@@ -56,7 +56,7 @@ public class UpdateLogSettings extends BusEndpointBase implements ApplicationEve
 	@ActionSelector(BusAction.GET)
 	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> getLogConfiguration(Message<?> message) {
-		Map<String, Object> logSettings = new HashMap<>(3);
+		Map<String, Object> logSettings = HashMap.newHashMap(3);
 		LoggerContext logContext = LoggerContext.getContext(false);
 		org.apache.logging.log4j.core.Logger rootLogger = logContext.getRootLogger();
 

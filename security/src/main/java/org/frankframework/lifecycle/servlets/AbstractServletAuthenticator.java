@@ -17,12 +17,12 @@ package org.frankframework.lifecycle.servlets;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -118,12 +118,9 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	}
 
 	final List<GrantedAuthority> getAuthorities() {
-		Set<String> securityRoles = getSecurityRoles();
-		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(securityRoles.size());
-		for (String role : securityRoles) {
-			grantedAuthorities.add(new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role));
-		}
-		return grantedAuthorities;
+		return getSecurityRoles().stream()
+				.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
+				.collect(Collectors.toList());
 	}
 
 	/**

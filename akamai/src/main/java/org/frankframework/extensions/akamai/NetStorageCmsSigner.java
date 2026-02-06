@@ -163,7 +163,7 @@ public class NetStorageCmsSigner {
 	 * @return Map of name-value pairs representing HTTP Headers and values.
 	 */
 	public Map<String, String> computeHeaders(NetStorageRequest netStorageAction) {
-		final Map<String, String> headers = new HashMap<>(3);
+		final Map<String, String> headers =  HashMap.newHashMap(3);
 		final String action = getActionHeaderValue(netStorageAction);
 		final String authData = getAuthDataHeaderValue();
 		final String authSign = getAuthSignHeaderValue(action, authData);

@@ -204,7 +204,7 @@ public class WebServices extends BusEndpointBase {
 		List<Map<String, Object>> wsdls = new ArrayList<>();
 		for (Configuration config : getIbisManager().getConfigurations()) {
 			for (Adapter adapter : config.getRegisteredAdapters()) {
-				Map<String, Object> wsdlMap = new HashMap<>(3);
+				Map<String, Object> wsdlMap = HashMap.newHashMap(3);
 				wsdlMap.put("configuration", config.getName());
 				wsdlMap.put("adapter", adapter.getName());
 				try {

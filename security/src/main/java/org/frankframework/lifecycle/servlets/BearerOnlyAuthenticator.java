@@ -146,7 +146,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 		if (!getAuthorities().isEmpty()) {
 			boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
 			token.setAuthenticated(result);
-			log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", () -> getAuthorities(), token::getAuthorities);
+			log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", () -> getAuthorities());
 		}
 
 		return token;
@@ -177,7 +177,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});
 		} catch (HttpClientErrorException e) {
-			log.debug("userInfo endpoint exception, status code [{}]", () -> e.getStatusCode().value(), () -> e);
+			log.warn("userInfo endpoint exception, status code [{}]", e.getStatusCode().value(), e);
 			return jwt;
 		}
 

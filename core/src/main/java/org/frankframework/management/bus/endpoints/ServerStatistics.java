@@ -71,12 +71,12 @@ public class ServerStatistics extends BusEndpointBase {
 		Map<String, Object> returnMap = new HashMap<>();
 
 		AppConstants appConstants = AppConstants.getInstance();
-		Map<String, Object> framework = new HashMap<>(2);
+		Map<String, Object> framework = HashMap.newHashMap(2);
 		framework.put("name", "FF!");
 		framework.put("version", appConstants.getProperty("application.version"));
 		returnMap.put("framework", framework);
 
-		Map<String, Object> instance = new HashMap<>(2);
+		Map<String, Object> instance = HashMap.newHashMap(2);
 		instance.put("version", appConstants.getProperty("instance.version"));
 		instance.put("name", appConstants.getProperty("instance.name"));
 		returnMap.put("instance", instance);
@@ -93,7 +93,7 @@ public class ServerStatistics extends BusEndpointBase {
 
 		returnMap.put("applicationServer", getApplicationServer());
 		returnMap.put("javaVersion", System.getProperty("java.runtime.name") + " (" + System.getProperty("java.runtime.version") + ")");
-		Map<String, Object> fileSystem = new HashMap<>(2);
+		Map<String, Object> fileSystem = HashMap.newHashMap(2);
 		fileSystem.put("totalSpace", getFileSystemTotalSpace());
 		fileSystem.put("freeSpace", getFileSystemFreeSpace());
 		returnMap.put("fileSystem", fileSystem);

@@ -42,9 +42,6 @@ public class RequestUtils {
 			return (T) is;
 		}
 		String str = StreamUtil.streamToString(is);
-		if(str == null) {
-			return null;
-		}
 		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
 			return (T) Boolean.valueOf(str); // At the moment we allow null/empty -> FALSE
 		}
