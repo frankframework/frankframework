@@ -36,7 +36,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
@@ -589,7 +588,7 @@ class FrankSenderTest {
 		}
 	}
 
-	private @NonNull FrankSender createFrankSender(FrankSender.Scope scope, boolean callSync, IPipe pipe) throws ConfigurationException, ListenerException {
+	private @NonNull FrankSender createFrankSender(FrankSender.Scope scope, boolean callSync, IPipe pipe) throws ConfigurationException {
 		FrankSender sender = configuration.createBean();
 		sender.setTarget(TARGET_SERVICE_NAME);
 		sender.setScope(scope);

@@ -56,7 +56,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 		this(Thread.currentThread().getContextClassLoader(), directory);
 	}
 
-	public DirectoryClassLoader(@NonNull ClassLoader parent, String directory) {
+	public DirectoryClassLoader(@Nullable ClassLoader parent, String directory) {
 		super(parent);
 
 		if (StringUtils.isBlank(directory)) {

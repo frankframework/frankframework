@@ -180,7 +180,7 @@ public abstract class AbstractSpringPoweredDigesterFactory implements IDigesterF
 	}
 
 	protected Map<String, String> copyAttrsToMap(Attributes attrs) {
-		Map<String, String> map = new HashMap<>(attrs.getLength());
+		Map<String, String> map = HashMap.newHashMap(attrs.getLength());
 		for (int i = 0; i < attrs.getLength(); ++i) {
 			String value = attrs.getValue(i);
 			map.put(attrs.getQName(i), value);

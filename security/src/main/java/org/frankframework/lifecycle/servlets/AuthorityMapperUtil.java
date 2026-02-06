@@ -77,7 +77,7 @@ public class AuthorityMapperUtil {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "java:S3740"})
 	private static List<String> splitRolesStringIfNeeded(Object roles) {
 		if (roles instanceof String rolesStr) {
 			// Split on JwtGrantedAuthoritiesConverter#DEFAULT_AUTHORITIES_CLAIM_DELIMITER && whitespace

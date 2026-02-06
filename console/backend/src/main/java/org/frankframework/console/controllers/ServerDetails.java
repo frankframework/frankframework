@@ -102,15 +102,15 @@ public class ServerDetails {
 	private Map<String, Object> getUnavailableServerInformation() {
 		Map<String, Object> returnMap = new HashMap<>();
 
-		Map<String, Object> framework = new HashMap<>(2);
+		Map<String, Object> framework = HashMap.newHashMap(2);
 		framework.put("name", "FF!");
 		framework.put("version", "");
 		returnMap.put("framework", framework);
-		Map<String, Object> instance = new HashMap<>(2);
+		Map<String, Object> instance = HashMap.newHashMap(2);
 		instance.put("version", "");
 		instance.put("name", "Unavailable");
 		returnMap.put("instance", instance);
-		Map<String, Object> fileSystem = new HashMap<>(2);
+		Map<String, Object> fileSystem = HashMap.newHashMap(2);
 		fileSystem.put("totalSpace", "0");
 		fileSystem.put("freeSpace", "0");
 		returnMap.put("fileSystem", fileSystem);
@@ -122,7 +122,7 @@ public class ServerDetails {
 		returnMap.put("machineName", "");
 		returnMap.put("uptime", "0");
 
-		Map<String, String> processMetrics = new HashMap<>(4);
+		Map<String, String> processMetrics = HashMap.newHashMap(4);
 		processMetrics.put("freeMemory", "0");
 		processMetrics.put("totalMemory", "0");
 		processMetrics.put("heapSize", "0");

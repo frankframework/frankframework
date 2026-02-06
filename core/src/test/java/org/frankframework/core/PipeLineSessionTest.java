@@ -526,9 +526,11 @@ public class PipeLineSessionTest {
 
 		assertEquals("A", session.get("enum"));
 		assertThrows(IllegalArgumentException.class, () -> {
+			// Need to pass an Enum value to get the right type
+			@SuppressWarnings("unused")
 			TestEnumInSession ignored = session.getAsType("enum");
 		}
-		); // Need to pass an Enum value to get the right type
+		);
 
 		TestEnumInSession result = session.removeIfType("enum");
 		assertNull(result);

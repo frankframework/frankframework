@@ -72,7 +72,7 @@ public class Init {
 	public ResponseEntity<?> getAllResources(HttpServletRequest servletRequest, ParametersModel params) {
 		List<Object> JSONresources = new ArrayList<>();
 		Map<String, Object> HALresources = new HashMap<>();
-		Map<String, Object> resources = new HashMap<>(1);
+		Map<String, Object> resources =  HashMap.newHashMap(1);
 		boolean hateoasSupport = params.hateoasSupport();
 
 		String requestPath = servletRequest.getRequestURL().toString();
@@ -107,7 +107,7 @@ public class Init {
 			String rel = !hateoasSupport && hasRelation ? method.getAnnotation(Relation.class).value() : null;
 
 			for (PathPattern path : paths) {
-				Map<String, Object> resource = new HashMap<>(6);
+				Map<String, Object> resource = HashMap.newHashMap(7);
 				resource.put("name", method.getName());
 				resource.put("href", requestPath + path.getPatternString());
 				resource.put("type", methodType.name());

@@ -280,7 +280,7 @@ public class GetSchedules extends BusEndpointBase {
 		String[] keys = jobData.getKeys();
 
 		for (int z = 0; z < keys.length; z++) {
-			Map<String, Object> property = new HashMap<>(3);
+			Map<String, Object> property = HashMap.newHashMap(3);
 
 			String name = keys[z];
 			Object value = jobData.get(name);
@@ -302,7 +302,7 @@ public class GetSchedules extends BusEndpointBase {
 
 		IJob jobdef = (IJob) jobDetail.getJobDataMap().get(ConfiguredJob.JOBDEF_KEY);
 		for (int t=0; t < jobdef.getMessageKeeper().size(); t++) {
-			Map<String, Object> message = new HashMap<>(3);
+			Map<String, Object> message = HashMap.newHashMap(3);
 			MessageKeeperMessage job = jobdef.getMessageKeeper().getMessage(t);
 
 			message.put("text", job.getMessageText());

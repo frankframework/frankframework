@@ -215,7 +215,7 @@ public class ConfigurationUtils {
 	}
 
 	private static Map<String, Object> extractConfigurationFromResultSetRow (ResultSet rs) throws SQLException {
-		Map<String, Object> configuration = new HashMap<>(5);
+		Map<String, Object> configuration = HashMap.newHashMap(5);
 		byte[] jarBytes = rs.getBytes(1);
 		if (jarBytes == null) return null;
 

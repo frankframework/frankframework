@@ -66,7 +66,7 @@ public class TestTibet2ToFrameworkDispatcher {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void authorisationCheckTechnicalError() throws StorageException {
+	public void authorisationCheckTechnicalError() {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenThrow(new BusException("technical-error-here"));
 
 		String result = dispatcher.authorisationCheck("1", "viewName");
@@ -94,7 +94,7 @@ public class TestTibet2ToFrameworkDispatcher {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void deleteReportFunctionalError() throws StorageException {
+	public void deleteReportFunctionalError() {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
 			Message<String> msg = i.getArgument(0);
 			MessageHeaders headers = msg.getHeaders();
@@ -114,7 +114,7 @@ public class TestTibet2ToFrameworkDispatcher {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void deleteReportTechnicalError() throws StorageException {
+	public void deleteReportTechnicalError() {
 		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenThrow(new BusException("technical-error-here"));
 
 		StorageException ex = assertThrows(StorageException.class, () -> dispatcher.deleteReport("no-idea"));

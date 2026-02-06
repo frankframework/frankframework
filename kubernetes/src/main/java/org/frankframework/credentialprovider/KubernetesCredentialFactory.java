@@ -156,7 +156,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	}
 
 	private boolean isAliasNameValid(CredentialAlias alias) {
-		if (alias == null || StringUtils.isEmpty(alias.getName())) {
+		if (StringUtils.isEmpty(alias.getName())) {
 			return false;
 		}
 

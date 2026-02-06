@@ -186,7 +186,7 @@ public class JsonUtil {
 		try(JsonReader jr = Json.createReader(new StringReader(json))) {
 			JsonStructure jobj = jr.read();
 
-			Map<String, Object> properties = new HashMap<>(1);
+			Map<String, Object> properties = HashMap.newHashMap(1);
 			properties.put(JsonGenerator.PRETTY_PRINTING, true);
 
 			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);

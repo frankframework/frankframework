@@ -310,7 +310,7 @@ public class AdapterStatus extends BusEndpointBase {
 			receiverInfo.put("name", receiver.getName());
 			receiverInfo.put("state", receiverRunState.name().toLowerCase());
 
-			Map<String, Object> messages = new HashMap<>(3);
+			Map<String, Object> messages = HashMap.newHashMap(3);
 			messages.put("received", receiver.getMessagesReceived());
 			messages.put("retried", receiver.getMessagesRetried());
 			messages.put("rejected", receiver.getMessagesRejected());
@@ -331,7 +331,7 @@ public class AdapterStatus extends BusEndpointBase {
 			ISender sender=null;
 			IListener<?> listener=receiver.getListener();
 			if(listener != null) {
-				Map<String, Object> listenerInfo = new HashMap<>();
+				Map<String, Object> listenerInfo = HashMap.newHashMap(5);
 				listenerInfo.put("name", listener.getName());
 				listenerInfo.put("class", ClassUtils.nameOf(listener));
 				if (listener instanceof HasPhysicalDestination && receiver.isConfigured()) {
