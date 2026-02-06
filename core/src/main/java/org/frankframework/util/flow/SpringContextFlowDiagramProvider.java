@@ -74,7 +74,7 @@ public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, 
 				log.debug("creating flow for configuration: {}", configuration);
 				flowDiagramManager.generate(configuration);
 			} else if (applicationContext instanceof Adapter adapter) {
-				log.debug("creating flow for adapter: ", adapter);
+				log.debug("creating flow for adapter: {}", adapter);
 				flowDiagramManager.generate(adapter);
 			} else {
 				throw new IllegalStateException("no suitable Configuration found");
