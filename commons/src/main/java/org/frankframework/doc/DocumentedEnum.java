@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,14 @@ package org.frankframework.doc;
 
 import java.lang.reflect.Field;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public interface DocumentedEnum {
 
 	/**
+	 * Get a label to be used for the enum constant.
+	 *
 	 * @return Optional 'FieldName' or label that's used to parse the Enum, should never be null but return <code>name()</code> instead!
 	 */
 	default String getLabel() {

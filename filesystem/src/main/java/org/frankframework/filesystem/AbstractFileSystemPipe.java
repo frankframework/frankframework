@@ -23,7 +23,6 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
@@ -55,7 +54,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @author Gerrit van Brakel
  */
-@DestinationType(Type.FILE_SYSTEM)
+@DestinationType(DestinationType.Type.FILE_SYSTEM)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 @Forward(name = "fileNotFound", description = "the input file was expected to exist, but was not found")
 @Forward(name = "folderNotFound", description = "the folder does not exist")

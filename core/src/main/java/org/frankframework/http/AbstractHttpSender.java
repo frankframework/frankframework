@@ -48,7 +48,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.CanUseSharedResource;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
@@ -97,7 +96,7 @@ import org.frankframework.util.XmlUtils;
  * @since	7.0
  *
  */
-@DestinationType(Type.HTTP)
+@DestinationType(DestinationType.Type.HTTP)
 @Forward(name = "*", description = "statuscode of the HTTP response")
 public abstract class AbstractHttpSender extends AbstractHttpSession implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<HttpSession> {
 

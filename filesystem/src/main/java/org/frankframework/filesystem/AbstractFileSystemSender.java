@@ -21,7 +21,6 @@ import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -52,7 +51,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @author Gerrit van Brakel
  */
-@DestinationType(Type.FILE_SYSTEM)
+@DestinationType(DestinationType.Type.FILE_SYSTEM)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 @Forward(name = "fileNotFound", description = "if the input file was expected to exist, but was not found")
 @Forward(name = "folderNotFound", description = "if the folder does not exist")

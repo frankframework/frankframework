@@ -35,7 +35,6 @@ import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -75,7 +74,7 @@ import org.frankframework.stream.Message;
  * @author Gerrit van Brakel
  */
 @Log4j2
-@DestinationType(Type.JVM)
+@DestinationType(DestinationType.Type.JVM)
 @Category(Category.Type.BASIC)
 public class JavaListener<M> implements RequestReplyListener, IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 

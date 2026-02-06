@@ -27,7 +27,6 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLine.ExitState;
@@ -68,7 +67,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.4.5
  */
-@DestinationType(Type.JVM)
+@DestinationType(DestinationType.Type.JVM)
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.ADVANCED)
 public class IbisJavaSender extends AbstractSenderWithParameters implements HasPhysicalDestination {

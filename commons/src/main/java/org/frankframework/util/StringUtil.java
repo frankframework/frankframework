@@ -105,7 +105,9 @@ public class StringUtil {
 	}
 
 	/**
-	 * @return hidden string with all characters replaced with '*'
+	 * Hides all characters in the string, effectively returning a string the length of the original string but consisting entirely of {@value '*'} characters.
+	 *
+	 * @return hidden string with all characters replaced with '*', or {@literal null} if the input string was {@literal null}.
 	 * @see #hide(String)
 	 */
 	@Nullable
@@ -173,6 +175,8 @@ public class StringUtil {
 	}
 
 	/**
+	 * Hides the input string according to the given regex.
+	 *
 	 * @see #hideAll(String, String, int)
 	 */
 	public static String hideAll(String inputString, String regex) {

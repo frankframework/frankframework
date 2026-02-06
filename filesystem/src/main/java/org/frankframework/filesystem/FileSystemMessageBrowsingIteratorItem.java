@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,17 +19,20 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
 
+@NullMarked
 public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSystem<F>> implements IMessageBrowsingIteratorItem {
 
 	private final FS fileSystem;
 	private final RawMessageWrapper<F> item;
 	private final String messageIdPropertyKey;
-	private final String comment;
+	private final @Nullable String comment;
 
 	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, RawMessageWrapper<F> item, String messageIdPropertyKey) throws FileSystemException {
 		this.fileSystem = fileSystem;
@@ -50,11 +53,12 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	}
 
 	@Override
+	@Nullable
 	public String getOriginalId() throws ListenerException {
 		try {
 			if (StringUtils.isNotEmpty(messageIdPropertyKey)) {
 				Map<String,Object> properties = fileSystem.getAdditionalFileProperties(item.getRawMessage());
-				return properties != null ? (String)properties.get(messageIdPropertyKey) : null;
+				return (String)properties.get(messageIdPropertyKey);
 			}
 			return fileSystem.getName(item.getRawMessage());
 		} catch (FileSystemException e) {
@@ -63,6 +67,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	}
 
 	@Override
+	@Nullable
 	public String getCorrelationId() {
 		return null;
 	}
@@ -77,26 +82,31 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	}
 
 	@Override
+	@Nullable
 	public Date getExpiryDate() {
 		return null;
 	}
 
 	@Override
+	@Nullable
 	public String getType() {
 		return null;
 	}
 
 	@Override
+	@Nullable
 	public String getHost() {
 		return null;
 	}
 
 	@Override
+	@Nullable
 	public String getCommentString() {
 		return comment;
 	}
 
 	@Override
+	@Nullable
 	public String getLabel() {
 		return null;
 	}

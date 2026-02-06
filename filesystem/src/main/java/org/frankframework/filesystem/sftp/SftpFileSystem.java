@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -36,7 +37,6 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
@@ -54,7 +54,7 @@ import org.frankframework.util.LogUtil;
  *
  * @author Niels Meijer
  */
-@DestinationType(Type.FILE_SYSTEM)
+@DestinationType(DestinationType.Type.FILE_SYSTEM)
 public class SftpFileSystem extends SftpSession implements IWritableFileSystem<SftpFileRef> {
 	private final Logger log = LogUtil.getLogger(this);
 
@@ -110,7 +110,8 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public DirectoryStream<SftpFileRef> list(SftpFileRef folder, TypeFilter filter) throws FileSystemException {
+	@NonNull
+	public DirectoryStream<SftpFileRef> list(SftpFileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
 		try {
 			String folderName = folder != null ? getCanonicalName(folder) : null;
 			return FileSystemUtils.getDirectoryStream(new SftpFilePathIterator(folderName, listFolder(folderName), filter));
@@ -410,7 +411,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(SftpFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		SftpATTRS attrs = getFileAttributes(f);

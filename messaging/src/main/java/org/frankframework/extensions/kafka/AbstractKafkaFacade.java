@@ -35,12 +35,11 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.lifecycle.LifecycleException;
 
-@DestinationType(Type.KAFKA)
+@DestinationType(DestinationType.Type.KAFKA)
 public abstract class AbstractKafkaFacade implements HasPhysicalDestination, IConfigurable {
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

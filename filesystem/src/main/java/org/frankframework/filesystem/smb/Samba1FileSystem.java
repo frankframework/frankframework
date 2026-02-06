@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -116,7 +117,8 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public DirectoryStream<SmbFile> list(SmbFile folder, TypeFilter filter) throws FileSystemException {
+	@NonNull
+	public DirectoryStream<SmbFile> list(SmbFile folder, @NonNull TypeFilter filter) throws FileSystemException {
 		try {
 			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(folder != null ? folder.getURL().getFile() : null, filter));
 		} catch (IOException e) {
@@ -125,7 +127,8 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public DirectoryStream<SmbFile> list(String folder, TypeFilter filter) throws FileSystemException {
+	@NonNull
+	public DirectoryStream<SmbFile> list(String folder, @NonNull TypeFilter filter) throws FileSystemException {
 		SmbFile actualFolder = toFile(folder);
 		return list(actualFolder, filter);
 	}
@@ -368,9 +371,8 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(SmbFile file) {
-		return null;
+		return Map.of();
 	}
 
 	/** The destination, aka smb://xxx/yyy share */

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -77,7 +79,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private final @Getter String name = "ExchangeFileSystem";
 
 	private @Getter String mailAddress;
-	private @Getter String url;
 
 	private @Getter String proxyHost = null;
 	private @Getter int proxyPort = 8080;
@@ -124,8 +125,8 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getUrl()) && StringUtils.isEmpty(getMailAddress())) {
-			throw new ConfigurationException("either url or mailAddress needs to be specified");
+		if (StringUtils.isEmpty(getMailAddress())) {
+			throw new ConfigurationException("mailAddress needs to be specified");
 		}
 
 		credentials = new CredentialFactory(getAuthAlias(), getClientId(), getClientSecret());
@@ -188,7 +189,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private MailFolder configureBaseFolder() throws IOException, FileSystemException {
 		List<String> folder = StringUtil.split(baseFolder, "/");
 
-		String rootFolder = folder.remove(0);
+		String rootFolder = folder.removeFirst();
 		List<MailFolder> folders = client.getMailFolders(mailAddress);
 		MailFolder foundMailFolder = folders.stream()
 				.filter(t -> rootFolder.equalsIgnoreCase(t.getName()))
@@ -211,14 +212,14 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 		}
 	}
 
-	private MailFolder findSubFolder(MailFolder parentFolder, String childFolderName) throws FileSystemException {
+	private @Nullable MailFolder findSubFolder(MailFolder parentFolder, String childFolderName) throws FileSystemException {
 		List<String> folderNames = StringUtil.split(childFolderName, "/");
 		if (folderNames.isEmpty()) {
 			throw new FileSystemException("unable to find folder, no name specified");
 		}
 
 		try {
-			String folderToLookFor = folderNames.remove(0);
+			String folderToLookFor = folderNames.removeFirst();
 			log.trace("attempt to find sub folder [{}] in parent folder [{}]", parentFolder, folderToLookFor);
 			List<MailFolder> subFolders = client.getMailFolders(parentFolder);
 			MailFolder folder = findSubFolder(subFolders, folderToLookFor);
@@ -249,11 +250,12 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	@Override
 	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		MailFolder f = findSubFolder(mailFolder, folder);
-		return f.getTotalItemCount();
+		return f == null ? 0 : f.getTotalItemCount();
 	}
 
 	@Override
-	public DirectoryStream<MailItemId> list(MailItemId folderName, TypeFilter filter) throws FileSystemException {
+	@NonNull
+	public DirectoryStream<MailItemId> list(MailItemId folderName, @NonNull TypeFilter filter) throws FileSystemException {
 		MailFolder folder;
 		if (folderName == null) {
 			folder = mailFolder;
@@ -266,7 +268,8 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public DirectoryStream<MailItemId> list(String folderName, TypeFilter filter) throws FileSystemException {
+	@NonNull
+	public DirectoryStream<MailItemId> list(String folderName, @NonNull TypeFilter filter) throws FileSystemException {
 		return listItems(resolveFolder(folderName), filter);
 	}
 
@@ -322,7 +325,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			log.trace("assuming id [{}] is a (part) folder", id);
 			String folderName = id.substring(0, id.lastIndexOf('/'));
 			String mailId = null;
-			if (id.length() > id.lastIndexOf('/')) {
+			if ((id.length()-1) >= id.lastIndexOf('/')) {
 				mailId = id.substring(id.lastIndexOf('/') + 1);
 			}
 			return toFile(folderName, mailId);
@@ -443,6 +446,9 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	public void removeFolder(String folder, boolean removeNonEmptyFolder) throws FileSystemException {
 		try {
 			MailFolder folderToDelete = findSubFolder(mailFolder, folder);
+			if (folderToDelete == null) {
+				return;
+			}
 			if (folderToDelete.getTotalItemCount() > 0 && !removeNonEmptyFolder) {
 				throw new FileSystemException("Cannot remove folder, not empty");
 			}
@@ -470,7 +476,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	@Override
 	public Date getModificationTime(MailItemId file) throws FileSystemException {
 		if (file instanceof MailFolder) {
-			return null;
+			return new Date(0L); // NullAway
 		}
 
 		MailMessage mailMessage = getMailMessage(file);
@@ -489,7 +495,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(MailItemId f) throws FileSystemException {
 		if (f instanceof MailFolder) {
-			return null;
+			return Map.of();
 		}
 
 		MailMessage emailMessage = getMailMessage(f);

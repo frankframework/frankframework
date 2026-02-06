@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.mail.BodyPart;
 import jakarta.mail.Flags;
@@ -50,6 +51,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.angus.mail.imap.AppendUID;
 import org.eclipse.angus.mail.imap.IMAPFolder;
 import org.eclipse.angus.mail.imap.IMAPMessage;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
@@ -58,7 +60,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.http.PartMessage;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CredentialFactory;
@@ -66,9 +67,10 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.xml.SaxElementBuilder;
 
 @Log4j2
-@DestinationType(Type.MAIL)
+@DestinationType(DestinationType.Type.MAIL)
 public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart, IMAPFolder> {
 
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private @Getter String host;
 	private @Getter int port = 993;
 
@@ -139,7 +141,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 		}
 	}
 
-	IMAPFolder getFolder(IMAPFolder baseFolder, String name) throws MessagingException {
+	IMAPFolder getFolder(IMAPFolder baseFolder, @Nullable String name) throws MessagingException {
 		if (StringUtils.isNotEmpty(name)) {
 			return (IMAPFolder)baseFolder.getFolder(name);
 		}
@@ -154,8 +156,9 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 		return Long.parseLong(filename, 16);
 	}
 
+	@NonNull
 	@Override
-	public String getName(Message f) {
+	public String getName(@NonNull Message f) {
 		UIDFolder folder = (UIDFolder) f.getFolder();
 		try {
 			return uidToName(folder.getUID(f));
@@ -164,8 +167,9 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 		}
 	}
 
+	@NonNull
 	@Override
-	public String getParentFolder(Message f) {
+	public String getParentFolder(@NonNull Message f) {
 		return f.getFolder().getFullName();
 	}
 
@@ -243,7 +247,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public DirectoryStream<Message> list(Message foldername, TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<Message> list(Message foldername, @NonNull TypeFilter filter) throws FileSystemException {
 		if (filter.includeFolders()) {
 			throw new FileSystemException("Filtering on folders is not supported");
 		}
@@ -485,7 +489,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Message getFileFromAttachment(MimeBodyPart a) throws FileSystemException {
+	public @Nullable Message getFileFromAttachment(MimeBodyPart a) throws FileSystemException {
 		try {
 			Object content = a.getContent();
 			if (content instanceof Message message) {
@@ -526,11 +530,11 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Date getModificationTime(Message message) {
+	public Date getModificationTime(Message message) throws FileSystemException {
 		try {
 			return message.getReceivedDate();
 		} catch (MessagingException e) {
-			return null;
+			throw new FileSystemException("Cannot get file modification timestamp for [%s]".formatted(getName(message)), e);
 		}
 	}
 
@@ -551,7 +555,6 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(Message f) throws FileSystemException {
 		try {
 			Map<String, Object> result = new LinkedHashMap<>();
@@ -619,7 +622,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 			}
 		}
 		String name = urlName == null ? "<no url>" : urlName.toString();
-		return StringUtil.concatStrings(name," ", super.getPhysicalDestinationName());
+		return Objects.requireNonNull(StringUtil.concatStrings(name," ", super.getPhysicalDestinationName()));
 	}
 
 	@Override
@@ -637,7 +640,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	private static class MimeContentMessage extends org.frankframework.stream.Message {
-		public MimeContentMessage(IMAPMessage imapMessage) {
+		MimeContentMessage(IMAPMessage imapMessage) {
 			super(imapMessage::getMimeStream, new MessageContext(), imapMessage.getClass());
 		}
 	}

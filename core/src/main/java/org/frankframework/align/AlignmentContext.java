@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,35 +16,26 @@
 package org.frankframework.align;
 
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.jspecify.annotations.Nullable;
+
+import lombok.Getter;
 
 /**
  * Top of a stack of parsed elements, that represent the current position in the aligned document.
  */
 public class AlignmentContext {
 
-	private final AlignmentContext parent;
-	private final String localName;
-	private final XSTypeDefinition typeDefinition;
+	private final @Getter @Nullable AlignmentContext parent;
+	private final @Getter @Nullable String localName;
+	private final @Getter @Nullable XSTypeDefinition typeDefinition;
 
 	public AlignmentContext() {
 		this(null, null, null);
 	}
 
-	public AlignmentContext(AlignmentContext parent, String localName, XSTypeDefinition typeDefinition) {
+	public AlignmentContext(@Nullable AlignmentContext parent, @Nullable String localName, @Nullable XSTypeDefinition typeDefinition) {
 		this.parent = parent;
 		this.localName = localName;
 		this.typeDefinition = typeDefinition;
-	}
-
-	public AlignmentContext getParent() {
-		return parent;
-	}
-
-	public String getLocalName() {
-		return localName;
-	}
-
-	public XSTypeDefinition getTypeDefinition() {
-		return typeDefinition;
 	}
 }

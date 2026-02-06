@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
@@ -35,9 +37,10 @@ import org.frankframework.util.XmlBuilder;
 
 public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extends IteratingPipe<A> {
 
-	private Set<String> onlyProperties;
-	private Set<String> excludeProperties;
+	private @Nullable Set<String> onlyProperties;
+	private @Nullable Set<String> excludeProperties;
 
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private FS fileSystem;
 
 	@Override
@@ -51,8 +54,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 	public void start() {
 		super.start();
 		try {
-			FS fileSystem = getFileSystem();
-			fileSystem.open();
+			getFileSystem().open();
 		} catch (FileSystemException e) {
 			throw new LifecycleException("Cannot open fileSystem",e);
 		}
@@ -153,7 +155,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 		if (getFileSystem() != null) {
 			return getFileSystem().getPhysicalDestinationName();
 		}
-		return null;
+		return "<No Filesystem>";
 	}
 
 	public FS getFileSystem() {

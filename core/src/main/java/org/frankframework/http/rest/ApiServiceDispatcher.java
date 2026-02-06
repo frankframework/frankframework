@@ -68,7 +68,7 @@ public class ApiServiceDispatcher {
 	 * and returned URI patterns may have more segments than the request.
 	 *
 	 * @param uri URI for which to find matching {@link ApiDispatchConfig} instances.
-	 * @return List of {@link ApiDispatchConfig} instances matching the start of this request URI. (Nonnull, may be empty).
+	 * @return List of {@link ApiDispatchConfig} instances matching the start of this request URI. (NonNull, may be empty).
 	 */
 	@NonNull
 	public List<ApiDispatchConfig> findAllMatchingConfigsForUri(String uri) {

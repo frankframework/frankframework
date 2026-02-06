@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import java.io.InputStream;
 public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 
 	/**
+	 * Create a file with the given content inputstream
 	 * @param file FileSystem file reference
 	 * @param content to write or NULL. When NULL existing files should be overwritten, and new files should be created.
 	 */

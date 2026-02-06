@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -40,6 +39,7 @@ import org.jspecify.annotations.Nullable;
  * Utilities for formatting and parsing dates.
  */
 @NullMarked
+@SuppressWarnings({"JavaTimeDefaultTimeZone", "TimeInStaticInitializer"})
 public class DateFormatUtils {
 	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz";
 	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";
@@ -117,7 +117,7 @@ public class DateFormatUtils {
 		return format(TimeProvider.now(), buildFormatter(format));
 	}
 
-	public static String now(@NonNull DateTimeFormatter formatter) {
+	public static String now(DateTimeFormatter formatter) {
 		return format(TimeProvider.now(), formatter);
 	}
 
@@ -131,20 +131,20 @@ public class DateFormatUtils {
 		return format(date, FULL_GENERIC_FORMATTER);
 	}
 
-	public static String format(@NonNull Instant instant) {
+	public static String format(Instant instant) {
 		return format(instant, FULL_GENERIC_FORMATTER);
 	}
 
-	public static String format(long date, @NonNull DateTimeFormatter formatter) {
+	public static String format(long date, DateTimeFormatter formatter) {
 		return format(Instant.ofEpochMilli(date), formatter);
 	}
 
 	@Deprecated
-	public static String format(Date date, @NonNull DateTimeFormatter formatter) {
+	public static String format(Date date, DateTimeFormatter formatter) {
 		return format(date.toInstant(), formatter);
 	}
 
-	public static String format(@NonNull Instant instant, @NonNull DateTimeFormatter formatter) {
+	public static String format(Instant instant, DateTimeFormatter formatter) {
 		return formatter.format(instant);
 	}
 
@@ -155,7 +155,7 @@ public class DateFormatUtils {
 		return GENERIC_DATETIME_FORMATTER.format(TimeProvider.now());
 	}
 
-	public static Instant parseToInstant(String dateString, @NonNull DateTimeFormatter parser) throws DateTimeParseException {
+	public static Instant parseToInstant(String dateString, DateTimeFormatter parser) throws DateTimeParseException {
 		TemporalAccessor temporalAccessor = parser.parse(dateString);
 		if (temporalAccessor.isSupported(ChronoField.INSTANT_SECONDS)) {
 			return Instant.from(temporalAccessor);
@@ -173,7 +173,7 @@ public class DateFormatUtils {
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 
-	public static LocalDate parseToLocalDate(String dateString, @NonNull DateTimeFormatter parser) throws DateTimeParseException {
+	public static LocalDate parseToLocalDate(String dateString, DateTimeFormatter parser) throws DateTimeParseException {
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 
@@ -181,13 +181,11 @@ public class DateFormatUtils {
 	 * Parses a string to a Date using CalendarParser
 	 */
 	@Deprecated
-	@NonNull
-	public static Date parseAnyDate(@NonNull String dateInAnyFormat) throws DateTimeParseException, IllegalArgumentException {
+	public static Date parseAnyDate(String dateInAnyFormat) throws DateTimeParseException, IllegalArgumentException {
 		return Date.from(parseGenericDate(dateInAnyFormat));
 	}
 
-	@NonNull
-	public static Instant parseGenericDate(@NonNull String dateString) throws DateTimeParseException, IllegalArgumentException {
+	public static Instant parseGenericDate(String dateString) throws DateTimeParseException, IllegalArgumentException {
 		// Date parsing based on: https://stackoverflow.com/a/3390252/3588231
 		// An alternative would have been this library: https://github.com/sisyphsu/dateparser
 		// But I prefer the clarity of having more direct control and using standard Java APIs.
@@ -201,7 +199,7 @@ public class DateFormatUtils {
 	/**
 	 * Java time API is more strict compared to the old Date API. This method allows for parsing dates with optional components.
 	 *
-	 * @param format
+	 * @param format Date formatting pattern according to the rules of the JDK {@link DateTimeFormatter}.
 	 */
 	public static DateTimeFormatter getDateTimeFormatterWithOptionalComponents(String format) {
 		return new DateTimeFormatterBuilder()

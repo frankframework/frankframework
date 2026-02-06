@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,22 +17,35 @@ package org.frankframework.core;
 
 import java.util.Date;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Iterator item for messagebrowsers.
  *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@NullMarked
 public interface IMessageBrowsingIteratorItem extends AutoCloseable {
 
+	@Nullable
 	String getId() throws ListenerException;
+	@Nullable
 	String getOriginalId() throws ListenerException;
+	@Nullable
 	String getCorrelationId() throws ListenerException;
+	@Nullable
 	Date   getInsertDate() throws ListenerException;
+	@Nullable
 	Date   getExpiryDate() throws ListenerException;
+	@Nullable
 	String getType() throws ListenerException;
+	@Nullable
 	String getHost() throws ListenerException;
+	@Nullable
 	String getCommentString() throws ListenerException;
+	@Nullable
 	String getLabel() throws ListenerException;
 
 	/**
@@ -41,5 +54,4 @@ public interface IMessageBrowsingIteratorItem extends AutoCloseable {
 	 */
 	@Override
 	void close();
-
 }

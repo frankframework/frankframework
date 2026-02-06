@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -390,6 +391,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 			this.closeOnRelease = closeOnRelease;
 		}
 
+		@Nullable
 		public String fieldValue(String field) throws ListenerException {
 			try {
 				return StringUtils.isNotEmpty(field) ? rs.getString(field) : null;
@@ -397,6 +399,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 				throw new ListenerException(e);
 			}
 		}
+		@Nullable
 		public Date dateFieldValue(String field) throws ListenerException {
 			try {
 				return StringUtils.isNotEmpty(field) ? rs.getTimestamp(field) : null;
@@ -406,40 +409,49 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 		}
 
 		@Override
+		@Nullable
 		public String getId() throws ListenerException {
 			return fieldValue(getKeyField());
 		}
 		@Override
+		@Nullable
 		public String getOriginalId() throws ListenerException {
 			return fieldValue(getIdField());
 		}
 		@Override
+		@Nullable
 		public String getCorrelationId() throws ListenerException {
 			return fieldValue(getCorrelationIdField());
 		}
 		@Override
+		@Nullable
 		public Date getInsertDate() throws ListenerException {
 			return dateFieldValue(getDateField());
 		}
 		@Override
+		@Nullable
 		public Date getExpiryDate() throws ListenerException {
 			return dateFieldValue(getExpiryDateField());
 		}
 		@Override
+		@Nullable
 		public String getType() throws ListenerException {
 			return fieldValue(getTypeField());
 		}
 		@Override
+		@Nullable
 		public String getHost() throws ListenerException {
 			return fieldValue(getHostField());
 		}
 
 		@Override
+		@Nullable
 		public String getLabel() throws ListenerException {
 			return fieldValue(getLabelField());
 		}
 
 		@Override
+		@Nullable
 		public String getCommentString() throws ListenerException {
 			return fieldValue(getCommentField());
 		}

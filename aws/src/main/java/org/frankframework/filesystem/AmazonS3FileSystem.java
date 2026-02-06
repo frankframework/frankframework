@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.DirectoryStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -68,7 +69,6 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import org.frankframework.aws.AwsUtil;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.filesystem.utils.AmazonEncodingUtils;
 import org.frankframework.stream.Message;
@@ -79,7 +79,7 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 @Log4j2
-@DestinationType(Type.FILE_SYSTEM)
+@DestinationType(DestinationType.Type.FILE_SYSTEM)
 public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements IWritableFileSystem<S3FileRef>, ISupportsCustomFileAttributes<S3FileRef> {
 
 	private static final String FILE_DELIMITER = "/";
@@ -186,8 +186,9 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 		}
 	}
 
+	@NonNull
 	@Override
-	public DirectoryStream<S3FileRef> list(S3FileRef folder, TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<S3FileRef> list(S3FileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
 		List<S3Object> files = new ArrayList<>();
 		List<CommonPrefix> subFolders = new ArrayList<>();
 
@@ -554,7 +555,6 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(S3FileRef f) {
 		Map<String, Object> attributes = new LinkedHashMap<>();
 		attributes.put("bucketName", f.getBucketName());
@@ -594,10 +594,11 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	public Date getModificationTime(S3FileRef f) throws FileSystemException {
 		updateFileAttributes(f);
-		if (f.getLastModified() == null) {
-			return null;
+		Instant lastModified = f.getLastModified();
+		if (lastModified == null) {
+			return new Date(0L);
 		}
-		return Date.from(f.getLastModified());
+		return Date.from(lastModified);
 	}
 
 	protected ApacheHttpClient.Builder getHttpClientBuilder() {

@@ -51,10 +51,10 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
@@ -66,7 +66,7 @@ import org.frankframework.util.XmlEncodingUtils;
  *
  */
 @Log4j2
-@DestinationType(Type.FILE_SYSTEM)
+@DestinationType(DestinationType.Type.FILE_SYSTEM)
 public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
 
@@ -78,6 +78,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
 	 * When the root is left unspecified, absolute paths to files and folders can be used
 	 */
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	@Getter @Setter private String root;
 
 	@Override
@@ -120,8 +121,9 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		return Paths.get(filename);
 	}
 
+	@NonNull
 	@Override
-	public DirectoryStream<Path> list(Path folder, TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<Path> list(Path folder, @NonNull TypeFilter filter) throws FileSystemException {
 		if (folder == null) {
 			folder = toFile(null);
 		}
@@ -133,9 +135,12 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			case FOLDERS_ONLY -> Files::isDirectory;
 			case FILES_AND_FOLDERS -> file -> true;
 		};
+		DirectoryStream<Path> paths = null;
 		try {
-			return Files.newDirectoryStream(folder, directoryStreamFilter);
+			paths = Files.newDirectoryStream(folder, directoryStreamFilter);
+			return paths;
 		} catch (IOException e) {
+			CloseUtils.closeSilently(paths);
 			throw new FileSystemException("Cannot list files in ["+folder+"]", e);
 		}
 	}
@@ -404,20 +409,19 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(Path file) throws FileSystemException {
 		try {
-			if (!Files.exists(file)) return null;
+			if (!Files.exists(file)) return Map.of();
 			UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(file);
 			List<String> attributeNames = userDefinedAttributes.list();
-			if (attributeNames == null || attributeNames.isEmpty()) return null;
+			if (attributeNames == null || attributeNames.isEmpty()) return Map.of();
 			String attrSpec = "user:" + String.join(",", attributeNames);
 			Map<String, Object> result = new LinkedHashMap<>();
 			Files.readAttributes(file, attrSpec)
 					.forEach((name, value) -> result.put(name, readAttributeValue(file, name, value)));
 			return result;
 		} catch (UnsupportedOperationException e) {
-			return null;
+			return Map.of();
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -457,7 +461,6 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	@Override
 	public String getCustomFileAttribute(@NonNull Path file, @NonNull String name) throws FileSystemException {
 		Map<String, Object> additionalFileProperties = getAdditionalFileProperties(file);
-		if (additionalFileProperties == null) return null;
 		return Objects.toString(additionalFileProperties.get(name), null);
 	}
 

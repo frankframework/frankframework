@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022, 2025 WeAreFrank!
+   Copyright 2020, 2022, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,7 +39,9 @@ public abstract class AbstractConnectedFileSystem<F,C> extends AbstractFileSyste
 	// implementations that have a thread-safe connection can set pooledConnection = false to use a shared connection.
 	private @Setter @Getter boolean pooledConnection=true;
 
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private C globalConnection;
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private ObjectPool<C> connectionPool;
 
 	/**

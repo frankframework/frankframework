@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.io.IoBuilder;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,13 +99,13 @@ public class RunLarvaTests {
 			"FxF3/scenario12"
 			);
 
-	@SuppressWarnings("NullAway.Init")
+	@Nullable
 	private static ConfigurableApplicationContext parentContext;
-	@SuppressWarnings("NullAway.Init")
+	@Nullable
 	private static ConfigurableApplicationContext applicationContext;
-	@SuppressWarnings("NullAway.Init")
+	@Nullable
 	private static IbisContext ibisContext;
-	@SuppressWarnings("NullAway.Init")
+	@Nullable
 	private static EmbeddedActiveMQ jmsServer;
 
 	@SuppressWarnings("NullAway.Init")
@@ -180,7 +181,7 @@ public class RunLarvaTests {
 
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
 		try {
-			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
+			Message<@NonNull Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
 			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+ MessageBase.STATUS_KEY));
 		} catch (Exception e) {
 			log.error("error while checking health of application", e);

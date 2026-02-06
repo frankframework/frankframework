@@ -37,7 +37,6 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -73,7 +72,7 @@ import org.frankframework.util.XmlUtils;
  * </pre></code>
  *
  */
-@DestinationType(Type.MAIL)
+@DestinationType(DestinationType.Type.MAIL)
 public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 
 	private @Getter String authAlias;

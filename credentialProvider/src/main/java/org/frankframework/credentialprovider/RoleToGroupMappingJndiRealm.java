@@ -21,6 +21,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 
@@ -174,6 +175,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 				groupCheckCount++;
 
 				Attributes attrs = roleMembershipCache.computeIfAbsentOrExpired(role, r -> connection.context.getAttributes(r, attrIds));
+				Objects.requireNonNull(attrs, "No attributes for role [%s]".formatted(role));
 
 				for (NamingEnumeration<? extends Attribute> attsEnum= attrs.getAll(); attsEnum.hasMoreElements();) {
 					Attribute attr = attsEnum.next();
@@ -217,6 +219,8 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	}
 
 	/**
+	 * Get a Digester for the Role To Group mapping file.
+	 *
 	 * @return a configured <code>Digester</code> to use for processing the XML input file, creating a new one if necessary.
 	 */
 	protected synchronized Digester getDigester() {

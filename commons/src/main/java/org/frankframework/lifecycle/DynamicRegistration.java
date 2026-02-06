@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Niels Meijer
  */
+@SuppressWarnings("MutablePublicArray")
 public interface DynamicRegistration {
 
 	String[] ALL_IBIS_ROLES = {"IbisWebService", "IbisObserver", "IbisDataAdmin", "IbisAdmin","IbisTester"};

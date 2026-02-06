@@ -154,15 +154,13 @@ public class FileSystemUtils {
 				.withModificationTime(fileSystem.getModificationTime(file))
 				.withSize(fileSystem.getFileSize(file));
 		Map<String, Object> fileProperties = fileSystem.getAdditionalFileProperties(file);
-		if (fileProperties != null) {
-			fileProperties.forEach((key, value) -> {
-				if (value instanceof Serializable s) {
-					context.put(key, s);
-				} else if (value != null) {
-					context.put(key, value.toString());
-				}
-			});
-		}
+		fileProperties.forEach((key, value) -> {
+			if (value instanceof Serializable s) {
+				context.put(key, s);
+			} else if (value != null) {
+				context.put(key, value.toString());
+			}
+		});
 		return context;
 	}
 
@@ -351,21 +349,17 @@ public class FileSystemUtils {
 				// Get the modification date of the file
 				Date modificationDate = fileSystem.getModificationTime(f);
 				// Add date
-				if (modificationDate != null) {
-					String date = DateFormatUtils.format(modificationDate, DateFormatUtils.ISO_DATE_FORMATTER);
-					file.addAttribute("modificationDate", date);
+				String date = DateFormatUtils.format(modificationDate, DateFormatUtils.ISO_DATE_FORMATTER);
+				file.addAttribute("modificationDate", date);
 
-					// add the time
-					String time = DateFormatUtils.format(modificationDate, DateFormatUtils.TIME_HMS_FORMATTER);
-					file.addAttribute("modificationTime", time);
-				}
+				// add the time
+				String time = DateFormatUtils.format(modificationDate, DateFormatUtils.TIME_HMS_FORMATTER);
+				file.addAttribute("modificationTime", time);
 			}
 
 			Map<String, Object> additionalParameters = fileSystem.getAdditionalFileProperties(f);
-			if (additionalParameters != null) {
-				for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
-					file.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
-				}
+			for (Map.Entry<String, Object> attribute : additionalParameters.entrySet()) {
+				file.addAttribute(attribute.getKey(), String.valueOf(attribute.getValue()));
 			}
 		}
 	}
