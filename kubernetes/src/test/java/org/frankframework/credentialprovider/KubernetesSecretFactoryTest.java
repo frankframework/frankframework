@@ -2,6 +2,7 @@ package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +28,10 @@ import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretList;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.VersionInfo;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
+import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
@@ -156,5 +160,15 @@ class KubernetesSecretFactoryTest {
 		assertTrue(handler.contains("must start and end with an alphanumeric"));
 
 		rootLogger.removeHandler(handler);
+	}
+
+	@Test
+	void testCustomSerializer() throws IOException {
+		KubernetesSerialization serializer = credentialFactory.createSerializer();
+		URL url = KubernetesSecretFactoryTest.class.getResource("/versionInfo.json");
+		assertNotNull(url, "test file not found");
+		VersionInfo versionInfo = serializer.unmarshal(url.openStream(), VersionInfo.class);
+		assertNotNull(versionInfo);
+		assertEquals("27", versionInfo.getMinor());
 	}
 }

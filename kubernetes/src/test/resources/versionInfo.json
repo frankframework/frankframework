@@ -1,0 +1,12 @@
+{
+  "major": "1",
+  "minor": "27",
+  "emulationMajor": "1",
+  "gitVersion": "v1.27.7-gke.1056000",
+  "gitCommit": "5e57f46af978bbabbaddc685365fd47e18625a32b",
+  "gitTreeState": "clean",
+  "buildDate": "2023-10-25T09:31:59Z",
+  "goVersion": "go1.20.10 X:boringcrypto",
+  "compiler": "gc",
+  "platform": "linux/amd64"
+}
