@@ -163,8 +163,8 @@ class KubernetesSecretFactoryTest {
 	}
 
 	@Test
-	void testCustomSerializer() throws IOException {
-		KubernetesSerialization serializer = credentialFactory.createSerializer();
+	void testKubernetesSerialization() throws IOException {
+		KubernetesSerialization serializer = new KubernetesSerialization();
 		URL url = KubernetesSecretFactoryTest.class.getResource("/versionInfo.json");
 		assertNotNull(url, "test file not found");
 		VersionInfo versionInfo = serializer.unmarshal(url.openStream(), VersionInfo.class);
