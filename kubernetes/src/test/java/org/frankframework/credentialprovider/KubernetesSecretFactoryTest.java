@@ -55,7 +55,7 @@ class KubernetesSecretFactoryTest {
 		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list().getItems()).thenReturn(List.of(secret1, secret2, secret3,
 				secret4, secret5));
 
-		when(client.getConfiguration()).thenReturn(new Config());
+		when(client.getConfiguration()).thenReturn(mock(Config.class));
 		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
 		credentialFactory.setClient(client);
 		credentialFactory.initialize();

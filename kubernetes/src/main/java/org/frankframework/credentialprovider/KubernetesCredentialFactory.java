@@ -24,17 +24,11 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientException;
-import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
@@ -100,7 +94,6 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 
 		if (client == null) { // For testing purposes
 			client = new KubernetesClientBuilder()
-					.withKubernetesSerialization(createSerializer())
 					.editOrNewConfig()
 					.withConnectionTimeout(3_000)
 					.withRequestTimeout(3_000)
@@ -136,13 +129,6 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 		log.info("fetching secrets from Kubernetes namespace [" + namespace + "]");
 		List<Secret> secrets = getSecretsFromKubernetes();
 		log.info("found [" + secrets.size() + "] secrets in namespace [" + namespace + "]");
-	}
-
-	protected KubernetesSerialization createSerializer() {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS).build();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		return new KubernetesSerialization(mapper, true);
 	}
 
 	@Override
