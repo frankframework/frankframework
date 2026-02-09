@@ -570,7 +570,17 @@
 					<groupId>com.sun.xml.bind</groupId>
 					<artifactId>jaxb-impl</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-fileupload2-jakarta</artifactId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<!-- We excluded the 'broken' version in DataSonnet, now include the working version. -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-fileupload2-jakarta-servlet6</artifactId>
+			<version>2.0.0-M4</version>
 		</dependency>
 
 		<dependency>
