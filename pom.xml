@@ -72,7 +72,7 @@
 	</scm>
 
 	<properties>
-		<revision>10.0.0-SNAPSHOT</revision>
+		<revision>10.1.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>21</maven.compiler.target>
 		<maven.compiler.source>25</maven.compiler.source>
