@@ -136,7 +136,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 		}
 
 		List<Checkpoint> checkpoints = originalReport.getCheckpoints();
-		Checkpoint checkpoint = checkpoints.get(0);
+		Checkpoint checkpoint = checkpoints.getFirst();
 		String checkpointName = checkpoint.getName();
 		if (checkpointName.startsWith(REPORT_ROOT_PREFIX)) {
 			String pipelineName = checkpointName.substring(REPORT_ROOT_PREFIX.length());

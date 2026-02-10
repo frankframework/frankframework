@@ -198,6 +198,6 @@ public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 		if(adapters.size() > 1) {
 			throw new IllegalStateException("found more then 1 adapter matching name ["+adapterName+"]");
 		}
-		return adapters.get(0);
+		return adapters.getFirst();
 	}
 }

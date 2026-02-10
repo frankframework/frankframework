@@ -63,7 +63,7 @@ public class ProcessUtil {
 		if (command==null || command.isEmpty()) {
 			return "";
 		}
-		StringBuilder result = new StringBuilder(command.get(0));
+		StringBuilder result = new StringBuilder(command.getFirst());
 		for (int i = 1; i < command.size(); i++) {
 			result.append(" ").append(command.get(i));
 		}

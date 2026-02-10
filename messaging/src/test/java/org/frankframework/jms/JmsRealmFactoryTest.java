@@ -69,7 +69,7 @@ public class JmsRealmFactoryTest {
 	@Test
 	public void readInOrderOfAppearanceViaList() {
 		List<String> list = jmsRealmFactory.getRegisteredRealmNamesAsList();
-		String sequence=list.get(0)+","+list.get(1)+","+list.get(2)+","+list.get(3);
+		String sequence=list.getFirst()+","+list.get(1)+","+list.get(2)+","+list.get(3);
 		assertEquals(4,  list.size());
 		assertEquals("c,b,d,a",sequence);
 

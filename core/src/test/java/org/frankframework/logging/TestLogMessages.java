@@ -61,7 +61,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
-			String message = logEvents.get(0);
+			String message = logEvents.getFirst();
 			assertEquals("DEBUG - "+ TEST_REGEX_OUT, message);
 		} finally {
 			IbisMaskingLayout.clearGlobalReplace();
@@ -76,7 +76,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
-			String message = logEvents.get(0);
+			String message = logEvents.getFirst();
 			assertEquals("DEBUG - my beautiful log with <password>************</password> hidden value", message);
 		}
 	}
@@ -99,7 +99,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(6, logEvents.size(), "found messages "+logEvents);
-			assertEquals("WARN - my beautiful warning message", logEvents.get(0));
+			assertEquals("WARN - my beautiful warning message", logEvents.getFirst());
 			assertEquals("ERROR - my beautiful error message", logEvents.get(1));
 		}
 		finally {
@@ -114,7 +114,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size());
-			String message = logEvents.get(0);
+			String message = logEvents.getFirst();
 			assertEquals("DEBUG - my beautiful <![CDATA[debug]]> for me & you --> \"world\"", message);
 		}
 	}
@@ -126,7 +126,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
-			String message = logEvents.get(0);
+			String message = logEvents.getFirst();
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
 		}
 	}
@@ -140,7 +140,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
-			String message = logEvents.get(0);
+			String message = logEvents.getFirst();
 
 			String expected = "DEBUG - "+ TEST_REGEX_IN.substring(0, length).trim() + " ...("+(TEST_REGEX_IN.length()-length)+" more characters)";
 			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
@@ -161,7 +161,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
-			String message = logEvents.get(0);
+			String message = logEvents.getFirst();
 
 			String expected = """
 					DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message
@@ -210,7 +210,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size());
-			String message = logEvents.get(0);
+			String message = logEvents.getFirst();
 			assertAll(
 				() -> assertThat(message, StringContains.containsString("DEBUG - Adapter Success ")),
 				() -> assertThat(message, StringContains.containsString("key [value]")),
@@ -229,7 +229,7 @@ public class TestLogMessages {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size());
-			String message = logEvents.get(0);
+			String message = logEvents.getFirst();
 			assertEquals("DEBUG - Adapter Success ", message);
 		}
 	}

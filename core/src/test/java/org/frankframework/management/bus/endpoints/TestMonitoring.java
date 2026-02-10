@@ -397,7 +397,7 @@ public class TestMonitoring extends BusTestBase {
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(0);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().getFirst();
 		assertAll(
 				() -> assertEquals(Severity.HARMLESS, trigger.getSeverity()),
 				() -> assertEquals(42, trigger.getPeriod()),
@@ -435,7 +435,7 @@ public class TestMonitoring extends BusTestBase {
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(0);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().getFirst();
 		assertAll(
 				() -> assertEquals(Severity.HARMLESS, trigger.getSeverity()),
 				() -> assertEquals(42, trigger.getPeriod()),
@@ -467,7 +467,7 @@ public class TestMonitoring extends BusTestBase {
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(0);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().getFirst();
 		assertAll(
 				() -> assertEquals(Severity.CRITICAL, trigger.getSeverity()),
 				() -> assertEquals(3600, trigger.getPeriod()),
@@ -503,7 +503,7 @@ public class TestMonitoring extends BusTestBase {
 			);
 
 		// Assert Trigger
-		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().get(0);
+		ITrigger trigger = getMonitorManager().getMonitor(TEST_MONITOR_NAME).getTriggers().getFirst();
 		assertAll(
 				() -> assertEquals(Severity.CRITICAL, trigger.getSeverity()),
 				() -> assertEquals(3600, trigger.getPeriod()),

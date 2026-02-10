@@ -41,7 +41,7 @@ public class FileNameComparatorTest {
 		list.add(new File("test.xml"));
 		list.add(new File("document.txt"));
 		Collections.sort(list, new FileNameComparator());
-		assertEquals("0123.py", list.get(0).getName());
+		assertEquals("0123.py", list.getFirst().getName());
 		assertEquals("document.txt", list.get(1).getName());
 		assertEquals("teSt.txt", list.get(2).getName());
 		assertEquals("test.txt", list.get(3).getName());

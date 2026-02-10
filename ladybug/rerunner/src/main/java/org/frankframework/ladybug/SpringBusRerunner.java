@@ -61,7 +61,7 @@ public class SpringBusRerunner implements Rerunner {
 		}
 
 		List<Checkpoint> checkpoints = originalReport.getCheckpoints();
-		Checkpoint firstCheckpoint = checkpoints.get(0);
+		Checkpoint firstCheckpoint = checkpoints.getFirst();
 		String checkpointName = firstCheckpoint.getName();
 		if (!checkpointName.startsWith(REPORT_ROOT_PREFIX)) {
 			return "First checkpoint isn't a pipeline, unable to rerun report!";

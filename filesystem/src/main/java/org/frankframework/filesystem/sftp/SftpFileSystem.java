@@ -138,7 +138,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		try {
 			List<LsEntry> files = listFolder(file);
 			if (!files.isEmpty()) {
-				return SftpFileRef.fromLsEntry(files.get(0));
+				return SftpFileRef.fromLsEntry(files.getFirst());
 			}
 		} catch (SftpException e) {
 			if (e.id != 2) { // ID 2 == File Not Found

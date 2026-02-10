@@ -245,7 +245,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			throw new ConfigurationException("no Pipes in Pipeline");
 		}
 		if (this.firstPipe == null) {
-			firstPipe=pipes.get(0).getName();
+			firstPipe=pipes.getFirst().getName();
 		}
 		if (getPipe(firstPipe) == null) {
 			throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");

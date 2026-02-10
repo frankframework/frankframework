@@ -59,7 +59,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 		List<String> parts = StringUtil.split(productVersion, "(");
 		if (parts.size() == 2 && parts.get(1).contains(")")) {
-			String version = parts.get(0).trim();
+			String version = parts.getFirst().trim();
 			DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(version);
 			DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("2.2.220");
 			boolean result = thisVersion.compareTo(targetVersion) >= 0;

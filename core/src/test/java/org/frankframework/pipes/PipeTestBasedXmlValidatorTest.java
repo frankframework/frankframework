@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeForward;
 
 public class PipeTestBasedXmlValidatorTest extends PipeTestBase<XmlValidator> {
-	public static String BASE_DIR_VALIDATION="/Validation";
-	public String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
-	public String SCHEMA_LOCATION_FACET_ERROR           =ROOT_NAMESPACE_BASIC+"_facetError "+BASE_DIR_VALIDATION+"/Basic/xsd/facet_error.xsd";
+	public static final String BASE_DIR_VALIDATION="/Validation";
+	public static final String ROOT_NAMESPACE_BASIC="http://www.ing.com/testxmlns";
+	public static final String SCHEMA_LOCATION_FACET_ERROR           =ROOT_NAMESPACE_BASIC+"_facetError "+BASE_DIR_VALIDATION+"/Basic/xsd/facet_error.xsd";
 
 	@Override
 	public XmlValidator createPipe() {

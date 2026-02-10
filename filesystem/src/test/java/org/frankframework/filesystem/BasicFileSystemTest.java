@@ -426,10 +426,10 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		if (numOfFilesInFolder == 0) {
 			return;
 		}
-		deleteFile(folder, fileIds.get(0));
+		deleteFile(folder, fileIds.getFirst());
 		int numDeleted = 1;
 		waitForActionToFinish();
-		assertFalse(_fileExists(folder, fileIds.get(0)), "file should not exist anymore physically after deletion");
+		assertFalse(_fileExists(folder, fileIds.getFirst()), "file should not exist anymore physically after deletion");
 
 		folderContent = getFolderContents(folder, TypeFilter.FILES_ONLY);
 		assertEquals(numOfFilesInFolder - numDeleted, folderContent.objects.size(), "Size of set of files after deletion");
@@ -654,7 +654,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		// Assert files only
 		List<String> otherFolder = getFolderContents("Otherfolder", TypeFilter.FILES_ONLY).objectNames;
 		assertEquals(1, otherFolder.size());
-		assertEquals("otherfile", otherFolder.get(0));
+		assertEquals("otherfile", otherFolder.getFirst());
 
 		// Assert directories only
 		otherFolder = getFolderContents("Otherfolder", TypeFilter.FOLDERS_ONLY).objectNames;

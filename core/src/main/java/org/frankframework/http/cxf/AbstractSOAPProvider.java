@@ -16,9 +16,9 @@
 package org.frankframework.http.cxf;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Resource;
@@ -136,7 +136,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 					log.error(m, e);
 					throw new WebServiceException(m, e);
 				}
-				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
+				List<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 				if (parts.isEmpty()) {
 					log.warn("no part(s) in multipart xml [{}]", multipartXml);
 				} else {

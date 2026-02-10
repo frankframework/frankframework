@@ -170,7 +170,7 @@ abstract class AmqpListenerTest {
 		await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> receivedMessages.size() == 1);
 
-		Message message = receivedMessages.get(0);
+		Message message = receivedMessages.getFirst();
 		assertNotNull(message);
 		assertFalse(message.isBinary(), "Expected text message");
 		assertEquals("test", message.asString());
@@ -194,7 +194,7 @@ abstract class AmqpListenerTest {
 		await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> receivedMessages.size() == 1);
 
-		Message message = receivedMessages.get(0);
+		Message message = receivedMessages.getFirst();
 		assertNotNull(message);
 		assertTrue(message.isBinary(), "Expected binary message");
 		assertEquals("test", message.asString());
@@ -256,7 +256,7 @@ abstract class AmqpListenerTest {
 		await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> receivedMessages.size() == 1);
 
-		Message message = receivedMessages.get(0);
+		Message message = receivedMessages.getFirst();
 		assertNotNull(message);
 		assertFalse(message.isBinary(), "Expected text message");
 		assertEquals("test", message.asString());
@@ -284,7 +284,7 @@ abstract class AmqpListenerTest {
 		await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> receivedMessages.size() == 1);
 
-		Message message = receivedMessages.get(0);
+		Message message = receivedMessages.getFirst();
 		assertNotNull(message);
 		assertTrue(message.isBinary(), "Expected binary message");
 		assertEquals("test", message.asString());
@@ -319,7 +319,7 @@ abstract class AmqpListenerTest {
 		await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> receivedMessages.size() == 1);
 
-		Message message = receivedMessages.get(0);
+		Message message = receivedMessages.getFirst();
 		assertNotNull(message);
 		assertFalse(message.isBinary(), "Expected text message");
 		assertEquals("test", message.asString());
@@ -353,7 +353,7 @@ abstract class AmqpListenerTest {
 		await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> receivedMessages.size() == 1);
 
-		Message message = receivedMessages.get(0);
+		Message message = receivedMessages.getFirst();
 		assertNotNull(message);
 		assertTrue(message.isBinary(), "Expected binary message");
 		assertEquals("test", message.asString());
@@ -377,7 +377,7 @@ abstract class AmqpListenerTest {
 		await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> receivedMessages.size() == 1);
 
-		Message message = receivedMessages.get(0);
+		Message message = receivedMessages.getFirst();
 		assertEquals("topic message 1", message.asString());
 
 		receivedMessages.clear();

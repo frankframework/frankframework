@@ -26,7 +26,7 @@ public class LiquibaseResourceAccessorTest extends ConfiguredTestBase {
 		List<liquibase.resource.Resource> resources = accessor.search("/Migrator/DatabaseChangelog_plus_changes.xml", false);
 		assertNotNull(resources);
 
-		URI actualUri = resources.get(0).getUri();
+		URI actualUri = resources.getFirst().getUri();
 		URI expectedURI = ClassLoaderUtils.getResourceURL("/Migrator/DatabaseChangelog_plus_changes.xml").toURI();
 
 		assertEquals(expectedURI, actualUri);

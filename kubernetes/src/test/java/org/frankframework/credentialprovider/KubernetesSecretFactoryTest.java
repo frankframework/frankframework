@@ -73,7 +73,7 @@ class KubernetesSecretFactoryTest {
 
 		List<String> aliases = List.copyOf(credentialFactory.getConfiguredAliases());
 		assertFalse(aliases.isEmpty());
-		assertEquals("alias1", aliases.get(0));
+		assertEquals("alias1", aliases.getFirst());
 	}
 
 	@Test

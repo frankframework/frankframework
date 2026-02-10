@@ -54,7 +54,7 @@ public class KafkaSenderTest {
 		PipeLineSession session = new PipeLineSession();
 		sender.sendMessage(message, session);
 		assertEquals(1, mockProducer.history().size(), "One message should be sent");
-		ProducerRecord<?, ?> test = mockProducer.history().get(0);
+		ProducerRecord<?, ?> test = mockProducer.history().getFirst();
 		assertEquals("test.test2", test.topic(), "Topic should be test.test2");
 		assertArrayEquals("Hello World".getBytes(), (byte[]) test.value(), "Message should be set");
 	}

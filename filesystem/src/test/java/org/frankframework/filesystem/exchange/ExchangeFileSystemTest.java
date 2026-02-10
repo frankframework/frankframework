@@ -70,7 +70,7 @@ public class ExchangeFileSystemTest extends HelperedBasicFileSystemTest<MailItem
 		MailMessageResponse dto = JacksonUtils.convertToDTO(mailJson.openStream(), MailMessageResponse.class);
 		List<MailMessage> messages = dto.messages;
 		assertEquals(1, messages.size());
-		MailMessage message = messages.get(0);
+		MailMessage message = messages.getFirst();
 		assertEquals("Test Message Contents", message.getBody().getContent());
 		assertEquals("EmailAddress: yes-reply <yes-reply@hidden.domain>", message.getSender().toString());
 		assertEquals("EmailAddress: no-reply <no-reply@hidden.domain>", message.getFrom().toString());

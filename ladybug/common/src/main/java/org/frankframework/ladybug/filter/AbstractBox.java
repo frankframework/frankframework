@@ -62,7 +62,7 @@ public abstract class AbstractBox implements CheckpointMatcher {
 	protected boolean isFirstOrLastCheckpoint(Report report, Checkpoint checkpoint) {
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		if (!checkpoints.isEmpty()) {
-			Checkpoint firstCheckpoint = checkpoints.get(0);
+			Checkpoint firstCheckpoint = checkpoints.getFirst();
 			if (checkpoint.equals(firstCheckpoint)) {
 				return true;
 			}

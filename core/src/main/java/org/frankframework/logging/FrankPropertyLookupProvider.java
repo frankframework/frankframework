@@ -170,7 +170,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider found [{}] resources named [{}]", urls.size(), filename);
 
 		urls.sort(new UrlLocationComparator());
-		URL urlToUse = urls.get(0);
+		URL urlToUse = urls.getFirst();
 		LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider decided to use resource [{}]", urlToUse);
 		return urlToUse;
 	}

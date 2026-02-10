@@ -142,7 +142,7 @@ public class SapListenerTest {
 		assertDoesNotThrow(() -> listener.handleRequest(mock(JCoServerContext.class), documentList));
 
 		assertEquals(2, messageCaptor.getAllValues().size());
-		assertNull(messageCaptor.getAllValues().get(0).getRawMessage());
+		assertNull(messageCaptor.getAllValues().getFirst().getRawMessage());
 		assertNull(messageCaptor.getAllValues().get(1).getRawMessage());
 
 		listener.afterMessageProcessed(new PipeLineResult(), new RawMessageWrapper<>(""), new PipeLineSession());

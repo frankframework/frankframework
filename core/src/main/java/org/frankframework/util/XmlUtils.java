@@ -26,11 +26,11 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -73,8 +73,6 @@ import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xmlbeans.GDate;
 import org.htmlcleaner.CleanerProperties;
@@ -98,6 +96,7 @@ import org.xml.sax.ext.LexicalHandler;
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
+import lombok.extern.log4j.Log4j2;
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
 import org.frankframework.core.IScopeProvider;
@@ -123,9 +122,9 @@ import org.frankframework.xml.XmlWriter;
  *
  * @author  Johan Verrips
  */
+@Log4j2
 public class XmlUtils {
 	public static final int HTML_MAX_PREAMBLE_SIZE = 512;
-	static Logger log = LogManager.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 
@@ -164,9 +163,7 @@ public class XmlUtils {
 		return new GDate(s).getDate();
 	}
 
-	private static String makeRemoveNamespacesXsltTemplates() {
-		// TODO: Wish to get rid of this as well but it's still embedded in another XSLT.
-		return
+	private static final String REMOVE_NAMESPACES_XSLT_TEMPLATE =
 		"""
 		<xsl:template match="*">\
 		<xsl:element name="{local-name()}">\
@@ -182,7 +179,6 @@ public class XmlUtils {
 		</xsl:copy>\
 		</xsl:template>\
 		""";
-	}
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
@@ -579,34 +575,33 @@ public class XmlUtils {
 			includeXmlDeclaration = false;
 		}
 
-		String xsl =
-			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+version+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
-			"<xsl:output method=\""+outputMethod.getOutputMethod()+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
-			(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
-			paramsString +
-			(ignoreNamespaces ?
-				"<xsl:template match=\"/\">" +
-					"<xsl:variable name=\"prep\"><xsl:apply-templates/></xsl:variable>" +
-					"<xsl:call-template name=\"expression\">" +
-						"<xsl:with-param name=\"root\" select=\"$prep\"/>" +
-					"</xsl:call-template>" +
-				"</xsl:template>" +
-				makeRemoveNamespacesXsltTemplates()+
+		// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 
-				"<xsl:template name=\"expression\">" +
-					"<xsl:param name=\"root\" />" +
-					"<xsl:for-each select=\"$root\">" +
-						xpathContainerSupplier.apply(xPathExpression) +
-					"</xsl:for-each>" +
-				"</xsl:template>"
-			:
+		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+version+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:output method=\""+outputMethod.getOutputMethod()+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
+		(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
+		paramsString +
+		(ignoreNamespaces ?
 			"<xsl:template match=\"/\">" +
-				xpathContainerSupplier.apply(xPathExpression) +
-			"</xsl:template>" )+
-			"</xsl:stylesheet>";
+				"<xsl:variable name=\"prep\"><xsl:apply-templates/></xsl:variable>" +
+				"<xsl:call-template name=\"expression\">" +
+					"<xsl:with-param name=\"root\" select=\"$prep\"/>" +
+				"</xsl:call-template>" +
+			"</xsl:template>" +
 
-		return xsl;
+			REMOVE_NAMESPACES_XSLT_TEMPLATE +
+
+			"<xsl:template name=\"expression\">" +
+				"<xsl:param name=\"root\" />" +
+				"<xsl:for-each select=\"$root\">" +
+					xpathContainerSupplier.apply(xPathExpression) +
+				"</xsl:for-each>" +
+			"</xsl:template>"
+		:
+		"<xsl:template match=\"/\">" +
+			xpathContainerSupplier.apply(xPathExpression) +
+		"</xsl:template>" )+
+		"</xsl:stylesheet>";
 	}
 
 
@@ -784,14 +779,14 @@ public class XmlUtils {
 		return factory;
 	}
 
-	public static String convertEndOfLines(String input) {
+	public static @Nullable String convertEndOfLines(@Nullable String input) {
 		if (input==null) {
 			return null;
 		}
 		return input.replaceAll("\r\n?", "\n");
 	}
 
-	public static String normalizeWhitespace(String input) {
+	public static @Nullable String normalizeWhitespace(@Nullable String input) {
 		if (input==null) {
 			return null;
 		}
@@ -802,7 +797,7 @@ public class XmlUtils {
 		return XmlEncodingUtils.replaceNonValidXmlCharacters(normalizeWhitespace(convertEndOfLines(input)), '?', true, true);
 	}
 
-	public static String cleanseElementName(String candidateName) {
+	public static @Nullable String cleanseElementName(@Nullable String candidateName) {
 		return candidateName!=null ? XmlEncodingUtils.replaceNonValidXmlCharacters(candidateName.replaceAll("[^\\w\\-.]", "_"), '?', true, true) : null;
 	}
 
@@ -997,24 +992,19 @@ public class XmlUtils {
 	 *                      be safely cast to type
 	 *                      <code>org.w3c.dom.Element</code>.
 	 */
-	public static Collection<Node> getChildTags(Element el, String tag) {
-		Collection<Node> c;
-		NodeList nl;
-		int len;
-		boolean allChildren;
-
-		c = new ArrayList<>();
-		nl = el.getChildNodes();
-		len = nl.getLength();
-
-		allChildren = "*".equals(tag);
+	public static List<Node> getChildTags(@Nullable Element el, String tag) {
+		if (el == null) {
+			return List.of();
+		}
+		List<Node> c = new ArrayList<>();
+		NodeList nl = el.getChildNodes();
+		int len = nl.getLength();
+		boolean allChildren = "*".equals(tag);
 
 		for (int i = 0; i < len; i++) {
 			Node n = nl.item(i);
-			if (n instanceof Element e) {
-				if (allChildren || e.getTagName().equals(tag)) {
-					c.add(n);
-				}
+			if (n instanceof Element e && (allChildren || e.getTagName().equals(tag))) {
+				c.add(n);
 			}
 		}
 
@@ -1031,18 +1021,13 @@ public class XmlUtils {
 	 * @return Element The element found, or <code>null</code> if no match
 	 *                  found.
 	 */
-	public static Element getFirstChildTag(Element el, String tag) {
-		NodeList nl;
-		int len;
-
-		nl = el.getChildNodes();
-		len = nl.getLength();
+	public static @Nullable Element getFirstChildTag(Element el, String tag) {
+		NodeList nl = el.getChildNodes();
+		int len = nl.getLength();
 		for (int i = 0; i < len; ++i) {
 			Node n = nl.item(i);
-			if (n instanceof Element elem) {
-				if (elem.getTagName().equals(tag)) {
-					return elem;
-				}
+			if (n instanceof Element elem && elem.getTagName().equals(tag)) {
+				return elem;
 			}
 		}
 		return null;
@@ -1092,7 +1077,7 @@ public class XmlUtils {
 		}
 	}
 
-	private static Object sanitizeValue(String paramName, Object value) throws IOException {
+	private static @Nullable Object sanitizeValue(String paramName, @Nullable Object value) throws IOException {
 		if (value == null) {
 			return null;
 		}
@@ -1272,7 +1257,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String getRootNamespace(String input) {
+	public static @Nullable String getRootNamespace(String input) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getGetRootNamespaceTransformerPool();
 			return tp.transformToString(input,null);
@@ -1282,7 +1267,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String getRootNamespace(Message input) {
+	public static @Nullable String getRootNamespace(Message input) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getGetRootNamespaceTransformerPool();
 			return tp.transformToString(input);
@@ -1292,7 +1277,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String addRootNamespace(String input, String namespace) {
+	public static @Nullable String addRootNamespace(String input, String namespace) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getAddRootNamespaceTransformerPool(namespace,true,false);
 			return tp.transformToString(input,null);
@@ -1312,7 +1297,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String copyOfSelect(String input, String xpath) {
+	public static @Nullable String copyOfSelect(String input, String xpath) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getCopyOfSelectTransformerPool(xpath, true,false);
 			return tp.transformToString(input,null);
@@ -1371,7 +1356,7 @@ public class XmlUtils {
 		return outputStream.toByteArray();
 	}
 
-	public static String cdataToText(String input) {
+	public static @Nullable String cdataToText(String input) {
 		try {
 			DocumentBuilderFactory factory = getDocumentBuilderFactory();
 			factory.setCoalescing(true);
@@ -1433,11 +1418,11 @@ public class XmlUtils {
 				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
 
-	public static @NonNull Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
+	public static @NonNull List<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		try {
-			Collection<String> c = new ArrayList<>();
+			List<String> c = new ArrayList<>();
 			Document doc = buildDomDocument(msg, true, true);
 			XPath xPath = getXPathFactory().newXPath();
 			XPathExpression xPathExpression = xPath.compile(xpathExpr);
@@ -1457,9 +1442,9 @@ public class XmlUtils {
 	}
 
 	public static @Nullable String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws XmlException {
-		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
+		List<String> c = evaluateXPathNodeSet(input, xpathExpr);
 		if (!c.isEmpty()) {
-			return c.iterator().next();
+			return c.getFirst();
 		}
 		return null;
 	}

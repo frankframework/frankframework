@@ -266,7 +266,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	private void checkIndexOnColumnsPresent(Connection connection, List<String> columns) throws JdbcException {
 		if (columns!=null && !columns.isEmpty()) {
 			if (!getDbmsSupport().hasIndexOnColumns(connection, getSchemaOwner4Check(), getTableName(), columns)) {
-				StringBuilder msg= new StringBuilder("table [" + getTableName() + "] has no index on columns [" + columns.get(0));
+				StringBuilder msg= new StringBuilder("table [" + getTableName() + "] has no index on columns [" + columns.getFirst());
 				for (int i=1;i<columns.size();i++) {
 					msg.append(",").append(columns.get(i));
 				}

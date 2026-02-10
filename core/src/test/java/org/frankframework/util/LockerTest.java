@@ -82,7 +82,7 @@ public class LockerTest {
 		objectId = locker.acquire(messageKeeper);
 		assertNull(objectId, "Should not be possible to obtain the lock a second time");
 
-		String message = messageKeeper.get(0).getMessageText();
+		String message = messageKeeper.getFirst().getMessageText();
 		assertThat(message, containsString("objectId [myLocker]"));
 		assertThat(message, containsString("Process locked by host"));
 		assertThat(message, containsString("with expiry date"));

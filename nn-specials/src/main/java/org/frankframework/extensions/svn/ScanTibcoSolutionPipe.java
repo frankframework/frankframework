@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -211,27 +212,27 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			try {
 				if ("jmsDest".equals(type) || "jmsDestConf".equals(type)) {
 					// AMX - receive (for jmsInboundDest)
-					Collection<String> c1 = XmlUtils.evaluateXPathNodeSet(
+					List<String> c1 = XmlUtils.evaluateXPathNodeSet(
 							content, "namedResource/@name");
 					if (!c1.isEmpty()) {
 						if (c1.size() > 1) {
 							warnMessage.add("more then one resourceName found");
 						}
-						String resourceName = c1.iterator().next();
+						String resourceName = c1.getFirst();
 						xmlStreamWriter.writeStartElement("resourceName");
 						xmlStreamWriter.writeCharacters(resourceName);
 						xmlStreamWriter.writeEndElement();
 					} else {
 						warnMessage.add("no resourceName found");
 					}
-					Collection<String> c2 = XmlUtils.evaluateXPathNodeSet(
+					List<String> c2 = XmlUtils.evaluateXPathNodeSet(
 							content, "namedResource/configuration/@jndiName");
 					if (!c2.isEmpty()) {
 						if (c2.size() > 1) {
 							warnMessage
 									.add("more then one resourceJndiName found");
 						}
-						String resourceJndiName = c2.iterator().next();
+						String resourceJndiName = c2.getFirst();
 						xmlStreamWriter.writeStartElement("resourceJndiName");
 						xmlStreamWriter.writeCharacters(resourceJndiName);
 						xmlStreamWriter.writeEndElement();
@@ -303,8 +304,8 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 							.evaluateXPathNumber(
 									content,
 									"count(ProcessDefinition/starter[type='com.tibco.plugin.soap.SOAPEventSource']/config)");
-					if (d1 > 0) {
-						Collection<String> c1 = XmlUtils
+					if (d1 != null && d1 > 0) {
+						List<String> c1 = XmlUtils
 								.evaluateXPathNodeSet(
 										content,
 										"ProcessDefinition/starter[type='com.tibco.plugin.soap.SOAPEventSource']/config/sharedChannels/jmsChannel/JMSTo");
@@ -330,8 +331,8 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 							.evaluateXPathNumber(
 									content,
 									"count(ProcessDefinition/activity[type='com.tibco.plugin.soap.SOAPSendReceiveActivity']/config)");
-					if (d2 > 0) {
-						Collection<String> c2 = XmlUtils
+					if (d2 != null && d2 > 0) {
+						List<String> c2 = XmlUtils
 								.evaluateXPathNodeSet(
 										content,
 										"ProcessDefinition/activity[type='com.tibco.plugin.soap.SOAPSendReceiveActivity']/config/sharedChannels/jmsChannel/JMSTo");

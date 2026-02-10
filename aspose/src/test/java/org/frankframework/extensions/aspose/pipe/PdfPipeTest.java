@@ -599,7 +599,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		List<String> warnings = getConfigurationWarnings().getWarnings();
 		assertEquals(1, warnings.size());
-		assertTrue(warnings.get(0).contains("Aspose License is not configured"));
+		assertTrue(warnings.getFirst().contains("Aspose License is not configured"));
 	}
 
 	@Test

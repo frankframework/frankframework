@@ -201,7 +201,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 				query.append(metadataName);
 			}
 		}
-		String rowNumber = getRowNumber(metadataNames.get(0));
+		String rowNumber = getRowNumber(metadataNames.getFirst());
 		if (StringUtils.isNotEmpty(rowNumber)) {
 			if (first) {
 				first = false;
@@ -266,7 +266,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 			argTypes.add(Types.INTEGER);
 		}
 		query.append(" order by ");
-		query.append(metadataNames.get(0) + " desc");
+		query.append(metadataNames.getFirst() + " desc");
 		log.debug("Metadata query: {}", query.toString());
 		List<List<Object>> metadata;
 		try {
@@ -322,7 +322,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 		final List<Checkpoint> checkpoints = new ArrayList<>();
 		report.setCheckpoints(checkpoints);
 		StringBuilder query = new StringBuilder("select "
-				+ reportColumnNames.get(0));
+				+ reportColumnNames.getFirst());
 		for (int i = 1; i < reportColumnNames.size(); i++) {
 			query.append(", ").append(reportColumnNames.get(i));
 		}
@@ -548,7 +548,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 		}
 
 		List<Checkpoint> checkpoints = report.getCheckpoints();
-		Checkpoint checkpoint = checkpoints.get(0);
+		Checkpoint checkpoint = checkpoints.getFirst();
 
 		new Tibet2ToFrameworkDispatcher(getApplicationContext()).deleteReport(checkpoint.getMessage());
 	}

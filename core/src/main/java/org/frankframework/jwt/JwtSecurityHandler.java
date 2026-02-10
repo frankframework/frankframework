@@ -134,7 +134,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		return StringUtil.splitToStream(claimsToSplit)
 				.map(s -> StringUtil.split(s, "="))
 				.filter(this::isValidKeyValuePair)
-				.map(pair -> ImmutablePair.of(pair.get(0), pair.get(1)));
+				.map(pair -> ImmutablePair.of(pair.getFirst(), pair.get(1)));
 	}
 
 	private boolean isValidKeyValuePair(List<String> pair) {

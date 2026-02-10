@@ -266,7 +266,7 @@ public class OpenApiGenerator {
 			List<String> references = StringUtil.split(schemaReferenceElement);
 
 			if (pipeLineExit.isSuccessExit()) {
-				return references.get(0);
+				return references.getFirst();
 			}
 
 			return references.get(references.size() - 1);

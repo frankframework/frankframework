@@ -256,7 +256,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		if(counter.isEmpty()) {
 			return 0;
 		}
-		return counter.get(0).count();
+		return counter.getFirst().count();
 	}
 
 	private double getGauge(Collection<Meter> meters, FrankMeterType type) {
@@ -267,7 +267,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		if(counter.isEmpty()) {
 			return 0;
 		}
-		return counter.get(0).value();
+		return counter.getFirst().value();
 	}
 
 	/**
@@ -289,7 +289,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		if(duration.isEmpty()) {
 			return null;
 		}
-		LocalDistributionSummary summary = duration.get(0);
+		LocalDistributionSummary summary = duration.getFirst();
 		return readSummary(summary, extractNameFromTag(summary, "name"));
 	}
 

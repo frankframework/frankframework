@@ -18,9 +18,8 @@ package org.frankframework.parameters;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -148,9 +147,9 @@ public class ParameterValue {
 		return value.toString();
 	}
 
-	public Collection<Node> asCollection() throws ParameterException {
+	public List<Node> asCollection() throws ParameterException {
 		if (value == null) {
-			return Collections.emptyList();
+			return List.of();
 		}
 		try {
 			LOG.debug("rendering IParameter [{}] value [{}] as Collection", ()->getDefinition().getName(), ()->value);

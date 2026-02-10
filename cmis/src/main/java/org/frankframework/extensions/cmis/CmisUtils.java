@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -384,7 +383,7 @@ public class CmisUtils {
 			if(definition.isRequired() != null)
 				propertyDefinitionXml.addAttribute("required", definition.isRequired());
 			if(definition.getDefaultValue() != null && !definition.getDefaultValue().isEmpty()) {
-				String defValue = definition.getDefaultValue().get(0).toString();
+				String defValue = definition.getDefaultValue().getFirst().toString();
 				propertyDefinitionXml.addAttribute("defaultValue", defValue);
 			}
 			if(definition.getChoices() != null && !definition.getChoices().isEmpty()) {
@@ -494,7 +493,7 @@ public class CmisUtils {
 		definition.setQueryName(queryName);
 
 		Element propertyDefinitions = XmlUtils.getFirstChildTag(typeXml, "propertyDefinitions");
-		Collection<Node> propertyDefinitionList = XmlUtils.getChildTags(propertyDefinitions, "propertyDefinition");
+		List<Node> propertyDefinitionList = XmlUtils.getChildTags(propertyDefinitions, "propertyDefinition");
 		for (Node node : propertyDefinitionList) {
 			definition.addPropertyDefinition(CmisUtils.xml2PropertyDefinition((Element) node));
 		}
@@ -935,7 +934,7 @@ public class CmisUtils {
 
 	public static List<TypeDefinitionContainer> xml2TypeDescendants(Element typeDefinitionsXml, CmisVersion cmisVersion) {
 		List<TypeDefinitionContainer> typeDefinitionList = new ArrayList<>();
-		Collection<Node> typeDescendantList = XmlUtils.getChildTags(typeDefinitionsXml, "typeDescendant");
+		List<Node> typeDescendantList = XmlUtils.getChildTags(typeDefinitionsXml, "typeDescendant");
 		for (Node node : typeDescendantList) {
 			Element typeDefinition = XmlUtils.getFirstChildTag((Element) node, "typeDefinition");
 			TypeDefinition typeDef = CmisUtils.xml2TypeDefinition(typeDefinition, cmisVersion);
@@ -1071,9 +1070,8 @@ public class CmisUtils {
 			AllowableActionsImpl allowableActions = new AllowableActionsImpl();
 			Set<Action> actions = EnumSet.noneOf(Action.class);
 
-			Iterator<Node> actionIterator = XmlUtils.getChildTags(allowableActionsElem, "action").iterator();
-			while (actionIterator.hasNext()) {
-				String property = XmlUtils.getStringValue((Element) actionIterator.next());
+			for (Node node : XmlUtils.getChildTags(allowableActionsElem, "action")) {
+				String property = XmlUtils.getStringValue((Element) node);
 				actions.add(Action.fromValue(property));
 			}
 
