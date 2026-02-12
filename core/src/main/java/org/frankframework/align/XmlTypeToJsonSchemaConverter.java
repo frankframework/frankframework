@@ -541,7 +541,7 @@ public class XmlTypeToJsonSchemaConverter  {
 				handleParticleForPropertiesWithoutAttributes(propertiesBuilder, childParticle);
 			}
 			if(modelGroups.size() == 1) {
-				handleModelGroup(builder, modelGroups.get(0), null, false);
+				handleModelGroup(builder, modelGroups.getFirst(), null, false);
 			} else if(modelGroups.size() > 1) {
 				JsonArrayBuilder allOfBuilder = Json.createArrayBuilder();
 				for (XSModelGroup modelGroup : modelGroups) {

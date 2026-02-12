@@ -80,7 +80,7 @@ public class IbisManager implements ApplicationContextAware {
 	public void unload(String configurationName) {
 		if (configurationName == null) {
 			while (!configurations.isEmpty()) {
-				removeConfiguration(configurations.get(0));
+				removeConfiguration(configurations.getFirst());
 			}
 		} else {
 			removeConfiguration(getConfiguration(configurationName));

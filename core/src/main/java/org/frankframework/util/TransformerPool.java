@@ -557,7 +557,7 @@ public class TransformerPool {
 		Map<String,String> result = new LinkedHashMap<>();
 		for (final String s : StringUtil.split(metadataString, ";")) {
 			List<String> kv = StringUtil.split(s, "=");
-			String key = kv.get(0);
+			String key = kv.getFirst();
 			String value = kv.get(1);
 			result.put(key, value);
 		}

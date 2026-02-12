@@ -57,7 +57,7 @@ public class Tibet2Debugger extends LadybugDebugger {
 		}
 
 		List<Checkpoint> checkpoints = originalReport.getCheckpoints();
-		Checkpoint checkpoint = checkpoints.get(0);
+		Checkpoint checkpoint = checkpoints.getFirst();
 		String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
 		Configuration config = ibisManager.getConfiguration(RESEND_ADAPTER_CONFIG);
 		if (config == null) {

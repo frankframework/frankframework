@@ -261,7 +261,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				continue;
 			}
 
-			String tablePattern = parts.get(0).toLowerCase();
+			String tablePattern = parts.getFirst().toLowerCase();
 			if (tablePattern != null) {
 				String role = parts.get(1);
 				String type = parts.get(2);

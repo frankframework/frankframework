@@ -518,7 +518,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.validate("<xml/>", pls);
 		List<String> lines = Arrays.asList(
 				((String) pls.get(val.getReasonSessionKey())).split("\\r?\\n"));
-		assertEquals("Validation using WsdlXmlValidator with '/Validation/Wsdl/SimpleWsdl/simple.wsdl' failed:", lines.get(0));
+		assertEquals("Validation using WsdlXmlValidator with '/Validation/Wsdl/SimpleWsdl/simple.wsdl' failed:", lines.getFirst());
 		assertEquals("/: at (1,7): cvc-elt.1.a: Cannot find the declaration of element 'xml'.", lines.get(1));
 		assertEquals("/: Illegal element 'xml'. Element(s) 'Envelope' expected.", lines.get(2));
 		assertEquals("/xml: Unknown namespace ''", lines.get(3));

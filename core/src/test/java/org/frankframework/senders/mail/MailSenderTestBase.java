@@ -140,7 +140,7 @@ public abstract class MailSenderTestBase<S extends AbstractMailSender> extends S
 			""";
 		sender.configure();
 		MailSessionBase mailSession = sender.extract(new Message(mailInput), session);
-		validateAddress(mailSession.getRecipientList().get(0),"to", "dummy","me@address.org");
+		validateAddress(mailSession.getRecipientList().getFirst(),"to", "dummy","me@address.org");
 		validateAddress(mailSession.getRecipientList().get(1),"cc", null,"cc@address.org");
 		validateAddress(mailSession.getRecipientList().get(2),"bcc", null,"bcc@address.org");
 		validateAddress(mailSession.getRecipientList().get(3),"bcc", "name","i@address.org");

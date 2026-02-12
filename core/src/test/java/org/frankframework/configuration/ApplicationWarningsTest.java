@@ -48,7 +48,7 @@ public class ApplicationWarningsTest {
 		ApplicationWarnings applWarnings = configuration.getBean("applicationWarnings", ApplicationWarnings.class);
 
 		assertEquals(configuration, applWarnings.getApplicationContext());
-		assertEquals("test message", applWarnings.getWarnings().get(0));
+		assertEquals("test message", applWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -64,7 +64,7 @@ public class ApplicationWarningsTest {
 
 		assertEquals(configuration, applWarnings.getApplicationContext());
 		assertEquals(1, applWarnings.getWarnings().size(), "After a Context refresh it should not copy warnings over to the new instance");
-		assertEquals("test message 2", applWarnings.getWarnings().get(0));
+		assertEquals("test message 2", applWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -83,7 +83,7 @@ public class ApplicationWarningsTest {
 		List<String> applWarnings = ApplicationWarnings.getWarningsList();
 
 		assertEquals(1, applWarnings.size());
-		assertEquals("missing property", applWarnings.get(0));
+		assertEquals("missing property", applWarnings.getFirst());
 	}
 
 	@Test
@@ -103,7 +103,7 @@ public class ApplicationWarningsTest {
 		List<String> applWarnings = ApplicationWarnings.getWarningsList();
 
 		assertEquals(1, applWarnings.size());
-		assertEquals("missing property", applWarnings.get(0));
+		assertEquals("missing property", applWarnings.getFirst());
 	}
 
 	@Test

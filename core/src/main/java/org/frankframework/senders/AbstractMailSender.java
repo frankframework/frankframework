@@ -89,7 +89,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 	private @Getter String bounceAddress;
 	private @Getter String domainWhitelist;
 
-	private final ArrayList<String> allowedDomains = new ArrayList<>();
+	private final List<String> allowedDomains = new ArrayList<>();
 
 	protected abstract void sendEmail(MailSessionBase mailSession) throws SenderException;
 
@@ -131,21 +131,21 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		return mailSession;
 	}
 
-	private @NonNull Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(@Nullable ParameterValue pv, @NonNull PipeLineSession session) throws SenderException, ParameterException {
+	private @NonNull List<MailAttachmentStream> retrieveAttachmentsFromParamList(@Nullable ParameterValue pv, @NonNull PipeLineSession session) throws SenderException, ParameterException {
 		if (pv == null) {
-			return Collections.emptyList();
+			return List.of();
 		}
-		Collection<MailAttachmentStream> attachments = retrieveAttachments(pv.asCollection(), session);
+		List<MailAttachmentStream> attachments = retrieveAttachments(pv.asCollection(), session);
 		log.debug("MailSender [{}] retrieved attachments-parameter [{}]", getName(), attachments);
 		return attachments;
 	}
 
-	private @NonNull Collection<EMail> retrieveRecipientsFromParameterList(ParameterValue pv)
+	private @NonNull List<EMail> retrieveRecipientsFromParameterList(ParameterValue pv)
 			throws ParameterException, SenderException {
 		if (pv == null) {
 			return Collections.emptyList();
 		}
-		Collection<EMail> recipients = retrieveRecipients(pv.asCollection());
+		List<EMail> recipients = retrieveRecipients(pv.asCollection());
 		log.debug("MailSender [{}] retrieved recipients-parameter [{}]", getName(), recipients);
 		return recipients;
 	}
@@ -257,11 +257,11 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		return recipients;
 	}
 
-	private @NonNull Collection<MailAttachmentStream> retrieveAttachments(@NonNull Collection<Node> attachmentsNode, @NonNull PipeLineSession session) throws SenderException {
+	private @NonNull List<MailAttachmentStream> retrieveAttachments(@NonNull Collection<Node> attachmentsNode, @NonNull PipeLineSession session) throws SenderException {
 		if (attachmentsNode.isEmpty()) {
-			return Collections.emptyList();
+			return List.of();
 		}
-		Collection<MailAttachmentStream> attachments = new ArrayList<>(attachmentsNode.size());
+		List<MailAttachmentStream> attachments = new ArrayList<>(attachmentsNode.size());
 		for (Node node : attachmentsNode) {
 			Element attachmentElement = (Element) node;
 			String name = attachmentElement.getAttribute("name");
@@ -359,7 +359,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		attachments = attachmentsElement == null ? null : XmlUtils.getChildTags(attachmentsElement, "attachment");
 		replyTo = XmlUtils.getFirstChildTag(emailElement, "replyTo");
 		Element headersElement = XmlUtils.getFirstChildTag(emailElement, "headers");
-		Collection<Node> headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement, "header");
+		List<Node> headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement, "header");
 
 		String bounceAddress = XmlUtils.getChildTagAsString(emailElement, "bounceAddress");
 		if (StringUtils.isNotBlank(bounceAddress)) {

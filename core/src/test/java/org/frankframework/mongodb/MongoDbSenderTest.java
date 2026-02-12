@@ -111,7 +111,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		JsonArrayBuilder students = Json.createArrayBuilder();
 		createStudent(List.of("Harry", "Klaas", "Bruinsma"), "1a", 4, 5, 6)
 				.forEach(students::add);
-		students.add(createStudent(List.of("Ridouan"), "1c", 4, 4, 3).get(0));
+		students.add(createStudent(List.of("Ridouan"), "1c", 4, 4, 3).getFirst());
 		// Act & assert: insert 4 students
 		result = sendMessage(students.build().toString());
 		assertThat(result.asString(), StringContains.containsString("\"insertedIds\":"));
@@ -325,7 +325,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		sender.start();
 
 		List<JsonObject> stud = createStudent(Collections.singletonList("Evert"), "1c", 4, 4, 3);
-		return sendMessage(stud.get(0).toString());
+		return sendMessage(stud.getFirst().toString());
 	}
 
 	public List<JsonObject> createStudent(List<String> studentId, String classId, Integer... grades) {

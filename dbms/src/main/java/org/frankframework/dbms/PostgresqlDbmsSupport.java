@@ -275,7 +275,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws DbmsException {
 		String schema = schemaOwner != null ? schemaOwner : "public";
 		String query = "SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE indrelid=?::regclass";
-		StringBuilder target = new StringBuilder().append(" (").append(columns.get(0).toLowerCase());
+		StringBuilder target = new StringBuilder().append(" (").append(columns.getFirst().toLowerCase());
 		for (int i = 1; i < columns.size(); i++) {
 			target.append(", ").append(columns.get(i).toLowerCase());
 		}

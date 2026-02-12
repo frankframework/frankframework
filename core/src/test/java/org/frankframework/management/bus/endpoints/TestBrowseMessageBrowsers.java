@@ -320,7 +320,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
-		request.setHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, adapter.getReceivers().iterator().next().getName());
+		request.setHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, adapter.getReceivers().getFirst().getName());
 		request.setHeader(BusMessageUtils.HEADER_PROCESSSTATE_KEY, ProcessState.AVAILABLE);
 
 		Message<?> response = callSyncGateway(request);

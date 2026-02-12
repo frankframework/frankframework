@@ -764,7 +764,7 @@ public class Json2Xml extends XmlAligner {
 
 		if (!unProcessedChildren.isEmpty()) {
 			final Set<String> unProcessedChildrenWorkingCopy = new LinkedHashSet<>(unProcessedChildren);
-			log.warn("processing [{}] unprocessed child elements{}", unProcessedChildren.size(), !unProcessedChildren.isEmpty() ? ", first [" + unProcessedChildren.iterator().next() + "]" : "");
+			log.warn("processing [{}] unprocessed child elements{}", unProcessedChildren.size(), ", first [" + unProcessedChildren.iterator().next() + "]");
 			// this loop is required to handle for mixed content element containing globally defined elements
 			for (String childName: unProcessedChildrenWorkingCopy) {
 				log.warn("processing unprocessed child element [{}]", childName);

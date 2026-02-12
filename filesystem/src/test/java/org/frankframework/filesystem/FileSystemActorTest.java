@@ -1045,7 +1045,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 			fileIds.add(createFile(innerFolder, filename, "is not empty"));
 		}
 
-		assertTrue(_fileExists(innerFolder, fileIds.get(0)), "Expected file [" + innerFolder + "/file0file1.txt] to be present");
+		assertTrue(_fileExists(innerFolder, fileIds.getFirst()), "Expected file [" + innerFolder + "/file0file1.txt] to be present");
 
 		actor.setAction(FileSystemAction.RMDIR);
 		actor.configure(fileSystem, parameters, adapter);

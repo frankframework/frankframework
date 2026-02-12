@@ -154,7 +154,7 @@ public class JdbcUtilTest {
 		List<Object> listResult = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params), session);
 
 		// Assert
-		assertEquals("just a third text", listResult.get(0));
+		assertEquals("just a third text", listResult.getFirst());
 		assertEquals("2018-04-12 03:05:06.0", listResult.get(1).toString());
 
 		// Arrange
@@ -225,7 +225,7 @@ public class JdbcUtilTest {
 
 		List<Object> result = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams), session);
 
-		Clob clob = (Clob) result.get(0);
+		Clob clob = (Clob) result.getFirst();
 		Blob blob = (Blob) result.get(1);
 
 		assertEquals(20_000, clob.length());

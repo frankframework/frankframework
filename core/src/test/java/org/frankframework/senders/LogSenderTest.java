@@ -37,7 +37,7 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 			assertEquals(input, result);
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
-			assertEquals(level+": Message2Log", logEvents.get(0));
+			assertEquals(level+": Message2Log", logEvents.getFirst());
 		}
 	}
 
@@ -60,7 +60,7 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 			assertEquals(input, result);
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
-			assertEquals(level+": Message2Log", logEvents.get(0));
+			assertEquals(level+": Message2Log", logEvents.getFirst());
 		}
 	}
 
@@ -77,7 +77,7 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 			assertEquals(input, result);
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
-			assertEquals("WARN: Message2Log", logEvents.get(0));
+			assertEquals("WARN: Message2Log", logEvents.getFirst());
 		}
 	}
 
@@ -94,7 +94,7 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 			assertEquals(input, result);
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(3, logEvents.size(), "found messages "+logEvents);
-			assertEquals("DEBUG: Calculating value for Parameter [logLevel]", logEvents.get(0));
+			assertEquals("DEBUG: Calculating value for Parameter [logLevel]", logEvents.getFirst());
 			assertEquals("DEBUG: Parameter [logLevel] resolved to [perensap]", logEvents.get(1));
 			assertEquals("DEBUG: Message2Log", logEvents.get(2));
 		}
@@ -115,7 +115,7 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 			assertEquals(input, result);
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(3, logEvents.size(), "found messages "+logEvents);
-			assertEquals("INFO: Message2Log", logEvents.get(0));
+			assertEquals("INFO: Message2Log", logEvents.getFirst());
 			assertEquals("INFO: parameter [param 1] value [appelflap]", logEvents.get(1));
 			assertEquals("INFO: parameter [param 2] value [perensap]", logEvents.get(2));
 		}

@@ -222,7 +222,7 @@ public class ConfigurationDigesterTest {
 		assertFalse(warnings.isEmpty());
 		String expected = "[org.frankframework.pipes.PutInSession] has been renamed to [org.frankframework.pipes.PutInSessionPipe]."
 				+ " Please use the new syntax or change the className attribute.";
-		assertEquals(expected, warnings.get(0));
+		assertEquals(expected, warnings.getFirst());
 
 	}
 

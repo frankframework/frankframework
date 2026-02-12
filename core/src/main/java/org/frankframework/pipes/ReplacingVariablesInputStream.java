@@ -110,7 +110,7 @@ public class ReplacingVariablesInputStream extends InputStream {
 
 		// Remove variablePrefix
 		for (byte b : variablePrefix) {
-			if (list.get(0) == b) {
+			if (list.getFirst() == b) {
 				list.remove(0);
 			}
 		}

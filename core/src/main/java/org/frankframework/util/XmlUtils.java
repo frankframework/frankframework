@@ -26,11 +26,11 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -73,8 +73,6 @@ import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xmlbeans.GDate;
 import org.htmlcleaner.CleanerProperties;
@@ -98,6 +96,7 @@ import org.xml.sax.ext.LexicalHandler;
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
+import lombok.extern.log4j.Log4j2;
 import net.sf.saxon.xpath.XPathFactoryImpl;
 
 import org.frankframework.core.IScopeProvider;
@@ -123,9 +122,9 @@ import org.frankframework.xml.XmlWriter;
  *
  * @author  Johan Verrips
  */
+@Log4j2
 public class XmlUtils {
 	public static final int HTML_MAX_PREAMBLE_SIZE = 512;
-	static Logger log = LogManager.getLogger(XmlUtils.class);
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 
@@ -149,6 +148,23 @@ public class XmlUtils {
 	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
+	private static final String REMOVE_NAMESPACES_XSLT_TEMPLATE =
+			"""
+			<xsl:template match="*">\
+			<xsl:element name="{local-name()}">\
+			<xsl:for-each select="@*">\
+			<xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>\
+			</xsl:for-each>\
+			<xsl:apply-templates/>\
+			</xsl:element>\
+			</xsl:template>\
+			<xsl:template match="comment() | processing-instruction() | text()">\
+			<xsl:copy>\
+			<xsl:apply-templates/>\
+			</xsl:copy>\
+			</xsl:template>\
+			""";
+
 	static {
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
@@ -164,26 +180,6 @@ public class XmlUtils {
 		return new GDate(s).getDate();
 	}
 
-	private static String makeRemoveNamespacesXsltTemplates() {
-		// TODO: Wish to get rid of this as well but it's still embedded in another XSLT.
-		return
-		"""
-		<xsl:template match="*">\
-		<xsl:element name="{local-name()}">\
-		<xsl:for-each select="@*">\
-		<xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>\
-		</xsl:for-each>\
-		<xsl:apply-templates/>\
-		</xsl:element>\
-		</xsl:template>\
-		<xsl:template match="comment() | processing-instruction() | text()">\
-		<xsl:copy>\
-		<xsl:apply-templates/>\
-		</xsl:copy>\
-		</xsl:template>\
-		""";
-	}
-
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
 			namespaceAwareByDefault=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, true);
@@ -192,28 +188,28 @@ public class XmlUtils {
 	}
 
 	public static synchronized boolean isXsltStreamingByDefault() {
-		if (xsltStreamingByDefault==null) {
-			xsltStreamingByDefault=AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
+		if (xsltStreamingByDefault == null) {
+			xsltStreamingByDefault = AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		}
 		return xsltStreamingByDefault;
 	}
 
 	public static synchronized boolean isIncludeFieldDefinitionByDefault() {
-		if (includeFieldDefinitionByDefault==null) {
-			includeFieldDefinitionByDefault=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
+		if (includeFieldDefinitionByDefault == null) {
+			includeFieldDefinitionByDefault = AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
 		}
 		return includeFieldDefinitionByDefault;
 	}
 
 	public static synchronized boolean isAutoReload() {
-		if (autoReload==null) {
-			autoReload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
+		if (autoReload == null) {
+			autoReload = AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
 		}
 		return autoReload;
 	}
 
 	public static synchronized int getBufSize() {
-		if (bufferSize ==null) {
+		if (bufferSize == null) {
 			bufferSize = AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
 		}
 		return bufferSize;
@@ -282,11 +278,11 @@ public class XmlUtils {
 		return xmlReader;
 	}
 
-	private static XMLReader getXMLReader(boolean namespaceAware, IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
+	private static @NonNull XMLReader getXMLReader(boolean namespaceAware, @Nullable IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (scopeProvider!=null) {
+		if (scopeProvider != null) {
 			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
 		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
@@ -294,19 +290,19 @@ public class XmlUtils {
 		return xmlReader;
 	}
 
-	public static Document buildDomDocument(Reader in) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
 	}
 
-	public static Document buildDomDocument(Reader in, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull Reader in, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(in, namespaceAware, false);
 	}
 
-	public static Document buildDomDocument(InputSource src, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull InputSource src, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(src, namespaceAware, false);
 	}
 
-	public static Document buildDomDocument(InputSource src, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull InputSource src, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		Document document;
 		try {
 			DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
@@ -324,7 +320,8 @@ public class XmlUtils {
 		}
 		return document;
 	}
-	public static Document buildDomDocument(Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+
+	public static @NonNull Document buildDomDocument(@NonNull Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		return buildDomDocument(new InputSource(in), namespaceAware, resolveExternalEntities);
 	}
 
@@ -332,16 +329,16 @@ public class XmlUtils {
 	 * Convert an XML string to a Document
 	 * Creation date: (20-02-2003 8:12:52)
 	 */
-	public static Document buildDomDocument(String s) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull String s) throws DomBuilderException {
 		StringReader sr = new StringReader(s);
 		return buildDomDocument(sr);
 	}
 
-	public static Document buildDomDocument(String s, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull String s, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(s, namespaceAware, false);
 	}
 
-	public static Document buildDomDocument(String s, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull String s, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		if (StringUtils.isEmpty(s)) {
 			throw new DomBuilderException("input is null");
 		}
@@ -352,62 +349,55 @@ public class XmlUtils {
 	/**
 	 * Build a Document from a URL
 	 */
-	public static Document buildDomDocument(URL url)
-		throws DomBuilderException {
-		Reader in;
-		Document output;
-
-		try {
-			in = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
+	public static @NonNull Document buildDomDocument(@NonNull URL url) throws DomBuilderException {
+		try (Reader in = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream())){
+			return buildDomDocument(in);
 		} catch (IOException e) {
 			throw new DomBuilderException(e);
 		}
-		output = buildDomDocument(in);
-		try {
-			in.close();
-		} catch (IOException e) {
-			log.debug("Exception closing URL-stream", e);
-		}
-		return output;
 	}
 	/**
 	 * Convert an XML string to a Document, then return the root-element
 	 */
-	public static org.w3c.dom.Element buildElement(String s, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Element buildElement(@NonNull String s, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(s,namespaceAware).getDocumentElement();
 	}
 
 	/**
 	 * Convert an XML string to a Document, then return the root-element as a Node
 	 */
-	public static Node buildNode(String s, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Node buildNode(@NonNull String s, boolean namespaceAware) throws DomBuilderException {
 		log.debug("buildNode() [{}],[{}]", s, namespaceAware);
 		return buildElement(s,namespaceAware);
 	}
 
-	public static Node buildNode(String s) throws DomBuilderException {
+	public static @NonNull Node buildNode(@NonNull String s) throws DomBuilderException {
 		log.debug("buildNode() [{}]", s);
-		return buildElement(s,isNamespaceAwareByDefault());
+		return buildElement(s, isNamespaceAwareByDefault());
 	}
 
 	/**
 	 * Convert an XML string to a Document, then return the root-element.
 	 * (namespace aware)
 	 */
-	public static Element buildElement(String s) throws DomBuilderException {
+	public static @NonNull Element buildElement(@NonNull String s) throws DomBuilderException {
 		return buildDomDocument(s).getDocumentElement();
 	}
 
-	public static Element buildElement(Message s) throws DomBuilderException {
+	public static @NonNull Element buildElement(@NonNull Message s) throws DomBuilderException {
 		try {
-			return buildElement(s.asString());
+			String input = Objects.requireNonNull(s.asString(), () -> "Message [%s] has no data".formatted(s));
+			return buildElement(input);
 		} catch (IOException e) {
 			throw new DomBuilderException(e);
 		}
 	}
 
-	public static String skipXmlDeclaration(String xmlString) {
-		if (xmlString != null && xmlString.startsWith("<?xml")) {
+	public static @NonNull String skipXmlDeclaration(@Nullable String xmlString) {
+		if (xmlString == null) {
+			return "";
+		}
+		if (xmlString.startsWith("<?xml")) {
 			int endPos = xmlString.indexOf("?>")+2;
 			if (endPos > 0) {
 				try {
@@ -424,8 +414,8 @@ public class XmlUtils {
 		return xmlString;
 	}
 
-	public static String skipDocTypeDeclaration(String xmlString) {
-		if (xmlString!=null && xmlString.startsWith("<!DOCTYPE")) {
+	public static @NonNull String skipDocTypeDeclaration(@NonNull String xmlString) {
+		if (xmlString.startsWith("<!DOCTYPE")) {
 			int endPos = xmlString.indexOf(">")+2;
 			if (endPos>0) {
 				try {
@@ -442,16 +432,16 @@ public class XmlUtils {
 		return xmlString;
 	}
 
-	public static String getNamespaceClause(String namespaceDefs) {
+	public static @NonNull String getNamespaceClause(@Nullable String namespaceDefs) {
 		StringBuilder namespaceClause = new StringBuilder();
-		for (Entry<String,String> namespaceDef:getNamespaceMap(namespaceDefs).entrySet()) {
-			String prefixClause=namespaceDef.getKey()==null?"":":"+namespaceDef.getKey();
+		for (Entry<String, String> namespaceDef : getNamespaceMap(namespaceDefs).entrySet()) {
+			String prefixClause = namespaceDef.getKey() == null ? "" : ":" + namespaceDef.getKey();
 			namespaceClause.append(" xmlns").append(prefixClause).append("=\"").append(namespaceDef.getValue()).append("\"");
 		}
 		return namespaceClause.toString();
 	}
 
-	public static Map<String,String> getNamespaceMap(String namespaceDefs) {
+	public static @NonNull Map<String,String> getNamespaceMap(@Nullable String namespaceDefs) {
 		Map<String,String> namespaceMap= new LinkedHashMap<>();
 		if (namespaceDefs != null) {
 			for (final String namespaceDef : StringUtil.split(namespaceDefs, ", \t\r\n\f")) {
@@ -579,34 +569,33 @@ public class XmlUtils {
 			includeXmlDeclaration = false;
 		}
 
-		String xsl =
-			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+version+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
-			"<xsl:output method=\""+outputMethod.getOutputMethod()+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
-			(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
-			paramsString +
-			(ignoreNamespaces ?
-				"<xsl:template match=\"/\">" +
-					"<xsl:variable name=\"prep\"><xsl:apply-templates/></xsl:variable>" +
-					"<xsl:call-template name=\"expression\">" +
-						"<xsl:with-param name=\"root\" select=\"$prep\"/>" +
-					"</xsl:call-template>" +
-				"</xsl:template>" +
-				makeRemoveNamespacesXsltTemplates()+
+		// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 
-				"<xsl:template name=\"expression\">" +
-					"<xsl:param name=\"root\" />" +
-					"<xsl:for-each select=\"$root\">" +
-						xpathContainerSupplier.apply(xPathExpression) +
-					"</xsl:for-each>" +
-				"</xsl:template>"
-			:
+		return "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\""+version+".0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:output method=\""+outputMethod.getOutputMethod()+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
+		(stripSpace?"<xsl:strip-space elements=\"*\"/>":"") +
+		paramsString +
+		(ignoreNamespaces ?
 			"<xsl:template match=\"/\">" +
-				xpathContainerSupplier.apply(xPathExpression) +
-			"</xsl:template>" )+
-			"</xsl:stylesheet>";
+				"<xsl:variable name=\"prep\"><xsl:apply-templates/></xsl:variable>" +
+				"<xsl:call-template name=\"expression\">" +
+					"<xsl:with-param name=\"root\" select=\"$prep\"/>" +
+				"</xsl:call-template>" +
+			"</xsl:template>" +
 
-		return xsl;
+			REMOVE_NAMESPACES_XSLT_TEMPLATE +
+
+			"<xsl:template name=\"expression\">" +
+				"<xsl:param name=\"root\" />" +
+				"<xsl:for-each select=\"$root\">" +
+					xpathContainerSupplier.apply(xPathExpression) +
+				"</xsl:for-each>" +
+			"</xsl:template>"
+		:
+		"<xsl:template match=\"/\">" +
+			xpathContainerSupplier.apply(xPathExpression) +
+		"</xsl:template>" )+
+		"</xsl:stylesheet>";
 	}
 
 
@@ -784,14 +773,14 @@ public class XmlUtils {
 		return factory;
 	}
 
-	public static String convertEndOfLines(String input) {
+	public static @Nullable String convertEndOfLines(@Nullable String input) {
 		if (input==null) {
 			return null;
 		}
 		return input.replaceAll("\r\n?", "\n");
 	}
 
-	public static String normalizeWhitespace(String input) {
+	public static @Nullable String normalizeWhitespace(@Nullable String input) {
 		if (input==null) {
 			return null;
 		}
@@ -802,7 +791,7 @@ public class XmlUtils {
 		return XmlEncodingUtils.replaceNonValidXmlCharacters(normalizeWhitespace(convertEndOfLines(input)), '?', true, true);
 	}
 
-	public static String cleanseElementName(String candidateName) {
+	public static @Nullable String cleanseElementName(@Nullable String candidateName) {
 		return candidateName!=null ? XmlEncodingUtils.replaceNonValidXmlCharacters(candidateName.replaceAll("[^\\w\\-.]", "_"), '?', true, true) : null;
 	}
 
@@ -997,24 +986,19 @@ public class XmlUtils {
 	 *                      be safely cast to type
 	 *                      <code>org.w3c.dom.Element</code>.
 	 */
-	public static Collection<Node> getChildTags(Element el, String tag) {
-		Collection<Node> c;
-		NodeList nl;
-		int len;
-		boolean allChildren;
-
-		c = new ArrayList<>();
-		nl = el.getChildNodes();
-		len = nl.getLength();
-
-		allChildren = "*".equals(tag);
+	public static List<Node> getChildTags(@Nullable Element el, String tag) {
+		if (el == null) {
+			return List.of();
+		}
+		List<Node> c = new ArrayList<>();
+		NodeList nl = el.getChildNodes();
+		int len = nl.getLength();
+		boolean allChildren = "*".equals(tag);
 
 		for (int i = 0; i < len; i++) {
 			Node n = nl.item(i);
-			if (n instanceof Element e) {
-				if (allChildren || e.getTagName().equals(tag)) {
-					c.add(n);
-				}
+			if (n instanceof Element e && (allChildren || e.getTagName().equals(tag))) {
+				c.add(n);
 			}
 		}
 
@@ -1031,18 +1015,13 @@ public class XmlUtils {
 	 * @return Element The element found, or <code>null</code> if no match
 	 *                  found.
 	 */
-	public static Element getFirstChildTag(Element el, String tag) {
-		NodeList nl;
-		int len;
-
-		nl = el.getChildNodes();
-		len = nl.getLength();
+	public static @Nullable Element getFirstChildTag(Element el, String tag) {
+		NodeList nl = el.getChildNodes();
+		int len = nl.getLength();
 		for (int i = 0; i < len; ++i) {
 			Node n = nl.item(i);
-			if (n instanceof Element elem) {
-				if (elem.getTagName().equals(tag)) {
-					return elem;
-				}
+			if (n instanceof Element elem && elem.getTagName().equals(tag)) {
+				return elem;
 			}
 		}
 		return null;
@@ -1092,7 +1071,7 @@ public class XmlUtils {
 		}
 	}
 
-	private static Object sanitizeValue(String paramName, Object value) throws IOException {
+	private static @Nullable Object sanitizeValue(String paramName, @Nullable Object value) throws IOException {
 		if (value == null) {
 			return null;
 		}
@@ -1272,7 +1251,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String getRootNamespace(String input) {
+	public static @Nullable String getRootNamespace(String input) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getGetRootNamespaceTransformerPool();
 			return tp.transformToString(input,null);
@@ -1282,7 +1261,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String getRootNamespace(Message input) {
+	public static @Nullable String getRootNamespace(Message input) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getGetRootNamespaceTransformerPool();
 			return tp.transformToString(input);
@@ -1292,7 +1271,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String addRootNamespace(String input, String namespace) {
+	public static @Nullable String addRootNamespace(String input, String namespace) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getAddRootNamespaceTransformerPool(namespace,true,false);
 			return tp.transformToString(input,null);
@@ -1312,7 +1291,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String copyOfSelect(String input, String xpath) {
+	public static @Nullable String copyOfSelect(String input, String xpath) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getCopyOfSelectTransformerPool(xpath, true,false);
 			return tp.transformToString(input,null);
@@ -1371,7 +1350,7 @@ public class XmlUtils {
 		return outputStream.toByteArray();
 	}
 
-	public static String cdataToText(String input) {
+	public static @Nullable String cdataToText(String input) {
 		try {
 			DocumentBuilderFactory factory = getDocumentBuilderFactory();
 			factory.setCoalescing(true);
@@ -1433,11 +1412,11 @@ public class XmlUtils {
 				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
 
-	public static @NonNull Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
+	public static @NonNull List<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		try {
-			Collection<String> c = new ArrayList<>();
+			List<String> c = new ArrayList<>();
 			Document doc = buildDomDocument(msg, true, true);
 			XPath xPath = getXPathFactory().newXPath();
 			XPathExpression xPathExpression = xPath.compile(xpathExpr);
@@ -1457,9 +1436,9 @@ public class XmlUtils {
 	}
 
 	public static @Nullable String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws XmlException {
-		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
+		List<String> c = evaluateXPathNodeSet(input, xpathExpr);
 		if (!c.isEmpty()) {
-			return c.iterator().next();
+			return c.getFirst();
 		}
 		return null;
 	}

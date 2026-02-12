@@ -500,15 +500,14 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	}
 
 	private void processProperties(Element propertiesElement, Map<String, Object> props) throws SenderException {
-		Iterator<Node> iter = XmlUtils.getChildTags(propertiesElement, "property").iterator();
 
-		while (iter.hasNext()) {
-			Element propertyElement = (Element) iter.next();
+		for (Node node : XmlUtils.getChildTags(propertiesElement, "property")) {
+			Element propertyElement = (Element) node;
 			String property = XmlUtils.getStringValue(propertyElement);
 
 			boolean setPropertyAsNull = false;
 			String isNull = propertyElement.getAttribute("isNull");
-			if(StringUtils.isNotEmpty(isNull)) {
+			if (StringUtils.isNotEmpty(isNull)) {
 				setPropertyAsNull = Boolean.parseBoolean(isNull);
 			}
 
@@ -530,7 +529,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
 					}
 					// TODO to be removed in a few versions
-					if(AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
+					if (AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
 						formatStringAttr = "yyyy-MM-dd HH:mm:ss";
 					}
 					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);

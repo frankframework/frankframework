@@ -135,7 +135,7 @@ public class JsonUtil {
 			if (jsonArray.isEmpty()) {
 				return "";
 			}
-			return getSingleValueJsonPathResult(jsonArray.get(0));
+			return getSingleValueJsonPathResult(jsonArray.getFirst());
 		}
 
 		// We found something, but it does not have a proper string representation

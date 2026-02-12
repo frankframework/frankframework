@@ -210,7 +210,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	private Message convertFromCsv(@NonNull String messageData, Map<String, Object> threadContext) throws ListenerException {
 		Message message;
 		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
-			CSVRecord csvRecord = parser.getRecords().get(0);
+			CSVRecord csvRecord = parser.getRecords().getFirst();
 			message = new Message(csvRecord.get(0));
 			for (int i = 1; i < csvRecord.size(); i++) {
 				if (sessionKeysList.size() >= i) {

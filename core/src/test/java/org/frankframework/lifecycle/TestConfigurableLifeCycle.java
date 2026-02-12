@@ -109,7 +109,7 @@ public class TestConfigurableLifeCycle {
 		// Fetch the first Adapter (and confirm it's been registered successfully).
 		List<Adapter> adapters = configuration.getRegisteredAdapters();
 		assertEquals(1, adapters.size());
-		return adapters.get(0);
+		return adapters.getFirst();
 	}
 
 	private Monitor createMonitor() {

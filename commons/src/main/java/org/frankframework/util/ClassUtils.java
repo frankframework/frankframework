@@ -348,7 +348,7 @@ public class ClassUtils {
 			throw new ReflectiveOperationException("more then one setter found matching signature "+o.getClass().getCanonicalName()+"."+name+"("+clazz.getCanonicalName()+")");
 		}
 
-		Method setterMtd = methods.get(0);
+		Method setterMtd = methods.getFirst();
 		Object[] args = { value };
 		setterMtd.invoke(o, args);
 	}

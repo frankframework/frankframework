@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Disabled;
@@ -167,7 +167,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		int duration = Integer.parseInt(origResult.getAttribute("duration"));
 		assertTrue(duration < 200, "test took more then [200ms] duration ["+duration+"]");
 
-		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
+		List<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(0, shadowResults.size());
 	}
 
@@ -203,7 +203,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
 		assertThat(Integer.parseInt(origResult.getAttribute("duration")), lessThan(200));
 
-		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
+		List<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(3, shadowResults.size());
 		for(Node node : shadowResults) {
 			Element shadowResult = (Element) node;
@@ -257,7 +257,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		assertEquals(ORIGINAL_SENDER_NAME, origResult.getAttribute("senderName"));
 		assertThat(Integer.parseInt(origResult.getAttribute("duration")), lessThan(200));
 
-		Collection<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
+		List<Node> shadowResults = XmlUtils.getChildTags(el, "shadowResult");
 		assertEquals(3, shadowResults.size());
 		for(Node node : shadowResults) {
 			Element shadowResult = (Element) node;

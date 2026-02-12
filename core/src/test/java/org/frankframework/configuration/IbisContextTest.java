@@ -121,7 +121,7 @@ public class IbisContextTest {
 
 			assertEquals(1, context.getIbisManager().getConfigurations().size());
 			Configuration config = context.getIbisManager().getConfiguration(configurationName);
-			assertNotNull(config, "test configuration ["+configurationName+"] not found. Found ["+context.getIbisManager().getConfigurations().get(0).getId()+"] instead");
+			assertNotNull(config, "test configuration ["+configurationName+"] not found. Found ["+context.getIbisManager().getConfigurations().getFirst().getId()+"] instead");
 			assertEquals(configurationName, config.getName());
 
 			ConfigurationException ex = config.getConfigurationException();

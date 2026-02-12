@@ -35,7 +35,7 @@ class BusExceptionTest {
 
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "expected only 1 line to be logged, got: "+logEvents);
-			String logMessage = logEvents.get(0);
+			String logMessage = logEvents.getFirst();
 			String[] event = logMessage.split(" - ");
 			String level = event[0];
 			String message = event[1];

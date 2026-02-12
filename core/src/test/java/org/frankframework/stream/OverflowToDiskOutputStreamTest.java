@@ -54,19 +54,19 @@ public class OverflowToDiskOutputStreamTest {
 
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
-		String fileContents = new String(Files.newInputStream(files.get(0)).readAllBytes());
+		String fileContents = new String(Files.newInputStream(files.getFirst()).readAllBytes());
 		assertEquals(testString, fileContents, "contents of both files differ, do we have the correct test file?");
 
 		oos.close();
-		assertTrue(Files.exists(files.get(0)), "closing the OverflowOutputStream should not remove the file");
+		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 
 		Message message = oos.toMessage();
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
-		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
+		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
 		requestObject.close();
-		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
+		assertFalse(Files.exists(files.getFirst()), "File should be removed after message is closed");
 	}
 
 	@ParameterizedTest
@@ -83,19 +83,19 @@ public class OverflowToDiskOutputStreamTest {
 		oos.close();
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
-		String fileContents = new String(Files.newInputStream(files.get(0)).readAllBytes());
+		String fileContents = new String(Files.newInputStream(files.getFirst()).readAllBytes());
 		assertEquals(testString + testString, fileContents, "contents of both files differ, do we have the correct test file?");
 
-		assertTrue(Files.exists(files.get(0)), "closing the OverflowOutputStream should not remove the file");
+		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 		Message message = oos.toMessage();
 		assertEquals(testString + testString, message.asString(), "contents of Message differs from the file");
 
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
-		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
+		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
 		requestObject.close();
-		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
+		assertFalse(Files.exists(files.getFirst()), "File should be removed after message is closed");
 	}
 
 	@Test
@@ -106,22 +106,22 @@ public class OverflowToDiskOutputStreamTest {
 
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
-		assertEquals(0, Files.newInputStream(files.get(0)).available(), "default buffer size not exceeded nothing will be written until close is called");
+		assertEquals(0, Files.newInputStream(files.getFirst()).available(), "default buffer size not exceeded nothing will be written until close is called");
 		oos.close();
 
-		String fileContents = new String(Files.newInputStream(files.get(0)).readAllBytes());
+		String fileContents = new String(Files.newInputStream(files.getFirst()).readAllBytes());
 		assertEquals(testString, fileContents, "contents of both files differ, do we have the correct test file?");
 
 		oos.close();
-		assertTrue(Files.exists(files.get(0)), "closing the OverflowOutputStream should not remove the file");
+		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 
 		Message message = oos.toMessage();
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
-		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
+		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
 		requestObject.close();
-		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
+		assertFalse(Files.exists(files.getFirst()), "File should be removed after message is closed");
 	}
 
 	@ParameterizedTest
@@ -136,19 +136,19 @@ public class OverflowToDiskOutputStreamTest {
 		assertEquals(1, files.size(), "1 file should have been created");
 
 		oos.close();
-		String fileContents = new String(Files.newInputStream(files.get(0)).readAllBytes());
+		String fileContents = new String(Files.newInputStream(files.getFirst()).readAllBytes());
 		assertEquals("00", fileContents, "contents of both files differ, do we have the correct test file?");
 
 		oos.close();
-		assertTrue(Files.exists(files.get(0)), "closing the OverflowOutputStream should not remove the file");
+		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 
 		Message message = oos.toMessage();
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
-		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
+		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
 		requestObject.close();
-		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
+		assertFalse(Files.exists(files.getFirst()), "File should be removed after message is closed");
 	}
 
 	@Test
@@ -172,16 +172,16 @@ public class OverflowToDiskOutputStreamTest {
 
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
-		long size = files.get(0).toFile().length();
+		long size = files.getFirst().toFile().length();
 		assertTrue(size > 2_500_000);
 
 		oos.flush(true);
 		oos.close();
-		assertTrue(Files.exists(files.get(0)), "closing the OverflowOutputStream should not remove the file");
+		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 
 		Message message = oos.toMessage();
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
-		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
+		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		assertInstanceOf(PathMessage.class, message);
 		byte[] content = message.asByteArray();
@@ -189,6 +189,6 @@ public class OverflowToDiskOutputStreamTest {
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
 		requestObject.close();
-		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
+		assertFalse(Files.exists(files.getFirst()), "File should be removed after message is closed");
 	}
 }

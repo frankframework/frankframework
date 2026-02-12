@@ -30,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -371,9 +370,9 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	private List<Column> getColumns(Element columnsElement) throws SenderException {
-		Collection<Node> columnElements = XmlUtils.getChildTags(columnsElement, "column");
+		List<Node> columnElements = XmlUtils.getChildTags(columnsElement, "column");
 		if (columnElements.isEmpty()) {
-			return Collections.emptyList();
+			return List.of();
 		}
 		List<Column> columns = new ArrayList<>();
 		for (Node element : columnElements) {

@@ -256,11 +256,11 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 			List<Checkpoint> checkpoints = report.getCheckpoints();
 
-			String adapterInputMessage = checkpoints.get(0).getMessage();
+			String adapterInputMessage = checkpoints.getFirst().getMessage();
 			if(adapterInputMessage == null) {
 				adapterInputMessage = "";
 			}
-			String pipelineClassName = checkpoints.get(0).getSourceClassName();
+			String pipelineClassName = checkpoints.getFirst().getSourceClassName();
 			if(pipelineClassName != null && pipelineClassName.startsWith("nl.nn.adapterframework")) {
 				senderListenerPackageName = "nl.nn.adapterframework";
 			}

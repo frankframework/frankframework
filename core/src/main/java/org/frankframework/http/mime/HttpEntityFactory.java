@@ -20,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -286,7 +285,7 @@ public class HttpEntityFactory {
 		} catch (DomBuilderException e) {
 			throw new IOException("error building multipart xml", e);
 		}
-		Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
+		List<Node> parts = XmlUtils.getChildTags(partsElement, "part");
 		if (parts.isEmpty()) {
 			log.warn("no part(s) in multipart xml [{}]", multipartXml);
 			return;

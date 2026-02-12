@@ -249,7 +249,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 
 		List<String> warnings = getConfigurationWarnings().getWarnings();
 		assertEquals(1, warnings.size());
-		assertTrue(warnings.get(0).contains("should NOT be used to wrap a message in an InputWrapper"));
+		assertTrue(warnings.getFirst().contains("should NOT be used to wrap a message in an InputWrapper"));
 	}
 
 	@Test

@@ -299,7 +299,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 						.toList();
 				if (modifiedUrls.size() == 1) {
 					// Replace /api/* with /api. Doing this in ApiListenerServlet.getUrlMapping() is not possible.
-					builder.append(modifiedUrls.get(0));
+					builder.append(modifiedUrls.getFirst());
 				} else {
 					builder.append(modifiedUrls);
 				}

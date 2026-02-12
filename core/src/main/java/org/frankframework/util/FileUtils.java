@@ -301,13 +301,13 @@ public class FileUtils {
 					log.error("cannot determine canonical path for file name '{}'", fileName, e);
 				}
 				String canonicalPath = null;
-				if ("*".equals(parts.get(0))) {
-					canonicalPath = parts.get(0);
+				if ("*".equals(parts.getFirst())) {
+					canonicalPath = parts.getFirst();
 				} else {
 					try {
-						canonicalPath = new File(parts.get(0)).getCanonicalPath();
+						canonicalPath = new File(parts.getFirst()).getCanonicalPath();
 					} catch(Exception e) {
-						log.error("cannot determine canonical path for first part '{}' of rule", parts.get(0), e);
+						log.error("cannot determine canonical path for first part '{}' of rule", parts.getFirst(), e);
 					}
 				}
 				if (canonicalFileName != null && canonicalPath != null) {

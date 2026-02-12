@@ -112,7 +112,7 @@ public class CommonsPkiUtil {
 		if (keyAliases.size() != 1) {
 			throw new KeyStoreException("Expected exactly one key entry, found " + keyAliases.size());
 		}
-		return keyAliases.get(0);
+		return keyAliases.getFirst();
 	}
 
 	public static RSAPrivateKey getRsaPrivateKey(final KeyStore keystore) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {

@@ -375,7 +375,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 		if (mongoClient!=null) {
 			List<ServerDescription> serverDescriptions = mongoClient.getClusterDescription().getServerDescriptions();
 			if (!serverDescriptions.isEmpty()) {
-				result += " server ["+serverDescriptions.get(0).getAddress()+"]";
+				result += " server ["+serverDescriptions.getFirst().getAddress()+"]";
 			}
 		}
 		return result;

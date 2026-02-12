@@ -11,7 +11,7 @@ public class SizeLimitedVectorTest {
 		SizeLimitedVector<String> slv = new SizeLimitedVector<>(10);
 		slv.add("testString");
 		assertEquals(10, slv.getMaxSize());
-		assertEquals("testString", slv.get(0));
+		assertEquals("testString", slv.getFirst());
 
 	}
 
@@ -20,7 +20,7 @@ public class SizeLimitedVectorTest {
 		SizeLimitedVector<Integer> slv = new SizeLimitedVector<>(1);
 		slv.add(13);
 		slv.add(14);
-		assertEquals(14, slv.get(0));
+		assertEquals(14, slv.getFirst());
 	}
 
 	@Test
@@ -37,6 +37,6 @@ public class SizeLimitedVectorTest {
 		assertEquals(6, slv.getMaxSize());
 		assertEquals(10, slv.capacity());
 		assertEquals(6, slv.size());
-		assertEquals(2, slv.get(0));
+		assertEquals(2, slv.getFirst());
 	}
 }
