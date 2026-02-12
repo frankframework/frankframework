@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -264,7 +265,7 @@ public class NetStorageSender extends AbstractHttpSender {
 		}
 	}
 
-	private String getSanitizedResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
+	private @NonNull String getSanitizedResponseBodyAsString(HttpResponseHandler responseHandler) throws IOException {
 		String responseString = getResponseBodyAsString(responseHandler, true);
 		if (responseString == null) {
 			return ""; // No response body, return empty string
@@ -279,7 +280,7 @@ public class NetStorageSender extends AbstractHttpSender {
 	 * When an exception occurs and the response cannot be parsed, we do not want to throw a 'missing response' exception.
 	 * Since this method is used when handling exceptions, silently return null, to avoid NPE's and IOExceptions
 	 */
-	public String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
+	public @Nullable String getResponseBodyAsString(HttpResponseHandler responseHandler, boolean throwIOExceptionWhenParsingResponse) throws IOException {
 		Message response = responseHandler.getResponseMessage();
 
 		try {

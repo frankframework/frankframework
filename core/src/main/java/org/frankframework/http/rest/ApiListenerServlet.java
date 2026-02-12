@@ -43,6 +43,7 @@ import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
@@ -285,104 +286,17 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				/*
 				 * Check authentication
 				 */
-				ApiPrincipal userPrincipal = null;
+				ApiPrincipal userPrincipal;
 
 				if (listener.getAuthenticationMethod() != ApiListener.AuthenticationMethods.NONE) {
-					String authorizationToken = null;
-					Cookie authorizationCookie = null;
-
-					switch (listener.getAuthenticationMethod()) {
-					case COOKIE:
-						authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
-						if(authorizationCookie != null) {
-							authorizationToken = authorizationCookie.getValue();
-							authorizationCookie.setPath("/");
-						}
-						break;
-					case HEADER:
-						authorizationToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-						break;
-					case AUTHROLE:
-						List<String> roles = listener.getAuthenticationRoleList();
-						if (roles != null) {
-							boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
-							if (userIsInRole) {
-								userPrincipal = new ApiPrincipal();
-							}
-						}
-						break;
-					case JWT:
-						String authorizationHeader = request.getHeader(listener.getJwtHeader());
-						boolean isNonStandardJwtAuthHeader = !HttpHeaders.AUTHORIZATION.equalsIgnoreCase(listener.getJwtHeader());
-						if (StringUtils.isNotEmpty(authorizationHeader) && (authorizationHeader.startsWith("Bearer") || isNonStandardJwtAuthHeader)) {
-							try {
-								String jwtToken = Strings.CI.removeStart(authorizationHeader, "Bearer ");
-								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(jwtToken);
-								pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
-								pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
-							} catch (Exception e) {
-								LOG.warn("unable to validate jwt",e);
-								response.sendError(401, e.getMessage());
-								return;
-							}
-						} else {
-							response.sendError(401, "JWT is not provided as bearer token");
-							return;
-						}
-						String requiredClaims = listener.getRequiredClaims();
-						String exactMatchClaims = listener.getExactMatchClaims();
-						String anyMatchClaims = listener.getAnyMatchClaims();
-						JwtSecurityHandler handler = (JwtSecurityHandler)pipelineSession.getSecurityHandler();
-						try {
-							handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
-							if (StringUtils.isNotEmpty(listener.getRoleClaim())) {
-								List<String> authRoles = listener.getAuthenticationRoleList();
-								if (authRoles != null) {
-									boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
-									if (userIsInRole) {
-										userPrincipal = new ApiPrincipal();
-									}
-								} else {
-									userPrincipal = new ApiPrincipal();
-								}
-							} else {
-								userPrincipal = new ApiPrincipal();
-							}
-						} catch (AuthorizationException e) {
-							response.sendError(403, e.getMessage());
-							return;
-						}
-
-						break;
-					default:
-						break;
-					}
-
-					if (authorizationToken != null && cache.containsKey(authorizationToken))
-						userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
-
-					if (userPrincipal == null || !userPrincipal.isLoggedIn()) {
-						cache.remove(authorizationToken);
-						if(authorizationCookie != null) {
-							CookieUtil.addCookie(request, response, authorizationCookie, 0);
-						}
-
-						response.setStatus(401);
-						LOG.warn("{} no (valid) credentials supplied", ()->createAbortMessage(remoteUser, 401));
+					userPrincipal = checkAuthorization(request, response, listener, pipelineSession, remoteUser);
+					if (userPrincipal == null) {
 						return;
 					}
-
-					if (authorizationCookie != null) {
-						CookieUtil.addCookie(request, response, authorizationCookie, authTTL);
-					}
-
-					if (authorizationToken != null) {
-						userPrincipal.updateExpiry();
-						userPrincipal.setToken(authorizationToken);
-						cache.put(authorizationToken, userPrincipal, authTTL);
-						pipelineSession.put("authorizationToken", authorizationToken);
-					}
+				} else {
+					userPrincipal = null;
 				}
+
 				// Remove this? it's now available as header value
 				pipelineSession.put("remoteAddr", request.getRemoteAddr());
 				if (userPrincipal != null)
@@ -405,29 +319,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					return;
 				}
 
-				String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
-				LOG.debug("Evaluating preconditions for listener[{}] etagKey[{}]", listener.getName(), etagCacheKey);
-				if (cache.containsKey(etagCacheKey)) {
-					String cachedEtag = (String) cache.get(etagCacheKey);
-					LOG.debug("found etag value[{}] for key[{}]", cachedEtag, etagCacheKey);
-
-					if (method == ApiListener.HttpMethod.GET) {
-						String ifNoneMatch = request.getHeader("If-None-Match");
-						if (ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
-							response.setStatus(304);
-							if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", ()->createAbortMessage(remoteUser, 304), ()->ifNoneMatch);
-							return;
-						}
-					}
-					else {
-						String ifMatch = request.getHeader("If-Match");
-						if (ifMatch != null && !ifMatch.equals(cachedEtag)) {
-							response.setStatus(412);
-							LOG.warn("{} matched if-match [{}] method [{}]", ()->createAbortMessage(remoteUser, 412), ()->ifMatch, ()->method);
-							return;
-						}
-					}
-				}
+				String etagCacheKey = isEtagCacheMatch(request, response, method, uri, listener, remoteUser);
+				if (etagCacheKey == null) return;
 				pipelineSession.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
 
 				/*
@@ -436,29 +329,9 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				// TODO: authentication implementation
 
 				/*
-				 * Map uriIdentifiers into messageContext
+				 * Map uriIdentifiers into PipeLineSession
 				 */
-				String[] patternSegments = listener.getUriPattern().split("/");
-				String[] uriSegments = uri.split("/");
-				int uriIdentifier = 0;
-				for (int i = 0; i < patternSegments.length; i++) {
-					final String segment = patternSegments[i];
-					final String name;
-
-					if("*".equals(segment)) {
-						name = "uriIdentifier_"+uriIdentifier;
-					} else if(segment.startsWith("{") && segment.endsWith("}")) {
-						name = segment.substring(1, segment.length()-1);
-					} else {
-						name = null;
-					}
-
-					if (name != null) {
-						uriIdentifier++;
-						if (LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
-						pipelineSession.put(name, uriSegments[i]);
-					}
-				}
+				mapUriIdentifiersToSession(uri, listener, pipelineSession);
 
 				/*
 				 * Map queryParameters into messageContext
@@ -476,43 +349,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * Process the request through the pipeline.
 				 * If applicable, map multipart parts into messageContext
 				 */
-				Message body = null;
-				// TODO fix HttpSender#handleMultipartResponse(..)
-				if(MultipartUtils.isMultipart(request)) {
-					final String multipartBodyName = listener.getMultipartBodyName();
-					try {
-						MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType());
-						for (Entry<String, Message> entry : parts.messages().entrySet()) {
-							String fieldName = entry.getKey();
-							if (!listener.isParameterAllowed(fieldName)) {
-								LOG.warn("Request contains multipart field [{}] which is not allowed", fieldName);
-								continue;
-							}
-							if ((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
-								body = entry.getValue();
-
-								Enumeration<String> names = request.getHeaderNames();
-								while (names.hasMoreElements()) {
-									String name = names.nextElement();
-									body.getContext().put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
-								}
-							}
-							pipelineSession.put(fieldName, entry.getValue());
-						}
-						pipelineSession.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, parts.multipartXml());
-					} catch(IOException e) {
-						response.sendError(400, "Could not read mime multipart request");
-						LOG.warn("{} Could not read mime multipart request: {}", () -> createAbortMessage(remoteUser, 400), e::getMessage);
-						return;
-					}
-
-					// If no multipartBodyName was found, but the value was provided. Body has to be set to something...
-					if (body == null) {
-						body = Message.nullMessage();
-					}
-				} else {
-					body = MessageUtils.parseContentAsMessage(request);
-				}
+				Message body = parseMessageFromRequest(request, response, listener, pipelineSession, remoteUser);
+				if (body == null) return; // Error reading request
 
 				/*
 				 * Compile Allow header
@@ -533,29 +371,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * Calculate an eTag over the processed result and store in cache
 				 */
 				if (Boolean.TRUE.equals(pipelineSession.getBoolean(UPDATE_ETAG_CONTEXT_KEY))) {
-					LOG.debug("calculating etags over processed result");
-					String cleanPattern = listener.getCleanPattern();
-					if (!Message.isEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { // If the data has changed, generate a new eTag
-						String eTag = MessageUtils.generateMD5Hash(result);
-						if(eTag != null) {
-							LOG.debug("adding/overwriting etag with key[{}] value[{}]", etagCacheKey, eTag);
-							cache.put(etagCacheKey, eTag);
-							response.addHeader("etag", eTag);
-						} else {
-							LOG.debug("skipping etag with key[{}] computed value is null", etagCacheKey);
-						}
-					}
-					else {
-						LOG.debug("removing etag with key[{}]", etagCacheKey);
-						cache.remove(etagCacheKey);
-
-						// Not only remove the eTag for the selected resources but also the collection
-						String key = ApiCacheManager.getParentCacheKey(listener, uri, method);
-						if(key != null) {
-							LOG.debug("removing parent etag with key[{}]", key);
-							cache.remove(key);
-						}
-					}
+					calculateEtags(response, method, uri, listener, result, etagCacheKey);
 				}
 
 				/*
@@ -634,6 +450,238 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				}
 			}
 		}
+	}
+
+	private @Nullable ApiPrincipal checkAuthorization(HttpServletRequest request, HttpServletResponse response, ApiListener listener, PipeLineSession pipelineSession, String remoteUser) throws IOException, ServletException {
+		{
+			String authorizationToken = null;
+			Cookie authorizationCookie = null;
+			ApiPrincipal userPrincipal = null;
+
+			switch (listener.getAuthenticationMethod()) {
+				case COOKIE:
+					authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
+					if(authorizationCookie != null) {
+						authorizationToken = authorizationCookie.getValue();
+						authorizationCookie.setPath("/");
+					}
+					break;
+				case HEADER:
+					authorizationToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+					break;
+				case AUTHROLE:
+					List<String> roles = listener.getAuthenticationRoleList();
+					if (roles != null) {
+						boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
+						if (userIsInRole) {
+							userPrincipal = new ApiPrincipal();
+						}
+					}
+					break;
+				case JWT:
+					String authorizationHeader = request.getHeader(listener.getJwtHeader());
+					boolean isNonStandardJwtAuthHeader = !HttpHeaders.AUTHORIZATION.equalsIgnoreCase(listener.getJwtHeader());
+					if (StringUtils.isNotEmpty(authorizationHeader) && (authorizationHeader.startsWith("Bearer") || isNonStandardJwtAuthHeader)) {
+						try {
+							String jwtToken = Strings.CI.removeStart(authorizationHeader, "Bearer ");
+							Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(jwtToken);
+							pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
+							pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
+						} catch (Exception e) {
+							LOG.warn("unable to validate jwt",e);
+							response.sendError(401, e.getMessage());
+							return null;
+						}
+					} else {
+						response.sendError(401, "JWT is not provided as bearer token");
+						return null;
+					}
+					String requiredClaims = listener.getRequiredClaims();
+					String exactMatchClaims = listener.getExactMatchClaims();
+					String anyMatchClaims = listener.getAnyMatchClaims();
+					JwtSecurityHandler handler = (JwtSecurityHandler)pipelineSession.getSecurityHandler();
+					try {
+						handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
+						if (StringUtils.isNotEmpty(listener.getRoleClaim())) {
+							List<String> authRoles = listener.getAuthenticationRoleList();
+							if (authRoles != null) {
+								boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
+								if (userIsInRole) {
+									userPrincipal = new ApiPrincipal();
+								}
+							} else {
+								userPrincipal = new ApiPrincipal();
+							}
+						} else {
+							userPrincipal = new ApiPrincipal();
+						}
+					} catch (AuthorizationException e) {
+						response.sendError(403, e.getMessage());
+						return null;
+					}
+
+					break;
+				default:
+					break;
+			}
+
+			if (authorizationToken != null && cache.containsKey(authorizationToken))
+				userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
+
+			if (userPrincipal == null || !userPrincipal.isLoggedIn()) {
+				cache.remove(authorizationToken);
+				if(authorizationCookie != null) {
+					CookieUtil.addCookie(request, response, authorizationCookie, 0);
+				}
+
+				response.setStatus(401);
+				LOG.warn("{} no (valid) credentials supplied", ()->createAbortMessage(remoteUser, 401));
+				return null;
+			}
+
+			if (authorizationCookie != null) {
+				CookieUtil.addCookie(request, response, authorizationCookie, authTTL);
+			}
+
+			if (authorizationToken != null) {
+				userPrincipal.updateExpiry();
+				userPrincipal.setToken(authorizationToken);
+				cache.put(authorizationToken, userPrincipal, authTTL);
+				pipelineSession.put("authorizationToken", authorizationToken);
+			}
+
+			return userPrincipal;
+		}
+	}
+
+	/**
+	 * Check of there is a match on ETAG header and cached version.
+	 * The method returns an ETAG value, or {@code null} if there was a match and processing can be skipped.
+	 */
+	private @Nullable String isEtagCacheMatch(HttpServletRequest request, HttpServletResponse response, ApiListener.HttpMethod method, String uri, ApiListener listener, String remoteUser) {
+		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
+		LOG.debug("Evaluating preconditions for listener[{}] etagKey[{}]", listener.getName(), etagCacheKey);
+		if (cache.containsKey(etagCacheKey)) {
+			String cachedEtag = (String) cache.get(etagCacheKey);
+			LOG.debug("found etag value[{}] for key[{}]", cachedEtag, etagCacheKey);
+
+			if (method == ApiListener.HttpMethod.GET) {
+				String ifNoneMatch = request.getHeader("If-None-Match");
+				if (ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
+					response.setStatus(304);
+					if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", ()->createAbortMessage(remoteUser, 304), ()->ifNoneMatch);
+					return null;
+				}
+			}
+			else {
+				String ifMatch = request.getHeader("If-Match");
+				if (ifMatch != null && !ifMatch.equals(cachedEtag)) {
+					response.setStatus(412);
+					LOG.warn("{} matched if-match [{}] method [{}]", ()->createAbortMessage(remoteUser, 412), ()->ifMatch, ()-> method);
+					return null;
+				}
+			}
+		}
+		return etagCacheKey;
+	}
+
+	private static void mapUriIdentifiersToSession(String uri, ApiListener listener, PipeLineSession pipelineSession) {
+		String[] patternSegments = listener.getUriPattern().split("/");
+		String[] uriSegments = uri.split("/");
+		int uriIdentifier = 0;
+		for (int i = 0; i < patternSegments.length; i++) {
+			final String segment = patternSegments[i];
+			final String name;
+
+			if("*".equals(segment)) {
+				name = "uriIdentifier_"+uriIdentifier;
+			} else if(segment.startsWith("{") && segment.endsWith("}")) {
+				name = segment.substring(1, segment.length()-1);
+			} else {
+				name = null;
+			}
+
+			if (name != null) {
+				uriIdentifier++;
+				if (LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
+				pipelineSession.put(name, uriSegments[i]);
+			}
+		}
+	}
+
+	private void calculateEtags(HttpServletResponse response, ApiListener.HttpMethod method, String uri, ApiListener listener, Message result, String etagCacheKey) {
+		LOG.debug("calculating etags over processed result");
+		String cleanPattern = listener.getCleanPattern();
+		if (!Message.isEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { // If the data has changed, generate a new eTag
+			String eTag = MessageUtils.generateMD5Hash(result);
+			if(eTag != null) {
+				LOG.debug("adding/overwriting etag with key[{}] value[{}]", etagCacheKey, eTag);
+				cache.put(etagCacheKey, eTag);
+				response.addHeader("etag", eTag);
+			} else {
+				LOG.debug("skipping etag with key[{}] computed value is null", etagCacheKey);
+			}
+		}
+		else {
+			LOG.debug("removing etag with key[{}]", etagCacheKey);
+			cache.remove(etagCacheKey);
+
+			// Not only remove the eTag for the selected resources but also the collection
+			String key = ApiCacheManager.getParentCacheKey(listener, uri, method);
+			if(key != null) {
+				LOG.debug("removing parent etag with key[{}]", key);
+				cache.remove(key);
+			}
+		}
+	}
+
+	/**
+	 * Parse the request into a Message. Returns {@code null} if there was an error.
+	 */
+	private @Nullable Message parseMessageFromRequest(HttpServletRequest request, HttpServletResponse response, ApiListener listener, PipeLineSession pipelineSession, String remoteUser) throws IOException {
+		// TODO fix HttpSender#handleMultipartResponse(..)
+		if (!MultipartUtils.isMultipart(request)) {
+			try {
+				return MessageUtils.parseContentAsMessage(request);
+			} catch (IOException e) {
+				LOG.warn(() -> "%s Could not read request: %s".formatted(createAbortMessage(remoteUser, 400), e.getMessage()), e);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not read request");
+				return null;
+			}
+		}
+		Message body = null;
+		final String multipartBodyName = listener.getMultipartBodyName();
+		try {
+			MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType());
+			for (Entry<String, Message> entry : parts.messages().entrySet()) {
+				String fieldName = entry.getKey();
+				if (!listener.isParameterAllowed(fieldName)) {
+					LOG.warn("Request contains multipart field [{}] which is not allowed", fieldName);
+					continue;
+				}
+				if ((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
+					body = entry.getValue();
+
+					Enumeration<String> names = request.getHeaderNames();
+					while (names.hasMoreElements()) {
+						String name = names.nextElement();
+						body.getContext().put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
+					}
+				}
+				pipelineSession.put(fieldName, entry.getValue());
+			}
+			pipelineSession.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, parts.multipartXml());
+		} catch(IOException e) {
+			LOG.warn(() -> "%s Could not read mime multipart request: %s".formatted(createAbortMessage(remoteUser, 400), e.getMessage()), e);
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not read mime multipart request");
+			return null;
+		}
+
+		// If no multipartBodyName was found, but the value was provided. Body has to be set to something...
+		if (body == null) {
+			return Message.nullMessage();
+		}
+		return body;
 	}
 
 	@NonNull

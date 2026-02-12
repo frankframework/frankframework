@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
@@ -35,14 +35,15 @@ import org.frankframework.core.ISecurityHandler;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 
+@NullMarked
 public class JwtSecurityHandler implements ISecurityHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final @Getter Map<String, Object> claimsSet;
-	private final @Getter String roleClaim;
-	private final @Getter String principalNameClaim; // Defaults to JWTClaimNames#SUBJECT
+	private final @Getter @Nullable String roleClaim;
+	private final @Getter @Nullable String principalNameClaim; // Defaults to JWTClaimNames#SUBJECT
 
-	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalNameClaim) {
+	public JwtSecurityHandler(Map<String, Object> claimsSet, @Nullable String roleClaim, @Nullable String principalNameClaim) {
 		this.claimsSet = claimsSet;
 		this.roleClaim = roleClaim;
 		this.principalNameClaim = principalNameClaim;
@@ -50,12 +51,13 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	// JWTClaimNames#AUDIENCE claim may be a String or List<String>. Others are either a String or Long (epoch date)
 	@Override
-	public boolean isUserInRole(@NonNull String role) {
+	public boolean isUserInRole(String role) {
 		Object claim = claimsSet.get(roleClaim);
 
 		if (claim instanceof String) {
 			return role.equals(claim);
 		} else if (claim instanceof List) {
+			@SuppressWarnings("unchecked")
 			List<String> claimList = (List<String>) claim;
 			return claimList.stream().anyMatch(role::equals);
 		}
@@ -69,7 +71,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 
-	public void validateClaims(String requiredClaims, String exactMatchClaims, String anyMatchClaims) throws AuthorizationException {
+	public void validateClaims(@Nullable String requiredClaims, @Nullable String exactMatchClaims, @Nullable String anyMatchClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
 			validateRequiredClaims(requiredClaims);
@@ -86,7 +88,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	void validateRequiredClaims(@NonNull String requiredClaims) throws AuthorizationException {
+	void validateRequiredClaims(String requiredClaims) throws AuthorizationException {
 		List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
 				.filter(claim -> !claimsSet.containsKey(claim))
 				.toList();
@@ -96,7 +98,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	void validateExactMatchClaims(@NonNull String exactMatchClaims) throws AuthorizationException {
+	void validateExactMatchClaims(String exactMatchClaims) throws AuthorizationException {
 		Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
 				.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
 				.findFirst();
@@ -108,7 +110,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	void validateAnyMatchClaims(@NonNull String anyMatchClaims) throws AuthorizationException {
+	void validateAnyMatchClaims(String anyMatchClaims) throws AuthorizationException {
 		Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
 				.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
 		boolean matchesOneOf = allowedValuesByClaim
@@ -121,7 +123,6 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	@NonNull
 	private String getClaimAsString(String claim) {
 		Object value = claimsSet.get(claim);
 		if (value == null) {
@@ -130,7 +131,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		return String.valueOf(value);
 	}
 
-	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit){
+	private Stream<Map.Entry<String, String>> splitClaims(@Nullable String claimsToSplit){
 		return StringUtil.splitToStream(claimsToSplit)
 				.map(s -> StringUtil.split(s, "="))
 				.filter(this::isValidKeyValuePair)

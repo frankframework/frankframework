@@ -148,6 +148,23 @@ public class XmlUtils {
 	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 	public static final XMLOutputFactory REPAIR_NAMESPACES_OUTPUT_FACTORY = XMLOutputFactory.newFactory();
 
+	private static final String REMOVE_NAMESPACES_XSLT_TEMPLATE =
+			"""
+			<xsl:template match="*">\
+			<xsl:element name="{local-name()}">\
+			<xsl:for-each select="@*">\
+			<xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>\
+			</xsl:for-each>\
+			<xsl:apply-templates/>\
+			</xsl:element>\
+			</xsl:template>\
+			<xsl:template match="comment() | processing-instruction() | text()">\
+			<xsl:copy>\
+			<xsl:apply-templates/>\
+			</xsl:copy>\
+			</xsl:template>\
+			""";
+
 	static {
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
@@ -163,23 +180,6 @@ public class XmlUtils {
 		return new GDate(s).getDate();
 	}
 
-	private static final String REMOVE_NAMESPACES_XSLT_TEMPLATE =
-		"""
-		<xsl:template match="*">\
-		<xsl:element name="{local-name()}">\
-		<xsl:for-each select="@*">\
-		<xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>\
-		</xsl:for-each>\
-		<xsl:apply-templates/>\
-		</xsl:element>\
-		</xsl:template>\
-		<xsl:template match="comment() | processing-instruction() | text()">\
-		<xsl:copy>\
-		<xsl:apply-templates/>\
-		</xsl:copy>\
-		</xsl:template>\
-		""";
-
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
 			namespaceAwareByDefault=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, true);
@@ -188,28 +188,28 @@ public class XmlUtils {
 	}
 
 	public static synchronized boolean isXsltStreamingByDefault() {
-		if (xsltStreamingByDefault==null) {
-			xsltStreamingByDefault=AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
+		if (xsltStreamingByDefault == null) {
+			xsltStreamingByDefault = AppConstants.getInstance().getBoolean(XSLT_STREAMING_BY_DEFAULT_KEY, false);
 		}
 		return xsltStreamingByDefault;
 	}
 
 	public static synchronized boolean isIncludeFieldDefinitionByDefault() {
-		if (includeFieldDefinitionByDefault==null) {
-			includeFieldDefinitionByDefault=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
+		if (includeFieldDefinitionByDefault == null) {
+			includeFieldDefinitionByDefault = AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
 		}
 		return includeFieldDefinitionByDefault;
 	}
 
 	public static synchronized boolean isAutoReload() {
-		if (autoReload==null) {
-			autoReload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
+		if (autoReload == null) {
+			autoReload = AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
 		}
 		return autoReload;
 	}
 
 	public static synchronized int getBufSize() {
-		if (bufferSize ==null) {
+		if (bufferSize == null) {
 			bufferSize = AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
 		}
 		return bufferSize;
@@ -278,11 +278,11 @@ public class XmlUtils {
 		return xmlReader;
 	}
 
-	private static XMLReader getXMLReader(boolean namespaceAware, IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
+	private static @NonNull XMLReader getXMLReader(boolean namespaceAware, @Nullable IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
 		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-		if (scopeProvider!=null) {
+		if (scopeProvider != null) {
 			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
 		} else {
 			xmlReader.setEntityResolver(new NonResolvingExternalEntityResolver());
@@ -290,19 +290,19 @@ public class XmlUtils {
 		return xmlReader;
 	}
 
-	public static Document buildDomDocument(Reader in) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull Reader in) throws DomBuilderException {
 		return buildDomDocument(in,isNamespaceAwareByDefault());
 	}
 
-	public static Document buildDomDocument(Reader in, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull Reader in, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(in, namespaceAware, false);
 	}
 
-	public static Document buildDomDocument(InputSource src, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull InputSource src, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(src, namespaceAware, false);
 	}
 
-	public static Document buildDomDocument(InputSource src, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull InputSource src, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		Document document;
 		try {
 			DocumentBuilderFactory factory = getDocumentBuilderFactory(namespaceAware);
@@ -320,7 +320,8 @@ public class XmlUtils {
 		}
 		return document;
 	}
-	public static Document buildDomDocument(Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+
+	public static @NonNull Document buildDomDocument(@NonNull Reader in, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		return buildDomDocument(new InputSource(in), namespaceAware, resolveExternalEntities);
 	}
 
@@ -328,16 +329,16 @@ public class XmlUtils {
 	 * Convert an XML string to a Document
 	 * Creation date: (20-02-2003 8:12:52)
 	 */
-	public static Document buildDomDocument(String s) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull String s) throws DomBuilderException {
 		StringReader sr = new StringReader(s);
 		return buildDomDocument(sr);
 	}
 
-	public static Document buildDomDocument(String s, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull String s, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(s, namespaceAware, false);
 	}
 
-	public static Document buildDomDocument(String s, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
+	public static @NonNull Document buildDomDocument(@NonNull String s, boolean namespaceAware, boolean resolveExternalEntities) throws DomBuilderException {
 		if (StringUtils.isEmpty(s)) {
 			throw new DomBuilderException("input is null");
 		}
@@ -348,62 +349,55 @@ public class XmlUtils {
 	/**
 	 * Build a Document from a URL
 	 */
-	public static Document buildDomDocument(URL url)
-		throws DomBuilderException {
-		Reader in;
-		Document output;
-
-		try {
-			in = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream());
+	public static @NonNull Document buildDomDocument(@NonNull URL url) throws DomBuilderException {
+		try (Reader in = StreamUtil.getCharsetDetectingInputStreamReader(url.openStream())){
+			return buildDomDocument(in);
 		} catch (IOException e) {
 			throw new DomBuilderException(e);
 		}
-		output = buildDomDocument(in);
-		try {
-			in.close();
-		} catch (IOException e) {
-			log.debug("Exception closing URL-stream", e);
-		}
-		return output;
 	}
 	/**
 	 * Convert an XML string to a Document, then return the root-element
 	 */
-	public static org.w3c.dom.Element buildElement(String s, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Element buildElement(@NonNull String s, boolean namespaceAware) throws DomBuilderException {
 		return buildDomDocument(s,namespaceAware).getDocumentElement();
 	}
 
 	/**
 	 * Convert an XML string to a Document, then return the root-element as a Node
 	 */
-	public static Node buildNode(String s, boolean namespaceAware) throws DomBuilderException {
+	public static @NonNull Node buildNode(@NonNull String s, boolean namespaceAware) throws DomBuilderException {
 		log.debug("buildNode() [{}],[{}]", s, namespaceAware);
 		return buildElement(s,namespaceAware);
 	}
 
-	public static Node buildNode(String s) throws DomBuilderException {
+	public static @NonNull Node buildNode(@NonNull String s) throws DomBuilderException {
 		log.debug("buildNode() [{}]", s);
-		return buildElement(s,isNamespaceAwareByDefault());
+		return buildElement(s, isNamespaceAwareByDefault());
 	}
 
 	/**
 	 * Convert an XML string to a Document, then return the root-element.
 	 * (namespace aware)
 	 */
-	public static Element buildElement(String s) throws DomBuilderException {
+	public static @NonNull Element buildElement(@NonNull String s) throws DomBuilderException {
 		return buildDomDocument(s).getDocumentElement();
 	}
 
-	public static Element buildElement(Message s) throws DomBuilderException {
+	public static @NonNull Element buildElement(@NonNull Message s) throws DomBuilderException {
 		try {
-			return buildElement(s.asString());
+			String input = Objects.requireNonNull(s.asString(), () -> "Message [%s] has no data".formatted(s));
+			return buildElement(input);
 		} catch (IOException e) {
 			throw new DomBuilderException(e);
 		}
 	}
 
-	public static String skipXmlDeclaration(String xmlString) {
-		if (xmlString != null && xmlString.startsWith("<?xml")) {
+	public static @NonNull String skipXmlDeclaration(@Nullable String xmlString) {
+		if (xmlString == null) {
+			return "";
+		}
+		if (xmlString.startsWith("<?xml")) {
 			int endPos = xmlString.indexOf("?>")+2;
 			if (endPos > 0) {
 				try {
@@ -420,8 +414,8 @@ public class XmlUtils {
 		return xmlString;
 	}
 
-	public static String skipDocTypeDeclaration(String xmlString) {
-		if (xmlString!=null && xmlString.startsWith("<!DOCTYPE")) {
+	public static @NonNull String skipDocTypeDeclaration(@NonNull String xmlString) {
+		if (xmlString.startsWith("<!DOCTYPE")) {
 			int endPos = xmlString.indexOf(">")+2;
 			if (endPos>0) {
 				try {
@@ -438,16 +432,16 @@ public class XmlUtils {
 		return xmlString;
 	}
 
-	public static String getNamespaceClause(String namespaceDefs) {
+	public static @NonNull String getNamespaceClause(@Nullable String namespaceDefs) {
 		StringBuilder namespaceClause = new StringBuilder();
-		for (Entry<String,String> namespaceDef:getNamespaceMap(namespaceDefs).entrySet()) {
-			String prefixClause=namespaceDef.getKey()==null?"":":"+namespaceDef.getKey();
+		for (Entry<String, String> namespaceDef : getNamespaceMap(namespaceDefs).entrySet()) {
+			String prefixClause = namespaceDef.getKey() == null ? "" : ":" + namespaceDef.getKey();
 			namespaceClause.append(" xmlns").append(prefixClause).append("=\"").append(namespaceDef.getValue()).append("\"");
 		}
 		return namespaceClause.toString();
 	}
 
-	public static Map<String,String> getNamespaceMap(String namespaceDefs) {
+	public static @NonNull Map<String,String> getNamespaceMap(@Nullable String namespaceDefs) {
 		Map<String,String> namespaceMap= new LinkedHashMap<>();
 		if (namespaceDefs != null) {
 			for (final String namespaceDef : StringUtil.split(namespaceDefs, ", \t\r\n\f")) {
