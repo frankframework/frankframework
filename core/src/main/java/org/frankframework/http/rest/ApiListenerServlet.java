@@ -224,8 +224,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 		ApiDispatchConfig config = dispatcher.findConfigForRequest(method, uri);
 		if(config == null) {
-			response.setStatus(404);
 			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
+			response.setStatus(404);
 			return;
 		}
 
@@ -234,37 +234,15 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		 * TODO make this work behind loadbalancers/reverse proxies
 		 * TODO check if request ip/origin header matches allowOrigin property
 		 */
-		String origin = request.getHeader("Origin");
-		if (method == ApiListener.HttpMethod.OPTIONS || origin != null) {
-			response.setHeader("Access-Control-Allow-Origin", corsAllowOrigin);
-			String headers = request.getHeader("Access-Control-Request-Headers");
-			if (headers != null) {
-				// Strip CR & LF characters from the headers as they come from request and Codacy warns
-				// this could result in a security issue.
-				response.setHeader("Access-Control-Allow-Headers", StringEscapeUtils.escapeJava(headers));
-			}
-			response.setHeader("Access-Control-Expose-Headers", corsExposeHeaders);
-
-			String methods = config.getMethods().stream()
-					.map(ApiListener.HttpMethod::name)
-					.collect(Collectors.joining(", "));
-			response.setHeader("Access-Control-Allow-Methods", methods);
-
-			// Only cut off OPTIONS (aka preflight) requests
-			if (method == ApiListener.HttpMethod.OPTIONS) {
-				response.setStatus(200);
-				LOG.trace("Aborting preflight request with status [200], method [{}]", method);
-				return;
-			}
-		}
+		if (handleCorsPreflightRequest(request, response, method, config)) return;
 
 		/*
 		 * Get serviceClient
 		 */
 		ApiListener listener = config.getApiListener(method);
-		if(listener == null) {
-			response.setStatus(405);
+		if (listener == null) {
 			LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
+			response.setStatus(405);
 			return;
 		}
 
@@ -314,8 +292,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				}
 
 				if (!listener.isConsumable(request.getContentType())) {
-					response.setStatus(415);
 					LOG.warn("{} did not match consumes [{}] got [{}] instead", ()-> createAbortMessage(remoteUser, 415), listener::getConsumes, request::getContentType);
+					response.setStatus(415);
 					return;
 				}
 
@@ -450,6 +428,33 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				}
 			}
 		}
+	}
+
+	private boolean handleCorsPreflightRequest(HttpServletRequest request, HttpServletResponse response, ApiListener.HttpMethod method, ApiDispatchConfig config) {
+		String origin = request.getHeader("Origin");
+		if (method == ApiListener.HttpMethod.OPTIONS || origin != null) {
+			response.setHeader("Access-Control-Allow-Origin", corsAllowOrigin);
+			String headers = request.getHeader("Access-Control-Request-Headers");
+			if (headers != null) {
+				// Strip CR & LF characters from the headers as they come from request and Codacy warns
+				// this could result in a security issue.
+				response.setHeader("Access-Control-Allow-Headers", StringEscapeUtils.escapeJava(headers));
+			}
+			response.setHeader("Access-Control-Expose-Headers", corsExposeHeaders);
+
+			String methods = config.getMethods().stream()
+					.map(ApiListener.HttpMethod::name)
+					.collect(Collectors.joining(", "));
+			response.setHeader("Access-Control-Allow-Methods", methods);
+
+			// Only cut off OPTIONS (aka preflight) requests
+			if (method == ApiListener.HttpMethod.OPTIONS) {
+				response.setStatus(200);
+				LOG.trace("Aborting preflight request with status [200], method [{}]", method);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private @Nullable ApiPrincipal checkAuthorization(HttpServletRequest request, HttpServletResponse response, ApiListener listener, PipeLineSession pipelineSession, String remoteUser) throws IOException, ServletException {
