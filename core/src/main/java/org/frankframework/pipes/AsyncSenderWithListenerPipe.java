@@ -50,6 +50,8 @@ import org.frankframework.util.TransformerPool.OutputType;
 
 /**
  * Sends a message using an asynchronous {@link ISender sender} and receives a reply from a {@link ICorrelatedPullingListener listener}.
+ * 
+ * @ff.tip This used to be part of the SenderPipe and could be used in combination with a {@link JmsListener}. When updating your configuration you should use a {@link PullingJmsListener} instead.
  *
  * {@inheritClassDoc}
  */
