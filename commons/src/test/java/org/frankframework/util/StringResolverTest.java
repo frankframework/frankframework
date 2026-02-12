@@ -244,6 +244,102 @@ public class StringResolverTest {
 	}
 
 	@Test
+	public void revolveUnorderedProperties() {
+		String result = StringResolver.substVars("${order}", properties);
+		assertEquals("reversed", result);
+	}
+
+	@Test
+	public void resolveWithInconsistentDefaults() {
+		String result = StringResolver.substVars("http://${host}:${port:-8080}${path:-/}", properties);
+		assertEquals("http://:8080/", result);
+
+		// Fill in missing properties
+		properties.put("host", "127.0.0.1");
+		properties.put("port", "80");
+		properties.put("path", "/home");
+
+		result = StringResolver.substVars("http://${host}:${port:-8080}${path:-/}", properties);
+		assertEquals("http://127.0.0.1:80/home", result);
+	}
+
+	@Test
+	public void resolveSimpleNestedVariable() {
+		properties.put("inner", "Name");
+		properties.put("outerName", "value");
+
+		String result = StringResolver.substVars("${outer${inner}}", properties);
+		assertEquals("value", result);
+	}
+
+	@Test
+	public void resolveNestedDefaultValue() {
+		properties.put("b", "B");
+
+		String result = StringResolver.substVars("${a:-${b:-x}}", properties);
+		assertEquals("B", result);
+	}
+
+	@Test
+	public void resolveMultipleNestedDefaults() {
+		properties.put("b", "B");
+		properties.put("d", "D");
+
+		String result = StringResolver.substVars("X${a:-${b:-x}}Y${c:-${d:-y}}Z", properties);
+		assertEquals("XBYDZ", result);
+	}
+
+	@Test
+	public void resolveLiteralBracesInsideDefault() {
+		String result = StringResolver.substVars("${a:-{x}}", properties);
+		assertEquals("{x}", result);
+	}
+
+	@Test
+	public void resolveBackToBackVariables() {
+		properties.put("a", "1");
+		properties.put("b", "2");
+
+		String result = StringResolver.substVars("${a}${b}", properties);
+		assertEquals("12", result);
+	}
+
+	@Test
+	public void resolveNestedDefaultWithColonInside() {
+		String result = StringResolver.substVars("${a:-${b:-default:value}}", properties);
+		assertEquals("default:value", result);
+	}
+
+	@Test
+	public void resolveDeeplyNestedVariables() {
+		properties.put("c", "C");
+		properties.put("bC", "BC");
+		properties.put("aBC", "ABC");
+
+		String result = StringResolver.substVars("${a${b${c}}}", properties);
+		assertEquals("ABC", result);
+	}
+
+	@Test
+	public void resolveDefaultOnlyWhenPropertyMissing() {
+		properties.put("host", "127.0.0.1");
+		// port and path missing
+
+		String result = StringResolver.substVars("http://${host}:${port:-8080}${path:-/}", properties);
+		assertEquals("http://127.0.0.1:8080/", result);
+	}
+
+	@Test
+	public void resolveAllPropertiesSet() {
+		properties.put("host", "127.0.0.1");
+		properties.put("port", "80");
+		properties.put("path", "/home");
+
+		String result = StringResolver.substVars("http://${host}:${port:-8080}${path:-/}", properties);
+		assertEquals("http://127.0.0.1:80/home", result);
+	}
+
+	@Test
 	public void resolveWithDefaultFromProps2() {
 		// Arrange
 		Map<Object, Object> emptyMap = Collections.emptyMap();

@@ -193,17 +193,20 @@ public class StringResolver {
 	}
 
 	private static String extractNextExpression(String val, SubstitutionContext ctx) {
-		int nextSeparatorPos = val.indexOf(VALUE_SEPARATOR, ctx.pointer);
+		int expressionEnd = indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop);
+		if (expressionEnd == -1) {
+			throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + ctx.pointer + "]");
+		}
+
+		int nextSeparatorPos = val.indexOf(VALUE_SEPARATOR, ctx.pointer, expressionEnd);
 		if (nextSeparatorPos >= 0) {
 			ctx.tail = nextSeparatorPos;
-			ctx.providedDefaultValue = val.substring(ctx.tail + VALUE_SEPARATOR.length(), indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop));
+			ctx.providedDefaultValue = val.substring(ctx.tail + VALUE_SEPARATOR.length(), expressionEnd);
 			ctx.containsDefault = true;
 		} else {
 			ctx.tail = indexOfDelimStop(val, ctx.pointer, ctx.delimStart, ctx.delimStop);
 		}
-		if (ctx.tail == -1) {
-			throw new IllegalArgumentException('[' + val + "] has no closing brace. Opening brace at position [" + ctx.pointer + "]");
-		}
+
 		String expression = val.substring(ctx.pointer, ctx.tail + ctx.delimStop.length());
 		ctx.pointer += ctx.delimStart.length();
 		return expression;
@@ -260,7 +263,8 @@ public class StringResolver {
 			}
 		} else {
 			if (ctx.providedDefaultValue != null) { // use default value of property if missing actual
-				sb.append(ctx.providedDefaultValue);
+				String resolvedDefault = substVars(ctx.providedDefaultValue, props1, props2, ctx.resolveWithPropertyName);
+				sb.append(resolvedDefault);
 			}
 		}
 		if (ctx.resolveWithPropertyName) {
