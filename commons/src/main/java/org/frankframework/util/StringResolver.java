@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -264,6 +265,10 @@ public class StringResolver {
 		} else {
 			if (ctx.providedDefaultValue != null) { // use default value of property if missing actual
 				String resolvedDefault = substVars(ctx.providedDefaultValue, props1, props2, ctx.resolveWithPropertyName);
+
+				org.apache.logging.log4j.Logger logger = LogManager.getLogger(StringResolver.class.getName());
+				logger.trace("No value found for key [{}], using default value [{}]", key, resolvedDefault);
+
 				sb.append(resolvedDefault);
 			}
 		}
