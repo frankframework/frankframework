@@ -6,7 +6,7 @@
         ":configMigration",
         "security:minimumReleaseAgeNpm"
     ],
-    "dependencyDashboardApproval": true,
+    "dependencyDashboardApproval": false,
     "baseBranchPatterns": [
         "master",
         "/^release\\/9\\./",
