@@ -23,7 +23,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void noSecret() {
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
-		assertThat(e.getMessage(), Matchers.endsWith("using a secret is mandatory"));
+		assertThat(e.getMessage(), Matchers.endsWith("using a secret or authAlias is mandatory"));
 	}
 
 	@Test
@@ -137,5 +137,16 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 		PipeRunResult prr = doPipe(pipe, getResource("largeInput.txt"), session);
 		String hash = prr.getResult().asString();
 		assertEquals("33b67ad0184bef648cc8211455eb103aebc14547289093f2cbde654903830d95", hash);
+	}
+
+	@Test
+	public void hashPipeWithAuthAlias() throws Exception {
+		pipe.setHashEncoding(HashEncoding.Hex);
+		Parameter parameter = new Parameter("authAlias", "alias1");
+		pipe.addParameter(parameter);
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
+		String hash = prr.getResult().asString(); assertEquals("a792afbfa40c48654eb22fb41f0eebba45417a10a4df60ceb8d083505b26caa1", hash);
 	}
 }

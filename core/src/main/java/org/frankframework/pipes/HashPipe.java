@@ -43,7 +43,6 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StreamUtil;
 
 /**
- *
  * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
  * If you need to prove the authenticity of the message as well, use one of the Mac-based algorithms (starting with 'Hmac'). These algorithms
  * require a secret to prove both integrity and authenticity. The HMac combined with the algorithm is used
@@ -100,9 +99,14 @@ public class HashPipe extends FixedForwardPipe {
 
 		super.configure();
 
-		if (algorithm.isSecretRequired() && (secret == null && !getParameterList().hasParameter("secret"))) {
-			throw new ConfigurationException("When using a (h)mac based Algorithm, using a secret is mandatory");
+		if (algorithm.isSecretRequired() && !isSecretOrAuthAliasDefined()) {
+			throw new ConfigurationException("When using a (h)mac based Algorithm, using a secret or authAlias is mandatory");
 		}
+	}
+
+	private boolean isSecretOrAuthAliasDefined() {
+		return secret != null || getParameterList().hasParameter("secret")
+			|| authAlias != null || getParameterList().hasParameter("authAlias");
 	}
 
 	@NonNull
