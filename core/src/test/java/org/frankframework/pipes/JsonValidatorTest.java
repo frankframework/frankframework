@@ -3,14 +3,17 @@ package org.frankframework.pipes;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
@@ -141,5 +144,14 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 
 		String reason = (String)session.get("failureReason");
 		assertThat(reason, containsString("required property 'street' not found"));
+	}
+
+	@Test
+	public void testInvalidJsonSchemaThrowsConfigurationException() {
+		pipe.setName("testInvalidJsonSchema");
+		pipe.setSchema("/Align/FamilyTree/JsonSchema/invalid.json");
+		pipe.addForward(new PipeForward("failure",null));
+
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 }

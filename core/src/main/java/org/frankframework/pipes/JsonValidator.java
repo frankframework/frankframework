@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.networknt.schema.InputFormat;
 import com.networknt.schema.InvalidSchemaRefException;
 import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaException;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SpecVersion;
@@ -38,7 +39,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
@@ -62,18 +62,15 @@ public class JsonValidator extends AbstractValidator {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getSubSchemaPrefix()==null) {
+
+		if (getSubSchemaPrefix() == null) {
 			setSubSchemaPrefix("");
 		}
-	}
 
-	@Override
-	public void start() {
 		try {
-			super.start();
 			jsonSchema = getJsonSchema();
-		} catch (IOException e) {
-			throw new LifecycleException("unable to start validator", e);
+		} catch (JsonSchemaException | IOException e) {
+			throw new ConfigurationException("unable to configure JsonValidator", e);
 		}
 	}
 
