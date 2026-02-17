@@ -88,7 +88,7 @@
 		<junit.includedTags />
 
 		<jackson.version>2.21.0</jackson.version>
-		<cxf.version>4.1.4</cxf.version>
+		<cxf.version>4.1.5</cxf.version>
 		<spring.version>7.0.4</spring.version>
 		<spring-security.version>7.0.3</spring-security.version>
 		<spring-integration.version>7.0.2</spring-integration.version>
@@ -113,7 +113,7 @@
 		<mssql.driver.version>12.10.2.jre11</mssql.driver.version>
 		<mysql.driver.version>9.6.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.7</mariadb.driver.version>
-		<postgresql.driver.version>42.7.9</postgresql.driver.version>
+		<postgresql.driver.version>42.7.10</postgresql.driver.version>
 		<mongodb.driver.version>5.6.3</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
@@ -127,7 +127,7 @@
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.21.0</mockito.version>
-		<junit.version>6.0.2</junit.version>
+		<junit.version>6.0.3</junit.version>
 	</properties>
 
 	<dependencyManagement>
