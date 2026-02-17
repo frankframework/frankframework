@@ -58,7 +58,7 @@
             "separateMajorMinor": true,
             "separateMultipleMinor": true,
             "separateMultipleMajor": true,
-            "separateMinorPatch": false
+            "separateMinorPatch": true
         },
         {
             "description": "Aspose Dependencies",
