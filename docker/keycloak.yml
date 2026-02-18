@@ -1,32 +1,33 @@
 version: ''
 
-name: tomcat
-
 services:
   ff-test:
     environment:
       application.security.console.authentication.type: OAUTH2
       application.security.console.authentication.provider: custom
       application.security.console.authentication.clientId: ff-console
-      application.security.console.authentication.clientSecret: "SdSD1lxXfeAXcgoWEukKj3xkFJJJwWjJGHq3dhJuaLa"
-#      application.security.console.authentication.scopes: "openid, email, profile, roles, groups"
-      application.security.console.authentication.issuerUri: http://localhost:9080/realms/ff-test
-      application.security.console.authentication.authorizationUri: http://localhost:9080/realms/ff-test/protocol/openid-connect/auth
-      application.security.console.authentication.tokenUri: http://localhost:9080/realms/ff-test/protocol/openid-connect/token
-      application.security.console.authentication.jwkSetUri: http://localhost:9080/realms/ff-test/protocol/openid-connect/certs
-      application.security.console.authentication.userInfoUri: http://localhost:9080/realms/ff-test/protocol/openid-connect/userinfo
-      application.security.console.authentication.userNameAttributeName: "email"
+      application.security.console.authentication.clientSecret: SdSD1lxXfeAXcgoWEukKj3xkFJJJwWjJGHq3dhJuaLa
+      application.security.console.authentication.issuerUri: http://keycloak.localtest.me:9080/realms/ff-test
+      application.security.console.authentication.authorizationUri: http://keycloak.localtest.me:9080/realms/ff-test/protocol/openid-connect/auth
+      application.security.console.authentication.tokenUri: http://keycloak.localtest.me:9080/realms/ff-test/protocol/openid-connect/token
+      application.security.console.authentication.jwkSetUri: http://keycloak.localtest.me:9080/realms/ff-test/protocol/openid-connect/certs
+      application.security.console.authentication.userInfoUri: http://keycloak.localtest.me:9080/realms/ff-test/protocol/openid-connect/userinfo
+      application.security.console.authentication.scopes: "openid,profile,email"
+      application.security.console.authentication.userNameAttributeName: email
+      application.security.console.authentication.authoritiesClaimName: roles
     volumes:
-      - "./keycloak/oauth-role-mapping.properties:/opt/frank/resources/oauth-role-mapping.properties"
+      - ./keycloak/oauth-role-mapping.properties:/opt/frank/resources/oauth-role-mapping.properties
     depends_on:
       keycloak:
         condition: service_healthy
+    networks:
+      keycloak: {}
 
   keycloak:
     image: keycloak/keycloak:26.5
     command: "start-dev --http-port=9080 --import-realm" #  --verbose"
     volumes:
-      - "./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json"
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
       - keycloak-h2:/opt/keycloak/data/h2
       - keycloak-transaction-logs:/opt/keycloak/data/transaction-logs
     environment:
@@ -34,10 +35,14 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: frank@framework.org
       KC_BOOTSTRAP_ADMIN_PASSWORD: frank
       KC_HEALTH_ENABLED: true
+    networks:
+      keycloak:
+        aliases:
+          - keycloak.localtest.me
     ports:
       - "9080:9080"
     healthcheck:
-      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9080;echo -e 'GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;" ]
+      test: [ "CMD-SHELL", "{ printf 'HEAD /health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -47,6 +52,8 @@ services:
       - command: "chown -R keycloak /opt/keycloak/data/transaction-logs"
         user: root
 
+networks:
+  keycloak: {}
 volumes:
   keycloak-h2: {}
   keycloak-transaction-logs: {}
