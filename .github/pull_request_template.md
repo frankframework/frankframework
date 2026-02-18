@@ -26,7 +26,8 @@ Example bad: "Refactor AdapterManager"
 Link all relevant issues so they auto-close on merge and remain traceable.
 Select issues in sidebar or use: Closes/Fixes/Resolves #123
 -->
-- [ ] Relevant issues linked
+- [ ] Relevant issue(s) linked
+- [ ] Confirmed with the issue creator(s) that the solution is satisfactory
 
 ### Backports
 <!--
