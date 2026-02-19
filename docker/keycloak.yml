@@ -24,28 +24,16 @@ services:
       keycloak: {}
 
   keycloak:
-    image: keycloak/keycloak:26.5
-    command: "start-dev --http-port=9080 --import-realm" #  --verbose"
+    image: ghcr.io/frankframework/idp/keycloak
     volumes:
-      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
       - keycloak-h2:/opt/keycloak/data/h2
       - keycloak-transaction-logs:/opt/keycloak/data/transaction-logs
-    environment:
-      KC_HTTP_PORT: 9080
-      KC_BOOTSTRAP_ADMIN_USERNAME: frank@framework.org
-      KC_BOOTSTRAP_ADMIN_PASSWORD: frank
-      KC_HEALTH_ENABLED: true
     networks:
       keycloak:
         aliases:
           - keycloak.localtest.me
     ports:
       - "9080:9080"
-    healthcheck:
-      test: [ "CMD-SHELL", "{ printf 'HEAD /health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     post_start:
       - command: "chown -R keycloak /opt/keycloak/data/h2"
         user: root
