@@ -42,7 +42,6 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
-
 /**
  * Pipe that validates the input message against a JSON Schema.
  * @author Gerrit van Brakel
@@ -144,10 +143,12 @@ public class JsonValidator extends AbstractValidator {
 		return service.getSchema(schemaRes.openStream());
 	}
 
-	/** The JSON Schema to validate to */
+	/**
+	 * The JSON Schema to validate to
+	 */
 	@Mandatory
 	public void setSchema(String schema) {
-		this.schema=schema;
+		this.schema = schema;
 	}
 
 	/**
