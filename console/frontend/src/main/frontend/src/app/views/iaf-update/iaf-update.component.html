@@ -17,6 +17,12 @@
             <hr />
             <p [innerHTML]="release.body | markDown"></p>
           </div>
+        } @else {
+          <div class="ibox-content">
+            <p>
+              <fa-icon aria-hidden="true" [icon]="faGithub" /> No release found on GitHub.
+            </p>
+          </div>
         }
       </div>
     </div>
