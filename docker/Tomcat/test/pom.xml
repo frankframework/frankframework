@@ -87,6 +87,11 @@
 			<version>${activemq.driver.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.fusesource.hawtbuf</groupId>
+			<artifactId>hawtbuf</artifactId>
+			<version>1.11</version>
+		</dependency>
+		<dependency>
 			<groupId>com.rabbitmq</groupId>
 			<artifactId>amqp-client</artifactId>
 			<version>${rabbitmq.driver.version}</version>
@@ -97,11 +102,6 @@
 			<artifactId>rabbitmq-jms</artifactId>
 			<version>${rabbitmq.jms.version}</version>
 			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.fusesource.hawtbuf</groupId>
-			<artifactId>hawtbuf</artifactId>
-			<version>1.11</version>
 		</dependency>
 	</dependencies>
 

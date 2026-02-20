@@ -1,0 +1,47 @@
+version: ''
+
+services:
+  ff-test:
+    environment:
+      application.security.console.authentication.type: OAUTH2
+      application.security.console.authentication.provider: custom
+      application.security.console.authentication.clientId: ff-console
+      application.security.console.authentication.clientSecret: SdSD1lxXfeAXcgoWEukKj3xkFJJJwWjJGHq3dhJuaLa
+      application.security.console.authentication.issuerUri: http://keycloak.localtest.me:9080/realms/ff-test
+      application.security.console.authentication.authorizationUri: http://keycloak.localtest.me:9080/realms/ff-test/protocol/openid-connect/auth
+      application.security.console.authentication.tokenUri: http://keycloak.localtest.me:9080/realms/ff-test/protocol/openid-connect/token
+      application.security.console.authentication.jwkSetUri: http://keycloak.localtest.me:9080/realms/ff-test/protocol/openid-connect/certs
+      application.security.console.authentication.userInfoUri: http://keycloak.localtest.me:9080/realms/ff-test/protocol/openid-connect/userinfo
+      application.security.console.authentication.scopes: "openid,profile,email"
+      application.security.console.authentication.userNameAttributeName: email
+      application.security.console.authentication.authoritiesClaimName: roles
+    volumes:
+      - ./keycloak/oauth-role-mapping.properties:/opt/frank/resources/oauth-role-mapping.properties
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      keycloak: {}
+
+  keycloak:
+    image: ghcr.io/frankframework/idp/keycloak
+    volumes:
+      - keycloak-h2:/opt/keycloak/data/h2
+      - keycloak-transaction-logs:/opt/keycloak/data/transaction-logs
+    networks:
+      keycloak:
+        aliases:
+          - keycloak.localtest.me
+    ports:
+      - "9080:9080"
+    post_start:
+      - command: "chown -R keycloak /opt/keycloak/data/h2"
+        user: root
+      - command: "chown -R keycloak /opt/keycloak/data/transaction-logs"
+        user: root
+
+networks:
+  keycloak: {}
+volumes:
+  keycloak-h2: {}
+  keycloak-transaction-logs: {}
