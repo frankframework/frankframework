@@ -51,8 +51,8 @@ importers:
         specifier: ^7.2.0
         version: 7.2.0
       '@frankframework/frank-config-layout':
-        specifier: ^1.2.7
-        version: 1.2.7(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))
+        specifier: ^1.2.8
+        version: 1.2.8(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))
       '@ng-bootstrap/ng-bootstrap':
         specifier: ^20.0.0
         version: 20.0.0(@angular/common@21.1.5(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/forms@21.1.5(@angular/common@21.1.5(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@21.1.5(@angular/animations@21.1.5(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0)))(@angular/common@21.1.5(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/localize@21.1.5(@angular/compiler-cli@21.1.5(@angular/compiler@21.1.5)(typescript@5.9.3))(@angular/compiler@21.1.5))(@popperjs/core@2.11.8)(rxjs@7.8.2)
@@ -75,7 +75,7 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2
       markdown-it:
-        specifier: ^14.1.0
+        specifier: ^14.1.1
         version: 14.1.1
       monaco-editor:
         specifier: 0.55.1
@@ -93,8 +93,8 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       sweetalert2:
-        specifier: ^11.26.18
-        version: 11.26.18
+        specifier: ^11.26.19
+        version: 11.26.20
       tinycon:
         specifier: 0.6.8
         version: 0.6.8
@@ -846,8 +846,8 @@ packages:
     resolution: {integrity: sha512-YTVITFGN0/24PxzXrwqCgnyd7njDuzp5ZvaCx5nq/jg55kUYd94Nj8UTchBdBofi/L0nwRfjGOg0E41d2u9T1w==}
     engines: {node: '>=6'}
 
-  '@frankframework/frank-config-layout@1.2.7':
-    resolution: {integrity: sha512-iYEVkMa4MuR6LseI3wVzUUVjLcG4VksWgzNaP3AFuw6cwVjWP5sZxLBi513epe1AEVRXR6pvzei6KJ52D6nGLw==}
+  '@frankframework/frank-config-layout@1.2.8':
+    resolution: {integrity: sha512-cHxe/vf8lL6fivDYGHhIfErlMweDHPiM9+U3qZtm9NrQ7UW1h236VPRpqleC4WFnlOq+jYhMWHLDCDCgshLrtg==}
     peerDependencies:
       '@angular/core': ^21.0.8 || ^22.0.0
 
@@ -4044,8 +4044,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  sweetalert2@11.26.18:
-    resolution: {integrity: sha512-3O5feBqV+hTIOwCRKGuZGHosjiuBAKP/vpBl6vKFZeVYfCUGdXqXuuidn6YXHan3f6e62UdmnjwJBt8UtDVBhg==}
+  sweetalert2@11.26.20:
+    resolution: {integrity: sha512-mG3guPRzmpqGufTQ05Kr7WQIe1xfBEB9JwPIJbR2plL0ezVzS3qmazuzse0J8+/YYGCGrAL4Us2Sm5VCgHyuRg==}
 
   synckit@0.11.12:
     resolution: {integrity: sha512-Bh7QjT8/SuKUIfObSXNHNSK6WHo6J1tHCqJsuaFDP7gP0fkzSfTxI8y85JrppZ0h8l0maIgc2tfuZQ6/t3GtnQ==}
@@ -5169,7 +5169,7 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.2.0
 
-  '@frankframework/frank-config-layout@1.2.7(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))':
+  '@frankframework/frank-config-layout@1.2.8(@angular/core@21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0))':
     dependencies:
       '@angular/core': 21.1.5(@angular/compiler@21.1.5)(rxjs@7.8.2)(zone.js@0.16.0)
       tslib: 2.8.1
@@ -8561,7 +8561,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  sweetalert2@11.26.18: {}
+  sweetalert2@11.26.20: {}
 
   synckit@0.11.12:
     dependencies:
