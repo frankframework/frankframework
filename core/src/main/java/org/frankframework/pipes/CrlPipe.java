@@ -33,27 +33,15 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
 
 /**
- * Pipe that reads a CRL from an input stream and transforms it to an XML.
- * The stream is closed after reading.
+ * Pipe that Generates a Certificate Revocation List from the input and transforms it to an XML.
  *
  * Example configuration:
  * <pre>{@code
- * 	<pipe name="Read input CSV file"
- *                 className="org.frankframework.pipes.FixedResultPipe">
- * 		<param name="filename" sessionKey="filePathName"/>
- * 		<forward name="success" path="Process each Line" />
- * 	</pipe>
- * 	<pipe
- * 		name="Read issuer"
- * 		className="org.frankframework.pipes.FixedResultPipe"
- * 		filename="dir/issuer.cer"
- * 		storeResultInSessionKey="issuer">
- * 		<forward name="success" path="Read CRL" />
- * 	</pipe>
  * 	<pipe
  * 		name="Read CRL"
  * 		className="org.frankframework.pipes.FixedResultPipe"
@@ -112,7 +100,10 @@ public class CrlPipe extends FixedForwardPipe {
 		return false;
 	}
 
-	/** Name of the sessionKey that holds the certificate of the issuer who signed the CRL. */
+	/**
+	 * Name of the sessionKey that holds the certificate of the issuer who signed the CRL.
+	 */
+	@Mandatory
 	public void setIssuerSessionKey(String issuerSessionKey) {
 		this.issuerSessionKey = issuerSessionKey;
 	}
