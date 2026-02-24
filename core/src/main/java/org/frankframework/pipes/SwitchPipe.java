@@ -29,7 +29,6 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -91,7 +90,7 @@ public class SwitchPipe extends AbstractPipe {
 			throw new ConfigurationException("has the notFoundForwardName attribute. However, the forward [" + getNotFoundForwardName() + "] does not exist.");
 		}
 		if (findForward(getNotFoundForwardName()) == null) {
-			ConfigurationWarnings.add(this, log, "does not have a [notFound] forward specified.");
+			log.debug("does not have a [notFound] forward specified.");
 			notFoundForwardName = null;
 		}
 
@@ -99,7 +98,7 @@ public class SwitchPipe extends AbstractPipe {
 			throw new ConfigurationException("has the emptyForwardName attribute. However, the forward [" + getEmptyForwardName() + "] does not exist.");
 		}
 		if (findForward(getEmptyForwardName()) == null) {
-			ConfigurationWarnings.add(this, log, "does not have an [empty] forward specified.");
+			log.debug("does not have an [empty] forward specified.");
 			emptyForwardName = null;
 		}
 

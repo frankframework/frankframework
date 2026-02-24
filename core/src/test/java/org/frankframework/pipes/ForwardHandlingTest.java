@@ -20,7 +20,6 @@ import org.frankframework.testutil.TestAppender;
 
 class ForwardHandlingTest extends ConfiguredTestBase {
 
-
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
