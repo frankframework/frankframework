@@ -445,10 +445,8 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 
 		pipe.addForward(new PipeForward("notFound2", "test"));
 
-		configureAndStartPipe();
-
-		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
-		assertEquals("Pipe [SwitchPipe under test] cannot find forward or pipe named [null]", ex.getMessage());
+		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> configureAndStartPipe());
+		assertEquals("Exception configuring SwitchPipe [SwitchPipe under test]: has the notFoundForwardName attribute. However, the forward [trilili] does not exist.", ex.getMessage());
 	}
 
 	@ParameterizedTest
@@ -456,10 +454,9 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	@MethodSource("emptyAndNullMessage")
 	void emptyForward(Message input) throws Exception {
 		pipe.setEmptyForwardName("tralalal");
-		configureAndStartPipe();
 
-		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
-		assertEquals("Pipe [SwitchPipe under test] cannot find forward or pipe named [tralalal]", ex.getMessage());
+		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> configureAndStartPipe());
+		assertEquals("Exception configuring SwitchPipe [SwitchPipe under test]: has the emptyForwardName attribute. However, the forward [tralalal] does not exist.", ex.getMessage());
 	}
 
 	// Ensure that the input is ignored when 'setForwardNameSessionKey' is used
