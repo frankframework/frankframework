@@ -579,11 +579,11 @@
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
-		<xsl:text>"<![CDATA[<b>]]></xsl:text>
+		<xsl:text>"<![CDATA[<text data-html-node="b">]]></xsl:text>
 		<xsl:value-of select="$text"/>
-		<xsl:text><![CDATA[</b>]]></xsl:text>
+		<xsl:text><![CDATA[</text>]]></xsl:text>
 		<xsl:if test="$subText != ''">
-			<xsl:text><![CDATA[<br/>]]></xsl:text>
+			<xsl:text>&#10;</xsl:text>
 			<xsl:if test="$extensive and contains($subText, '.')">
 				<xsl:text><![CDATA[<a style='color:#909090;'>]]></xsl:text>
 				<xsl:value-of select="tokenize($subText, '\.')[position() != last()]" separator="."/>
@@ -594,14 +594,14 @@
 		<xsl:if test="$extensive">
 			<xsl:choose>
 				<xsl:when test="@getInputFromFixedValue != ''">
-					<xsl:text><![CDATA[<br/>]]></xsl:text>
+					<xsl:text>&#10;</xsl:text>
 					<xsl:text>fixed input: </xsl:text>
 					<xsl:text><![CDATA[<i>]]></xsl:text>
 					<xsl:value-of select="replace(@getInputFromFixedValue, '&lt;', '&amp;lt;')"/>
 					<xsl:text><![CDATA[</i>]]></xsl:text>
 				</xsl:when>
 				<xsl:when test="@getInputFromSessionKey != ''">
-					<xsl:text><![CDATA[<br/>]]></xsl:text>
+					<xsl:text>&#10;</xsl:text>
 					<xsl:text>input sessionKey: </xsl:text>
 					<xsl:text><![CDATA[<i>]]></xsl:text>
 					<xsl:value-of select="@getInputFromSessionKey"/>
@@ -610,7 +610,7 @@
 			</xsl:choose>
 			<xsl:if test="attribute">
 				<xsl:for-each select="@*[name() = current()/attribute/@name]">
-					<xsl:text><![CDATA[<br/>]]></xsl:text>
+					<xsl:text>&#10;</xsl:text>
 					<xsl:variable name="specialAttr" select="../attribute[@name = current()/name()][1]"/>
 					<xsl:value-of select="if($specialAttr/@text) then ($specialAttr/@text) else (concat($specialAttr/@name,': '))"/>
 					<xsl:if test="$specialAttr/@showValue = 'true'">
@@ -621,14 +621,14 @@
 				</xsl:for-each>
 			</xsl:if>
 			<xsl:if test="@storeResultInSessionKey != ''">
-				<xsl:text><![CDATA[<br/>]]></xsl:text>
+				<xsl:text>&#10;</xsl:text>
 				<xsl:text>output sessionKey: </xsl:text>
 				<xsl:text><![CDATA[<i>]]></xsl:text>
 				<xsl:value-of select="@storeResultInSessionKey"/>
 				<xsl:text><![CDATA[</i>]]></xsl:text>
 			</xsl:if>
 			<xsl:if test="@preserveInput = 'true'">
-				<xsl:text><![CDATA[<br/>]]></xsl:text>
+				<xsl:text>&#10;</xsl:text>
 				<xsl:text>replaces result with computed pipe input</xsl:text>
 			</xsl:if>
 		</xsl:if>
@@ -652,7 +652,7 @@
 		<xsl:text> --> |</xsl:text>
 		<xsl:value-of select="@name"/>
 		<xsl:if test="exists(@customText)">
-			<xsl:text><![CDATA[<br/>]]></xsl:text>
+			<xsl:text>&#10;</xsl:text>
 			<xsl:value-of select="@customText"/>
 		</xsl:if>
 		<xsl:text>| </xsl:text>
