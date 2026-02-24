@@ -70,10 +70,10 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	private static final List<String> extendsFileSystem = List.of("FileSystem", "Directory", "Samba", "Ftp", "Imap", "Sftp", "S3", "Exchange", "Mail");
 
 	private final List<String> resourceMethods;
-	private Document frankElements;
+	protected Document frankElements;
 
-	private TransformerPool transformerPoolAdapter;
-	private TransformerPool transformerPoolConfig;
+	protected TransformerPool transformerPoolAdapter;
+	protected TransformerPool transformerPoolConfig;
 
 	public MermaidFlowGenerator() {
 		resourceMethods = List.of(
