@@ -6,7 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -40,11 +46,16 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		return new SwitchPipe();
 	}
 
+	/**
+	 * Configures the adapter + pipe and starts it.
+	 * Calls doPipe and asserts if the selected forward matches the expectedForwardName
+	 */
 	public void testSwitch(Message input, String expectedForwardName) throws Exception {
 		log.debug("inputfile [{}]", input);
 
-		configureAdapter();
-		PipeRunResult prr = doPipe(pipe,input,session);
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
 
 		assertEquals(input,prr.getResult());
 
@@ -144,7 +155,6 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.addForward(new PipeForward("true","Envelope-Path"));
 		pipe.addForward(new PipeForward("false","dummy-Path"));
 
-		session=new PipeLineSession();
 		session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 
 		testSwitch(new Message("<dummy/>"),"true");
@@ -167,7 +177,6 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.addForward(new PipeForward("true","Envelope-Path"));
 		pipe.addForward(new PipeForward("false","dummy-Path"));
 
-		session=new PipeLineSession();
 		session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 
 		testSwitch(new Message("<dummy/>"),"true");
@@ -195,7 +204,6 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.addForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.addForward(new PipeForward("selectValue","SelectValue-Path"));
 		pipe.setForwardNameSessionKey("selectKey");
-		session=new PipeLineSession();
 		session.put("selectKey", "selectValue");
 		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
 		testSwitch(input,"selectValue");
@@ -208,7 +216,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.setForwardNameSessionKey("selectKey");
 		String forwardName = "forwardName";
 		pipe.setStoreForwardInSessionKey(forwardName);
-		session=new PipeLineSession();
+
 		session.put("selectKey", "selectValue");
 		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
 		testSwitch(input,"selectValue");
@@ -301,7 +309,6 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	void testForwardNameFromSessionKey() throws Exception {
 		pipe.addForward(new PipeForward("forwardName","Envelope-Path"));
 		pipe.setForwardNameSessionKey("forwardNameSessionKey");
-		session=new PipeLineSession();
 		session.put("forwardNameSessionKey", "forwardName");
 		Message input = MessageTestUtils.getMessage("/SwitchPipe/in.xml");
 
@@ -314,7 +321,6 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.setGetInputFromSessionKey("sessionKey");
 		pipe.setXpathExpression("name(/node()[position()=last()])");
 
-		session = new PipeLineSession();
 		Message input = MessageTestUtils.getMessage("/SwitchPipe/in.xml");
 		session.put("sessionKey", input);
 
@@ -324,7 +330,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		CorePipeProcessor coreProcessor = new CorePipeProcessor();
 		ioProcessor.setPipeProcessor(coreProcessor);
 
-		pipe.configure();
+		configureAndStartPipe();
 
 		PipeRunResult prr = ioProcessor.processPipe(pipeline, pipe, new Message("dummy"), session);
 
@@ -355,7 +361,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		CorePipeProcessor coreProcessor = new CorePipeProcessor();
 		ioProcessor.setPipeProcessor(coreProcessor);
 
-		pipe.configure();
+		configureAndStartPipe();
 
 		PipeRunResult prr = ioProcessor.processPipe(pipeline, pipe, new Message(""), session);
 
@@ -379,7 +385,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		CorePipeProcessor coreProcessor = new CorePipeProcessor();
 		ioProcessor.setPipeProcessor(coreProcessor);
 
-		pipe.configure();
+		configureAndStartPipe();
 
 		PipeRunResult prr = ioProcessor.processPipe(pipeline, pipe, new Message("unfound"), session);
 
@@ -393,12 +399,78 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 
 	@Test
 	void notFoundForward() throws Exception {
-		pipe.setNotFoundForwardName("notFound");
+		pipe.setNotFoundForwardName("none-found");
 		pipe.setForwardNameSessionKey("sessionKey");
-		session=new PipeLineSession();
 		session.put("sessionKey", "someForward");
-		pipe.addForward(new PipeForward("notFound", "test"));
-		testSwitch(new Message("dummy"),"notFound");
+		pipe.addForward(new PipeForward("none-found", "test"));
+
+		testSwitch(new Message("dummy"), "none-found");
+	}
+
+	@Test
+	void forwardNotFoundInSessionWithNotFoundForwardThatDoesntExist() throws Exception {
+		pipe.setNotFoundForwardName("notFound");
+		pipe.setForwardNameSessionKey("does-not-exist");
+
+		pipe.addForward(new PipeForward("none-found", "test"));
+
+		configureAndStartPipe();
+
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(pipe, "dummy", session));
+		assertEquals("Pipe [SwitchPipe under test] cannot find forward or pipe named [null]", ex.getMessage());
+	}
+
+	static Stream<Arguments> emptyAndNullMessage() {
+		return Stream.of(
+				Arguments.of(Message.nullMessage()),
+				Arguments.of(new Message(""))
+		);
+	}
+
+	static Stream<Arguments> input() {
+		return Stream.of(
+				Arguments.of(new Message("input"))
+		);
+	}
+
+	// Ensure that the input is ignored when 'setForwardNameSessionKey' is used
+	@ParameterizedTest
+	@NullSource
+	@MethodSource("emptyAndNullMessage")
+	@MethodSource("input")
+	void forwardNotFoundInSession(Message input) throws Exception {
+		pipe.setForwardNameSessionKey("does-not-exist");
+		pipe.setNotFoundForwardName("trilili");
+		pipe.setEmptyForwardName("tralalal");
+
+		pipe.addForward(new PipeForward("notFound2", "test"));
+
+		configureAndStartPipe();
+
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
+		assertEquals("Pipe [SwitchPipe under test] cannot find forward or pipe named [null]", ex.getMessage());
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@MethodSource("emptyAndNullMessage")
+	void emptyForward(Message input) throws Exception {
+		pipe.setEmptyForwardName("tralalal");
+		configureAndStartPipe();
+
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
+		assertEquals("Pipe [SwitchPipe under test] cannot find forward or pipe named [tralalal]", ex.getMessage());
+	}
+
+	// Ensure that the input is ignored when 'setForwardNameSessionKey' is used
+	@ParameterizedTest
+	@NullSource
+	@MethodSource("emptyAndNullMessage")
+	void emptyForwardWithoutAttribute(Message input) throws Exception {
+		configureAndStartPipe();
+
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
+		assertEquals("Pipe [SwitchPipe under test] cannot find forward or pipe named [null]", ex.getMessage());
 	}
 
 	@Test
