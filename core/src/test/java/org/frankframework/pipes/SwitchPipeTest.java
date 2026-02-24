@@ -459,6 +459,16 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		assertEquals("Exception configuring SwitchPipe [SwitchPipe under test]: has the emptyForwardName attribute. However, the forward [tralalal] does not exist.", ex.getMessage());
 	}
 
+	@ParameterizedTest
+	@MethodSource("emptyAndNullMessage")
+	@MethodSource("input")
+	void successForwardWhenError(Message input) throws Exception {
+		pipe.setNotFoundForwardName("success");
+		pipe.setForwardNameSessionKey("does-not-exist"); // is not found
+
+		testSwitch(input, "success");
+	}
+
 	// Ensure that the input is ignored when 'setForwardNameSessionKey' is used
 	@ParameterizedTest
 	@NullSource

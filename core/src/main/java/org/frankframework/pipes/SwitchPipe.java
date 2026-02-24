@@ -86,18 +86,18 @@ public class SwitchPipe extends AbstractPipe {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
-		if (!"notFound".equals(getNotFoundForwardName()) && findForward(getNotFoundForwardName()) == null) {
+		if (!"notFound".equals(getNotFoundForwardName()) && !doesForwardExist(getNotFoundForwardName())) {
 			throw new ConfigurationException("has the notFoundForwardName attribute. However, the forward [" + getNotFoundForwardName() + "] does not exist.");
 		}
-		if (findForward(getNotFoundForwardName()) == null) {
+		if (!doesForwardExist(getNotFoundForwardName())) {
 			log.debug("does not have a [notFound] forward specified.");
 			notFoundForwardName = null;
 		}
 
-		if (!"empty".equals(getEmptyForwardName()) && findForward(getEmptyForwardName()) == null) {
+		if (!"empty".equals(getEmptyForwardName()) && !doesForwardExist(getEmptyForwardName())) {
 			throw new ConfigurationException("has the emptyForwardName attribute. However, the forward [" + getEmptyForwardName() + "] does not exist.");
 		}
-		if (findForward(getEmptyForwardName()) == null) {
+		if (!doesForwardExist(getEmptyForwardName())) {
 			log.debug("does not have an [empty] forward specified.");
 			emptyForwardName = null;
 		}
@@ -128,6 +128,15 @@ public class SwitchPipe extends AbstractPipe {
 		if (transformerPool != null) {
 			transformerPool.close();
 		}
+	}
+
+	/**
+	 * Implicit forwards are added after this has been configured, which would otherwise throw a {@link ConfigurationException}.
+	 */
+	private boolean doesForwardExist(@NonNull String forward) {
+		return PipeForward.SUCCESS_FORWARD_NAME.equals(forward) ||
+				PipeForward.EXCEPTION_FORWARD_NAME.equals(forward) ||
+				findForward(forward) != null;
 	}
 
 	/**

@@ -103,7 +103,7 @@
 			<pipe name="ResultBase64" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="PHJvb3Q+UGlwZUxpbmUgcmVzdWx0IGZyb20gaW5wdXRTdHJlYW08L3Jvb3Q+" />
 			<pipe name="decodeResult" className="org.frankframework.pipes.Base64Pipe" direction="decode" />
 			<pipe name="SwitchThrowException" className="org.frankframework.pipes.SwitchPipe" getInputFromSessionKey="originalMessage" preserveInput="true"
-                  xpathExpression="request/@exit" notFoundForwardName="ThrowExceptionFalse">
+                  xpathExpression="request/@exit" notFoundForwardName="success">
 				<forward name="throw" path="ThrowException" />
 			</pipe>
 			<pipe name="ThrowException" className="org.frankframework.pipes.ExceptionPipe">
