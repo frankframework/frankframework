@@ -1,17 +1,17 @@
 package org.frankframework.util.flow;
 
-import org.frankframework.core.Resource;
-import org.frankframework.util.TransformerPool;
-
-import org.xml.sax.SAXException;
-
-import javax.xml.transform.TransformerException;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.transform.TransformerException;
+
+import org.xml.sax.SAXException;
+
+import org.frankframework.core.Resource;
+import org.frankframework.util.TransformerPool;
 
 public class FrankConfigLayoutGlowGenerator extends MermaidFlowGenerator implements IFlowGenerator {
 
@@ -24,6 +24,8 @@ public class FrankConfigLayoutGlowGenerator extends MermaidFlowGenerator impleme
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		super.afterPropertiesSet();
+
 		Resource xsltSourceAdapter = Resource.getResource(ADAPTER2CONFIGLAYOUT_XSLT);
 		assert xsltSourceAdapter != null;
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceAdapter, 2);

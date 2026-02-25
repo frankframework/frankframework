@@ -158,15 +158,13 @@
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
-		<xsl:text>"</xsl:text>
+		<xsl:text>'<![CDATA[<text]]></xsl:text>
 		<xsl:if test="name() = 'pipeline'">
-			<xsl:text><![CDATA[<a style='font-size:28px'>]]></xsl:text>
+			<xsl:text> data-html-node="a"</xsl:text>
 		</xsl:if>
+		<xsl:text><![CDATA[>]]></xsl:text>
 		<xsl:value-of select="$text"/>
-		<xsl:if test="name() = 'pipeline'">
-			<xsl:text><![CDATA[</a>]]></xsl:text>
-		</xsl:if>
-		<xsl:text>"</xsl:text>
+		<xsl:text><![CDATA[</text>]]>'</xsl:text>
 		<xsl:value-of select="($shapeEndMap/field[@type = current()/type],')')[1]"/>
 		<xsl:text>:::</xsl:text>
 		<xsl:value-of select="$style"/>
