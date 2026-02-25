@@ -12,34 +12,7 @@
 
 		<xsl:text>flowchart&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedConfiguration" mode="convertElements"/>
-		<xsl:text>	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;&#10;</xsl:text>
-		<xsl:text>	classDef listener0 fill:#fff,stroke-width:4px,stroke:#fe41ff;&#10;</xsl:text><!--HTTP       --><!--Frank pink-->
-		<xsl:text>	classDef listener1 fill:#fff,stroke-width:4px,stroke:#18a689;&#10;</xsl:text><!--JMS        --><!--Frank green-->
-		<xsl:text>	classDef listener2 fill:#fff,stroke-width:4px,stroke:#18a689;&#10;</xsl:text><!--JDBC       --><!--Frank blue-->
-		<xsl:text>	classDef listener3 fill:#fff,stroke-width:4px,stroke:#4150ff;&#10;</xsl:text><!--Filesystem --><!--New dark blue-->
-		<xsl:text>	classDef listener4 fill:#fff,stroke-width:4px,stroke:#ffc107;&#10;</xsl:text><!--Java       --><!--Frank yellow-->
-		<xsl:text>	classDef listener5 fill:#fff,stroke-width:4px,stroke:#ff417e;&#10;</xsl:text><!--SAP        --><!--New pink-->
-
-		<xsl:text>	classDef sender0 fill:#fff,stroke-width:4px,stroke:#fe41ff;&#10;</xsl:text><!--HTTP       --><!--Frank pink-->
-		<xsl:text>	classDef sender1 fill:#fff,stroke-width:4px,stroke:#8bc34a;&#10;</xsl:text><!--JMS        --><!--Frank green-->
-		<xsl:text>	classDef sender2 fill:#fff,stroke-width:4px,stroke:#00abff;&#10;</xsl:text><!--JDBC       --><!--Frank blue-->
-		<xsl:text>	classDef sender3 fill:#fff,stroke-width:4px,stroke:#4150ff;&#10;</xsl:text><!--Filesystem --><!--New dark blue-->
-		<xsl:text>	classDef sender4 fill:#fff,stroke-width:4px,stroke:#ffc107;&#10;</xsl:text><!--Java       --><!--Frank yellow-->
-		<xsl:text>	classDef sender5 fill:#fff,stroke-width:4px,stroke:#ff417e;&#10;</xsl:text><!--SAP        --><!--New pink-->
-		<xsl:text>	classDef sender6 fill:#fff,stroke-width:4px,stroke:#8a41ff;&#10;</xsl:text><!--Mail       --><!--New purple-->
-		<xsl:text>	classDef sender7 fill:#fff,stroke-width:4px,stroke:#ff8741;&#10;</xsl:text><!--Utility    --><!--New orange-->
-		<xsl:text>	classDef sender8 fill:#fff,stroke-width:4px,stroke:#8bc34a;&#10;</xsl:text><!--Other      --><!--Frank aqua-->
-
 		<xsl:apply-templates select="$preproccessedConfiguration//forward" mode="convertForwards"/>
-		<xsl:if test="$preproccessedConfiguration//forward">
-			<xsl:text>	linkStyle </xsl:text>
-			<xsl:value-of select="$preproccessedConfiguration//forward/(position() - 1)" separator=","/>
-			<xsl:text> stroke:#8bc34a,stroke-width:3px,fill:none;</xsl:text>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
-		<!-- The code below gives back the preprocessed configuration
-				This is for testing purposes. To test, also change method(line 3) to xml instead of text-->
-<!--				<xsl:copy-of select="$preproccessedConfiguration"/>-->
 	</xsl:template>
 
 	<xsl:template match="*" mode="preprocess">
@@ -110,19 +83,6 @@
 		<xsl:apply-templates select="*" mode="#current"/>
 	</xsl:template>
 
-<!--	<xsl:template match="adapter" mode="convertElements">-->
-<!--		<xsl:text>	style </xsl:text>-->
-<!--		<xsl:value-of select="@name"/>-->
-<!--		<xsl:text> fill:#0000,stroke:#0000,stroke-width:2px&#10;</xsl:text>-->
-<!--		<xsl:text>	subgraph </xsl:text>-->
-<!--		<xsl:value-of select="@name"/>-->
-<!--		<xsl:text>&#10;</xsl:text>-->
-<!--		<xsl:text>	direction TB</xsl:text>-->
-<!--		<xsl:text>&#10;</xsl:text>-->
-<!--		<xsl:apply-templates select="*" mode="#current"/>-->
-<!--		<xsl:text>	end&#10;</xsl:text>-->
-<!--	</xsl:template>-->
-
 	<xsl:template match="pipeline" mode="convertElements">
 		<xsl:call-template name="createMermaidElement">
 			<xsl:with-param name="text" select="parent::adapter/@name"/>
@@ -155,7 +115,7 @@
 		<xsl:param name="text" select="xs:string((@name,name())[1])"/>
 		<xsl:param name="style" select="'normal'"/>
 
-		<xsl:text>	</xsl:text>
+		<xsl:text>  </xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
 		<xsl:text>'<![CDATA[<text]]></xsl:text>
@@ -173,7 +133,7 @@
 	</xsl:template>
 
 	<xsl:template match="forward" mode="convertForwards">
-		<xsl:text>	</xsl:text>
+		<xsl:text>  </xsl:text>
 		<xsl:value-of select="parent::*/@elementID"/>
 		<xsl:text> --> </xsl:text>
 		<xsl:value-of select="@targetID"/>
