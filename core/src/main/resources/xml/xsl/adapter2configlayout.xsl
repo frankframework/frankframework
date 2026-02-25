@@ -22,30 +22,7 @@
 
 		<xsl:text>flowchart&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedAdapter" mode="convertElements"/>
-		<xsl:text>	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;&#10;</xsl:text>
-		<xsl:text>	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;&#10;</xsl:text>
 		<xsl:apply-templates select="$forwards" mode="convertForwards"/>
-		<xsl:variable name="forwardNums">
-			<xsl:for-each select="$forwards">
-				<xsl:element name="forward">
-					<xsl:copy-of select="@errorHandling"/>
-					<xsl:attribute name="pos" select="position() - 1"/>
-				</xsl:element>
-			</xsl:for-each>
-		</xsl:variable>
-		<xsl:for-each-group select="$forwardNums/forward" group-by="@errorHandling">
-			<xsl:text>	linkStyle </xsl:text>
-			<xsl:value-of select="current-group()/@pos" separator=","/>
-			<xsl:choose>
-				<xsl:when test="xs:boolean(current-grouping-key())">
-					<xsl:text> stroke:#ec4758,stroke-width:3px,fill:none;</xsl:text>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:text> stroke:#8bc34a,stroke-width:3px,fill:none;</xsl:text>
-				</xsl:otherwise>
-			</xsl:choose>
-			<xsl:text>&#10;</xsl:text>
-		</xsl:for-each-group>
 	</xsl:template>
 
 	<xsl:template match="*" mode="resolveExits">
@@ -576,7 +553,7 @@
 		<xsl:param name="subText" select="(listener/@className,sender/@className,@className)[1]"/>
 		<xsl:param name="extensive" tunnel="yes" select="'false'"/>
 
-		<xsl:text>	</xsl:text>
+		<xsl:text>  </xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
 		<xsl:text>'<![CDATA[<text data-html-node="b">]]></xsl:text>
@@ -648,7 +625,7 @@
 	</xsl:template>
 
 	<xsl:template match="forward" mode="convertForwards">
-		<xsl:text>	</xsl:text>
+		<xsl:text>  </xsl:text>
 		<xsl:value-of select="parent::*/@elementID"/>
 		<xsl:text> --> |</xsl:text>
 		<xsl:value-of select="@name"/>
