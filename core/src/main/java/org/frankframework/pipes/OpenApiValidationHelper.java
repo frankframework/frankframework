@@ -45,14 +45,16 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
  */
 public class OpenApiValidationHelper {
 	private final JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
-	private final ObjectMapper objectMapper = new ObjectMapper();
-
+	private final ObjectMapper objectMapper;
 	private final Operation operation;
 
 	public OpenApiValidationHelper(Operation operation) {
 		this.operation = operation;
+
 		// This setting is important to make sure that resolving of references works correctly
-		this.objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+		this.objectMapper = objectMapper;
 	}
 
 	/**
