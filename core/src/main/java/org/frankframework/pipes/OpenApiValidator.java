@@ -17,20 +17,18 @@ package org.frankframework.pipes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.InputFormat;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaException;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.ParseOptions;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -51,29 +49,54 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 @Category(Category.Type.BASIC)
 public class OpenApiValidator extends AbstractValidator {
 
-	private final JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
-	private final ObjectMapper mapper = new ObjectMapper();
+	private OpenApiValidationHelper openApiValidationHelper;
 	private @Getter String openApiDefinition;
 	private @Getter String path;
 	private @Getter String method;
 	private @Getter String reasonSessionKey = "failureReason";
-	private JsonSchema openApiSchema;
+	private @Getter boolean useAsOutputValidator;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		// openApiDefinition, path and method are mandatory
 		if (StringUtils.isAnyEmpty(openApiDefinition, path, method)) {
 			throw new ConfigurationException("openApiDefinition, path and method are required");
 		}
 
 		try {
-			JsonNode schemaJsonNode = readOpenApiDefinition();
-			openApiSchema = getSchema(path, method, schemaJsonNode);
-		} catch (JsonSchemaException | IOException e) {
+			Operation operation = getOperation();
+
+			openApiValidationHelper = new OpenApiValidationHelper(operation);
+
+		} catch (IOException e) {
 			throw new ConfigurationException("unable to configure OpenApiValidator", e);
 		}
+	}
+
+	/**
+	 * Tries to load the given OpenApi schema and find the schema for the given path and method. If any of these steps fail, a ConfigurationException is thrown.
+	 */
+	private @NonNull Operation getOperation() throws ConfigurationException, IOException {
+		OpenAPI openApi = readOpenApiDefinition();
+		PathItem pathItem = openApi.getPaths().get(path);
+
+		if (pathItem == null) {
+			throw new ConfigurationException("No schema found for path [" + path + "]");
+		}
+
+		Operation operation = switch (method.toLowerCase()) {
+			case "get" -> pathItem.getGet();
+			case "post" -> pathItem.getPost();
+			case "put" -> pathItem.getPut();
+			case "delete" -> pathItem.getDelete();
+			default -> throw new ConfigurationException("Method [" + method + "] is not supported. Supported methods are GET, POST, PUT and DELETE");
+		};
+
+		if (operation == null) {
+			throw new ConfigurationException("No schema found for path [" + path + "] and method [" + method + "]");
+		}
+		return operation;
 	}
 
 	@Override
@@ -82,7 +105,8 @@ public class OpenApiValidator extends AbstractValidator {
 			if (messageToValidate.isEmpty()) {
 				messageToValidate = new Message("{}");
 			}
-			SchemaValidationResult result = validateJson(openApiSchema, messageToValidate);
+
+			SchemaValidationResult result = openApiValidationHelper.validateMessage(messageToValidate, responseMode, session);
 
 			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 				session.put(getReasonSessionKey(), result.validationMessages.toString());
@@ -94,77 +118,21 @@ public class OpenApiValidator extends AbstractValidator {
 		}
 	}
 
-	private JsonSchema getSchema(String path, String method, JsonNode schemaJsonNode) throws ConfigurationException {
-		JsonNode operationNode = schemaJsonNode
-				.path("paths")
-				.path(path)
-				.path(method);
-
-		// .path methods will result in missing node instead of null or an exception. Check for that.
-		if (operationNode.isMissingNode()) {
-			throw new ConfigurationException("No schema found for path [" + path + "] and method [" + method + "]");
-		}
-
-		JsonNode schemaNode = operationNode
-				.path("requestBody")
-				.path("content")
-				.path("application/json")
-				.path("schema");
-
-		if (schemaNode.isMissingNode()) {
-			throw new ConfigurationException("No JSON requestBody schema defined for path [" + path + "] and method [" + method + "]");
-		}
-
-		if (schemaNode.has("$ref")) {
-			String refValue = schemaNode.get("$ref").asText();
-
-			if (!refValue.startsWith("#/")) {
-				throw new ConfigurationException("Only internal refs are supported. Ref [" + refValue + "] does not start with [#/]");
-			}
-
-			return jsonSchemaFactory.getSchema(resolveInternalRef(schemaNode.get("$ref").asText(), schemaJsonNode));
-		}
-
-		return jsonSchemaFactory.getSchema(operationNode);
-	}
-
-	private JsonNode resolveInternalRef(String ref, JsonNode schemaJsonNode) {
-		String[] parts = ref.substring(2).split("/");
-
-		JsonNode current = schemaJsonNode;
-		for (String part : parts) {
-			current = current.path(part);
-		}
-
-		return current;
-	}
-
-	private SchemaValidationResult validateJson(JsonSchema jsonSchema, Message message) throws IOException {
-		try {
-			Set<ValidationMessage> validationMessages = jsonSchema.validate(
-					message.asString(), InputFormat.JSON,
-					executionContext -> executionContext.getExecutionConfig().setFormatAssertionsEnabled(true)
-			);
-
-			ValidationResult result = validationMessages.isEmpty() ? ValidationResult.VALID : ValidationResult.INVALID;
-
-			return new SchemaValidationResult(result, validationMessages);
-		} catch (IllegalArgumentException e) {
-			return new SchemaValidationResult(ValidationResult.PARSER_ERROR, Set.of(ValidationMessage.builder().message(e.getMessage()).build()));
-		}
-	}
-
-	protected JsonNode readOpenApiDefinition() throws IOException {
-		String specPath = getOpenApiDefinition();
-		Resource resource = Resource.getResource(this, specPath);
+	private OpenAPI readOpenApiDefinition() throws IOException {
+		String openApiDefinitionPath = getOpenApiDefinition();
+		Resource resource = Resource.getResource(this, openApiDefinitionPath);
 
 		if (resource == null) {
-			throw new FileNotFoundException("Cannot find OpenAPI spec [" + specPath + "]");
+			throw new FileNotFoundException("Cannot find OpenAPI definition [" + openApiDefinitionPath + "]");
 		}
 
-		try (InputStream resourceStream = resource.openStream()) {
-			return mapper.readTree(resourceStream);
-		}
+		// Parse options are set to resolve all $ref in the OpenAPI definition, so that we can validate against the fully resolved schema.
+		ParseOptions options = new ParseOptions();
+		options.setResolve(true);
+		options.setResolveFully(true);
+
+		return new OpenAPIV3Parser()
+				.read(openApiDefinitionPath, null, options);
 	}
 
 	/**
@@ -201,6 +169,14 @@ public class OpenApiValidator extends AbstractValidator {
 	 */
 	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;
+	}
+
+	/**
+	 * Mark this Validator as configured for mixed validation, meaning it will be used for both request and response validation. Depending solely on the
+	 * responseRoot being set is not sufficient, since in case of OpenApiValidator, the responseRoot is not used, but it is still a mixed validator.
+	 */
+	public void setUseAsOutputValidator(boolean useAsOutputValidator) {
+		this.useAsOutputValidator = useAsOutputValidator;
 	}
 
 	record SchemaValidationResult(ValidationResult result, Set<ValidationMessage> validationMessages) {

@@ -53,7 +53,6 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 	private @Getter String root;
 	private @Getter String responseRoot;
 	private @Getter boolean forwardFailureToSuccess = false;
-
 	private final @Getter boolean throwException = false;
 
 	@Override
@@ -171,6 +170,7 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 	public void setRoot(String root) {
 		this.root = root;
 	}
+
 	/** Name of the response root element. */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
