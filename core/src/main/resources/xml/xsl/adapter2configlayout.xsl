@@ -579,17 +579,18 @@
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
-		<xsl:text>"<![CDATA[<text data-html-node="b">]]></xsl:text>
+		<xsl:text>'<![CDATA[<text data-html-node="b">]]></xsl:text>
 		<xsl:value-of select="$text"/>
 		<xsl:text><![CDATA[</text>]]></xsl:text>
 		<xsl:if test="$subText != ''">
-			<xsl:text>&#10;</xsl:text>
 			<xsl:if test="$extensive and contains($subText, '.')">
-				<xsl:text><![CDATA[<a style='color:#909090;'>]]></xsl:text>
+				<xsl:text><![CDATA[<text data-html-node="a">]]></xsl:text>
 				<xsl:value-of select="tokenize($subText, '\.')[position() != last()]" separator="."/>
-				<xsl:text>.<![CDATA[</a>]]></xsl:text>
+				<xsl:text>.<![CDATA[</text>]]></xsl:text>
 			</xsl:if>
+			<xsl:text><![CDATA[<text>]]></xsl:text>
 			<xsl:value-of select="tokenize($subText, '\.')[last()]"/>
+			<xsl:text><![CDATA[</text>]]></xsl:text>
 		</xsl:if>
 		<xsl:if test="$extensive">
 			<xsl:choose>
@@ -632,7 +633,7 @@
 				<xsl:text>replaces result with computed pipe input</xsl:text>
 			</xsl:if>
 		</xsl:if>
-		<xsl:text>"</xsl:text>
+		<xsl:text>'</xsl:text>
 		<xsl:value-of select="($shapeEndMap/field[@type = current()/type],')')[1]"/>
 		<xsl:text>:::</xsl:text>
 		<xsl:choose>
