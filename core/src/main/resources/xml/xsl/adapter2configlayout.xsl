@@ -358,7 +358,7 @@
 						<xsl:copy>
 							<xsl:attribute name="errorHandling" select="$errorHandling or count(current-group()[@name = $errorForwards]) = count(current-group())or $target/type = 'errorhandling'"/>
 							<xsl:attribute name="name">
-								<xsl:value-of select="current-group()/@name" separator="&lt;br/>"/>
+								<xsl:value-of select="current-group()/@name" separator="&lt;/text>&lt;text>"/>
 							</xsl:attribute>
 							<xsl:copy-of select="current-group()[1]/@*[not(name() = 'name')]"/>
 						</xsl:copy>
@@ -627,11 +627,13 @@
 	<xsl:template match="forward" mode="convertForwards">
 		<xsl:text>  </xsl:text>
 		<xsl:value-of select="parent::*/@elementID"/>
-		<xsl:text> --> |</xsl:text>
+		<xsl:text> --> |<![CDATA[<text>]]></xsl:text>
 		<xsl:value-of select="@name"/>
+		<xsl:text><![CDATA[</text>]]></xsl:text>
 		<xsl:if test="exists(@customText)">
-			<xsl:text>&#10;</xsl:text>
+			<xsl:text><![CDATA[<text>]]></xsl:text>
 			<xsl:value-of select="@customText"/>
+			<xsl:text><![CDATA[</text>]]></xsl:text>
 		</xsl:if>
 		<xsl:text>| </xsl:text>
 		<xsl:value-of select="@targetID"/>
