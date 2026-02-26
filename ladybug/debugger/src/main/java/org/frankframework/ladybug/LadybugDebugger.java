@@ -294,6 +294,11 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
 	// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 	// IbisDebuggerAdvice stores state in AppConstants testtool.enabled for use by GUI
+	// - on start-up, ladybug expects that the first calls to TestTool.setReportGeneratorEnabled() and
+	//   TestTool.setRegexFilter() provide the defaults. These defaults are restored when someone does restore
+	//   to factory settings in the Ladybug UI. For the Frank!Framework this means that the default
+	//   settings should be communicated exactly once. It is not required that the defaults would
+	//   be set during bean creation. Ladybug does not rely on timing here.
 
 	@Override
 	public void updateReportGeneratorStatus(boolean enabled) {
