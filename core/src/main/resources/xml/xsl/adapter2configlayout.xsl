@@ -20,7 +20,6 @@
 		</xsl:variable>
 		<xsl:variable name="forwards" select="$preproccessedAdapter//forward"/>
 
-		<xsl:text>flowchart&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedAdapter" mode="convertElements"/>
 		<xsl:apply-templates select="$forwards" mode="convertForwards"/>
 	</xsl:template>
