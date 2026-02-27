@@ -10,7 +10,6 @@
 			<xsl:apply-templates select="*" mode="preprocess"/>
 		</xsl:variable>
 
-		<xsl:text>flowchart&#10;</xsl:text>
 		<xsl:apply-templates select="$preproccessedConfiguration" mode="convertElements"/>
 		<xsl:apply-templates select="$preproccessedConfiguration//forward" mode="convertForwards"/>
 	</xsl:template>
