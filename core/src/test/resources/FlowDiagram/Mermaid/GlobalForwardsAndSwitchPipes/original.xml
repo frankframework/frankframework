@@ -42,13 +42,15 @@
 		</pipe>
 
 		<pipe name="TestXmlSwitchWithAttributes" className="org.frankframework.pipes.XmlSwitch"
-			  elementXPathExpression="test" notFoundForwardName="ERROR" emptyForwardName="TestCompareInteger">
+			  elementXPathExpression="test" notFoundForwardName="ERROR" emptyForwardName="empty">
+			<forward name="empty" path="TestCompareInteger" />
 		</pipe>
 
 		<pipe name="TestXmlSwitchWithBoth" className="org.frankframework.pipes.XmlSwitch"
-			  elementXPathExpression="test" notFoundForwardName="TestCompareString" emptyForwardName="ERROR">
+			  elementXPathExpression="test" notFoundForwardName="notFound" emptyForwardName="ERROR">
 			<forward name="option1" path="EXIT" />
 			<forward name="option2" path="TestXmlSwitchWithNone" />
+			<forward name="notFound" path="TestCompareString" />
 		</pipe>
 
 		<pipe name="TestXmlSwitchWithNone" className="org.frankframework.pipes.XmlSwitch"
