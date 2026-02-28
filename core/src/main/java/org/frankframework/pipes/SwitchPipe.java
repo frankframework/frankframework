@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -52,10 +52,10 @@ import org.frankframework.util.XmlUtils;
  * of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.
  *
  * @since 9.2
- * @author Johan Verrips
  */
-@Forward(name = "*", description = "name of the root-element")
-@Forward(name = "*", description = "result of transformation, when <code>styleSheetName</code> or <code>xpathExpression</code> is specified")
+@Forward(name = "notFound", description = "when the forward derived from the stylesheet could not be found")
+@Forward(name = "empty", description = "when the content, on which the switch is performed, is empty")
+@Forward(name = "*", description = "name of the root-element OR result of transformation (when <code>styleSheetName</code> or <code>xpathExpression</code> is specified)")
 @Category(Category.Type.BASIC)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class SwitchPipe extends AbstractPipe {
@@ -69,8 +69,8 @@ public class SwitchPipe extends AbstractPipe {
 	private JsonPath jsonPath = null;
 	private @Getter String namespaceDefs = null;
 	private @Getter String storeForwardInSessionKey = null;
-	private @Getter String notFoundForwardName = null;
-	private @Getter String emptyForwardName = null;
+	private @Getter String notFoundForwardName = "notFound";
+	private @Getter String emptyForwardName = "empty";
 	private @Getter int xsltVersion = 0; // set to 0 for auto-detect.
 	private @Getter String forwardNameSessionKey = null;
 	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
@@ -85,12 +85,21 @@ public class SwitchPipe extends AbstractPipe {
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
 		super.configure();
-		if (getNotFoundForwardName() != null && findForward(getNotFoundForwardName()) == null) {
-			ConfigurationWarnings.add(this, log, "has a notFoundForwardName attribute. However, this forward [" + getNotFoundForwardName() + "] is not configured.");
+
+		if (!"notFound".equals(getNotFoundForwardName()) && !doesForwardExist(getNotFoundForwardName())) {
+			throw new ConfigurationException("has the notFoundForwardName attribute. However, the forward [" + getNotFoundForwardName() + "] does not exist.");
+		}
+		if (!doesForwardExist(getNotFoundForwardName())) {
+			log.debug("does not have a [notFound] forward specified.");
+			notFoundForwardName = null;
 		}
 
-		if (getEmptyForwardName() != null && findForward(getEmptyForwardName()) == null) {
-			ConfigurationWarnings.add(this, log, "has a emptyForwardName attribute. However, this forward [" + getEmptyForwardName() + "] is not configured.");
+		if (!"empty".equals(getEmptyForwardName()) && !doesForwardExist(getEmptyForwardName())) {
+			throw new ConfigurationException("has the emptyForwardName attribute. However, the forward [" + getEmptyForwardName() + "] does not exist.");
+		}
+		if (!doesForwardExist(getEmptyForwardName())) {
+			log.debug("does not have an [empty] forward specified.");
+			emptyForwardName = null;
 		}
 
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
@@ -107,6 +116,7 @@ public class SwitchPipe extends AbstractPipe {
 	@Override
 	public void start() {
 		super.start();
+
 		if (transformerPool != null) {
 			transformerPool.open();
 		}
@@ -118,6 +128,15 @@ public class SwitchPipe extends AbstractPipe {
 		if (transformerPool != null) {
 			transformerPool.close();
 		}
+	}
+
+	/**
+	 * Implicit forwards are added after this has been configured, which would otherwise throw a {@link ConfigurationException}.
+	 */
+	private boolean doesForwardExist(@NonNull String forward) {
+		return PipeForward.SUCCESS_FORWARD_NAME.equals(forward) ||
+				PipeForward.EXCEPTION_FORWARD_NAME.equals(forward) ||
+				findForward(forward) != null;
 	}
 
 	/**
@@ -153,7 +172,7 @@ public class SwitchPipe extends AbstractPipe {
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			return session.getString(getForwardNameSessionKey());
 		}
-		if (message.isEmpty()) {
+		if (Message.isEmpty(message)) {
 			return getEmptyForwardName();
 		}
 		MimeType mimeType = MessageUtils.computeMimeType(message);
@@ -230,12 +249,16 @@ public class SwitchPipe extends AbstractPipe {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	/** Forward returned when the pipename derived from the stylesheet could not be found. */
+	/** Forward returned when the forward derived from the stylesheet could not be found. */
+	@Deprecated
+	@ConfigurationWarning("it's no longer possible to set a custom [notFoundForward], you must add a forward named [notFound].")
 	public void setNotFoundForwardName(String notFound) {
 		notFoundForwardName = notFound;
 	}
 
 	/** Forward returned when the content, on which the switch is performed, is empty. if <code>emptyforwardname</code> is not specified, <code>notfoundforwardname</code> is used. */
+	@Deprecated
+	@ConfigurationWarning("it's no longer possible to set a custom [emptyForwardName], you must add a forward named [empty].")
 	public void setEmptyForwardName(String empty) {
 		emptyForwardName = empty;
 	}
