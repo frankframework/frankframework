@@ -304,17 +304,6 @@
 			</xsl:variable>
 
 			<xsl:copy-of select="$forwards"/>
-
-			<xsl:call-template name="createForwardIfNecessary">
-				<xsl:with-param name="forwards" select="$forwards/forward"/>
-				<xsl:with-param name="name" select="'notFoundForwardName'"/>
-				<xsl:with-param name="path" select="@notFoundForwardName"/>
-			</xsl:call-template>
-			<xsl:call-template name="createForwardIfNecessary">
-				<xsl:with-param name="forwards" select="$forwards/forward"/>
-				<xsl:with-param name="name" select="'emptyForwardName'"/>
-				<xsl:with-param name="path" select="@emptyForwardName"/>
-			</xsl:call-template>
 		</xsl:copy>
 	</xsl:template>
 
