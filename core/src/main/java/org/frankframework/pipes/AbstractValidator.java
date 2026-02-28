@@ -36,7 +36,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.XmlValidatorException;
 
-
 /**
  * Pipe that validates the input message against a schema.
  *
@@ -54,9 +53,7 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 	private @Getter String root;
 	private @Getter String responseRoot;
 	private @Getter boolean forwardFailureToSuccess = false;
-
 	private final @Getter boolean throwException = false;
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -94,7 +91,6 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 	}
 
 	protected abstract PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException, XmlValidatorException, ConfigurationException;
-
 
 	protected final PipeForward determineForward(ValidationResult validationResult, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
 		throwEvent(validationResult.getEvent());
@@ -174,6 +170,7 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 	public void setRoot(String root) {
 		this.root = root;
 	}
+
 	/** Name of the response root element. */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;
