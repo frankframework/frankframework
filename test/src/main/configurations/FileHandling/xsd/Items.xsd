@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:element name="request">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="status" type="StatusType" default="b" />
+				<xsd:element name="item" type="ItemType" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="response">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="status" type="StatusType" default="b" />
+				<xsd:element name="result" type="xsd:string" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:simpleType name="StatusType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="a" />
+			<xsd:enumeration value="b" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="ItemType">
+
+		<xsd:sequence>
+			<xsd:element name="id" type="xsd:string" minOccurs="0" />
+			<xsd:element name="type" type="xsd:string" minOccurs="0" />
+			<xsd:element name="title" type="xsd:string" minOccurs="0" />
+			<xsd:element name="status" type="xsd:string" minOccurs="0" />
+			<xsd:element name="detail" type="xsd:string" minOccurs="0" />
+			<xsd:element name="instance" type="xsd:string" minOccurs="0" />
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>
+
