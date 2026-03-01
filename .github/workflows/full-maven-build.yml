@@ -89,7 +89,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
       with:
-        node-version: 24.13.1
+        node-version: 24.14.0
         cache: pnpm
         cache-dependency-path: '**/pnpm-lock.yaml'
 
@@ -144,27 +144,27 @@ jobs:
 
     - name: Store Test Results
       if: ${{ failure() || cancelled() }}
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
         name: java${{ env.JDK_VERSION }}_Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
 
     - name: Store Test Logs
       if: ${{ failure() || cancelled() }}
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
         name: java${{ env.JDK_VERSION }}_Logs
         path: ${{ github.workspace }}/*/target/test-logs/*
       
     - name: Store Cypress Results
       if: failure()
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
         name: java${{ env.JDK_VERSION }}_Cypress
         path: ${{ github.workspace }}/*/target/test-classes/e2e/cypress/**
 
     - name: Store FrankDoc XSD
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
         name: java${{ env.JDK_VERSION }}_FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
