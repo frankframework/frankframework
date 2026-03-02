@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.0.3">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.0.4">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -15292,6 +15292,16 @@
     <xs:attribute name="recursiveSearch" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, the memberOf attribute is also searched in all the found members Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxRecursion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Max recursion search depth. Set to `0` to have no limit on recursion-depth for recursive search. Default: 5</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="recursionFilter" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Recursion filter. If set, only search recursively into groups whose name equals or contains as substring the recursionFilter.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
