@@ -7,12 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -172,5 +174,21 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 
 		assertEquals("outputFailure", forward.getName());
 		assertEquals("[$: required property 'id' not found, $: required property 'name' not found]", session.get("failureReason"));
+	}
+
+	@Test
+	@DisplayName("Test that the response validator is correctly wrapped and can be retrieved by setting useAsOutputValidator to true")
+	void testResponseValidator() throws ConfigurationException {
+		pipe.setOpenApiDefinition("/OpenApiValidator/petstore-openapi.json");
+		pipe.setPath("/pets");
+		pipe.setMethod("post");
+		pipe.setUseAsOutputValidator(true);
+
+		configureAndStartPipe();
+
+		IValidator responseValidator = pipe.getResponseValidator();
+		assertEquals(AbstractValidator.ResponseValidatorWrapper.class, responseValidator.getClass());
+
+		assertEquals("ResponseValidator of OpenApiValidator under test", responseValidator.getName());
 	}
 }

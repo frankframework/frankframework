@@ -173,10 +173,18 @@ public class OpenApiValidator extends AbstractValidator {
 
 	/**
 	 * Mark this Validator as configured for mixed validation, meaning it will be used for both request and response validation. Depending solely on the
-	 * responseRoot being set is not sufficient, since in case of OpenApiValidator, the responseRoot is not used, but it is still a mixed validator.
+	 * responseRoot being set is not sufficient, since in case of OpenApiValidator, the resposeRoot is not used, but it is still a mixed validator.
+	 *
+	 * @see {@code isConfiguredForMixedValidation()} which overrides this in the super class to determine whether this is a mixed validator or not.
+	 * @ff.default false
 	 */
 	public void setUseAsOutputValidator(boolean useAsOutputValidator) {
 		this.useAsOutputValidator = useAsOutputValidator;
+	}
+
+	@Override
+	protected boolean isConfiguredForMixedValidation() {
+		return useAsOutputValidator;
 	}
 
 	record SchemaValidationResult(ValidationResult result, Set<ValidationMessage> validationMessages) {
