@@ -73,6 +73,18 @@
 			<artifactId>azure-identity</artifactId>
 			<version>1.18.2</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.azure</groupId>
+					<artifactId>azure-core-http-netty</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-core-http-okhttp</artifactId>
+			<version>1.13.3</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->

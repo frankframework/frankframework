@@ -27,10 +27,10 @@ public class MailFolder extends MailItemId {
 	@JsonProperty("displayName")
 	private String name;
 
-	private int childFolderCount;
-	private int unreadItemCount;
-	private int totalItemCount;
-	private int sizeInBytes;
+	private long childFolderCount;
+	private long unreadItemCount;
+	private long totalItemCount;
+	private long sizeInBytes;
 
 	@Override
 	public String toString() {
