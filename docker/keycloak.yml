@@ -34,11 +34,6 @@ services:
           - keycloak.localtest.me
     ports:
       - "9080:9080"
-    post_start:
-      - command: "chown -R keycloak /opt/keycloak/data/h2"
-        user: root
-      - command: "chown -R keycloak /opt/keycloak/data/transaction-logs"
-        user: root
 
 networks:
   keycloak: {}
