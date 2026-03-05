@@ -33,7 +33,6 @@ import org.frankframework.lifecycle.ConfigurableApplicationContext;
 
 /**
  * Custom Larva SpringContext, used to load the Larva scenario actions.
- * Not a fan of the IbisContext being passed/used here, but for now it is the only way to get the `Application` SpringContext.
  */
 @Log4j2
 public class LarvaScenarioContext extends ConfigurableApplicationContext {

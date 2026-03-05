@@ -17,23 +17,31 @@ package org.frankframework.lifecycle;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.support.GenericApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
+import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.util.RunState;
 
 @Log4j2
-public class ConfigurableApplicationContext extends GenericApplicationContext implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware {
+public class ConfigurableApplicationContext extends GenericApplicationContext implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware, ConfigurationAware {
 
 	private final String className = this.getClass().getSimpleName();
 	private @Getter RunState state = RunState.STOPPED;
 	private @Getter boolean isConfigured = false;
+	private @Setter Configuration configuration;
 
 	protected final boolean inState(RunState state) {
 		return getState() == state;
@@ -59,6 +67,24 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 		}
 
 		refresh();
+	}
+
+	/**
+	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
+	 */
+	@Override
+	protected void registerBeanPostProcessors(@NonNull ConfigurableListableBeanFactory beanFactory) {
+		super.registerBeanPostProcessors(beanFactory);
+
+		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
+		AutowiredAnnotationBeanPostProcessor postProcessor = new AutowiredAnnotationBeanPostProcessor();
+		postProcessor.setAutowiredAnnotationType(Autowired.class);
+		postProcessor.setBeanFactory(beanFactory);
+		beanFactory.addBeanPostProcessor(postProcessor);
+
+		if (configuration != null) { // Could technically be null?
+			beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
+		}
 	}
 
 	@Override
