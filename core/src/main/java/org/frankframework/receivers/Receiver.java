@@ -591,7 +591,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 			if (getListener() instanceof ITransactionRequirements tr) {
 				if (tr.transactionalRequired() && !isTransacted()) {
-					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
+					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY);
 					// throw new ConfigurationException(msg);
 				}
 			}
@@ -661,7 +661,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 
 			if (isTransacted() && errorStorage==null && !knownProcessStates().contains(ProcessState.ERROR)) {
-				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
+				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY);
 			}
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {

@@ -190,7 +190,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void addChild(IRecordHandlerManager manager) throws Exception {
-		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 		addManager(manager);
 	}
 
@@ -220,7 +220,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void addChild(RecordHandlingFlow flowEl) throws ConfigurationException {
-		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 		IRecordHandlerManager manager = registeredManagers.get(flowEl.getRecordHandlerManagerRef());
 		if (manager == null) {
 			throw new ConfigurationException("RecordHandlerManager [" + flowEl.getRecordHandlerManagerRef() + "] not found. Manager must be defined before the flows it contains");
@@ -235,7 +235,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void addChild(IRecordHandler handler) {
-		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 		addRecordHandler(handler);
 	}
 
@@ -254,7 +254,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@Deprecated
 	public void addChild(IResultHandler handler) {
-		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
+		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 		addResultHandler(handler);
 	}
 

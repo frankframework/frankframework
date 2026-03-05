@@ -30,6 +30,8 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.configuration.AdapterAware;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -86,9 +88,10 @@ import org.frankframework.util.SpringUtils;
  * @see PipeLineSession
  */
 @Forward(name = "exception", description = "some error happened while processing the message; represents the 'unhappy or error flow' and is not limited to Java Exceptions.")
-public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, IWithParameters {
+public abstract class AbstractPipe extends TransactionAttributes implements IPipe, EventThrowing, IWithParameters, AdapterAware {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
+	private @Setter Adapter adapter;
 
 	private boolean started = false;
 	private @Getter String name;
@@ -351,12 +354,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 	}
 
+	/**
+	 * Please use {@link ConfigurationAware} or AdapterAware where needed so this can be removed from the base-class.
+	 */
 	@Override
+	@Deprecated(forRemoval = true)
 	public Adapter getAdapter() {
-		if (applicationContext instanceof Adapter adapter) {
-			return adapter;
-		}
-		return null;
+		return adapter;
 	}
 
 	@Override

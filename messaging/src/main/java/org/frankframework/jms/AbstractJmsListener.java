@@ -334,7 +334,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	@Deprecated(forRemoval = true, since = "7.9.0")
 	public void setSender(ISender newSender) {
 		sender = newSender;
-		ConfigurationWarnings.add(this, log, "["+getName()+"] has a nested Sender, which is deprecated. Please use attribute replyDestinationName or a Sender nested in Receiver instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
+		ConfigurationWarnings.add(this, log, "["+getName()+"] has a nested Sender, which is deprecated. Please use attribute replyDestinationName or a Sender nested in Receiver instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 	}
 
 	/**

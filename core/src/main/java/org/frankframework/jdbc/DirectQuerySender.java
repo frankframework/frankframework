@@ -61,7 +61,7 @@ public class DirectQuerySender extends AbstractJdbcQuerySender<Connection> {
 		super.configure();
 
 		if (adapter != null) {
-			ConfigurationWarnings.add(adapter, log, "has a ["+ClassUtils.nameOf(this)+"]. This may cause potential SQL injections!", SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, adapter);
+			ConfigurationWarnings.add(adapter, log, "has a ["+ClassUtils.nameOf(this)+"]. This may cause potential SQL injections!", SuppressKeys.SQL_INJECTION_SUPPRESS_KEY);
 		} else {
 			// This can still be triggered when a Sender is inside a SenderSeries wrapper such as ParallelSenders
 			ApplicationWarnings.add(log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. This may cause potential SQL injections!");

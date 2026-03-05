@@ -178,7 +178,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 
 		if (getUriPattern().endsWith("/**")) {
-			ConfigurationWarnings.add(this, log, "When using /** patterns in an ApiListener the generated OpenAPI spec might be incomplete", SuppressKeys.CONFIGURATION_VALIDATION, getReceiver().getAdapter());
+			ConfigurationWarnings.add(this, log, "When using /** patterns in an ApiListener the generated OpenAPI spec might be incomplete", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 
 		if (getConsumes() != MediaTypes.ANY) {
