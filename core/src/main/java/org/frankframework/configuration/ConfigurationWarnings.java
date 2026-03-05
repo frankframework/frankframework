@@ -62,17 +62,13 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	 * Add a (globally-)suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
 	public static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey) {
-		add2(source, log, message, suppressionKey, findAdapter(source));
+		add(source, log, message, suppressionKey, findAdapter(source));
 	}
 
 	/**
 	 * Add a suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
-	public static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey, @NonNull Adapter adapter) {
-		add2(source, log, message, suppressionKey, adapter.getName());
-	}
-
-	private static void add2(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey, @Nullable String adapterName) {
+	private static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey, @Nullable String adapterName) {
 		ConfigurationWarnings instance = getInstance(source); // We could call two statics, this prevents a double getInstance(..) lookup.
 		if(instance != null) {
 			instance.add((Object) source, log, message, suppressionKey, adapterName);
