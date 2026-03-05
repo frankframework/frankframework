@@ -15,6 +15,7 @@
 */
 package org.frankframework.configuration.digester;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
@@ -42,6 +42,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -97,10 +98,10 @@ import org.frankframework.xml.XmlWriter;
  * @see Configuration
  */
 @Log4j2
-public class ConfigurationDigester implements ApplicationContextAware {
+public class ConfigurationDigester implements ConfigurationAware {
 	public static final String MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY = "migration.rewriteLegacyClassNames";
 	private final Logger configLogger = LogUtil.getLogger("CONFIG");
-	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter Configuration configuration;
 	private @Setter ConfigurationWarnings configurationWarnings;
 
 	private @Getter @Setter String digesterRuleFile = "digester-rules.xml";
@@ -136,50 +137,51 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	public @NonNull Digester getDigester(Configuration configuration) throws ConfigurationException {
-		Digester digester = SpringUtils.createBean(configuration);
+	private HashMap<String, DigesterRule> loadDigesterRules(@Nullable Resource digesterRulesResource) throws IOException, SAXException {
+		if (digesterRulesResource == null) {
+			throw new FileNotFoundException("unable to load Digester rule file");
+		}
+
+		FrankDigesterRules rules = new FrankDigesterRules();
+		XmlUtils.parseXml(digesterRulesResource.asInputSource(), rules);
+		return rules.getParsedPatterns();
+	}
+
+	public @NonNull Digester getDigester(ApplicationContext applicationContext) throws ConfigurationException {
+		Digester digester = SpringUtils.createBean(applicationContext);
+
 		try {
-
-			Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
-			if (digesterRulesResource == null) {
-				throw new ConfigurationException("unable to load Digester rule file");
-			}
-			loadDigesterRules(digester, digesterRulesResource);
-
-			return digester;
+			Resource digesterRulesResource = Resource.getResource(applicationContext::getClassLoader, getDigesterRuleFile());
+			digester.setParsedPatterns(loadDigesterRules(digesterRulesResource));
 		} catch (IOException | SAXException e) {
 			throw new ConfigurationException("unable to create digester with digester-rules ["+getDigesterRuleFile()+"] ", e);
 		}
-	}
 
-	private void loadDigesterRules(Digester digester, Resource digesterRulesResource) throws IOException, SAXException {
-		FrankDigesterRules rules = new FrankDigesterRules();
-		XmlUtils.parseXml(digesterRulesResource.asInputSource(), rules);
-		digester.setParsedPatterns(rules.getParsedPatterns());
+		return digester;
 	}
 
 	public void digest() throws ConfigurationException {
-		if(!(applicationContext instanceof Configuration configuration)) {
-			throw new IllegalStateException("no suitable Configuration found");
-		}
-
 		Resource configurationResource = getConfigurationResource(configuration);
 		if(configurationResource == null) {
 			return;
 		}
 
 		digestConfiguration(configuration, configurationResource);
+
+		configLogger.info(configuration.getLoadedConfiguration());
 	}
 
 	void digestConfiguration(Configuration configuration, Resource configurationResource) throws ConfigurationException {
-		Digester digester = getDigester(configuration);
+		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
+		digestConfiguration(configuration, configurationResource, appConstants);
+	}
+
+	public void digestConfiguration(ApplicationContext applicationContext, Resource configurationResource, PropertyLoader properties) throws ConfigurationException {
+		log.debug("digesting [{}] configurationFile [{}]", configuration::toString, configurationResource::getSystemId);
+		Digester digester = getDigester(applicationContext);
+
 		try {
-			log.debug("digesting configuration [{}] configurationFile [{}]", configuration::getName, configurationResource::getSystemId);
-
-			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-			parseAndResolveEntitiesAndProperties(digester, configuration, configurationResource, appConstants);
-
-			configLogger.info(configuration.getLoadedConfiguration());
+			parseAndResolveEntitiesAndProperties(digester, applicationContext, configurationResource, properties);
 		} catch (IOException | TransformerConfigurationException e) {
 			throw new ConfigurationException("error loading configuration", e);
 		} catch (SAXException e) {
@@ -210,7 +212,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 */
-	public void parseAndResolveEntitiesAndProperties(ContentHandler digester, Configuration configuration, Resource resource, PropertyLoader properties) throws IOException, SAXException, TransformerConfigurationException {
+	public void parseAndResolveEntitiesAndProperties(ContentHandler digester, ApplicationContext applicationContext, Resource resource, PropertyLoader properties) throws IOException, SAXException, TransformerConfigurationException {
 		ContentHandler handler;
 
 		XmlWriter loadedHiddenWriter = new XmlWriter();
@@ -218,7 +220,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		handler = new AttributePropertyResolver(handler, properties, getPropsToHide(properties));
 		handler = new XmlTee(digester, handler);
 
-		handler = getStub4TesttoolContentHandler(handler, configuration, properties);
+		handler = getStub4TesttoolContentHandler(handler, applicationContext::getClassLoader, properties);
 		handler = getConfigurationCanonicalizer(handler);
 		handler = new OnlyActiveFilter(handler, properties);
 		handler = new ElementPropertyResolver(handler, properties);
@@ -234,8 +236,11 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		handler = new IncludeFilter(handler, resource);
 
 		XmlUtils.parseXml(resource, handler);
-		configuration.setOriginalConfiguration(originalConfigWriter.toString());
-		configuration.setLoadedConfiguration(loadedHiddenWriter.toString());
+
+		if (applicationContext instanceof Configuration config) {
+			config.setOriginalConfiguration(originalConfigWriter.toString());
+			config.setLoadedConfiguration(loadedHiddenWriter.toString());
+		}
 	}
 
 	private Set<String> getPropsToHide(Properties appConstants) {

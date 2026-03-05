@@ -158,7 +158,6 @@ public class PropertyLoader extends Properties {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T extends Enum<T>> T getOrDefault(String key, T dfault) {
 		String value = getProperty(key);
 		if (value == null) {

@@ -89,4 +89,34 @@ public class JexlEvaluationInStringVarSubstTest {
 		// Assert
 		assertEquals("", result);
 	}
+
+	@Test
+	void testBooleanValue() {
+		// Arrange
+		Map<String, Object> vars = new HashMap<>();
+		vars.put("my.value", "exists");
+
+		String input = "${=StringUtils.isEmpty(my.value)}";
+
+		// Act
+		String result = StringResolver.substVars(input, vars);
+
+
+		// Assert
+		assertEquals("false", result);
+	}
+
+	@Test
+	void testNonExistingValue() {
+		// Arrange
+		Map<String, Object> vars = new HashMap<>();
+
+		String input = "${=StringUtils.isEmpty(non.existing.value)}";
+
+		// Act
+		String result = StringResolver.substVars(input, vars);
+
+		// Assert
+		assertEquals("true", result);
+	}
 }

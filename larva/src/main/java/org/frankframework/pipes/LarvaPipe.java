@@ -20,11 +20,13 @@ import java.io.StringWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
-import org.springframework.context.ApplicationContext;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeForward;
@@ -50,7 +52,10 @@ import org.frankframework.util.LogUtil;
  */
 @Forward(name = "success", description = "no errors and all tests passed")
 @Forward(name = "failure", description = "errors or failed tests")
-public class LarvaPipe extends FixedForwardPipe {
+public class LarvaPipe extends FixedForwardPipe implements ConfigurationAware {
+
+	@Setter
+	private Configuration configuration;
 
 	public static final LarvaLogLevel DEFAULT_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 	public static final String FORWARD_FAILURE="failure";
@@ -83,9 +88,8 @@ public class LarvaPipe extends FixedForwardPipe {
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
-		ApplicationContext applicationContext = getAdapter().getConfiguration().getApplicationContext();
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
-		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext);
+		LarvaTool larvaTool = LarvaTool.createInstance(configuration);
 		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
 		larvaConfig.setLogLevel(getLogLevel());
 		if (StringUtils.isNotBlank(getWaitBeforeCleanup())) {
