@@ -62,12 +62,12 @@ public class TestLocalStatisticsRegistry {
 
 		PipeLine pipeline = SpringUtils.createBean(adapter);
 
-		EchoPipe echoPipe = SpringUtils.createBean(adapter);
+		EchoPipe echoPipe = SpringUtils.createBean(pipeline);
 		echoPipe.setName("echoPipe");
 		pipeline.addPipe(echoPipe);
 
-		SenderPipe senderPipe = SpringUtils.createBean(adapter);
-		HttpSender httpSender = SpringUtils.createBean(adapter);
+		SenderPipe senderPipe = SpringUtils.createBean(pipeline);
+		HttpSender httpSender = SpringUtils.createBean(pipeline);
 		senderPipe.setSender(httpSender);
 		httpSender.setUrl("http://dummy.url");
 		httpSender.setName("httpSender");

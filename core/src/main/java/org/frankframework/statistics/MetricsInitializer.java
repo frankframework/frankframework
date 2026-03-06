@@ -163,11 +163,11 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 
 	private List<Tag> getTags(@NonNull FrankElement frankElement, @NonNull String name, @Nullable List<Tag> extraTags) {
 		List<Tag> tags = new ArrayList<>(5);
-		Adapter adapter = getAdapter(frankElement);
+		Adapter adapter = findAdapter(frankElement.getApplicationContext());
 		if(adapter != null) {
 			tags.add(Tag.of("adapter", adapter.getName()));
 		}
-		Configuration configuration = getConfiguration(frankElement);
+		Configuration configuration = findConfiguration(frankElement.getApplicationContext());
 		if(configuration != null && StringUtils.isNotEmpty(configuration.getId())) {
 			tags.add(Tag.of("configuration", configuration.getId()));
 		}
@@ -180,27 +180,25 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return tags;
 	}
 
-	@Nullable
-	private Configuration getConfiguration(@NonNull FrankElement frankElement) {
-		ApplicationContext ac = frankElement.getApplicationContext();
-		if (ac instanceof Configuration config) {
-			return config;
-		} else if (ac instanceof Adapter adapter) {
-			return (Configuration) adapter.getParent();
+	private static @Nullable Configuration findConfiguration(@Nullable ApplicationContext source) {
+		if (source == null) {
+			return null;
 		}
-		return null; // TODO throw new IllegalStateException("No ConfigurationContext found");
+		if (source instanceof Configuration configuration) {
+			return configuration;
+		}
+		return findConfiguration(source.getParent());
 	}
 
-	private Adapter getAdapter(@NonNull FrankElement frankElement) {
-		if (frankElement instanceof Adapter adapter) {
+	// The only FrankElements (I can think of) that doesn't have an adapter are things created by the MonitorManager/ScheduleManager.
+	private static @Nullable Adapter findAdapter(@Nullable ApplicationContext source) {
+		if (source == null) {
+			return null;
+		}
+		if (source instanceof Adapter adapter) {
 			return adapter;
 		}
-
-		if (frankElement.getApplicationContext() instanceof Adapter adapter) {
-			return adapter;
-		}
-
-		return null;
+		return findAdapter(source.getParent());
 	}
 
 	private String getElementType(@NonNull FrankElement frankElement) {
