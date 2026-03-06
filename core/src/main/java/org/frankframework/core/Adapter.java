@@ -56,6 +56,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.AdapterAwareBeanPostProcessor;
 import org.frankframework.configuration.AopProxyBeanFactoryPostProcessor;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationAware;
@@ -390,6 +391,8 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		postProcessor.setAutowiredAnnotationType(Autowired.class);
 		postProcessor.setBeanFactory(beanFactory);
 		beanFactory.addBeanPostProcessor(postProcessor);
+
+		beanFactory.addBeanPostProcessor(new AdapterAwareBeanPostProcessor(this));
 
 		if (configuration != null) {
 			beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));

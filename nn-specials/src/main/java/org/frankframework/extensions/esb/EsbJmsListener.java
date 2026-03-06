@@ -96,7 +96,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				}
 			}
 			if (getCacheMode()==CacheMode.CACHE_CONSUMER) {
-				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
+				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
 			}
 			setCacheMode(CacheMode.CACHE_CONSUMER);
 		} else {

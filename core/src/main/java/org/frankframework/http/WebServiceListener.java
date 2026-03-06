@@ -105,7 +105,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress()) && StringUtils.isEmpty(getSoapAction())) {
 			String msg = "You must specify either an address, soapAction or a serviceNamespaceURI";
-			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
+			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 		}
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress()) && StringUtils.isNotEmpty(getSoapAction())) {
 			String msg = "Please specify only one of either an address, soapAction or serviceNamespaceURI";

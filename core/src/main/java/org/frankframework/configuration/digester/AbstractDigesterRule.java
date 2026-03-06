@@ -100,7 +100,8 @@ public abstract class AbstractDigesterRule implements ApplicationContextAware {
 	 * @param suppressionKey {@link SuppressKeys} to check.
 	 */
 	protected final void addSuppressibleWarning(String msg, SuppressKeys suppressionKey) {
-		configurationWarnings.add(getBean(), log, getLocationString() + msg, suppressionKey, currentAdapter);
+		String adapterName = currentAdapter != null ? currentAdapter.getName() : null;
+		configurationWarnings.add(getBean(), log, getLocationString() + msg, suppressionKey, adapterName);
 	}
 
 	private String getLocationString() {

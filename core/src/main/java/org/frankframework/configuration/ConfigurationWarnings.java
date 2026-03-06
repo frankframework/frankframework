@@ -62,19 +62,36 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	 * Add a (globally-)suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
 	public static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey) {
-		add(source, log, message, suppressionKey, null);
+		add(source, log, message, suppressionKey, findAdapter(source));
 	}
 
 	/**
 	 * Add a suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
-	public static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey, @Nullable Adapter adapter) {
+	private static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey, @Nullable String adapterName) {
 		ConfigurationWarnings instance = getInstance(source); // We could call two statics, this prevents a double getInstance(..) lookup.
 		if(instance != null) {
-			instance.add((Object) source, log, message, suppressionKey, adapter);
+			instance.add((Object) source, log, message, suppressionKey, adapterName);
 		} else {
 			ApplicationWarnings.add(log, message);
 		}
+	}
+
+	private static @Nullable String findAdapter(@Nullable HasApplicationContext source) {
+		if (source == null) {
+			return null;
+		}
+		return findAdapter(source.getApplicationContext());
+	}
+
+	private static @Nullable String findAdapter(@Nullable ApplicationContext source) {
+		if (source == null) {
+			return null;
+		}
+		if (source instanceof Adapter adapter) {
+			return adapter.getName();
+		}
+		return findAdapter(source.getParent());
 	}
 
 	// Helper method to retrieve ConfigurationWarnings from the Configuration Context
@@ -95,8 +112,8 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 		return applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);
 	}
 
-	private boolean doIsSuppressed(@NonNull SuppressKeys key, @Nullable Adapter adapter) {
-		return isSuppressed(key) || adapter != null && getAppConstants().getBoolean(key.getKey() + "." + adapter.getName(), false); // or warning is suppressed for this adapter only.
+	private boolean doIsSuppressed(@NonNull SuppressKeys key, @Nullable String adapterName) {
+		return isSuppressed(key) || adapterName != null && getAppConstants().getBoolean(key.getKey() + "." + adapterName, false); // or warning is suppressed for this adapter only.
 	}
 
 	public boolean isSuppressed(@NonNull SuppressKeys key) {
@@ -113,16 +130,16 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 			throw new IllegalArgumentException("ConfigurationWarnings not initialized");
 		}
 
-		return instance.doIsSuppressed(key, adapter);
+		return instance.doIsSuppressed(key, adapter.getName());
 	}
 
-	public void add(@Nullable Object source, @NonNull Logger log, String message, @NonNull SuppressKeys suppressionKey, @Nullable Adapter adapter) {
-		if(!doIsSuppressed(suppressionKey, adapter)) {
+	public void add(@Nullable Object source, @NonNull Logger log, String message, @NonNull SuppressKeys suppressionKey, @Nullable String adapterName) {
+		if(!doIsSuppressed(suppressionKey, adapterName)) {
 			// provide suppression hint as info
 			String hint = null;
 			if(log.isInfoEnabled()) {
-				if(adapter != null) {
-					hint = ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapter.getName()+"=true'";
+				if(adapterName != null) {
+					hint = ". This warning can be suppressed by setting the property '"+suppressionKey.getKey()+"."+adapterName+"=true'";
 					if(suppressionKey.isAllowGlobalSuppression()) {
 						hint += ", or globally by setting the property '"+suppressionKey.getKey()+"=true'";
 					}
