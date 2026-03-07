@@ -53,6 +53,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Dir2Xml;
 import org.frankframework.util.FileUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.TransformerPool;
@@ -133,6 +134,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			receiver.setListener(esbJmsListener);
 			adapter.addReceiver(receiver);
 			pipeLine.setApplicationContext(adapter);
+			SpringUtils.autowireByName(adapter, pipeLine);
 			adapter.setPipeLine(pipeLine);
 
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
