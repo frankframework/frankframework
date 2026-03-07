@@ -124,7 +124,7 @@ public class PipeDescriptionProvider {
 			// object will be created. The old configuration object will be
 			// removed from pipeDescriptionCaches by the garbage collection as
 			// this is a WeakHashMap.
-			Configuration configuration = pipeLine.getConfiguration();
+			Configuration configuration = pipeLine.getAdapter().getConfiguration();
 
 			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.computeIfAbsent(configuration, k -> new HashMap<>());
 			pipeDescription = pipeDescriptionCache.get(xpathExpression);
