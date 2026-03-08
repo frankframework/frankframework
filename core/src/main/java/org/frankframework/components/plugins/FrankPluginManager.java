@@ -109,6 +109,9 @@ public class FrankPluginManager extends DefaultPluginManager {
 		return plugin;
 	}
 
+	/**
+	 * The super method doesn't seem to always stop all plugins.
+	 */
 	@Override
 	public void stopPlugins() {
 		// Stop started plugins in reverse order

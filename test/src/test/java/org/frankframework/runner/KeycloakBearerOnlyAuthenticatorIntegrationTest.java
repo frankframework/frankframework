@@ -12,14 +12,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import org.frankframework.util.AppConstants;
 
 /**
  * Tests whether bearer only request authentication works with Keycloak and the application.
@@ -29,7 +26,7 @@ import org.frankframework.util.AppConstants;
  */
 @Tag("integration")
 @DisabledWithoutDocker
-public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBearerOnlyBase{
+public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBearerOnlyBase {
 
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
@@ -42,24 +39,22 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBear
 		System.setProperty("application.security.console.authentication.userNameAttributeName", "name");
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
 
-		SpringApplication springApplication = IafTestInitializer.configureApplication();
-
-		applicationContext = springApplication.run();
+		System.setProperty("configurations.names", ""); // Don't load configurations to speed things up.
+		frankApplication = new FrankApplication();
+		frankApplication.run();
 	}
 
 	@AfterAll
 	static void tearDown() {
-		if (applicationContext != null) {
-			applicationContext.close();
+		if (frankApplication != null) {
+			frankApplication.close();
 		}
 
+		System.clearProperty("configurations.names");
 		System.clearProperty("application.security.console.authentication.type");
 		System.clearProperty("application.security.console.authentication.issuerUri");
 		System.clearProperty("application.security.console.authentication.userNameAttributeName");
 		System.clearProperty("application.security.console.authentication.authoritiesClaimName");
-
-		// Make sure to clear the app constants as well
-		AppConstants.removeInstance();
 	}
 
 	@Test

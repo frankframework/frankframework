@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.boot.SpringApplication;
 
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
 
@@ -31,10 +30,10 @@ import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
  * @author Niels Meijer
  */
 // Careful.. don't log here!!
-public class IafTestInitializer extends FrankInitializer {
+public class IafTestInitializer {
 
 	public static void main(String[] args) throws IOException {
-		SpringApplication app = configureApplication();
+		FrankApplication app = configureApplication();
 		app.run(args);
 	}
 
@@ -46,7 +45,7 @@ public class IafTestInitializer extends FrankInitializer {
 	 * @param jmsProvider Name of JMS provider. If null, JMS is not enabled in tests (property {@code jms.active=false}). The JMS provider name is used to set the properties
 	 *                    {@code jms.provider.default=<jmsProvider>}, {@code jms.connectionfactory.qcf.<jmsProvider>=jms/qcf-<jmsProvider>} and {@code jms.destination.suffix=-<jmsProvider>}.
 	 */
-	static SpringApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
+	static FrankApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
 		if (jmsProvider != null) {
 			System.setProperty("jms.provider.default", jmsProvider);
 		}
@@ -64,9 +63,10 @@ public class IafTestInitializer extends FrankInitializer {
 	 * Configure the Frank!Framework application, enabling support for JMS depending on the value of {@literal "jms.provider.default"} System property, with
 	 * application server type {@literal "IBISTEST"}.
 	 */
-	static SpringApplication configureApplication() throws IOException {
+	static FrankApplication configureApplication() throws IOException {
+		FrankApplication frankApp = new FrankApplication();
 		// Find and configure the configurations
-		setConfigurationsDirectory(getProjectDir());
+		setConfigurationsDirectory(frankApp.getProjectDir());
 
 		// Configure JMS
 		String jmsProvider = System.getProperty("jms.provider.default");
@@ -89,7 +89,11 @@ public class IafTestInitializer extends FrankInitializer {
 			System.setProperty("active.storedProcedureTests", "true");
 		}
 
-		return createSpringApplication();
+		// Configure a CredentialProvider
+		frankApp.configureCredentialProvider("src/main/secrets/credentials.properties");
+		System.setProperty("authAliases.expansion.allowed", "testalias");
+
+		return frankApp;
 	}
 
 	private static void setConfigurationsDirectory(Path projectDir) throws IOException {

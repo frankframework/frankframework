@@ -14,14 +14,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import org.frankframework.util.AppConstants;
 
 /**
  * Tests whether bearer only request authentication works with Keycloak and the application. This test looks a lot like the other one, but
@@ -46,15 +43,15 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
 		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(httpPort));
 
-		SpringApplication springApplication = IafTestInitializer.configureApplication();
-
-		applicationContext = springApplication.run();
+		System.setProperty("configurations.names", ""); // Don't load configurations to speed things up.
+		frankApplication = new FrankApplication();
+		frankApplication.run();
 	}
 
 	@AfterAll
 	static void tearDown() {
-		if (applicationContext != null) {
-			applicationContext.close();
+		if (frankApplication != null) {
+			frankApplication.close();
 		}
 
 		System.clearProperty("application.security.console.authentication.type");
@@ -62,9 +59,6 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 		System.clearProperty("application.security.console.authentication.userNameAttributeName");
 		System.clearProperty("application.security.console.authentication.authoritiesClaimName");
 		System.clearProperty("application.security.console.authentication.userInfoUri");
-
-		// Make sure to clear the app constants as well
-		AppConstants.removeInstance();
 	}
 
 	@Test

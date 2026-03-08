@@ -180,6 +180,9 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return tags;
 	}
 
+	/**
+	 * Traverses the {@link ApplicationContext ApplicationContext's} parent until it finds a {@link Configuration}.
+	 */
 	private static @Nullable Configuration findConfiguration(@Nullable ApplicationContext source) {
 		if (source == null) {
 			return null;
@@ -190,6 +193,9 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return findConfiguration(source.getParent());
 	}
 
+	/**
+	 * Traverses the {@link ApplicationContext ApplicationContext's} parent until it finds an {@link Adapter}.
+	 */
 	// The only FrankElements (I can think of) that doesn't have an adapter are things created by the MonitorManager/ScheduleManager.
 	private static @Nullable Adapter findAdapter(@Nullable ApplicationContext source) {
 		if (source == null) {

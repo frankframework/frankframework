@@ -25,6 +25,7 @@ import java.util.NoSuchElementException;
 import java.util.logging.Level;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import lombok.extern.java.Log;
@@ -59,6 +60,11 @@ public class CredentialFactory {
 		return self;
 	}
 
+	public static synchronized void createInstance(@NonNull ISecretProvider... providers) throws Exception {
+		clearInstance();
+		self = new CredentialFactory(providers);
+	}
+
 	private CredentialFactory() {
 		this(ALLOW_FALLBACK);
 	}
@@ -75,6 +81,17 @@ public class CredentialFactory {
 				// No factories found and no fallback allowed, abort!
 				exit();
 			}
+		}
+	}
+
+	private CredentialFactory(@NonNull ISecretProvider... providers) throws Exception {
+		List<ISecretProvider> providerList = Arrays.asList(providers);
+		if (providerList.isEmpty()) {
+			throw new IllegalArgumentException("No CredentialFactory installed");
+		}
+		for (ISecretProvider provider : providerList) {
+			provider.initialize();
+			delegates.add(provider);
 		}
 	}
 
