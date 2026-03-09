@@ -25,7 +25,7 @@ public class ConfigWarningTest {
 		ConfigurationDigester digester = SpringUtils.createBean(configuration);
 
 		// Act
-		digester.digestConfiguration(configuration, resource);
+		digester.digest(resource);
 
 		// Assert
 		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();

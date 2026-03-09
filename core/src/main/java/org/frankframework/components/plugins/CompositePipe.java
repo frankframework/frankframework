@@ -100,7 +100,7 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean 
 
 			// We must digest the entrypoint with the Plugin Classloader because the Thread's contextClassLoader is used.
 			Thread.currentThread().setContextClassLoader(plugin.getPluginClassLoader());
-			configurationDigester.digestConfiguration(pipeline, resource, properties);
+			configurationDigester.digest(pipeline, resource, properties);
 			log.info("succesfully loaded plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
 
 			// After loading all bean, configure them.

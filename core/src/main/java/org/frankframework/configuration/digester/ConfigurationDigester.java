@@ -160,24 +160,40 @@ public class ConfigurationDigester implements ConfigurationAware {
 		return digester;
 	}
 
+	/**
+	 * Digest the {@link ConfigurationUtils#getConfigurationFile(ClassLoader, String) Configuration.xml} using the configuration as the 'TOP' bean.
+	 * This means each bean will be created/wired using the {@link Configuration ConfigurationContext} this class was made with.
+	 * Each newly created bean will be 'injected' into it's parent using the {@link ConfigurationDigester#getDigesterRuleFile() DigesterRuleFile}.
+	 */
 	public void digest() throws ConfigurationException {
 		Resource configurationResource = getConfigurationResource(configuration);
 		if(configurationResource == null) {
+			log.trace("nothing to digest, skipping");
 			return;
 		}
 
-		digestConfiguration(configuration, configurationResource);
+		digest(configurationResource);
 
 		configLogger.info(configuration.getLoadedConfiguration());
 	}
 
-	void digestConfiguration(Configuration configuration, Resource configurationResource) throws ConfigurationException {
+	/**
+	 * Digest the provided {@code configurationResource} using the configuration as the 'TOP' bean.
+	 * This means each bean will be created/wired using the {@link Configuration ConfigurationContext} this class was made with.
+	 * Each newly created bean will be 'injected' into it's parent using the {@link ConfigurationDigester#getDigesterRuleFile() DigesterRuleFile}.
+	 */
+	public void digest(Resource configurationResource) throws ConfigurationException {
 		AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
-		digestConfiguration(configuration, configurationResource, appConstants);
+		digest(configuration, configurationResource, appConstants);
 	}
 
-	public void digestConfiguration(ApplicationContext applicationContext, Resource configurationResource, PropertyLoader properties) throws ConfigurationException {
-		log.debug("digesting [{}] configurationFile [{}]", configuration::toString, configurationResource::getSystemId);
+	/**
+	 * Digest the provided {@code configurationResource} using the provided {@link ApplicationContext} as the 'TOP' bean.
+	 * This means each bean will be created/wired using the {@link ApplicationContext} this class was made with.
+	 * Each newly created bean will be 'injected' into it's parent using the {@link ConfigurationDigester#getDigesterRuleFile() DigesterRuleFile}.
+	 */
+	public void digest(ApplicationContext applicationContext, Resource configurationResource, PropertyLoader properties) throws ConfigurationException {
+		log.debug("digesting [{}] configurationFile [{}]", applicationContext::toString, configurationResource::getSystemId);
 		Digester digester = getDigester(applicationContext);
 
 		try {

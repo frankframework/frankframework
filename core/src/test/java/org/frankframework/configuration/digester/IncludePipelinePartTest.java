@@ -22,7 +22,7 @@ public class IncludePipelinePartTest {
 		ConfigurationDigester digester = SpringUtils.createBean(configuration);
 
 		// Act
-		digester.digestConfiguration(configuration, resource);
+		digester.digest(resource);
 
 		// Assert
 		Adapter adapter = configuration.getRegisteredAdapter("Adapt1");

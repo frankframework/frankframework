@@ -14,7 +14,7 @@ public class ConfigurationDigesterMock extends ConfigurationDigester {
 	}
 
 	@Override
-	public void digestConfiguration(ApplicationContext applicationContext, Resource configurationResource, PropertyLoader properties) throws ConfigurationException {
+	public void digest(ApplicationContext applicationContext, Resource configurationResource, PropertyLoader properties) throws ConfigurationException {
 		// Ignore digest to speed up jUnit-tests
 	}
 }
