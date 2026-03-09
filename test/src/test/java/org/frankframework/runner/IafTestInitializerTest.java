@@ -8,49 +8,45 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
-import org.frankframework.util.AppConstants;
 
 @Tag("slow")
 class IafTestInitializerTest {
 
 	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
-	private static ConfigurableApplicationContext applicationContext = null;
+	private static FrankApplication frankApplication;
 
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
 	@BeforeAll
 	static void setup() throws IOException {
-		SpringApplication springApplication = IafTestInitializer.configureApplication();
+		System.setProperty("configurations.names", ""); // Don't load configurations to speed things up.
 
-		applicationContext = springApplication.run();
+		frankApplication = new FrankApplication();
+		frankApplication.run();
 	}
 
 	@AfterAll
 	static void tearDown() {
-		if (applicationContext != null) {
-			applicationContext.close();
-		}
+		System.clearProperty("configurations.names");
 
-		// Make sure to clear the app constants as well
-		AppConstants.removeInstance();
+		if (frankApplication != null) {
+			frankApplication.close();
+		}
 	}
 
 	@Test
 	void contextLoads() {
-		assertTrue(applicationContext.isRunning());
+		assertTrue(frankApplication.isRunning());
 	}
 
 	@Test
 	void ladybugRuns() {
 		// Make sure to use the right context and port for the Tomcat server
-		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
+		TomcatServletWebServerFactory tomcat = frankApplication.getBean("tomcat");
 		String baseUrl = String.format("http://localhost:%d/%s/iaf/ladybug/api/", tomcat.getPort(), tomcat.getContextPath());
 
 		RestTemplate restTemplate = new RestTemplate();

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
@@ -39,14 +40,11 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.messaging.Message;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
@@ -57,14 +55,8 @@ import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.LocalGateway;
-import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
-import org.frankframework.util.SpringUtils;
 
 /**
  * Attempt to run Larva tests in the Maven build.
@@ -124,14 +116,14 @@ public class RunLarvaTests {
 	 */
 	@BeforeAll
 	static void setupBeforeAll() throws Exception {
-		jmsServer = configureEmbeddedJmsServer();
+		FrankApplication frankApplication = IafTestInitializer.configureApplication("NARAYANA", null, "inmem");
+		jmsServer = configureEmbeddedJmsServer(frankApplication.getProjectDir());
 
 		// Ladybug is called from a Larva scenario (using LadybugPipe) and needs to find and execute the *.report.xml files
 		System.setProperty("ibistesttool.directory", "src/test/testtool");
 
-		SpringApplication springApplication = IafTestInitializer.configureApplication("NARAYANA", null, "inmem");
 		// This ApplicationContext doesn't have the database, so we cannot use it for the Larva Tests...
-		parentContext = springApplication.run();
+		parentContext = frankApplication.run();
 		ServletContext servletContext = parentContext.getBean(ServletContext.class);
 
 		// We need to get the IbisContext from the ServletContext, since from this one we can get the ApplicationContext that has the database.
@@ -142,19 +134,18 @@ public class RunLarvaTests {
 		// However, as it's set via DeploymentSpecifics we cannot just clear or remove it, so we have to set it to blanks in the System properties which take preference over DeploymentSpecifics
 		System.setProperty("wsdl.soapAction", "");
 
-		OutboundGateway gateway = SpringUtils.createBean(parentContext, LocalGateway.class);
-		assertTrue(parentContext.isRunning());
+		assertTrue(frankApplication.isRunning());
 		await().pollInterval(5, TimeUnit.SECONDS)
 				.atMost(Duration.ofMinutes(5))
-				.until(() -> verifyAppIsHealthy(gateway));
+				.until(() -> frankApplication.hasStarted());
 	}
 
-	private static EmbeddedActiveMQ configureEmbeddedJmsServer() throws Exception {
+	private static EmbeddedActiveMQ configureEmbeddedJmsServer(Path projectDir) throws Exception {
 		// NB: Currently with current ActiveMQ Artemis releases the in-memory broker is not compatible with JDK23 and above.
 		// See: https://issues.apache.org/jira/browse/ARTEMIS-4975, https://issues.apache.org/jira/browse/ARTEMIS-5711
 		// However work is underway to fix this in an upcoming release, probably before we are ready to release F!F 10.0 and move to JDK25.
 		log.info("Starting in-memory Artemis message broker");
-		String jmsDataDir = IafTestInitializer.getLogDir(IafTestInitializer.getProjectDir()) + "/ArtemisMQ";
+		String jmsDataDir = FrankApplication.getLogDir(projectDir) + "/ArtemisMQ";
 		FileUtils.deleteDirectory(new File(jmsDataDir));
 
 		Configuration artemisJmsConfig = new ConfigurationImpl();
@@ -177,16 +168,6 @@ public class RunLarvaTests {
 		embeddedServer.start();
 		log.info("Started embedded in-memory Artemis message broker");
 		return embeddedServer;
-	}
-
-	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
-		try {
-			Message<@NonNull Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
-			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+ MessageBase.STATUS_KEY));
-		} catch (Exception e) {
-			log.error("error while checking health of application", e);
-			return false;
-		}
 	}
 
 	@BeforeEach
