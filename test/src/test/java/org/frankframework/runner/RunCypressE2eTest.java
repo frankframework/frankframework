@@ -76,6 +76,7 @@ public class RunCypressE2eTest {
 	}
 
 	private static void startIafTestInitializer() throws IOException {
+		// Use IafTestInitializer because the iaf-test classpath is used
 		frankApplication = IafTestInitializer.configureApplication();
 		frankApplication.run();
 

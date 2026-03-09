@@ -35,6 +35,8 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
 	@BeforeAll
+//	Enable this once JUNIT 6.1.0 has been released
+//	@SetSystemProperty(key = "configurations.names", value = "") // Don't load configurations to speed things up.
 	static void setup() throws IOException {
 		// Set system properties for the application to use the Keycloak container and start the framework initializer
 		System.setProperty("application.security.console.authentication.type", "BEARER_ONLY");
@@ -43,12 +45,9 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
 		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(httpPort));
 
-		System.setProperty("configurations.names", ""); // Don't load configurations to speed things up.
-
-		frankApplication = new FrankApplication();
+		// Use IafTestInitializer because the iaf-test classpath is used
+		frankApplication = IafTestInitializer.configureApplication();
 		frankApplication.run();
-
-		System.clearProperty("configurations.names");
 	}
 
 	@AfterAll

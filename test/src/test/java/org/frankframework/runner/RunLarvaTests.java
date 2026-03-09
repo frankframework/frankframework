@@ -73,9 +73,9 @@ public class RunLarvaTests {
 
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
-			// These scenarios might fail, mostly in Maven builds, some in IntelliJ builds
-			"Base64Pipe/scenario01",
-			"Base64Pipe/scenario02",
+			// These scenarios might fail (!!because of classpath issues!!), mostly in Maven builds, some in IntelliJ builds
+			"Base64Pipe/scenario01", // Warning: Could not find file C:\Data\Git\IAF2\test\file.txt to copy.
+			"Base64Pipe/scenario02", // Warning: Could not find file C:\Data\Git\IAF2\test\file.pdf to copy.
 			"FileSender/scenario01",
 			"LadybugIntegration/scenario02",
 			"ManagedFileHandler/scenario01",
