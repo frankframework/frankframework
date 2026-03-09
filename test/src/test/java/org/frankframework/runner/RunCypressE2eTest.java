@@ -101,9 +101,7 @@ public class RunCypressE2eTest {
 
 	@AfterAll
 	static void tearDown() {
-		if (frankApplication == null) return;
-
-		frankApplication.close();
+		FrankApplication.exit(frankApplication);
 
 		if (container != null) {
 			container.stop();

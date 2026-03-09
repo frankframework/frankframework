@@ -31,11 +31,9 @@ class IafTestInitializerTest {
 
 	@AfterAll
 	static void tearDown() {
-		System.clearProperty("configurations.names");
+		FrankApplication.exit(frankApplication);
 
-		if (frankApplication != null) {
-			frankApplication.close();
-		}
+		System.clearProperty("configurations.names");
 	}
 
 	@Test

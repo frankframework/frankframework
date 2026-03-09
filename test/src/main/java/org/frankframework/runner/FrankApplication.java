@@ -15,7 +15,6 @@
 */
 package org.frankframework.runner;
 
-import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -46,6 +45,7 @@ import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -79,7 +79,7 @@ import org.frankframework.util.SpringUtils;
  * @author Niels Meijer
  */
 // Careful.. don't log here!!
-public class FrankApplication implements Closeable {
+public class FrankApplication {
 	private final Path projectDir;
 	private final SpringApplication app;
 	private boolean configuredCredentialProvider = false;
@@ -209,14 +209,22 @@ public class FrankApplication implements Closeable {
 		return applicationContext;
 	}
 
-	@Override
-	public void close() {
+	public static void exit(FrankApplication frankApplication) {
+		if (frankApplication != null && frankApplication.applicationContext != null) {
+			exit(frankApplication.applicationContext);
+		} else {
+			exit((ApplicationContext) null);
+		}
+	}
+
+	public static void exit(ApplicationContext applicationContext) {
+		System.clearProperty("credentialFactory.class");
+		System.clearProperty("credentialFactory.map.properties");
+
 		if (applicationContext != null) {
 			SpringApplication.exit(applicationContext);
 		}
 
-		System.clearProperty("credentialFactory.class");
-		System.clearProperty("credentialFactory.map.properties");
 		// Make sure to clear the app constants as well
 		AppConstants.removeInstance();
 	}

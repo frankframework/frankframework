@@ -46,9 +46,7 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBear
 
 	@AfterAll
 	static void tearDown() {
-		if (frankApplication != null) {
-			frankApplication.close();
-		}
+		FrankApplication.exit(frankApplication);
 
 		System.clearProperty("configurations.names");
 		System.clearProperty("application.security.console.authentication.type");

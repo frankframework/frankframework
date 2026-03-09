@@ -56,7 +56,6 @@ import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.CloseUtils;
 
 /**
  * Attempt to run Larva tests in the Maven build.
@@ -188,11 +187,8 @@ public class RunLarvaTests {
 
 	@AfterAll
 	static void tearDown() {
-		if (parentContext != null) {
-			parentContext.stop();
-			CloseUtils.closeSilently(parentContext);
-			parentContext = null;
-		}
+		FrankApplication.exit(parentContext);
+
 		applicationContext = null;
 		ibisContext = null;
 		if (jmsServer != null) {
