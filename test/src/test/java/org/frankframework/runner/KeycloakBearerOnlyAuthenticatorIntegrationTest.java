@@ -40,15 +40,17 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBear
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
 
 		System.setProperty("configurations.names", ""); // Don't load configurations to speed things up.
+
 		frankApplication = new FrankApplication();
 		frankApplication.run();
+
+		System.clearProperty("configurations.names");
 	}
 
 	@AfterAll
 	static void tearDown() {
 		FrankApplication.exit(frankApplication);
 
-		System.clearProperty("configurations.names");
 		System.clearProperty("application.security.console.authentication.type");
 		System.clearProperty("application.security.console.authentication.issuerUri");
 		System.clearProperty("application.security.console.authentication.userNameAttributeName");

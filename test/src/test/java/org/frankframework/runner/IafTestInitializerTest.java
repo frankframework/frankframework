@@ -27,13 +27,13 @@ class IafTestInitializerTest {
 
 		frankApplication = new FrankApplication();
 		frankApplication.run();
+
+		System.clearProperty("configurations.names");
 	}
 
 	@AfterAll
 	static void tearDown() {
 		FrankApplication.exit(frankApplication);
-
-		System.clearProperty("configurations.names");
 	}
 
 	@Test

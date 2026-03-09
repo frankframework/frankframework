@@ -80,6 +80,7 @@ import org.frankframework.util.SpringUtils;
  */
 // Careful.. don't log here!!
 public class FrankApplication {
+
 	private final Path projectDir;
 	private final SpringApplication app;
 	private boolean configuredCredentialProvider = false;
@@ -204,8 +205,12 @@ public class FrankApplication {
 
 		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
 		String baseUrl = String.format("http://localhost:%d%s/", tomcat.getPort(), tomcat.getContextPath());
-
 		LogUtil.getLogger("APPLICATION").info("Application running on [{}]", baseUrl);
+
+		// The application has started, preemptively clear the credentialFactory properties.
+		System.clearProperty("credentialFactory.class");
+		System.clearProperty("credentialFactory.map.properties");
+
 		return applicationContext;
 	}
 
@@ -217,10 +222,7 @@ public class FrankApplication {
 		}
 	}
 
-	public static void exit(ApplicationContext applicationContext) {
-		System.clearProperty("credentialFactory.class");
-		System.clearProperty("credentialFactory.map.properties");
-
+	public static synchronized void exit(ApplicationContext applicationContext) {
 		if (applicationContext != null) {
 			SpringApplication.exit(applicationContext);
 		}

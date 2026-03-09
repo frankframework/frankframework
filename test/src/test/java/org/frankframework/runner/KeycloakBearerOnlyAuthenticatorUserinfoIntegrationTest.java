@@ -44,15 +44,17 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(httpPort));
 
 		System.setProperty("configurations.names", ""); // Don't load configurations to speed things up.
+
 		frankApplication = new FrankApplication();
 		frankApplication.run();
+
+		System.clearProperty("configurations.names");
 	}
 
 	@AfterAll
 	static void tearDown() {
 		FrankApplication.exit(frankApplication);
 
-		System.clearProperty("configurations.names");
 		System.clearProperty("application.security.console.authentication.type");
 		System.clearProperty("application.security.console.authentication.issuerUri");
 		System.clearProperty("application.security.console.authentication.userNameAttributeName");
