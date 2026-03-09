@@ -136,7 +136,7 @@ public class FrankApplication {
 	 */
 	public void configureCredentialProvider(String credentialPropertiesFile) throws IOException {
 		// If a CredentialFactory has already been set, abort.
-		if (configuredCredentialProvider == true || StringUtils.isNotBlank(System.getProperty("credentialFactory.class"))) {
+		if (configuredCredentialProvider || StringUtils.isNotBlank(System.getProperty("credentialFactory.class"))) {
 			// skip!
 			return;
 		}
