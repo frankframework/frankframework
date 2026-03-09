@@ -76,6 +76,7 @@ public class RunCypressE2eTest {
 	}
 
 	private static void startIafTestInitializer() throws IOException {
+		// Use IafTestInitializer because the iaf-test classpath is used
 		frankApplication = IafTestInitializer.configureApplication();
 		frankApplication.run();
 
@@ -101,9 +102,7 @@ public class RunCypressE2eTest {
 
 	@AfterAll
 	static void tearDown() {
-		if (frankApplication == null) return;
-
-		frankApplication.close();
+		FrankApplication.exit(frankApplication);
 
 		if (container != null) {
 			container.stop();
