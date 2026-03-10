@@ -98,7 +98,7 @@
 
 		<narayana.version>7.3.3.Final</narayana.version>
 		<jboss-logging.version>3.6.2.Final</jboss-logging.version>
-		<micrometer.version>1.16.3</micrometer.version>
+		<micrometer.version>1.16.4</micrometer.version>
 		<argLine />
 		<!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
@@ -607,7 +607,7 @@
 			<dependency>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
-				<version>1.3.5</version>
+				<version>1.3.6</version>
 			</dependency>
 
 			<!-- API's are to compile, implementations should be provided by the application server -->
