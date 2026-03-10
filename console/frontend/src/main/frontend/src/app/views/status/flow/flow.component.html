@@ -11,7 +11,7 @@
     (click)="prepareFlowModal()"
   >
     @if (loadInline) {
-      <app-ng-mermaid [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500" [flowName]="flowName" />
+      <app-flow-diagram [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500" [flowName]="flowName" />
     } @else {
       <button appHasAccessToLink="getAdapterFlow" class="btn btn-info">
         <fa-icon [icon]="faShareAltSquare" /> Flow Diagram
