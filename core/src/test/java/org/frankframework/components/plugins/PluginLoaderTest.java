@@ -37,7 +37,7 @@ public class PluginLoaderTest {
 	}
 
 	@Test
-	public void initializeAndLoadPlugins() throws Exception {
+	public void initializeAndLoadPlugins() {
 		PluginLoader loader = createPluginLoader();
 		loader.afterPropertiesSet();
 

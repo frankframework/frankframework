@@ -64,9 +64,9 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 			assertNotNull(url);
 			File directory = new File(url.toURI());
 
-			PluginLoader loader = new PluginLoader(directory.getCanonicalPath());
-			autowireByType(loader);
-			return loader;
+			PluginLoader pluginLoader = new PluginLoader(directory.getCanonicalPath());
+			autowireByType(pluginLoader);
+			return pluginLoader;
 		} catch (Exception e) {
 			return fail("unable to create PluginLoader", e);
 		}

@@ -28,6 +28,7 @@ import org.springframework.beans.factory.InitializingBean;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.configuration.AdapterAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.configuration.util.ConfigurationUtils;
@@ -40,6 +41,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.Resource;
+import org.frankframework.doc.Default;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -50,9 +52,17 @@ import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.SpringUtils;
 
 /**
+ * <pre>{@code
+ * <CompositePipe name="name-of-the-pipe" plugin="name-of-the-plugin">
+ *     <Param name="Vincent" value="Niels" />
+ * </CompositePipe>
+ * }</pre>
+ * 
+ * @see <a href="https://github.com/frankframework/plugin-template">https://github.com/frankframework/plugin-template</a>
+ * 
  * @author Niels Meijer
  */
-public class CompositePipe extends FixedForwardPipe implements InitializingBean {
+public class CompositePipe extends FixedForwardPipe implements InitializingBean, AdapterAware {
 
 	private String pluginName;
 	private String partReference = ConfigurationUtils.DEFAULT_CONFIGURATION_FILE;
@@ -103,7 +113,7 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean 
 			configurationDigester.digest(pipeline, resource, properties);
 			log.info("succesfully loaded plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
 
-			// After loading all bean, configure them.
+			// After loading all beans, configure them.
 			pipeline.configure();
 			log.info("succesfully configured plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
 		} finally {
@@ -150,7 +160,7 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean 
 	/**
 	 * Allow uses to inject session variables through {@link Parameter parameters}, and set the CID when present.
 	 */
-	private static PipeLineSession createChildSession(ParameterValueList pvl, PipeLineSession parentSession) throws PipeRunException {
+	private static PipeLineSession createChildSession(ParameterValueList pvl, PipeLineSession parentSession) {
 		PipeLineSession childSession = new PipeLineSession();
 		String correlationId = parentSession.getCorrelationId();
 		if (correlationId != null) {
@@ -204,10 +214,18 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean 
 		return resource;
 	}
 
+	/**
+	 * Functional name of the plugin to load.
+	 */
 	public void setPlugin(String pluginName) {
 		this.pluginName = pluginName;
 	}
 
+	/**
+	 * File in the Plugin which contains the {@code <PipelinePart />} to call.
+	 * Defaults to {@value ConfigurationUtils#DEFAULT_CONFIGURATION_FILE} but can be any XML file.
+	 */
+	@Default("Configuration.xml")
 	public void setRef(String partReference) {
 		this.partReference = partReference;
 	}
