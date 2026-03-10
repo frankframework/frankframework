@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.transform.TransformerException;
 
@@ -28,12 +29,12 @@ import org.xml.sax.SAXException;
 import org.frankframework.core.Resource;
 import org.frankframework.util.TransformerPool;
 
-public class FrankConfigLayoutGlowGenerator extends MermaidFlowGenerator implements IFlowGenerator {
+public class FrankConfigLayoutFlowGenerator extends MermaidFlowGenerator implements IFlowGenerator {
 
 	private static final String ADAPTER2CONFIGLAYOUT_XSLT = "/xml/xsl/adapter2configlayout.xsl";
 	private static final String CONFIGURATION2CONFIGLAYOUT_XSLT = "/xml/xsl/configuration2configlayout.xsl";
 
-	public FrankConfigLayoutGlowGenerator() {
+	public FrankConfigLayoutFlowGenerator() {
 		super();
 	}
 
@@ -42,11 +43,11 @@ public class FrankConfigLayoutGlowGenerator extends MermaidFlowGenerator impleme
 		super.afterPropertiesSet();
 
 		Resource xsltSourceAdapter = Resource.getResource(ADAPTER2CONFIGLAYOUT_XSLT);
-		assert xsltSourceAdapter != null;
+		Objects.requireNonNull(xsltSourceAdapter, "Couldn't get Flow Generator resource " + ADAPTER2CONFIGLAYOUT_XSLT);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceAdapter, 2);
 
 		Resource xsltSourceConfig = Resource.getResource(CONFIGURATION2CONFIGLAYOUT_XSLT);
-		assert xsltSourceConfig != null;
+		Objects.requireNonNull(xsltSourceConfig, "Couldn't get Flow Generator resource " + CONFIGURATION2CONFIGLAYOUT_XSLT);
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceConfig, 2);
 	}
 
