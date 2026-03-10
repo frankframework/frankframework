@@ -41,7 +41,7 @@ class PluginTest {
 	 */
 	@BeforeAll
 	static void setup() throws IOException {
-		frankApplication = new FrankApplication();
+		frankApplication = IafTestInitializer.configureApplication();
 		Path projectDir = frankApplication.getProjectDir();
 
 		Path pluginDirectory = projectDir.resolve("src/main/plugins/").normalize().toAbsolutePath();
@@ -49,10 +49,10 @@ class PluginTest {
 		System.setProperty("plugins.directory", pluginDirectory.toString());
 		System.setProperty("plugins.enabled", "true");
 
-		Path configurationDir = projectDir.resolve("src/main/configurations/").toAbsolutePath();
-		System.setProperty("configurations.directory", configurationDir.toString());
+// TODO Ideally only start the CompositeComponents configuration here...
+//		Path configurationDir = projectDir.resolve("src/main/configurations/").toAbsolutePath();
+//		System.setProperty("configurations.directory", configurationDir.toString());
 
-		System.setProperty("configurations.names", "CompositeComponents");
 		System.setProperty("configurations.CompositeComponents.classLoaderType", "DirectoryClassLoader");
 		System.setProperty("configurations.CompositeComponents.configurationFile", "Configuration.xml");
 		System.setProperty("configurations.CompositeComponents.basePath", "CompositeComponents");
@@ -67,9 +67,10 @@ class PluginTest {
 
 	@AfterAll
 	static void tearDown() {
-		if (frankApplication != null) {
-			frankApplication.close();
-		}
+		System.clearProperty("plugins.directory");
+		System.setProperty("plugins.enabled", "false");
+
+		FrankApplication.exit(frankApplication);
 	}
 
 	@Test
