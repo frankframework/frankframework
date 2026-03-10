@@ -52,11 +52,20 @@ import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.SpringUtils;
 
 /**
+ * Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+ * As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
+ * For example:
+ * 
  * <pre>{@code
  * <CompositePipe name="name-of-the-pipe" plugin="name-of-the-plugin">
- *     <Param name="Vincent" value="Niels" />
+ *     <Param name="inject-me" value="im a value" />
+ *     <Param name="inject-me-too" sessionKey="originalMessage" />
  * </CompositePipe>
  * }</pre>
+ * 
+ * 
+ * @ff.note The sub-process called by this pipe will function as it's own 'pipeline' call, similar to calling a sub-adapter.
+ * @ff.tip  A plugin may have multiple entrypoints (or ref's), each one can be called independently.
  * 
  * @see <a href="https://github.com/frankframework/plugin-template">https://github.com/frankframework/plugin-template</a>
  * 
@@ -93,9 +102,9 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 
 	@Override
 	public void configure() throws ConfigurationException {
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("plugin", pluginName)) {
-			parameterNamesMustBeUnique = true;
+		parameterNamesMustBeUnique = true;
 
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("plugin", pluginName)) {
 			PluginWrapper plugin = findPlugin(pluginName);
 			Resource resource = getResource(plugin, partReference);
 
@@ -111,11 +120,11 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 			// We must digest the entrypoint with the Plugin Classloader because the Thread's contextClassLoader is used.
 			Thread.currentThread().setContextClassLoader(plugin.getPluginClassLoader());
 			configurationDigester.digest(pipeline, resource, properties);
-			log.info("succesfully loaded plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
+			log.info("successfully loaded plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
 
 			// After loading all beans, configure them.
 			pipeline.configure();
-			log.info("succesfully configured plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
+			log.info("successfully configured plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
 		} finally {
 			// Always revert to the original contextClassLoader, regardless if successful or not.
 			Thread.currentThread().setContextClassLoader(getConfigurationClassLoader());
