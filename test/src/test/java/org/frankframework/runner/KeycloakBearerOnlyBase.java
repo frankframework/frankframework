@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,12 +36,12 @@ public abstract class KeycloakBearerOnlyBase {
 	}
 
 	@SuppressWarnings("NullAway.Init")
-	static ConfigurableApplicationContext applicationContext = null;
+	static FrankApplication frankApplication = null;
 
 	static final String TOKEN_ENDPOINT_FORMAT = "http://localhost:%s/realms/test/protocol/openid-connect/token";
 
 	String getFrameworkUrl() {
-		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
+		TomcatServletWebServerFactory tomcat = frankApplication.getBean("tomcat");
 		return String.format("http://localhost:%d%s/iaf/api", tomcat.getPort(), tomcat.getContextPath());
 	}
 

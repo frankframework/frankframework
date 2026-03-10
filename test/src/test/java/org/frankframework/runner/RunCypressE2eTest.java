@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,25 +35,12 @@ import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.messaging.Message;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import io.github.wimdeblauwe.testcontainers.cypress.CypressContainer;
 import io.github.wimdeblauwe.testcontainers.cypress.CypressTestResults;
 import io.github.wimdeblauwe.testcontainers.cypress.CypressTestSuite;
 import lombok.extern.log4j.Log4j2;
-
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.LocalGateway;
-import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.message.MessageBase;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.SpringUtils;
 
 /**
  * Runs e2e tests with Cypress in a Testcontainer.
@@ -72,8 +58,8 @@ public class RunCypressE2eTest {
 	@SuppressWarnings("NullAway.Init")
 	private static CypressContainer container;
 	@SuppressWarnings("NullAway.Init")
-	private static ConfigurableApplicationContext run;
-	private static final Logger CYPRESS_LOG = LogUtil.getLogger("cypress");
+	private static FrankApplication frankApplication;
+
 	private static final String TEST_CONTAINER_BASE_URL = "http://host.testcontainers.internal:8080";
 	private static final Path MOCHAWESOME_REPORTS_DIR = Paths.get("target/test-classes/e2e/cypress/test-results/reports/mochawesome");
 
@@ -90,30 +76,13 @@ public class RunCypressE2eTest {
 	}
 
 	private static void startIafTestInitializer() throws IOException {
-		SpringApplication springApplication = IafTestInitializer.configureApplication();
+		// Use IafTestInitializer because the iaf-test classpath is used
+		frankApplication = IafTestInitializer.configureApplication();
+		frankApplication.run();
 
-		run = springApplication.run();
-		OutboundGateway gateway = SpringUtils.createBean(run, LocalGateway.class);
-
-		assertTrue(run.isRunning());
 		await().pollInterval(5, TimeUnit.SECONDS)
 				.atMost(Duration.ofMinutes(5))
-				.until(() -> verifyAppIsHealthy(gateway));
-	}
-
-	private static boolean verifyAppIsHealthy() {
-		OutboundGateway gateway = SpringUtils.createBean(run, LocalGateway.class);
-		return verifyAppIsHealthy(gateway);
-	}
-
-	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
-		try {
-			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
-			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
-		} catch (Exception e) {
-			CYPRESS_LOG.error("error while checking health of application", e);
-			return false;
-		}
+				.until(() -> frankApplication.hasStarted());
 	}
 
 	public static void startTestContainer() {
@@ -133,20 +102,14 @@ public class RunCypressE2eTest {
 
 	@AfterAll
 	static void tearDown() {
-		if (run == null) return;
+		FrankApplication.exit(frankApplication);
 
-		run.stop();
 		if (container != null) {
 			container.stop();
 			assertFalse(container.isRunning());
 		}
 
-		assertFalse(run.isRunning());
-
-		run.close();
-
-		// Make sure to clear the app constants as well
-		AppConstants.removeInstance();
+		assertFalse(frankApplication.isRunning());
 	}
 
 	@TestFactory
@@ -167,7 +130,7 @@ public class RunCypressE2eTest {
 						test.getDescription(), () -> {
 							if (!test.isSuccess()) {
 								log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
-								assertTrue(verifyAppIsHealthy(), "!! application not reachable !!");
+								assertTrue(frankApplication.hasStarted(), "!! application not reachable !!");
 							}
 							assertTrue(test.isSuccess(), test::getErrorMessage);
 						}

@@ -14,14 +14,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.SpringApplication;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import org.frankframework.util.AppConstants;
 
 /**
  * Tests whether bearer only request authentication works with Keycloak and the application. This test looks a lot like the other one, but
@@ -38,6 +35,8 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
 	@BeforeAll
+//	Enable this once JUNIT 6.1.0 has been released
+//	@SetSystemProperty(key = "configurations.names", value = "") // Don't load configurations to speed things up.
 	static void setup() throws IOException {
 		// Set system properties for the application to use the Keycloak container and start the framework initializer
 		System.setProperty("application.security.console.authentication.type", "BEARER_ONLY");
@@ -46,25 +45,20 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
 		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(httpPort));
 
-		SpringApplication springApplication = IafTestInitializer.configureApplication();
-
-		applicationContext = springApplication.run();
+		// Use IafTestInitializer because the iaf-test classpath is used
+		frankApplication = IafTestInitializer.configureApplication();
+		frankApplication.run();
 	}
 
 	@AfterAll
 	static void tearDown() {
-		if (applicationContext != null) {
-			applicationContext.close();
-		}
+		FrankApplication.exit(frankApplication);
 
 		System.clearProperty("application.security.console.authentication.type");
 		System.clearProperty("application.security.console.authentication.issuerUri");
 		System.clearProperty("application.security.console.authentication.userNameAttributeName");
 		System.clearProperty("application.security.console.authentication.authoritiesClaimName");
 		System.clearProperty("application.security.console.authentication.userInfoUri");
-
-		// Make sure to clear the app constants as well
-		AppConstants.removeInstance();
 	}
 
 	@Test

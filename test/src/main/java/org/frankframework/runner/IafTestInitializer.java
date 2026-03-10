@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2026 WeAreFrank!
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,41 +18,11 @@ package org.frankframework.runner;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.tomcat.websocket.server.WsContextListener;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.BeansException;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.context.event.ApplicationFailedEvent;
-import org.springframework.boot.logging.LoggingSystem;
-import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
-import org.springframework.boot.web.servlet.ServletContextInitializer;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.env.PropertiesPropertySource;
 
-import lombok.extern.log4j.Log4j2;
-
-import org.frankframework.console.runner.ConsoleWarInitializer;
-import org.frankframework.ladybug.runner.LadybugWarInitializer;
-import org.frankframework.lifecycle.FrankApplicationInitializer;
-import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 /**
  * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.
@@ -62,90 +32,9 @@ import org.frankframework.util.LogUtil;
 // Careful.. don't log here!!
 public class IafTestInitializer {
 
-	public static class ApplicationInitializerWrapper implements ServletContextInitializer {
-		@Override
-		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
-			FrankApplicationInitializer init = new FrankApplicationInitializer();
-			init.onStartup(servletContext);
-			LogManager.getLogger("APPLICATION").info("Started Frank!Application");
-		}
-	}
-
-	public static class LadybugInitializerWrapper implements ServletContextInitializer {
-		@Override
-		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
-			System.setProperty("ladybug.jdbc.datasource", "");
-			LadybugWarInitializer init = new LadybugWarInitializer();
-			init.onStartup(servletContext);
-			LogManager.getLogger("APPLICATION").info("Started Ladybug");
-		}
-	}
-
-	public static class ConsoleInitializerWrapper implements ServletContextInitializer {
-		@Override
-		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
-			ConsoleWarInitializer init = new ConsoleWarInitializer();
-			init.onStartup(servletContext);
-			LogManager.getLogger("APPLICATION").info("Started Console");
-		}
-	}
-
-	/** Required to enable the use of WebSockets when starting as (Spring)Boot-able application. */
-	public static class WsSciWrapper implements ServletContextInitializer {
-
-		@Override
-		public void onStartup(@NonNull ServletContext servletContext) {
-			WsContextListener sc = new WsContextListener();
-			sc.contextInitialized(new ServletContextEvent(servletContext));
-		}
-	}
-
-	public static class ConfigureAppConstants implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
-		@Override
-		public void initialize(ConfigurableApplicationContext applicationContext) {
-			applicationContext.getEnvironment().getPropertySources().addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
-		}
-	}
-
 	public static void main(String[] args) throws IOException {
-		SpringApplication app = configureApplication();
+		FrankApplication app = configureApplication();
 		app.run(args);
-	}
-
-	/**
-	 * Disable the Spring-Boot LoggingSystem.
-	 * Spring programmatically adds Console appenders and configures it's format regardless of what we configure.
-	 *
-	 * See {@link Log4J2LoggingSystem#initialize(org.springframework.boot.logging.LoggingInitializationContext, String, org.springframework.boot.logging.LogFile)}.
-	 */
-	private static void disableSpringBootLogging() {
-		LoggerContext logContext = LoggerContext.getContext(false);
-		logContext.setExternalContext(LoggingSystem.class.getName());
-	}
-
-	/**
-	 * When the application fails to start up, trigger a shutdown and log the exception.
-	 */
-	@SuppressWarnings("unused")
-	@Log4j2
-	private static class FailedInitializationMonitor implements ApplicationListener<ApplicationFailedEvent> {
-
-		@Override
-		public void onApplicationEvent(ApplicationFailedEvent event) {
-			log.fatal("unable to start application", event.getException());
-			LogUtil.getLogger("APPLICATION").fatal("unable to start application: {}", () -> getRootCause(event.getException()).getMessage());
-
-			System.exit(1); // Terminate the JVM
-		}
-
-		private Throwable getRootCause(Throwable t) {
-			if (t instanceof BeansException) {
-				return (t.getCause() != null) ? getRootCause(t.getCause()) : t;
-			}
-			return t;
-		}
-
 	}
 
 	/**
@@ -156,7 +45,7 @@ public class IafTestInitializer {
 	 * @param jmsProvider Name of JMS provider. If null, JMS is not enabled in tests (property {@code jms.active=false}). The JMS provider name is used to set the properties
 	 *                    {@code jms.provider.default=<jmsProvider>}, {@code jms.connectionfactory.qcf.<jmsProvider>=jms/qcf-<jmsProvider>} and {@code jms.destination.suffix=-<jmsProvider>}.
 	 */
-	static SpringApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
+	static FrankApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
 		if (jmsProvider != null) {
 			System.setProperty("jms.provider.default", jmsProvider);
 		}
@@ -174,35 +63,10 @@ public class IafTestInitializer {
 	 * Configure the Frank!Framework application, enabling support for JMS depending on the value of {@literal "jms.provider.default"} System property, with
 	 * application server type {@literal "IBISTEST"}.
 	 */
-	static SpringApplication configureApplication() throws IOException {
-		Path projectDir = getProjectDir();
-
-		// Ensure a log.dir has been set
-		if (System.getProperty("log.dir") == null) {
-			String foundLogDir = getLogDir(projectDir);
-			System.setProperty("log.dir", foundLogDir);
-			LogUtil.getLogger("APPLICATION").info("set log.dir to [{}]", foundLogDir);
-		}
-
-		disableSpringBootLogging();
-
+	static FrankApplication configureApplication() throws IOException {
+		FrankApplication frankApp = new FrankApplication();
 		// Find and configure the configurations
-		LogUtil.getLogger("APPLICATION").info("using project.dir [{}]", projectDir);
-		setConfigurationsDirectory(projectDir);
-
-		System.setProperty("application.security.http.authentication", "false");
-		System.setProperty("application.security.http.transportGuarantee", "none");
-		System.setProperty("dtap.stage", "LOC");
-		System.setProperty("servlet.IAF-GUI.urlMapping", "/*,/iaf/gui/*");
-
-		// Configure a CredentialProvider
-		System.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
-		Path secrets = projectDir.resolve("src/main/secrets/credentials.properties").toAbsolutePath();
-		System.setProperty("credentialFactory.map.properties", secrets.toString().replace("\\", "/"));
-		System.setProperty("authAliases.expansion.allowed", "testalias");
-
-		// Configure application server type
-		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
+		setConfigurationsDirectory(frankApp.getProjectDir());
 
 		// Configure JMS
 		String jmsProvider = System.getProperty("jms.provider.default");
@@ -225,27 +89,11 @@ public class IafTestInitializer {
 			System.setProperty("active.storedProcedureTests", "true");
 		}
 
-		// Start the actual application
-		SpringApplication app = new SpringApplication();
-		app.addInitializers(new ConfigureAppConstants());
-		app.setWebApplicationType(WebApplicationType.SERVLET);
-		Set<String> set = new HashSet<>();
-		app.addPrimarySources(List.of(LadybugInitializerWrapper.class, ApplicationInitializerWrapper.class, ConsoleInitializerWrapper.class, WsSciWrapper.class));
-		set.add(SpringContextScope.ENVIRONMENT.getContextFile());
-		set.add("TestFrankContext.xml");
-		app.setSources(set);
+		// Configure a CredentialProvider
+		frankApp.configureCredentialProvider("src/main/secrets/credentials.properties");
+		System.setProperty("authAliases.expansion.allowed", "testalias");
 
-		return app;
-	}
-
-	/**
-	 * Find the iaf-test module directory
-	 * NOTE: Since we still need to determine the log.dir, we may not log anything here!
-	 */
-	@NonNull
-	public static Path getProjectDir() throws IOException {
-		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-		return validateIfEclipseOrIntelliJ(runFromDir);
+		return frankApp;
 	}
 
 	private static void setConfigurationsDirectory(Path projectDir) throws IOException {
@@ -261,36 +109,5 @@ public class IafTestInitializer {
 				System.setProperty("configurations."+name+".basePath", name);
 			});
 		}
-	}
-
-	/**
-	 * Eclipse runs from the module (relative) directory.
-	 * IntelliJ runs from the project root directory.
-	 * NOTE: Since we still need to determine the log.dir, we may not log anything here!
-	 */
-	private static @NonNull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
-		if(Files.exists(runFromDir.resolve(".github"))) { // this folder exists in the project ROOT directory
-			Path module = runFromDir.resolve("test");
-			if(Files.exists(module)) {
-				return module;
-			}
-			throw new IOException("assuming we're using IntelliJ but cannot find the FF! Test module");
-		}
-
-		return runFromDir;
-	}
-
-	// Store the logs by default in ./test/target/logs
-	// NOTE: Since we still need to determine the log.dir, we may not log anything here!
-	public static String getLogDir(Path projectPath) throws IOException {
-		Path targetPath = projectPath.resolve("target");
-		if(Files.exists(targetPath) && Files.isDirectory(targetPath)) {
-			Path logDir = targetPath.resolve("logs");
-			if(!Files.exists(logDir)) {
-				Files.createDirectory(logDir);
-			}
-			return logDir.toAbsolutePath().toString().replace("\\", "/"); // Slashes are required for the larva tool...
-		}
-		throw new IOException("unable to determine log directory");
 	}
 }
