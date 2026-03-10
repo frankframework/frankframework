@@ -3,7 +3,7 @@
     <h4 class="modal-title">Flow Diagram for [{{ flowName }}] ({{ zoom }})</h4>
   </div>
   <div class="modal-body text-center" [appZoomPan]="flowSvg" (newScale)="updateZoom($event)">
-    <app-ng-mermaid
+    <app-flow-diagram
       [nmModel]="flow"
       [nmRefreshInterval]="500"
       [flowName]="flowName"

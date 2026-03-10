@@ -1,13 +1,13 @@
 import { Component, inject, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.component';
+import { FlowDiagramComponent } from 'src/app/components/flow-diagram/flow-diagram.component';
 import { ZoomPanDirective } from '../../../../components/zoom-pan.directive';
 
 @Component({
   selector: 'app-flow-modal',
   templateUrl: './flow-modal.component.html',
   styleUrls: ['./flow-modal.component.scss'],
-  imports: [NgMermaidComponent, ZoomPanDirective],
+  imports: [FlowDiagramComponent, ZoomPanDirective],
 })
 export class FlowModalComponent {
   @Input() flowName = '';
