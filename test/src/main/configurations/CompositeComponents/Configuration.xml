@@ -3,19 +3,6 @@
 	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
 	active="${plugins.enabled}">
 
-	<Adapter name="testCustomClassFromPlugin">
-		<Receiver>
-			<JavaListener name="testPluginListenerDirect" />
-		</Receiver>
-		<Pipeline>
-			<Exits>
-				<Exit name="EXIT" state="SUCCESS" />
-			</Exits>
-
-			<Pipe className="org.frankframework.pipes.IbisMetricsPipe" name="java-file-from-config" />
-		</Pipeline>
-	</Adapter>
-
 	<Adapter name="testPipelinePartFromPlugin">
 		<Receiver>
 			<JavaListener name="testPlugin" />
@@ -26,7 +13,7 @@
 			</Exits>
 
 			<!-- custom pipe of sender (in plugin) -->
-			<CompositePipe name="plugin1" plugin="demo-plugin" ref="demo-test-part" />
+			<CompositePipe name="plugin1" plugin="demo-plugin" ref="demo-test-part.xml" />
 		</Pipeline>
 	</Adapter>
 </Configuration>

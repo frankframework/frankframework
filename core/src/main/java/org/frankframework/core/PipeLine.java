@@ -31,16 +31,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.TransactionDefinition;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
-import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationAware;
+import org.frankframework.configuration.AdapterAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -48,7 +50,7 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
-import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.ConfigurableApplicationContext;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -99,12 +101,14 @@ import org.frankframework.util.StringUtil;
  *
  * @author  Johan Verrips
  */
+@Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware, ConfigurableLifecycle {
-	private @Getter ApplicationContext applicationContext;
-	private @Getter @Setter Configuration configuration; // Required for the Ladybug
-	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+public class PipeLine extends ConfigurableApplicationContext implements ICacheEnabled<String, String>, FrankElement, HasTransactionAttribute {
+
+	private @Getter @Setter TransactionAttribute transactionAttribute = TransactionAttribute.SUPPORTS;
+	private @Getter int transactionTimeout = 0;
+	private @Getter TransactionDefinition txDef = null;
 
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
 	public static final String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
@@ -158,14 +162,26 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	@Override
-	public final void setApplicationContext(@NonNull ApplicationContext context) {
-		if (context instanceof Adapter contextAdapter) {
-			this.adapter = contextAdapter;
+	public void afterPropertiesSet() throws Exception {
+		if (getParent() instanceof Adapter contextAdapter) {
+			adapter = contextAdapter;
 		} else {
 			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
 		}
 
-		this.applicationContext = context;
+		super.afterPropertiesSet();
+	}
+
+	@Override
+	protected void registerBeanPostProcessors(@NonNull ConfigurableListableBeanFactory beanFactory) {
+		super.registerBeanPostProcessors(beanFactory);
+
+		beanFactory.addBeanPostProcessor(new AdapterAwareBeanPostProcessor(adapter));
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return this;
 	}
 
 	/**
@@ -293,7 +309,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			expectsSessionKeysSet = Collections.emptySet();
 		}
 
-		super.configure();
+		txDef = TransactionAttributes.configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
+
 		log.debug("successfully configured");
 		configured = true;
 		if (configurationException != null) {
@@ -723,4 +740,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		this.expectsSessionKeys = expectsSessionKeys;
 	}
 
+	/**
+	 * Set transactionTimeout in seconds.
+	 *
+	 * @param transactionTimeoutSeconds Time in seconds after which a transaction will fail.
+	 */
+	@Override
+	public void setTransactionTimeout(int transactionTimeoutSeconds) {
+		transactionTimeout = transactionTimeoutSeconds;
+	}
 }

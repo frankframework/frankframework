@@ -16,6 +16,9 @@
 package org.frankframework.components.plugins;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -105,5 +108,23 @@ public class FrankPluginManager extends DefaultPluginManager {
 		APPLICATION_LOG.info("Loading Plugin [{}] version [{}] developed by [{}]", descriptor::getPluginId, descriptor::getVersion, descriptor::getProvider);
 
 		return plugin;
+	}
+
+	/**
+	 * The super method:
+	 * Doesn't seem to always stop all plugins.
+	 * Always reverses the 'startedPlugins' list (stopping twice is fun!).
+	 */
+	@Override
+	public void stopPlugins() {
+		List<PluginWrapper> plugins = new ArrayList<>(startedPlugins);
+
+		// Stop started plugins in reverse order
+		Collections.reverse(plugins);
+
+		// Stop modifies the startedPlugins iterator. The parent class does not traverse all entries properly (sigh) so we'll have to...
+		plugins.stream()
+			.map(PluginWrapper::getPluginId)
+			.forEach(super::stopPlugin);
 	}
 }
