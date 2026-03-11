@@ -77,7 +77,7 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
-		<lombok.version>1.18.42</lombok.version>
+		<lombok.version>1.18.44</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
 		<log4j2.version>2.25.3</log4j2.version>
 
@@ -638,7 +638,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.42</version>
+				<version>${lombok.version}</version>
 				<scope>provided</scope>
 			</dependency>
 
