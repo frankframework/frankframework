@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -51,9 +52,9 @@ import org.frankframework.util.LogUtil;
  * @since	7.0-B4
  *
  */
+@Log4j2
 public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware, HasApplicationContext, IScopeProvider {
 
-	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
 	private @Getter Configuration configuration;
 	private @Getter String name;
@@ -62,18 +63,18 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 
 	@Override
 	public void afterPropertiesSet() {
-		if(dataSourceFactory == null) {
+		if (dataSourceFactory == null) {
 			throw new IllegalStateException("DataSourceFactory has not been autowired");
 		}
 
 		configurationClassLoader = configuration.getClassLoader();
-		if(!(configurationClassLoader instanceof AbstractClassLoader)) { // Though this should technically never happen.. you never know!
+		if (!(configurationClassLoader instanceof AbstractClassLoader)) { // Though this should technically never happen.. you never know!
 			throw new IllegalStateException("unable to initialize database migrator");
 		}
 	}
 
 	public String getDatasourceName() {
-		if(datasourceName == null) {
+		if (datasourceName == null) {
 			AppConstants appConstants = AppConstants.getInstance(configuration.getClassLoader());
 			datasourceName = appConstants.getString("jdbc.migrator.datasource", appConstants.getString("jdbc.migrator.dataSource", IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME));
 		}

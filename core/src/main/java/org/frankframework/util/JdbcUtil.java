@@ -45,6 +45,7 @@ import java.util.zip.ZipException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -82,8 +83,12 @@ public class JdbcUtil {
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
 	public static final DateTimeFormatter TIMESTAMP_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(TIMESTAMPFORMAT);
 
+	private JdbcUtil() {
+		// Private constructor to prevent creating instances
+	}
+
 	@Deprecated
-	public static String warningsToString(SQLWarning warnings) {
+	public static @Nullable String warningsToString(SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
 		if (warningsElem != null) {
 			return warningsElem.asXmlString();
@@ -100,7 +105,7 @@ public class JdbcUtil {
 	}
 
 	@Deprecated
-	public static XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {
+	public static @Nullable XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {
 		if (warnings != null) {
 			XmlBuilder warningsElem = new XmlBuilder("warnings");
 			while (warnings != null) {
