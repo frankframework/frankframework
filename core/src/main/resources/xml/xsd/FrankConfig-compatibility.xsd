@@ -1481,6 +1481,15 @@ If not specified, the default is INPUT.</xs:documentation>
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="CompositeSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CompositeSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="DelaySender">
         <xs:complexType>
           <xs:complexContent>
@@ -2714,6 +2723,32 @@ Defaults to 10000, inherited from HttpSender#setTimeout. Default: 10000</xs:docu
   </xs:attributeGroup>
   <xs:attributeGroup name="CommandSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="CommandSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="CompositeSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="CompositeSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.components.plugins.CompositeSender" />
+  </xs:complexType>
+  <xs:attributeGroup name="CompositeSenderDeclaredAttributeGroup">
+    <xs:attribute name="plugin" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Functional name of the plugin to load.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ref" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>File in the Plugin which contains the &lt;code&gt;&amp;lt;PipelinePart /&amp;gt;&lt;/code&gt; to call.
+Defaults to &lt;code&gt;Configuration.xml&lt;/code&gt; but can be any XML file. Default: Configuration.xml</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="CompositeSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CompositeSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DelaySenderType">
@@ -13311,8 +13346,17 @@ This field controls how to iterate over the input and does not determine the pip
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.components.plugins.CompositePipe" />
   </xs:complexType>
   <xs:attributeGroup name="CompositePipeDeclaredAttributeGroup">
-    <xs:attribute name="plugin" type="xs:string" />
-    <xs:attribute name="ref" type="xs:string" />
+    <xs:attribute name="plugin" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Functional name of the plugin to load.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ref" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>File in the Plugin which contains the &lt;code&gt;&amp;lt;PipelinePart /&amp;gt;&lt;/code&gt; to call.
+Defaults to &lt;code&gt;Configuration.xml&lt;/code&gt; but can be any XML file. Default: Configuration.xml</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="CompositePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CompositePipeDeclaredAttributeGroup" />

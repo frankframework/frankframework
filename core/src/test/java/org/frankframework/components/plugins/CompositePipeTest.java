@@ -24,9 +24,9 @@ import org.springframework.context.event.ApplicationContextEvent;
 
 import lombok.Getter;
 
+import org.frankframework.components.PipelinePart;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -38,7 +38,7 @@ import org.frankframework.testutil.TestFileUtils;
 public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 	private PluginContextEventListener listener;
 	private PluginLoader loader;
-	private PipeLine pipeline;
+	private PipelinePart pipeline;
 
 	@Override
 	public CompositePipe createPipe() throws ConfigurationException {

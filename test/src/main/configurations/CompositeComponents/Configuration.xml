@@ -10,10 +10,20 @@
 		<Pipeline>
 			<Exits>
 				<Exit name="EXIT" state="SUCCESS" />
+				<Exit name="ERROR" state="ERROR" />
 			</Exits>
 
 			<!-- custom pipe of sender (in plugin) -->
-			<CompositePipe name="plugin1" plugin="demo-plugin" ref="demo-test-part.xml" />
+			<CompositePipe name="callPluginAsPipe" plugin="demo-plugin" />
+
+			<SwitchPipe name="if success">
+				<Forward name="Niels was here!" path="forLoop" />
+				<Forward name="notFound" path="ERROR" />
+			</SwitchPipe>
+
+			<SenderPipe name="callPluginAsSender">
+				<CompositeSender name="plugin" plugin="demo-plugin" ref="demo-test-part.xml" />
+			</SenderPipe>
 		</Pipeline>
 	</Adapter>
 </Configuration>
