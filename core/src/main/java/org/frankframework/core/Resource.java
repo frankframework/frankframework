@@ -60,12 +60,14 @@ public abstract class Resource implements IScopeProvider {
 
 	@Nullable
 	public static Resource getResource(@Nullable IScopeProvider scopeProvider, @NonNull String resource, String allowedProtocols) {
-		if(scopeProvider == null) {
+		if (scopeProvider == null) {
 			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
 		}
-		String ref= resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME) ? resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length()) : resource;
+
+		String ref = resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME) ? resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length()) : resource;
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
-		if (url==null) {
+
+		if (url == null) {
 			return null;
 		}
 

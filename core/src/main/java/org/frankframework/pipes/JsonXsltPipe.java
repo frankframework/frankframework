@@ -28,7 +28,6 @@ import org.frankframework.senders.XsltSender;
  *
  * @author Gerrit van Brakel
  */
-
 public class JsonXsltPipe extends XsltPipe {
 
 	@Override
@@ -46,5 +45,4 @@ public class JsonXsltPipe extends XsltPipe {
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}
-
 }

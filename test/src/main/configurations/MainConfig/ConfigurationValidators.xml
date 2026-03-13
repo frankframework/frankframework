@@ -156,6 +156,7 @@
 		<receiver>
 			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="jsonvalidator/item/post" method="POST" allowAllParams="false"/>
 		</receiver>
+
 		<pipeline firstPipe="Convert2XML">
 			<exits>
 				<exit name="EXIT" state="success" code="200"/>

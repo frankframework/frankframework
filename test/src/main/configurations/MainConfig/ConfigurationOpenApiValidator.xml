@@ -1,0 +1,38 @@
+<module name="openApiValidator">
+	<adapter name="openApiValidator">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-openApiValidator" onException="FORMAT_AND_RETURN" />
+		</receiver>
+		<receiver>
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="openapivalidator/item" />
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit name="EXIT" state="success" code="200"/>
+				<exit name="NotModified" state="success" code="304" empty="true" />
+				<exit name="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
+				<exit name="ServerError" state="error" code="500" />
+			</exits>
+
+			<OpenApiInputValidator useAsOutputValidator="true" path="/pets" method="post"
+				openApiDefinition="/Validators/openapi/petstore-openapi.json">
+				<forward name="failure" path="ServerError" />
+				<forward name="outputFailure" path="ServerError" />
+			</OpenApiInputValidator>
+
+			<DataSonnetPipe name="JSON Transform" styleSheetName="/Validators/openapi/newPetInputToOutput.jsonnet" />
+
+<!--			<pipe name="InputValidationFailure" className="org.frankframework.pipes.ReplacerPipe"-->
+<!--				getInputFromFixedValue="{ &quot;message&quot;:&quot;input validation failure: ?{REASON}&quot; }">-->
+<!--				<param name="REASON" sessionKey="failureReason" />-->
+<!--				<forward name="success" path="BadRequest" />-->
+<!--			</pipe>-->
+<!--			<pipe name="OutputValidationFailure" className="org.frankframework.pipes.ReplacerPipe"-->
+<!--				getInputFromFixedValue="{ &quot;message&quot;:&quot;output validation failure: ?{REASON}&quot; }">-->
+<!--				<param name="REASON" sessionKey="failureReason" />-->
+<!--				<forward name="success" path="ServerError" />-->
+<!--			</pipe>-->
+		</pipeline>
+	</adapter>
+</module>
