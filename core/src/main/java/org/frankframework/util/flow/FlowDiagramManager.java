@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
@@ -39,6 +40,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.core.Adapter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -152,7 +154,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 			Files.delete(destFile.toPath());
 		}
 
-		String configurationXml = configuration.getLoadedConfiguration();
+		String configurationXml = configuration.getBean(ConfigurationDigester.class).getLoadedConfiguration();
 		String name = "configuration [" + configuration.getName() + "]";
 
 		generateFlowDiagram(name, configurationXml, destFile);
@@ -173,8 +175,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	public String getAdapterConfigurationAsString(Adapter adapter) {
-		String loadedConfig = adapter.getConfiguration().getLoadedConfiguration();
-		String encodedName = StringUtils.replace(adapter.getName(), "'", "''");
+		String loadedConfig = adapter.getBean(ConfigurationDigester.class).getLoadedConfiguration();
+		String encodedName = Strings.CS.replace(adapter.getName(), "'", "''");
 		String xpath = "//adapter[@name='" + encodedName + "']";
 
 		return XmlUtils.copyOfSelect(loadedConfig, xpath);
@@ -183,7 +185,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	public String getConfigurationXml(List<Configuration> configurations) {
 		StringBuilder dotInput = new StringBuilder("<Configurations>");
 		for (Configuration configuration : configurations) {
-			dotInput.append(XmlUtils.skipXmlDeclaration(configuration.getLoadedConfiguration()));
+			dotInput.append(XmlUtils.skipXmlDeclaration(configuration.getBean(ConfigurationDigester.class).getLoadedConfiguration()));
 		}
 		dotInput.append("</Configurations>");
 

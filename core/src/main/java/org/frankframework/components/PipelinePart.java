@@ -8,9 +8,11 @@ import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.Resource;
 import org.frankframework.util.PropertyLoader;
+import org.frankframework.util.SpringUtils;
 
 public class PipelinePart extends PipeLine {
 	private PluginWrapper plugin;
+	private ConfigurationDigester configurationDigester;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -26,7 +28,8 @@ public class PipelinePart extends PipeLine {
 		super.afterPropertiesSet();
 
 		// Ensure the ConfigurationDigester bean exists.
-		getBean(ConfigurationDigester.class);
+		configurationDigester = SpringUtils.createBean(this, ConfigurationDigester.class);
+		SpringUtils.registerSingleton(this, "configurationDigester", configurationDigester);
 	}
 
 	public void digest(Resource resource) throws ConfigurationException {
@@ -36,10 +39,8 @@ public class PipelinePart extends PipeLine {
 			// We must digest the entrypoint with the Plugin Classloader because the Thread's contextClassLoader is used.
 			thread.setContextClassLoader(getClassLoader());
 
-			PropertyLoader properties = new PropertyLoader(getClassLoader(), "plugin.properties");
-			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
-
 			// Digest the plugin's resource.
+			PropertyLoader properties = new PropertyLoader(getClassLoader(), "plugin.properties");
 			configurationDigester.digest(this, resource, properties);
 		} finally {
 			// Always revert to the original contextClassLoader, regardless if successful or not.

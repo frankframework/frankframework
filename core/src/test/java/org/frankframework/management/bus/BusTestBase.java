@@ -66,8 +66,8 @@ public class BusTestBase {
 				fail("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME);
 			}
 
-			configuration.setLoadedConfiguration("<loaded authAlias=\"test\" />"); // AuthAlias is used in BusTopic.SECURITY_ITEMS
-			configuration.setOriginalConfiguration("<original authAlias=\"test\" />");
+//			configuration.setLoadedConfiguration("<loaded authAlias=\"test\" />"); // AuthAlias is used in BusTopic.SECURITY_ITEMS
+//			configuration.setOriginalConfiguration("<original authAlias=\"test\" />");
 		}
 		return configuration;
 	}

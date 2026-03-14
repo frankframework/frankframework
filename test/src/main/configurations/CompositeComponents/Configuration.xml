@@ -17,7 +17,7 @@
 			<CompositePipe name="callPluginAsPipe" plugin="demo-plugin" />
 
 			<SwitchPipe name="if success">
-				<Forward name="Niels was here!" path="forLoop" />
+				<Forward name="Niels was here!" path="callPluginAsSender" />
 				<Forward name="notFound" path="ERROR" />
 			</SwitchPipe>
 

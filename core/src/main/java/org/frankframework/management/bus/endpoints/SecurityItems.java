@@ -43,6 +43,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasSender;
@@ -193,9 +194,11 @@ public class SecurityItems extends BusEndpointBase {
 		} catch (Exception e) {
 			log.warn("could not retrieve aliases from CredentialFactory", e);
 		}
-		// and add all aliases that are used in the configuration
+
+		// And add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			String configString = configuration.getLoadedConfiguration();
+			ConfigurationDigester digester = configuration.getBean(ConfigurationDigester.class);
+			String configString = digester.getLoadedConfiguration();
 			if(StringUtils.isEmpty(configString)) continue; // If a configuration can't be found, continue...
 
 			try {

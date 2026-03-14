@@ -1,4 +1,4 @@
-package org.frankframework.configuration.digester;
+package org.frankframework.configuration.filters;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
