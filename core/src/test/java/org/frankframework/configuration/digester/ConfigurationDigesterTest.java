@@ -43,7 +43,6 @@ import org.frankframework.xml.XmlWriter;
 
 @Log4j2
 public class ConfigurationDigesterTest {
-	private static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 
@@ -51,7 +50,7 @@ public class ConfigurationDigesterTest {
 	public void testNewCanonicalizer() throws Exception {
 		XmlWriter writer = new XmlWriter();
 		ConfigurationDigester digester = new ConfigurationDigester();
-		ContentHandler handler = digester.getConfigurationCanonicalizer(writer, FRANK_CONFIG_XSD, new XmlErrorHandler());
+		ContentHandler handler = digester.getConfigurationCanonicalizer(writer, ConfigurationUtils.FRANK_CONFIG_XSD, new XmlErrorHandler());
 
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		XmlUtils.parseXml(resource, handler);
@@ -83,7 +82,7 @@ public class ConfigurationDigesterTest {
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
 		MatchUtils.assertXmlEquals(expected, result);
 
-		String storedResult = configuration.getLoadedConfiguration();
+		String storedResult = digester.getLoadedConfiguration();
 		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden.xml");
 		MatchUtils.assertXmlEquals(storedExpected, storedResult);
 	}
@@ -132,7 +131,7 @@ public class ConfigurationDigesterTest {
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved2.xml");
 		MatchUtils.assertXmlEquals(expected, result);
 
-		String storedResult = configuration.getLoadedConfiguration();
+		String storedResult = digester.getLoadedConfiguration();
 		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden2.xml");
 		MatchUtils.assertXmlEquals(storedExpected, storedResult);
 	}
@@ -146,7 +145,7 @@ public class ConfigurationDigesterTest {
 		digester.setContentHandler(writer);
 
 		Resource resource = Resource.getResource("/Digester/MultipleConfigurationElements.xml");
-		ContentHandler handler = configDigester.getConfigurationCanonicalizer(digester, FRANK_CONFIG_XSD, new XmlErrorHandler());
+		ContentHandler handler = configDigester.getConfigurationCanonicalizer(digester, ConfigurationUtils.FRANK_CONFIG_XSD, new XmlErrorHandler());
 
 		final List<String> digesterLogs;
 		try (TestAppender appender = TestAppender.newBuilder().minLogLevel(Level.DEBUG).build()) {
@@ -183,7 +182,7 @@ public class ConfigurationDigesterTest {
 	@Test
 	public void testFixedValueAttributeResolverWithFrankConfig() throws Exception {
 		try (TestAppender testAppender = TestAppender.newBuilder().minLogLevel(Level.ERROR).build()) {
-			URL schemaURL = TestFileUtils.getTestFileURL(FRANK_CONFIG_XSD);
+			URL schemaURL = TestFileUtils.getTestFileURL(ConfigurationUtils.FRANK_CONFIG_XSD);
 			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaURL);
 
 			XmlWriter writer = new XmlWriter();

@@ -39,6 +39,7 @@ import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
@@ -75,11 +76,13 @@ public class ConfigManagement extends BusEndpointBase {
 
 		if(configurationName != null) {
 			Configuration configuration = getConfigurationByName(configurationName);
-			result.append(loadedConfiguration ? configuration.getLoadedConfiguration() : configuration.getOriginalConfiguration());
+			ConfigurationDigester digester = configuration.getBean(ConfigurationDigester.class);
+			result.append(loadedConfiguration ? digester.getLoadedConfiguration() : digester.getOriginalConfiguration());
 		} else {
 			result.append("<" + ROOT_ELEMENT_NAME + ">");
 			for (Configuration configuration : getIbisManager().getConfigurations()) {
-				result.append(loadedConfiguration ? configuration.getLoadedConfiguration() : configuration.getOriginalConfiguration());
+				ConfigurationDigester digester = configuration.getBean(ConfigurationDigester.class);
+				result.append(loadedConfiguration ? digester.getLoadedConfiguration() : digester.getOriginalConfiguration());
 			}
 			result.append("</" + ROOT_ELEMENT_NAME + ">");
 		}
