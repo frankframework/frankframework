@@ -17,18 +17,15 @@ package org.frankframework.components.plugins;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.pf4j.PluginState;
-import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.InitializingBean;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.components.PipelinePart;
+import org.frankframework.components.FrankPlugin;
 import org.frankframework.configuration.AdapterAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.util.ConfigurationUtils;
@@ -39,7 +36,6 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.Resource;
 import org.frankframework.doc.Default;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
@@ -50,7 +46,7 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.SpringUtils;
 
 /**
- * Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+ * Pipe that allows you to call a Frank!Framework Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
  * As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
  * For example:
  *
@@ -75,26 +71,21 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 	private String partReference = ConfigurationUtils.DEFAULT_CONFIGURATION_FILE;
 
 	private @Getter @Setter Adapter adapter;
-	private PluginLoader pluginLoader;
-	private PipelinePart pipeline;
+	private FrankPlugin frankPlugin;
 
 	public CompositePipe() throws SecurityException, ReflectiveOperationException {
 		// NOOP for Spring to initialize
 	}
 
 	// For testing purposes only!
-	protected CompositePipe(PluginLoader pluginLoader, PipelinePart pipeline) {
-		this.pluginLoader = pluginLoader;
-		this.pipeline = pipeline;
+	protected CompositePipe(FrankPlugin frankPlugin) {
+		this.frankPlugin = frankPlugin;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if (pluginLoader == null) {
-			pluginLoader = getApplicationContext().getBean(PluginLoader.class);
-		}
-		if (pipeline == null) {
-			pipeline = ClassUtils.newInstance(PipelinePart.class);
+		if (frankPlugin == null) {
+			frankPlugin = ClassUtils.newInstance(FrankPlugin.class);
 		}
 	}
 
@@ -103,21 +94,14 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 		parameterNamesMustBeUnique = true;
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("plugin", pluginName)) {
-			PluginWrapper plugin = findPlugin(pluginName);
-			Resource resource = getResource(plugin, partReference);
-
 			// Assuming we can find the plugin and entrypoint. Configure the parameters.
 			super.configure();
 
-			pipeline.setPlugin(plugin);
-			SpringUtils.autowireByName(adapter, pipeline);
+			frankPlugin.setPluginName(pluginName);
+			frankPlugin.setConfigurationFile(partReference);
 
-			pipeline.digest(resource);
-			log.info("successfully loaded plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
-
-			// After loading all beans, configure them.
-			pipeline.configure();
-			log.info("successfully configured plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
+			SpringUtils.autowireByName(adapter, frankPlugin);
+			frankPlugin.configure();
 		}
 	}
 
@@ -125,15 +109,15 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 	public void start() {
 		super.start();
 
-		if (pipeline != null) {
-			pipeline.start();
+		if (frankPlugin != null) {
+			frankPlugin.start();
 		}
 	}
 
 	@Override
 	public void stop() {
-		if (pipeline != null) {
-			pipeline.stop();
+		if (frankPlugin != null) {
+			frankPlugin.stop();
 		}
 
 		super.stop();
@@ -149,7 +133,7 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 		}
 
 		try (PipeLineSession childSession = createChildSession(pvl, parentSession)) {
-			PipeLineResult pipelineResult = pipeline.process(MessageUtils.generateMessageId(), message, childSession);
+			PipeLineResult pipelineResult = frankPlugin.process(MessageUtils.generateMessageId(), message, childSession);
 
 			PipeForward forward = getExitCodeForward(childSession);
 			return new PipeRunResult(forward, pipelineResult.getResult());
@@ -179,38 +163,6 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 		Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 		String forwardName = Objects.toString(exitCode, null); // ToString the value
 		return forwardName != null ? findForward(forwardName) : getSuccessForward();
-	}
-
-	/**
-	 * Try and see if the plugin exists in the applications PluginLoader.
-	 */
-	private @NonNull PluginWrapper findPlugin(String nameOfPlugin) throws ConfigurationException {
-		PluginWrapper pluginWrapper = pluginLoader.findPlugin(nameOfPlugin);
-
-		if (pluginWrapper == null) {
-			throw new ConfigurationException("plugin ["+nameOfPlugin+"] not found");
-		}
-		if (pluginWrapper.getPluginState() != PluginState.STARTED) {
-			throw new ConfigurationException("plugin ["+nameOfPlugin+"] is in state ["+pluginWrapper.getPluginState()+"]");
-		}
-
-		return pluginWrapper;
-	}
-
-	/**
-	 * The resource is the plugin's entrypoint. Typically Configuration.xml but could be any XML file.
-	 */
-	private static @NonNull Resource getResource(PluginWrapper pluginWrapper, String entryPoint) throws ConfigurationException {
-		if (StringUtils.isBlank(entryPoint)) {
-			throw new ConfigurationException("no reference provided for plugin ["+pluginWrapper.getPluginId()+"]");
-		}
-
-		String resourceToUse = entryPoint.startsWith("/") ? entryPoint.substring(1) : entryPoint;
-		Resource resource = Resource.getResource(pluginWrapper::getPluginClassLoader, resourceToUse);
-		if (resource == null) {
-			throw new ConfigurationException("reference ["+resourceToUse+"] not found in plugin ["+pluginWrapper.getPluginId()+"]");
-		}
-		return resource;
 	}
 
 	/**

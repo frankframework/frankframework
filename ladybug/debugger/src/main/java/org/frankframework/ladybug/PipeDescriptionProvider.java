@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import org.frankframework.components.PipelinePart;
+import org.frankframework.components.FrankPlugin;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.core.HasName;
@@ -70,8 +70,12 @@ public class PipeDescriptionProvider {
 	private static record PipeInfo(String checkpointName, String xpathExpression) {
 
 		public String getXPath(PipeLine pipeLine) {
-			if (pipeLine instanceof PipelinePart) {
-				// Single PipelinePart
+			if (xpathExpression == null) {
+				return null;
+			}
+
+			if (pipeLine instanceof FrankPlugin) {
+				// Single PipelinePart in a FrankPlugin
 				return "//*" + xpathExpression;
 			} else {
 				// Entire Configuration with potentially multiple adapters
@@ -97,16 +101,16 @@ public class PipeDescriptionProvider {
 
 			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.computeIfAbsent(System.identityHashCode(pipeLine), k -> new HashMap<>());
 
-			return pipeDescriptionCache.computeIfAbsent(xpathExpression, k -> {
+			return pipeDescriptionCache.computeIfAbsent(xpathExpression, xpath -> {
 				PipeDescription pipeDescription = new PipeDescription();
 				pipeDescription.setCheckpointName(checkpointName);
 
-				if (k == null) {
+				if (xpath == null) {
 					pipeDescription.setDescription("Could not create xpath to extract pipe from configuration");
 				} else {
 					try {
 						Document document = getLoadedConfiguration(pipeLine);
-						Node node = doXPath(document, k);
+						Node node = doXPath(document, xpath);
 
 						if (node != null) {
 							XmlWriter xmlWriter = new XmlWriter();
@@ -136,7 +140,7 @@ public class PipeDescriptionProvider {
 	 */
 	private Document getLoadedConfiguration(PipeLine pipeline) {
 		final Integer uniqueIdentifier;
-		if (pipeline instanceof PipelinePart) {
+		if (pipeline instanceof FrankPlugin) {
 			uniqueIdentifier = System.identityHashCode(pipeline);
 		} else {
 			Configuration configuration = pipeline.getAdapter().getConfiguration();

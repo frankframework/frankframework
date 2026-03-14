@@ -7,7 +7,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -19,12 +20,13 @@ import java.util.Deque;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
 
 import lombok.Getter;
 
-import org.frankframework.components.PipelinePart;
+import org.frankframework.components.FrankPlugin;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine.ExitState;
@@ -38,18 +40,19 @@ import org.frankframework.testutil.TestFileUtils;
 public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 	private PluginContextEventListener listener;
 	private PluginLoader loader;
-	private PipelinePart pipeline;
+	private FrankPlugin frankPlugin;
 
 	@Override
 	public CompositePipe createPipe() throws ConfigurationException {
-		return new CompositePipe(loader, pipeline);
+		return new CompositePipe(frankPlugin);
 	}
 
 	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		loader = createPluginLoader();
-		pipeline = mock();
+		frankPlugin = spy();
+		doReturn(loader).when(frankPlugin).getPluginLoader(any(ApplicationContext.class));
 
 		super.setUp();
 
@@ -91,17 +94,20 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 		assertEquals(0, listener.getEvents().size());
 
 		configureAdapter();
+		// Verify above method 'pipeline.configure()' has configured everything.
+		assertEquals(1, listener.getEvents().size());
+		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
+		verify(frankPlugin, times(1)).configure();
 
-		assertEquals(0, listener.getEvents().size());
-
-		verify(pipeline, times(1)).configure();
+		// Stub actual processing.
 		doAnswer(i -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setResult(i.getArgument(1));
 			plr.setState(ExitState.SUCCESS);
 			return plr;
-		}).when(pipeline).process(anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(frankPlugin).process(anyString(), any(Message.class), any(PipeLineSession.class));
 
+		// Process dummy message
 		Message ignored = Message.nullMessage();
 		PipeRunResult result = doPipe(ignored);
 

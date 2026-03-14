@@ -29,7 +29,7 @@ import org.wearefrank.ladybug.TestTool;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.components.PipelinePart;
+import org.frankframework.components.FrankPlugin;
 import org.frankframework.core.HasName;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IPipe;
@@ -69,7 +69,7 @@ public class LadybugReportGenerator implements InitializingBean {
 
 	// combines the config and adapter-names so each report is unique and can be 'rerun'.
 	private String getName(PipeLine pipeLine) {
-		if (pipeLine instanceof PipelinePart compositeComponent) {
+		if (pipeLine instanceof FrankPlugin compositeComponent) {
 			return compositeComponent.getDisplayName();
 		}
 
