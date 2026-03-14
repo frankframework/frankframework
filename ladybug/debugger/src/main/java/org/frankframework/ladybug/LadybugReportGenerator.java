@@ -69,8 +69,8 @@ public class LadybugReportGenerator implements InitializingBean {
 
 	// combines the config and adapter-names so each report is unique and can be 'rerun'.
 	private String getName(PipeLine pipeLine) {
-		if (pipeLine instanceof FrankPlugin compositeComponent) {
-			return compositeComponent.getDisplayName();
+		if (pipeLine instanceof FrankPlugin frankPlugin) {
+			return frankPlugin.getDisplayName();
 		}
 
 		String adapterName = pipeLine.getAdapter().getName();
