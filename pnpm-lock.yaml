@@ -93,8 +93,8 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       sweetalert2:
-        specifier: ^11.26.21
-        version: 11.26.21
+        specifier: ^11.26.22
+        version: 11.26.22
       tinycon:
         specifier: 0.6.8
         version: 0.6.8
@@ -4018,8 +4018,8 @@ packages:
     resolution: {integrity: sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==}
     engines: {node: '>=10'}
 
-  sweetalert2@11.26.21:
-    resolution: {integrity: sha512-apfAIHg5DOOnPqUIJc+aAsDplpfHliAnVl7zqLfhQiWaYDew46pg4ZZMLJhbVbjdOdMV+PKG5ulkKzNqvcSViQ==}
+  sweetalert2@11.26.22:
+    resolution: {integrity: sha512-UtfV5j7gXBRLm0+6Vm+MqIpsMA7CF7lOGeBj1sc8YSb2Q2xKT6mkSV63b4kFUGNs4vYa+Nd7ufZ97ZX9hNfqsA==}
 
   synckit@0.11.12:
     resolution: {integrity: sha512-Bh7QjT8/SuKUIfObSXNHNSK6WHo6J1tHCqJsuaFDP7gP0fkzSfTxI8y85JrppZ0h8l0maIgc2tfuZQ6/t3GtnQ==}
@@ -8471,7 +8471,7 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
-  sweetalert2@11.26.21: {}
+  sweetalert2@11.26.22: {}
 
   synckit@0.11.12:
     dependencies:
