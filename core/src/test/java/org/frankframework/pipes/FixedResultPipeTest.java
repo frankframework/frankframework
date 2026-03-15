@@ -54,7 +54,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 	public void testFailureWithAttribute() {
 		pipe.setFilename(PIPES_2_TXT + "/something.txt");
 
-		assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThrows(ConfigurationException.class, this::configureAdapter);
 	}
 
 	@Test
@@ -62,7 +62,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		Parameter filename = ParameterBuilder.create().withName("filename").withValue(PIPES_2_TXT + "/something.txt");
 		pipe.addParameter(filename);
 
-		assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThrows(ConfigurationException.class, this::configureAdapter);
 	}
 
 	@Test
@@ -113,7 +113,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 		pipe.setReplaceTo("kar");
 		pipe.setReturnString("?{param1}andandandparam2");
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
 		assertThat(e.getMessage(), Matchers.endsWith("cannot find resource [/Pipes/2.txt/something]"));
 	}
 

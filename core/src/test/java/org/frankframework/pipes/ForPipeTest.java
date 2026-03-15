@@ -1,7 +1,6 @@
 package org.frankframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,7 +31,7 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 
 	@Test
 	void assertMaxNotSet() {
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
 		assertThat(e.getMessage(), Matchers.containsString("is mandatory to break out of the for loop pipe"));
 	}
 
@@ -41,9 +40,8 @@ public class ForPipeTest extends PipeTestBase<ForPipe> {
 		pipe.addForward(new PipeForward("continue", null));
 		pipe.addForward(new PipeForward("stop", null));
 		pipe.setStopAt(10);
-		configureAndStartPipe();
 
-		assertDoesNotThrow(this::configurePipe);
+		configureAndStartPipe();
 	}
 
 	@Test

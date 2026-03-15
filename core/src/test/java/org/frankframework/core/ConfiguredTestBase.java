@@ -67,10 +67,6 @@ public abstract class ConfiguredTestBase {
 		return getConfiguration().getConfigurationWarnings();
 	}
 
-	protected void configurePipeline() throws ConfigurationException {
-		pipeline.configure();
-	}
-
 	/**
 	 * Configure the pipe adapter, pipeline and pipe(s)
 	 */

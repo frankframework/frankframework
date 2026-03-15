@@ -34,7 +34,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	public void everythingNull() {
 		pipe.setFind("laa");
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
 		assertThat(e.getMessage(), Matchers.containsString("cannot have a null replace-attribute"));
 	}
 
@@ -98,7 +98,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		pipe.setNonXmlReplacementCharacter("klkl");
 		pipe.setReplaceNonXmlChars(true);
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
 		assertThat(e.getMessage(), Matchers.containsString("replaceNonXmlChar [klkl] has to be one character"));
 	}
 
