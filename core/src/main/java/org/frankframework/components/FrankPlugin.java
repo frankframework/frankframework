@@ -81,6 +81,7 @@ public class FrankPlugin extends PipeLine {
 
 	private void digestPluginInClassloader(Resource resource) throws ConfigurationException {
 		Thread thread = Thread.currentThread();
+		ClassLoader originalClassLoader = thread.getContextClassLoader();
 
 		try {
 			// We must digest the entrypoint with the Plugin Classloader because the Thread's contextClassLoader is used.
@@ -91,7 +92,7 @@ public class FrankPlugin extends PipeLine {
 			configurationDigester.digest(this, resource, properties);
 		} finally {
 			// Always revert to the original contextClassLoader, regardless if successful or not.
-			thread.setContextClassLoader(getConfigurationClassLoader());
+			thread.setContextClassLoader(originalClassLoader);
 		}
 	}
 
