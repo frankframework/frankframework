@@ -2,6 +2,7 @@ package org.frankframework.components.plugins;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,11 +32,13 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine.ExitState;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.pipes.SenderPipe;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 
@@ -117,6 +120,44 @@ public class CompositeSenderTest extends SenderTestBase<CompositeSender> {
 		doAnswer(i -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setResult(i.getArgument(1));
+			PipeLineSession session = i.getArgument(2);
+			assertNull(session.getMessageId());
+			assertEquals(testCorrelationId, session.getCorrelationId());
+			plr.setState(ExitState.SUCCESS);
+			return plr;
+		}).when(frankPlugin).process(anyString(), any(Message.class), any(PipeLineSession.class));
+
+		// Process dummy message
+		Message ignored = Message.nullMessage();
+		Message result = sendMessage(ignored);
+
+		assertTrue(Message.isNull(result));
+	}
+
+	@Test
+	public void initializeAndLoadPluginWithParameters() throws Exception {
+		sender.setPlugin("demo-plugin");
+		sender.setRef("demo-test-part.xml");
+		IParameter parameter = spy(ParameterBuilder.create("test", "value"));
+		sender.addParameter(parameter);
+
+		assertEquals(0, listener.getEvents().size());
+
+		configureAdapter();
+		// Verify above method 'pipeline.configure()' has configured everything.
+		assertEquals(1, listener.getEvents().size());
+		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
+		verify(frankPlugin, times(1)).configure();
+		verify(parameter, times(1)).configure();
+
+		// Stub actual processing.
+		doAnswer(i -> {
+			PipeLineResult plr = new PipeLineResult();
+			plr.setResult(i.getArgument(1));
+			PipeLineSession session = i.getArgument(2);
+			assertNull(session.getMessageId());
+			assertEquals(testCorrelationId, session.getCorrelationId());
+			assertEquals("value", session.getString("test"));
 			plr.setState(ExitState.SUCCESS);
 			return plr;
 		}).when(frankPlugin).process(anyString(), any(Message.class), any(PipeLineSession.class));
