@@ -27,23 +27,38 @@ import org.springframework.context.event.ApplicationContextEvent;
 import lombok.Getter;
 
 import org.frankframework.components.FrankPlugin;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.pipes.PipeTestBase;
+import org.frankframework.pipes.SenderPipe;
+import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.SpringUtils;
 
-public class CompositePipeTest extends PipeTestBase<CompositePipe> {
+public class CompositeSenderTest extends SenderTestBase<CompositeSender> {
 	private PluginContextEventListener listener;
 	private PluginLoader loader;
 	private FrankPlugin frankPlugin;
 
 	@Override
-	public CompositePipe createPipe() {
-		return new CompositePipe(frankPlugin);
+	public CompositeSender createSender() {
+		return new CompositeSender(frankPlugin);
+	}
+
+	@Override
+	protected void configureAdapter() throws ConfigurationException {
+		SenderPipe pipe = new SenderPipe();
+		SpringUtils.autowireByType(pipeline, pipe);
+		pipe.addForward(new PipeForward("success", "READY"));
+		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipeline.addPipe(pipe);
+		SpringUtils.autowireByType(pipeline, sender);
+		pipe.setSender(sender);
+		super.configureAdapter();
 	}
 
 	@Override
@@ -87,8 +102,8 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 
 	@Test
 	public void initializeAndLoadPlugin() throws Exception {
-		pipe.setPlugin("demo-plugin");
-		pipe.setRef("demo-test-part.xml");
+		sender.setPlugin("demo-plugin");
+		sender.setRef("demo-test-part.xml");
 
 		assertEquals(0, listener.getEvents().size());
 
@@ -108,14 +123,14 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 
 		// Process dummy message
 		Message ignored = Message.nullMessage();
-		PipeRunResult result = doPipe(ignored);
+		Message result = sendMessage(ignored);
 
-		assertTrue(Message.isNull(result.getResult()));
+		assertTrue(Message.isNull(result));
 	}
 
 	@Test
 	public void initializeAndLoadPluginDefaultRef() throws Exception {
-		pipe.setPlugin("demo-plugin");
+		sender.setPlugin("demo-plugin");
 
 		assertEquals(0, listener.getEvents().size());
 

@@ -15,6 +15,8 @@
 */
 package org.frankframework.components;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.pf4j.PluginDescriptor;
@@ -94,6 +96,13 @@ public class FrankPlugin extends PipeLine {
 			// Always revert to the original contextClassLoader, regardless if successful or not.
 			thread.setContextClassLoader(originalClassLoader);
 		}
+	}
+
+	@Override
+	public @NonNull ClassLoader getClassLoader() {
+		ClassLoader cl = super.getClassLoader();
+		Objects.requireNonNull(cl, "no ClassLoader found, has the plugin been initialized?");
+		return cl;
 	}
 
 	public void setPluginName(String pluginName) {

@@ -113,26 +113,27 @@ public class PipeDescriptionProvider {
 						Node node = doXPath(document, xpath);
 
 						if (node != null) {
-							XmlWriter xmlWriter = new XmlWriter();
-							ContentHandler handler = new PrettyPrintFilter(xmlWriter);
-							try {
-								String input = XmlUtils.nodeToString(node);
-								XmlUtils.parseXml(input, handler);
-								pipeDescription.setDescription(xmlWriter.toString());
-							} catch (IOException | TransformerException | SAXException e) {
-								pipeDescription.setDescription("Exception: " + e.getMessage());
-							}
+							pipeDescription.setDescription(nodeToString(node));
 							addResourceNamesToPipeDescription(node, pipeDescription);
 						} else {
 							pipeDescription.setDescription("Pipe not found in configuration.");
 						}
-					} catch (IllegalStateException e) {
-						pipeDescription.setDescription("Could not parse configuration: " + e.getMessage());
+					} catch (Exception e) {
+						// Catch all Exceptions, and display the reason.
+						pipeDescription.setDescription("Exception: " + e.getMessage());
 					}
 				}
 				return pipeDescription;
 			});
 		}
+	}
+
+	private String nodeToString(Node node) throws TransformerException, IOException, SAXException {
+		XmlWriter xmlWriter = new XmlWriter();
+		ContentHandler handler = new PrettyPrintFilter(xmlWriter);
+		String input = XmlUtils.nodeToString(node);
+		XmlUtils.parseXml(input, handler);
+		return xmlWriter.toString();
 	}
 
 	/**
