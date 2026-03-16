@@ -17,22 +17,23 @@
 
 			<OpenApiInputValidator useAsOutputValidator="true" path="/pets" method="post"
 				openApiDefinition="/Validators/openapi/petstore-openapi.json">
-				<forward name="failure" path="ServerError" />
+				<forward name="failure" path="InputValidationFailure" />
 				<forward name="outputFailure" path="ServerError" />
 			</OpenApiInputValidator>
 
 			<DataSonnetPipe name="JSON Transform" styleSheetName="/Validators/openapi/newPetInputToOutput.jsonnet" />
 
-<!--			<pipe name="InputValidationFailure" className="org.frankframework.pipes.ReplacerPipe"-->
-<!--				getInputFromFixedValue="{ &quot;message&quot;:&quot;input validation failure: ?{REASON}&quot; }">-->
-<!--				<param name="REASON" sessionKey="failureReason" />-->
-<!--				<forward name="success" path="BadRequest" />-->
-<!--			</pipe>-->
-<!--			<pipe name="OutputValidationFailure" className="org.frankframework.pipes.ReplacerPipe"-->
-<!--				getInputFromFixedValue="{ &quot;message&quot;:&quot;output validation failure: ?{REASON}&quot; }">-->
-<!--				<param name="REASON" sessionKey="failureReason" />-->
-<!--				<forward name="success" path="ServerError" />-->
-<!--			</pipe>-->
+			<EchoPipe name="Echo">
+				<forward name="success" path="EXIT" />
+			</EchoPipe>
+
+			<ReplacerPipe name="InputValidationFailure" getInputFromFixedValue="{ &quot;message&quot;:&quot;?{REASON}&quot;}">
+				<param name="REASON" sessionKey="failureReason" />
+				<forward name="success" path="BadRequest" />
+			</ReplacerPipe>
+
+			<!-- Please note that the output validation is currently not working, because the OpenApiOutputValidator relies on specific
+			 exit codes which aren't supported when using a larva test -->
 		</pipeline>
 	</adapter>
 </module>
