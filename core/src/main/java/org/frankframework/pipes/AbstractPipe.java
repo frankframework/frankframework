@@ -336,11 +336,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public String getEventSourceName() {
-		return getName().trim();
-	}
-
-	@Override
 	public void registerEvent(String description) {
 		if (eventPublisher != null) {
 			eventPublisher.registerEvent(this, description);
@@ -357,7 +352,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	/**
 	 * Please use {@link ConfigurationAware} or AdapterAware where needed so this can be removed from the base-class.
 	 */
-	@Override
 	@Deprecated(forRemoval = true)
 	public Adapter getAdapter() {
 		return adapter;

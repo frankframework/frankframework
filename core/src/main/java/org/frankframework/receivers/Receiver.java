@@ -536,13 +536,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		isConfigured = false;
 		try {
 			super.configure();
-			if (StringUtils.isEmpty(getName())) {
-				if (getListener()!=null) {
-					setName(ClassUtils.nameOf(getListener()));
-				} else {
-					setName(ClassUtils.nameOf(this));
-				}
-			}
 			if(getName().contains("/")) {
 				throw new ConfigurationException("It is not allowed to have '/' in receiver name ["+getName()+"]");
 			}
@@ -1739,10 +1732,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
-	@Override
-	public String getEventSourceName() {
-		return getLogPrefix().trim();
-	}
 	private void registerEvent(String eventCode) {
 		if (eventPublisher != null) {
 			eventPublisher.registerEvent(this, eventCode);
@@ -2061,7 +2050,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	@Override
 	public void setName(String newName) {
 		name = newName;
-		propagateName();
 	}
 
 	/**

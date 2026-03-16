@@ -890,6 +890,11 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	public void addReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
 
+		if (StringUtils.isBlank(receiver.getName())) {
+			log.warn("receiver does not have a name, generating implicit one.");
+			receiver.setName("Receiver [%d]".formatted(receivers.size()));
+		}
+
 		if (log.isTraceEnabled()) {
 			log.trace("Adapter [{}] registered receiver [{}]", name, receiver.toString());
 		} else {
