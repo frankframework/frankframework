@@ -28,25 +28,40 @@ import org.springframework.context.event.ApplicationContextEvent;
 import lombok.Getter;
 
 import org.frankframework.components.FrankPlugin;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine.ExitState;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.parameters.IParameter;
-import org.frankframework.pipes.PipeTestBase;
+import org.frankframework.pipes.SenderPipe;
+import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.SpringUtils;
 
-public class CompositePipeTest extends PipeTestBase<CompositePipe> {
+public class CompositeSenderTest extends SenderTestBase<CompositeSender> {
 	private PluginContextEventListener listener;
 	private PluginLoader loader;
 	private FrankPlugin frankPlugin;
 
 	@Override
-	public CompositePipe createPipe() {
-		return new CompositePipe(frankPlugin);
+	public CompositeSender createSender() {
+		return new CompositeSender(frankPlugin);
+	}
+
+	@Override
+	protected void configureAdapter() throws ConfigurationException {
+		SenderPipe pipe = new SenderPipe();
+		SpringUtils.autowireByType(pipeline, pipe);
+		pipe.addForward(new PipeForward("success", "READY"));
+		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipeline.addPipe(pipe);
+		SpringUtils.autowireByType(pipeline, sender);
+		pipe.setSender(sender);
+		super.configureAdapter();
 	}
 
 	@Override
@@ -57,8 +72,6 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 		doReturn(loader).when(frankPlugin).getPluginLoader(any(ApplicationContext.class));
 
 		super.setUp();
-		session.put(PipeLineSession.MESSAGE_ID_KEY, testMessageId);
-		session.put(PipeLineSession.CORRELATION_ID_KEY, testCorrelationId);
 
 		loader.start();
 		listener = new PluginContextEventListener();
@@ -86,21 +99,18 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 			getConfiguration().removeApplicationListener(listener);
 		}
 
-		pipe.stop();
 		loader.stop();
 		super.tearDown();
 	}
 
 	@Test
 	public void initializeAndLoadPlugin() throws Exception {
-		pipe.setPlugin("demo-plugin");
-		pipe.setRef("demo-test-part.xml");
+		sender.setPlugin("demo-plugin");
+		sender.setRef("demo-test-part.xml");
 
 		assertEquals(0, listener.getEvents().size());
 
 		configureAdapter();
-		pipe.start();
-
 		// Verify above method 'pipeline.configure()' has configured everything.
 		assertEquals(1, listener.getEvents().size());
 		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
@@ -119,22 +129,21 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 
 		// Process dummy message
 		Message ignored = Message.nullMessage();
-		PipeRunResult result = doPipe(ignored);
+		Message result = sendMessage(ignored);
 
-		assertTrue(Message.isNull(result.getResult()));
+		assertTrue(Message.isNull(result));
 	}
 
 	@Test
 	public void initializeAndLoadPluginWithParameters() throws Exception {
-		pipe.setPlugin("demo-plugin");
-		pipe.setRef("demo-test-part.xml");
+		sender.setPlugin("demo-plugin");
+		sender.setRef("demo-test-part.xml");
 		IParameter parameter = spy(ParameterBuilder.create("test", "value"));
-		pipe.addParameter(parameter);
+		sender.addParameter(parameter);
 
 		assertEquals(0, listener.getEvents().size());
 
 		configureAdapter();
-		pipe.start();
 		// Verify above method 'pipeline.configure()' has configured everything.
 		assertEquals(1, listener.getEvents().size());
 		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
@@ -155,14 +164,14 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 
 		// Process dummy message
 		Message ignored = Message.nullMessage();
-		PipeRunResult result = doPipe(ignored);
+		Message result = sendMessage(ignored);
 
-		assertTrue(Message.isNull(result.getResult()));
+		assertTrue(Message.isNull(result));
 	}
 
 	@Test
 	public void initializeAndLoadPluginDefaultRef() throws Exception {
-		pipe.setPlugin("demo-plugin");
+		sender.setPlugin("demo-plugin");
 
 		assertEquals(0, listener.getEvents().size());
 

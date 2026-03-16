@@ -19,7 +19,6 @@ import java.util.Objects;
 
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 
 import lombok.Getter;
@@ -31,15 +30,15 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ParameterException;
-import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Default;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.pipes.FixedForwardPipe;
+import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.MessageUtils;
@@ -51,10 +50,12 @@ import org.frankframework.util.SpringUtils;
  * For example:
  *
  * <pre>{@code
- * <CompositePipe name="name-of-the-pipe" plugin="name-of-the-plugin">
- *     <Param name="inject-me" value="im a value" />
- *     <Param name="inject-me-too" sessionKey="originalMessage" />
- * </CompositePipe>
+ * <ForEachChildElementPipe name="callPluginAsSender" ...>
+ *     <CompositeSender name="plugin" plugin="demo-plugin" ref="demo-test-part.xml">
+ *         <Param name="inject-me" value="im a value" />
+ *         <Param name="inject-me-too" sessionKey="originalMessage" />
+ *     </CompositeSender>
+ * </ForEachChildElementPipe>
  * }</pre>
  *
  *
@@ -65,7 +66,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @author Niels Meijer
  */
-public class CompositePipe extends FixedForwardPipe implements InitializingBean, AdapterAware {
+public class CompositeSender extends AbstractSenderWithParameters implements InitializingBean, AdapterAware {
 
 	private String pluginName;
 	private String partReference = ConfigurationUtils.DEFAULT_CONFIGURATION_FILE;
@@ -73,12 +74,12 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 	private @Getter @Setter Adapter adapter;
 	private FrankPlugin frankPlugin;
 
-	public CompositePipe() throws SecurityException, ReflectiveOperationException {
+	public CompositeSender() throws SecurityException, ReflectiveOperationException {
 		// NOOP for Spring to initialize
 	}
 
 	// For testing purposes only!
-	protected CompositePipe(FrankPlugin frankPlugin) {
+	protected CompositeSender(FrankPlugin frankPlugin) {
 		this.frankPlugin = frankPlugin;
 	}
 
@@ -94,7 +95,6 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 		parameterNamesMustBeUnique = true;
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("plugin", pluginName)) {
-			// Assuming we can find the plugin and entrypoint. Configure the parameters.
 			super.configure();
 
 			frankPlugin.setPluginName(pluginName);
@@ -124,19 +124,22 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 	}
 
 	@Override
-	public @NonNull PipeRunResult doPipe(Message message, PipeLineSession parentSession) throws PipeRunException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession parentSession) throws SenderException {
 		ParameterValueList pvl;
 		try {
 			pvl = getParameterList().getValues(message, parentSession);
 		} catch (ParameterException e) {
-			throw new PipeRunException(this, "cannot determine parameter values", e);
+			throw new SenderException("cannot determine parameter values", e);
 		}
 
 		try (PipeLineSession childSession = createChildSession(pvl, parentSession)) {
 			PipeLineResult pipelineResult = frankPlugin.process(MessageUtils.generateMessageId(), message, childSession);
 
-			PipeForward forward = getExitCodeForward(childSession);
-			return new PipeRunResult(forward, pipelineResult.getResult());
+			Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+			String forwardName = Objects.toString(exitCode, null); // ToString the value
+			return new SenderResult(pipelineResult.isSuccessful(), pipelineResult.getResult(), null, forwardName);
+		} catch (PipeRunException e) {
+			throw new SenderException("error while processing request in plugin", e);
 		}
 	}
 
@@ -154,15 +157,6 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 		}
 
 		return childSession;
-	}
-
-	/**
-	 * Returns the exit code forward, if present. Else the SUCCESS forward.
-	 */
-	private @Nullable PipeForward getExitCodeForward(PipeLineSession childSession) {
-		Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		String forwardName = Objects.toString(exitCode, null); // ToString the value
-		return forwardName != null ? findForward(forwardName) : getSuccessForward();
 	}
 
 	/**

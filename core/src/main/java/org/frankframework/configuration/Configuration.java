@@ -96,8 +96,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	private @Getter String version;
 	private @Getter IbisManager ibisManager;
 	private @Getter IErrorMessageFormatter errorMessageFormatter;
-	private @Getter String originalConfiguration;
-	private @Getter String loadedConfiguration;
 	private @Getter boolean configured = false;
 
 	private @Getter ConfigurationException configurationException = null;
@@ -466,18 +464,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 
 	public void setIbisManager(IbisManager ibisManager) {
 		this.ibisManager = ibisManager;
-	}
-
-	/** The entire (raw) configuration */
-	@Protected
-	public void setOriginalConfiguration(String originalConfiguration) {
-		this.originalConfiguration = originalConfiguration;
-	}
-
-	/** The loaded (with resolved properties) configuration */
-	@Protected
-	public void setLoadedConfiguration(String loadedConfiguration) {
-		this.loadedConfiguration = loadedConfiguration;
 	}
 
 	public IJob getScheduledJob(String name) {

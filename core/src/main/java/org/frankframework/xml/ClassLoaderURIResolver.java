@@ -22,8 +22,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import org.frankframework.core.IScopeProvider;
@@ -42,7 +44,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 	private final IScopeProvider scopeProvider;
 	private final List<String> allowedProtocols = ClassLoaderUtils.getAllowedProtocols();
 
-	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
+	public ClassLoaderURIResolver(@NonNull IScopeProvider scopeProvider) {
 		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider [{}]", scopeProvider);
 		this.scopeProvider = scopeProvider;
 	}
@@ -80,7 +82,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 			}
 		}
 
-		String ref=absoluteOrRelativeRef;
+		String ref = FilenameUtils.normalize(absoluteOrRelativeRef, true);
 		Resource resource = Resource.getResource(scopeProvider, ref, protocol);
 		if (resource==null && globalClasspathRef!=null) {
 			if (log.isDebugEnabled())

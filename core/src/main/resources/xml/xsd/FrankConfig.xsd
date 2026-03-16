@@ -7904,6 +7904,25 @@ When &lt;code&gt;action=update&lt;/code&gt; the input (xml string) indicates doc
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="CompositeSender">
+        <xs:annotation>
+          <xs:documentation>Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
+For example:
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;CompositePipe name=&amp;quot;name-of-the-pipe&amp;quot; plugin=&amp;quot;name-of-the-plugin&amp;quot;&amp;gt;
+    &amp;lt;Param name=&amp;quot;inject-me&amp;quot; value=&amp;quot;im a value&amp;quot; /&amp;gt;
+    &amp;lt;Param name=&amp;quot;inject-me-too&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; /&amp;gt;
+&amp;lt;/CompositePipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;A plugin may have multiple entrypoints (or ref's), each one can be called independently.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CompositeSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="DelaySender">
         <xs:annotation>
           <xs:documentation>Sender that sleeps for a specified time, which defaults to 5000 msecs.
@@ -9766,6 +9785,28 @@ Defaults to 10000, inherited from HttpSender#setTimeout. Default: 10000</xs:docu
   </xs:attributeGroup>
   <xs:attributeGroup name="CommandSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="CommandSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="CompositeSenderType">
+    <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    <xs:attributeGroup ref="CompositeSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.components.plugins.CompositeSender" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="CompositeSenderDeclaredAttributeGroup">
+    <xs:attribute name="plugin" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Functional name of the plugin to load.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ref" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>File in the Plugin which contains the &lt;code&gt;&amp;lt;PipelinePart /&amp;gt;&lt;/code&gt; to call.
+Defaults to &lt;code&gt;Configuration.xml&lt;/code&gt; but can be any XML file. Default: Configuration.xml</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="CompositeSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CompositeSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DelaySenderType">
@@ -13528,6 +13569,16 @@ This pipe can be used in combination with IncreaseIntegerPipe to construct loops
         </xs:complexType>
       </xs:element>
       <xs:element name="CompositePipe">
+        <xs:annotation>
+          <xs:documentation>Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
+For example:
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;CompositePipe name=&amp;quot;name-of-the-pipe&amp;quot; plugin=&amp;quot;name-of-the-plugin&amp;quot;&amp;gt;
+    &amp;lt;Param name=&amp;quot;inject-me&amp;quot; value=&amp;quot;im a value&amp;quot; /&amp;gt;
+    &amp;lt;Param name=&amp;quot;inject-me-too&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; /&amp;gt;
+&amp;lt;/CompositePipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;A plugin may have multiple entrypoints (or ref's), each one can be called independently.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CompositePipeType">
@@ -15999,8 +16050,17 @@ This field controls how to iterate over the input and does not determine the pip
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.components.plugins.CompositePipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CompositePipeDeclaredAttributeGroup">
-    <xs:attribute name="plugin" type="xs:string" />
-    <xs:attribute name="ref" type="xs:string" />
+    <xs:attribute name="plugin" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Functional name of the plugin to load.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ref" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>File in the Plugin which contains the &lt;code&gt;&amp;lt;PipelinePart /&amp;gt;&lt;/code&gt; to call.
+Defaults to &lt;code&gt;Configuration.xml&lt;/code&gt; but can be any XML file. Default: Configuration.xml</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="CompositePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CompositePipeDeclaredAttributeGroup" />
