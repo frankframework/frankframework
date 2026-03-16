@@ -46,7 +46,10 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	public void tearDown() {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
+
+		pipe.stop();
 		pipe = null;
+
 		super.tearDown();
 	}
 
@@ -54,14 +57,14 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	 * Configure the pipe
 	 */
 	protected void configurePipe() throws ConfigurationException {
-		configurePipeline();
+		configureAdapter();
 	}
 
 	/**
 	 * Configure and start the pipe
 	 */
 	protected void configureAndStartPipe() throws ConfigurationException {
-		configurePipeline();
+		configureAdapter();
 		pipe.start();
 	}
 

@@ -46,7 +46,7 @@ class ZipIteratorPipeTest extends PipeTestBase<ZipIteratorPipe> {
 	void testSessionKeyIsSet() {
 		pipe.setSender(new EchoSender());
 		pipe.setContentsSessionKey("");
-		assertThrows(ConfigurationException.class, this::configurePipe);
+		assertThrows(ConfigurationException.class, this::configureAdapter);
 	}
 
 	@ParameterizedTest

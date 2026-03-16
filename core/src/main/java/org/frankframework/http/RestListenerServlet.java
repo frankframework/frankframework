@@ -130,7 +130,7 @@ public class RestListenerServlet extends AbstractHttpServlet {
 					return;
 				}
 
-				String etag=(String)messageContext.get("etag");
+				String etag = messageContext.getString("etag");
 				if (StringUtils.isNotEmpty(etag))
 					response.setHeader("etag", etag);
 
@@ -143,15 +143,15 @@ public class RestListenerServlet extends AbstractHttpServlet {
 				if (Message.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
 				} else {
-					contentType=messageContext.getString("contentType");
+					contentType = messageContext.getString("contentType");
 					if (StringUtils.isNotEmpty(contentType)) {
 						response.setHeader("Content-Type", contentType);
 					}
-					String contentDisposition=(String)messageContext.get("contentDisposition");
+					String contentDisposition = messageContext.getString("contentDisposition");
 					if (StringUtils.isNotEmpty(contentDisposition)) {
 						response.setHeader("Content-Disposition", contentDisposition);
 					}
-					String allowedMethods=(String)messageContext.get("allowedMethods");
+					String allowedMethods = messageContext.getString("allowedMethods");
 					if (StringUtils.isNotEmpty(allowedMethods)) {
 						response.setHeader("Allow", allowedMethods);
 					}

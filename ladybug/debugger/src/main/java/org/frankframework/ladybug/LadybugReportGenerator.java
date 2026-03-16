@@ -15,11 +15,11 @@
 */
 package org.frankframework.ladybug;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,8 +39,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageUtils;
-import org.frankframework.util.StringUtil;
 
 /**
  * Interface between the AOP config and the Ladybug. Takes care of boilerplate code such as report name, checkpoint names, pipe descriptions.
@@ -189,15 +187,17 @@ public class LadybugReportGenerator implements InitializingBean {
 		return testTool.inputpoint(correlationId, null, "getDefaultValue", replacementValue);
 	}
 
+	// TODO create tests here to hide values, and ideally with a message such as "(x characters more...)".
 	public Object parameterResolvedTo(IParameter parameter, String correlationId, Object value) {
 		if (parameter.isHidden()) {
 			log.debug("hiding parameter [{}] value", parameter::getName);
-			String hiddenValue;
-			try {
-				hiddenValue = StringUtil.hide(MessageUtils.asString(value));
-			} catch (IOException e) {
-				hiddenValue = "IOException while hiding value for parameter " + parameter.getName() + ": " + e.getMessage();
-				log.warn(hiddenValue, e);
+			final String hiddenValue;
+			if (value instanceof Message msg) {
+				hiddenValue = StringUtils.repeat("*", (int) msg.size());
+			} else if (value instanceof String str) {
+				hiddenValue = StringUtils.repeat("*", str.length());
+			} else {
+				hiddenValue = "*** MASKED ***";
 			}
 			testTool.inputpoint(correlationId, null, "Parameter " + parameter.getName(), hiddenValue, extractMessageContext(value));
 			return value;

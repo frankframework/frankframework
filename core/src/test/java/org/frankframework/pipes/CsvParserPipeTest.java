@@ -44,7 +44,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	public void testNoHeaderNoFieldNames() {
 		pipe.setFileContainsHeader(false);
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
 		assertThat(e.getMessage(), Matchers.endsWith("No fieldNames specified, and fileContainsHeader=false"));
 	}
 
@@ -52,7 +52,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	public void test2CharFieldSeparator() {
 		pipe.setFieldSeparator("; ");
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
 		assertThat(e.getMessage(), Matchers.endsWith("], can only be a single character"));
 	}
 
@@ -61,7 +61,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		pipe.setFieldSeparator(";");
 		pipe.setUseControlCodes(true);
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
 		assertThat(e.getMessage(), Matchers.endsWith("cannot use fieldSeparator in combination with useControlCodes"));
 	}
 

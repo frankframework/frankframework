@@ -39,7 +39,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 		session.put("a", "4");
 		pipe.setIncrement(2);
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
 		assertThat(e.getMessage(), Matchers.endsWith("sessionKey must be filled"));
 	}
 

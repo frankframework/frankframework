@@ -32,7 +32,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(combinedBlocks);
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
@@ -73,7 +73,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(combinedBlocks);
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
@@ -134,7 +134,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
@@ -154,7 +154,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
@@ -175,7 +175,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
 		pipe.addForward(new PipeForward(StopReason.MAX_ITEMS_REACHED.getForwardName(), "dummy"));
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
@@ -196,7 +196,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
@@ -217,7 +217,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setLinePrefix("{");
 		pipe.setLineSuffix("}");
 		pipe.setCombineBlocks(true);
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
@@ -237,7 +237,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.addForward(new PipeForward(StopReason.STOP_CONDITION_MET.getForwardName(), "dummy"));
 		pipe.setStopConditionXPathExpression("/block='key 4 nine'");
 		pipe.setCombineBlocks(true);
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
@@ -253,7 +253,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 	@Test
 	void testBasicWithoutXmlEscaping() throws Exception {
 		pipe.setSender(getElementRenderer(false));
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
@@ -269,7 +269,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 	void testBasicWithXmlEscaping() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setEscapeXml(true);
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
@@ -285,7 +285,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 	void testEndOfLineString() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setEndOfLineString("EOL");
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = getResource("EndMarked.txt");
@@ -302,7 +302,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 		pipe.setSender(getElementRenderer(false));
 		pipe.setStartOfLineString("BOL");
 		pipe.setItemNoSessionKey("itemNo");
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		Message input = getResource("BeginMarked.txt");
@@ -319,7 +319,7 @@ class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIterato
 	void testItemNoSessionKeyEmptyInput() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setItemNoSessionKey("itemNo");
-		configurePipe();
+		configureAdapter();
 		pipe.start();
 
 		String input = "";

@@ -58,11 +58,15 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
 	@MethodSource("fileValues")
 	@ParameterizedTest
-	public void testChecksumAndForFiles(Algorithm algorithm, String fileUrl, String expectedHex, String expectedBase64) throws Exception {
+	public void testChecksumHex(Algorithm algorithm, String fileUrl, String expectedHex, String ignored) throws Exception {
 		URL file = TestFileUtils.getTestFileURL(fileUrl);
-
 		assertEquals(expectedHex, calculateChecksum(file.openStream(), algorithm, HashPipe.HashEncoding.Hex));
+	}
 
+	@MethodSource("fileValues")
+	@ParameterizedTest
+	public void testChecksumBase64(Algorithm algorithm, String fileUrl, String ignored, String expectedBase64) throws Exception {
+		URL file = TestFileUtils.getTestFileURL(fileUrl);
 		assertEquals(expectedBase64, calculateChecksum(file.openStream(), algorithm, HashPipe.HashEncoding.Base64));
 	}
 

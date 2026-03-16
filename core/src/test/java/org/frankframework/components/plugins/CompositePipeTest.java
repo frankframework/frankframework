@@ -86,7 +86,6 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 			getConfiguration().removeApplicationListener(listener);
 		}
 
-		pipe.stop();
 		loader.stop();
 		super.tearDown();
 	}
@@ -98,9 +97,7 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 
 		assertEquals(0, listener.getEvents().size());
 
-		configureAdapter();
-		pipe.start();
-
+		configureAndStartPipe();
 		// Verify above method 'pipeline.configure()' has configured everything.
 		assertEquals(1, listener.getEvents().size());
 		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
@@ -133,8 +130,7 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 
 		assertEquals(0, listener.getEvents().size());
 
-		configureAdapter();
-		pipe.start();
+		configureAndStartPipe();
 		// Verify above method 'pipeline.configure()' has configured everything.
 		assertEquals(1, listener.getEvents().size());
 		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
