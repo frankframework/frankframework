@@ -64,18 +64,19 @@ public class LdapFindGroupMembershipsPipe extends AbstractLdapQueryPipe implemen
 	private @Getter int maxRecursion = 5;
 	private @Getter String recursionFilter = "";
 
-    private LdapClient ldapClient;
-    private ICache<String, Set<String>> cache;
+	private LdapClient ldapClient;
+	private ICache<String, Set<String>> cache;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		Map<String,Object> options=new HashMap<>();
 		options.put("java.naming.provider.url",retrieveUrl(getHost(), getPort(), getBaseDN(), isUseSsl()));
 		options.put(Context.SECURITY_AUTHENTICATION, "simple");
 		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());
 		options.put(Context.SECURITY_CREDENTIALS, cf.getPassword());
-		ldapClient= new LdapClient(options);
+		ldapClient = new LdapClient(options);
 		ldapClient.setCache(cache);
 		ldapClient.configure();
 	}

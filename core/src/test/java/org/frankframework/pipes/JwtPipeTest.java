@@ -13,6 +13,8 @@ import javax.crypto.spec.SecretKeySpec;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSVerifier;
@@ -92,13 +94,18 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		pipe.setSharedSecret("Potato");
 		configureAndStartPipe();
 		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
+		assertValidTokenSignature(jwt1, RIGHT_PADDED_SHORT_SECRET);
+	}
 
+	@Test
+	void paddedSecret() throws Exception {
+		// When jwtAllowWeakSecrets is true, short secrets should be padded to meet minimum length
+		pipe.setJwtAllowWeakSecrets(true);
 		// A manually padded secret should produce the same signature as the auto-padded secret
 		pipe.setSharedSecret("Potato\0\0\0\0");
 		configureAndStartPipe();
 		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
 
-		assertValidTokenSignature(jwt1, RIGHT_PADDED_SHORT_SECRET);
 		assertValidTokenSignature(jwt2, RIGHT_PADDED_SHORT_SECRET);
 	}
 
@@ -125,45 +132,34 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));
 	}
 
-	@Test
-	void secretParamTooShortShouldBePadded() throws Exception {
+	@ParameterizedTest
+	// Run with secret, 32 chars long (OK)
+	// Run with padded secret, 34 chars long (OK)
+	@ValueSource(strings = {"Potato", "Potato\0\0\0\0"})
+	void secretParamTooShortShouldBePadded(String paramValue) throws Exception {
 		// Generate JWT using a short secret (passed as a parameter) with padding allowed
 		pipe.setJwtAllowWeakSecrets(true);
-		Parameter potatoParam = new Parameter(JwtPipe.SHARED_SECRET_PARAMETER_NAME, "Potato");
+		Parameter potatoParam = new Parameter(JwtPipe.SHARED_SECRET_PARAMETER_NAME, paramValue);
 		pipe.addParameter(potatoParam);
 		configureAndStartPipe();
 		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
 
-		// Generate JWT using a manually padded version of the same secret (also as parameter)
-		pipe.setSharedSecret(null);
-		pipe.getParameterList().clear();
-		potatoParam.setValue("Potato\0\0\0\0");
-		pipe.addParameter(potatoParam);
-		configureAndStartPipe();
-		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
-
 		// The resulting JWT signatures should be identical
 		assertValidTokenSignature(jwt1, RIGHT_PADDED_SHORT_SECRET);
-		assertValidTokenSignature(jwt2, RIGHT_PADDED_SHORT_SECRET);
 	}
 
-	@Test
-	void secretPaddedIsTheSame() throws Exception {
-		// Run with secret, 32 chars long (OK)
-		pipe.setSharedSecret(DUMMY_SECRET);
+	@ParameterizedTest
+	// Run with secret, 32 chars long (OK)
+	// Run with padded secret, 34 chars long (OK)
+	@ValueSource(strings = {DUMMY_SECRET, DUMMY_SECRET + "\0\0"})
+	void secretPaddedIsTheSame(String sharedSecret) throws Exception {
+		pipe.setSharedSecret(sharedSecret);
 		configureAndStartPipe();
 		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
 		assertThat(jwt1, Matchers.startsWith(BASE64_HEADER_HS256));
 
-		// Run with padded secret, 34 chars long (OK)
-		pipe.setSharedSecret(DUMMY_SECRET + "\0\0");
-		configureAndStartPipe();
-		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
-
 		// Assert
-		assertThat(jwt2, Matchers.startsWith(BASE64_HEADER_HS256));
 		assertValidTokenSignature(jwt1, DUMMY_SECRET);
-		assertValidTokenSignature(jwt2, DUMMY_SECRET);
 	}
 
 	@Test

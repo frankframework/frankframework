@@ -5,19 +5,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
-import java.io.IOException;
 import java.util.LinkedHashSet;
-
-import javax.naming.NamingException;
-
-import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
+import org.junit.jupiter.api.Test;
 
 public class LdapFindGroupMembershipsPipeTest extends PipeTestBase<LdapFindGroupMembershipsPipe> {
 
@@ -27,7 +22,7 @@ public class LdapFindGroupMembershipsPipeTest extends PipeTestBase<LdapFindGroup
 	}
 
 	@Test
-	public void testDoPipe() throws NamingException, PipeRunException, IOException {
+	public void testDoPipe() throws Exception {
 		var set = new LinkedHashSet<String>();
 		set.add("item1");
 		set.add("item2");
@@ -39,6 +34,7 @@ public class LdapFindGroupMembershipsPipeTest extends PipeTestBase<LdapFindGroup
 		pipe.setRecursiveSearch(true);
 		pipe.setMaxRecursion(3);
 		pipe.setRecursionFilter("dummy");
+		configureAndStartPipe();
 
 		PipeRunResult result = pipe.doPipeWithException(new Message("searchedDN"), new PipeLineSession());
 
