@@ -8,18 +8,18 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
-import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 
 public class MonitorDestinationTest implements EventThrowing {
-	private @Getter Adapter adapter;
-	private @Getter String eventSourceName = "MONITOR_DESTINATION_TEST";
+	private @Getter ApplicationContext applicationContext;
+	private @Getter String name = "MONITOR_DESTINATION_TEST";
 	private static final String EVENTCODE = "MONITOR_EVENT_CODE";
 
 	@Test

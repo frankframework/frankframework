@@ -26,11 +26,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.ITrigger.TriggerType;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
 import org.frankframework.monitoring.events.FireMonitorEvent;
@@ -42,8 +42,8 @@ import org.frankframework.util.XmlBuilder;
 
 public class TriggerTest implements EventThrowing {
 	private static final String EVENT_CODE = "dummy code";
-	private @Getter String eventSourceName = "TriggerTestClass";
-	private @Getter Adapter adapter;
+	private @Getter String name = "TriggerTestClass";
+	private @Getter ApplicationContext applicationContext;
 
 	private IMonitorDestination destination;
 	private MonitorManager manager;
