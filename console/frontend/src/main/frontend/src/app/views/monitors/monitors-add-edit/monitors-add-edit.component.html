@@ -91,7 +91,7 @@
                       [(ngModel)]="trigger.adapters"
                     >
                       @for (adapter of getAdaptersForEvents(trigger.events); track adapter) {
-                        <option>
+                        <option [value]="adapter">
                           {{ adapter }}
                         </option>
                       }
