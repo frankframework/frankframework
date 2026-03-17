@@ -22,7 +22,6 @@ import java.util.NoSuchElementException;
 
 import javax.sql.DataSource;
 
-import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -43,7 +42,6 @@ import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.lifecycle.events.ConfigurationMessageEvent;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 /**
  * DatabaseMigration implementation for Frank!Framework.

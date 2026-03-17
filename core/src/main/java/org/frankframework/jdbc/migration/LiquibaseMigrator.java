@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import liquibase.ChecksumVersion;
 import liquibase.Contexts;
@@ -54,8 +55,6 @@ import org.frankframework.core.Resource;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
-
-import org.jspecify.annotations.Nullable;
 
 /**
  * LiquiBase implementation for IAF
