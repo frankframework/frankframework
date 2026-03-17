@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.SpringUtils;
 
 class AdapterTest {
 	private int pipeNr = 0;
@@ -41,6 +44,25 @@ class AdapterTest {
 
 			// Assert 2
 			assertEquals("<root>hidden</root>", regexApplied.replaceFirst(regex, "hidden"));
+		}
+	}
+
+	@Test
+	void testDuplicateReceiverNames() {
+		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean()) {
+
+			Receiver<?> receiver1 = SpringUtils.createBean(adapter);
+			receiver1.setName("testReceiver");
+
+			Receiver<?> receiver2 = SpringUtils.createBean(adapter);
+			receiver2.setName("testReceiver");
+
+			adapter.addReceiver(receiver1);
+			assertEquals(0, config.getConfigurationWarnings().size());
+
+			adapter.addReceiver(receiver2);
+			assertEquals(1, config.getConfigurationWarnings().size());
+			assertEquals("Receiver [testReceiver] name must be unique!", config.getConfigWarning(0));
 		}
 	}
 
