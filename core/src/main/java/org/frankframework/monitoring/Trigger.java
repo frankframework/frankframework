@@ -31,7 +31,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.XmlBuilder;
@@ -108,7 +107,7 @@ public class Trigger implements ITrigger {
 	}
 
 	protected void evaluateEvent(FireMonitorEvent event) {
-		if(evaluateAdapterFilters(event.getSource())) {
+		if(evaluateAdapterFilters(event.getAdapterName())) {
 			try {
 				changeState(event);
 			} catch (MonitorException e) {
@@ -117,9 +116,8 @@ public class Trigger implements ITrigger {
 		}
 	}
 
-	protected boolean evaluateAdapterFilters(EventThrowing source) {
-		Adapter adapter = source.getAdapter();
-		return getAdapterFilters().isEmpty() || (adapter != null && getAdapterFilters().containsKey(adapter.getName()));
+	protected boolean evaluateAdapterFilters(String adapterName) {
+		return getAdapterFilters().isEmpty() || (adapterName != null && getAdapterFilters().containsKey(adapterName));
 	}
 
 	protected void changeState(FireMonitorEvent event) throws MonitorException {

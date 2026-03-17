@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,17 @@
 */
 package org.frankframework.monitoring.events;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.monitoring.EventThrowing;
 
 public class RegisterMonitorEvent extends MonitorEvent {
 
 	public RegisterMonitorEvent(EventThrowing source, String eventCode) {
 		super(source, eventCode, null);
-	}
 
+		if(StringUtils.isEmpty(getAdapterName())) {
+			throw new IllegalStateException("Event ["+source+"] has no (usable) adapter name");
+		}
+	}
 }

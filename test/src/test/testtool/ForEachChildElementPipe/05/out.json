@@ -10,7 +10,7 @@
         "exit.state": "SUCCESS",
         "pipeline.duration": "3",
         "mdc1": "mdc1_value_export",
-        "listener": "listener of [JavaListener]",
+        "listener": "listener of [Receiver [1]]",
         "mid": "synthetic-message-id-0a000a6f-65f825e8_1968bf8b863_-7ad3",
         "mdc_export": "mdc_export_value",
         "pipe": "echo",

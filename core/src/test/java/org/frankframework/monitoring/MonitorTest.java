@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
-import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.stream.Message;
@@ -82,8 +82,8 @@ public class MonitorTest {
 
 	private static class EventThrowingClass implements EventThrowing {
 
-		private @Getter String eventSourceName = "TriggerTestClass";
-		private @Getter Adapter adapter;
+		private @Getter String name = "TriggerTestClass";
+		private @Getter ApplicationContext applicationContext;
 
 		private static FireMonitorEvent createMonitorEvent(Message message) {
 			EventThrowingClass event = new EventThrowingClass();

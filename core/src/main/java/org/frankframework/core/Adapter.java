@@ -298,7 +298,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	private @Getter Configuration configuration;
 
-	private final ArrayList<Receiver<?>> receivers = new ArrayList<>();
+	// Insert ordered list!
+	private final List<Receiver<?>> receivers = new ArrayList<>();
+
 	private long lastMessageDate = 0;
 	private @Getter String lastMessageProcessingState; // "OK" or "ERROR"
 	private PipeLine pipeline;
@@ -888,6 +890,15 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have a recursive call to logger when trace-level logging is enabled
 	public void addReceiver(Receiver<?> receiver) {
+		if (StringUtils.isBlank(receiver.getName())) {
+			log.warn("receiver does not have a name, generating implicit one.");
+			receiver.setName("Receiver [%d]".formatted(receivers.size() + 1));
+		}
+
+		if (receivers.stream().map(HasName::getName).toList().contains(receiver.getName())) {
+			ConfigurationWarnings.add(receiver, log, "name must be unique!");
+		}
+
 		receivers.add(receiver);
 
 		if (log.isTraceEnabled()) {

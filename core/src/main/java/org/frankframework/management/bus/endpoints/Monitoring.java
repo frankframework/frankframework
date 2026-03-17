@@ -44,7 +44,6 @@ import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.monitoring.AdapterFilter;
-import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.monitoring.EventType;
 import org.frankframework.monitoring.ITrigger;
 import org.frankframework.monitoring.ITrigger.TriggerType;
@@ -55,6 +54,7 @@ import org.frankframework.monitoring.Severity;
 import org.frankframework.monitoring.SourceFiltering;
 import org.frankframework.monitoring.Trigger;
 import org.frankframework.monitoring.events.ConsoleMonitorEvent;
+import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.SpringUtils;
@@ -382,11 +382,11 @@ public class Monitoring extends BusEndpointBase {
 		if(isRaised) {
 			Map<String, Object> alarm = new HashMap<>();
 			alarm.put("severity", monitor.getAlarmSeverity());
-			EventThrowing source = monitor.getRaisedBy();
+			MonitorEvent source = monitor.getRaisedBy();
 			if(source != null) {
 				String name = "";
-				if(source.getAdapter() != null) {
-					name = "%s / %s".formatted(source.getAdapter().getName(), source.getEventSourceName());
+				if(source.getAdapterName() != null) { // Null when a ConsoleMonitorEvent
+					name = "%s / %s".formatted(source.getAdapterName(), source.getEventSourceName());
 				} else {
 					name = source.getEventSourceName();
 				}

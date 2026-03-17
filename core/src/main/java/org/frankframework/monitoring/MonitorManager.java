@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -33,7 +32,6 @@ import org.springframework.core.ResolvableType;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.Adapter;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.ConfigurableApplicationContext;
@@ -100,19 +98,12 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 	}
 
 	private void registerEvent(@NonNull RegisterMonitorEvent registerEvent) {
-		EventThrowing eventThrowing = registerEvent.getSource();
 		String eventCode = registerEvent.getEventCode();
-
-		Adapter adapter = eventThrowing.getAdapter();
-		log.trace("registerEvent [{}] for adapter [{}] object [{}]", () -> eventCode, adapter::getId, eventThrowing::getEventSourceName);
-
-		if(StringUtils.isEmpty(adapter.getName())) {
-			throw new IllegalStateException("adapter ["+adapter+"] has no (usable) name");
-		}
+		log.trace("registerEvent [{}] for adapter [{}] object [{}]", () -> eventCode, registerEvent::getAdapterName, registerEvent::getEventSourceName);
 
 		// Update the list with potential events that can be thrown
 		Event event = events.computeIfAbsent(eventCode, e -> new Event());
-		event.addThrower(eventThrowing);
+		event.addThrower(registerEvent);
 		events.put(eventCode, event);
 	}
 

@@ -79,7 +79,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 
 	private @Getter @Setter Severity alarmSeverity = null;
 	private String eventCode = null;
-	private @Getter EventThrowing raisedBy = null;
+	private @Getter MonitorEvent raisedBy = null;
 
 	private MonitorManager monitorManager = null;
 
@@ -181,7 +181,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 
 	private void storeRaisedBy(MonitorEvent event) {
 		eventCode = event.getEventCode();
-		raisedBy = event.getSource();
+		raisedBy = event;
 	}
 
 	private void clearRaisedBy() {

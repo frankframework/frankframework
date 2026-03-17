@@ -21,23 +21,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.core.Adapter;
-import org.frankframework.monitoring.EventThrowing;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A Monitoring Event with a map of potential Adapters that can throw events of this type.
  */
 public class Event {
-	private final List<EventThrowing> throwers = new ArrayList<>();
+	private final List<RegisterMonitorEvent> throwers = new ArrayList<>();
 
 	public Event() {}
 
-	public Event(EventThrowing thrower) {
+	public Event(RegisterMonitorEvent thrower) {
 		throwers.add(thrower);
 	}
 
-	public void addThrower(EventThrowing thrower) {
-		throwers.add(thrower);
+	public void addThrower(@NonNull RegisterMonitorEvent registerEvent) {
+		throwers.add(registerEvent);
 	}
 
 	/**
@@ -45,11 +44,10 @@ public class Event {
 	 */
 	public Map<String, List<String>> getSources() {
 		Map<String, List<String>> sources = new HashMap<>();
-		for(EventThrowing eventThrower : throwers) {
-			Adapter adapter = eventThrower.getAdapter();
-			List<String> sourceNames = sources.getOrDefault(adapter.getName(), new ArrayList<>());
+		for(RegisterMonitorEvent eventThrower : throwers) {
+			List<String> sourceNames = sources.getOrDefault(eventThrower.getAdapterName(), new ArrayList<>());
 			sourceNames.add(eventThrower.getEventSourceName());
-			sources.put(adapter.getName(), sourceNames);
+			sources.put(eventThrower.getAdapterName(), sourceNames);
 		}
 		return Collections.unmodifiableMap(sources);
 	}

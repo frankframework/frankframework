@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.monitoring.events;
+
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
@@ -30,8 +32,13 @@ public class ConsoleMonitorEvent extends MonitorEvent {
 		return new EventThrowing() {
 			private final @Getter Adapter adapter = null;
 			@Override
-			public String getEventSourceName() {
+			public String getName() {
 				return "Frank!Console on behalf of '"+user+"'";
+			}
+
+			@Override
+			public ApplicationContext getApplicationContext() {
+				return null;
 			}
 		};
 	}

@@ -17,16 +17,21 @@ package org.frankframework.monitoring.events;
 
 import java.time.Instant;
 
+import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 
 import lombok.Getter;
 
+import org.frankframework.core.Adapter;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.stream.Message;
 
 public class MonitorEvent extends ApplicationEvent {
 	private final @Getter String eventCode;
 	private final @Getter Message eventMessage;
+	private transient String adapterName;
 
 	public MonitorEvent(EventThrowing source, String eventCode, Message eventMessage) {
 		super(source);
@@ -44,6 +49,24 @@ public class MonitorEvent extends ApplicationEvent {
 	}
 
 	public String getEventSourceName() {
-		return getSource().getEventSourceName();
+		return StringUtils.trimToNull(getSource().getName());
+	}
+
+	public String getAdapterName() {
+		if (adapterName == null) {
+			adapterName = findAdapterName(getSource().getApplicationContext());
+		}
+
+		return adapterName;
+	}
+
+	private static @Nullable String findAdapterName(@Nullable ApplicationContext source) {
+		if (source == null) {
+			return null;
+		}
+		if (source instanceof Adapter adapter) {
+			return adapter.getName();
+		}
+		return findAdapterName(source.getParent());
 	}
 }

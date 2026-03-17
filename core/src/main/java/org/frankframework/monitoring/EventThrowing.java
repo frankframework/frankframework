@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
 */
 package org.frankframework.monitoring;
 
-import org.frankframework.core.Adapter;
+import org.frankframework.core.HasApplicationContext;
+import org.frankframework.core.HasName;
 
 /**
  * Interface to be implemented by objects to be monitored; Is called by code that handles event.
@@ -23,7 +24,5 @@ import org.frankframework.core.Adapter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public interface EventThrowing {
-	String getEventSourceName();
-	Adapter getAdapter();
+public interface EventThrowing extends HasName, HasApplicationContext {
 }
