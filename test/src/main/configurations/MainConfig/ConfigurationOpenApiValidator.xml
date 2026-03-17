@@ -1,0 +1,39 @@
+<module name="openApiValidator">
+	<adapter name="openApiValidator">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-openApiValidator" onException="FORMAT_AND_RETURN" />
+		</receiver>
+		<receiver>
+			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="openapivalidator/item" />
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit name="EXIT" state="success" code="200"/>
+				<exit name="NotModified" state="success" code="304" empty="true" />
+				<exit name="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
+				<exit name="ServerError" state="error" code="500" />
+			</exits>
+
+			<OpenApiInputValidator useAsOutputValidator="true" path="/pets" method="post"
+				openApiDefinition="/Validators/openapi/petstore-openapi.json">
+				<forward name="failure" path="InputValidationFailure" />
+				<forward name="outputFailure" path="ServerError" />
+			</OpenApiInputValidator>
+
+			<DataSonnetPipe name="JSON Transform" styleSheetName="/Validators/openapi/newPetInputToOutput.jsonnet" />
+
+			<EchoPipe name="Echo">
+				<forward name="success" path="EXIT" />
+			</EchoPipe>
+
+			<ReplacerPipe name="InputValidationFailure" getInputFromFixedValue="{ &quot;message&quot;:&quot;?{REASON}&quot;}">
+				<param name="REASON" sessionKey="failureReason" />
+				<forward name="success" path="BadRequest" />
+			</ReplacerPipe>
+
+			<!-- Please note that the output validation is currently not working, because the OpenApiOutputValidator relies on specific
+			 exit codes which aren't supported when using a larva test -->
+		</pipeline>
+	</adapter>
+</module>

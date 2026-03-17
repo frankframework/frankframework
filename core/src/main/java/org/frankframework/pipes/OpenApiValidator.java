@@ -29,6 +29,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -39,6 +40,7 @@ import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
 /**
@@ -79,6 +81,10 @@ public class OpenApiValidator extends AbstractValidator {
 	 */
 	private @NonNull Operation getOperation() throws ConfigurationException, IOException {
 		OpenAPI openApi = readOpenApiDefinition();
+		if (openApi == null) {
+			throw new ConfigurationException("Error loading OpenAPI definition [" + openApiDefinition + "]");
+		}
+
 		PathItem pathItem = openApi.getPaths().get(path);
 
 		if (pathItem == null) {
@@ -120,7 +126,8 @@ public class OpenApiValidator extends AbstractValidator {
 
 	private OpenAPI readOpenApiDefinition() throws IOException {
 		String openApiDefinitionPath = getOpenApiDefinition();
-		Resource resource = Resource.getResource(this, openApiDefinitionPath);
+
+		Resource resource = Resource.getResource(this, getOpenApiDefinition());
 
 		if (resource == null) {
 			throw new FileNotFoundException("Cannot find OpenAPI definition [" + openApiDefinitionPath + "]");
@@ -131,8 +138,10 @@ public class OpenApiValidator extends AbstractValidator {
 		options.setResolve(true);
 		options.setResolveFully(true);
 
-		return new OpenAPIV3Parser()
-				.read(openApiDefinitionPath, null, options);
+		SwaggerParseResult swaggerParseResult = new OpenAPIV3Parser()
+				.readContents(StreamUtil.streamToString(resource.openStream()), null, options);
+
+		return swaggerParseResult.getOpenAPI();
 	}
 
 	/**

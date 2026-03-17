@@ -146,7 +146,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 		if (!getAuthorities().isEmpty()) {
 			boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
 			token.setAuthenticated(result);
-			log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", () -> getAuthorities());
+			log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", this::getAuthorities);
 		}
 
 		return token;
