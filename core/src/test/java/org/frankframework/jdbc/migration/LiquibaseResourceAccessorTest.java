@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
 
@@ -21,14 +22,15 @@ public class LiquibaseResourceAccessorTest extends ConfiguredTestBase {
 		Resource frankResource = Resource.getResource("/Migrator/DatabaseChangelog.xml");
 		assertNotNull(frankResource);
 
-		ResourceAccessor accessor = new LiquibaseResourceAccessor(frankResource);
+		try (ResourceAccessor accessor = new LiquibaseResourceAccessor(frankResource)) {
 
-		List<liquibase.resource.Resource> resources = accessor.search("/Migrator/DatabaseChangelog_plus_changes.xml", false);
-		assertNotNull(resources);
+			List<liquibase.resource.Resource> resources = accessor.search("/Migrator/DatabaseChangelog_plus_changes.xml", false);
+			assertNotNull(resources);
 
-		URI actualUri = resources.getFirst().getUri();
-		URI expectedURI = ClassLoaderUtils.getResourceURL("/Migrator/DatabaseChangelog_plus_changes.xml").toURI();
+			URI actualUri = resources.getFirst().getUri();
+			URI expectedURI = Objects.requireNonNull(ClassLoaderUtils.getResourceURL("/Migrator/DatabaseChangelog_plus_changes.xml")).toURI();
 
-		assertEquals(expectedURI, actualUri);
+			assertEquals(expectedURI, actualUri);
+		}
 	}
 }

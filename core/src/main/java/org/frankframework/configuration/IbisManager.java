@@ -44,7 +44,7 @@ import org.frankframework.util.LogUtil;
  */
 @Log4j2
 public class IbisManager implements ApplicationContextAware {
-	private Logger secLog = LogUtil.getLogger("SEC");
+	private final Logger secLog = LogUtil.getLogger("SEC");
 
 	private IbisContext ibisContext;
 	private final List<Configuration> configurations = new ArrayList<>();

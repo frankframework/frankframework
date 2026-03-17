@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import liquibase.ChecksumVersion;
 import liquibase.Contexts;
@@ -46,6 +47,7 @@ import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
 import liquibase.ui.LoggerUIService;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
@@ -61,14 +63,15 @@ import org.frankframework.util.LogUtil;
  * @since 7.0-B4
  *
  */
+@Log4j2
 public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 
-	private static Logger applicationLog = LogUtil.getLogger("APPLICATION");
+	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 	private Contexts contexts;
 	private final LabelExpression labelExpression = new LabelExpression();
 
 	@Override
-	public Resource getChangeLog() {
+	public @Nullable Resource getChangeLog() {
 		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
@@ -89,11 +92,11 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 		return resource;
 	}
 
-	private Liquibase createMigrator() throws SQLException, LiquibaseException {
+	private Liquibase createMigrator() throws LiquibaseException {
 		return createMigrator(getChangeLog());
 	}
 
-	private Liquibase createMigrator(Resource resource) throws SQLException, LiquibaseException {
+	private Liquibase createMigrator(Resource resource) throws LiquibaseException {
 		if (resource == null) {
 			throw new LiquibaseException("no resource provided");
 		}
@@ -124,13 +127,11 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 			ConfigurationWarnings.add(this, log, "liquibase validation failed: " + e.getMessage(), e);
 		} catch (LiquibaseException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
-		} catch (SQLException e) {
-			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database [" + getDatasourceName() + "]", e);
 		}
 		return false;
 	}
 
-	private void doValidate() throws LiquibaseException, SQLException {
+	private void doValidate() throws LiquibaseException {
 		try (Liquibase liquibase = createMigrator()) {
 			Database database = liquibase.getDatabase();
 
@@ -185,7 +186,7 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 		}
 	}
 
-	private void doUpdate(List<String> changes) throws LiquibaseException, SQLException {
+	private void doUpdate(List<String> changes) throws LiquibaseException {
 		try (Liquibase liquibase = createMigrator()) {
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
 			for (ChangeSet changeSet : changeSets) {
@@ -195,7 +196,7 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 			if (!changeSets.isEmpty()) {
 				liquibase.update(contexts);
 
-				ChangeSet lastChange = changeSets.get(changeSets.size() - 1);
+				ChangeSet lastChange = changeSets.getLast();
 				String tag = lastChange.getId() + ":" + lastChange.getAuthor();
 				liquibase.tag(tag);
 
