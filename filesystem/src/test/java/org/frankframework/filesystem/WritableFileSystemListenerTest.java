@@ -361,6 +361,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		assertTrue(_folderExists(processedFolder));
 
 		Receiver<F> receiver = SpringUtils.createBean(adapter);
+		receiver.setName("testReceiver");
 		receiver.setListener(fileSystemListener);
 		MetricsInitializer metrics = mock();
 		when(metrics.createCounter(any(), any())).thenAnswer(invocation -> mock(Counter.class));
