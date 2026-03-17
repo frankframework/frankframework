@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.1.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.1.1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -283,7 +283,7 @@
      If set to 0, then there is no delay after messages that had an error.
  &lt;/p&gt;
  &lt;p&gt;
-     If this is not set on the receiver, then a default is taken from the configuration property `${receiver.defaultMaxBackoffDelay}` which
+     If this is not set on the receiver, then a default is taken from the configuration property &lt;pre&gt;${receiver.defaultMaxBackoffDelay}&lt;/pre&gt; which
      defaults to 60 seconds.
  &lt;/p&gt;</xs:documentation>
       </xs:annotation>
@@ -4579,7 +4579,7 @@
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="resourceName" />
+    <xs:attribute ref="resourceName" use="required" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -4600,7 +4600,7 @@
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="resourceName" />
+    <xs:attribute ref="resourceName" use="required" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -11493,7 +11493,16 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.api.ApiStreamPipe" />
   </xs:complexType>
   <xs:attributeGroup name="ApiStreamPipeDeclaredAttributeGroup">
-    <xs:attribute name="jmsRealm" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jmsRealm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ApiStreamPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ApiStreamPipeDeclaredAttributeGroup" />
@@ -13027,7 +13036,7 @@
     </xs:attribute>
     <xs:attribute name="rootElementName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>When direction is JSON2XML, specifies the name of the root element when `addXmlRootElement` is &lt;code&gt;true&lt;/code&gt;.
+        <xs:documentation>When direction is JSON2XML, specifies the name of the root element when &lt;pre&gt;addXmlRootElement&lt;/pre&gt; is &lt;code&gt;true&lt;/code&gt;.
  When direction is XML2JSON, can not be used. Default: root</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -16691,7 +16700,7 @@
   </xs:attribute>
   <xs:attribute name="oauthAuthenticationMethod">
     <xs:annotation>
-      <xs:documentation>Only used when `tokenEndpoint` has been configured. Sets the OAuth authentication method and controls which authentication flow should be used.</xs:documentation>
+      <xs:documentation>Only used when &lt;pre&gt;tokenEndpoint&lt;/pre&gt; has been configured. Sets the OAuth authentication method and controls which authentication flow should be used.</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="OauthAuthenticationMethodAttributeValuesType variableRef" />
@@ -17041,7 +17050,11 @@
       <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt; Default: 2</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="resourceName" type="xs:string" />
+  <xs:attribute name="resourceName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Name of the MqttClientSettings configuration in the `resources.yml`.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="replyDestinationName" type="xs:string">
     <xs:annotation>
       <xs:documentation>Name of the JMS destination (queue or topic) to use for sending replies. If &lt;code&gt;useReplyTo=true&lt;/code&gt;,
