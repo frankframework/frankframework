@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,17 +29,18 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
 /**
@@ -127,11 +127,9 @@ public class OpenApiValidator extends AbstractValidator {
 	private OpenAPI readOpenApiDefinition() throws IOException {
 		String openApiDefinitionPath = getOpenApiDefinition();
 
-		// Try to resolve the OpenAPI definition as a resource on the classpath
-		String normalizedReference = openApiDefinitionPath.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME) ? openApiDefinitionPath.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length()) : openApiDefinitionPath;
-		URL url = ClassLoaderUtils.getResourceURL(this, normalizedReference, null);
+		Resource resource = Resource.getResource(this, getOpenApiDefinition());
 
-		if (url == null) {
+		if (resource == null) {
 			throw new FileNotFoundException("Cannot find OpenAPI definition [" + openApiDefinitionPath + "]");
 		}
 
@@ -140,8 +138,10 @@ public class OpenApiValidator extends AbstractValidator {
 		options.setResolve(true);
 		options.setResolveFully(true);
 
-		return new OpenAPIV3Parser()
-				.read(url.toString(), null, options);
+		SwaggerParseResult swaggerParseResult = new OpenAPIV3Parser()
+				.readContents(StreamUtil.streamToString(resource.openStream()), null, options);
+
+		return swaggerParseResult.getOpenAPI();
 	}
 
 	/**
