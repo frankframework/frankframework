@@ -22,21 +22,8 @@
       </div>
     }
   }
-}
-
-@if (redirectURL && redirectURL.length > 0) {
-  <div class="row">
-    <div class="col-lg-12">
-      <div class="wrapper wrapper-content">
-        <div class="text-center animated fadeInRightBig" style="margin-top: 140px">
-          <h3 class="font-bold">Automated redirect to - {{ redirectURL }}</h3>
-          <p>
-            <a target="_blank" rel="noopener noreferrer" [href]="redirectURL"
-              >Click here if you have not automatically been redirected to '{{ redirectURL }}'</a
-            >
-          </p>
-        </div>
-      </div>
-    </div>
+} @else {
+  <div class="text-center animated fadeInRightBig" style="margin-top: 140px">
+    <p>View {{ iframeName | titlecase }} is not configured correctly!</p>
   </div>
 }
