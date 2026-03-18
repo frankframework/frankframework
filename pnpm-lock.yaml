@@ -131,7 +131,7 @@ importers:
         version: 21.2.4(@angular/compiler@21.2.2)(typescript@5.9.3)
       '@cypress/schematic':
         specifier: ^5.0.0
-        version: 5.0.0(@angular/cli@21.2.2(@types/node@25.3.3)(chokidar@5.0.0))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(cypress@15.11.0)
+        version: 5.0.0(@angular/cli@21.2.2(@types/node@25.3.3)(chokidar@5.0.0))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(cypress@15.12.0)
       '@eslint/js':
         specifier: ^9.39.4
         version: 9.39.4
@@ -205,8 +205,8 @@ importers:
   console/frontend/src/main/frontend/cypress:
     devDependencies:
       cypress:
-        specifier: ^15.11.0
-        version: 15.11.0
+        specifier: ^15.12.0
+        version: 15.12.0
       cypress-multi-reporters:
         specifier: ^2.0.5
         version: 2.0.5(mocha@11.7.5)
@@ -2228,8 +2228,8 @@ packages:
     peerDependencies:
       mocha: '>=3.1.2'
 
-  cypress@15.11.0:
-    resolution: {integrity: sha512-NXDE6/fqZuzh1Zr53nyhCCa4lcANNTYWQNP9fJO+tzD3qVTDaTUni5xXMuigYjMujQ7CRiT9RkJJONmPQSsDFw==}
+  cypress@15.12.0:
+    resolution: {integrity: sha512-B2BRcudLfA4NZZP5QpA45J70bu1heCH59V1yKRLHAtiC49r7RV03X5ifUh7Nfbk8QNg93RAsc6oAmodm/+j0pA==}
     engines: {node: ^20.1.0 || ^22.0.0 || >=24.0.0}
     hasBin: true
 
@@ -4919,11 +4919,11 @@ snapshots:
       tunnel-agent: 0.6.0
       uuid: 8.3.2
 
-  '@cypress/schematic@5.0.0(@angular/cli@21.2.2(@types/node@25.3.3)(chokidar@5.0.0))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(cypress@15.11.0)':
+  '@cypress/schematic@5.0.0(@angular/cli@21.2.2(@types/node@25.3.3)(chokidar@5.0.0))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(cypress@15.12.0)':
     dependencies:
       '@angular/cli': 21.2.2(@types/node@25.3.3)(chokidar@5.0.0)
       '@angular/core': 21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)
-      cypress: 15.11.0
+      cypress: 15.12.0
       jsonc-parser: 3.3.1
       rxjs: 7.8.2
       semver: 7.7.4
@@ -5823,7 +5823,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 25.0.6
+      '@types/node': 25.3.3
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.57.0(@typescript-eslint/parser@8.57.0(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4)(typescript@5.9.3)':
@@ -6420,7 +6420,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  cypress@15.11.0:
+  cypress@15.12.0:
     dependencies:
       '@cypress/request': 3.0.10
       '@cypress/xvfb': 1.2.4(supports-color@8.1.1)
