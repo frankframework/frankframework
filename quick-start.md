@@ -18,7 +18,7 @@ The setup includes:
     * [Directory structure](#directory-structure)
     * [Docker Compose file](#docker-compose-file)
     * [Running the setup](#running-the-setup)
-  * [Services and ports](#services-and-ports)
+    * [What's next](#whats-next)
   * [Mounting files](#mounting-files)
     * [Directories](#directories)
     * [Files](#files)
@@ -30,6 +30,7 @@ The setup includes:
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose) or Docker Engine with the [Compose plugin](https://docs.docker.com/compose/install/)
+- Docker Compose **v2.22 or later** – required for the `--watch` flag used in this guide
 
 ## Getting started
 
@@ -161,6 +162,8 @@ configs:
 
 Start all services with file-watching enabled (so that changes to the `configurations/` directory are synced automatically):
 
+> **Note:** The `--watch` flag requires Docker Compose v2.22 or later. Run `docker compose version` to check. If your version is older, use `docker compose up -d` instead and restart the container manually after making changes.
+
 ```shell
 docker compose up --watch
 ```
@@ -171,16 +174,25 @@ To stop all services:
 docker compose down
 ```
 
-## Services and ports
+### What's next
 
-| Service           | URL                       | Description                                                           |
-|-------------------|---------------------------|-----------------------------------------------------------------------|
-| Frank!Framework   | http://localhost:8080     | The core application console                                          |
-| Frank!Flow        | http://localhost:8081     | Visual configuration editor (also accessible via the console sidebar) |
-| Swagger UI        | http://localhost:8082     | Standalone Swagger UI                                                 |
-| Nginx (API proxy) | http://localhost:8083     | Swagger UI with CORS-safe access to the Frank!Framework API           |
+Once the services are running, the following endpoints will be available:
 
-> **Tip:** Use the Nginx proxy at http://localhost:8083 when exploring the API through Swagger UI to avoid CORS issues.
+| URL                       | Description                                                            |
+|---------------------------|------------------------------------------------------------------------|
+| http://localhost:8080     | **Frank!Framework console** – monitor and manage your Frank application |
+| http://localhost:8081     | **Frank!Flow** – visual configuration editor                           |
+| http://localhost:8083     | **Swagger UI** (via Nginx proxy) – browse and test the API             |
+
+Open http://localhost:8080 in your browser to access the Frank!Framework console. Frank!Flow is also accessible from the console sidebar under the "Frank!Flow" menu item.
+
+Use http://localhost:8083 to explore the API through Swagger UI. The Nginx proxy at this address forwards API requests to the Frank!Framework, avoiding CORS issues.
+
+From here you can:
+- Place your Frank configuration files in the `configurations/` directory and they will be synced into the running container automatically.
+- Explore the Frank!Framework console to monitor adapters, view logs, and test your configurations.
+- Use Frank!Flow to visually create and edit configurations.
+- Use the Swagger UI to explore and test the Frank!Framework REST API.
 
 ## Mounting files
 
