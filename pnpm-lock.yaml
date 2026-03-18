@@ -9,13 +9,13 @@ importers:
   console/frontend/src/main/frontend:
     dependencies:
       '@angular/animations':
-        specifier: ^21.2.3
+        specifier: ^21.2.4
         version: 21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))
       '@angular/cdk':
         specifier: ^21.2.2
         version: 21.2.2(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(@angular/platform-browser@21.2.4(@angular/animations@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))(rxjs@7.8.2)
       '@angular/common':
-        specifier: ^21.2.3
+        specifier: ^21.2.4
         version: 21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2)
       '@angular/compiler':
         specifier: ^21.2.1
@@ -24,19 +24,19 @@ importers:
         specifier: ^21.2.1
         version: 21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)
       '@angular/forms':
-        specifier: ^21.2.3
+        specifier: ^21.2.4
         version: 21.2.4(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(@angular/platform-browser@21.2.4(@angular/animations@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))(rxjs@7.8.2)
       '@angular/localize':
-        specifier: ^21.2.3
+        specifier: ^21.2.4
         version: 21.2.4(@angular/compiler-cli@21.2.4(@angular/compiler@21.2.2)(typescript@5.9.3))(@angular/compiler@21.2.2)
       '@angular/platform-browser':
-        specifier: ^21.2.3
+        specifier: ^21.2.4
         version: 21.2.4(@angular/animations@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))
       '@angular/platform-browser-dynamic':
-        specifier: ^21.2.3
+        specifier: ^21.2.4
         version: 21.2.4(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/compiler@21.2.2)(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(@angular/platform-browser@21.2.4(@angular/animations@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))
       '@angular/router':
-        specifier: ^21.2.3
+        specifier: ^21.2.4
         version: 21.2.4(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(@angular/platform-browser@21.2.4(@angular/animations@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))(@angular/common@21.2.4(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1))(rxjs@7.8.2))(@angular/core@21.2.2(@angular/compiler@21.2.2)(rxjs@7.8.2)(zone.js@0.16.1)))(rxjs@7.8.2)
       '@fortawesome/angular-fontawesome':
         specifier: ^4.0.0
@@ -127,7 +127,7 @@ importers:
         specifier: ^21.2.2
         version: 21.2.2(@types/node@25.3.3)(chokidar@5.0.0)
       '@angular/compiler-cli':
-        specifier: ^21.2.3
+        specifier: ^21.2.4
         version: 21.2.4(@angular/compiler@21.2.2)(typescript@5.9.3)
       '@cypress/schematic':
         specifier: ^5.0.0
