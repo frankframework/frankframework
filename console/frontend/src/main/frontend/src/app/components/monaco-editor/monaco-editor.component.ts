@@ -16,13 +16,7 @@ import {
 } from '@angular/core';
 import { first, Observable, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-
-type AMDRequire = {
-  require: {
-    (imports: string[], callback: () => void): void;
-    config(config: { paths: Record<string, string> }): void;
-  };
-};
+import { AMDRequire, AppService } from '../../app.service';
 
 @Component({
   selector: 'app-monaco-editor',
@@ -47,9 +41,10 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   editor$: Observable<monaco.editor.IStandaloneCodeEditor>;
 
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private zone = inject(NgZone);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly zone = inject(NgZone);
+  private readonly appService = inject(AppService);
 
   private editorSubject = new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
 
@@ -111,21 +106,18 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
       return;
     }
 
-    if ((globalThis as unknown as AMDRequire).require) {
-      this.onAmdLoader();
-    } else {
-      const loaderScript: HTMLScriptElement = document.createElement('script');
-      loaderScript.type = 'text/javascript';
-      loaderScript.src = 'assets/monaco/vs/loader.js';
-      loaderScript.addEventListener('load', () => this.onAmdLoader());
-      document.body.append(loaderScript);
+    const amdWindow = globalThis as unknown as AMDRequire;
+    const amdLoaderSubscription = this.appService.amdLoaderReady$.subscribe(() => this.onAmdLoader(amdWindow));
+    if ((amdWindow as Partial<AMDRequire>).require) {
+      amdLoaderSubscription.unsubscribe();
+      this.onAmdLoader(amdWindow as AMDRequire);
     }
   }
 
-  private onAmdLoader(): void {
-    const windowRequire = (globalThis as unknown as AMDRequire).require;
-    windowRequire.config({ paths: { vs: 'assets/monaco/vs' } });
-    windowRequire(['vs/editor/editor.main'], () => {
+  private onAmdLoader(amdWindow: AMDRequire): void {
+    const { require } = amdWindow;
+    require.config({ paths: { vs: 'assets/monaco/vs' } });
+    require(['vs/editor/editor.main'], () => {
       this.initializeMonaco();
     });
   }
