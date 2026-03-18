@@ -37,6 +37,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasName;
@@ -674,6 +675,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	/** Charset to be used for {@value #ACTION_READ1} and {@value #ACTION_WRITE1} action */
+	@Deprecated(since = "10.1.0", forRemoval = true)
+	@ConfigurationWarning("Charset property will be removed in a future version. ")
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}

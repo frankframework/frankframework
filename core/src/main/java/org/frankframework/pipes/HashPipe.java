@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -175,6 +176,8 @@ public class HashPipe extends FixedForwardPipe {
 	 *
 	 * @ff.default UTF-8
 	 */
+	@Deprecated(since = "10.1.0", forRemoval = true)
+	@ConfigurationWarning("Charset property will be removed in a future version. ")
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
