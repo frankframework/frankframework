@@ -2,6 +2,7 @@ import { Component, inject, OnDestroy, OnInit, Renderer2, Signal, WritableSignal
 import { filter, first, Subscription } from 'rxjs';
 import {
   Adapter,
+  AMDRequire,
   AppInitState,
   appInitState,
   AppService,
@@ -228,6 +229,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
         this.initializeWarnings();
         this.checkIafVersions();
+        this.initializeAmdLoader();
       },
       error: (error: HttpErrorResponse) => {
         this.appService.loading.set(false);
@@ -249,7 +251,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   checkIafVersions(): void {
-    /* Check FF version */
     console.log('Checking FF version with remote...');
     this.appService.getIafVersions(this.miscService.getUID(this.serverInfo!)).subscribe((response) => {
       this.serverInfo = null;
@@ -308,11 +309,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeWarnings(): void {
-    /*const startupErrorSubscription = this.appService.startupError$.subscribe(() => {
-      this.startupError = this.appService.startupError();
-    });
-    this._subscriptionsReloadable.add(startupErrorSubscription);*/
-
     this.http
       .get<Record<string, MessageLog>>(`${this.appService.absoluteApiPath}server/warnings`)
       .subscribe((data) => this.processWarnings(data));
@@ -530,6 +526,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openInfoModel(): void {
     this.modalService.open(InformationModalComponent, this.MODAL_OPTIONS_CLASSES);
+  }
+
+  private initializeAmdLoader(): void {
+    if ((globalThis as unknown as AMDRequire).require) return;
+    const loaderScript: HTMLScriptElement = document.createElement('script');
+    loaderScript.type = 'text/javascript';
+    loaderScript.src = 'assets/monaco/vs/loader.js';
+    loaderScript.addEventListener('load', () => this.appService.triggerAMDLoaderReady());
+    document.body.append(loaderScript);
   }
 
   private updateClusterMembers(member: ClusterMember, action: ClusterMemberEventType): void {
