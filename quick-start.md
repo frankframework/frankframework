@@ -6,7 +6,6 @@ The setup includes:
 - **Frank!Framework** – the core application
 - **Frank!Flow** – a visual configuration tool
 - **Swagger UI** – an API documentation viewer
-- **Nginx** – a reverse proxy to prevent CORS issues between Swagger UI and the Frank!Framework API
 
 ## Contents
 
@@ -30,7 +29,7 @@ The setup includes:
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose) or Docker Engine with the [Compose plugin](https://docs.docker.com/compose/install/)
-- Docker Compose **v2.22 or later** – required for the `--watch` flag used in this guide
+- Docker Compose **v2.22 or later** – required for `docker compose watch` used in this guide
 
 ## Getting started
 
@@ -46,7 +45,7 @@ my-frank-project/
         └── Configuration.xml
 ```
 
-The `configurations/` directory is synced into the container automatically when using `docker compose up --watch`.
+The `configurations/` directory is synced into the container automatically when using `docker compose watch`.
 
 ### Docker Compose file
 
@@ -59,7 +58,6 @@ Create a `compose.yaml` file with the following content:
 #   - frankframework: the core application (runs on port 8080)
 #   - frank-flow: visual configuration tool (runs on port 8081)
 #   - swagger-ui: API docs viewer (runs on port 8082)
-#   - nginx: reverse proxy forwarding / and /api/ to prevent CORS issues (runs on port 80)
 #
 # Start the services with:
 #   docker compose up --watch
@@ -77,6 +75,7 @@ services:
       customViews.names: FrankFlow
       customViews.FrankFlow.name: Frank!Flow
       customViews.FrankFlow.url: http://localhost:8081
+      cors.enforced: "true"
     develop:
       watch:
         - action: sync
@@ -86,14 +85,11 @@ services:
 
         # Optional additional watch actions for other directories (e.g., resources, secrets)
         # - action: sync
-        #   path: ./testtool
-        #   target: /opt/frank/testtool
-        # - action: sync
         #   path: ./resources
-        #   target: /opt/frank/resources
+        #   target: /resources
         # - action: sync+restart
         #   path: ./secrets
-        #   target: /opt/frank/secrets
+        #   target: /secrets
 
   frank-flow:
     image: frankframework/frank-flow:latest
@@ -109,23 +105,11 @@ services:
     ports:
       - "8082:8080"
     environment:
-      CORS: "false"
       URLS: |
         [
-          {"name":"Configurations API","url":"http://localhost:8083/api/webservices/openapi.json"},
-          {"name":"Frank!Framework API","url":"http://localhost:8083/api/openapi/v3.yaml"}
+          {"name":"Configurations API","url":"http://localhost:8080/iaf/api/webservices/openapi.json"},
+          {"name":"Frank!Framework API","url":"http://localhost:8080/iaf/api/openapi/v3.yaml"}
         ]
-
-  nginx:
-    image: nginx:latest
-    ports:
-      - "8083:80"
-    configs:
-      - source: nginx_conf
-        target: /etc/nginx/nginx.conf
-    depends_on:
-      - frankframework
-      - swagger-ui
 
 configs:
   # JDBC datasource config for Frank!Framework
@@ -135,44 +119,51 @@ configs:
         - name: "ff-quick-start"
           type: "org.h2.jdbcx.JdbcDataSource"
           url: "jdbc:h2:mem:test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;"
-
-  # Nginx config used by the nginx service
-  nginx_conf:
-    content: |
-      events {}
-
-      http {
-        server {
-          listen 80;
-
-          location / {
-            proxy_pass http://swagger-ui:8080/;
-            proxy_set_header Host $$host;
-          }
-
-          location /api/ {
-            proxy_pass http://frankframework:8080/iaf/api/;
-            proxy_set_header Host $$host;
-          }
-        }
-      }
 ```
 
 ### Running the setup
 
-Start all services with file-watching enabled (so that changes to the `configurations/` directory are synced automatically):
+The recommended way to start is with `docker compose watch`. This command starts all services and automatically syncs changes from your local `configurations/` directory into the running container — without needing a restart. It is significantly faster than a plain volume mount, especially on Windows where bind-mount performance can be slow.
 
-> **Note:** The `--watch` flag requires Docker Compose v2.22 or later. Run `docker compose version` to check. If your version is older, use `docker compose up -d` instead and restart the container manually after making changes.
+```shell
+docker compose watch
+```
+
+Press **Ctrl+C** to stop watching. The containers will keep running in the background. To stop and remove them:
+
+```shell
+docker compose down
+```
+
+> **Note:** `docker compose watch` requires Docker Compose v2.22 or later. Run `docker compose version` to check.
+
+#### Alternative: start with `--watch` flag
+
+You can also pass `--watch` to `docker compose up`, which behaves the same way but also streams logs to your terminal:
 
 ```shell
 docker compose up --watch
 ```
 
-To stop all services:
+#### Alternative: plain volume mount
+
+If you cannot use `docker compose watch` (e.g., your Docker Compose version is older), you can start the services normally and mount the `configurations/` directory as a volume instead. Edit the `frankframework` service in `compose.yaml` to add a `volumes` entry:
+
+```yaml
+services:
+  frankframework:
+    ...
+    volumes:
+      - ./configurations/:/opt/frank/configurations
+```
+
+Then start without watching:
 
 ```shell
-docker compose down
+docker compose up -d
 ```
+
+Changes to the `configurations/` directory will still be picked up, but performance may be lower — particularly on Windows.
 
 ### What's next
 
@@ -182,17 +173,15 @@ Once the services are running, the following endpoints will be available:
 |---------------------------|------------------------------------------------------------------------|
 | http://localhost:8080     | **Frank!Framework console** – monitor and manage your Frank application |
 | http://localhost:8081     | **Frank!Flow** – visual configuration editor                           |
-| http://localhost:8083     | **Swagger UI** (via Nginx proxy) – browse and test the API             |
+| http://localhost:8082     | **Swagger UI** – browse and test the API                               |
 
 Open http://localhost:8080 in your browser to access the Frank!Framework console. Frank!Flow is also accessible from the console sidebar under the "Frank!Flow" menu item.
-
-Use http://localhost:8083 to explore the API through Swagger UI. The Nginx proxy at this address forwards API requests to the Frank!Framework, avoiding CORS issues.
 
 From here you can:
 - Place your Frank configuration files in the `configurations/` directory and they will be synced into the running container automatically.
 - Explore the Frank!Framework console to monitor adapters, view logs, and test your configurations.
 - Use Frank!Flow to visually create and edit configurations.
-- Use the Swagger UI to explore and test the Frank!Framework REST API.
+- Use the Swagger UI at http://localhost:8082 to explore and test the Frank!Framework REST API.
 
 ## Mounting files
 
