@@ -226,6 +226,13 @@ export const appInitState = {
 } as const;
 export type AppInitState = (typeof appInitState)[keyof typeof appInitState];
 
+export type AMDRequire = {
+  require: {
+    (imports: string[], callback: () => void): void;
+    config(config: { paths: Record<string, string> }): void;
+  };
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -241,11 +248,13 @@ export class AppService {
   public reload$: Observable<void>;
   public toggleSidebar$: Observable<void>;
   public customBreadcrumbs$: Observable<string>;
+  public amdLoaderReady$: Observable<void>;
   public consoleState: WritableSignal<AppInitState> = signal(appInitState.UN_INIT);
 
   private reloadSubject = new Subject<void>();
   private toggleSidebarSubject = new Subject<void>();
   private customBreadcrumbsSubject = new Subject<string>();
+  private amdLoaderReadySubject = new Subject<void>();
 
   private _adapters: WritableSignal<Record<string, Adapter>> = signal({});
   private _configurations: WritableSignal<Configuration[]> = signal([]);
@@ -289,6 +298,7 @@ export class AppService {
     this.reload$ = this.reloadSubject.asObservable();
     this.toggleSidebar$ = this.toggleSidebarSubject.asObservable();
     this.customBreadcrumbs$ = this.customBreadcrumbsSubject.asObservable();
+    this.amdLoaderReady$ = this.amdLoaderReadySubject.asObservable();
   }
 
   get adapters(): Signal<Record<string, Adapter>> {
@@ -441,6 +451,11 @@ export class AppService {
 
   toggleSidebar(): void {
     this.toggleSidebarSubject.next();
+  }
+
+  triggerAMDLoaderReady(): void {
+    this.amdLoaderReadySubject.next();
+    this.amdLoaderReadySubject.complete();
   }
 
   updateTitle(title: string): void {

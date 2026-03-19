@@ -40,11 +40,7 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
 
     const view = routeState['view'];
 
-    if (view['url'].includes('http')) {
-      this.window.open(view['url'], view['name']);
-      this.redirectURL = view['url'];
-      this.url = '';
-    } else if (view['url'].startsWith('/')) {
+    if (view['url'].startsWith('/')) {
       this.url = view['url'];
     } else {
       this.url = this.appService.getServerPath() + view['url'];

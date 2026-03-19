@@ -56,9 +56,6 @@
                 "org.eclipse.m2e:lifecycle-mapping",
                 "com.eclipsesource.j2v8:j2v8_linux_x86_64"
             ],
-            "major": {
-                "enabled": false
-            },
             "groupName": "maven-dependencies",
             "separateMajorMinor": true,
             "separateMultipleMinor": true,
@@ -128,9 +125,6 @@
             ],
             "groupName": "npm-dependencies",
             "separateMajorMinor": true,
-            "major": {
-                "enabled": false
-            }
         },
         {
             "description": "Angular packages - override groupName",
