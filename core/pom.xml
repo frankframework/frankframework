@@ -16,7 +16,7 @@
 		<graalvm.version>24.2.2</graalvm.version>
 
 		<!-- From version 11, duplicate imported resources cause an exception. -->
-		<saxon.version>10.9</saxon.version>
+		<saxon.version>11.7</saxon.version>
 	</properties>
 
 	<dependencies>
