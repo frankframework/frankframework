@@ -36,7 +36,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
 public class KafkaSenderTest {
-	final MockProducer<String, byte[]> mockProducer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
+	final MockProducer<String, byte[]> mockProducer = new MockProducer<>(true, null, new StringSerializer(), new ByteArraySerializer());
 	final KafkaSender sender = new KafkaSender();
 
 	@BeforeEach
