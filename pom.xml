@@ -95,6 +95,7 @@
 		<spring.boot.version>4.0.4</spring.boot.version>
 		<tomcat.version>11.0.18</tomcat.version>
 		<bouncycastle.version>1.83</bouncycastle.version>
+		<tika.version>3.2.3</tika.version>
 
 		<narayana.version>7.3.3.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
@@ -107,7 +108,7 @@
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.4.240</h2.driver.version>
-		<db2.driver.version>11.5.9.0</db2.driver.version>
+		<db2.driver.version>12.1.4.0</db2.driver.version>
 		<oracle.driver.version>23.26.1.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>13.4.0.jre11</mssql.driver.version>
@@ -202,7 +203,7 @@
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
-				<version>1.21.4</version>
+				<version>2.0.4</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -717,7 +718,7 @@
 			<dependency>
 				<groupId>org.hamcrest</groupId>
 				<artifactId>hamcrest</artifactId>
-				<version>2.2</version>
+				<version>3.0</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -924,7 +925,7 @@
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
-					<version>2.46.1</version>
+					<version>3.4.0</version>
 					<configuration>
 						<java>
 							<removeUnusedImports />
