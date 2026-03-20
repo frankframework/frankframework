@@ -117,8 +117,8 @@ public class JsonUtil {
 
 	/**
 	 * When using expressions, jsonPath returns a JsonArray, even if there is only one match. Make sure to get a String from it.
-	 * If the result is not an array and not a scalar value, then return an empty string. Do not return NULL
-	 * when a result was found.
+	 * Empty is treated as no filter matches.
+	 * If the result is not an array and not a scalar value, then return an empty string. (What would the result be?)
 	 */
 	private static @Nullable String getSingleValueJsonPathResult(@NonNull Object jsonPathResult) {
 		if (jsonPathResult instanceof String string) {
@@ -133,13 +133,18 @@ public class JsonUtil {
 
 		if (jsonPathResult instanceof JSONArray jsonArray) {
 			if (jsonArray.isEmpty()) {
-				return "";
+				// We found nothing, we got an empty array and there are no matches.
+				return null;
 			}
 			return getSingleValueJsonPathResult(jsonArray.getFirst());
 		}
 
-		// We found something, but it does not have a proper string representation
-		// usable for the IF-pipe.
+		if (jsonPathResult == null) {
+			return null;
+		}
+
+		// We found something, but it does not have a proper string representation!
+		// Usable for the IF-pipe... 
 		// Do not return NULL because NULL indicates that nothing is found.
 		return "";
 	}
