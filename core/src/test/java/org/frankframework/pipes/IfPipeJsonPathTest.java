@@ -84,7 +84,10 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 				Arguments.of(testJson, "$.store.book[1].category", "reference", PIPE_FORWARD_ELSE),
 				Arguments.of(testJson, "$.store.book[?(@.price == 22.99)].author", "J. R. R. Tolkien", PIPE_FORWARD_THEN),
 				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')]", "", PIPE_FORWARD_THEN),
-				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')][0]", "", PIPE_FORWARD_THEN)
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')].author", "", PIPE_FORWARD_THEN),
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')][?(@.author)]", "", PIPE_FORWARD_THEN),
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')][?(@.price > 22)]", "", PIPE_FORWARD_THEN),
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')][?(@.price > 23)]", "", PIPE_FORWARD_ELSE)
 		);
 	}
 

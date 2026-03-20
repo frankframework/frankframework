@@ -16,6 +16,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.jayway.jsonpath.InvalidJsonException;
 
@@ -219,6 +221,97 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		assertInstanceOf(JsonException.class, pipeRunException.getCause());
 		assertInstanceOf(InvalidJsonException.class, pipeRunException.getCause().getCause());
 		assertThat(pipeRunException.getMessage(), containsString("error evaluating expression"));
+	}
+
+	@Test
+	void testValidJsonMessage1() throws Exception {
+		pipe.setJsonPathExpression("$.valid");
+
+		configureAndStartPipe();
+
+		// Act
+		PipeRunResult result = doPipe(pipe, getJsonMessage("{ \"valid\": true }"), session);
+
+		// Assert
+		assertEquals("then", result.getPipeForward().getName());
+	}
+
+	@Test
+	void testValidJsonMessage2() throws Exception {
+		pipe.setJsonPathExpression("$.valid");
+
+		configureAndStartPipe();
+
+		// Act
+		PipeRunResult result = doPipe(pipe, getJsonMessage("{ \"valid\": false }"), session);
+
+		// Assert
+		assertEquals("else", result.getPipeForward().getName());
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(strings = {"null"})
+	void testJsonNullValue(String value) throws Exception {
+		pipe.setJsonPathExpression("$.key"); // Exists but is NULL
+
+		configureAndStartPipe();
+
+		// Act
+		PipeRunResult result = doPipe(pipe, getJsonMessage("{ \"key\": " + value + "}"), session);
+
+		// Assert
+		assertEquals("else", result.getPipeForward().getName());
+	}
+
+	/**
+	 * Both expression are the same
+	 */
+	@ParameterizedTest
+	@ValueSource(strings = {"$.key", "$[?(@.key != null)]", "$[?(@.key == '')]"})
+	void testJsonEmptyValue(String expression) throws Exception {
+		pipe.setJsonPathExpression(expression);
+
+		configureAndStartPipe();
+
+		// Act
+		// The value exists but is empty --> handle as 'found'
+		PipeRunResult result = doPipe(pipe, getJsonMessage("{ \"key\": \"\"}"), session);
+
+		// Assert
+		assertEquals("then", result.getPipeForward().getName());
+	}
+
+	/**
+	 * NULL and EMPTY is treated as not-found.
+	 */
+	@ParameterizedTest
+	@CsvSource({",else", "\"\",else", "\"one\",then"})
+	void testJsonMessageWithFilterExpressions(String value, String forward) throws Exception {
+		pipe.setJsonPathExpression("$[?(@.key empty false)]");
+
+		configureAndStartPipe();
+
+		// Act
+		PipeRunResult result = doPipe(pipe, getJsonMessage("{ \"key\": " + value + "}"), session);
+
+		// Assert
+		assertEquals(forward, result.getPipeForward().getName());
+	}
+
+	@ParameterizedTest
+	@CsvSource({"one, then", "two, else"})
+	void testJsonMessageWithExpressionValue(String value, String forward) throws Exception {
+		pipe.setJsonPathExpression("$.key");
+		pipe.setExpressionValue("one");
+
+		configureAndStartPipe();
+
+		// Act
+		PipeRunResult result = doPipe(pipe, getJsonMessage("{ \"key\": \"" + value + "\"}"), session);
+
+		// Assert
+		assertEquals(forward, result.getPipeForward().getName());
 	}
 
 	@ParameterizedTest

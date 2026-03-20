@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.frankframework.util.StreamUtil;
 
 /**
  * <p>CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.</p>
+ * You can configure the location of the file by setting the property {@value #PROPERTY_FILE_KEY}.
  *
  * <p>Secret are stored in the properties file as key/value pairs, where the key is the alias and the value is the password.</p>
  *
