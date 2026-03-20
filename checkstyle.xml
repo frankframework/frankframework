@@ -46,7 +46,8 @@
 			com.mongodb.lang,
 			io.micrometer.common.lang,
 			org.checkerframework.checker.nullness.qual,
-			org.testcontainers.shaded.org.checkerframework.framework.qual,
+			org.testcontainers.shaded.org,
+			org.testcontainers.shaded.com,
 			" />
 			<property name="illegalClasses" value="
 			com.sun.istack.Nullable,

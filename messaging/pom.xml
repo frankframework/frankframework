@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
-			<version>3.9.2</version>
+			<version>4.2.0</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -128,22 +128,22 @@
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>hivemq</artifactId>
+			<artifactId>testcontainers-hivemq</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>rabbitmq</artifactId>
+			<artifactId>testcontainers-rabbitmq</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>activemq</artifactId>
+			<artifactId>testcontainers-activemq</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 
