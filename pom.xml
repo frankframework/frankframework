@@ -87,13 +87,13 @@
 		<junit.excludedTags />
 		<junit.includedTags />
 
-		<jackson.version>2.21.1</jackson.version>
+		<jackson.version>2.21.2</jackson.version>
 		<cxf.version>4.2.0</cxf.version>
 		<spring.version>7.0.6</spring.version>
 		<spring-security.version>7.0.4</spring-security.version>
 		<spring-integration.version>7.0.4</spring-integration.version>
 		<spring.boot.version>4.0.4</spring.boot.version>
-		<tomcat.version>11.0.18</tomcat.version>
+		<tomcat.version>11.0.20</tomcat.version>
 		<bouncycastle.version>1.83</bouncycastle.version>
 		<tika.version>3.2.3</tika.version>
 
@@ -253,7 +253,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.34.0</version>
+				<version>4.34.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
