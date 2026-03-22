@@ -17,18 +17,19 @@ package org.frankframework.pipes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Set;
+import java.io.UncheckedIOException;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.networknt.schema.Error;
 import com.networknt.schema.InputFormat;
 import com.networknt.schema.InvalidSchemaRefException;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaException;
-import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaException;
 import com.networknt.schema.SchemaLocation;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.dialect.Dialects;
 
 import lombok.Getter;
 
@@ -50,13 +51,12 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 public class JsonValidator extends AbstractValidator {
 
 	private @Getter String schema;
-	// private @Getter String jsonSchemaVersion=null;
 	private @Getter String subSchemaPrefix="/definitions/";
 	private @Getter String reasonSessionKey = "failureReason";
 
-	private final JsonSchemaFactory service = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+	private final SchemaRegistry schemaRegistry = SchemaRegistry.withDefaultDialect(Dialects.getDraft202012());
 
-	private JsonSchema jsonSchema;
+	private Schema jsonSchema;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -68,7 +68,7 @@ public class JsonValidator extends AbstractValidator {
 
 		try {
 			jsonSchema = getJsonSchema();
-		} catch (JsonSchemaException | IOException e) {
+		} catch (SchemaException | IOException e) {
 			throw new ConfigurationException("unable to configure JsonValidator", e);
 		}
 	}
@@ -80,7 +80,7 @@ public class JsonValidator extends AbstractValidator {
 				messageToValidate = new Message("{}");
 			}
 
-			JsonSchema curSchema = jsonSchema;
+			Schema curSchema = jsonSchema;
 
 			if (StringUtils.isEmpty(messageRoot)) {
 				messageRoot = responseMode ? getResponseRoot() : getRoot();
@@ -104,7 +104,7 @@ public class JsonValidator extends AbstractValidator {
 		}
 	}
 
-	private JsonSchema getSubSchema(String messageRoot) throws PipeRunException {
+	private Schema getSubSchema(String messageRoot) throws PipeRunException {
 		try {
 			return jsonSchema.getSubSchema(SchemaLocation.Fragment.of(subSchemaPrefix + messageRoot));
 		} catch (InvalidSchemaRefException e) {
@@ -112,27 +112,28 @@ public class JsonValidator extends AbstractValidator {
 		}
 	}
 
-	private SchemaValidationResult validateJson(JsonSchema jsonSchema, Message message) throws IOException {
+	private SchemaValidationResult validateJson(Schema jsonSchema, Message message) throws IOException {
 		try {
-			Set<ValidationMessage> validationMessages = jsonSchema.validate(
+			List<Error> validationMessages = jsonSchema.validate(
 					message.asString(), InputFormat.JSON,
 					// By default, since Draft 2019-09 the format keyword only generates annotations and not assertions
-					executionContext -> executionContext.getExecutionConfig().setFormatAssertionsEnabled(true)
+					executionContext -> executionContext.executionConfig(builder -> builder.formatAssertionsEnabled(true))
 			);
 
 			return new SchemaValidationResult(
 					validationMessages.isEmpty() ? ValidationResult.VALID : ValidationResult.INVALID,
 					validationMessages
 			);
-		} catch (IllegalArgumentException e) {
+		} catch (IOException | UncheckedIOException e) {
+			// Jackson throws UncheckedIOExceptions
 			return new SchemaValidationResult(ValidationResult.PARSER_ERROR,
-					Set.of(ValidationMessage.builder().message(e.getMessage()).build()));
+					List.of(Error.builder().message("Invalid input: " + e.getMessage()).build()));
 		}
 	}
 
-	record SchemaValidationResult(ValidationResult result, Set<ValidationMessage> validationMessages) { }
+	record SchemaValidationResult(ValidationResult result, List<com.networknt.schema.Error> validationMessages) { }
 
-	protected JsonSchema getJsonSchema() throws IOException {
+	protected Schema getJsonSchema() throws IOException {
 		String schemaName = getSchema();
 		Resource schemaRes = Resource.getResource(this, schemaName);
 
@@ -140,7 +141,7 @@ public class JsonValidator extends AbstractValidator {
 			throw new FileNotFoundException("Cannot find schema ["+schemaName+"]");
 		}
 
-		return service.getSchema(schemaRes.openStream());
+		return schemaRegistry.getSchema(schemaRes.openStream());
 	}
 
 	/**
