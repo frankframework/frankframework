@@ -94,7 +94,7 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 		String input = TestFileUtils.getTestFile("/OpenApiValidator/newPet.json");
 
 		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> doPipe(input));
-		assertEquals("Pipe [OpenApiValidator under test] Could not validate: Pipe [OpenApiValidator under test] [Malformed escape pair at index 0: %/components/schemas/AsdfPet]",
+		assertEquals("Pipe [OpenApiValidator under test] Could not validate: (SchemaException): (FileNotFoundException) %/components/schemas/AsdfPet",
 				pipeRunException.getMessage());
 	}
 
@@ -121,7 +121,7 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 		String input = TestFileUtils.getTestFile("/OpenApiValidator/invalidNewPet.json");
 		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> doPipe(input));
 
-		assertEquals("Pipe [OpenApiValidator under test] Could not validate: Pipe [OpenApiValidator under test] [$: required property 'name' not found]", pipeRunException.getMessage());
+		assertEquals("Pipe [OpenApiValidator under test] Could not validate: Pipe [OpenApiValidator under test] [: required property 'name' not found]", pipeRunException.getMessage());
 	}
 
 	@Test
@@ -139,7 +139,7 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 		PipeRunResult result = doPipe(input);
 
 		assertEquals("failure", result.getPipeForward().getName());
-		assertEquals("[$: required property 'name' not found]", session.get("failureReason"));
+		assertEquals("[: required property 'name' not found]", session.get("failureReason"));
 	}
 
 	@Test
@@ -173,7 +173,7 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 		PipeForward forward = pipe.validate(new Message(input), session, true, null);
 
 		assertEquals("outputFailure", forward.getName());
-		assertEquals("[$: required property 'id' not found, $: required property 'name' not found]", session.get("failureReason"));
+		assertEquals("[: required property 'id' not found, : required property 'name' not found]", session.get("failureReason"));
 	}
 
 	@Test

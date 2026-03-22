@@ -4,17 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
-import java.util.Set;
+import java.util.List;
 
 import jakarta.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.networknt.schema.InputFormat;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.dialect.Dialects;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -109,15 +108,12 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 	 * Derived from {@link JsonValidator#getJsonSchema()}
 	 */
 	public void validateJson(String jsonString, String jsonSchemaContent) {
-		JsonSchemaFactory service = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
-		JsonSchema schema = service.getSchema(jsonSchemaContent);
+		SchemaRegistry schemaRegistry = SchemaRegistry.withDefaultDialect(Dialects.getDraft202012());
+		Schema schema = schemaRegistry.getSchema(jsonSchemaContent);
 
 		try {
-			Set<ValidationMessage> validationMessages = schema.validate(
-					jsonString, InputFormat.JSON,
-					executionContext -> {
-						executionContext.getExecutionConfig().setFormatAssertionsEnabled(true);
-					}
+			List<com.networknt.schema.Error> validationMessages = schema.validate(
+					jsonString, InputFormat.JSON, e -> e.executionConfig(config -> config.formatAssertionsEnabled(true))
 			);
 
 			log.debug("jsonString: {}", jsonString);

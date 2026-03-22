@@ -15,14 +15,15 @@
 */
 package org.frankframework.pipes;
 
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.Error;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -196,6 +197,6 @@ public class OpenApiValidator extends AbstractValidator {
 		return useAsOutputValidator;
 	}
 
-	record SchemaValidationResult(ValidationResult result, Set<ValidationMessage> validationMessages) {
+	record SchemaValidationResult(ValidationResult result, List<Error> validationMessages) {
 	}
 }

@@ -15,21 +15,22 @@
 */
 package org.frankframework.pipes;
 
+
 import java.io.IOException;
-import java.util.Set;
+import java.io.UncheckedIOException;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.Error;
 import com.networknt.schema.InputFormat;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.dialect.Dialects;
 
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 
@@ -44,7 +45,7 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
  * @author evandongen
  */
 public class OpenApiValidationHelper {
-	private final JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+	private final SchemaRegistry schemaRegistry = SchemaRegistry.withDefaultDialect(Dialects.getDraft202012());
 	private final ObjectMapper objectMapper;
 	private final Operation operation;
 
@@ -62,27 +63,28 @@ public class OpenApiValidationHelper {
 	 * determined based on the exit code in the session, and the path and method defined in the pipe configuration.
 	 */
 	OpenApiValidator.SchemaValidationResult validateMessage(Message message, boolean responseMode, PipeLineSession session) throws IOException {
-		JsonSchema jsonSchema = resolveJsonSchema(operation, responseMode, session);
+		Schema jsonSchema = resolveJsonSchema(operation, responseMode, session);
 
 		try {
-			Set<ValidationMessage> validationMessages = jsonSchema.validate(
+			List<Error> validationMessages = jsonSchema.validate(
 					message.asString(), InputFormat.JSON,
-					executionContext -> executionContext.getExecutionConfig().setFormatAssertionsEnabled(true)
+					executionContext -> executionContext.executionConfig(b -> b.formatAssertionsEnabled(true))
 			);
 
 			ValidationResult result = validationMessages.isEmpty() ? ValidationResult.VALID : ValidationResult.INVALID;
 
 			return new OpenApiValidator.SchemaValidationResult(result, validationMessages);
-		} catch (IllegalArgumentException e) {
+		} catch (IOException | UncheckedIOException e) {
+			// Jackson throws UncheckedIOExceptions
 			return new OpenApiValidator.SchemaValidationResult(
-					ValidationResult.PARSER_ERROR, Set.of(ValidationMessage.builder()
+					ValidationResult.PARSER_ERROR, List.of(Error.builder()
 					.message(e.getMessage())
 					.build())
 			);
 		}
 	}
 
-	private JsonSchema resolveJsonSchema(Operation operation, boolean responseMode, PipeLineSession session) {
+	private Schema resolveJsonSchema(Operation operation, boolean responseMode, PipeLineSession session) {
 		if (responseMode) {
 			return getResponseSchema(operation, session.getString(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 		}
@@ -94,7 +96,7 @@ public class OpenApiValidationHelper {
 	 * Get the response for the given operation and exit code. If no response is defined for the given exit code, look for a default response.
 	 * If neither is found, an exception will be thrown when trying to get the schema from the null response.
 	 */
-	private JsonSchema getResponseSchema(Operation operation, String exitCode) {
+	private Schema getResponseSchema(Operation operation, String exitCode) {
 		ApiResponse apiResponse = operation.getResponses().get(exitCode);
 
 		if (apiResponse == null) {
@@ -107,18 +109,16 @@ public class OpenApiValidationHelper {
 	/**
 	 * Gets the request body for the given operation and returns the schema defined for the "application/json" content type.
 	 */
-	private JsonSchema getRequestSchema(Operation operation) {
+	private Schema getRequestSchema(Operation operation) {
 		RequestBody requestBody = operation.getRequestBody();
 
 		return getJsonSchemaFromContent(requestBody.getContent());
 	}
 
-	private JsonSchema getJsonSchemaFromContent(Content content) {
-		Schema<?> schema = content.get("application/json")
-				.getSchema();
-
+	private Schema getJsonSchemaFromContent(Content content) {
+		io.swagger.v3.oas.models.media.Schema<?> schema = content.get("application/json").getSchema();
 		JsonNode schemaNode = objectMapper.valueToTree(schema);
 
-		return jsonSchemaFactory.getSchema(schemaNode);
+		return schemaRegistry.getSchema(schemaNode);
 	}
 }
