@@ -86,7 +86,7 @@ public class ExchangeConnectionCache {
 		CloseUtils.closeSilently(configuration, graphClient);
 	}
 
-	private static ExchangeConnectionCache getInstance() {
+	private static synchronized ExchangeConnectionCache getInstance() {
 		if (EXCHANGE_CONNECTION_CACHE == null) {
 			EXCHANGE_CONNECTION_CACHE = new ExchangeConnectionCache();
 		}
@@ -168,13 +168,13 @@ public class ExchangeConnectionCache {
 		return getInstance().createListener();
 	}
 
-	public static ExchangeFileSystemSender getExchangeFileSystemSender() {
+	public static synchronized ExchangeFileSystemSender getExchangeFileSystemSender() {
 		assumeTrue(validateCredentials());
 
 		return EXCHANGE_CONNECTION_CACHE.createSender();
 	}
 
-	public static void close() {
+	public static synchronized void close() {
 		if (EXCHANGE_CONNECTION_CACHE != null) {
 			EXCHANGE_CONNECTION_CACHE.doClose();
 		}
