@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: org.frankframework.cmdline.StartIbis
+Main-Class: org.frankframework.runner.StartIbis
 

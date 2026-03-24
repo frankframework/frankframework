@@ -834,7 +834,7 @@
 						<manifest>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<mainClass>org.frankframework.cmdline.StartIbis</mainClass>
+							<mainClass>org.frankframework.runner.StartIbis</mainClass>
 						</manifest>
 						<manifestEntries>
 							<Add-Opens>java.base/java.lang java.base/java.io</Add-Opens>

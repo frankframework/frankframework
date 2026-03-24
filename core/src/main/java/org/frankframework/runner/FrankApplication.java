@@ -29,12 +29,12 @@ import java.util.Set;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.tomcat.websocket.server.WsContextListener;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
@@ -43,27 +43,26 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
-import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.console.runner.ConsoleWarInitializer;
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.credentialprovider.ISecret;
 import org.frankframework.credentialprovider.ISecretProvider;
-import org.frankframework.ladybug.runner.LadybugWarInitializer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
+import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
@@ -203,9 +202,10 @@ public class FrankApplication {
 
 		applicationContext = app.run(args);
 
-		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
-		String baseUrl = String.format("http://localhost:%d%s/", tomcat.getPort(), tomcat.getContextPath());
-		LogUtil.getLogger("APPLICATION").info("Application running on [{}]", baseUrl);
+		// Would be nice to log the port in use?
+//		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
+//		String baseUrl = String.format("http://localhost:%d%s/", tomcat.getPort(), tomcat.getContextPath());
+//		LogUtil.getLogger("APPLICATION").info("Application running on [{}]", baseUrl);
 
 		// The application has started, preemptively clear the credentialFactory properties.
 		System.clearProperty("credentialFactory.class");
@@ -242,7 +242,13 @@ public class FrankApplication {
 
 		try {
 			LocalGateway gateway = createBean();
-			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
+
+			// Simple request
+			MessageBuilder<?> builder = MessageBuilder.withPayload("NONE");
+			builder.setHeader(BusTopic.TOPIC_HEADER_NAME, BusTopic.HEALTH.name());
+			builder.setHeader(BusAction.ACTION_HEADER_NAME, BusAction.GET.name());
+
+			Message<Object> response = gateway.sendSyncMessage(builder.build());
 			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -329,19 +335,31 @@ public class FrankApplication {
 	private static class LadybugInitializerWrapper implements ServletContextInitializer {
 		@Override
 		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
-			System.setProperty("ladybug.jdbc.datasource", "");
-			LadybugWarInitializer init = new LadybugWarInitializer();
-			init.onStartup(servletContext);
-			LogManager.getLogger("APPLICATION").info("Started Ladybug");
+			try {
+				System.setProperty("ladybug.jdbc.datasource", "");
+				if (ClassUtils.isClassPresent("org.frankframework.ladybug.runner.LadybugWarInitializer")) {
+					SpringBootServletInitializer initializer = ClassUtils.newInstance("org.frankframework.ladybug.runner.LadybugWarInitializer", SpringBootServletInitializer.class);
+					initializer.onStartup(servletContext);
+					LogManager.getLogger("APPLICATION").info("Started Ladybug");
+				}
+			} catch (Exception e) {
+				LogManager.getLogger("APPLICATION").error("Failed to start Ladybug", e);
+			}
 		}
 	}
 
 	private static class ConsoleInitializerWrapper implements ServletContextInitializer {
 		@Override
 		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
-			ConsoleWarInitializer init = new ConsoleWarInitializer();
-			init.onStartup(servletContext);
-			LogManager.getLogger("APPLICATION").info("Started Console");
+			try {
+				if (ClassUtils.isClassPresent("org.frankframework.console.runner.ConsoleWarInitializer")) {
+					SpringBootServletInitializer initializer = ClassUtils.newInstance("org.frankframework.console.runner.ConsoleWarInitializer", SpringBootServletInitializer.class);
+					initializer.onStartup(servletContext);
+					LogManager.getLogger("APPLICATION").info("Started Console");
+				}
+			} catch (Exception e) {
+				LogManager.getLogger("APPLICATION").error("Failed to start Console", e);
+			}
 		}
 	}
 
@@ -349,8 +367,16 @@ public class FrankApplication {
 	private static class WsSciWrapper implements ServletContextInitializer {
 		@Override
 		public void onStartup(@NonNull ServletContext servletContext) {
-			WsContextListener sc = new WsContextListener();
-			sc.contextInitialized(new ServletContextEvent(servletContext));
+			try {
+				// Should only work when the WebSocket capability is present
+				if (ClassUtils.isClassPresent("org.apache.tomcat.websocket.server.WsContextListener")) {
+					ServletContextListener initializer = ClassUtils.newInstance("org.apache.tomcat.websocket.server.WsContextListener", ServletContextListener.class);
+					initializer.contextInitialized(new ServletContextEvent(servletContext));
+					LogManager.getLogger("APPLICATION").info("Enabled WebSockets");
+				}
+			} catch (Exception e) {
+				LogManager.getLogger("APPLICATION").error("Unable to enable WebSockets", e);
+			}
 		}
 	}
 
