@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.concurrent.atomic.LongAdder;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class VirtualReader extends Reader {
-	private final static Logger LOG = LogManager.getLogger(VirtualReader.class);
 	final LongAdder charsRead;
 	private final long streamSize;
 
@@ -21,7 +21,7 @@ public class VirtualReader extends Reader {
 	@Override
 	public int read(@NonNull final char[] cbuf, final int off, final int len) throws IOException {
 		if (charsRead.longValue() >= streamSize) {
-			LOG.info("{}: VirtualReader EOF after {} characters", Thread.currentThread().getName(), charsRead.longValue());
+			log.info("{}: VirtualReader EOF after {} characters", Thread.currentThread().getName(), charsRead.longValue());
 			return -1;
 		}
 		long toRead = Math.min(len, streamSize - charsRead.longValue());
