@@ -89,7 +89,7 @@ public class WebServiceNtlmSender extends AbstractSenderWithParameters implement
 	private String soapAction;
 
 	private PoolingClientConnectionManager connectionManager;
-	protected DefaultHttpClient httpClient;
+	private DefaultHttpClient httpClient;
 
 	private final class JCIFSEngine implements NTLMEngine {
 		private static final int TYPE_1_FLAGS = NtlmFlags.NTLMSSP_NEGOTIATE_56

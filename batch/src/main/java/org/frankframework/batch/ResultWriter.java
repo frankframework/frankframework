@@ -56,11 +56,12 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	@Override
 	public void closeDocument(PipeLineSession session, String streamId) {
 		try (Writer ignored = openWriters.remove(streamId)) {
-			// just close the writer
+			// Just close the writer.
+			log.debug("closing [{}]", streamId);
 		} catch (IOException e) {
 			log.error("Exception closing [{}]", streamId, e);
 		}
-		super.closeDocument(session,streamId);
+		super.closeDocument(session, streamId);
 	}
 
 	@Override

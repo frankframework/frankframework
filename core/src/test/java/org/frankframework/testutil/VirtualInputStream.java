@@ -3,11 +3,10 @@ package org.frankframework.testutil;
 import java.io.InputStream;
 import java.util.concurrent.atomic.LongAdder;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class VirtualInputStream extends InputStream {
-	private final static Logger LOG = LogManager.getLogger(VirtualInputStream.class);
 	final LongAdder bytesRead;
 	private final long streamSize;
 
@@ -19,7 +18,7 @@ public class VirtualInputStream extends InputStream {
 	@Override
 	public int read() {
 		if (bytesRead.longValue() >= streamSize) {
-			LOG.info("{}: VirtualInputStream EOF after {} bytes", Thread.currentThread().getName(), bytesRead.longValue());
+			log.info("{}: VirtualInputStream EOF after {} bytes", Thread.currentThread().getName(), bytesRead.longValue());
 			return -1;
 		}
 		bytesRead.increment();

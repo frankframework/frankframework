@@ -69,7 +69,7 @@ public class SerializableInputStreamTest {
 			out.writeObject(in);
 			return baos.toByteArray();
 		} catch (IOException e) {
-			System.out.println("problem serializing session attribute class [" + in.getClass().getName() + "]: (" + e.getClass().getName() + "): " + e.getMessage() + ". Value [" + ToStringBuilder.reflectionToString(in, ToStringStyle.MULTI_LINE_STYLE) + "]");
+			log.error("problem serializing session attribute class [{}]. Value [{}]", in.getClass().getName(), ToStringBuilder.reflectionToString(in, ToStringStyle.MULTI_LINE_STYLE), e);
 			throw e;
 		}
 	}
@@ -78,7 +78,7 @@ public class SerializableInputStreamTest {
 		try (ByteArrayInputStream bais = new ByteArrayInputStream(wire); ObjectInputStream in = new ObjectInputStream(bais)) {
 			return in.readObject();
 		} catch (Exception e) {
-			System.out.println("problem deserializing session attribute class (" + e.getClass().getName() + "): " + e.getMessage());
+			log.error("problem deserializing session attribute class", e);
 			throw e;
 		}
 	}

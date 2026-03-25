@@ -354,7 +354,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				outputStreamOptions.bodyLength(Math.toIntExact(message.size()));
 			}
 			try (OutputStream outputStream = streamSenderMessage.body(outputStreamOptions);
-				 InputStream inputStream = message.asInputStream()) {
+				InputStream inputStream = message.asInputStream()) {
 				inputStream.transferTo(outputStream);
 			} catch (IOException e) {
 				log.warn("Cannot send streaming AMQP message to AMQP server, aborting message", e);

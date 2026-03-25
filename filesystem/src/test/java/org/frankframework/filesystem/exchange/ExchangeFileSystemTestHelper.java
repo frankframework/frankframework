@@ -1,5 +1,7 @@
 package org.frankframework.filesystem.exchange;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.LinkedList;
@@ -100,13 +102,18 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 						break;
 					}
 				}
-				if (!found) {
+				if (!found && base != null) {
 					MailFolder mailFolder = new MailFolder();
 					mailFolder.setDisplayName(subMailFolder);
 					mailFolder.setIsHidden(false);
 					base = requestBuilder.mailFolders().byMailFolderId(base.getId()).childFolders().post(mailFolder);
 					log.debug("created mail folder [{}] with id [{}]", subMailFolder, base.getId());
 				}
+			}
+
+			if (base == null) {
+				fail("no base mail folder found!");
+				return ;
 			}
 
 			log.debug("using MailFolder id [{}]", base.getId());
@@ -125,6 +132,11 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	// AfterAll Cleanup
 	public void afterAllCleanup() {
+		if (baseMailFolder == null) {
+			log.info("nothing to clean up, no baseMailFolder present!");
+			return;
+		}
+
 		cleanBaseMailFolder();
 
 		// Remove the base directory it self.

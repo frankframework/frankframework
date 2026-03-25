@@ -60,7 +60,8 @@
             "separateMajorMinor": true,
             "separateMultipleMinor": true,
             "separateMultipleMajor": true,
-            "separateMinorPatch": true
+            "separateMinorPatch": true,
+            "minimumReleaseAge": "5 days"
         },
         {
             "description": "Aspose Dependencies",
@@ -125,6 +126,7 @@
             ],
             "groupName": "npm-dependencies",
             "separateMajorMinor": true,
+            "minimumReleaseAge": "5 days"
         },
         {
             "description": "Angular packages - override groupName",
@@ -137,7 +139,8 @@
                 "/^@angular-devkit\\//",
                 "@angular/common",
                 "zone.js"
-            ]
+            ],
+            "minimumReleaseAge": "5 days"
         },
         {
             "description": "ESLint packages - override groupName",
@@ -147,7 +150,8 @@
             "groupName": "ES Lint",
             "matchPackageNames": [
                 "/(eslint)/"
-            ]
+            ],
+            "minimumReleaseAge": "5 days"
         },
         {
             "description": "Ignore NPM peer dependencies",
@@ -211,7 +215,8 @@
                 "CI/CD"
             ],
             "groupName": "github-actions",
-            "separateMajorMinor": false
+            "separateMajorMinor": false,
+            "minimumReleaseAge": "7 days"
         }
     ],
     "lockFileMaintenance": {
