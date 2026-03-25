@@ -1,11 +1,15 @@
 package org.frankframework.runner;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class FrankApplicationTest {
@@ -20,6 +24,8 @@ class FrankApplicationTest {
 	static void setup() throws IOException {
 		frankApplication = new FrankApplication();
 		frankApplication.run();
+
+		assertTrue(frankApplication.isRunning());
 	}
 
 	@AfterAll
@@ -28,8 +34,11 @@ class FrankApplicationTest {
 	}
 
 	@Test
+	@DisplayName("Wait max. 1 minute and verify the Frank!Application has started succesfully.")
 	void contextLoads() {
-		assertTrue(frankApplication.isRunning());
+		await().pollInterval(5, TimeUnit.SECONDS)
+				.atMost(Duration.ofMinutes(1))
+				.until(frankApplication::hasStarted);
 	}
 
 }
