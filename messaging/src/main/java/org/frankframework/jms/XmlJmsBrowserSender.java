@@ -122,9 +122,7 @@ public class XmlJmsBrowserSender extends AbstractSenderWithParameters {
 
 		boolean remove = false;
 
-		if ("browse".equalsIgnoreCase(root)) {
-			// OK
-		} else {
+		if (!"browse".equalsIgnoreCase(root)) {
 			if ("remove".equalsIgnoreCase(root)) {
 				remove = true;
 			} else {

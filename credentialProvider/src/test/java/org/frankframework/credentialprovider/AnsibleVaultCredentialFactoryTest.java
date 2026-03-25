@@ -20,8 +20,10 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import lombok.extern.log4j.Log4j2;
 import net.wedjaa.ansible.vault.crypto.VaultHandler;
 
+@Log4j2
 public class AnsibleVaultCredentialFactoryTest {
 
 	public static final String ANSIBLE_VAULT_FILE="/credentials-vault.txt";
@@ -65,15 +67,15 @@ public class AnsibleVaultCredentialFactoryTest {
 
 // re-enable the line below to generate a vault which contains single backslashes, if you want to test with that.
 //		vaultData = vaultData.replace("\\\\", "\\");
-		System.out.println("Vault data before encryption:\n"+ vaultData);
+		log.info("Vault data before encryption:\n"+ vaultData);
 
 		byte[] encryptedVault = VaultHandler.encrypt(vaultData.getBytes(StandardCharsets.US_ASCII), ANSIBLE_VAULT_PASSWORD);
 
-		System.out.println("Ansible Vault:\n"+new String(encryptedVault));
+		log.info("Ansible Vault:\n"+new String(encryptedVault));
 
 	}
 
-	//@Test
+	// @Test
 	// run this to obtain a fresh ansible vault
 	public void testSetupVault() throws IOException {
 		Properties aliases = new Properties();
@@ -89,11 +91,11 @@ public class AnsibleVaultCredentialFactoryTest {
 		Properties properties = new Properties();
 		properties.load(urlin.openStream());
 
-		properties.forEach((k,v) -> System.out.println(k+": "+v));
+		properties.forEach((k, v) -> log.info("{}: {}", k, v));
 		setupVault(properties, "");
 	}
 
-	//@Test
+	// @Test
 	public void testCreateVaultFromProperties() throws IOException {
 		testCreateVaultFromProperties("");
 	}
@@ -105,7 +107,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		VaultHandler.decrypt(fis, credentialData, password);
 
-		System.out.println("Decrypted Vault data:\n" + credentialData);
+		log.info("Decrypted Vault data:\n" + credentialData);
 	}
 
 

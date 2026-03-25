@@ -84,7 +84,7 @@ public class SqlTranslatorTest {
 	 * @param c Class to be checked
 	 * @return True if one of the causes of the exception is the given class, false otherwise.
 	 */
-	private boolean checkExceptionClass(Throwable t, Class c) {
+	private boolean checkExceptionClass(Throwable t, Class<?> c) {
 		if (c.isInstance(t)) {
 			return true;
 		} else if (t.getCause() != null) {

@@ -136,7 +136,7 @@ public class RunLarvaTests {
 		assertTrue(frankApplication.isRunning());
 		await().pollInterval(5, TimeUnit.SECONDS)
 				.atMost(Duration.ofMinutes(5))
-				.until(() -> frankApplication.hasStarted());
+				.until(frankApplication::hasStarted);
 	}
 
 	private static EmbeddedActiveMQ configureEmbeddedJmsServer(Path projectDir) throws Exception {
