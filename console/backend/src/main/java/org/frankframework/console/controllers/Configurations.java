@@ -175,8 +175,8 @@ public class Configurations {
 	@Description("change the active configuration version, and optionally schedule or load it directly")
 	@PutMapping(value = "/configurations/{configuration}/versions/{version}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> manageConfiguration(ConfigurationPathVariables path,
-												 ConfigurationParameters params,
-												 @RequestBody ManageConfigurationModel model) throws ApiException {
+												ConfigurationParameters params,
+												@RequestBody ManageConfigurationModel model) throws ApiException {
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);

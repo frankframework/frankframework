@@ -100,6 +100,7 @@ public class JsonUtil {
 		}
 		// Try to match the jsonPath expression on the given json string
 		try {
+			// May return null!
 			Object jsonPathResult = jsonPath.read(message.asInputStream(), JSON_PATH_CONFIGURATION);
 
 			// if we get to this point, we have a match (and no PathNotFoundException)
@@ -120,7 +121,7 @@ public class JsonUtil {
 	 * Empty is treated as no filter matches.
 	 * If the result is not an array and not a scalar value, then return an empty string. (What would the result be?)
 	 */
-	private static @Nullable String getSingleValueJsonPathResult(@NonNull Object jsonPathResult) {
+	private static @Nullable String getSingleValueJsonPathResult(@Nullable Object jsonPathResult) {
 		if (jsonPathResult instanceof String string) {
 			return string;
 		}
@@ -144,7 +145,7 @@ public class JsonUtil {
 		}
 
 		// We found something, but it does not have a proper string representation!
-		// Usable for the IF-pipe... 
+		// Usable for the IF-pipe...
 		// Do not return NULL because NULL indicates that nothing is found.
 		return "";
 	}

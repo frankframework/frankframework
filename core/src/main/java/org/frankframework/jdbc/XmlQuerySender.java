@@ -201,6 +201,10 @@ public class XmlQuerySender extends DirectQuerySender {
 
 	@Override
 	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		if (Message.isEmpty(message)) {
+			throw new SenderException("unable to execute query, no input provided");
+		}
+
 		Message result;
 		try {
 			Element queryElement = XmlUtils.buildElement(message.asString());

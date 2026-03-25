@@ -438,7 +438,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	@NullSource
 	@MethodSource("emptyAndNullMessage")
 	@MethodSource("input")
-	void forwardNotFoundInSession(Message input) throws Exception {
+	void forwardNotFoundInSession(Message input) {
 		pipe.setForwardNameSessionKey("does-not-exist");
 		pipe.setNotFoundForwardName("trilili");
 		pipe.setEmptyForwardName("tralalal");
@@ -452,7 +452,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	@ParameterizedTest
 	@NullSource
 	@MethodSource("emptyAndNullMessage")
-	void emptyForward(Message input) throws Exception {
+	void emptyForward(Message input) {
 		pipe.setEmptyForwardName("tralalal");
 
 		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> configureAndStartPipe());

@@ -11,6 +11,19 @@
 	<artifactId>frankframework-aws</artifactId>
 	<name>Frank!Framework support for AWS</name>
 
+	<!-- One would say this is redundant because it's already in the parent pom... If only our CI would think the same. -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>4.2.10.Final</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>

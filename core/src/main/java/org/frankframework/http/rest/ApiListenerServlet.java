@@ -253,7 +253,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		 */
 
 		try (final CloseableThreadContext.Instance ignored = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName());
-			 final PipeLineSession pipelineSession = new PipeLineSession()) {
+			final PipeLineSession pipelineSession = new PipeLineSession()) {
 
 			pipelineSession.put(PipeLineSession.HTTP_METHOD_KEY, method);
 			pipelineSession.put(PipeLineSession.HTTP_REQUEST_KEY, request);
@@ -267,7 +267,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				ApiPrincipal userPrincipal;
 
 				if (listener.getAuthenticationMethod() != ApiListener.AuthenticationMethods.NONE) {
-					userPrincipal = checkAuthorization(request, response, listener, pipelineSession, remoteUser);
+					userPrincipal = checkAuthorization(request, response, listener, pipelineSession);
 					if (userPrincipal == null) {
 						return;
 					}
@@ -457,106 +457,104 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		return false;
 	}
 
-	private @Nullable ApiPrincipal checkAuthorization(HttpServletRequest request, HttpServletResponse response, ApiListener listener, PipeLineSession pipelineSession, String remoteUser) throws IOException, ServletException {
-		{
-			String authorizationToken = null;
-			Cookie authorizationCookie = null;
-			ApiPrincipal userPrincipal = null;
+	private @Nullable ApiPrincipal checkAuthorization(HttpServletRequest request, HttpServletResponse response, ApiListener listener, PipeLineSession pipelineSession) throws IOException {
+		String authorizationToken = null;
+		Cookie authorizationCookie = null;
+		ApiPrincipal userPrincipal = null;
 
-			switch (listener.getAuthenticationMethod()) {
-				case COOKIE:
-					authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
-					if(authorizationCookie != null) {
-						authorizationToken = authorizationCookie.getValue();
-						authorizationCookie.setPath("/");
+		switch (listener.getAuthenticationMethod()) {
+			case COOKIE:
+				authorizationCookie = CookieUtil.getCookie(request, AUTHENTICATION_COOKIE_NAME);
+				if(authorizationCookie != null) {
+					authorizationToken = authorizationCookie.getValue();
+					authorizationCookie.setPath("/");
+				}
+				break;
+			case HEADER:
+				authorizationToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+				break;
+			case AUTHROLE:
+				List<String> roles = listener.getAuthenticationRoleList();
+				if (roles != null) {
+					boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
+					if (userIsInRole) {
+						userPrincipal = new ApiPrincipal();
 					}
-					break;
-				case HEADER:
-					authorizationToken = request.getHeader(HttpHeaders.AUTHORIZATION);
-					break;
-				case AUTHROLE:
-					List<String> roles = listener.getAuthenticationRoleList();
-					if (roles != null) {
-						boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
-						if (userIsInRole) {
-							userPrincipal = new ApiPrincipal();
-						}
-					}
-					break;
-				case JWT:
-					String authorizationHeader = request.getHeader(listener.getJwtHeader());
-					boolean isNonStandardJwtAuthHeader = !HttpHeaders.AUTHORIZATION.equalsIgnoreCase(listener.getJwtHeader());
-					if (StringUtils.isNotEmpty(authorizationHeader) && (authorizationHeader.startsWith("Bearer") || isNonStandardJwtAuthHeader)) {
-						try {
-							String jwtToken = Strings.CI.removeStart(authorizationHeader, "Bearer ");
-							Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(jwtToken);
-							pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
-							pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
-						} catch (Exception e) {
-							LOG.warn("unable to validate jwt",e);
-							response.sendError(401, e.getMessage());
-							return null;
-						}
-					} else {
-						response.sendError(401, "JWT is not provided as bearer token");
+				}
+				break;
+			case JWT:
+				String authorizationHeader = request.getHeader(listener.getJwtHeader());
+				boolean isNonStandardJwtAuthHeader = !HttpHeaders.AUTHORIZATION.equalsIgnoreCase(listener.getJwtHeader());
+				if (StringUtils.isNotEmpty(authorizationHeader) && (authorizationHeader.startsWith("Bearer") || isNonStandardJwtAuthHeader)) {
+					try {
+						String jwtToken = Strings.CI.removeStart(authorizationHeader, "Bearer ");
+						Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(jwtToken);
+						pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
+						pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
+					} catch (Exception e) {
+						LOG.warn("unable to validate jwt",e);
+						response.sendError(401, e.getMessage());
 						return null;
 					}
-					String requiredClaims = listener.getRequiredClaims();
-					String exactMatchClaims = listener.getExactMatchClaims();
-					String anyMatchClaims = listener.getAnyMatchClaims();
-					JwtSecurityHandler handler = (JwtSecurityHandler)pipelineSession.getSecurityHandler();
-					try {
-						handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
-						if (StringUtils.isNotEmpty(listener.getRoleClaim())) {
-							List<String> authRoles = listener.getAuthenticationRoleList();
-							if (authRoles != null) {
-								boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
-								if (userIsInRole) {
-									userPrincipal = new ApiPrincipal();
-								}
-							} else {
+				} else {
+					response.sendError(401, "JWT is not provided as bearer token");
+					return null;
+				}
+				String requiredClaims = listener.getRequiredClaims();
+				String exactMatchClaims = listener.getExactMatchClaims();
+				String anyMatchClaims = listener.getAnyMatchClaims();
+				JwtSecurityHandler handler = (JwtSecurityHandler)pipelineSession.getSecurityHandler();
+				try {
+					handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
+					if (StringUtils.isNotEmpty(listener.getRoleClaim())) {
+						List<String> authRoles = listener.getAuthenticationRoleList();
+						if (authRoles != null) {
+							boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
+							if (userIsInRole) {
 								userPrincipal = new ApiPrincipal();
 							}
 						} else {
 							userPrincipal = new ApiPrincipal();
 						}
-					} catch (AuthorizationException e) {
-						response.sendError(403, e.getMessage());
-						return null;
+					} else {
+						userPrincipal = new ApiPrincipal();
 					}
-
-					break;
-				default:
-					break;
-			}
-
-			if (authorizationToken != null && cache.containsKey(authorizationToken))
-				userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
-
-			if (userPrincipal == null || !userPrincipal.isLoggedIn()) {
-				cache.remove(authorizationToken);
-				if(authorizationCookie != null) {
-					CookieUtil.addCookie(request, response, authorizationCookie, 0);
+				} catch (AuthorizationException e) {
+					response.sendError(403, e.getMessage());
+					return null;
 				}
 
-				response.setStatus(401);
-				LOG.warn("{} no (valid) credentials supplied", ()->createAbortMessage(remoteUser, 401));
-				return null;
-			}
-
-			if (authorizationCookie != null) {
-				CookieUtil.addCookie(request, response, authorizationCookie, authTTL);
-			}
-
-			if (authorizationToken != null) {
-				userPrincipal.updateExpiry();
-				userPrincipal.setToken(authorizationToken);
-				cache.put(authorizationToken, userPrincipal, authTTL);
-				pipelineSession.put("authorizationToken", authorizationToken);
-			}
-
-			return userPrincipal;
+				break;
+			default:
+				break;
 		}
+
+		if (authorizationToken != null && cache.containsKey(authorizationToken))
+			userPrincipal = (ApiPrincipal) cache.get(authorizationToken);
+
+		if (userPrincipal == null || !userPrincipal.isLoggedIn()) {
+			cache.remove(authorizationToken);
+			if(authorizationCookie != null) {
+				CookieUtil.addCookie(request, response, authorizationCookie, 0);
+			}
+
+			response.setStatus(401);
+			LOG.warn("{} no (valid) credentials supplied", ()->createAbortMessage(request.getRemoteUser(), 401));
+			return null;
+		}
+
+		if (authorizationCookie != null) {
+			CookieUtil.addCookie(request, response, authorizationCookie, authTTL);
+		}
+
+		if (authorizationToken != null) {
+			userPrincipal.updateExpiry();
+			userPrincipal.setToken(authorizationToken);
+			cache.put(authorizationToken, userPrincipal, authTTL);
+			pipelineSession.put("authorizationToken", authorizationToken);
+		}
+
+		return userPrincipal;
 	}
 
 	/**

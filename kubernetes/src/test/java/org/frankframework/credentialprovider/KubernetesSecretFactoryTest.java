@@ -41,6 +41,7 @@ class KubernetesSecretFactoryTest {
 	private static final KubernetesClient client = mock(KubernetesClient.class);
 
 	@BeforeAll
+	@SuppressWarnings("unchecked")
 	public static void setUp() {
 		Secret secret1 = createSecret("alias1", "testUsername1", "testPassword1");
 		Secret secret2 = createSecret("alias2", "testUsername2", "testPassword2");

@@ -82,9 +82,10 @@ public class RoleGroupMapperTest {
 		URL ldifDataUrl = ClassUtils.getResourceURL(ldifDataFile);
 		if (ldifDataUrl == null) {
 			fail("cannot find resource [" + ldifDataFile + "]");
+		} else {
+			inMemoryDirectoryServer.importFromLDIF(true, ldifDataUrl.getPath());
+			inMemoryDirectoryServer.startListening();
 		}
-		inMemoryDirectoryServer.importFromLDIF(true, ldifDataUrl.getPath());
-		inMemoryDirectoryServer.startListening();
 	}
 
 	@AfterAll

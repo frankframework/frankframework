@@ -153,10 +153,10 @@ public class CmisSenderPerformanceTest {
 		System.out.println("numCycles ["+numCycles+"] total ["+total+"] average ["+average+"]");
 	}
 
-    public void testParallel(int numParallel) throws Exception {
-    	System.out.println("start testing with ["+numParallel+"] threads...");
-		long t0=System.currentTimeMillis();
-    	ArrayList<CmisSenderTester> threads = new ArrayList<>();
+	public void testParallel(int numParallel) throws Exception {
+		System.out.println("start testing with [" + numParallel + "] threads...");
+		long t0 = System.currentTimeMillis();
+		ArrayList<CmisSenderTester> threads = new ArrayList<>();
 		for (int i=0;i<numParallel;i++) {
 			threads.add(new CmisSenderTester());
 		}
@@ -188,51 +188,51 @@ public class CmisSenderPerformanceTest {
 		System.out.println(result);
 		results.append(result).append("\n");
 
-    }
+	}
 
-    @Test
-    public void testParallel() throws Exception {
-    	System.out.println("warming up...");
-    	testGet();
-    	testGet();
-    	testGet();
-    	testParallel(numParallel);
-    }
+	@Test
+	public void testParallel() throws Exception {
+		System.out.println("warming up...");
+		testGet();
+		testGet();
+		testGet();
+		testParallel(numParallel);
+	}
 
-    @Test
-    public void testRampUp() throws Exception {
-    	System.out.println("warming up...");
-    	testGet();
-    	testGet();
-    	testGet();
-    	results.append("msgsize").append(separator).append("#threads").append(separator).append("totcycles").append(separator).append("totalTime").append(separator).append("totalTimeTesting\n");
-    	for (int i=0; i<threadCount.length; i++) {
-        	testParallel(threadCount[i]);
-    	}
-    	System.out.println(results);
-    }
+	@Test
+	public void testRampUp() throws Exception {
+		System.out.println("warming up...");
+		testGet();
+		testGet();
+		testGet();
+		results.append("msgsize").append(separator).append("#threads").append(separator).append("totcycles").append(separator).append("totalTime").append(
+				separator).append("totalTimeTesting\n");
+		for (int i = 0; i < threadCount.length; i++) {
+			testParallel(threadCount[i]);
+		}
+		System.out.println(results);
+	}
 
-
-    private class CmisSenderTester extends Thread {
+	private class CmisSenderTester extends Thread {
 
 		private long total;
-		private int cycles=0;
+		private int cycles = 0;
 
-    	@Override
+		@Override
 		public void run() {
-    		long t0=System.currentTimeMillis();
+			long t0 = System.currentTimeMillis();
 			try {
-				for (int i=0;i<numCycles;i++) {
+				for (int i = 0; i < numCycles; i++) {
 					cycles++;
 					testGet();
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			long t1=System.currentTimeMillis();
-			total=t1-t0;
+			long t1 = System.currentTimeMillis();
+			total = t1 - t0;
 		}
 
-    }
+	}
 
 }

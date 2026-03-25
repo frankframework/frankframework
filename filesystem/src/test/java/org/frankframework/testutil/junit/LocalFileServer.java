@@ -44,7 +44,6 @@ import org.filesys.smb.server.SMBConfigSection;
 import org.filesys.smb.server.SMBServer;
 import org.filesys.smb.server.SMBSrvSession;
 import org.filesys.smb.server.disk.original.JavaFileDiskDriver;
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.element.GenericConfigElement;
 
@@ -59,7 +58,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Niels Meijer
  */
-public class LocalFileServer implements AutoCloseable, CloseableResource {
+public class LocalFileServer implements AutoCloseable {
 	private final Logger log = LogUtil.getLogger(this);
 
 	// Default memory pool settings
