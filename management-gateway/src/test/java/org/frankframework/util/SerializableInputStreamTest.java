@@ -69,7 +69,7 @@ public class SerializableInputStreamTest {
 			out.writeObject(in);
 			return baos.toByteArray();
 		} catch (IOException e) {
-			log.error("problem serializing session attribute class [{}]. Value [{}]", in.getClass().getName(), ToStringBuilder.reflectionToString(in, ToStringStyle.MULTI_LINE_STYLE));
+			log.error("problem serializing session attribute class [{}]. Value [{}]", in.getClass().getName(), ToStringBuilder.reflectionToString(in, ToStringStyle.MULTI_LINE_STYLE), e);
 			throw e;
 		}
 	}
