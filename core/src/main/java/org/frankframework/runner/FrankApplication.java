@@ -33,7 +33,7 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -100,7 +100,7 @@ public class FrankApplication {
 		if (System.getProperty("log.dir") == null) {
 			String foundLogDir = getLogDir(projectDir);
 			System.setProperty("log.dir", foundLogDir);
-			LogUtil.getLogger("APPLICATION").info("set log.dir to [{}]", foundLogDir);
+			getApplicationLogger().info("set log.dir to [{}]", foundLogDir);
 		}
 
 		disableSpringBootLogging();
@@ -109,7 +109,7 @@ public class FrankApplication {
 		// Make the console available on the root endpoint.
 		System.setProperty("servlet.IAF-GUI.urlMapping", "/*,/iaf/gui/*");
 
-		LogUtil.getLogger("APPLICATION").info("using project.dir [{}]", projectDir);
+		getApplicationLogger().info("using project.dir [{}]", projectDir);
 
 		// Configure application server type
 		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
@@ -146,7 +146,7 @@ public class FrankApplication {
 			try {
 				CredentialFactory.createInstance(new NoopCredentialFactory());
 			} catch (Exception e) {
-				LogUtil.getLogger("APPLICATION").fatal("unable to install  NoopCredentialFactory", e);
+				getApplicationLogger().fatal("unable to install  NoopCredentialFactory", e);
 			}
 			return;
 		}
@@ -165,6 +165,10 @@ public class FrankApplication {
 		System.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 		System.setProperty("credentialFactory.map.properties", url.toString().replace("\\", "/"));
 		CredentialFactory.getInstance();
+	}
+
+	private static Logger getApplicationLogger() {
+		return LogUtil.getLogger("APPLICATION");
 	}
 
 	public static class NoopCredentialFactory implements ISecretProvider {
@@ -328,7 +332,7 @@ public class FrankApplication {
 		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 			FrankApplicationInitializer init = new FrankApplicationInitializer();
 			init.onStartup(servletContext);
-			LogManager.getLogger("APPLICATION").info("Started Frank!Application");
+			getApplicationLogger().info("Started Frank!Application");
 		}
 	}
 
@@ -340,10 +344,10 @@ public class FrankApplication {
 				if (ClassUtils.isClassPresent("org.frankframework.ladybug.runner.LadybugWarInitializer")) {
 					SpringBootServletInitializer initializer = ClassUtils.newInstance("org.frankframework.ladybug.runner.LadybugWarInitializer", SpringBootServletInitializer.class);
 					initializer.onStartup(servletContext);
-					LogManager.getLogger("APPLICATION").info("Started Ladybug");
+					getApplicationLogger().info("Started Ladybug");
 				}
 			} catch (Exception e) {
-				LogManager.getLogger("APPLICATION").error("Failed to start Ladybug", e);
+				getApplicationLogger().error("Failed to start Ladybug", e);
 			}
 		}
 	}
@@ -355,10 +359,10 @@ public class FrankApplication {
 				if (ClassUtils.isClassPresent("org.frankframework.console.runner.ConsoleWarInitializer")) {
 					SpringBootServletInitializer initializer = ClassUtils.newInstance("org.frankframework.console.runner.ConsoleWarInitializer", SpringBootServletInitializer.class);
 					initializer.onStartup(servletContext);
-					LogManager.getLogger("APPLICATION").info("Started Console");
+					getApplicationLogger().info("Started Console");
 				}
 			} catch (Exception e) {
-				LogManager.getLogger("APPLICATION").error("Failed to start Console", e);
+				getApplicationLogger().error("Failed to start Console", e);
 			}
 		}
 	}
@@ -372,10 +376,10 @@ public class FrankApplication {
 				if (ClassUtils.isClassPresent("org.apache.tomcat.websocket.server.WsContextListener")) {
 					ServletContextListener initializer = ClassUtils.newInstance("org.apache.tomcat.websocket.server.WsContextListener", ServletContextListener.class);
 					initializer.contextInitialized(new ServletContextEvent(servletContext));
-					LogManager.getLogger("APPLICATION").info("Enabled WebSockets");
+					getApplicationLogger().info("Enabled WebSockets");
 				}
 			} catch (Exception e) {
-				LogManager.getLogger("APPLICATION").error("Unable to enable WebSockets", e);
+				getApplicationLogger().error("Unable to enable WebSockets", e);
 			}
 		}
 	}
@@ -413,7 +417,7 @@ public class FrankApplication {
 		@Override
 		public void onApplicationEvent(ApplicationFailedEvent event) {
 			log.fatal("unable to start application", event.getException());
-			LogUtil.getLogger("APPLICATION").fatal("unable to start application: {}", () -> getRootCause(event.getException()).getMessage());
+			getApplicationLogger().fatal("unable to start application: {}", () -> getRootCause(event.getException()).getMessage());
 
 			System.exit(1); // Terminate the JVM
 		}
