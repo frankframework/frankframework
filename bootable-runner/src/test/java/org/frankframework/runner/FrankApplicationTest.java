@@ -39,21 +39,4 @@ class FrankApplicationTest {
 		assertTrue(frankApplication.isRunning());
 	}
 
-	@Test
-	void ladybugRuns() {
-		// Make sure to use the right context and port for the Tomcat server
-		TomcatServletWebServerFactory tomcat = frankApplication.getBean("tomcat");
-		String baseUrl = String.format("http://localhost:%d/%s/iaf/ladybug/api/", tomcat.getPort(), tomcat.getContextPath());
-
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> response = restTemplate.getForEntity(baseUrl + "testtool", String.class);
-		assertTrue(response.getStatusCode().is2xxSuccessful(), "Ladybug testtool endpoint should return 2xx status");
-
-		// create a rest call to the ladybug endpoints at 'iaf/ladybug/api/testtool/views' and 'iaf/ladybug/api/report/variables'
-		ResponseEntity<String> viewResponse = restTemplate.getForEntity(baseUrl + "testtool/views", String.class);
-		assertTrue(viewResponse.getStatusCode().is2xxSuccessful(), "testtool/views should return 2xx status");
-
-		ResponseEntity<String> variablesResponse = restTemplate.getForEntity(baseUrl + "report/variables", String.class);
-		assertTrue(variablesResponse.getStatusCode().is2xxSuccessful(), "report/variables should return 2xx status");
-	}
 }

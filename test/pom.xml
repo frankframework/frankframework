@@ -44,6 +44,7 @@
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>bootable-runner</artifactId>
+			<scope>optional</scope>
 		</dependency>
 
 		<!-- provided scoped dependencies -->
