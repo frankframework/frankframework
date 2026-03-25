@@ -165,6 +165,9 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	public void afterPropertiesSet() throws Exception {
 		if (getParent() instanceof Adapter contextAdapter) {
 			adapter = contextAdapter;
+
+			// Propagate ClassLoader
+			setClassLoader(adapter.getConfigurationClassLoader());
 		} else {
 			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
 		}
