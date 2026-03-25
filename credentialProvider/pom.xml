@@ -119,7 +119,7 @@
 
 		<!-- Needed for the Jackson ObjectMapper in the test -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
+			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<scope>test</scope>
 		</dependency>

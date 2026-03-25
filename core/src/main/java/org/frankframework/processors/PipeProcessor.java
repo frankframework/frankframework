@@ -32,7 +32,7 @@ public interface PipeProcessor {
 
 	@NonNull
 	PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException;
+
 	@NonNull
 	PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException;
-
 }

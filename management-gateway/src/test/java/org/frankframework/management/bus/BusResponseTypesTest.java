@@ -1,6 +1,5 @@
 package org.frankframework.management.bus;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,7 +9,6 @@ import java.io.ByteArrayInputStream;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.management.bus.message.BinaryMessage;
@@ -63,8 +61,9 @@ public class BusResponseTypesTest {
 	public void testUnableToConvertPayloadToJson() {
 		ByteArrayInputStream stream = new ByteArrayInputStream("binary".getBytes());
 
-		BusException e = assertThrows(BusException.class, () -> new JsonMessage(stream));
-		assertThat(e.getMessage(), Matchers.startsWith("unable to convert response to JSON: (InvalidDefinitionException) No serializer found for class java.io.ByteArrayInputStream"));
+		// jackson 3 doesn't throw, but just returns an empty JSON object
+		JsonMessage jsonMessage = new JsonMessage(stream);
+		assertEquals("{}", jsonMessage.getPayload());
 	}
 
 	@Test

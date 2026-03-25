@@ -31,10 +31,9 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.messaging.Message;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
+import tools.jackson.databind.ObjectMapper;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;

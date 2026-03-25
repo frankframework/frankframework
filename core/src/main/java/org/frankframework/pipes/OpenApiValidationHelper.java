@@ -21,8 +21,6 @@ import java.io.UncheckedIOException;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.Error;
 import com.networknt.schema.InputFormat;
 import com.networknt.schema.Schema;
@@ -33,6 +31,9 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -53,9 +54,10 @@ public class OpenApiValidationHelper {
 		this.operation = operation;
 
 		// This setting is important to make sure that resolving of references works correctly
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
-		this.objectMapper = objectMapper;
+		this.objectMapper = JsonMapper.builder()
+				.changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+				.changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL))
+				.build();
 	}
 
 	/**

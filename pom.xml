@@ -87,7 +87,7 @@
 		<junit.excludedTags />
 		<junit.includedTags />
 
-		<jackson.version>2.21.2</jackson.version>
+		<jackson.version>3.1.0</jackson.version>
 		<cxf.version>4.2.0</cxf.version>
 		<spring.version>7.0.6</spring.version>
 		<spring-security.version>7.0.4</spring-security.version>
@@ -185,7 +185,7 @@
 			</dependency>
 
 			<dependency>
-				<groupId>com.fasterxml.jackson</groupId>
+				<groupId>tools.jackson</groupId>
 				<artifactId>jackson-bom</artifactId>
 				<version>${jackson.version}</version>
 				<type>pom</type>
