@@ -31,6 +31,12 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>bootable-runner</artifactId>
+			<scope>optional</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

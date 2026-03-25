@@ -67,6 +67,7 @@ public class IafTestInitializer {
 		FrankApplication frankApp = new FrankApplication();
 		// Find and configure the configurations
 		setConfigurationsDirectory(frankApp.getProjectDir());
+		System.setProperty("server.contextPath", "/iaf-test");
 
 		// Configure JMS
 		String jmsProvider = System.getProperty("jms.provider.default");
