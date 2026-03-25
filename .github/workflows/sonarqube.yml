@@ -7,31 +7,8 @@ on:
   push:
     branches:
       - master
-      - '[0-9]+.[0-9]+-release'
-      - 'release/[0-9]+.[0-9]+'
-    paths-ignore:
-      - "**.md"
-      - "**.yml"
-      - "**.txt"
-      - "**.png"
-      - "**.toml"
-      - ".github/**"
-      - "!.github/workflows/*.yml"
-      - "docker/**"
   pull_request:
-    branches:
-      - master
-      - '[0-9]+.[0-9]+-release'
-      - 'release/[0-9]+.[0-9]+'
-    paths-ignore:
-      - "**.md"
-      - "**.yml"
-      - "**.txt"
-      - "**.png"
-      - "**.toml"
-      - ".github/**"
-      - "!.github/workflows/*.yml"
-      - "docker/**"
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -84,7 +61,14 @@ jobs:
             ~/.sonar/cache
           key: sonar-cache-${{ github.base_ref }}
 
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests -Dsonar.projectKey=ibissource_iaf
+        run: ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -DskipTests -Dsonar.projectKey=ibissource_iaf
