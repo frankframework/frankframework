@@ -122,7 +122,7 @@
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.29.0</rabbitmq.driver.version>
-		<rabbitmq.jms.version>3.5.0</rabbitmq.jms.version>
+		<rabbitmq.jms.version>3.6.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.39.2</aws.java.sdk.version>
 
