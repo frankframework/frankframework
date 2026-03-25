@@ -25,6 +25,12 @@
 			<version>${h2.driver.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>bootable-runner</artifactId>
+			<scope>optional</scope>
+		</dependency>
+
 		<!-- This should be the only required test dependency to run IbisTester -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>

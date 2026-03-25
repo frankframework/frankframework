@@ -41,6 +41,10 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-console-backend</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>bootable-runner</artifactId>
+		</dependency>
 
 		<!-- provided scoped dependencies -->
 		<dependency>

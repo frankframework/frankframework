@@ -285,6 +285,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
+				<artifactId>bootable-runner</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-security</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -1613,6 +1618,7 @@
 				<module>test</module>
 				<module>example</module>
 
+				<module>bootable-runner</module>
 				<module>build-templates</module>
 			</modules>
 		</profile>

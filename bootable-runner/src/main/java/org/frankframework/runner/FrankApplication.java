@@ -33,6 +33,7 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.jspecify.annotations.NonNull;
@@ -43,6 +44,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
@@ -69,7 +71,6 @@ import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -168,7 +169,7 @@ public class FrankApplication {
 	}
 
 	private static Logger getApplicationLogger() {
-		return LogUtil.getLogger("APPLICATION");
+		return LogManager.getLogger("APPLICATION");
 	}
 
 	public static class NoopCredentialFactory implements ISecretProvider {
@@ -207,9 +208,9 @@ public class FrankApplication {
 		applicationContext = app.run(args);
 
 		// Would be nice to log the port in use?
-//		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
-//		String baseUrl = String.format("http://localhost:%d%s/", tomcat.getPort(), tomcat.getContextPath());
-//		LogUtil.getLogger("APPLICATION").info("Application running on [{}]", baseUrl);
+		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
+		String baseUrl = String.format("http://localhost:%d%s/", tomcat.getPort(), tomcat.getContextPath());
+		getApplicationLogger().info("Application running on [{}]", baseUrl);
 
 		// The application has started, preemptively clear the credentialFactory properties.
 		System.clearProperty("credentialFactory.class");

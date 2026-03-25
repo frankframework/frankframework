@@ -647,13 +647,6 @@
 			<version>78.3</version>
 		</dependency>
 
-		<!-- only here for easy startup, please don't use classes from this dependency... -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot</artifactId>
-			<optional>true</optional>
-		</dependency>
-
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
