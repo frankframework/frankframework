@@ -59,7 +59,8 @@ public class FrankPlugin extends PipeLine {
 		PluginDescriptor descriptor = plugin.getDescriptor();
 		setDisplayName("Plugin [%s:%s]".formatted(descriptor.getPluginId(), descriptor.getVersion()));
 
-		super.afterPropertiesSet();
+		// We can't call super.afterPropertiesSet here because that would overwrite the classloader.
+		refresh();
 
 		// Ensure the ConfigurationDigester bean exists.
 		configurationDigester = SpringUtils.createBean(this, ConfigurationDigester.class);
