@@ -15,8 +15,11 @@
  */
 package org.frankframework.pipes;
 
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 
 import com.networknt.schema.ExecutionContext;
@@ -29,11 +32,23 @@ import lombok.extern.log4j.Log4j2;
  * like +0100 instead of +01:00. This class is a custom implementation of the 'date-time' format that first tries to parse the value
  * using the strict RFC 3339 format, and if that fails, it falls back to a more lenient format that accepts offsets without a colon.
  *
- * @see <a href="https://github.com/networknt/json-schema-validator/blob/master/doc/custom-dialect.md">Custom Dialect Documentation</a>
  * @author evandongen
+ * @see <a href="https://github.com/networknt/json-schema-validator/blob/master/doc/custom-dialect.md">Custom Dialect Documentation</a>
  */
 @Log4j2
 public class OpenApiLenientDateTimeFormat implements Format {
+	private static final DateTimeFormatter FALLBACK_FORMATTER;
+
+	static {
+		// Base the format off of DateTimeFormatter.ISO_OFFSET_DATE_TIME, but make it lenient for the offset part to accept +0100 instead of +01:00
+		FALLBACK_FORMATTER = new DateTimeFormatterBuilder()
+				.parseCaseInsensitive()
+				.append(ISO_LOCAL_DATE_TIME)
+				.parseLenient()
+				.appendOffset("+HHmm", "Z")
+				.parseStrict()
+				.toFormatter();
+	}
 
 	@Override
 	public String getName() {
@@ -56,8 +71,7 @@ public class OpenApiLenientDateTimeFormat implements Format {
 
 		// 2. Fallback: accept +0100 (no colon in offset)
 		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-			OffsetDateTime.parse(value, formatter);
+			OffsetDateTime.parse(value, FALLBACK_FORMATTER);
 
 			return true;
 		} catch (DateTimeParseException ex) {

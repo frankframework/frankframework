@@ -1,9 +1,9 @@
 package org.frankframework.pipes;
 
 import static org.frankframework.core.PipeLineSession.EXIT_CODE_CONTEXT_KEY;
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.stream.Stream;
@@ -147,6 +147,8 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 		pipe.setOpenApiDefinition("/OpenApiValidator/petstore-openapi.json");
 		pipe.setPath("/pets");
 		pipe.setMethod("post");
+		pipe.setUseAsOutputValidator(true);
+
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile("/OpenApiValidator/savedPet.json");

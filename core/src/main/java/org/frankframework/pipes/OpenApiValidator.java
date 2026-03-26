@@ -173,7 +173,7 @@ public class OpenApiValidator extends AbstractValidator {
 	}
 
 	/**
-	 * Stores the validation errors, if any, in the sessionKey with this value. Defaults to 'failureReson'
+	 * Stores the validation errors, if any, in the sessionKey with this value. Defaults to 'failureReason'
 	 *
 	 * @ff.default failureReason
 	 */

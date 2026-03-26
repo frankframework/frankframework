@@ -135,8 +135,13 @@ public class OpenApiValidationHelper {
 		if (content.containsKey("application/json")) {
 			 schema = content.get("application/json").getSchema();
 		} else {
-			// try to get */**
+			// try to get */*
 			schema = content.get("*/*").getSchema();
+		}
+
+		if (schema == null) {
+			throw new IllegalStateException("Could not find 'application/json' or '*/*' content type in OpenAPI definition. " +
+					"Available content types: %s".formatted(content.keySet()));
 		}
 
 		JsonNode schemaNode = objectMapper.valueToTree(schema);
