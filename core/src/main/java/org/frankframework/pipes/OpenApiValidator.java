@@ -70,7 +70,7 @@ public class OpenApiValidator extends AbstractValidator {
 		try {
 			Operation operation = getOperation();
 
-			openApiValidationHelper = new OpenApiValidationHelper(operation);
+			openApiValidationHelper = new OpenApiValidationHelper(operation, useAsOutputValidator);
 
 		} catch (IOException e) {
 			throw new ConfigurationException("unable to configure OpenApiValidator", e);
@@ -113,13 +113,13 @@ public class OpenApiValidator extends AbstractValidator {
 				messageToValidate = new Message("{}");
 			}
 
-			SchemaValidationResult result = openApiValidationHelper.validateMessage(messageToValidate, responseMode, session);
+			SchemaValidationResult result = openApiValidationHelper.validateMessage(messageToValidate, session);
 
 			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 				session.put(getReasonSessionKey(), result.validationMessages.toString());
 			}
 
-			return determineForward(result.result, responseMode, result.validationMessages::toString);
+			return determineForward(result.result, useAsOutputValidator, result.validationMessages::toString);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot validate", e);
 		}
@@ -173,7 +173,7 @@ public class OpenApiValidator extends AbstractValidator {
 	}
 
 	/**
-	 * If set: creates a sessionKey to store any errors when validating the json output
+	 * Stores the validation errors, if any, in the sessionKey with this value. Defaults to 'failureReson'
 	 *
 	 * @ff.default failureReason
 	 */
@@ -182,10 +182,10 @@ public class OpenApiValidator extends AbstractValidator {
 	}
 
 	/**
-	 * Mark this Validator as configured for mixed validation, meaning it will be used for both request and response validation. Depending solely on the
-	 * responseRoot being set is not sufficient, since in case of OpenApiValidator, the resposeRoot is not used, but it is still a mixed validator.
+	 * Set this validator to be used as an output validator. Please note that 'mixed' validation doesn't work well, and you need to define
+	 * both an input and an output validator instance of this type with this value set to true for the output validator and false (default) for the input
+	 * validator if you want to validate both input and output.
 	 *
-	 * @see {@code isConfiguredForMixedValidation()} which overrides this in the super class to determine whether this is a mixed validator or not.
 	 * @ff.default false
 	 */
 	public void setUseAsOutputValidator(boolean useAsOutputValidator) {
@@ -194,7 +194,7 @@ public class OpenApiValidator extends AbstractValidator {
 
 	@Override
 	protected boolean isConfiguredForMixedValidation() {
-		return useAsOutputValidator;
+		return false;
 	}
 
 	record SchemaValidationResult(ValidationResult result, List<Error> validationMessages) {

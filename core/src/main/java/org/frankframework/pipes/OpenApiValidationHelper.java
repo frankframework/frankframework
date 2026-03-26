@@ -15,7 +15,6 @@
 */
 package org.frankframework.pipes;
 
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
@@ -27,6 +26,7 @@ import com.networknt.schema.Error;
 import com.networknt.schema.InputFormat;
 import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.dialect.Dialect;
 import com.networknt.schema.dialect.Dialects;
 
 import io.swagger.v3.oas.models.Operation;
@@ -45,30 +45,40 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
  * @author evandongen
  */
 public class OpenApiValidationHelper {
-	private final SchemaRegistry schemaRegistry = SchemaRegistry.withDefaultDialect(Dialects.getDraft202012());
+	private final SchemaRegistry schemaRegistry;
 	private final ObjectMapper objectMapper;
 	private final Operation operation;
+	private final boolean useAsOutputValidator;
 
-	public OpenApiValidationHelper(Operation operation) {
+	public OpenApiValidationHelper(Operation operation, boolean useAsOutputValidator) {
 		this.operation = operation;
+		this.useAsOutputValidator = useAsOutputValidator;
+		this.schemaRegistry = createCustomSchemaRegistry();
 
 		// This setting is important to make sure that resolving of references works correctly
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
-		this.objectMapper = objectMapper;
+		this.objectMapper = new ObjectMapper()
+				.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+	}
+
+	private SchemaRegistry createCustomSchemaRegistry() {
+		Dialect dialect = Dialect.builder(Dialects.getDraft202012())
+				.format(new OpenApiLenientDateTimeFormat())
+				.build();
+
+		return SchemaRegistry.withDialect(dialect);
 	}
 
 	/**
 	 * Determine whether to validate as input or output and calls the appropriate method. For response validation, the schema to validate against can be
 	 * determined based on the exit code in the session, and the path and method defined in the pipe configuration.
 	 */
-	OpenApiValidator.SchemaValidationResult validateMessage(Message message, boolean responseMode, PipeLineSession session) throws IOException {
-		Schema jsonSchema = resolveJsonSchema(operation, responseMode, session);
+	OpenApiValidator.SchemaValidationResult validateMessage(Message message, PipeLineSession session) throws IOException {
+		Schema jsonSchema = resolveJsonSchema(operation, session);
 
 		try {
 			List<Error> validationMessages = jsonSchema.validate(
 					message.asString(), InputFormat.JSON,
-					executionContext -> executionContext.executionConfig(b -> b.formatAssertionsEnabled(true))
+					executionContext -> executionContext.executionConfig(builder -> builder.formatAssertionsEnabled(true))
 			);
 
 			ValidationResult result = validationMessages.isEmpty() ? ValidationResult.VALID : ValidationResult.INVALID;
@@ -84,8 +94,8 @@ public class OpenApiValidationHelper {
 		}
 	}
 
-	private Schema resolveJsonSchema(Operation operation, boolean responseMode, PipeLineSession session) {
-		if (responseMode) {
+	private Schema resolveJsonSchema(Operation operation, PipeLineSession session) {
+		if (useAsOutputValidator) {
 			return getResponseSchema(operation, session.getString(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 		}
 
@@ -97,6 +107,10 @@ public class OpenApiValidationHelper {
 	 * If neither is found, an exception will be thrown when trying to get the schema from the null response.
 	 */
 	private Schema getResponseSchema(Operation operation, String exitCode) {
+		if (exitCode == null) {
+			exitCode = "200";
+		}
+
 		ApiResponse apiResponse = operation.getResponses().get(exitCode);
 
 		if (apiResponse == null) {
@@ -116,7 +130,15 @@ public class OpenApiValidationHelper {
 	}
 
 	private Schema getJsonSchemaFromContent(Content content) {
-		io.swagger.v3.oas.models.media.Schema<?> schema = content.get("application/json").getSchema();
+		io.swagger.v3.oas.models.media.Schema<?> schema;
+
+		if (content.containsKey("application/json")) {
+			 schema = content.get("application/json").getSchema();
+		} else {
+			// try to get */**
+			schema = content.get("*/*").getSchema();
+		}
+
 		JsonNode schemaNode = objectMapper.valueToTree(schema);
 
 		return schemaRegistry.getSchema(schemaNode);

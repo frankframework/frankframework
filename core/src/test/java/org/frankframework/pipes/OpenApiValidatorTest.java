@@ -1,6 +1,7 @@
 package org.frankframework.pipes;
 
 import static org.frankframework.core.PipeLineSession.EXIT_CODE_CONTEXT_KEY;
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,7 +15,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -161,6 +161,7 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 		pipe.setOpenApiDefinition("/OpenApiValidator/petstore-openapi.json");
 		pipe.setPath("/pets");
 		pipe.setMethod("post");
+		pipe.setUseAsOutputValidator(true);
 
 		// Define a forward for the outputFailure case, so that instead of throwing an exception, the pipe will forward to "outputFailure" and put the reason in the session
 		pipe.addForward(new PipeForward("outputFailure", null));
@@ -177,7 +178,7 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 	}
 
 	@Test
-	@DisplayName("Test that the response validator is correctly wrapped and can be retrieved by setting useAsOutputValidator to true")
+	@DisplayName("Test that the response validator logic is not wrapping the current validator since we rely on setUseAsOutputValidator")
 	void testResponseValidator() throws ConfigurationException {
 		pipe.setOpenApiDefinition("/OpenApiValidator/petstore-openapi.json");
 		pipe.setPath("/pets");
@@ -186,9 +187,6 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 
 		configureAndStartPipe();
 
-		IValidator responseValidator = pipe.getResponseValidator();
-		assertEquals(AbstractValidator.ResponseValidatorWrapper.class, responseValidator.getClass());
-
-		assertEquals("ResponseValidator of OpenApiValidator under test", responseValidator.getName());
+		assertNull(pipe.getResponseValidator());
 	}
 }
