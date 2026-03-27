@@ -186,3 +186,5 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         sonar.projectKey: frankframework
         sonar.organization: frank-framework
+      with:
+        scanMetadataReportFile: target/sonar/report-task.txt
