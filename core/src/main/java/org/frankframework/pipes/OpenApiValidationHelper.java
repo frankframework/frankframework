@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,21 +110,13 @@ public class OpenApiValidationHelper {
 	 * If neither is found, an exception will be thrown when trying to get the schema from the null response.
 	 */
 	private Schema getResponseSchema(Operation operation, String exitCode) {
-		ApiResponse apiResponse = operation.getResponses().get(determineExitCode(exitCode));
+		ApiResponse apiResponse = operation.getResponses().get(StringUtils.defaultIfBlank(exitCode, DEFAULT_EXIT_CODE));
 
 		if (apiResponse == null) {
 			apiResponse = operation.getResponses().get("default");
 		}
 
 		return getJsonSchemaFromContent(apiResponse.getContent());
-	}
-
-	private String determineExitCode(String exitCode) {
-		if (exitCode == null) {
-			return DEFAULT_EXIT_CODE;
-		}
-
-		return exitCode;
 	}
 
 	/**
