@@ -24,47 +24,47 @@ import org.junit.jupiter.api.Test;
 import com.networknt.schema.ExecutionContext;
 
 class OpenApiLenientDateTimeFormatTest {
-    private OpenApiLenientDateTimeFormat format;
-    private ExecutionContext ctx;
+	private OpenApiLenientDateTimeFormat format;
+	private ExecutionContext ctx;
 
-    @BeforeEach
-    void setUp() {
-        format = new OpenApiLenientDateTimeFormat();
-        ctx = null; // Not used in current implementation
-    }
+	@BeforeEach
+	void setUp() {
+		format = new OpenApiLenientDateTimeFormat();
+		ctx = null; // Not used in current implementation
+	}
 
-    @Test
-    void testStrictRfc3339WithColonNoNanos() {
-        assertTrue(format.matches(ctx, "2023-03-26T12:34:56+01:00"));
-    }
+	@Test
+	void testStrictRfc3339WithColonNoNanos() {
+		assertTrue(format.matches(ctx, "2023-03-26T12:34:56+01:00"));
+	}
 
-    @Test
-    void testStrictRfc3339WithColonWithNanos() {
-        assertTrue(format.matches(ctx, "2023-03-26T12:34:56.123456789+01:00"));
-        assertTrue(format.matches(ctx, "2023-03-26T12:34:56.123+01:00"));
-    }
+	@Test
+	void testStrictRfc3339WithColonWithNanos() {
+		assertTrue(format.matches(ctx, "2023-03-26T12:34:56.123456789+01:00"));
+		assertTrue(format.matches(ctx, "2023-03-26T12:34:56.123+01:00"));
+	}
 
-    @Test
-    void testFallbackNoColonNoNanos() {
-        assertTrue(format.matches(ctx, "2023-03-26T12:34:56+0100"));
-    }
+	@Test
+	void testFallbackNoColonNoNanos() {
+		assertTrue(format.matches(ctx, "2023-03-26T12:34:56+0100"));
+	}
 
-    @Test
-    void testFallbackNoColonWithNanos() {
-        assertTrue(format.matches(ctx, "2023-03-26T12:34:56.123456789+0100"));
-        assertTrue(format.matches(ctx, "2023-03-26T12:34:56.123+0100"));
-    }
+	@Test
+	void testFallbackNoColonWithNanos() {
+		assertTrue(format.matches(ctx, "2023-03-26T12:34:56.123456789+0100"));
+		assertTrue(format.matches(ctx, "2023-03-26T12:34:56.123+0100"));
+	}
 
-    @Test
-    void testInvalidCases() {
-        assertFalse(format.matches(ctx, "2023-03-26T12:34:56")); // No offset
-        assertFalse(format.matches(ctx, "2023-03-26 12:34:56+01:00")); // Space instead of T
-        assertFalse(format.matches(ctx, "not-a-date"));
-    }
+	@Test
+	void testInvalidCases() {
+		assertFalse(format.matches(ctx, "2023-03-26T12:34:56")); // No offset
+		assertFalse(format.matches(ctx, "2023-03-26 12:34:56+01:00")); // Space instead of T
+		assertFalse(format.matches(ctx, "not-a-date"));
+	}
 
-    @Test
-    void testNullValue() {
-        assertTrue(format.matches(ctx, null));
-    }
+	@Test
+	void testNullValue() {
+		assertTrue(format.matches(ctx, null));
+	}
 }
 

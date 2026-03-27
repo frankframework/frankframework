@@ -130,11 +130,11 @@ public class OpenApiValidationHelper {
 	}
 
 	private Schema getJsonSchemaFromContent(Content content) {
-		io.swagger.v3.oas.models.media.Schema<?> schema;
+		io.swagger.v3.oas.models.media.Schema<?> schema = null;
 
 		if (content.containsKey("application/json")) {
 			 schema = content.get("application/json").getSchema();
-		} else {
+		} else if (content.containsKey("*/*")) {
 			// try to get */*
 			schema = content.get("*/*").getSchema();
 		}
