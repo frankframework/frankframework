@@ -127,7 +127,7 @@ jobs:
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf -Dsonar.organization=frank-framework
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad # v5
@@ -178,3 +178,11 @@ jobs:
         path: |
           ~/.sonar/cache
         key: sonar-cache-${{ github.base_ref }}
+
+    # Check the Quality Gate status.
+    - name: SonarQube Quality Gate check
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        sonar.projectKey: ibissource_iaf
+        sonar.organization: frank-framework
