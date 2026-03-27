@@ -79,6 +79,11 @@
 			<artifactId>frankframework-ladybug-debugger</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>bootable-runner</artifactId>
+			<scope>optional</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>com.rabbitmq</groupId>
@@ -391,6 +396,28 @@
 				<configuration>
 					<skip>true</skip>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-embed-tomcat-lib-ban</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<excludes>
+										<exclude>org.apache.tomcat.embed:*:*:jar:compile</exclude>
+									</excludes>
+									<message>Do not include embedded Tomcat</message>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

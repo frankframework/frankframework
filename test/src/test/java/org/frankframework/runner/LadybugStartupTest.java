@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 @Tag("slow")
-class FrankApplicationTest {
+class LadybugStartupTest {
 
 	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private static FrankApplication frankApplication;
