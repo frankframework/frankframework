@@ -2,6 +2,8 @@ name: SonarQube Analyze
 
 env:
   JDK_VERSION: 25
+  sonar.projectKey: ibissource_iaf
+  sonar.organization: frank-framework
 
 on:
   push:
