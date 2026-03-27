@@ -45,6 +45,7 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
  * @author evandongen
  */
 public class OpenApiValidationHelper {
+	public static final String DEFAULT_EXIT_CODE = "200";
 	private final SchemaRegistry schemaRegistry;
 	private final ObjectMapper objectMapper;
 	private final Operation operation;
@@ -107,17 +108,21 @@ public class OpenApiValidationHelper {
 	 * If neither is found, an exception will be thrown when trying to get the schema from the null response.
 	 */
 	private Schema getResponseSchema(Operation operation, String exitCode) {
-		if (exitCode == null) {
-			exitCode = "200";
-		}
-
-		ApiResponse apiResponse = operation.getResponses().get(exitCode);
+		ApiResponse apiResponse = operation.getResponses().get(determineExitCode(exitCode));
 
 		if (apiResponse == null) {
 			apiResponse = operation.getResponses().get("default");
 		}
 
 		return getJsonSchemaFromContent(apiResponse.getContent());
+	}
+
+	private String determineExitCode(String exitCode) {
+		if (exitCode == null) {
+			return DEFAULT_EXIT_CODE;
+		}
+
+		return exitCode;
 	}
 
 	/**
