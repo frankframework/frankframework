@@ -165,9 +165,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	public void afterPropertiesSet() throws Exception {
 		if (getParent() instanceof Adapter contextAdapter) {
 			adapter = contextAdapter;
-
-			// Propagate ClassLoader
-			setClassLoader(adapter.getConfigurationClassLoader());
 		} else {
 			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
 		}
@@ -373,7 +370,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		// TODO Once IPipe implements ConfigurableLifecycle we should directly throw ConfigurationException here.
 		} catch (Throwable t) {
 			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
-			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "unable to initialize", e));
+			this.publishEvent(new AdapterMessageEvent(adapter, pipe, "unable to initialize", e));
 			throw e;
 		}
 		log.debug("Pipe successfully configured");
@@ -501,7 +498,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 				pipe.start();
 				log.debug("successfully started {}", type);
 			} catch (Exception t) {
-				adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
+				this.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
 				throw t;
 			}
 		}
@@ -551,7 +548,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 				pipe.stop();
 				log.debug("successfully stopped {}", type);
 			} catch (Exception t) {
-				adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
+				this.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
 				throw t;
 			}
 		}

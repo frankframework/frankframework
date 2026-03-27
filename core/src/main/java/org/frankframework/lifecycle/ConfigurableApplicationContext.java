@@ -57,9 +57,13 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 		super.initLifecycleProcessor();
 	}
 
+	/**
+	 * Set the parent context and propagate the ClassLoader.
+	 */
 	@Override
 	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		setParent(applicationContext);
+		setClassLoader(applicationContext.getClassLoader());
 	}
 
 	@Override

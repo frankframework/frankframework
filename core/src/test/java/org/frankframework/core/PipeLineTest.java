@@ -45,6 +45,25 @@ public class PipeLineTest {
 	}
 
 	@Test
+	public void testClassLoaders() throws ConfigurationException {
+		Adapter adapter = configuration.createBean();
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+
+		configuration.configure();
+
+		ClassLoader classLoader = configuration.getClassLoader();
+		assertEquals(classLoader, configuration.getConfigurationClassLoader());
+
+		assertEquals(classLoader, adapter.getClassLoader());
+		// I'd like to test the Adapter's ConfigurationClassLoader here but it's based on the ContextClassloader.
+
+		assertEquals(classLoader, pipeline.getClassLoader());
+		assertEquals(classLoader, pipeline.getConfigurationClassLoader());
+	}
+
+	@Test
 	public void testDuplicateExits() {
 		Adapter adapter = configuration.createBean();
 		adapter.setName("testAdapter");
