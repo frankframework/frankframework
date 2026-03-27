@@ -57,7 +57,7 @@ jobs:
           cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: SonarQube Quality Gate check
-        uses: sonarsource/sonarqube-quality-gate-action
+        uses: sonarsource/sonarqube-quality-gate-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
