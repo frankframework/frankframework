@@ -119,7 +119,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 
 	public static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
-	private String firstPipe;
+	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn = Misc.getMessageSizeWarnByDefault();
