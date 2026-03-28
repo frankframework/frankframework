@@ -15,8 +15,6 @@
 */
 package org.frankframework.lifecycle;
 
-import java.util.Objects;
-
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +61,12 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 	@Override
 	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		setParent(applicationContext);
-		setClassLoader(applicationContext.getClassLoader());
+
+		ClassLoader classLoader = applicationContext.getClassLoader();
+		if (classLoader == null) {
+			throw new IllegalStateException("no classloader configured, unable to propagate ClassLoader");
+		}
+		setClassLoader(classLoader);
 	}
 
 	@Override
@@ -95,9 +98,11 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 
 	@Override
 	public @NonNull ClassLoader getClassLoader() {
-		ClassLoader cl = super.getClassLoader();
-		Objects.requireNonNull(cl, "no ClassLoader found, has the plugin been initialized?");
-		return cl;
+		ClassLoader classLoader = super.getClassLoader();
+		if (classLoader == null) {
+			throw new IllegalStateException("no ClassLoader found");
+		}
+		return classLoader;
 	}
 
 	@Override
