@@ -119,10 +119,10 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 
 	public static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
-	private @Getter String firstPipe;
+	private String firstPipe;
 	private @Getter int maxThreads = 0;
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
-	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
+	private long messageSizeWarn = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
 	private @Getter String adapterToRunBeforeOnEmptyInput = null;
 
@@ -130,10 +130,12 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	private @Getter IValidator outputValidator = null;
 	private @Getter IWrapperPipe inputWrapper = null;
 	private @Getter IWrapperPipe outputWrapper = null;
+
 	private final Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
 	private final Map<String, PipeForward> globalForwards = new HashMap<>();
+
 	private @Getter Locker locker;
-	private @Getter ICache<String,String> cache;
+	private @Getter ICache<String, String> cache;
 
 	private final Map<String, IPipe> pipesByName = new LinkedHashMap<>();
 	private final @Getter List<IPipe> pipes = new ArrayList<>();
@@ -150,7 +152,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	private @Getter String expectsSessionKeys;
 	private Set<String> expectsSessionKeysSet;
 
-	private boolean started = false;
 	private @Getter boolean configured = false;
 
 	public enum ExitState {
@@ -478,12 +479,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		}
 
 		log.info("successfully started pipeline");
-		started = true;
-	}
-
-	@Override
-	public boolean isRunning() {
-		return started;
 	}
 
 	@Override
@@ -527,7 +522,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			cache.close();
 		}
 		log.debug("successfully closed pipeline");
-		started = false;
 	}
 
 	// Method may not be called getGlobalForwards, because of the FrankDoc...
@@ -666,17 +660,15 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * @see AbstractPipe
 	 **/
 	@Mandatory
-	public void addPipe(IPipe pipe) throws ConfigurationException {
-		if (pipe == null) {
-			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
-		}
+	public void addPipe(@NonNull IPipe pipe) throws ConfigurationException {
 		String name = pipe.getName();
 		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe) + "] to be added has no name, pipelineTable size [" + pipesByName.size() + "]");
+			throw new ConfigurationException("unable to add pipe [" + ClassUtils.nameOf(pipe) + "] without name");
 		}
 		if (getPipe(name) != null) {
-			throw new ConfigurationException("pipe [" + name + "] defined more then once");
+			throw new ConfigurationException("unable to add pipe with duplicate name [" + name + "]");
 		}
+
 		pipesByName.put(name, pipe);
 		pipes.add(pipe);
 		log.debug("added pipe [{}]", pipe);
@@ -717,14 +709,16 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		return messageSizeWarn;
 	}
 
-	/** when specified and <code>null</code> is received as a message the message is changed to the specified value */
+	/** When specified and <code>null</code> is received as a message the message is changed to the specified value. */
+	@Deprecated(forRemoval = true, since = "10.1")
+	@ConfigurationWarning("Please use an IfPipe to retrieve a new/different response")
 	public void setTransformNullMessage(String s) {
 		transformNullMessage = new Message(s);
 	}
 
-	/** when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
-	@Deprecated
-	@ConfigurationWarning("Please use an XmlIf-pipe and call a sub-adapter to retrieve a new/different response")
+	/** When specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
+	@Deprecated(forRemoval = true, since = "7.9")
+	@ConfigurationWarning("Please use an IfPipe and call a sub-adapter to retrieve a new/different response")
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
 	}

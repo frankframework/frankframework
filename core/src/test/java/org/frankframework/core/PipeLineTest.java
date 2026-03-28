@@ -15,6 +15,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.BeanCreationException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLine.ExitState;
@@ -42,6 +43,18 @@ public class PipeLineTest {
 	@AfterEach
 	void tearDown() {
 		configuration.close();
+	}
+
+	@Test
+	public void testNoParent() throws Exception {
+		try (PipeLine pipeline = new PipeLine()) {
+			assertThrows(IllegalArgumentException.class, pipeline::afterPropertiesSet);
+		}
+	}
+
+	@Test
+	public void testWrongParent() throws Exception {
+		assertThrows(BeanCreationException.class, () -> configuration.createBean(PipeLine.class));
 	}
 
 	@Test
