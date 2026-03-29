@@ -96,6 +96,9 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 		}
 	}
 
+	/**
+	 * Ensure that a ClassLoader is always available, propagated from the parent context.
+	 */
 	@Override
 	public @NonNull ClassLoader getClassLoader() {
 		ClassLoader classLoader = super.getClassLoader();

@@ -99,7 +99,7 @@ import org.frankframework.util.StringUtil;
  * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be rolled back,
  * or marked for roll back by the calling party.
  *
- * @author  Johan Verrips
+ * @author Niels Meijer
  */
 @Log4j2
 @Category(Category.Type.BASIC)
@@ -301,6 +301,8 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			getLocker().configure();
 		}
 
+		super.configure();
+
 		requestSizeStats = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_SIZE);
 		pipelineWaitStatistics = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_WAIT_TIME);
 
@@ -478,6 +480,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			startPipe("Pipe", getPipe(i));
 		}
 
+		super.start();
 		log.info("successfully started pipeline");
 	}
 
@@ -507,6 +510,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	@Override
 	public void stop() {
 		log.info("is closing pipeline");
+		super.stop();
 
 		stopPipe("InputWrapper", getInputWrapper());
 		stopPipe("InputValidator", getInputValidator());

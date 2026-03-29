@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Map;
@@ -227,6 +228,34 @@ public class PipeLineTest {
 
 		assertThat(messages.getFirst(), Matchers.containsString("Configuration [TestConfiguration] configured in "));
 		assertEquals(messages.get(1), "Configuration [TestConfiguration] aborted starting; Exception configuring EchoPipe [one]: pipe1");
+
+	}
+
+	@Test
+	public void testLifecycle() throws Exception {
+		configuration.clearEvents();
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+
+		EchoPipe pipe1 = spy(SpringUtils.createBean(adapter, EchoPipe.class));
+		pipe1.setName("one");
+		pipeline.addPipe(pipe1);
+
+		configuration.configure();
+		configuration.start();
+
+		verify(pipe1).configure();
+		verify(pipe1).start();
+
+		List<String> configEvents = configuration.getEvents(ConfigurationMessageEvent.class);
+		assertEquals(1, configEvents.size());
+		assertThat(configEvents.getFirst(), Matchers.containsString("Configuration [TestConfiguration] configured in "));
+
+		configuration.stop();
+		verify(pipe1).stop();
 	}
 
 	@Test
