@@ -20,7 +20,7 @@
   },
   "private": true,
   "engines": {
-    "node": ">=22.22.2"
+    "node": ">=24.14.1"
   },
   "dependencies": {
     "@angular/animations": "^21.2.5",
@@ -47,7 +47,7 @@
     "lodash.merge": "^4.6.2",
     "markdown-it": "^14.1.1",
     "monaco-editor": "0.55.1",
-    "ng2-charts": "^8.0.0",
+    "ng2-charts": "^10.0.0",
     "pace-js": "1.2.4",
     "rxjs": "~7.8.2",
     "sockjs-client": "^1.6.1",
@@ -67,7 +67,7 @@
     "@angular/compiler-cli": "^21.2.5",
     "@cypress/schematic": "^5.0.0",
     "@eslint/js": "^10.0.1",
-    "@types/jasmine": "~5.1.15",
+    "@types/jasmine": "~6.0.0",
     "@types/lodash": "^4.17.24",
     "@types/markdown-it": "^14.1.2",
     "@types/sockjs-client": "^1.5.4",
@@ -80,14 +80,14 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-sonarjs": "^4.0.2",
     "eslint-plugin-unicorn": "^63.0.0",
-    "jasmine-core": "~5.13.0",
+    "jasmine-core": "~6.1.0",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.2.0",
     "prettier": "^3.8.1",
-    "typescript": "~5.9.3",
+    "typescript": "~6.0.2",
     "typescript-eslint": "^8.57.2"
   },
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
