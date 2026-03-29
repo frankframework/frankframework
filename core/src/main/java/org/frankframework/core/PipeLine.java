@@ -261,7 +261,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		if (pipes.isEmpty()) {
 			throw new ConfigurationException("no Pipes in Pipeline");
 		}
-		if (this.firstPipe == null) {
+		if (StringUtils.isEmpty(this.firstPipe)) {
 			firstPipe=pipes.getFirst().getName();
 		}
 		if (getPipe(firstPipe) == null) {
