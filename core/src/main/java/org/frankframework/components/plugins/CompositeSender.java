@@ -116,7 +116,7 @@ public class CompositeSender extends AbstractSenderWithParameters implements Ini
 
 	@Override
 	public void stop() {
-		if (frankPlugin != null) {
+		if (frankPlugin != null && !frankPlugin.getState().isStopped()) {
 			frankPlugin.stop();
 		}
 

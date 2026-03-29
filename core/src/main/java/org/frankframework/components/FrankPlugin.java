@@ -135,4 +135,9 @@ public class FrankPlugin extends PipeLine {
 		}
 		return resource;
 	}
+
+	@Override
+	protected void additionalToString(StringBuilder result) {
+		result.append("[plugin=").append(pluginName).append("]");
+	}
 }

@@ -106,6 +106,10 @@ import org.frankframework.util.StringUtil;
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLine extends ConfigurableApplicationContext implements ICacheEnabled<String, String>, FrankElement, HasTransactionAttribute {
 
+	public PipeLine() {
+		setDisplayName("PipeLine");
+	}
+
 	private @Getter @Setter TransactionAttribute transactionAttribute = TransactionAttribute.SUPPORTS;
 	private @Getter int transactionTimeout = 0;
 	private @Getter TransactionDefinition txDef = null;
@@ -560,8 +564,14 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 */
 	@Override
 	public String toString(){
-		StringBuilder result = new StringBuilder();
-		result.append("[adapterName=").append(adapter == null ? "-none-" : adapter.getName()).append("]");
+		StringBuilder result = new StringBuilder(super.toString());
+
+		additionalToString(result);
+
+		return result.toString();
+	}
+
+	protected void additionalToString(StringBuilder result) {
 		result.append("[startPipe=").append(firstPipe).append("]");
 		result.append("[transactionAttribute=").append(getTransactionAttribute()).append("]");
 		for (int i=0; i<pipes.size(); i++) {
@@ -570,9 +580,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		for (PipeLineExit pe : pipeLineExits.values()) {
 			result.append("[name:").append(pe.getName()).append(" state:").append(pe.getState()).append("]");
 		}
-		return result.toString();
 	}
-
 
 	/** Request validator, or combined validator for request and response */
 	public void setInputValidator(IValidator inputValidator) {
