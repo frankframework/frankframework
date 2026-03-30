@@ -1,5 +1,6 @@
 package org.frankframework.core;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,8 +10,10 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
@@ -246,6 +249,11 @@ public class PipeLineTest {
 
 		configuration.configure();
 		configuration.start();
+
+		// Start is done asynchronous. Wait till it's ready.
+		await().pollInterval(3, TimeUnit.SECONDS)
+			.atMost(Duration.ofSeconds(30))
+			.until(() -> adapter.isRunning());
 
 		verify(pipe1).configure();
 		verify(pipe1).start();
