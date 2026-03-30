@@ -22,5 +22,5 @@
 	<!-- bean just needs to be here to override the 'default' specified in SpringConfigurationContext.xml -->
 	<bean primary="true" name="configFlowGenerator" class="java.lang.Object" />
 
-	<bean id="ConfigurationMessageListener" class="org.frankframework.testutil.ConfigurationMessageEventListener" />
+	<bean id="MessageEventListener" class="org.frankframework.testutil.MessageEventListener" />
 </beans>

@@ -55,9 +55,18 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 		super.initLifecycleProcessor();
 	}
 
+	/**
+	 * Set the parent context and propagate the ClassLoader.
+	 */
 	@Override
 	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		setParent(applicationContext);
+
+		ClassLoader classLoader = applicationContext.getClassLoader();
+		if (classLoader == null) {
+			throw new IllegalStateException("no classloader configured, unable to propagate ClassLoader");
+		}
+		setClassLoader(classLoader);
 	}
 
 	@Override
@@ -85,6 +94,18 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 		if (configuration != null) { // Could technically be null?
 			beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
 		}
+	}
+
+	/**
+	 * Ensure that a ClassLoader is always available, propagated from the parent context.
+	 */
+	@Override
+	public @NonNull ClassLoader getClassLoader() {
+		ClassLoader classLoader = super.getClassLoader();
+		if (classLoader == null) {
+			throw new IllegalStateException("no ClassLoader found");
+		}
+		return classLoader;
 	}
 
 	@Override

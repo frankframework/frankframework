@@ -263,6 +263,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return (JmsMessagingSource)getMessagingSource();
 	}
 
+	@SuppressWarnings("java:S2168") // Ignore double-checked locking
 	protected MessagingSource getMessagingSource() throws JmsException {
 		// We use double-checked locking here
 		// We're aware of the risks involved, but consider them

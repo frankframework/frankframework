@@ -356,6 +356,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 
 		setParent(applicationContext);
+
+		// Set the default ClassLoader to the 'configurationClassLoader'.
+		setClassLoader(config.getClassLoader());
+
 		this.configuration = config;
 	}
 
@@ -370,13 +374,18 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			throw new LifecycleException("unable to refresh, AdapterContext is already active");
 		}
 
+		// AOP is required for the Ladybug to function.
 		if (getEnvironment().matchesProfiles("aop")) {
 			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 		}
 
+		// Listen to all events thrown by FrankElements.
 		addApplicationListener(new MessageKeepingEventListener(messageKeeperSize));
+
+		// Load the Context.
 		refresh();
 
+		// Once the BeanFactory has initialized, create and register a FlowGenerator
 		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this);
 		getBeanFactory().registerSingleton("FlowGenerator", bean);
 	}
