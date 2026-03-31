@@ -79,7 +79,7 @@
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<lombok.version>1.18.44</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
-		<log4j2.version>2.25.3</log4j2.version>
+		<log4j2.version>2.25.4</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -163,7 +163,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.11.Final</version>
+				<version>4.2.12.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
