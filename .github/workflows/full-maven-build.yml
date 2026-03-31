@@ -181,11 +181,23 @@ jobs:
 
     # Check the Quality Gate status.
     - name: SonarQube Quality Gate check
+      id: sonar-quality-gate
       if: ${{ env.USE_PROPRIETARY == 'true' && env.IS_DEPENDENCY_BOT == 'false' }}
+      continue-on-error: true
       uses: sonarsource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        sonar.projectKey: frankframework
-        sonar.organization: frank-framework
       with:
         scanMetadataReportFile: target/sonar/report-task.txt
+
+    - name: Report SonarQube Quality Gate as GitHub Check
+      if: ${{ env.USE_PROPRIETARY == 'true' && env.IS_DEPENDENCY_BOT == 'false' }}
+      uses: LouisBrunner/checks-action@dfcbcf801bff1ea7f1414824fc28f2cd697b35da # v3.0.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        name: SonarQube Quality Gate
+        conclusion: ${{ steps.sonar-quality-gate.outcome }}
+        details_url: https://sonarcloud.io/project/overview?id=frankframework
+        output: |
+          {"summary": "SonarQube Quality Gate ${{ steps.sonar-quality-gate.outcome == 'success' && 'passed ✅' || 'failed ❌' }}. See the details on SonarCloud."}
+
