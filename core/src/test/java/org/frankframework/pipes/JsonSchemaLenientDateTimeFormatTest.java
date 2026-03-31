@@ -23,13 +23,13 @@ import org.junit.jupiter.api.Test;
 
 import com.networknt.schema.ExecutionContext;
 
-class OpenApiLenientDateTimeFormatTest {
-	private OpenApiLenientDateTimeFormat format;
+class JsonSchemaLenientDateTimeFormatTest {
+	private JsonSchemaLenientDateTimeFormat format;
 	private ExecutionContext ctx;
 
 	@BeforeEach
 	void setUp() {
-		format = new OpenApiLenientDateTimeFormat();
+		format = new JsonSchemaLenientDateTimeFormat();
 		ctx = null; // Not used in current implementation
 	}
 

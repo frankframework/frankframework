@@ -29,7 +29,6 @@ import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaException;
 import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SchemaRegistry;
-import com.networknt.schema.dialect.Dialects;
 
 import lombok.Getter;
 
@@ -54,7 +53,7 @@ public class JsonValidator extends AbstractValidator {
 	private @Getter String subSchemaPrefix="/definitions/";
 	private @Getter String reasonSessionKey = "failureReason";
 
-	private final SchemaRegistry schemaRegistry = SchemaRegistry.withDefaultDialect(Dialects.getDraft202012());
+	private final SchemaRegistry schemaRegistry = JsonSchemaLenientDateTimeFormat.getCustomSchemaRegistry();
 
 	private Schema jsonSchema;
 
