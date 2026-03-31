@@ -14,6 +14,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLWarning;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +30,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.BytesResource;
 import org.frankframework.core.Resource;
 import org.frankframework.core.Resource.GlobalScopeProvider;
-import org.frankframework.testutil.ConfigurationMessageEventListener;
+import org.frankframework.lifecycle.events.ConfigurationMessageEvent;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
@@ -38,7 +39,6 @@ import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.MessageKeeper;
 
 @Log4j2
 public class MigratorTest {
@@ -56,7 +56,7 @@ public class MigratorTest {
 
 		env.getConfiguration().getConfigurationWarnings().destroy();
 		env.getConfiguration().getConfigurationWarnings().afterPropertiesSet();
-		env.getConfiguration().getMessageKeeper().clear();
+		env.getConfiguration().clearEvents();
 
 		dropTableIfPresent(tableName);
 		dropTableIfPresent("DATABASECHANGELOG");
@@ -86,11 +86,10 @@ public class MigratorTest {
 		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		migrator.update();
 
-		MessageKeeper messageKeeper = env.getConfiguration().getMessageKeeper();
-		assertNotNull(messageKeeper, "no message logged to the messageKeeper");
-		System.err.println(messageKeeper); // == empty?
-		assertEquals(1, messageKeeper.size());
-		assertEquals("Configuration ["+env.getName()+"] LiquiBase applied [3] change(s) and added tag [three:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
+		List<String> messages = env.getConfiguration().getEvents(ConfigurationMessageEvent.class);
+		assertNotNull(messages, "no message logged to the messageKeeper");
+		assertEquals(1, messages.size());
+		assertEquals("Configuration ["+env.getName()+"] LiquiBase applied [3] change(s) and added tag [three:Niels Meijer]", messages.getFirst());
 		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
 		assertFalse(isTablePresent("TABLETWO"), "table [TABLETWO] should not exist");
 	}
@@ -100,11 +99,10 @@ public class MigratorTest {
 		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogCreate.xml");
 		migrator.update();
 
-		MessageKeeper messageKeeper = env.getConfiguration().getMessageKeeper();
-		assertNotNull(messageKeeper, "no message logged to the messageKeeper");
-		System.err.println(messageKeeper); // == empty?
-		assertEquals(1, messageKeeper.size());
-		assertEquals("Configuration ["+env.getName()+"] LiquiBase applying change [one:Niels Meijer] description [createTable tableName=DUMMYTABLE] tag [one:Niels Meijer]", messageKeeper.getMessage(0).getMessageText());
+		List<String> messages = env.getConfiguration().getEvents(ConfigurationMessageEvent.class);
+		assertNotNull(messages, "no message logged to the messageKeeper");
+		assertEquals(1, messages.size());
+		assertEquals("Configuration ["+env.getName()+"] LiquiBase applying change [one:Niels Meijer] description [createTable tableName=DUMMYTABLE] tag [one:Niels Meijer]", messages.getFirst());
 		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
 	}
 
@@ -216,10 +214,10 @@ public class MigratorTest {
 
 			migrator.update();
 
-			String msg = "LiquiBase applied [3] change(s) and added tag [three:Niels Meijer]";
+			String msg = "Configuration ["+env.getName()+"] LiquiBase applied [3] change(s) and added tag [three:Niels Meijer]";
 			assertFalse(appender.contains(msg), "expected message not to be logged but found ["+appender.getLogLines()+"]"); // Validate Liquibase doesn't log
 
-			ConfigurationMessageEventListener configurationMessages = env.getConfiguration().getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
+			List<String> configurationMessages = env.getConfiguration().getEvents(ConfigurationMessageEvent.class);
 			assertTrue(configurationMessages.contains(msg)); // Validate Liquibase did run
 		} finally {
 			Configurator.reconfigure();

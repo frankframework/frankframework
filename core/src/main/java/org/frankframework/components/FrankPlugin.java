@@ -15,8 +15,6 @@
 */
 package org.frankframework.components;
 
-import java.util.Objects;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.pf4j.PluginDescriptor;
@@ -98,13 +96,6 @@ public class FrankPlugin extends PipeLine {
 		}
 	}
 
-	@Override
-	public @NonNull ClassLoader getClassLoader() {
-		ClassLoader cl = super.getClassLoader();
-		Objects.requireNonNull(cl, "no ClassLoader found, has the plugin been initialized?");
-		return cl;
-	}
-
 	public void setPluginName(String pluginName) {
 		this.pluginName = pluginName;
 	}
@@ -143,5 +134,10 @@ public class FrankPlugin extends PipeLine {
 			throw new ConfigurationException("reference ["+resourceToUse+"] not found in plugin ["+plugin.getPluginId()+"]");
 		}
 		return resource;
+	}
+
+	@Override
+	protected void additionalToString(StringBuilder result) {
+		result.append("[plugin=").append(pluginName).append("]");
 	}
 }

@@ -110,7 +110,7 @@ jobs:
 
       # Secrets are not available when commits are made by dependency bots or from GH forks
     - name: Update environment to run on SonarSource
-      if: ${{ env.USE_PROPRIETARY == 'true' || env.IS_DEPENDENCY_BOT == 'true' }}
+      if: ${{ env.USE_PROPRIETARY == 'true' && env.IS_DEPENDENCY_BOT == 'false' }}
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
@@ -125,9 +125,9 @@ jobs:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=frankframework -Dsonar.organization=frank-framework
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad # v5
@@ -178,3 +178,14 @@ jobs:
         path: |
           ~/.sonar/cache
         key: sonar-cache-${{ github.base_ref }}
+
+    # Check the Quality Gate status.
+    - name: SonarQube Quality Gate check
+      if: ${{ env.USE_PROPRIETARY == 'true' && env.IS_DEPENDENCY_BOT == 'false' }}
+      uses: sonarsource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        sonar.projectKey: frankframework
+        sonar.organization: frank-framework
+      with:
+        scanMetadataReportFile: target/sonar/report-task.txt

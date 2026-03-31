@@ -22,5 +22,5 @@
 	<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
 	<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
 
-	<bean id="ConfigurationMessageListener" class="org.frankframework.testutil.ConfigurationMessageEventListener" />
+	<bean id="MessageEventListener" class="org.frankframework.testutil.MessageEventListener" />
 </beans>

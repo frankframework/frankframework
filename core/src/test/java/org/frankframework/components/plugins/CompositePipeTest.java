@@ -1,5 +1,6 @@
 package org.frankframework.components.plugins;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -15,8 +16,10 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayDeque;
+import java.time.Duration;
 import java.util.Deque;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,10 +28,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
 
-import lombok.Getter;
-
 import org.frankframework.components.FrankPlugin;
-import org.frankframework.core.Adapter;
+import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -98,10 +99,19 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 		assertEquals(0, listener.getEvents().size());
 
 		configureAndStartPipe();
+
+		await().pollInterval(1, TimeUnit.SECONDS)
+			.atMost(Duration.ofSeconds(10))
+			.until(() -> listener.getEvents().size() == 3);
+
 		// Verify above method 'pipeline.configure()' has configured everything.
-		assertEquals(1, listener.getEvents().size());
-		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
+		assertEquals(3, listener.getEvents().size());
+		assertTrue(listener.getEvents().remove("ContextRefreshedEvent"));
+		assertTrue(listener.getEvents().remove("ContextStartedEvent"));
+		assertTrue(listener.getEvents().remove("ContextStartedEvent"));
+
 		verify(frankPlugin, times(1)).configure();
+		verify(frankPlugin, times(1)).start();
 
 		// Stub actual processing.
 		doAnswer(i -> {
@@ -119,6 +129,13 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 		PipeRunResult result = doPipe(ignored);
 
 		assertTrue(Message.isNull(result.getResult()));
+
+		pipeline.stop();
+
+		verify(frankPlugin, times(1)).stop();
+		assertEquals(2, listener.getEvents().size());
+		assertTrue(listener.getEvents().remove("ContextStoppedEvent"));
+		assertTrue(listener.getEvents().remove("ContextStoppedEvent"));
 	}
 
 	@Test
@@ -131,9 +148,17 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 		assertEquals(0, listener.getEvents().size());
 
 		configureAndStartPipe();
+
+		await().pollInterval(1, TimeUnit.SECONDS)
+			.atMost(Duration.ofSeconds(10))
+			.until(() -> listener.getEvents().size() == 3);
+
 		// Verify above method 'pipeline.configure()' has configured everything.
-		assertEquals(1, listener.getEvents().size());
-		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
+		assertEquals(3, listener.getEvents().size());
+		assertTrue(listener.getEvents().remove("ContextRefreshedEvent"));
+		assertTrue(listener.getEvents().remove("ContextStartedEvent"));
+		assertTrue(listener.getEvents().remove("ContextStartedEvent"));
+
 		verify(frankPlugin, times(1)).configure();
 		verify(parameter, times(1)).configure();
 
@@ -154,6 +179,13 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 		PipeRunResult result = doPipe(ignored);
 
 		assertTrue(Message.isNull(result.getResult()));
+
+		pipeline.stop();
+
+		verify(frankPlugin, times(1)).stop();
+		assertEquals(2, listener.getEvents().size());
+		assertTrue(listener.getEvents().remove("ContextStoppedEvent"));
+		assertTrue(listener.getEvents().remove("ContextStoppedEvent"));
 	}
 
 	@Test
@@ -167,12 +199,15 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 	}
 
 	private static class PluginContextEventListener implements ApplicationListener<ApplicationContextEvent> {
-		@Getter
-		private final Deque<String> events = new ArrayDeque<>();
+		private final Deque<String> events = new LinkedBlockingDeque<>(16);
+
+		public Deque<String> getEvents() {
+			return events;
+		}
 
 		@Override
 		public void onApplicationEvent(ApplicationContextEvent event) {
-			if (!(event.getApplicationContext() instanceof Adapter)) {
+			if (event.getApplicationContext() instanceof PipeLine) {
 				events.push(event.getClass().getSimpleName());
 			}
 		}

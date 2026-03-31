@@ -20,6 +20,9 @@ import java.io.IOException;
 
 import org.jspecify.annotations.NonNull;
 
+import lombok.Setter;
+
+import org.frankframework.configuration.AdapterAware;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -39,8 +42,9 @@ import org.frankframework.util.StreamUtil;
  * @author Jaco de Groot
  */
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
-public class WsdlGeneratorPipe extends FixedForwardPipe {
+public class WsdlGeneratorPipe extends FixedForwardPipe implements AdapterAware {
 	private String from = "parent";
+	private @Setter Adapter adapter;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -63,7 +67,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 					throw new PipeRunException(this, "Could not find adapter: " + adapterName);
 				}
 			} else {
-				adapter = getPipeLine().getAdapter();
+				adapter = this.adapter;
 			}
 		} catch (IOException e) {
 			throw new PipeRunException(this, "Could not determine adapter name", e);

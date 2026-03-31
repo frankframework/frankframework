@@ -256,7 +256,7 @@ public class FrankApplication {
 			Message<Object> response = gateway.sendSyncMessage(builder.build());
 			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
 		} catch (Exception e) {
-			e.printStackTrace();
+			getApplicationLogger().warn("FrankApplication is not yet healthy!", e);
 			return false;
 		}
 	}
