@@ -57,14 +57,14 @@ public class PipeLineTest {
 	}
 
 	@Test
-	public void testNoParent() throws Exception {
+	public void testNoParent() {
 		try (PipeLine pipeline = new PipeLine()) {
 			assertThrows(IllegalArgumentException.class, pipeline::afterPropertiesSet);
 		}
 	}
 
 	@Test
-	public void testWrongParent() throws Exception {
+	public void testWrongParent() {
 		assertThrows(BeanCreationException.class, () -> configuration.createBean(PipeLine.class));
 	}
 
@@ -88,7 +88,7 @@ public class PipeLineTest {
 	}
 
 	@Test
-	public void testNoPipes() throws Exception {
+	public void testNoPipes() {
 		Adapter adapter = configuration.createBean();
 		configuration.addAdapter(adapter);
 		adapter.setName("testAdapter");
@@ -100,7 +100,7 @@ public class PipeLineTest {
 	}
 
 	@Test
-	public void testNoPipeName() throws Exception {
+	public void testNoPipeName() {
 		Adapter adapter = configuration.createBean();
 		configuration.addAdapter(adapter);
 		adapter.setName("testAdapter");
@@ -230,7 +230,7 @@ public class PipeLineTest {
 		List<String> messages = configuration.getEvents(ConfigurationMessageEvent.class);
 
 		assertThat(messages.getFirst(), Matchers.containsString("Configuration [TestConfiguration] configured in "));
-		assertEquals(messages.get(1), "Configuration [TestConfiguration] aborted starting; Exception configuring EchoPipe [one]: pipe1");
+		assertEquals("Configuration [TestConfiguration] aborted starting; Exception configuring EchoPipe [one]: pipe1", messages.get(1));
 
 	}
 
@@ -253,7 +253,7 @@ public class PipeLineTest {
 		// Start is done asynchronous. Wait till it's ready.
 		await().pollInterval(3, TimeUnit.SECONDS)
 			.atMost(Duration.ofSeconds(30))
-			.until(() -> adapter.isRunning());
+			.until(adapter::isRunning);
 
 		verify(pipe1).configure();
 		verify(pipe1).start();
