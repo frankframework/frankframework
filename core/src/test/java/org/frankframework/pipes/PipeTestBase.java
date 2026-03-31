@@ -65,7 +65,9 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	 */
 	protected void configureAndStartPipe() throws ConfigurationException {
 		configureAdapter();
-		pipe.start();
+
+		// Start Pipeline because async start in Adapter may take too long.
+		pipeline.start();
 	}
 
 	/*

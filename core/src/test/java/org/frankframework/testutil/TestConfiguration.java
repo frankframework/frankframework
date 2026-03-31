@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.BeansException;
@@ -13,9 +14,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
-import org.frankframework.lifecycle.events.MessageEventListener;
+import org.frankframework.lifecycle.events.MessageEvent;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -149,13 +149,13 @@ public class TestConfiguration extends Configuration {
 		return super.getIbisManager();
 	}
 
-	public MessageKeeper getMessageKeeper() {
-		MessageEventListener mel = getBean("MessageEventListener", MessageEventListener.class);
-		return mel.getMessageKeeper(getName());
+	public List<String> getEvents(Class<? extends MessageEvent<?>> clazz) {
+		MessageEventListener listener = getBean("MessageEventListener", MessageEventListener.class);
+		return listener.getEvents(clazz);
 	}
 
-	public MessageKeeper getGlobalMessageKeeper() {
-		MessageEventListener mel = getBean("MessageEventListener", MessageEventListener.class);
-		return mel.getMessageKeeper();
+	public void clearEvents() {
+		MessageEventListener listener = getBean("MessageEventListener", MessageEventListener.class);
+		listener.clear();
 	}
 }

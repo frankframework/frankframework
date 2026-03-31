@@ -99,12 +99,16 @@ import org.frankframework.util.StringUtil;
  * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be rolled back,
  * or marked for roll back by the calling party.
  *
- * @author  Johan Verrips
+ * @author Niels Meijer
  */
 @Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLine extends ConfigurableApplicationContext implements ICacheEnabled<String, String>, FrankElement, HasTransactionAttribute {
+
+	public PipeLine() {
+		setDisplayName("PipeLine");
+	}
 
 	private @Getter @Setter TransactionAttribute transactionAttribute = TransactionAttribute.SUPPORTS;
 	private @Getter int transactionTimeout = 0;
@@ -122,7 +126,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
-	private long messageSizeWarn  = Misc.getMessageSizeWarnByDefault();
+	private long messageSizeWarn = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
 	private @Getter String adapterToRunBeforeOnEmptyInput = null;
 
@@ -130,10 +134,12 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	private @Getter IValidator outputValidator = null;
 	private @Getter IWrapperPipe inputWrapper = null;
 	private @Getter IWrapperPipe outputWrapper = null;
+
 	private final Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
 	private final Map<String, PipeForward> globalForwards = new HashMap<>();
+
 	private @Getter Locker locker;
-	private @Getter ICache<String,String> cache;
+	private @Getter ICache<String, String> cache;
 
 	private final Map<String, IPipe> pipesByName = new LinkedHashMap<>();
 	private final @Getter List<IPipe> pipes = new ArrayList<>();
@@ -150,7 +156,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	private @Getter String expectsSessionKeys;
 	private Set<String> expectsSessionKeysSet;
 
-	private boolean started = false;
 	private @Getter boolean configured = false;
 
 	public enum ExitState {
@@ -260,7 +265,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		if (pipes.isEmpty()) {
 			throw new ConfigurationException("no Pipes in Pipeline");
 		}
-		if (this.firstPipe == null) {
+		if (StringUtils.isEmpty(this.firstPipe)) {
 			firstPipe=pipes.getFirst().getName();
 		}
 		if (getPipe(firstPipe) == null) {
@@ -299,6 +304,8 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			log.debug("configuring Locker");
 			getLocker().configure();
 		}
+
+		super.configure();
 
 		requestSizeStats = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_SIZE);
 		pipelineWaitStatistics = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_WAIT_TIME);
@@ -370,7 +377,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		// TODO Once IPipe implements ConfigurableLifecycle we should directly throw ConfigurationException here.
 		} catch (Throwable t) {
 			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
-			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "unable to initialize", e));
+			this.publishEvent(new AdapterMessageEvent(adapter, pipe, "unable to initialize", e));
 			throw e;
 		}
 		log.debug("Pipe successfully configured");
@@ -477,13 +484,8 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			startPipe("Pipe", getPipe(i));
 		}
 
+		super.start();
 		log.info("successfully started pipeline");
-		started = true;
-	}
-
-	@Override
-	public boolean isRunning() {
-		return started;
 	}
 
 	@Override
@@ -498,7 +500,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 				pipe.start();
 				log.debug("successfully started {}", type);
 			} catch (Exception t) {
-				adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
+				this.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
 				throw t;
 			}
 		}
@@ -512,6 +514,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	@Override
 	public void stop() {
 		log.info("is closing pipeline");
+		super.stop();
 
 		stopPipe("InputWrapper", getInputWrapper());
 		stopPipe("InputValidator", getInputValidator());
@@ -527,7 +530,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			cache.close();
 		}
 		log.debug("successfully closed pipeline");
-		started = false;
 	}
 
 	// Method may not be called getGlobalForwards, because of the FrankDoc...
@@ -548,7 +550,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 				pipe.stop();
 				log.debug("successfully stopped {}", type);
 			} catch (Exception t) {
-				adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
+				this.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
 				throw t;
 			}
 		}
@@ -562,8 +564,14 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 */
 	@Override
 	public String toString(){
-		StringBuilder result = new StringBuilder();
-		result.append("[adapterName=").append(adapter == null ? "-none-" : adapter.getName()).append("]");
+		StringBuilder result = new StringBuilder(super.toString());
+
+		additionalToString(result);
+
+		return result.toString();
+	}
+
+	protected void additionalToString(StringBuilder result) {
 		result.append("[startPipe=").append(firstPipe).append("]");
 		result.append("[transactionAttribute=").append(getTransactionAttribute()).append("]");
 		for (int i=0; i<pipes.size(); i++) {
@@ -572,9 +580,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		for (PipeLineExit pe : pipeLineExits.values()) {
 			result.append("[name:").append(pe.getName()).append(" state:").append(pe.getState()).append("]");
 		}
-		return result.toString();
 	}
-
 
 	/** Request validator, or combined validator for request and response */
 	public void setInputValidator(IValidator inputValidator) {
@@ -666,17 +672,15 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * @see AbstractPipe
 	 **/
 	@Mandatory
-	public void addPipe(IPipe pipe) throws ConfigurationException {
-		if (pipe == null) {
-			throw new ConfigurationException("pipe to be added is null, pipelineTable size [" + pipesByName.size() + "]");
-		}
+	public void addPipe(@NonNull IPipe pipe) throws ConfigurationException {
 		String name = pipe.getName();
 		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe) + "] to be added has no name, pipelineTable size [" + pipesByName.size() + "]");
+			throw new ConfigurationException("unable to add pipe [" + ClassUtils.nameOf(pipe) + "] without name");
 		}
 		if (getPipe(name) != null) {
-			throw new ConfigurationException("pipe [" + name + "] defined more then once");
+			throw new ConfigurationException("unable to add pipe with duplicate name [" + name + "]");
 		}
+
 		pipesByName.put(name, pipe);
 		pipes.add(pipe);
 		log.debug("added pipe [{}]", pipe);
@@ -717,14 +721,16 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		return messageSizeWarn;
 	}
 
-	/** when specified and <code>null</code> is received as a message the message is changed to the specified value */
+	/** When specified and <code>null</code> is received as a message the message is changed to the specified value. */
+	@Deprecated(forRemoval = true, since = "10.1")
+	@ConfigurationWarning("Please use an IfPipe to retrieve a new/different response")
 	public void setTransformNullMessage(String s) {
 		transformNullMessage = new Message(s);
 	}
 
-	/** when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
-	@Deprecated
-	@ConfigurationWarning("Please use an XmlIf-pipe and call a sub-adapter to retrieve a new/different response")
+	/** When specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
+	@Deprecated(forRemoval = true, since = "7.9")
+	@ConfigurationWarning("Please use an IfPipe and call a sub-adapter to retrieve a new/different response")
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
 	}

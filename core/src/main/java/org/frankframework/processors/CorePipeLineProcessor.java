@@ -82,7 +82,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 		boolean ready=false;
 
 		// get the first pipe to run
-		IForwardTarget forwardTarget = pipeLine.getPipe(pipeLine.getFirstPipe());
+		IForwardTarget forwardTarget = pipeLine.getPipe(firstPipe);
 
 		boolean inputValidateError = false;
 		IValidator inputValidator = pipeLine.getInputValidator();

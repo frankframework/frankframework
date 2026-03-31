@@ -1,23 +1,35 @@
 package org.frankframework.core;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.hamcrest.Matchers;
 import org.hamcrest.core.StringEndsWith;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.BeanCreationException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLine.ExitState;
+import org.frankframework.lifecycle.events.ConfigurationMessageEvent;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
@@ -45,6 +57,143 @@ public class PipeLineTest {
 	}
 
 	@Test
+	public void testNoParent() throws Exception {
+		try (PipeLine pipeline = new PipeLine()) {
+			assertThrows(IllegalArgumentException.class, pipeline::afterPropertiesSet);
+		}
+	}
+
+	@Test
+	public void testWrongParent() throws Exception {
+		assertThrows(BeanCreationException.class, () -> configuration.createBean(PipeLine.class));
+	}
+
+	@Test
+	public void testClassLoaders() throws ConfigurationException {
+		Adapter adapter = configuration.createBean();
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+
+		configuration.configure();
+
+		ClassLoader classLoader = configuration.getClassLoader();
+		assertEquals(classLoader, configuration.getConfigurationClassLoader());
+
+		assertEquals(classLoader, adapter.getClassLoader());
+		// I'd like to test the Adapter's ConfigurationClassLoader here but it's based on the ContextClassloader.
+
+		assertEquals(classLoader, pipeline.getClassLoader());
+		assertEquals(classLoader, pipeline.getConfigurationClassLoader());
+	}
+
+	@Test
+	public void testNoPipes() throws Exception {
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+
+		ConfigurationException ex = assertThrows(ConfigurationException.class, configuration::configure);
+		assertEquals("no Pipes in Pipeline", ex.getMessage());
+	}
+
+	@Test
+	public void testNoPipeName() throws Exception {
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+
+		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> pipeline.addPipe(new EchoPipe()));
+		assertEquals("unable to add pipe [EchoPipe] without name", ex.getMessage());
+	}
+
+	@Test
+	public void testDuplicatePipeName() throws Exception {
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+
+		EchoPipe pipe1 = SpringUtils.createBean(adapter);
+		pipe1.setName("one");
+		pipeline.addPipe(pipe1);
+
+		EchoPipe pipe2 = SpringUtils.createBean(adapter);
+		pipe2.setName("one");
+
+		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> pipeline.addPipe(pipe2));
+		assertEquals("unable to add pipe with duplicate name [one]", ex.getMessage());
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = "one")
+	public void testGetFirstPipe(String firstPipe) throws Exception {
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+		pipeline.setFirstPipe(firstPipe);
+
+		EchoPipe pipe1 = SpringUtils.createBean(adapter);
+		pipe1.setName("one");
+		pipeline.addPipe(pipe1);
+
+		EchoPipe pipe2 = SpringUtils.createBean(adapter);
+		pipe2.setName("two");
+		pipeline.addPipe(pipe2);
+
+		configuration.configure();
+
+		assertEquals("one", pipeline.getFirstPipe());
+	}
+
+	@Test
+	public void testGetFirstPipe() throws Exception {
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+		pipeline.setFirstPipe("two");
+
+		EchoPipe pipe1 = SpringUtils.createBean(adapter);
+		pipe1.setName("one");
+		pipeline.addPipe(pipe1);
+
+		EchoPipe pipe2 = SpringUtils.createBean(adapter);
+		pipe2.setName("two");
+		pipeline.addPipe(pipe2);
+
+		configuration.configure();
+
+		assertEquals("two", pipeline.getFirstPipe());
+	}
+
+	@Test
+	public void firstPipeDoesNotExist() throws Exception {
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+		pipeline.setFirstPipe("two");
+
+		EchoPipe pipe1 = SpringUtils.createBean(adapter);
+		pipe1.setName("one");
+		pipeline.addPipe(pipe1);
+
+		ConfigurationException ex = assertThrows(ConfigurationException.class, configuration::configure);
+		assertEquals("no pipe found for firstPipe [two]", ex.getMessage());
+	}
+
+	@Test
 	public void testDuplicateExits() {
 		Adapter adapter = configuration.createBean();
 		adapter.setName("testAdapter");
@@ -60,6 +209,61 @@ public class PipeLineTest {
 		assertEquals(1, warnings.size());
 		String lastWarning = warnings.get(warnings.size()-1);
 		assertThat(lastWarning, StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
+	}
+
+	@Test
+	public void pipesCannotConfigure() throws Exception {
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+
+		EchoPipe pipe1 = spy(SpringUtils.createBean(adapter, EchoPipe.class));
+		doThrow(new ConfigurationException("pipe1")).when(pipe1).configure();
+		pipe1.setName("one");
+		pipeline.addPipe(pipe1);
+
+		ConfigurationException ex = assertThrows(ConfigurationException.class, configuration::configure);
+		assertEquals("Exception configuring EchoPipe [one]: pipe1", ex.getMessage());
+
+		List<String> messages = configuration.getEvents(ConfigurationMessageEvent.class);
+
+		assertThat(messages.getFirst(), Matchers.containsString("Configuration [TestConfiguration] configured in "));
+		assertEquals(messages.get(1), "Configuration [TestConfiguration] aborted starting; Exception configuring EchoPipe [one]: pipe1");
+
+	}
+
+	@Test
+	public void testLifecycle() throws Exception {
+		configuration.clearEvents();
+		Adapter adapter = configuration.createBean();
+		configuration.addAdapter(adapter);
+		adapter.setName("testAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		adapter.setPipeLine(pipeline);
+
+		EchoPipe pipe1 = spy(SpringUtils.createBean(adapter, EchoPipe.class));
+		pipe1.setName("one");
+		pipeline.addPipe(pipe1);
+
+		configuration.configure();
+		configuration.start();
+
+		// Start is done asynchronous. Wait till it's ready.
+		await().pollInterval(3, TimeUnit.SECONDS)
+			.atMost(Duration.ofSeconds(30))
+			.until(() -> adapter.isRunning());
+
+		verify(pipe1).configure();
+		verify(pipe1).start();
+
+		List<String> configEvents = configuration.getEvents(ConfigurationMessageEvent.class);
+		assertEquals(1, configEvents.size());
+		assertThat(configEvents.getFirst(), Matchers.containsString("Configuration [TestConfiguration] configured in "));
+
+		configuration.stop();
+		verify(pipe1).stop();
 	}
 
 	@Test
