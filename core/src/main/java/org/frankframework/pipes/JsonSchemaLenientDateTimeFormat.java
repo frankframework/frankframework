@@ -23,6 +23,9 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 
 import com.networknt.schema.ExecutionContext;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.dialect.Dialect;
+import com.networknt.schema.dialect.Dialects;
 import com.networknt.schema.format.Format;
 
 import lombok.extern.log4j.Log4j2;
@@ -36,7 +39,7 @@ import lombok.extern.log4j.Log4j2;
  * @see <a href="https://github.com/networknt/json-schema-validator/blob/master/doc/custom-dialect.md">Custom Dialect Documentation</a>
  */
 @Log4j2
-public class OpenApiLenientDateTimeFormat implements Format {
+public class JsonSchemaLenientDateTimeFormat implements Format {
 	private static final DateTimeFormatter FALLBACK_FORMATTER;
 
 	static {
@@ -48,6 +51,14 @@ public class OpenApiLenientDateTimeFormat implements Format {
 				.appendOffset("+HHmm", "Z")
 				.parseStrict()
 				.toFormatter();
+	}
+
+	public static SchemaRegistry getCustomSchemaRegistry() {
+		Dialect dialect = Dialect.builder(Dialects.getDraft202012())
+				.format(new JsonSchemaLenientDateTimeFormat())
+				.build();
+
+		return SchemaRegistry.withDefaultDialect(dialect);
 	}
 
 	@Override

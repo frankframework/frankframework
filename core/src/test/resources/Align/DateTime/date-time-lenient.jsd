@@ -1,0 +1,11 @@
+{
+  "title": "DateTimeLenientTest",
+  "type": "object",
+  "properties": {
+    "eventTime": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["eventTime"]
+}

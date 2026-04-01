@@ -28,8 +28,6 @@ import com.networknt.schema.Error;
 import com.networknt.schema.InputFormat;
 import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaRegistry;
-import com.networknt.schema.dialect.Dialect;
-import com.networknt.schema.dialect.Dialects;
 
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
@@ -48,7 +46,7 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
  */
 public class OpenApiValidationHelper {
 	public static final String DEFAULT_EXIT_CODE = "200";
-	private final SchemaRegistry schemaRegistry;
+	private final SchemaRegistry schemaRegistry = JsonSchemaLenientDateTimeFormat.getCustomSchemaRegistry();
 	private final ObjectMapper objectMapper;
 	private final Operation operation;
 	private final boolean useAsOutputValidator;
@@ -56,19 +54,10 @@ public class OpenApiValidationHelper {
 	public OpenApiValidationHelper(Operation operation, boolean useAsOutputValidator) {
 		this.operation = operation;
 		this.useAsOutputValidator = useAsOutputValidator;
-		this.schemaRegistry = createCustomSchemaRegistry();
 
 		// This setting is important to make sure that resolving of references works correctly
 		this.objectMapper = new ObjectMapper()
 				.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
-	}
-
-	private SchemaRegistry createCustomSchemaRegistry() {
-		Dialect dialect = Dialect.builder(Dialects.getDraft202012())
-				.format(new OpenApiLenientDateTimeFormat())
-				.build();
-
-		return SchemaRegistry.withDialect(dialect);
 	}
 
 	/**

@@ -154,4 +154,28 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 
 		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
+
+	@Test
+	public void testDateTimeLenientFormat() throws Exception {
+		pipe.setSchema("/Align/DateTime/date-time-lenient.jsd");
+		pipe.addForward(new PipeForward("failure", null));
+		configureAndStartPipe();
+
+		// Strict RFC 3339 format (should pass)
+		String validStrict = "{\"eventTime\":\"2026-03-27T12:34:56+01:00\"}";
+		PipeRunResult resultStrict = doPipe(validStrict);
+		assertEquals("success", resultStrict.getPipeForward().getName());
+
+		// Lenient format (should pass)
+		String validLenient = "{\"eventTime\":\"2026-03-27T12:34:56+0100\"}";
+		PipeRunResult resultLenient = doPipe(validLenient);
+		assertEquals("success", resultLenient.getPipeForward().getName());
+
+		// Invalid format (should fail)
+		String invalid = "{\"eventTime\":\"2026-03-27 12:34:56\"}";
+		PipeRunResult resultInvalid = doPipe(invalid);
+		assertEquals("failure", resultInvalid.getPipeForward().getName());
+		String reason = (String)session.get("failureReason");
+		assertThat(reason, containsString("does not match the date-time pattern"));
+	}
 }
