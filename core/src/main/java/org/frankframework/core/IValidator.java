@@ -40,5 +40,4 @@ public interface IValidator extends IPipe {
 	@Override
 	@Optional
 	void setName(String name);
-
 }

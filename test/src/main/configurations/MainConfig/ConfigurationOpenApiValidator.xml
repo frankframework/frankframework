@@ -15,7 +15,7 @@
 				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
-			<OpenApiInputValidator useAsOutputValidator="true" path="/pets" method="post"
+			<OpenApiInputValidator useAsOutputValidator="false" path="/pets" method="post"
 				openApiDefinition="/Validators/openapi/petstore-openapi.json">
 				<forward name="failure" path="InputValidationFailure" />
 				<forward name="outputFailure" path="ServerError" />
@@ -32,8 +32,14 @@
 				<forward name="success" path="BadRequest" />
 			</ReplacerPipe>
 
-			<!-- Please note that the output validation is currently not working, because the OpenApiOutputValidator relies on specific
-			 exit codes which aren't supported when using a larva test -->
+			<OpenApiOutputValidator useAsOutputValidator="true" path="/pets" method="post"
+				openApiDefinition="/Validators/openapi/petstore-openapi.json">
+				<forward name="failure" path="InputValidationFailure" />
+				<forward name="outputFailure" path="ServerError" />
+			</OpenApiOutputValidator>
+
+			<!-- Please note that the output validation tested here only works on the common 200 response code. Larva tests break the determination
+				 of exitCode we need to use different codes  -->
 		</pipeline>
 	</adapter>
 </module>

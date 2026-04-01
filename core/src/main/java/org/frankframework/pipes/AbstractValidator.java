@@ -83,7 +83,6 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Could not validate", e);
 		}
-
 	}
 
 	protected final PipeForward validate(String messageToValidate, PipeLineSession session) throws PipeRunException, XmlValidatorException, ConfigurationException {
