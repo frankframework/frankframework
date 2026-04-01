@@ -49,7 +49,7 @@
     "monaco-editor": "0.55.1",
     "ng2-charts": "^10.0.0",
     "pace-js": "1.2.4",
-    "rxjs": "~7.8.2",
+    "rxjs": "^7.8.2",
     "sockjs-client": "^1.6.1",
     "sweetalert2": "^11.26.24",
     "tinycon": "0.6.8",
@@ -87,7 +87,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.2.0",
     "prettier": "^3.8.1",
-    "typescript": "~6.0.2",
+    "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.2"
   },
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"

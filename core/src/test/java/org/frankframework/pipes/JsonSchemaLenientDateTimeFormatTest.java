@@ -67,4 +67,3 @@ class JsonSchemaLenientDateTimeFormatTest {
 		assertTrue(format.matches(ctx, null));
 	}
 }
-
