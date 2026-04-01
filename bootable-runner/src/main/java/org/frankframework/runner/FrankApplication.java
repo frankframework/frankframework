@@ -189,7 +189,7 @@ public class FrankApplication {
 		}
 
 		@Override
-		public @Nullable Collection<String> getConfiguredAliases() {
+		public Collection<String> getConfiguredAliases() {
 			return null;
 		}
 	}
