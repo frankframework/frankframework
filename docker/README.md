@@ -1,7 +1,7 @@
 # Frank!Framework - Docker
 
 This module contains Docker images for various application servers to **test** the Frank!Framework with. This is not meant for
-developing Franks! nor to run in production. For that, refer to the ["Frank!Framework with Docker"](../Docker.md)
+developing Franks! nor to run in production. For that, refer to the ["Frank!Framework with Docker"](../DOCKER.md)
 documentation.
 The Docker images have been customized to run without needing much configuration.
 The images contain the test configurations and secrets to connect with

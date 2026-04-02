@@ -29,7 +29,7 @@ The Frank!Framework can run on any java runtime version 25 and up, either as a s
 ### Application Server Support
 The Frank!Framework can be deployed as a WAR file in any application server supporting WAR file deployment. In our CI we test every PR and Release against Tomcat, Wildfly and JBoss, all these application servers are supported by us for use in production environments.
 Other application servers should work but are untested by us.
-You may [create containers](/docker/README.md) to run the framework using the beforementioned application servers. Please note that they are for development use only, more info about using and creating them can be found in [Docker.md](Docker.md).
+You may [create containers](/docker/README.md) to run the framework using the beforementioned application servers. Please note that they are for development use only, more info about using and creating them can be found in [DOCKER.md](DOCKER.md).
 
 All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/frankframework/charts).
 
