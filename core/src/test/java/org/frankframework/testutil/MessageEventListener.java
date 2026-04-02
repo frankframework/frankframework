@@ -12,7 +12,7 @@ import org.frankframework.util.SizeLimitedVector;
 /**
  * A Spring ApplicationListener that listens for MessageEvent events and stores them in a SizeLimitedVector.
  * This class is only for testing purposes, allowing you to verify that certain messages were emitted during the execution of your code.
- * 
+ *
  * Note that the SizeLimitedVector will only keep the most recent 16 events, using FIFO the oldest ones will be discarded first.
  */
 public class MessageEventListener implements ApplicationListener<MessageEvent<?>> {
