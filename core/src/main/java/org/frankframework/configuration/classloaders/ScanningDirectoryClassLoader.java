@@ -21,6 +21,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
@@ -49,7 +51,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
 		createTaskExecutor();
 
-		if(scanInterval > 0) {
+		if (scanInterval > 0) {
 			schedule();
 		}
 	}
@@ -72,19 +74,19 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	public void destroy() {
 		super.destroy();
 
-		if(executor != null) {
-			executor.shutdownNow();
-			executor = null;
-		}
-
 		if (future != null) {
 			future.cancel(true);
 			future = null;
 		}
+
+		if (executor != null) {
+			executor.shutdownNow();
+			executor = null;
+		}
 	}
 
 	public void setScanInterval(int interval) throws ConfigurationException {
-		if(interval < 10)
+		if (interval < 10)
 			throw new ConfigurationException("minimum scaninterval is 10 seconds");
 
 		log.debug("scanInterval set to [{}] seconds", interval);
@@ -109,18 +111,13 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 		}
 
 		log.debug("starting new scheduler, interval [{}] delay [{}]", scanInterval, delay);
-		future = executor.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				ScanningDirectoryClassLoader.this.scan();
-			}
-		}, delay, scanInterval, TimeUnit.SECONDS);
+		future = executor.scheduleAtFixedRate(ScanningDirectoryClassLoader.this::scan, delay, scanInterval, TimeUnit.SECONDS);
 	}
 
 	protected synchronized void scan() {
-		if(log.isTraceEnabled()) log.trace("running directory scanner on directory [{}]", getDirectory());
+		if (log.isTraceEnabled()) log.trace("running directory scanner on directory [{}]", getDirectory());
 		File[] files = getDirectory().listFiles();
-		if(hasBeenModified(files)) {
+		if (hasBeenModified(files)) {
 			log.debug("detected file change, reloading configuration");
 			getIbisManager().handleAction(Action.RELOAD, getConfigurationName(), null, null, toString(), false);
 
@@ -132,16 +129,19 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	 * Loop through a file array and check if one of the files has been modefied.
 	 * @see #hasBeenModified(File)
 	 */
-	private boolean hasBeenModified(File[] files) {
-		boolean changed = false;
+	private boolean hasBeenModified(File @Nullable [] files) {
+		if (files == null) {
+			return false;
+		}
+		boolean changed;
 		for (File file : files) {
-			if(file.isDirectory()) {
+			if (file.isDirectory()) {
 				changed = hasBeenModified(file.listFiles());
 			} else {
 				changed = hasBeenModified(file);
 			}
 
-			if(changed) {
+			if (changed) {
 				// Only return something when a change has been detected
 				return changed;
 			}
@@ -153,10 +153,10 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	 * @return true if a file has been changed in the last 'scanInterval' seconds
 	 */
 	private boolean hasBeenModified(File file) {
-		if(log.isTraceEnabled()) log.trace("scanning file [{}] lastModDate [{}]", file.getName(), file.lastModified());
-		boolean modified = file.lastModified() + scanInterval*1000 >= System.currentTimeMillis();
+		if (log.isTraceEnabled()) log.trace("scanning file [{}] lastModDate [{}]", file.getName(), file.lastModified());
+		boolean modified = file.lastModified() + scanInterval*1000L >= System.currentTimeMillis();
 
-		if(log.isDebugEnabled() && modified) {
+		if (log.isDebugEnabled() && modified) {
 			log.debug("file [{}] has been changed in the last [{}] seconds", file.getAbsolutePath(), scanInterval);
 		}
 

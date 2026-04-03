@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 - 2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2016 - 2019 Nationale-Nederlanden, 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,8 +42,7 @@ public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
 			// Make sure there's a database present
 			ApplicationContext ac = getIbisManager().getApplicationContext();
 			loadedConfiguration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			// Make the error a little bit more IBIS-developer intuitive
 			throw new ClassLoaderException(getErrorMessage(), t);
 		}

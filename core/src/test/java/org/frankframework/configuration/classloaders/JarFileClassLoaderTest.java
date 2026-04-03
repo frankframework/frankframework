@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
@@ -118,7 +119,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
-		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
+		Set<String> loadedCustomClasses = (Set<String>) loadedClassesField.get(classLoader);
 		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
 	}
@@ -137,7 +138,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
-		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
+		Set<String> loadedCustomClasses = (Set<String>) loadedClassesField.get(classLoader);
 		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
 	}
