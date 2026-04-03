@@ -152,7 +152,7 @@ public class WebServiceSender extends HttpSender {
 		}
 		try {
 			if (isSoap()) {
-				return soapWrapper.getBody(httpResult, false, session, null);
+				return soapWrapper.getBody(httpResult, false, session);
 			}
 			return httpResult;
 		} catch (Exception e) {

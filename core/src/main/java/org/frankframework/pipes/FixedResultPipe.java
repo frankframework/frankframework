@@ -322,7 +322,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 
 			if (transformerPool != null) {
 				try {
-					resultString = transformerPool.transformToString(resultString);
+					Message transformResult = transformerPool.transform(resultString);
+					return new PipeRunResult(getSuccessForward(), transformResult);
 				} catch (SAXException e) {
 					throw new PipeRunException(this, "got error converting string [" + resultString + "] to source", e);
 				} catch (IOException | TransformerException e) {
@@ -333,7 +334,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 			resultMessage = new Message(resultString);
 		}
 
-		log.debug("returning fixed result [{}]", resultMessage);
 		return new PipeRunResult(getSuccessForward(), resultMessage);
 	}
 

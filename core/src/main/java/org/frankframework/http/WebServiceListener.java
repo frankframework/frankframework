@@ -205,7 +205,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 		try {
 			if (log.isDebugEnabled()) log.debug("{}received SOAPMSG [{}]", getLogPrefix(), message);
-			Message request = soapWrapper.getBody(message, false, session, null);
+			Message request = soapWrapper.getBody(message, false, session);
 			Message result = super.processRequest(request, session);
 
 			String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;

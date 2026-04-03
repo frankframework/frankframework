@@ -79,6 +79,8 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 	public static final String SOAP_PROTOCOL_KEY = "soapProtocol";
 
+	public static final String SOAP_VERSION_KEY = org.frankframework.stream.MessageContext.SOAP_PREFIX + "version";
+
 	protected boolean multipartBackwardsCompatibilityMode = AppConstants.getInstance().getBoolean("WebServiceListener.backwardsCompatibleMultipartNotation", false);
 
 	// WebServiceProviders must have a default public constructor
@@ -325,6 +327,9 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 	protected final Message parseSOAPMessage(SOAPMessage soapMessage) {
 		org.frankframework.stream.MessageContext context = MessageUtils.getContext(soapMessage.getMimeHeaders().getAllHeaders());
+
+		String version = getSoapProtocol(soapMessage) == SOAPConstants.SOAP_1_1_PROTOCOL ? "1.1" : "1.2";
+		context.put(SOAP_VERSION_KEY, version);
 
 		// This is not set in the SOAPMessage
 		String contentType = (String) webServiceContext.getMessageContext().get("Content-Type");

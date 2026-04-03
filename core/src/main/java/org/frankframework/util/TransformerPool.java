@@ -315,7 +315,7 @@ public class TransformerPool {
 
 	@NonNull
 	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @NonNull String xPathExpression, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws TransformerConfigurationException {
-		String xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, params, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
+		String xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, params, true, StringUtils.isEmpty(namespaceDefs), xsltVersion);
 		log.debug("xpath [{}] resulted in xslt [{}]", xPathExpression, xslt);
 
 		return new TransformerPool(xslt, null, xsltVersion == 0 ? XmlUtils.DEFAULT_XSLT_VERSION : xsltVersion, null);
@@ -432,6 +432,10 @@ public class TransformerPool {
 		return transformToString(s, null);
 	}
 
+	public String transformToString(@NonNull Message input) throws TransformerException, IOException, SAXException {
+		return transformToString(input.asSource(), null);
+	}
+
 	public String transformToString(Source s, Map<String,Object> parameters) throws TransformerException, IOException {
 		StringWriter out = new StringWriter(XmlUtils.getBufSize());
 		Result result = new StreamResult(out);
@@ -439,8 +443,9 @@ public class TransformerPool {
 		return out.toString();
 	}
 
-	public String transformToString(@NonNull Message input) throws TransformerException, IOException, SAXException {
-		return transformToString(input.asSource(), null);
+	public Message transform(String s) throws TransformerException, IOException, SAXException {
+		Source source = XmlUtils.stringToSourceForSingleUse(s);
+		return transform(source, null);
 	}
 
 	public @NonNull Message transform(@NonNull Message message) throws IOException, TransformerException, SAXException {
@@ -458,11 +463,18 @@ public class TransformerPool {
 		if (m.isEmpty()) {
 			return Message.nullMessage();
 		}
+		Source source = m.asSource();
+		if (source == null) throw new IllegalStateException("Message#asSource may not be null when message is not empty");
+		return transform(source, parameterMap);
+	}
+
+	/**
+	 * Transforms a Source into a Frank message.
+	 */
+	private @NonNull Message transform(@NonNull Source source, @Nullable Map<String, Object> parameterMap) throws IOException, TransformerException, SAXException {
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (OutputStream outputStream = messageBuilder.asOutputStream()) {
 			StreamResult result = new StreamResult(outputStream);
-			Source source = m.asSource();
-			if (source == null) throw new IllegalStateException("Message#asSource may not be null when message is not empty");
 			transform(source, result, parameterMap);
 		}
 		Message output = messageBuilder.build();
