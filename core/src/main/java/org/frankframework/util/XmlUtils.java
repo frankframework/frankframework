@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -497,7 +498,7 @@ public class XmlUtils {
 	 */
 	@NonNull
 	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @NonNull String xPathExpression, TransformerPool.@NonNull OutputType outputMethod, boolean includeXmlDeclaration, boolean stripSpace) {
-		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, includeXmlDeclaration, null, stripSpace, false, null, DEFAULT_XSLT_VERSION);
+		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, includeXmlDeclaration, null, stripSpace, false, DEFAULT_XSLT_VERSION);
 	}
 
 	/**
@@ -517,7 +518,7 @@ public class XmlUtils {
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
 	@NonNull
-	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @NonNull String xPathExpression, TransformerPool.@NonNull OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
+	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @NonNull String xPathExpression, TransformerPool.@NonNull OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		final String copyMethod;
@@ -527,9 +528,7 @@ public class XmlUtils {
 			copyMethod = "value-of";
 		}
 
-		final String separatorString = separator != null ? " separator=\"" + separator + "\"" : "";
-
-		return createXPathEvaluatorSource(ignored -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlEncodingUtils.encodeChars(xPathExpression) + "\"" + separatorString + "/>", xPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
+		return createXPathEvaluatorSource(xPath -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlEncodingUtils.encodeChars(xPath) + "\" />", xPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
 	}
 
 	/**
@@ -553,12 +552,14 @@ public class XmlUtils {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
 
-		StringBuilder paramsString = new StringBuilder();
+		String paramsString = "";
 		if (params != null) {
-			for (IParameter param: params) {
-				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
-			}
+			paramsString = params.stream()
+					.map(IParameter::getName)
+					.map(paramName -> "<xsl:param name=\"" + paramName + "\"/>")
+					.collect(Collectors.joining());
 		}
+
 		int version = xsltVersion == 0 ? DEFAULT_XSLT_VERSION : xsltVersion;
 
 		// Xslt version 1 ignores namespaces by default, setting this to true will generate a different non-xslt1-parsable xslt: xslt1 'Can not convert #RTREEFRAG to a NodeList'
@@ -594,10 +595,10 @@ public class XmlUtils {
 		:
 		"<xsl:template match=\"/\">" +
 			xpathContainerSupplier.apply(xPathExpression) +
-		"</xsl:template>" )+
+		"</xsl:template>" )
+		+
 		"</xsl:stylesheet>";
 	}
-
 
 	/**
 	 * Converts a string containing xml-markup to a Source-object, that can be used as the input of a XSLT-transformer.
@@ -1254,7 +1255,7 @@ public class XmlUtils {
 	public static @Nullable String getRootNamespace(String input) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getGetRootNamespaceTransformerPool();
-			return tp.transformToString(input,null);
+			return tp.transformToString(input);
 		} catch (Exception e) {
 			log.warn("unable to find root-namespace", e);
 			return null;
@@ -1274,7 +1275,7 @@ public class XmlUtils {
 	public static @Nullable String addRootNamespace(String input, String namespace) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getAddRootNamespaceTransformerPool(namespace,true,false);
-			return tp.transformToString(input,null);
+			return tp.transformToString(input);
 		} catch (Exception e) {
 			log.warn("unable to add root-namespace", e);
 			return null;
@@ -1294,7 +1295,7 @@ public class XmlUtils {
 	public static @Nullable String copyOfSelect(String input, String xpath) {
 		try {
 			TransformerPool tp = UtilityTransformerPools.getCopyOfSelectTransformerPool(xpath, true,false);
-			return tp.transformToString(input,null);
+			return tp.transformToString(input);
 		} catch (Exception e) {
 			log.warn("unable to execute xpath expression [{}]", xpath, e);
 			return null;

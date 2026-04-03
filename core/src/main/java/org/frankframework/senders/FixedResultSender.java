@@ -103,17 +103,18 @@ public class FixedResultSender extends AbstractSenderWithParameters {
 			result=StringResolver.substVars(returnString, session);
 		}
 
-		if (transformerPool != null) {
-			try{
-				result = transformerPool.transformToString(result);
-			} catch (IOException | TransformerException e) {
-				throw new SenderException("got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
-			} catch (SAXException se) {
-				throw new SenderException("got error converting string [" + result + "] to source", se);
-			}
+		if (transformerPool == null) {
+			return new SenderResult(result);
 		}
-		log.debug("returning fixed result [{}]", result);
-		return new SenderResult(result);
+
+		try {
+			Message transformResult = transformerPool.transform(result);
+			return new SenderResult(transformResult);
+		} catch (IOException | TransformerException e) {
+			throw new SenderException("got error transforming message [" + result + "] with [" + getStyleSheetName() + "]", e);
+		} catch (SAXException se) {
+			throw new SenderException("got error converting string [" + result + "] to source", se);
+		}
 	}
 
 	@Override

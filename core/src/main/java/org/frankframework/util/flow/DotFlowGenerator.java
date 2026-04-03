@@ -60,9 +60,9 @@ public class DotFlowGenerator implements IFlowGenerator {
 	protected String generateDot(String xml) throws FlowGenerationException {
 		try {
 			if(xml.startsWith("<adapter")) {
-				return transformerPoolAdapter.transformToString(xml, null);
+				return transformerPoolAdapter.transformToString(xml);
 			} else {
-				return transformerPoolConfig.transformToString(xml, null);
+				return transformerPoolConfig.transformToString(xml);
 			}
 		} catch (IOException | TransformerException | SAXException e) {
 			throw new FlowGenerationException("error transforming [xml] to [dot]", e);
