@@ -529,7 +529,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return mailFolder.getUrl();
+		return mailFolder == null ? "" : mailFolder.getUrl();
 	}
 
 	/**
