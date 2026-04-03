@@ -471,7 +471,7 @@ public class TransformerPool {
 	/**
 	 * Transforms a Source into a Frank message.
 	 */
-	private @NonNull Message transform(@NonNull Source source, @Nullable Map<String, Object> parameterMap) throws IOException, TransformerException, SAXException {
+	private @NonNull Message transform(@NonNull Source source, @Nullable Map<String, Object> parameterMap) throws IOException, TransformerException {
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (OutputStream outputStream = messageBuilder.asOutputStream()) {
 			StreamResult result = new StreamResult(outputStream);

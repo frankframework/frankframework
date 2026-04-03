@@ -199,7 +199,7 @@ public class SoapWrapper {
 		if (!Message.isEmpty(extractedMessage)) {
 			extractedMessage.getContext().with(AbstractSOAPProvider.SOAP_VERSION_KEY, soapVersion.getLabel());
 
-			if (session != null && soapVersion != null) {
+			if (session != null) {
 				session.putIfAbsent(SOAP_VERSION_SESSION_KEY, soapVersion);
 				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 					session.putIfAbsent(soapNamespaceSessionKey, soapVersion.namespace);

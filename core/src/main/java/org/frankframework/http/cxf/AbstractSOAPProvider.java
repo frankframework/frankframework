@@ -328,7 +328,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 	protected final Message parseSOAPMessage(SOAPMessage soapMessage) {
 		org.frankframework.stream.MessageContext context = MessageUtils.getContext(soapMessage.getMimeHeaders().getAllHeaders());
 
-		String version = getSoapProtocol(soapMessage) == SOAPConstants.SOAP_1_1_PROTOCOL ? "1.1" : "1.2";
+		String version = SOAPConstants.SOAP_1_1_PROTOCOL.equals(getSoapProtocol(soapMessage)) ? "1.1" : "1.2";
 		context.put(SOAP_VERSION_KEY, version);
 
 		// This is not set in the SOAPMessage
