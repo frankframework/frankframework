@@ -47,12 +47,13 @@ public class CleanerProvider {
 		Runtime.getRuntime().addShutdownHook(new Thread(CleanerProvider::logLeakStatistics));
 	}
 
+	@SuppressWarnings({"java:S1215", "java:S1181"}) // Ignore warnings for calling gc() and catching Throwable
 	public static void logLeakStatistics() {
 		// Force system to run garbage collection to clean up as much as possible and collect as much leak-info before logging it
 		System.gc();
 		try {
 			// Give time to GC thread.
-			Thread.sleep(1000L);
+			Thread.sleep(500L);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
