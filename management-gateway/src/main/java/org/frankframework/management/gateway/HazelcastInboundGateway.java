@@ -29,8 +29,8 @@ import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHandlingException;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -140,9 +140,17 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 				}
 				handleResponse(response, tempReplyChannel);
 			}
-		} catch (MessageHandlingException e) {
-			log.warn("error processing message id [{}]", headers.getId(), e.getCause());
+		} catch (MessagingException e) {
+			// Catch all exceptions with a failed-message.
+			if (log.isInfoEnabled()) {
+				// Only log the stacktrace if loglevel is INFO.
+				log.warn("error processing message id [{}]", headers.getId(), e);
+			} else {
+				// Hide the message when the loglevel is WARN.
+				log.warn("error processing message id [{}]", headers.getId());
+			}
 		} catch (Exception e) {
+			// Log other exceptions normally.
 			log.error("error processing message id [{}]", headers.getId(), e);
 		}
 	}
