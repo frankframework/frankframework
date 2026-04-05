@@ -138,7 +138,7 @@ importers:
         version: 21.2.5(@angular/compiler@21.2.5)(typescript@5.9.3)
       '@cypress/schematic':
         specifier: ^5.0.0
-        version: 5.0.0(@angular/cli@21.2.3(@types/node@25.5.0)(chokidar@5.0.0))(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2)(zone.js@0.16.1))(cypress@15.12.0)
+        version: 5.0.0(@angular/cli@21.2.3(@types/node@25.5.0)(chokidar@5.0.0))(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2)(zone.js@0.16.1))(cypress@15.13.0)
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.1.0)
@@ -212,8 +212,8 @@ importers:
   console/frontend/src/main/frontend/cypress:
     devDependencies:
       cypress:
-        specifier: ^15.12.0
-        version: 15.12.0
+        specifier: ^15.13.0
+        version: 15.13.0
       cypress-multi-reporters:
         specifier: ^2.0.5
         version: 2.0.5(mocha@11.7.5)
@@ -2224,8 +2224,8 @@ packages:
     peerDependencies:
       mocha: '>=3.1.2'
 
-  cypress@15.12.0:
-    resolution: {integrity: sha512-B2BRcudLfA4NZZP5QpA45J70bu1heCH59V1yKRLHAtiC49r7RV03X5ifUh7Nfbk8QNg93RAsc6oAmodm/+j0pA==}
+  cypress@15.13.0:
+    resolution: {integrity: sha512-hJ9sY++TUC/HlUzHVJpIrDyqKMjlhx5PTXl/A7eA91JNEtUWkJAqefQR5mo9AtLra/9+m+JJaMg2U5Qd0a74Fw==}
     engines: {node: ^20.1.0 || ^22.0.0 || >=24.0.0}
     hasBin: true
 
@@ -4859,11 +4859,11 @@ snapshots:
       tunnel-agent: 0.6.0
       uuid: 8.3.2
 
-  '@cypress/schematic@5.0.0(@angular/cli@21.2.3(@types/node@25.5.0)(chokidar@5.0.0))(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2)(zone.js@0.16.1))(cypress@15.12.0)':
+  '@cypress/schematic@5.0.0(@angular/cli@21.2.3(@types/node@25.5.0)(chokidar@5.0.0))(@angular/core@21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2)(zone.js@0.16.1))(cypress@15.13.0)':
     dependencies:
       '@angular/cli': 21.2.3(@types/node@25.5.0)(chokidar@5.0.0)
       '@angular/core': 21.2.5(@angular/compiler@21.2.5)(rxjs@7.8.2)(zone.js@0.16.1)
-      cypress: 15.12.0
+      cypress: 15.13.0
       jsonc-parser: 3.3.1
       rxjs: 7.8.2
       semver: 7.7.4
@@ -6336,7 +6336,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  cypress@15.12.0:
+  cypress@15.13.0:
     dependencies:
       '@cypress/request': 3.0.10
       '@cypress/xvfb': 1.2.4(supports-color@8.1.1)
