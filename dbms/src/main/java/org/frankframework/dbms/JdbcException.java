@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,16 +29,16 @@ public class JdbcException extends IbisException {
 		super();
 	}
 
-	public JdbcException(String arg1) {
-		super(arg1);
+	public JdbcException(String message) {
+		super(message);
 	}
 
-	public JdbcException(String arg1, Throwable arg2) {
-		super(arg1, arg2);
+	public JdbcException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	public JdbcException(Throwable arg1) {
-		super(arg1);
+	public JdbcException(Throwable cause) {
+		super(cause);
 	}
 
 }
