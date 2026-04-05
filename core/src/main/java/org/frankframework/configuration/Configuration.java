@@ -208,7 +208,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	public void configure() throws ConfigurationException {
 		log.info("configuring configuration [{}]", this::getId);
 		if (getName().contains("/")) {
-			throw new ConfigurationException("It is not allowed to have '/' in configuration name [" + getName() + "]");
+			throw new IllegalStateException("It is not allowed to have '/' in configuration name [" + getName() + "]");
 		}
 		state = RunState.STARTING;
 		long start = System.currentTimeMillis();
@@ -230,7 +230,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			}
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
-			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage()));
+			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage(),  MessageEventLevel.WARN));
 			applicationLog.info("Configuration [{}] was not able to startup", this::getNameWithOptionalVersion);
 
 			configurationException = e;
