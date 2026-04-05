@@ -69,6 +69,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
@@ -242,6 +243,7 @@ public class FrankApplication {
 
 	public boolean hasStarted() {
 		if (applicationContext == null || !isRunning()) {
+			getApplicationLogger().warn("FrankApplication is not yet running!");
 			return false;
 		}
 
@@ -249,13 +251,13 @@ public class FrankApplication {
 			LocalGateway gateway = createBean();
 
 			// Simple request
-			MessageBuilder<?> builder = MessageBuilder.withPayload("NONE");
-			builder.setHeader(BusTopic.TOPIC_HEADER_NAME, BusTopic.HEALTH.name());
-			builder.setHeader(BusAction.ACTION_HEADER_NAME, BusAction.GET.name());
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH, BusAction.GET);
 
-			Message<Object> response = gateway.sendSyncMessage(builder.build());
-			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
+			Message<Object> response = gateway.sendSyncMessage(builder.build(null));
+			// An integer is returned, but just in case it might be something else, convert it to a String.
+			return "200".equals(""+response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
 		} catch (Exception e) {
+			e.printStackTrace();
 			getApplicationLogger().warn("FrankApplication is not yet healthy!", e);
 			return false;
 		}
