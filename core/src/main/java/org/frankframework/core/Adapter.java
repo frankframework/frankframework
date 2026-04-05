@@ -319,7 +319,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	private DistributionSummary statsMessageProcessingDuration = null;
 	private final Object statisticsLock = new Object();
 
-	private long statsUpSince = System.currentTimeMillis();
+	private long statsUpSince = 0;
 	private IErrorMessageFormatter errorMessageFormatter;
 
 	private final RunStateManager runState = new RunStateManager();
