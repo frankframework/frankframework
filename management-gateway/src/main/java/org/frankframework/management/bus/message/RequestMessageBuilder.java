@@ -39,7 +39,7 @@ import org.frankframework.management.bus.BusTopic;
  * Utility class to help create RequestMessages.
  * Unlike a response message, the request message needs to contain
  * information as to where it needs to be send to.
- * 
+ *
  * This information is stored as a so called 'transport header'.
  * Examples are 'topic', 'action' and 'target'.
  */

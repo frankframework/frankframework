@@ -229,14 +229,14 @@ public class ConfigurationsTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart("/configurations")
-						.file(createMockMultipartFile("file", "file.txt", "contents".getBytes()))
+						.file(createMockMultipartFile("file", "file.txt", "contents".getBytes(UTF_8)))
 						.part(
 								new MockPart[]{
-										new MockPart("datasource", "test".getBytes()),
-										new MockPart("user", "username".getBytes()),
-										new MockPart("multiple_configs", "true".getBytes()),
-										new MockPart("activate_config", "false".getBytes()),
-										new MockPart("automatic_reload", "true".getBytes())
+										new MockPart("datasource", "test".getBytes(UTF_8)),
+										new MockPart("user", "username".getBytes(UTF_8)),
+										new MockPart("multiple_configs", "true".getBytes(UTF_8)),
+										new MockPart("activate_config", "false".getBytes(UTF_8)),
+										new MockPart("automatic_reload", "true".getBytes(UTF_8))
 								}
 						)
 						.characterEncoding("UTF-8")
