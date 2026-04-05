@@ -52,7 +52,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.extern.log4j.Log4j2;
