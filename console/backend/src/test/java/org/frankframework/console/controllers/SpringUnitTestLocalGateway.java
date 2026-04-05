@@ -43,6 +43,10 @@ public class SpringUnitTestLocalGateway implements OutboundGateway {
 				headers.put(MessageBase.MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
 				headers.put("meta-" + MessageBase.MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
 
+				// Since I'm too lazy to change all the tests, I've added this.
+				// But this would be a way to verify that we're not sending a payload.
+				headers.put("meta-status", 200);
+
 				return new MessageHeaders(headers);
 			}
 		};

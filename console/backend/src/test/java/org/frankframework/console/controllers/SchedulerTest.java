@@ -41,7 +41,7 @@ public class SchedulerTest extends FrankApiTestBase {
 		mockMvc.perform(put("/schedules")
 						.content("{\"action\": \"start\"}")
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class SchedulerTest extends FrankApiTestBase {
 		mockMvc.perform(put("/schedules/groupName/jobs/jobName")
 						.content("{\"action\": \"start\"}")
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class SchedulerTest extends FrankApiTestBase {
 
 		mockMvc.perform(multipart("/schedules")
 						.part(getMultiPartParts()))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
@@ -101,7 +101,7 @@ public class SchedulerTest extends FrankApiTestBase {
 		});
 		mockMvc.perform(multipart(HttpMethod.PUT, "/schedules/groupName/jobs/jobName")
 						.part(getMultiPartParts()))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
@@ -126,7 +126,7 @@ public class SchedulerTest extends FrankApiTestBase {
 		});
 		mockMvc.perform(multipart("/schedules/groupName/jobs")
 						.part(getMultiPartParts()))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test

@@ -241,8 +241,10 @@ public class ConfigurationsTest extends FrankApiTestBase {
 						)
 						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
+
+				// We're sending any binary data, octet-stream
 				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
 	}
 
 	@Test
