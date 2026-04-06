@@ -96,10 +96,8 @@ public class IbisstoreSummary extends BusEndpointBase {
 
 	private List<Adapter> getAdapters() {
 		List<Adapter> registeredAdapters = new ArrayList<>();
-		for (Configuration configuration : getIbisManager().getConfigurations()) {
-			if(configuration.isActive()) {
-				registeredAdapters.addAll(configuration.getRegisteredAdapters());
-			}
+		for (Configuration configuration : getIbisManager().getActiveConfigurations()) {
+			registeredAdapters.addAll(configuration.getRegisteredAdapters());
 		}
 		return registeredAdapters;
 	}

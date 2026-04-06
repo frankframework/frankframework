@@ -196,7 +196,7 @@ public class SecurityItems extends BusEndpointBase {
 		}
 
 		// And add all aliases that are used in the configuration
-		for (Configuration configuration : getIbisManager().getConfigurations()) {
+		for (Configuration configuration : getIbisManager().getActiveConfigurations()) {
 			ConfigurationDigester digester = configuration.getBean(ConfigurationDigester.class);
 			String configString = digester.getLoadedConfiguration();
 			if(StringUtils.isEmpty(configString)) continue; // If a configuration can't be found, continue...

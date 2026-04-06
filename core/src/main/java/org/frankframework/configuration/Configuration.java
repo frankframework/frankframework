@@ -228,12 +228,13 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			if (errorMessageFormatter instanceof IConfigurable configurableErrorMessageFormatter) {
 				configurableErrorMessageFormatter.configure();
 			}
-		} catch (ConfigurationException e) {
+		} catch (BeansException | ConfigurationException e) {
 			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage(),  MessageEventLevel.WARN));
 			applicationLog.info("Configuration [{}] was not able to startup", this::getNameWithOptionalVersion);
 
-			configurationException = e;
+			// TODO configurationException is more like an instantiation exception, shouldn't it be more generic?
+			configurationException = e instanceof ConfigurationException ce ? ce : new ConfigurationException(e);
 			throw e;
 		}
 		configured = true;
