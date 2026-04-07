@@ -1040,9 +1040,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	/**
 	 * For more information see:
-	 * @see http://msdn.microsoft.com/en-us/library/cc223248.aspx
-	 * @see http://stackoverflow.com/questions/15335614/changing-active-directory-user-password-from-java-program
-	 * @see http://blogs.msdn.com/b/alextch/archive/2012/05/15/how-to-set-active-directory-password-from-java-application.aspx
+	 * @see <a href="http://msdn.microsoft.com/en-us/library/cc223248.aspx">3.1.1.3.1.5.1 unicodePwd</a>
+	 * @see <a href="http://stackoverflow.com/questions/15335614/changing-active-directory-user-password-from-java-program">Changing Active Directory user password from java program</a>
 	 */
 	private byte[] encodeUnicodePwd(Object value) {
 		log.debug("Encode unicodePwd value");
