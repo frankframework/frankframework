@@ -46,7 +46,6 @@ import org.springframework.messaging.Message;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
@@ -62,6 +61,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.SpringUtils;
@@ -182,7 +182,7 @@ public class RunLarvaTests {
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
 		try {
 			Message<@NonNull Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
-			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+ MessageBase.STATUS_KEY));
+			return "200".equals(""+response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
 		} catch (Exception e) {
 			log.error("error while checking health of application", e);
 			return false;

@@ -79,7 +79,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		});
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/pipes/storageSourceName/stores/error/messages/download")
-						.part(new MockPart("messageIds", "1,2,3".getBytes())))
+						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
 				.andExpect(request().asyncStarted())
 				.andDo(MvcResult::getAsyncResult)
 				.andExpect(MockMvcResultMatchers.status().isOk())
@@ -115,7 +115,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
-						.part(new MockPart("messageIds", "1,2,3".getBytes())))
+						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
@@ -133,7 +133,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 				.sendAsyncMessage(Mockito.any(Message.class));
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
-						.part(new MockPart("messageIds", "1,2,3".getBytes())))
+						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isAccepted())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.content().string(EXPECTED_EXCEPTION_CONTENT));
@@ -145,7 +145,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error/move/Done")
-						.part(new MockPart("messageIds", "1,2,3".getBytes())))
+						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
@@ -173,7 +173,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.DELETE, "/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
-						.part(new MockPart("messageIds", "1,2,3".getBytes())))
+						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
@@ -187,7 +187,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 				.when(outputGateway).sendAsyncMessage(Mockito.any(Message.class));
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.DELETE, "/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
-						.part(new MockPart("messageIds", "1,2,3".getBytes())))
+						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isAccepted())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.content().string(EXPECTED_EXCEPTION_CONTENT));

@@ -33,10 +33,10 @@ import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 

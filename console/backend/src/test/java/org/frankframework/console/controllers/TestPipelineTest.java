@@ -30,8 +30,8 @@ public class TestPipelineTest extends FrankApiTestBase {
 
 	private static MockPart[] getMultiPartParts() {
 		return new MockPart[] {
-				new MockPart("configuration", "TestConfiguration".getBytes()),
-				new MockPart("adapter", "HelloWorld".getBytes())
+				new MockPart("configuration", "TestConfiguration".getBytes(UTF_8)),
+				new MockPart("adapter", "HelloWorld".getBytes(UTF_8))
 		};
 	}
 
@@ -48,7 +48,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
-						.file(createMockMultipartFile("message", null, DUMMY_MESSAGE.getBytes()))
+						.file(createMockMultipartFile("message", null, DUMMY_MESSAGE.getBytes(UTF_8)))
 						.part(getMultiPartParts())
 						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
@@ -70,7 +70,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
-						.file(createMockMultipartFile("message", null, "".getBytes()))
+						.file(createMockMultipartFile("message", null, "".getBytes(UTF_8)))
 						.part(getMultiPartParts())
 						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
@@ -93,11 +93,11 @@ public class TestPipelineTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
-						.file(createMockMultipartFile("message", null, "".getBytes()))
+						.file(createMockMultipartFile("message", null, "".getBytes(UTF_8)))
 						.part(new MockPart[]{
-								new MockPart("configuration", "TestConfiguration".getBytes()),
-								new MockPart("adapter", "HelloWorld".getBytes()),
-								new MockPart("sessionKeys", sessionKeys.getBytes()),
+								new MockPart("configuration", "TestConfiguration".getBytes(UTF_8)),
+								new MockPart("adapter", "HelloWorld".getBytes(UTF_8)),
+								new MockPart("sessionKeys", sessionKeys.getBytes(UTF_8)),
 						})
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
@@ -118,7 +118,7 @@ public class TestPipelineTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
-						.file(createMockMultipartFile("file", "my-file.xml", DUMMY_MESSAGE.getBytes()))
+						.file(createMockMultipartFile("file", "my-file.xml", DUMMY_MESSAGE.getBytes(UTF_8)))
 						.part(getMultiPartParts())
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
@@ -185,13 +185,13 @@ public class TestPipelineTest extends FrankApiTestBase {
 			assertEquals(DUMMY_MESSAGE, in.getPayload());
 			assertEquals("HelloWorld", in.getHeaders().get("meta-adapter"));
 
-			return new BinaryMessage("dummy data".getBytes());
+			return new BinaryMessage("dummy data".getBytes(UTF_8));
 		});
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.part(getMultiPartParts())
-						.file(new MockMultipartFile("message", DUMMY_MESSAGE.getBytes()))
+						.file(new MockMultipartFile("message", DUMMY_MESSAGE.getBytes(UTF_8)))
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
@@ -210,14 +210,14 @@ public class TestPipelineTest extends FrankApiTestBase {
 			assertEquals(expectedValue, in.getPayload());
 			assertEquals("HelloWorld", in.getHeaders().get("meta-adapter"));
 
-			InputStream message = new ByteArrayInputStream(input.getBytes()); // Stream is needed to test the line endings conversion
+			InputStream message = new ByteArrayInputStream(input.getBytes(UTF_8)); // Stream is needed to test the line endings conversion
 			return new GenericMessage<>(message, new MessageHeaders(null));
 		});
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_PIPELINE_ENDPOINT)
 						.part(getMultiPartParts())
-						.file(new MockMultipartFile("message", input.getBytes()))
+						.file(new MockMultipartFile("message", input.getBytes(UTF_8)))
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))

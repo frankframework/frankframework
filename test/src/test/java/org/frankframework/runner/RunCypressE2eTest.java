@@ -46,12 +46,12 @@ import io.github.wimdeblauwe.testcontainers.cypress.CypressTestResults;
 import io.github.wimdeblauwe.testcontainers.cypress.CypressTestSuite;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
@@ -109,7 +109,7 @@ public class RunCypressE2eTest {
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
 		try {
 			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
-			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
+			return "200".equals(""+response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
 		} catch (Exception e) {
 			CYPRESS_LOG.error("error while checking health of application", e);
 			return false;

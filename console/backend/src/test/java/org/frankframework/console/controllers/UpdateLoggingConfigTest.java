@@ -40,18 +40,18 @@ public class UpdateLoggingConfigTest extends FrankApiTestBase {
 	public static Stream<Arguments> createLogDefinitionSource() {
 		return Stream.of(
 				Arguments.of(new MockPart[]{
-					new MockPart("level", "WARN".getBytes()),
-					new MockPart("logger", "package".getBytes())
+					new MockPart("level", "WARN".getBytes(UTF_8)),
+					new MockPart("logger", "package".getBytes(UTF_8))
 				}, "meta-level", "WARN", MockMvcResultMatchers.status().isOk()),
 				Arguments.of(new MockPart[]{
-						new MockPart("level", "WARN".getBytes()),
-						new MockPart("logger", "package".getBytes())
+						new MockPart("level", "WARN".getBytes(UTF_8)),
+						new MockPart("logger", "package".getBytes(UTF_8))
 				}, "meta-logPackage", "package", MockMvcResultMatchers.status().isOk()),
 				Arguments.of(new MockPart[]{
-						new MockPart("level", "WARN".getBytes())
+						new MockPart("level", "WARN".getBytes(UTF_8))
 				}, null, null, MockMvcResultMatchers.status().isBadRequest()),
 				Arguments.of(new MockPart[]{
-						new MockPart("logger", "package".getBytes())
+						new MockPart("logger", "package".getBytes(UTF_8))
 				}, null, null, MockMvcResultMatchers.status().isBadRequest())
 		);
 	}

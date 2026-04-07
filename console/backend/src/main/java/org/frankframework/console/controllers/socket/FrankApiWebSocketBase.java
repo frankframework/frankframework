@@ -43,11 +43,11 @@ import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.management.gateway.HazelcastOutboundGateway;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 
