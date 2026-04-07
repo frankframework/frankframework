@@ -192,7 +192,7 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 		try {
 			Scope.child(Scope.Attr.ui.name(), new LoggerUIService(), scopedRunner);
 		} catch (Exception e) {
-			throw e instanceof LiquibaseException ? (LiquibaseException) e : new LiquibaseException(e);
+			throw e instanceof LiquibaseException liquibaseException ? liquibaseException : new LiquibaseException(e);
 		}
 	}
 
