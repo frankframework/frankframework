@@ -41,7 +41,7 @@ public class SchedulerTest extends FrankApiTestBase {
 		mockMvc.perform(put("/schedules")
 						.content("{\"action\": \"start\"}")
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class SchedulerTest extends FrankApiTestBase {
 		mockMvc.perform(put("/schedules/groupName/jobs/jobName")
 						.content("{\"action\": \"start\"}")
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
@@ -76,13 +76,13 @@ public class SchedulerTest extends FrankApiTestBase {
 
 		mockMvc.perform(multipart("/schedules")
 						.part(getMultiPartParts()))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
 	public void createScheduleWithoutAllParts() throws Exception {
 		mockMvc.perform(multipart("/schedules")
-						.part(new MockPart("name", "scheduleName".getBytes())))
+						.part(new MockPart("name", "scheduleName".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("Key [group] not defined"));
@@ -101,13 +101,13 @@ public class SchedulerTest extends FrankApiTestBase {
 		});
 		mockMvc.perform(multipart(HttpMethod.PUT, "/schedules/groupName/jobs/jobName")
 						.part(getMultiPartParts()))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
 	public void updateScheduleWithoutAllParts() throws Exception {
 		mockMvc.perform(multipart(HttpMethod.PUT, "/schedules/groupName/jobs/jobName")
-						.part(new MockPart("name", "scheduleName".getBytes())))
+						.part(new MockPart("name", "scheduleName".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("Key [adapter] not defined"));
@@ -126,13 +126,13 @@ public class SchedulerTest extends FrankApiTestBase {
 		});
 		mockMvc.perform(multipart("/schedules/groupName/jobs")
 						.part(getMultiPartParts()))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
 	public void createScheduleInJobGroupWithoutAllParts() throws Exception {
 		mockMvc.perform(multipart("/schedules/groupName/jobs")
-						.part(new MockPart("name", "scheduleName".getBytes())))
+						.part(new MockPart("name", "scheduleName".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("Key [adapter] not defined"));
@@ -140,19 +140,19 @@ public class SchedulerTest extends FrankApiTestBase {
 
 	private static MockPart[] getMultiPartParts() {
 		return new MockPart[]{
-				new MockPart("name", "scheduleName".getBytes()),
-				new MockPart("group", "groupName".getBytes()),
-				new MockPart("cron", "* * * * *".getBytes()),
-				new MockPart("interval", "0".getBytes()),
-				new MockPart("adapter", "adapterName".getBytes()),
-				new MockPart("receiver", "receiverName".getBytes()),
-				new MockPart("configuration", "configurationName".getBytes()),
-				new MockPart("listener", "listenenerName".getBytes()),
-				new MockPart("lockkey", "".getBytes()),
-				new MockPart("message", "".getBytes()),
-				new MockPart("description", "".getBytes()),
-				new MockPart("persistent", "false".getBytes()),
-				new MockPart("locker", "false".getBytes()),
+				new MockPart("name", "scheduleName".getBytes(UTF_8)),
+				new MockPart("group", "groupName".getBytes(UTF_8)),
+				new MockPart("cron", "* * * * *".getBytes(UTF_8)),
+				new MockPart("interval", "0".getBytes(UTF_8)),
+				new MockPart("adapter", "adapterName".getBytes(UTF_8)),
+				new MockPart("receiver", "receiverName".getBytes(UTF_8)),
+				new MockPart("configuration", "configurationName".getBytes(UTF_8)),
+				new MockPart("listener", "listenenerName".getBytes(UTF_8)),
+				new MockPart("lockkey", "".getBytes(UTF_8)),
+				new MockPart("message", "".getBytes(UTF_8)),
+				new MockPart("description", "".getBytes(UTF_8)),
+				new MockPart("persistent", "false".getBytes(UTF_8)),
+				new MockPart("locker", "false".getBytes(UTF_8)),
 		};
 	}
 }

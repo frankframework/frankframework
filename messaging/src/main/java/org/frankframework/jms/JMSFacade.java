@@ -764,9 +764,9 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 
 	protected Message extractMessageBody(Message message, Map<String, Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException, XmlException {
 		if (context instanceof PipeLineSession session) {
-			return soapWrapper.getBody(message, false, session, null);
+			return soapWrapper.getBody(message, false, session);
 		}
-		return soapWrapper.getBody(message, false, null, null);
+		return soapWrapper.getBody(message, false, null);
 	}
 
 	public void checkTransactionManagerValidity() {

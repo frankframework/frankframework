@@ -292,7 +292,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 						throw new PipeRunException(this, "cannot extract SOAP body", e);
 					}
 					try {
-						inputRootNs = transformerPoolGetRootNamespace.transformToString(input, null);
+						inputRootNs = transformerPoolGetRootNamespace.transformToString(input);
 					} catch (Exception e) {
 						throw new PipeRunException(this, "cannot extract root namespace", e);
 					}

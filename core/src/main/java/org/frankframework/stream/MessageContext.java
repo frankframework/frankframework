@@ -47,6 +47,8 @@ public class MessageContext implements Serializable {
 
 	public static final String HEADER_PREFIX = "Header.";
 
+	public static final String SOAP_PREFIX = "Soap.";
+
 	public static final String METADATA_CHARSET = "Metadata.Charset";
 	public static final String METADATA_SIZE = "Metadata.Size";
 	public static final String METADATA_MODIFICATIONTIME = "Metadata.ModificationTime";

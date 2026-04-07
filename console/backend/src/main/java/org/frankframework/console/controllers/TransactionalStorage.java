@@ -43,12 +43,12 @@ import lombok.Setter;
 
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 
 @RestController
 public class TransactionalStorage {

@@ -29,9 +29,9 @@ import lombok.Getter;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.Relation;
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 
 @RestController
 public class SecurityItems {

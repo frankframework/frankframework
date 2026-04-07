@@ -53,7 +53,7 @@ public class FlowDiagramTest {
 		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
 		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineWithoutFirstPipe.xml");
 		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
-		String result = transformerPool.transformToString(adapter, null);
+		String result = transformerPool.transformToString(adapter);
 
 		assertEquals(dot, result);
 	}
@@ -64,7 +64,7 @@ public class FlowDiagramTest {
 		TransformerPool transformerPool = TransformerPool.getInstance(resource, 2);
 		String adapter = TestFileUtils.getTestFile("/FlowDiagram/pipelineExitInTheMiddle.xml");
 		String dot = TestFileUtils.getTestFile("/FlowDiagram/dot.txt");
-		String result = transformerPool.transformToString(adapter, null);
+		String result = transformerPool.transformToString(adapter);
 
 		assertEquals(dot, result);
 	}

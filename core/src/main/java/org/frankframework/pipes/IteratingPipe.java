@@ -364,7 +364,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 					if (getStopConditionTp()!=null) {
 						long stopConditionStartTime = System.currentTimeMillis();
-						String stopConditionResult = getStopConditionTp().transformToString(itemResult,null);
+						String stopConditionResult = getStopConditionTp().transformToString(itemResult);
 						long stopConditionEndTime = System.currentTimeMillis();
 						long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
 						getStatisticsKeeper("stop condition determination").record(stopConditionDuration);

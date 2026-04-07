@@ -145,7 +145,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 			if (correlationIDTp!=null) {
 				if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
 					String sourceString = session.getString(getCorrelationIDSessionKey());
-					correlationID =correlationIDTp.transformToString(sourceString,null);
+					correlationID =correlationIDTp.transformToString(sourceString);
 				} else {
 					if (isUseInputForExtract()) {
 						correlationID =correlationIDTp.transformToString(originalMessage);

@@ -45,12 +45,12 @@ public class MessageBase<T> implements Message<T> {
 		if(status < 200 || status > 599) {
 			throw new IllegalArgumentException("Status code ["+status+"] must be between 200 and 599");
 		}
-		setHeader(STATUS_KEY, String.valueOf(status));
+		setMetaHeader(STATUS_KEY, status);
 	}
 
 	protected void setMimeType(MimeType mimeType) {
 		if(mimeType != null) {
-			setHeader(MIMETYPE_KEY, mimeType.toString());
+			setMetaHeader(MIMETYPE_KEY, mimeType.toString());
 		}
 	}
 
@@ -59,11 +59,30 @@ public class MessageBase<T> implements Message<T> {
 	}
 
 	public void setFilename(String disposition, String filename) {
-		setHeader(CONTENT_DISPOSITION_KEY, disposition + "; filename=\""+filename+"\"");
+		setMetaHeader(CONTENT_DISPOSITION_KEY, disposition + "; filename=\""+filename+"\"");
 	}
 
+	/**
+	 * Set a header with the {@value BusMessageUtils#HEADER_PREFIX} prefix for the data layer.
+	 */
 	public void setHeader(String key, String value) {
-		headers.put(BusMessageUtils.HEADER_PREFIX+key, value);
+		setMetaHeader(key, value);
+	}
+
+	/**
+	 * Prepend the header with {@value BusMessageUtils#HEADER_PREFIX} prefix to make a
+	 * distinct difference between custom (data layer) and mandatory (transport layer) headers.
+	 */
+	void setMetaHeader(String key, Object value) {
+		setMessageHeader(BusMessageUtils.HEADER_PREFIX+key, value);
+	}
+
+	/**
+	 * Set a header without the {@value BusMessageUtils#HEADER_PREFIX} prefix.
+	 * Is used by the transport layer and not the data layer.
+	 */
+	void setMessageHeader(String key, Object value) {
+		headers.put(key, value);
 	}
 
 	@NonNull

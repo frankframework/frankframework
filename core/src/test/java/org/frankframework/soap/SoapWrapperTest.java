@@ -118,7 +118,7 @@ public class SoapWrapperTest {
 	void getBody11() {
 		String soapBody;
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessageSoap11), false, null, null).asString();
+			soapBody = soapWrapper.getBody(new Message(soapMessageSoap11), false, null).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -129,7 +129,7 @@ public class SoapWrapperTest {
 	void getBody12() {
 		String soapBody;
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessageSoap12), false, null, null).asString();
+			soapBody = soapWrapper.getBody(new Message(soapMessageSoap12), false, null).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -193,13 +193,13 @@ public class SoapWrapperTest {
 
 	@Test
 	void testGetBodyXmlWithPlainXMLMessageNotAllowed() throws Exception {
-		Message message = soapWrapper.getBody(new Message(xmlMessage), false, null, null);
+		Message message = soapWrapper.getBody(new Message(xmlMessage), false, null);
 		assertTrue(message.isNull());
 	}
 
 	@Test
 	void testGetBodyXmlWithPlainXMLMessageAllowed() throws Exception {
-		Message message = soapWrapper.getBody(new Message(xmlMessage), true, null, null);
+		Message message = soapWrapper.getBody(new Message(xmlMessage), true, null);
 		assertEquals(xmlMessage, message.asString());
 	}
 
@@ -209,7 +209,7 @@ public class SoapWrapperTest {
 		session.put(SoapWrapper.SOAP_VERSION_SESSION_KEY, SoapVersion.NONE);
 		Message messageMock = mock(Message.class);
 
-		Message message = soapWrapper.getBody(messageMock, true, session, null);
+		Message message = soapWrapper.getBody(messageMock, true, session);
 
 		verify(messageMock, times(0)).asSource();
 		assertEquals(message, messageMock);
