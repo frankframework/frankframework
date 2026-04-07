@@ -291,7 +291,7 @@ public class MessageUtils {
 	 * <p>
 	 *    When there is no filename for the Message and Apache TIKA deduces mime type {@literal text/plain}, a heuristic is
 	 *    applied. If the message starts with {@literal '<'} the mime type {@literal application/xml} is returned.
-	 *    If the message starts with {@literal '['} or {@literal '{'} the mime type {@literal application/json} is returned.
+	 *    If the message starts with {@literal '['} or '&#123;' the mime type {@literal application/json} is returned.
 	 *    Otherwise it will be {@literal text/plain} as Apache TIKA returned.
 	 * </p>
 	 * @ff.note This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
@@ -345,7 +345,7 @@ public class MessageUtils {
 	 * is an internal method of {@link #computeMimeType(Message)}, called with assumption that
 	 * TIKA computed {@literal text/plain} and the message has been preserved.
 	 * @param message Message for which to make educated guess of the mimetype.
-	 * @return {@literal application/json} if the message started with {@literal '{'} or {@literal '['},
+	 * @return {@literal application/json} if the message started with '&#123' or {@literal '['},
 	 * {@literal application/xml} if the message started with {@literal '<'}, otherwise {@literal text/plain}.
 	 *
 	 */

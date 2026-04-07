@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.IListenerConnector.CacheMode;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPortConnectedListener;
-import org.frankframework.core.ISender;
 import org.frankframework.core.IThreadCountControllable;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.PipeLineSession;
@@ -45,7 +44,7 @@ import org.frankframework.util.CredentialFactory;
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
  * The JMS messages have to come in from an external source: an MDB or a Spring
  * message container.
- *
+ * <p>
  * This version of the <code>JmsListener</code> supports distributed transactions using the XA-protocol.
  * No special action is required to have the listener join the transaction.
  * </p><p>
@@ -63,7 +62,7 @@ import org.frankframework.util.CredentialFactory;
  * <p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is
  * specified in the message, the JmsListener sends the result of the processing
  * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
- * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
+ * specified {@link #setSender(org.frankframework.core.ISender) Sender}, that in turn sends the message to
  * whatever it is configured to.</p>
  *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing

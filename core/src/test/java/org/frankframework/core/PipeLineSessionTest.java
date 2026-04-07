@@ -272,10 +272,6 @@ public class PipeLineSessionTest {
 		assertEquals(correlationId, session.getCorrelationId());
 	}
 
-	/**
-	 * Method: mergeToParentSession(String keys, Map<String,Object> from, Map<String,Object>
-	 * to)
-	 */
 	@Test
 	public void testMergeToParentSession() {
 		// Arrange

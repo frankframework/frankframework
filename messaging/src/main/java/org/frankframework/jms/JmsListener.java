@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@
 package org.frankframework.jms;
 
 import org.frankframework.core.IJmsListener;
-import org.frankframework.core.IPullingListener;
 
 /**
- * A true multi-threaded {@link IPullingListener Listener}-class.
+ * A true multi-threaded {@link org.frankframework.core.IPullingListener Listener}-class.
  * <br/>
- *
+ * <p>
  * Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
  * {@link #setTransacted(boolean) transacted} attribute. If this is set to <code>true</code>, received messages are
  * committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
  * In case of a failure, all actions within the transaction are rolled back.
  * </p><p>
- * Setting {@link #setAcknowledgeMode(AcknowledgeMode) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
+ * Setting {@link #setAcknowledgeMode(AcknowledgeMode) listener.acknowledgeMode} to "auto" means that messages are always acknowledged removed from
  * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
  * when the state of the Adapter equals the success state for committing.
  * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the

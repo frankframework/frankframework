@@ -83,6 +83,7 @@ import org.frankframework.util.XmlUtils;
  * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
+ * <p>
  * <h3>Note on using packages</h3>
  * The package processor makes some assumptions about the data types:
  * <ul>

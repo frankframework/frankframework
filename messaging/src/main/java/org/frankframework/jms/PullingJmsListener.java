@@ -33,7 +33,6 @@ import org.frankframework.core.HasSender;
 import org.frankframework.core.ICorrelatedPullingListener;
 import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.IPullingListener;
-import org.frankframework.core.ISender;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -67,8 +66,9 @@ import org.frankframework.util.RunStateEnquiring;
  * <p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is
  * specified in the message, the JmsListener sends the result of the processing
  * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
- * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
- * whatever it is configured to.</p>
+ * specified {@link #setSender(org.frankframework.core.ISender) Sender}, that in turn sends the message to
+ * whatever it is configured to.
+ *
  * </p>
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>jakarta.jms.TextMessage</code>s <br/><br/>

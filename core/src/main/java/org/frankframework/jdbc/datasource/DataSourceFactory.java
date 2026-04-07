@@ -25,7 +25,7 @@ import org.frankframework.util.StringUtil;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
- * Default implementation, does not use pooling, wraps the {@link DataSource} in a {@link TransactionAwareDataSourceProxy).
+ * Default implementation, does not use pooling, wraps the {@link DataSource} in a {@link TransactionAwareDataSourceProxy}.
  *
  */
 public class DataSourceFactory extends NonTransactionalDataSourceFactory {

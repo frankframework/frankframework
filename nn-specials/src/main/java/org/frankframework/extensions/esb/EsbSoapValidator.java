@@ -138,7 +138,8 @@ public class EsbSoapValidator extends SoapValidator implements WsdlGeneratorExte
 	}
 
 	/**
-	 * Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2
+	 * <p>Only used when <code>mode=reg</code>!</p>
+	 * Sets the Common Message Header version. 1 or 2
 	 * @ff.default 1
 	 */
 	public void setCmhVersion(int i) {
