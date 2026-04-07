@@ -48,7 +48,6 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
-import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
@@ -62,11 +61,12 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
 /**
- * Implementation of a {@link IPushingListener},
+ * Implementation of a {@link org.frankframework.core.IPushingListener},
  * that enables a Receiver to receive messages from SAP-systems.
- *
+ * <p>
  * In SAP, the function to be called is an RFC-function to the destination that is registered using <code>progid</code>.
- * </b>
+ * </p>
+ * <p>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from xml.
  * </p>

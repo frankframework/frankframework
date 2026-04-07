@@ -44,7 +44,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlUtils;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
- *
+ * <p>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from/to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml.
  * </p>

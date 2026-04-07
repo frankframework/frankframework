@@ -67,7 +67,7 @@ import org.frankframework.stream.Message;
  *     When calling the JavaListener via the {@link IbisLocalSender} all messages are passed in their native format,
  *     retaining all their metadata.
  * </p>
- * 
+ *
  * @see <a href="https://github.com/frankframework/servicedispatcher">The ServiceDispatcher project on Gitbug for more information.</a>
  * @author Gerrit van Brakel
  */
