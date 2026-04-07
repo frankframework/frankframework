@@ -8,7 +8,7 @@
   }
   @if (securityItemsService.hasExpiringCertificates()) {
     <li class="list-group-item alert-danger">
-      <div tabindex="0" role="button" class="pointer" (click)="navigateTo('security-items')">
+      <div tabindex="0" class="pointer" (click)="navigateTo('security-items')">
         <fa-icon class="m-r-md" [icon]="faInfoCircle" />
         <span>One or more certificates are due to expire</span>
       </div>
@@ -45,7 +45,7 @@
       alert.configuration === '' || selectedConfiguration === alert.configuration || selectedConfiguration === 'All'
     ) {
       <li [class]="`alert-${alert.type} list-group-item`">
-        <div tabindex="0" role="button" [ngClass]="{ pointer: !!alert.link }" (click)="navigateByAlert(alert)">
+        <div tabindex="0" [ngClass]="{ pointer: !!alert.link }" (click)="navigateByAlert(alert)">
           <fa-icon class="m-r-md" [icon]="alert.type === 'warning' ? faWarning : faTimes" />
           @if (selectedConfiguration === 'All' && alert.configuration !== '') {
             <span>Configuration [{{ alert.configuration }}] - </span>
