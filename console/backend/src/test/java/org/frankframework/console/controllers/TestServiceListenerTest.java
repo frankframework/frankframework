@@ -24,7 +24,7 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 	public void testWrongEncoding() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
-						.file(createMockMultipartFile("message", null, INPUT_MESSAGE.getBytes()))
+						.file(createMockMultipartFile("message", null, INPUT_MESSAGE.getBytes(UTF_8)))
 						.part(getMockPart("service", "dummyService123"))
 						.part(getMockPart("encoding", "fakeEncoding"))
 						.accept(MediaType.APPLICATION_JSON))
@@ -37,7 +37,7 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 	public void testFileWrongEncoding() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
-						.file(createMockMultipartFile("file", "script.xml", INPUT_MESSAGE.getBytes()))
+						.file(createMockMultipartFile("file", "script.xml", INPUT_MESSAGE.getBytes(UTF_8)))
 						.part(getMockPart("service", "dummyService123"))
 						.part(getMockPart("encoding", "fakeEncoding"))
 						.accept(MediaType.APPLICATION_JSON))
@@ -59,7 +59,7 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
-						.file(createMockMultipartFile("message", null, INPUT_MESSAGE.getBytes()))
+						.file(createMockMultipartFile("message", null, INPUT_MESSAGE.getBytes(UTF_8)))
 						.part(getMockPart("service", "dummyService123"))
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
@@ -79,7 +79,7 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart(TEST_SERVICE_LISTENER_ENDPOINT)
-						.file(createMockMultipartFile("file", null, INPUT_MESSAGE.getBytes()))
+						.file(createMockMultipartFile("file", null, INPUT_MESSAGE.getBytes(UTF_8)))
 						.part(getMockPart("service", "dummyService123"))
 						.accept(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isOk())
@@ -94,6 +94,6 @@ public class TestServiceListenerTest extends FrankApiTestBase {
 	}
 
 	private MockPart getMockPart(String name, String value) {
-		return new MockPart(name, value.getBytes());
+		return new MockPart(name, value.getBytes(UTF_8));
 	}
 }

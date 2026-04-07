@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.console.util;
+package org.frankframework.management.bus.message;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -26,7 +26,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -35,8 +34,15 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.util.JacksonUtils;
 
+/**
+ * Utility class to help create RequestMessages.
+ * Unlike a response message, the request message needs to contain
+ * information as to where it needs to be send to.
+ *
+ * This information is stored as a so called 'transport header'.
+ * Examples are 'topic', 'action' and 'target'.
+ */
 @Log4j2
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
@@ -44,8 +50,7 @@ public class RequestMessageBuilder {
 	private final @Getter @NonNull BusTopic topic;
 	private final @Getter @NonNull BusAction action;
 
-	private static final String DEFAULT_PAYLOAD = "NONE";
-	private Object payload = DEFAULT_PAYLOAD;
+	private MessageBase<?> payload = null;
 
 	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
@@ -81,16 +86,17 @@ public class RequestMessageBuilder {
 	}
 
 	public RequestMessageBuilder setPayload(InputStream payload) {
-		this.payload = payload;
+		this.payload = new BinaryMessage(payload);
 		return this;
 	}
 
 	public RequestMessageBuilder setJsonPayload(Object payload) {
-		return setPayload(JacksonUtils.convertToJson(payload));
+		this.payload = new JsonMessage(payload);
+		return this;
 	}
 
 	public RequestMessageBuilder setPayload(String payload) {
-		this.payload = payload;
+		this.payload = new StringMessage(payload);
 		return this;
 	}
 
@@ -114,14 +120,12 @@ public class RequestMessageBuilder {
 				.map(this::mapHeaderForLog)
 				.collect(Collectors.joining(", "));
 
-		if (action == BusAction.GET || DEFAULT_PAYLOAD.equals(payload)) {
-			if(action == BusAction.GET && !DEFAULT_PAYLOAD.equals(payload)) {
-				log.warn("created bus request [GET:{}] with payload [{}]", topic, payload);
-			}
-
+		// Log statement without payload (GET never has a payload)
+		if (action == BusAction.GET || payload == null) {
 			SEC_LOG.debug("created bus request [{}:{}] with headers [{}]", action, topic, headers);
 		} else {
-			String safePayload = payload instanceof String payloadString ? StringEscapeUtils.escapeJava(payloadString) : "";
+			// Log statement with payload
+			String safePayload = payload instanceof StringMessage strMsg ? StringEscapeUtils.escapeJava(strMsg.getPayload()) : "";
 			SEC_LOG.info("created bus request [{}:{}] with headers [{}] payload [{}]", action, topic, headers, safePayload);
 		}
 	}
@@ -131,21 +135,26 @@ public class RequestMessageBuilder {
 			addLogLines();
 		}
 
-		MessageBuilder<?> builder = MessageBuilder.withPayload(payload);
-		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
+		if (this.payload == null) {
+			this.payload = EmptyMessage.noContent();
+		} else if(action == BusAction.GET) {
+			// We have a payload and action is GET. We don't expect this, so log it for now...
+			log.warn("created bus request [GET:{}] with payload [{}]", topic, payload);
+		}
+
+		payload.setMessageHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
+		payload.setMessageHeader(BusAction.ACTION_HEADER_NAME, action.name());
 
 		// Optional target parameter, to target a specific backend node.
 		if(uuid != null) {
-			builder.setHeader(BusMessageUtils.HEADER_TARGET_KEY, uuid);
+			payload.setMessageHeader(BusMessageUtils.HEADER_TARGET_KEY, uuid);
 		}
 
 		for (Map.Entry<String, Object> customHeader : customHeaders.entrySet()) {
-			String key = BusMessageUtils.HEADER_PREFIX + customHeader.getKey();
-			builder.setHeader(key, customHeader.getValue());
+			payload.setMetaHeader(customHeader.getKey(), customHeader.getValue());
 		}
 
-		return builder.build();
+		return payload;
 	}
 
 	private String mapHeaderForLog(Map.Entry<String, Object> entry) {

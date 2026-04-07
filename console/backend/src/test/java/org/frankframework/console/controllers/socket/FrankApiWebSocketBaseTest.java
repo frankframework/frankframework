@@ -16,9 +16,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import org.frankframework.console.controllers.SpringUnitTestLocalGateway;
 import org.frankframework.console.controllers.WebTestConfiguration;
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 
 @WebAppConfiguration
 @ExtendWith(SpringExtension.class)
