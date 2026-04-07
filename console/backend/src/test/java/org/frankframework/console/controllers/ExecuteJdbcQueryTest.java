@@ -53,8 +53,10 @@ public class ExecuteJdbcQueryTest extends FrankApiTestBase {
 						}
 						""")
 				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+
+			// We're not sending any data, so 204 and text/plain
+			.andExpect(MockMvcResultMatchers.status().isNoContent())
+			.andExpect(MockMvcResultMatchers.content().contentType(MediaType.TEXT_PLAIN));
 	}
 
 	@Test
@@ -82,7 +84,9 @@ public class ExecuteJdbcQueryTest extends FrankApiTestBase {
 						}
 						""")
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+
+				// We're not sending any data, so 204 and text/plain
+				.andExpect(MockMvcResultMatchers.status().isNoContent())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.TEXT_PLAIN));
 	}
 }

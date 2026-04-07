@@ -26,9 +26,9 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 	@Test
 	public void testWrongEncoding() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/jms/message")
-						.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes()))
+						.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes(UTF_8)))
 						.part(getMultiPartParts())
-						.part(new MockPart("encoding", "fakeEncoding".getBytes())))
+						.part(new MockPart("encoding", "fakeEncoding".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("unsupported file encoding [fakeEncoding]"));
@@ -37,9 +37,9 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 	@Test
 	public void testFileWrongEncoding() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/jms/message")
-						.file(new MockMultipartFile("message", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes())))
+						.file(new MockMultipartFile("message", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes(UTF_8))))
 						.part(getMultiPartParts())
-						.part(new MockPart("encoding", "fakeEncoding".getBytes())))
+						.part(new MockPart("encoding", "fakeEncoding".getBytes(UTF_8))))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("unsupported file encoding [fakeEncoding]"));
@@ -56,7 +56,7 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 			return mockResponseMessage(in, in::getPayload, 200, MediaType.APPLICATION_JSON);
 		});
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/jms/message")
-						.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes()))
+						.file(new MockMultipartFile("message", null, MediaType.TEXT_PLAIN_VALUE, "inputMessage".getBytes(UTF_8)))
 						.part(getMultiPartParts()))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().string("inputMessage"));
@@ -73,7 +73,7 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 			return mockResponseMessage(in, in::getPayload, 200, MediaType.APPLICATION_JSON);
 		});
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/jms/message")
-						.file(new MockMultipartFile("file", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes())))
+						.file(new MockMultipartFile("file", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes(UTF_8))))
 						.part(getMultiPartParts()))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content().string("inputMessage"));
@@ -104,7 +104,7 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/jms/message")
-						.file(new MockMultipartFile("file", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes())))
+						.file(new MockMultipartFile("file", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("inputMessage".getBytes(UTF_8))))
 						.part(getMultiPartParts("false")))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
@@ -120,12 +120,12 @@ public class SendJmsMessageTest extends FrankApiTestBase {
 
 	private MockPart[] getMultiPartParts(String synchronous) {
 		return new MockPart[]{
-				new MockPart("persistent", "false".getBytes()),
-				new MockPart("lookupDestination", "false".getBytes()),
-				new MockPart("synchronous", synchronous.getBytes()),
-				new MockPart("destination", "some-queue".getBytes()),
-				new MockPart("type", "type".getBytes()),
-				new MockPart("connectionFactory", "qcf/connectionFactory".getBytes())
+				new MockPart("persistent", "false".getBytes(UTF_8)),
+				new MockPart("lookupDestination", "false".getBytes(UTF_8)),
+				new MockPart("synchronous", synchronous.getBytes(UTF_8)),
+				new MockPart("destination", "some-queue".getBytes(UTF_8)),
+				new MockPart("type", "type".getBytes(UTF_8)),
+				new MockPart("connectionFactory", "qcf/connectionFactory".getBytes(UTF_8))
 		};
 	}
 }

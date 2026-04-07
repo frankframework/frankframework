@@ -229,20 +229,22 @@ public class ConfigurationsTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart("/configurations")
-						.file(createMockMultipartFile("file", "file.txt", "contents".getBytes()))
+						.file(createMockMultipartFile("file", "file.txt", "contents".getBytes(UTF_8)))
 						.part(
 								new MockPart[]{
-										new MockPart("datasource", "test".getBytes()),
-										new MockPart("user", "username".getBytes()),
-										new MockPart("multiple_configs", "true".getBytes()),
-										new MockPart("activate_config", "false".getBytes()),
-										new MockPart("automatic_reload", "true".getBytes())
+										new MockPart("datasource", "test".getBytes(UTF_8)),
+										new MockPart("user", "username".getBytes(UTF_8)),
+										new MockPart("multiple_configs", "true".getBytes(UTF_8)),
+										new MockPart("activate_config", "false".getBytes(UTF_8)),
+										new MockPart("automatic_reload", "true".getBytes(UTF_8))
 								}
 						)
 						.characterEncoding("UTF-8")
 						.accept(MediaType.APPLICATION_JSON))
+
+				// We're sending any binary data, octet-stream
 				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
 	}
 
 	@Test

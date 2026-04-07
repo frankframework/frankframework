@@ -58,7 +58,7 @@ public class MonitorsTest extends FrankApiTestBase {
 		});
 
 		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configurationName/monitors/monitorName"))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test
@@ -74,7 +74,7 @@ public class MonitorsTest extends FrankApiTestBase {
 		});
 
 		mockMvc.perform(MockMvcRequestBuilders.delete("/configurations/configurationName/monitors/monitorName/triggers/1"))
-				.andExpect(MockMvcResultMatchers.status().isOk());
+				.andExpect(MockMvcResultMatchers.status().isNoContent());
 	}
 
 	@Test

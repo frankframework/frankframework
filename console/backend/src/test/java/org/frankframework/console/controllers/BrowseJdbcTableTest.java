@@ -31,8 +31,9 @@ public class BrowseJdbcTableTest extends FrankApiTestBase {
 					.content("{\"datasource\": \"testDatasource\", \"table\": \"testTable\"}")
 					.accept(MediaType.APPLICATION_JSON)
 					.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+				// We're not sending any data, so 204 and text/plain
+				.andExpect(MockMvcResultMatchers.status().isNoContent())
+				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.TEXT_PLAIN));
 	}
 
 	@Test
@@ -42,6 +43,7 @@ public class BrowseJdbcTableTest extends FrankApiTestBase {
 					.accept(MediaType.APPLICATION_JSON)
 					.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().isBadRequest())
+				// Exception is handled normally with json response.
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("tableName not defined."));
 	}
