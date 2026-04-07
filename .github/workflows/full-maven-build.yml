@@ -25,9 +25,7 @@ on:
       - "**.txt"
       - "**.png"
       - "**.toml"
-      - ".github/**"
       - "!.github/workflows/*.yml"
-      - "docker/**"
   pull_request:
     branches:
       - master
@@ -39,9 +37,7 @@ on:
       - "**.txt"
       - "**.png"
       - "**.toml"
-      - ".github/**"
       - "!.github/workflows/*.yml"
-      - "docker/**"
 
 jobs:
   build-maven-artifacts:
