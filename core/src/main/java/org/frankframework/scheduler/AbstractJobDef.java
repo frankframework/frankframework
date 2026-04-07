@@ -59,49 +59,49 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  *     <td align="left">&nbsp;</th>
  *     <td align="left">0-59</td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left">{@code , - * / }</td>
+ *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Minutes</code></td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left">0-59</td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left">{@code , - * / }</td>
+ *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Hours</code></td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left">0-23</td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left">{@code , - * / }</td>
+ *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Day-of-month</code></td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left">1-31</td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left">{@code , - * ? / L C }</td>
+ *     <td align="left"><code>, - * ? / L C</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Month</code></td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left">1-12 or JAN-DEC</td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left">{@code , - * / }</td>
+ *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Day-of-Week</code></td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left">1-7 or SUN-SAT</td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left">{@code , - * ? / L C # }</td>
+ *     <td align="left"><code>, - * ? / L C #</code></td>
  *   </tr>
  *   <tr>
  *     <td align="left"><code>Year (Optional)</code></td>
  *     <td align="left">&nbsp;</th>
  *     <td align="left">>empty, 1970-2099</td>
  *     <td align="left">&nbsp;</th>
- *     <td align="left">{@code , - * / }</td>
+ *     <td align="left"><code>, - * /</code></td>
  *   </tr>
  * </table>
  * </p>

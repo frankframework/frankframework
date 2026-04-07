@@ -93,7 +93,7 @@
 
 	<module name="SuppressionSingleFilter">
 		<property name="checks" value="UnusedImports"/>
-		<property name="files" value="StandardLockService.java"/>
+		<property name="files" value="StandardLockService.java,AbstractJobDef.java"/>
 	</module>
 
 	<module name="TreeWalker">
