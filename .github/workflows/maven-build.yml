@@ -22,9 +22,7 @@ on:
       - "**.txt"
       - "**.png"
       - "**.toml"
-      - ".github/**"
       - "!.github/workflows/maven-build.yml"
-      - "docker/**"
   pull_request:
     branches:
       - master
@@ -36,13 +34,11 @@ on:
       - "**.txt"
       - "**.png"
       - "**.toml"
-      - ".github/**"
       - "!.github/workflows/maven-build.yml"
-      - "docker/**"
 
 jobs:
   build-maven-artifacts:
-    name: Build and Test Maven Artifacts
+    name: Build and Test Maven Artifacts on JDK
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -118,7 +114,7 @@ jobs:
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=frankframework
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
