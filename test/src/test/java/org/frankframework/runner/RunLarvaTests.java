@@ -182,7 +182,7 @@ public class RunLarvaTests {
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
 		try {
 			Message<@NonNull Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
-			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+ MessageBase.STATUS_KEY));
+			return "200".equals(""+response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
 		} catch (Exception e) {
 			log.error("error while checking health of application", e);
 			return false;

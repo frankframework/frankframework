@@ -109,7 +109,7 @@ public class RunCypressE2eTest {
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
 		try {
 			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
-			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
+			return "200".equals(""+response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
 		} catch (Exception e) {
 			CYPRESS_LOG.error("error while checking health of application", e);
 			return false;
