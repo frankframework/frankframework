@@ -62,7 +62,7 @@ TagDatabase
 		<createSequence sequenceName="SEQ_IBISTEMP" startValue="56789"/>
 	</changeSet>
 
-	<changeSet id="IAF_Util:8" author="Niels Meijer">
+	<changeSet id="IBISFILETRIGGER" author="Niels Meijer" onValidationFail="MARK_RAN">
 		<comment>Add IBISFILETRIGGER Table</comment>
 		<createTable tableName="IBISFILETRIGGER">
 			<column name="ID" type="BIGINT" autoIncrement="true">
