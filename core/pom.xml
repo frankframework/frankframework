@@ -340,6 +340,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- io.swagger implements both the old Javax and the new Jakarta implementations -->
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-core-jakarta</artifactId>
