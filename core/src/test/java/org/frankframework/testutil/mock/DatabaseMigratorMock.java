@@ -17,12 +17,12 @@ public class DatabaseMigratorMock extends AbstractDatabaseMigrator {
 	}
 
 	@Override
-	public void update() throws JdbcException {
+	public void update() {
 		// Nothing to update
 	}
 
 	@Override
-	public void update(Writer writer) throws JdbcException {
+	public void update(Writer writer) {
 		// Nothing to update
 	}
 

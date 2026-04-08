@@ -66,6 +66,12 @@ public class IbisManager implements ApplicationContextAware {
 		return Collections.unmodifiableList(configurations);
 	}
 
+	public List<Configuration> getActiveConfigurations() {
+		return configurations.stream()
+				.filter(Configuration::isActive)
+				.toList();
+	}
+
 	@Nullable
 	public Configuration getConfiguration(String configurationName) {
 		return configurations.stream()

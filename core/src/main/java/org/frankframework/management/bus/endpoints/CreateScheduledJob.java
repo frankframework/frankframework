@@ -212,12 +212,10 @@ public class CreateScheduledJob extends BusEndpointBase {
 	}
 
 	private Adapter findAdapter(String adapterName) {
-		for(Configuration config : getIbisManager().getConfigurations()) {
-			if(config.isActive()) {
-				Adapter adapter = config.getRegisteredAdapter(adapterName);
-				if (adapterName.equals(adapter.getName())) {
-					return adapter;
-				}
+		for(Configuration config : getIbisManager().getActiveConfigurations()) {
+			Adapter adapter = config.getRegisteredAdapter(adapterName);
+			if (adapterName.equals(adapter.getName())) {
+				return adapter;
 			}
 		}
 		return null;
