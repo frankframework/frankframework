@@ -1,5 +1,6 @@
 package org.frankframework.console.controllers;
 
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -31,6 +32,7 @@ import org.frankframework.management.bus.message.MessageBase;
 @WebAppConfiguration
 @ExtendWith(SpringExtension.class)
 public abstract class FrankApiTestBase {
+	public static final Charset UTF_8 = Charset.defaultCharset();
 	protected MockMvc mockMvc;
 
 	@Autowired
@@ -50,7 +52,7 @@ public abstract class FrankApiTestBase {
 		Mockito.reset(outputGateway);
 	}
 
-	protected MockMultipartFile createMockMultipartFile(final String name, final String originalFilename, final byte[] content) {
+	protected MockMultipartFile createMockMultipartFile(final String name, @Nullable final String originalFilename, final byte[] content) {
 		return new MockMultipartFile(name, originalFilename, MediaType.MULTIPART_FORM_DATA_VALUE, content);
 	}
 

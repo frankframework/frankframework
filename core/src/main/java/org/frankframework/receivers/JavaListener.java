@@ -47,7 +47,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 
@@ -57,20 +56,19 @@ import org.frankframework.stream.Message;
  * JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.
  * <p>
  * To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
- * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link IbisJavaSender} (external call)
+ * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link org.frankframework.senders.IbisJavaSender} (external call)
  * or {@link IbisLocalSender} (internal call).
  * </p>
  * <p>
- *     Calling the JavaListener via the {@link IbisJavaSender} forces all request messages to be passed as strings without
+ *     Calling the JavaListener via the {@link org.frankframework.senders.IbisJavaSender} forces all request messages to be passed as strings without
  *     metadata.
  * </p>
  * <p>
  *     When calling the JavaListener via the {@link IbisLocalSender} all messages are passed in their native format,
  *     retaining all their metadata.
  * </p>
- * <p>
- *     @see <a href="https://github.com/frankframework/servicedispatcher">The ServiceDispatcher project on Gitbug for more information.</a>
- * </p>
+ *
+ * @see <a href="https://github.com/frankframework/servicedispatcher">The ServiceDispatcher project on Gitbug for more information.</a>
  * @author Gerrit van Brakel
  */
 @Log4j2

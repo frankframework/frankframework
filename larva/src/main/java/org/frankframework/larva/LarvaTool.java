@@ -958,7 +958,7 @@ public class LarvaTool {
 	 *
 	 * @param properties Properties to be checked
 	 *
-	 * @return Map<String, Map<String, Map<String, String>>> as Map<'ignoreContentBetweenKeys', Map<'fieldA', Map<'key1', '<field name="A">'>
+	 * @return {@code Map<String, Map<String, Map<String, String>>> as Map<'ignoreContentBetweenKeys', Map<'fieldA', Map<'key1', '<field name="A">'>>>}
 	*/
 	public static Map<String, Map<String, Map<String, String>>> mapPropertiesToIgnores(Properties properties){
 		Map<String, Map<String, Map<String, String>>> returnMap = new HashMap<>();

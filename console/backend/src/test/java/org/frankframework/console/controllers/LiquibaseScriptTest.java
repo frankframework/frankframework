@@ -88,9 +88,9 @@ public class LiquibaseScriptTest extends FrankApiTestBase {
 
 		mockMvc.perform(MockMvcRequestBuilders
 						.multipart("/jdbc/liquibase")
-						.file(new MockMultipartFile("file", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("dummy".getBytes())))
+						.file(new MockMultipartFile("file", "script.xml", MediaType.TEXT_PLAIN_VALUE, new ByteArrayInputStream("dummy".getBytes(UTF_8))))
 						.part(
-								new MockPart("configuration", "TestConfiguration".getBytes())
+								new MockPart("configuration", "TestConfiguration".getBytes(UTF_8))
 						))
 				.andExpect(MockMvcResultMatchers.status().isCreated())
 				.andExpect(MockMvcResultMatchers.jsonPath("result").value("dummy"));
@@ -100,9 +100,9 @@ public class LiquibaseScriptTest extends FrankApiTestBase {
 	public void uploadZipWithScripts() throws Exception {
 		MvcResult mockResult = mockMvc.perform(MockMvcRequestBuilders
 						.multipart("/jdbc/liquibase")
-						.file(new MockMultipartFile("file", "script.zip", MediaType.APPLICATION_OCTET_STREAM_VALUE, new ByteArrayInputStream("dummy".getBytes())))
+						.file(new MockMultipartFile("file", "script.zip", MediaType.APPLICATION_OCTET_STREAM_VALUE, new ByteArrayInputStream("dummy".getBytes(UTF_8))))
 						.part(
-								new MockPart("configuration", "TestConfiguration".getBytes())
+								new MockPart("configuration", "TestConfiguration".getBytes(UTF_8))
 						))
 				.andExpect(MockMvcResultMatchers.status().isInternalServerError())
 				.andExpect(MockMvcResultMatchers.jsonPath("error").value("uploading zip files is not supported!"))

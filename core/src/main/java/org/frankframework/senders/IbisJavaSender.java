@@ -45,6 +45,7 @@ import org.frankframework.stream.Message;
  * An IbisJavaSender makes a call to a Receiver with a {@link JavaListener}
  * or any other application in the same JVM that has registered a <code>RequestProcessor</code> with the IbisServiceDispatcher.
  * </p>
+ * <p>
  * The IbisJavaSender is now considered to be legacy. The new way to call another adapter or java application from your own
  * adapter is by using the {@link FrankSender}.
  * </p>

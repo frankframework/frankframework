@@ -88,6 +88,7 @@ public class Parameter extends AbstractParameter<Message> {
 
 	/**
 	 * Only valid for xPathExpression.
+	 * <p>
 	 * If xpathResult is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
 	 * This results in an xml-string including the XML tags, if you want the contents of the element (as scalar value), use TEXT.
 	 * </p>

@@ -35,10 +35,10 @@ import org.frankframework.console.ApiException;
 import org.frankframework.console.configuration.ClientSession;
 import org.frankframework.console.configuration.DeprecationInterceptor;
 import org.frankframework.console.controllers.socket.MessageCacheStore;
-import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.management.gateway.HazelcastOutboundGateway;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 

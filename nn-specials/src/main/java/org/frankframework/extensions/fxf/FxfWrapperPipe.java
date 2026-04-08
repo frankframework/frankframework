@@ -218,9 +218,9 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		String transferFlowId;
 		String clientFilename;
 		try {
-			transferFlowId = transferFlowIdTp.transformToString(soapBody, null);
+			transferFlowId = transferFlowIdTp.transformToString(soapBody);
 			session.put(getTransferFlowIdSessionKey(), transferFlowId);
-			clientFilename = clientFilenameTp.transformToString(soapBody, null);
+			clientFilename = clientFilenameTp.transformToString(soapBody);
 			session.put(getClientFilenameSessionKey(), clientFilename);
 		} catch (Throwable t) {
 			throw new PipeRunException(this, "Unexpected exception during (un)wrapping ", t);

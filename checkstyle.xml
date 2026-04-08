@@ -70,6 +70,12 @@
 		</module>
 	</module>
 
+	<module name="SuppressionSingleFilter">
+		<property name="checks" value="UnusedImports"/>
+		<property name="files" value="AbstractJobDef.java"/>
+		<property name="lines" value="1-268"/>
+	</module>
+
 	<module name="TreeWalker">
 		<property name="severity" value="warning" />
 		<module name="RegexpSinglelineJava">

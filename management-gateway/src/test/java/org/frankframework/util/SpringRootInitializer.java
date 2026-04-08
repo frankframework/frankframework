@@ -14,13 +14,9 @@ import org.frankframework.management.security.JwtKeyGenerator;
 /**
  * A minimal Spring ApplicationContext which contains no beans and no configuration.
  * Enables the use of
- * <pre>
  * @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
- * </pre>
  * And
- * <pre>
  * @WithMockUser(...)
- * </pre>
  *
  */
 @Configuration

@@ -134,7 +134,8 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		super.stop();
 	}
 
-	protected String makeEncapsulatingXslt(String rootElementName, String xpathExpression, int xsltVersion, String namespaceDefs) {
+	// This could/should use XmlUtils.createXPathEvaluatorSource
+	private String makeEncapsulatingXslt(String rootElementName, String xpathExpression, int xsltVersion, String namespaceDefs) {
 		String paramsString = getParameterList().stream()
 				.map(IParameter::getName)
 				.map(paramName -> "<xsl:param name=\"" + paramName + "\"/>")

@@ -22,13 +22,17 @@ export class ServerWarningsComponent {
   @Input() freeDiskSpacePercentage: number | null = null;
 
   protected readonly FREE_DISK_SPACE_ALERT_THRESHOLD = 5;
+  protected readonly faInfoCircle = faInfoCircle;
+  protected readonly faWarning = faWarning;
+  protected readonly faTimes = faTimes;
   protected securityItemsService: SecurityItemsService = inject(SecurityItemsService);
 
   private router: Router = inject(Router);
 
   protected navigateByAlert(alert: Alert): void {
     if (alert.link) {
-      this.router.navigate(['configuration', alert.link.name], {
+      this.router.navigate(['configurations'], {
+        queryParams: { name: alert.link.name },
         fragment: alert.link['#'],
       });
     }
@@ -38,7 +42,4 @@ export class ServerWarningsComponent {
     this.router.navigate([path]);
   }
 
-  protected readonly faInfoCircle = faInfoCircle;
-  protected readonly faWarning = faWarning;
-  protected readonly faTimes = faTimes;
 }

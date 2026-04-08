@@ -76,7 +76,7 @@ class StringUtilTest {
 	}
 
 	/**
-	 * Method: {@link StringUtil#hideAll(String string, Collection regexes})
+	 * Method: {@link StringUtil#hideAll(String, Collection)})
 	 */
 	@Test
 	public void testHideAll() {

@@ -364,7 +364,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 					if (getStopConditionTp()!=null) {
 						long stopConditionStartTime = System.currentTimeMillis();
-						String stopConditionResult = getStopConditionTp().transformToString(itemResult,null);
+						String stopConditionResult = getStopConditionTp().transformToString(itemResult);
 						long stopConditionEndTime = System.currentTimeMillis();
 						long stopConditionDuration = stopConditionEndTime - stopConditionStartTime;
 						getStatisticsKeeper("stop condition determination").record(stopConditionDuration);
@@ -527,8 +527,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	/**
 	 * Only valid for xPathExpression.
 	 * If outputType is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
-	 * </p>
+	 * <p>
 	 * This field controls how to iterate over the input and does not determine the pipe's output.
+	 * </p>
 	 * @ff.default text
 	 */
 	public void setOutputType(OutputType outputType) {

@@ -87,7 +87,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String,V>, Frank
 		}
 		if (keyTp!=null) {
 			try {
-				input=keyTp.transformToString(input, null);
+				input=keyTp.transformToString(input);
 			} catch (Exception e) {
 				log.error("{}cannot determine cache key", getLogPrefix(), e);
 			}

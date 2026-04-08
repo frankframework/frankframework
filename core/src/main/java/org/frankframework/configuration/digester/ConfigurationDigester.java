@@ -80,7 +80,7 @@ import org.frankframework.xml.XmlWriter;
  * <p>The configuration.xml is first resolved using the {@link StringResolver resolver},
  * with tries to resolve ${variable} with the {@link AppConstants}, so that
  * both the values from the property files as the environment setting are available.<p>
- * <pThe configuration.xml is parsed with an EntityResolver that uses the configuration's classpath,
+ * <p>The configuration.xml is parsed with an EntityResolver that uses the configuration's classpath,
  * which means that you may specify entities that will be resolved during parsing.
  * </p>
  * Example:

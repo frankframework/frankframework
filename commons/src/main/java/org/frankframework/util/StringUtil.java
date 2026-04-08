@@ -105,7 +105,8 @@ public class StringUtil {
 	}
 
 	/**
-	 * Hides all characters in the string, effectively returning a string the length of the original string but consisting entirely of {@value '*'} characters.
+	 * Hides all characters in the string, effectively returning a string the length of the original string
+	 * but consisting entirely of a {@literal '*'} characters.
 	 *
 	 * @return hidden string with all characters replaced with '*', or {@literal null} if the input string was {@literal null}.
 	 * @see #hide(String)

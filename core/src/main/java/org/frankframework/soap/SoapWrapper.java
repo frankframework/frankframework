@@ -50,6 +50,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.http.cxf.AbstractSOAPProvider;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -146,11 +147,15 @@ public class SoapWrapper {
 		}
 	}
 
+	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session) throws SAXException, TransformerException, IOException {
+		return getBody(message, allowPlainXml, session, null);
+	}
+
 	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException {
 		// First try with Soap 1.1 transform pool, when no result, try with Soap 1.2 transform pool
-		String extractedBody = extractMessageWithTransformers(extractBodySoap11, extractBodySoap12, message, session, soapNamespaceSessionKey);
-		if (StringUtils.isNotEmpty(extractedBody)) {
-			return new Message(extractedBody);
+		Message extractedBody = extractMessageWithTransformers(extractBodySoap11, extractBodySoap12, message, session, soapNamespaceSessionKey);
+		if (!Message.isEmpty(extractedBody)) {
+			return extractedBody;
 		}
 
 		if (session != null) {
@@ -161,37 +166,40 @@ public class SoapWrapper {
 				session.putIfAbsent(SOAP_VERSION_SESSION_KEY, SoapVersion.NONE);
 			}
 		}
+
 		return allowPlainXml ? message : Message.nullMessage();
 	}
 
-	private String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
+	private Message extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
 		// If SOAP version is already determined in the session, directly use the SOAP 1.2 transformer
 		SoapVersion soapVersion = getSoapVersionFromSession(session);
-		String extractedMessage;
+		Message extractedMessage;
 		if (soapVersion == SoapVersion.SOAP12) {
-			extractedMessage = transformerS12.transformToString(message);
+			extractedMessage = transformerS12.transform(message);
 			// If session had the wrong SOAP version stored (e.g. multiple SoapWrappers), try SOAP 1.1 too. (#6032)
-			if (StringUtils.isEmpty(extractedMessage)) {
-				extractedMessage = transformerS11.transformToString(message);
+			if (Message.isEmpty(extractedMessage)) {
+				extractedMessage = transformerS11.transform(message);
 				// TODO: previous SoapWrapper configurations can write the wrong SOAP version to the session (using the same name).
 				// Consider a solution to match the right saved SOAP version with the right SoapWrapper: e.g. cache SoapVersion inside Message.context
 			}
 		} else if (soapVersion == SoapVersion.NONE) {
 			return null;
 		} else {
-			extractedMessage = transformerS11.transformToString(message);
-			if (StringUtils.isNotEmpty(extractedMessage)) {
+			extractedMessage = transformerS11.transform(message);
+			if (!Message.isEmpty(extractedMessage)) {
 				soapVersion = SoapVersion.SOAP11;
 			} else {
-				extractedMessage = transformerS12.transformToString(message);
-				if (StringUtils.isNotEmpty(extractedMessage)) {
+				extractedMessage = transformerS12.transform(message);
+				if (!Message.isEmpty(extractedMessage)) {
 					soapVersion = SoapVersion.SOAP12;
 				}
 			}
 		}
 
-		if (StringUtils.isNotEmpty(extractedMessage)) {
-			if (session != null && soapVersion != null) {
+		if (!Message.isEmpty(extractedMessage)) {
+			extractedMessage.getContext().with(AbstractSOAPProvider.SOAP_VERSION_KEY, soapVersion.getLabel());
+
+			if (session != null) {
 				session.putIfAbsent(SOAP_VERSION_SESSION_KEY, soapVersion);
 				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 					session.putIfAbsent(soapNamespaceSessionKey, soapVersion.namespace);
@@ -199,6 +207,7 @@ public class SoapWrapper {
 			}
 			return extractedMessage;
 		}
+
 		return null;
 	}
 
@@ -210,10 +219,6 @@ public class SoapWrapper {
 			return version;
 		}
 		return null;
-	}
-
-	public String getHeader(final Message message, final PipeLineSession session) throws SAXException, TransformerException, IOException {
-		return extractMessageWithTransformers(extractHeaderSoap11, extractHeaderSoap12, message, session, null);
 	}
 
 	public int getFaultCount(Message message) throws SAXException, TransformerException, IOException {
@@ -234,12 +239,21 @@ public class SoapWrapper {
 		return Integer.parseInt(faultCount);
 	}
 
+	private String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session) throws IOException, TransformerException, SAXException {
+		Message result = extractMessageWithTransformers(transformerS11, transformerS12, message, session, null);
+		return Message.isEmpty(result) ? null : result.asString();
+	}
+
+	public String getHeader(final Message message, final PipeLineSession session) throws SAXException, TransformerException, IOException {
+		return extractMessageWithTransformers(extractHeaderSoap11, extractHeaderSoap12, message, session);
+	}
+
 	protected String getFaultCode(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
-		return extractMessageWithTransformers(extractFaultCode11, extractFaultCode12, message, session, null);
+		return extractMessageWithTransformers(extractFaultCode11, extractFaultCode12, message, session);
 	}
 
 	protected String getFaultString(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
-		return extractMessageWithTransformers(extractFaultString11, extractFaultString12, message, session, null);
+		return extractMessageWithTransformers(extractFaultString11, extractFaultString12, message, session);
 	}
 
 	public Message putInEnvelope(Message message, String encodingStyleUri) throws IOException {

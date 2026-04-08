@@ -17,7 +17,7 @@ import org.frankframework.core.PipeRunResult;
 /**
  * IsUserInRolePipe unit tests.
  *
- * @author <Laurens Mäkel>
+ * @author Laurens Makel
  */
 class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 

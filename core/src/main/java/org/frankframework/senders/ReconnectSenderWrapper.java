@@ -31,7 +31,7 @@ import org.frankframework.stream.Message;
 /**
  * Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
  * This prevents (long) open connections inside Senders and possible connection failures.
- *
+ * <p>
  * <b>Example:</b>
  * <pre>{@code
  * <SenderPipe>
