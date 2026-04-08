@@ -83,6 +83,11 @@ public class ClassLoaderURIResolver implements URIResolver {
 		}
 
 		String ref = FilenameUtils.normalize(absoluteOrRelativeRef, true);
+		if (ref == null) {
+			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] ref is [null] protocol ["+protocol+"] in scope ["+scopeProvider+"]";
+			throw new TransformerException(message);
+		}
+
 		Resource resource = Resource.getResource(scopeProvider, ref, protocol);
 		if (resource==null && globalClasspathRef!=null) {
 			if (log.isDebugEnabled())
