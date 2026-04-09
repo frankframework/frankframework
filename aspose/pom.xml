@@ -17,7 +17,7 @@
 		<!-- AsposeJava Maven repository: https://releases.aspose.com/java/repo/com/aspose/ -->
 		<aspose.cells.version>26.3</aspose.cells.version>
 		<aspose.email.version>26.1</aspose.email.version>
-		<aspose.imaging.version>26.3</aspose.imaging.version>
+		<aspose.imaging.version>26.4</aspose.imaging.version>
 		<aspose.pdf.version>26.3</aspose.pdf.version>
 		<aspose.slides.version>26.3</aspose.slides.version>
 		<aspose.words.version>26.3</aspose.words.version>
