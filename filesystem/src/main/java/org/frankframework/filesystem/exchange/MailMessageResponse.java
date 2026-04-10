@@ -82,6 +82,16 @@ public class MailMessageResponse {
 		return response;
 	}
 
+	public static String getMime(GraphClient client, MailMessage filePointer) throws IOException {
+		String composedUrl = MESSAGE_URL_SUFFIX.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String generatedUrl = filePointer.getUrl();
+		if (!composedUrl.equals(generatedUrl)) {
+			throw new IOException("url mismatch");
+		}
+		URI uri = URI.create(generatedUrl + "/$value");
+		return client.execute(new HttpGet(uri), String.class);
+	}
+
 	public static MailMessage move(GraphClient client, MailMessage filePointer, MailFolder destinationFolder) throws IOException {
 		String composedUrl = MESSAGE_URL_SUFFIX.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
 		String generatedUrl = filePointer.getUrl();
