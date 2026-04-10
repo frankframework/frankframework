@@ -83,7 +83,7 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
 	 */
 	@Override
-	protected void registerBeanPostProcessors(@NonNull ConfigurableListableBeanFactory beanFactory) {
+	protected void registerBeanPostProcessors(@Nonnull ConfigurableListableBeanFactory beanFactory) {
 		super.registerBeanPostProcessors(beanFactory);
 
 		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
@@ -101,7 +101,7 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 	 * Ensure that a ClassLoader is always available, propagated from the parent context.
 	 */
 	@Override
-	public @NonNull ClassLoader getClassLoader() {
+	public @Nonnull ClassLoader getClassLoader() {
 		ClassLoader classLoader = super.getClassLoader();
 		if (classLoader == null) {
 			throw new IllegalStateException("no ClassLoader found");
