@@ -7,6 +7,8 @@ import org.jspecify.annotations.NonNull;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -14,10 +16,15 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 
-class MessageCapturingEchoSender extends EchoSender {
+class MessageCapturingEchoSender extends EchoSender implements ConfigurationAware {
 	private @Getter Message inputMessage;
 	private @Getter PipeLineSession inputSession;
 	private @Getter String sessionOriginalMessageValue;
+
+	@Override
+	public void setConfiguration(Configuration configuration) {
+		// Mock
+	}
 
 	@Override
 	@SneakyThrows(IOException.class)
