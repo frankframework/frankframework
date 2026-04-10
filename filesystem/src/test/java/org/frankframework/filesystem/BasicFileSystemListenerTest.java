@@ -40,7 +40,6 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
-import org.frankframework.filesystem.AbstractMailListener.MessageType;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -234,7 +233,12 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String filename = "rawMessageFile";
 		String contents = "Test Message Contents";
 
-		fileSystemListener.setMessageType(MessageType.NAME);
+		if (fileSystemListener instanceof AbstractMailListener<?, ?, ?>) {
+			fileSystemListener.setMessageType(AbstractMailListener.MessageType.NAME);
+		} else {
+			fileSystemListener.setMessageType(AbstractFileSystemListener.MessageType.NAME);
+		}
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.configure();
 		fileSystemListener.start();
