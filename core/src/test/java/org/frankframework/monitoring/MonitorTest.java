@@ -2,6 +2,9 @@ package org.frankframework.monitoring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,16 +52,26 @@ public class MonitorTest {
 
 		manager.addMonitor(monitor);
 
-		MonitorDestination destination = configuration.createBean();
+		MonitorDestination destination = spy(configuration.createBean(MonitorDestination.class));
 		destination.setName("myTestDestination");
 
-		MessageCapturingEchoSender sender = new MessageCapturingEchoSender();
+		MessageCapturingEchoSender sender = spy(new MessageCapturingEchoSender());
+		SpringUtils.autowireByType(manager, sender);
+		verify(sender, times(1)).setConfiguration(configuration);
+
 		destination.setSender(sender);
 		manager.addDestination(destination);
 		monitor.setDestinations(destination.getName());
 		Message message = new Message("very important message");
 		message.getContext().put("special-key", 123);
+
 		configuration.configure();
+		verify(destination, times(1)).configure();
+		verify(sender, times(1)).configure();
+
+		configuration.start();
+		verify(destination, times(1)).start();
+		verify(sender, times(1)).start();
 
 		// Act
 		configuration.publishEvent(EventThrowingClass.createMonitorEvent(message));
