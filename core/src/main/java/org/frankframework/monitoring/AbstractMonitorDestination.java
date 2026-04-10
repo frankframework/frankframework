@@ -16,18 +16,17 @@
 package org.frankframework.monitoring;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.monitoring.events.MonitorEvent;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.XmlBuilder;
 
@@ -36,8 +35,8 @@ import org.frankframework.util.XmlBuilder;
  *
  * @author  Gerrit van Brakel
  */
+@Log4j2
 public abstract class AbstractMonitorDestination implements IMonitorDestination, ApplicationContextAware {
-	protected Logger log = LogUtil.getLogger(this);
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private boolean started = false;
@@ -45,7 +44,7 @@ public abstract class AbstractMonitorDestination implements IMonitorDestination,
 	private String hostname;
 
 	protected AbstractMonitorDestination() {
-		log.debug("creating Destination [{}]", ()->ClassUtils.nameOf(this));
+		log.debug("creating Destination [{}]", () -> ClassUtils.nameOf(this));
 	}
 
 	@Override
