@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
@@ -34,6 +35,7 @@ import org.frankframework.util.XmlBuilder;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@Log4j2
 public class MonitorDestination extends AbstractMonitorDestination {
 
 	private @Getter @Setter ISender sender;
