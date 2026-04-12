@@ -21,8 +21,9 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Vector;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +44,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
- * Abstract base class for for IBIS Configuration ClassLoaders.
+ * Abstract base class for IBIS Configuration ClassLoaders.
  *
  * Appends a BasePath to every resource when set. This allows the use of sub config's in src/main/resources
  * When a file with prepended BasePath cannot be found it will traverse through it's classpath to find it.
@@ -63,7 +64,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	private String basePath = null;
 
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
-	private final List<String> loadedCustomClasses = new ArrayList<>();
+	private final Set<String> loadedCustomClasses = new HashSet<>();
 
 	protected AbstractClassLoader() {
 		this(Thread.currentThread().getContextClassLoader());
@@ -78,20 +79,23 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 
-		if(StringUtils.isEmpty(configurationFile)) {
+		if (StringUtils.isEmpty(configurationFile)) {
 			throw new ClassLoaderException("unable to determine configurationFile");
 		}
 
-		if(basePath == null) {
+		if (basePath == null) {
 			int i = configurationFile.lastIndexOf('/');
 			if (i != -1) { // Configuration file contains a path, derive the BasePath from the path
 				setBasePath(configurationFile.substring(0, i + 1));
 				setConfigurationFile(configurationFile.substring(i + 1));
 				log.info("derived basepath [{}] from configurationFile [{}]", getBasePath(), configurationFile);
-			} else if(!(getConfigurationName().equalsIgnoreCase(instanceName) && this instanceof WebAppClassLoader)) {
+			} else if (!(getConfigurationName().equalsIgnoreCase(instanceName) && this instanceof WebAppClassLoader)) {
 				setBasePath(getConfigurationName());
 			}
 		}
+
+		// Register this instance so the leak-detection works even if it was not created via the ClassLoaderManager
+		ClassLoadingLeakDetector.registerClassLoader(configurationName, this);
 
 		log.info("[{}] created classloader [{}] basepath [{}]", getConfigurationName(), this, getBasePath());
 	}
@@ -101,8 +105,8 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * @param basePath path to use, defaults to the configuration name
 	 */
 	public void setBasePath(String basePath) {
-		if(StringUtils.isNotEmpty(basePath)) {
-			if(!basePath.endsWith("/"))
+		if (StringUtils.isNotEmpty(basePath)) {
+			if (!basePath.endsWith("/"))
 				basePath += "/";
 
 			this.basePath = FilenameUtils.normalize(basePath, true);
@@ -170,19 +174,19 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * Implementations of this class should use {@link AbstractClassLoader#getLocalResource(String)}
 	 */
 	@Override
-	public final URL getResource(String name) {
+	public final @Nullable URL getResource(String name) {
 		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
 			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]")); // Use an exception so we can 'trace the stack'
 			return null;
 		}
 
 		// It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
-		if(name.startsWith("META-INF/")) {
+		if (name.startsWith("META-INF/")) {
 			return getParent().getResource(name);
 		}
 
 		// The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
-		if(getBasePath() != null && name.equals(getConfigurationFile())) {
+		if (getBasePath() != null && name.equals(getConfigurationFile())) {
 			return getResource(name, false); // Search for the resource in the local ClassLoader only
 		}
 
@@ -201,10 +205,10 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * @param useParent only use local classpath or also traverse down the classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>null</code>
 	 */
-	public URL getResource(String name, boolean useParent) {
-		URL url = null;
+	public @Nullable URL getResource(String name, boolean useParent) {
+		URL url;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
-		if(normalizedFilename == null) {
+		if (normalizedFilename == null) {
 			return null; // If the path after normalization equals null, return null
 		}
 		// Resources retrieved from ClassLoaders should never start with a leading slash
@@ -213,11 +217,11 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		}
 
 		url = getLocalResource(normalizedFilename);
-		if(log.isTraceEnabled())
+		if (log.isTraceEnabled())
 			log.trace("[{}] {} local resource [{}]", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
 
 		// URL without basepath cannot be found, follow parent hierarchy
-		if(url == null && useParent) {
+		if (url == null && useParent) {
 			url = getParent().getResource(name);
 			if(log.isTraceEnabled())
 				log.trace("[{}] {} resource [{}] from parent", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", name);
@@ -233,7 +237,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 			return getParent().getResources(name);
 		}
 
-		Vector<URL> urls = new Vector<>();
+		List<URL> urls = new ArrayList<>();
 
 		// Search for the file in the local classpath only
 		URL localResource = getResource(name, false);
@@ -244,14 +248,14 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		// Add all files found in the classpath's parent
 		urls.addAll(Collections.list(getParent().getResources(name)));
 
-		if(log.isTraceEnabled()) log.trace("[{}] retrieved files [{}] found urls {}", getConfigurationName(), name, urls);
+		if (log.isTraceEnabled()) log.trace("[{}] retrieved files [{}] found urls {}", getConfigurationName(), name, urls);
 
-		return urls.elements();
+		return Collections.enumeration(urls);
 	}
 
 	@Override
-	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-		if(name == null) {
+	protected @NonNull Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		if (name == null) {
 			throw new IllegalArgumentException("classname to load may not be null");
 		}
 
@@ -259,12 +263,12 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		int dollar = name.lastIndexOf("$");
 		if (dollar > 0) {
 			String baseClass = name.substring(0, dollar);
-			if(loadedCustomClasses.contains(baseClass)) {
+			if (loadedCustomClasses.contains(baseClass)) {
 				return defineClass(name, resolve);
 			}
 		}
 
-		Throwable throwable = null;
+		Throwable throwable;
 		try {
 			return super.loadClass(name, resolve); // First try to load the class natively
 		} catch (ClassNotFoundException | NoClassDefFoundError t) { // Catch NoClassDefFoundError and ClassNotFoundExceptions
@@ -290,7 +294,9 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	@NonNull
 	@Override
 	public Class<?> publicDefineClass(@NonNull String name, byte @NonNull [] b, @Nullable ProtectionDomain protectionDomain) {
-		return super.defineClass(name, b, 0, b.length, protectionDomain);
+		Class<?> definedClass = super.defineClass(name, b, 0, b.length, protectionDomain);
+		ClassLoadingLeakDetector.registerResource(configurationName, definedClass);
+		return definedClass;
 	}
 
 	/**
@@ -300,14 +306,14 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * Introspector#findExplicitBeanInfo/BeanInfoFinder#find attempts to lookup classes with the 'BeanInfo' postfix.
 	 * Introspector#findCustomizerClass attempts to lookup classes with the 'Customizer' postfix.
 	 */
-	private Class<?> defineClass(String name, boolean resolve) throws ClassNotFoundException {
-		if(getAllowCustomClasses()) {
+	private @NonNull Class<?> defineClass(String name, boolean resolve) throws ClassNotFoundException {
+		if (getAllowCustomClasses()) {
 			synchronized (getClassLoadingLock(name)) {
 				String path = name.replace(".", "/").concat(".class");
 				log.trace("attempting to load custom class [{}] path [{}]", name, path);
 
 				URL url = getResource(path);
-				if(url != null) {
+				if (url != null) {
 					log.debug("found custom class url [{}] from classloader [{}] with path [{}]", url, this, path);
 
 					try {
@@ -315,7 +321,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 						ProtectionDomain protectionDomain = ReflectUtils.getProtectionDomain(this.getClass());
 						Class<?> clazz = publicDefineClass(name, bytes, protectionDomain);
 
-						if(resolve) {
+						if (resolve) {
 							resolveClass(clazz);
 						}
 
@@ -344,13 +350,13 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		log.debug("removing classloader [{}]", this);
 
 		AppConstants.removeInstance(this);
+		ClassLoadingLeakDetector.destroyed(configurationName);
 	}
 
 	@Override
 	public String toString() {
 		String logPrefix = ClassUtils.classNameOf(this) + "@" + Integer.toHexString(this.hashCode());
 
-		String configurationName = getConfigurationName();
 		if(StringUtils.isNotEmpty(configurationName)) {
 			logPrefix += "["+configurationName+"]";
 		}
