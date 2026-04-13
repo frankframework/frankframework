@@ -687,7 +687,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public @Nullable MailItemId getFileFromAttachment(MailMessage a) throws FileSystemException {
+	public MailItemId getFileFromAttachment(MailMessage a) throws FileSystemException {
 		throw new NotImplementedException();
 	}
 
