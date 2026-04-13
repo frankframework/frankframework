@@ -3,7 +3,6 @@ package org.frankframework.filesystem.exchange;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.AfterAll;
@@ -19,7 +18,6 @@ import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
-import org.frankframework.testutil.TestAssertions;
 
 @Tag("slow")
 @Tag("unstable") // Relies on a remote API that is not always available for the tests
@@ -27,7 +25,6 @@ public class ExchangeFileSystemListenerTest extends BasicFileSystemListenerTest<
 
 	@BeforeAll
 	public static void beforeAll() {
-		assumeFalse(TestAssertions.isTestRunningOnCI());
 		assumeTrue(ExchangeConnectionCache.validateCredentials());
 	}
 
@@ -48,6 +45,7 @@ public class ExchangeFileSystemListenerTest extends BasicFileSystemListenerTest<
 		return ExchangeConnectionCache.getExchangeMailListener();
 	}
 
+	@SuppressWarnings("java:S2699") // Sonar 'Add at least one assertion to this test case.'
 	@Test
 	@Override
 	public void fileListenerTestGetStringFromRawMessageFilename() throws Exception {
