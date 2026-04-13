@@ -646,14 +646,12 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public void extractEmail(Message emailMessage, SaxElementBuilder emailXml)
-			throws FileSystemException, SAXException {
+	public void extractEmail(Message emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
 		MailFileSystemUtils.addEmailInfo(this, emailMessage, emailXml);
 	}
 
 	@Override
-	public void extractAttachment(MimeBodyPart attachment, SaxElementBuilder attachmentsXml)
-			throws FileSystemException, SAXException {
+	public void extractAttachment(MimeBodyPart attachment, SaxElementBuilder attachmentsXml) throws FileSystemException, SAXException {
 		MailFileSystemUtils.addAttachmentInfo(this, attachment, attachmentsXml);
 	}
 
