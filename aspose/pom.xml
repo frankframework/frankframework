@@ -16,7 +16,7 @@
 		<!-- Latest versions and what libraries need the classifier can be checked on the -->
 		<!-- AsposeJava Maven repository: https://releases.aspose.com/java/repo/com/aspose/ -->
 		<aspose.cells.version>26.3</aspose.cells.version>
-		<aspose.email.version>26.1</aspose.email.version>
+		<aspose.email.version>26.3</aspose.email.version>
 		<aspose.imaging.version>26.4</aspose.imaging.version>
 		<aspose.pdf.version>26.3</aspose.pdf.version>
 		<aspose.slides.version>26.3</aspose.slides.version>
