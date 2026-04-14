@@ -233,6 +233,12 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String filename = "rawMessageFile";
 		String contents = "Test Message Contents";
 
+		if (fileSystemListener instanceof AbstractMailListener<?, ?, ?>) {
+			fileSystemListener.setMessageType(AbstractMailListener.MessageType.NAME);
+		} else {
+			fileSystemListener.setMessageType(AbstractFileSystemListener.MessageType.NAME);
+		}
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.configure();
 		fileSystemListener.start();
@@ -252,7 +258,11 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String contents = "Test Message Contents";
 
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType(AbstractFileSystemListener.MessageType.CONTENTS);
+		if (fileSystemListener instanceof AbstractMailListener<?, ?, ?>) {
+			fileSystemListener.setMessageType(AbstractMailListener.MessageType.CONTENTS);
+		} else {
+			fileSystemListener.setMessageType(AbstractFileSystemListener.MessageType.CONTENTS);
+		}
 		fileSystemListener.configure();
 		fileSystemListener.start();
 
@@ -297,7 +307,13 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		String contents = "Test Message Contents";
 
 		fileSystemListener.setMinStableTime(0);
-		fileSystemListener.setMessageType(AbstractFileSystemListener.MessageType.NAME);
+
+		if (fileSystemListener instanceof AbstractMailListener<?, ?, ?>) {
+			fileSystemListener.setMessageType(AbstractMailListener.MessageType.NAME);
+		} else {
+			fileSystemListener.setMessageType(AbstractFileSystemListener.MessageType.NAME);
+		}
+
 		fileSystemListener.configure();
 		fileSystemListener.start();
 

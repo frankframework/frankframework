@@ -328,7 +328,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public SftpFileRef moveFile(SftpFileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
-		SftpFileRef destination = new SftpFileRef(getName(f), destinationFolder);
+		SftpFileRef destination = toFile(destinationFolder, getName(f));
 		if (exists(destination)) {
 			throw new FileAlreadyExistsException("target already exists");
 		} else if (createFolder && !folderExists(destinationFolder)) {

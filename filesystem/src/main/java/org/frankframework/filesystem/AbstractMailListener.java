@@ -96,6 +96,8 @@ public abstract class AbstractMailListener<M, A, S extends IMailFileSystem<M,A>>
 				}
 
 				try (SaxDocumentBuilder emailXml = new SaxDocumentBuilder("email", msgBuilder.asXmlWriter(), false)) {
+					emailXml.addAttribute("name", getFileSystem().getName(rawMessage.getRawMessage()));
+
 					if (isSimple()) {
 						MailFileSystemUtils.addEmailInfoSimple(getFileSystem(), rawMessage.getRawMessage(), emailXml);
 					} else {
@@ -142,6 +144,7 @@ public abstract class AbstractMailListener<M, A, S extends IMailFileSystem<M,A>>
 	 *
 	 * @ff.default EMAIL
 	 */
+	// Default impl is NAME, PATH, CONTENTS, INFO
 	public void setMessageType(MessageType messageType) {
 		super.setMessageType(messageType);
 	}

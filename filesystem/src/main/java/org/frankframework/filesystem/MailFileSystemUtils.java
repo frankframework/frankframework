@@ -32,11 +32,12 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
+import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.xml.SaxElementBuilder;
 
 public class MailFileSystemUtils {
-	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER;
 	protected static Logger log = LogUtil.getLogger(MailFileSystemUtils.class);
 
 	private static final List<String> specialHeaders = Arrays.asList(
