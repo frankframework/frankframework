@@ -49,8 +49,8 @@ import org.frankframework.util.TransformerPool.OutputType;
  * @since   4.11
  */
 public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, FrankElement, IWithParameters {
-	private static final String PARAM_VALUE = "value";
-	private static final String PARAM_KEY = "key";
+	static final String PARAM_VALUE = "value";
+	static final String PARAM_KEY = "key";
 
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

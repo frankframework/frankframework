@@ -15,6 +15,8 @@
  */
 package org.frankframework.cache;
 
+import static org.frankframework.cache.AbstractCacheAdapter.PARAM_KEY;
+import static org.frankframework.cache.AbstractCacheAdapter.PARAM_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -34,7 +36,7 @@ public class EhCacheTransformTest {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-key-parameter-" + System.nanoTime());
 		cache.setKeyInputSessionKey("legacyKey");
-		cache.addParameter(new Parameter("key", "resolvedKey"));
+		cache.addParameter(new Parameter(PARAM_KEY, "resolvedKey"));
 		cache.configure();
 		cache.open();
 
@@ -71,7 +73,7 @@ public class EhCacheTransformTest {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-key-empty-" + System.nanoTime());
 		cache.setCacheEmptyKeys(true);
-		cache.addParameter(new Parameter("key", "  "));
+		cache.addParameter(new Parameter(PARAM_KEY, "  "));
 		cache.configure();
 		cache.open();
 
@@ -87,7 +89,7 @@ public class EhCacheTransformTest {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-value-parameter-" + System.nanoTime());
 		cache.setValueInputSessionKey("legacyValue");
-		cache.addParameter(new Parameter("value", "resolvedValue"));
+		cache.addParameter(new Parameter(PARAM_VALUE, "resolvedValue"));
 		cache.configure();
 		cache.open();
 
@@ -105,7 +107,7 @@ public class EhCacheTransformTest {
 	public void transformValueReturnsNullWhenBlankParameterAndEmptyValuesAreNotAllowed() throws ConfigurationException {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-value-null-" + System.nanoTime());
-		cache.addParameter(new Parameter("value", "\t"));
+		cache.addParameter(new Parameter(PARAM_VALUE, "\t"));
 		cache.configure();
 		cache.open();
 
@@ -171,8 +173,8 @@ public class EhCacheTransformTest {
 	public void transformedKeyAndValueCanBeUsedForEhCacheStorage() throws Exception {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-storage-" + System.nanoTime());
-		cache.addParameter(new Parameter("key", "cacheKey"));
-		cache.addParameter(new Parameter("value", "cacheValue"));
+		cache.addParameter(new Parameter(PARAM_KEY, "cacheKey"));
+		cache.addParameter(new Parameter(PARAM_VALUE, "cacheValue"));
 		cache.configure();
 		cache.open();
 
