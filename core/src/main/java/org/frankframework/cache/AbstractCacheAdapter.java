@@ -158,11 +158,14 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 				returnMessage = new Message(resolvedValue);
 			} else if (isCacheEmptyValues()) {
 				returnMessage = new Message("");
-			} else {
-				returnMessage = value;
 			}
 		} else {
 			returnMessage = deprecatedGetValue(value, session);
+		}
+
+		// Make sure not to call toValue with a null parameter
+		if (returnMessage == null) {
+			return null;
 		}
 
 		return toValue(returnMessage);
@@ -194,7 +197,8 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 	}
 
 	/**
-	 * Gets a parameter with parameterName from the parameter list, if it exists. If the parameter is not found, an empty Optional is returned.
+	 * Gets a parameter with parameterName from the parameter list, if it exists. Returns the parameter value as a string, or null if the parameter does not
+	 * exist or an error occurs when trying to determine the parameter value.
 	 */
 	private String getParameter(String parameterName, Message input, PipeLineSession session) {
 		if (getParameterList().hasParameter(parameterName)) {
@@ -206,7 +210,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 					return parameterValue.asStringValue();
 				}
 			} catch (ParameterException e) {
-				log.error("{}cannot determine cache key", getLogPrefix(), e);
+				log.error("{}cannot parameter '{}' from parameter list", getLogPrefix(), parameterName, e);
 			}
 		}
 
