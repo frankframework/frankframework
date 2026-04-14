@@ -1,0 +1,104 @@
+publiccodeYmlVersion: 0.5.0
+name: Frank!Framework
+applicationSuite: Frank!Platform
+url: https://github.com/frankframework/frankframework
+landingURL: https://frankframework.org/
+logo: https://avatars.githubusercontent.com/u/117156081
+platforms:
+  - linux
+  - windows
+  - mac
+categories:
+  - erp
+usedBy:
+  - NN
+  - ING
+  - Syntouch
+  - Group of Butchers
+  - IGM
+  - ODMH
+  - QUINSO
+  - Gemeente Leeuwarden
+  - Gemeente Rotterdam
+  - Gemeente Sittard-Geleen
+  - Gemeente Utrecht
+  - Eekels
+roadmap: https://insights.frankframework.org/roadmap
+developmentStatus: stable
+softwareType: standalone/backend
+intendedAudience:
+  countries:
+    - NL
+    - BE
+    - DE
+    - LU
+  scope:
+    - healthcare
+    - infrastructures
+    - local-authorities
+    - defence
+    - security
+    - transportation
+    - welfare
+    - education
+    - energy
+    - government
+description:
+  en:
+    localisedName: Frank!Framework
+    shortDescription: A Low-Code Java-based messaging framework to connect your system and application data
+    longDescription: |-
+      The Frank!Framework is a framework that is completely
+      configurable through XML configurations. Each Frank!Application may
+      contain multiple configurations, and each configuration can consist of
+      multiple end-to-end connections which we call 'adapters'. Configurations
+      may be (re)loaded conditionally or individually for optimal performance
+      and customizability. The application may be managed and monitored through
+      a web interface or REST API. See it in action:
+      https://frank2example.frankframework.org
+    documentation: https://frank-manual.readthedocs.io/
+    apiDocumentation: https://frankdoc.frankframework.org/
+    features:
+      - REST
+      - SOAP
+      - JSON
+      - XML
+      - XSD
+      - OpenAPI
+      - Database
+      - Message Queue
+      - MQ
+      - DB
+      - java
+      - open-source
+      - framework
+      - integration
+      - erp
+      - workflow-engine
+      - bpmn
+      - data-flow
+      - self-hosted
+      - batch-processing
+      - erp-framework
+      - community-driven
+      - etl-framework
+      - low-code
+      - integration-framework
+    screenshots:
+      - https://raw.githubusercontent.com/frankframework/frankframework/refs/heads/master/frank-framework-github-banner.png
+      - https://github.com/user-attachments/assets/a094486b-cabb-48a1-8718-37072162fa50
+legal:
+  license: Apache-2.0
+maintenance:
+  type: community
+  contacts:
+    - name: Niels Meijer
+      email: niels@frankframework.org
+      affiliation: Maintainer
+    - name: Sergi Philipsen
+      email: sergi@frankframework.org
+      affiliation: Maintainer
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en
