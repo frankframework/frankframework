@@ -61,11 +61,11 @@ public class ClassLoaderManager {
 		classPathClassLoader = Thread.currentThread().getContextClassLoader();
 	}
 
-	private ClassLoader createClassloader(String configurationName, @NonNull String classLoaderType) throws ClassLoaderException {
+	private ClassLoader createClassloader(@NonNull String configurationName, @NonNull String classLoaderType) throws ClassLoaderException {
 		return createClassloader(configurationName, classLoaderType, classPathClassLoader);
 	}
 
-	private @Nullable ClassLoader createClassloader(String configurationName, @NonNull String classLoaderType, ClassLoader parentClassLoader) throws ClassLoaderException {
+	private @Nullable ClassLoader createClassloader(@NonNull String configurationName, @NonNull String classLoaderType, ClassLoader parentClassLoader) throws ClassLoaderException {
 		// It is possible that no ClassLoader has been defined, use default ClassLoader
 		if (classLoaderType.isEmpty())
 			throw new ClassLoaderException("classLoaderType cannot be empty");
@@ -116,19 +116,11 @@ public class ClassLoaderManager {
 				loader.configure(ibisContext, configurationName);
 			} catch (ClassLoaderException ce) {
 				String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
-				switch(loader.getReportLevel()) {
-					case DEBUG:
-						log.debug(msg, ce);
-						break;
-					case INFO:
-						ibisContext.log(msg, MessageEventLevel.INFO, ce);
-						break;
-					case WARN:
-						ApplicationWarnings.add(log, msg, ce);
-						break;
-					case ERROR:
-					default:
-						throw ce;
+				switch (loader.getReportLevel()) {
+					case DEBUG -> log.debug(msg, ce);
+					case INFO -> ibisContext.log(msg, MessageEventLevel.INFO, ce);
+					case WARN -> ApplicationWarnings.add(log, msg, ce);
+					case ERROR -> throw ce;
 				}
 
 				// Break here, we cannot continue when there are ConfigurationExceptions!
@@ -142,21 +134,19 @@ public class ClassLoaderManager {
 
 	private Object getCastValue(Class<?> class1, String value) {
 		String className = class1.getName().toLowerCase();
-		if ("boolean".equals(className))
-			return Boolean.parseBoolean(value);
-		else if ("int".equals(className) || "integer".equals(className))
-			return Integer.parseInt(value);
-		else if ("long".equals(className))
-			return Long.parseLong(value);
-		else
-			return value;
+		return switch (className) {
+			case "boolean" -> Boolean.parseBoolean(value);
+			case "int", "integer" -> Integer.parseInt(value);
+			case "long" -> Long.parseLong(value);
+			default -> value;
+		};
 	}
 
-	private @Nullable ClassLoader init(String configurationName, String classLoaderType) throws ClassLoaderException {
+	private @Nullable ClassLoader init(@NonNull String configurationName, @Nullable String classLoaderType) throws ClassLoaderException {
 		return init(configurationName, classLoaderType, APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null));
 	}
 
-	private @Nullable ClassLoader init(String configurationName, @Nullable String classLoaderType, String parentConfig) throws ClassLoaderException {
+	private @Nullable ClassLoader init(@NonNull String configurationName, @Nullable String classLoaderType, String parentConfig) throws ClassLoaderException {
 		if (contains(configurationName))
 			throw new ClassLoaderException("unable to add configuration with duplicate name ["+configurationName+"]");
 
@@ -215,7 +205,7 @@ public class ClassLoaderManager {
 	 * @return ClassLoader or null on error
 	 * @throws ClassLoaderException when a ClassLoader failed to initialize
 	 */
-	public @Nullable ClassLoader get(String configurationName, String classLoaderType) throws ClassLoaderException {
+	public @Nullable ClassLoader get(@NonNull String configurationName, @Nullable String classLoaderType) throws ClassLoaderException {
 		if (ibisContext == null) {
 			throw new IllegalStateException("shutting down");
 		}
@@ -228,7 +218,7 @@ public class ClassLoaderManager {
 		return classLoader;
 	}
 
-	public void remove(String configurationName) {
+	public void remove(@NonNull String configurationName) {
 		if (ibisContext == null) {
 			throw new IllegalStateException("No IBIS Context");
 		}
@@ -246,7 +236,7 @@ public class ClassLoaderManager {
 	 * Reloads a configuration if it exists. Does not create a new one!
 	 * See {@link #reload(ClassLoader)} for more information
 	 */
-	public void reload(String configurationName) throws ClassLoaderException {
+	public void reload(@NonNull String configurationName) throws ClassLoaderException {
 		if (ibisContext == null) {
 			throw new IllegalStateException("shutting down");
 		}
@@ -283,7 +273,7 @@ public class ClassLoaderManager {
 		}
 	}
 
-	public boolean contains(String currentConfigurationName) {
+	private boolean contains(String currentConfigurationName) {
 		return classLoaders.containsKey(currentConfigurationName);
 	}
 
