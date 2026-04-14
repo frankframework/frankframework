@@ -24,8 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.frankframework.util.CleanerProvider;
 
 public class ClassLoadingLeakDetector {
@@ -95,7 +93,7 @@ public class ClassLoadingLeakDetector {
 			}
 			LEAK_LOG.warn("Currently registered classloaders:");
 			for (ClassLoaderMeta classLoaderMeta : classLoaders.values()) {
-				LEAK_LOG.warn(classLoaderMeta.toString());
+				LEAK_LOG.warn(" {}", classLoaderMeta);
 			}
 		} catch (Throwable e) {
 			// Ignore log exceptions which may cause the application to not terminate properly.
