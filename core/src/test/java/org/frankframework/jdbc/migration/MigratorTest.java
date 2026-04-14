@@ -2,9 +2,11 @@ package org.frankframework.jdbc.migration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -22,10 +24,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.BytesResource;
 import org.frankframework.core.Resource;
@@ -58,9 +62,18 @@ public class MigratorTest {
 		env.getConfiguration().getConfigurationWarnings().afterPropertiesSet();
 		env.getConfiguration().clearEvents();
 
+		// Reset default property values
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("jdbc.migrator.active", "true");
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("jdbc.migrator.on-fail-throw", "");
+
 		dropTableIfPresent(tableName);
 		dropTableIfPresent("DATABASECHANGELOG");
 		dropTableIfPresent("DATABASECHANGELOGLOCK");
+	}
+
+	@AfterEach
+	public void tearDown(DatabaseTestEnvironment env) {
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("jdbc.migrator.on-fail-throw", "");
 	}
 
 	private boolean isTablePresent(String tableName) throws Exception {
@@ -107,15 +120,38 @@ public class MigratorTest {
 	}
 
 	@TxManagerTest
-	public void testFaultyChangelogFile(DatabaseTestEnvironment env) throws Exception {
+	public void testUpdateThrowsException(DatabaseTestEnvironment env) throws Exception {
 		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
-		migrator.update();
+
+		assertThrows(JdbcMigrationException.class, migrator::update);
+
+		// H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
+		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
+	}
+
+	@TxManagerTest
+	public void testConfigureThrowsException(DatabaseTestEnvironment env) throws Exception {
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("jdbc.migrator.on-fail-throw", "true");
+
+		assertThrows(ConfigurationException.class, migrator::configure);
+
+		// H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
+		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
+	}
+
+	@TxManagerTest
+	public void testConfigureDoesNotThrow(DatabaseTestEnvironment env) throws Exception {
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelogError.xml");
+		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("jdbc.migrator.on-fail-throw", "false");
+
+		assertDoesNotThrow(migrator::configure);
 
 		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
 		assertEquals(1, warnings.size());
 
 		String warning = warnings.get(0);
-		assertThat(warning, containsString("LiquibaseMigrator Error running LiquiBase update. Failed to execute [3] change(s)")); // Test ObjectName + Error
+		assertThat(warning, containsString("LiquibaseMigrator liquibase update failed to execute [3] change(s)")); // Test ObjectName + Error
 		assertThat(warning, containsString("Migration failed for changeset Migrator/DatabaseChangelogError.xml::error::Niels Meijer")); // Test liquibase exception
 		// H2 logs 'Table \"DUMMYTABLE\" already exists' Oracle throws 'ORA-00955: name is already used by an existing object'
 		assertTrue(isTablePresent(tableName), "table ["+tableName+"] should exist");
@@ -200,7 +236,7 @@ public class MigratorTest {
 	}
 
 	@TxManagerTest
-	public void testScriptExecutionLogs(DatabaseTestEnvironment env) {
+	public void testScriptExecutionLogs(DatabaseTestEnvironment env) throws JdbcMigrationException {
 		AppConstants.getInstance(env.getConfiguration().getClassLoader()).setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		Configurator.reconfigure();
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {

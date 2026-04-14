@@ -118,7 +118,7 @@
 		<mongodb.driver.version>5.6.4</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>6.2.3</activemq.driver.version>
+		<activemq.driver.version>6.2.4</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.29.0</rabbitmq.driver.version>
@@ -798,12 +798,13 @@
 							<path>
 								<groupId>com.google.errorprone</groupId>
 								<artifactId>error_prone_core</artifactId>
-								<version>2.48.0</version>
+								<!-- NB: When an ErrorProne update breaks the build, check if NullAway should perhaps be updated at the same time -->
+								<version>2.49.0</version>
 							</path>
 							<path>
 								<groupId>com.uber.nullaway</groupId>
 								<artifactId>nullaway</artifactId>
-								<version>0.13.1</version>
+								<version>0.13.2</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>

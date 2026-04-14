@@ -33,6 +33,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
@@ -94,14 +95,15 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 	}
 
 	/**
-	 * Validate the current already executed ChangeSets against the migration script
+	 * Validate the current already executed ChangeSets against the migration script.
+	 * Either true or false if successful or an exception when unable to initialize.
 	 */
-	public abstract boolean validate();
+	protected abstract boolean validate() throws JdbcMigrationException;
 
 	/**
 	 * Run the migration script against the database.
 	 */
-	public abstract void update() throws JdbcException;
+	protected abstract void update() throws JdbcMigrationException;
 
 	/**
 	 * Run the migration script and write the output to the {@link Writer}.
@@ -143,6 +145,10 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 		return AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.active", false);
 	}
 
+	private boolean reThrowException() {
+		return AppConstants.getInstance(configuration.getClassLoader()).getBoolean("jdbc.migrator.on-fail-throw", true);
+	}
+
 	@Override
 	public int getPhase() {
 		return Integer.MIN_VALUE; // Starts first
@@ -170,8 +176,14 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 				if(validate()) {
 					update();
 				}
-			} catch (Exception e) {
-				configuration.publishEvent(new ConfigurationMessageEvent(configuration, "unable to run JDBC migration", e));
+			} catch (JdbcMigrationException e) {
+				if (reThrowException()) {
+					// Propagate the 'Cause' as we don't care about the 'wrapper'-exception.
+					throw new ConfigurationException("unable to run JDBC migration", e);
+				} else {
+					ConfigurationWarnings.add(this, log, e.getMessage(), e.getCause());
+					configuration.publishEvent(new ConfigurationMessageEvent(configuration, "unable to run JDBC migration", e));
+				}
 			}
 		}
 	}

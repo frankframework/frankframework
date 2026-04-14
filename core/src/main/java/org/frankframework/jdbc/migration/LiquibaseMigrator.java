@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2022 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.Scope;
+import liquibase.Scope.ScopedRunner;
 import liquibase.UpdateSummaryOutputEnum;
 import liquibase.change.CheckSum;
 import liquibase.changelog.ChangeLogHistoryService;
@@ -49,7 +50,6 @@ import liquibase.resource.ResourceAccessor;
 import liquibase.ui.LoggerUIService;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.core.Resource;
 import org.frankframework.dbms.JdbcException;
@@ -57,7 +57,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
 /**
- * LiquiBase implementation for IAF
+ * LiquiBase implementation for FF! Configurations.
  *
  * @author Niels Meijer
  * @since 7.0-B4
@@ -117,18 +117,21 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 	}
 
 	@Override
-	public boolean validate() {
-		try {
-			if (hasMigrationScript()) {
-				doValidate();
-				return true;
-			}
-		} catch (ValidationFailedException e) {
-			ConfigurationWarnings.add(this, log, "liquibase validation failed: " + e.getMessage(), e);
-		} catch (LiquibaseException e) {
-			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
+	protected boolean validate() throws JdbcMigrationException {
+		if (!hasMigrationScript()) {
+			return false;
 		}
-		return false;
+
+		try {
+			runInScope(this::doValidate);
+
+			// If we reached this far, call it a success!
+			return true;
+		} catch (ValidationFailedException e) {
+			throw new JdbcMigrationException("liquibase validation failed", e);
+		} catch (LiquibaseException e) {
+			throw new JdbcMigrationException("liquibase failed to initialize", e);
+		}
 	}
 
 	private void doValidate() throws LiquibaseException {
@@ -173,16 +176,23 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 	}
 
 	@Override
-	public void update() {
+	protected void update() throws JdbcMigrationException {
 		List<String> changes = new ArrayList<>();
 		try {
-			Scope.child(
-					Scope.Attr.ui.name(), new LoggerUIService(),
-					() -> this.doUpdate(changes)
-			);
+			runInScope(() -> this.doUpdate(changes));
+		} catch (LiquibaseException e) {
+			throw new JdbcMigrationException("liquibase update failed to execute [" + changes.size() + "] change(s)", e);
+		}
+	}
+
+	/**
+	 * Appends the UI-log configuration scope, so messages are not printed to STD:OUT.
+	 */
+	private void runInScope(ScopedRunner<?> scopedRunner) throws LiquibaseException {
+		try {
+			Scope.child(Scope.Attr.ui.name(), new LoggerUIService(), scopedRunner);
 		} catch (Exception e) {
-			String errorMsg = "Error running LiquiBase update. Failed to execute [" + changes.size() + "] change(s): " + e.getMessage();
-			ConfigurationWarnings.add(this, log, errorMsg, e);
+			throw e instanceof LiquibaseException liquibaseException ? liquibaseException : new LiquibaseException(e);
 		}
 	}
 

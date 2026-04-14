@@ -117,11 +117,9 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 
 		if(BusMessageUtils.ALL_CONFIGS_KEY.equals(configurationName)) {
 			for (Configuration configuration : getIbisManager().getConfigurations()) {
-				if(configuration.isActive()) {
-					for (Adapter adapter : configuration.getRegisteredAdapters()) {
-						if (adapterName.equals(adapter.getName())) {
-							return adapter;
-						}
+				for (Adapter adapter : configuration.getRegisteredAdapters()) {
+					if (adapterName.equals(adapter.getName())) {
+						return adapter;
 					}
 				}
 			}

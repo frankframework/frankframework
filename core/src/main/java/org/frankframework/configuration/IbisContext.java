@@ -370,16 +370,20 @@ public class IbisContext extends IbisApplicationContext {
 				ibisManager.addConfiguration(configuration); // Manually add the configuration else it will be GC'd
 				if(classLoaderException != null) {
 					classLoaderException.addSuppressed(e);
-					throw new ConfigurationException("error instantiating ClassLoader", classLoaderException);
+					throw new ClassLoaderException("error instantiating ClassLoader", classLoaderException);
 				}
-				throw new ConfigurationException("error instantiating configuration", e);
+				throw new ClassLoaderException("error instantiating configuration", e);
 			}
 
 			configuration.configure();
 
 			LOG.info("configured configuration [{}] successfully", currentConfigurationName);
 		} catch (ConfigurationException e) {
-			configuration.setConfigurationException(e);
+			// Unable to configure, but able to create configuration.
+			LOG.info("unable to configure configuration [{}]", currentConfigurationName);
+		} catch (Exception e) {
+			// Something is wrong, unable to create configuration.
+			configuration.setConfigurationException(new ConfigurationException(e));
 			log("exception loading configuration ["+currentConfigurationName+"]", MessageEventLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);

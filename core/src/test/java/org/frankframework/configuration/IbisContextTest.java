@@ -88,7 +88,7 @@ public class IbisContextTest {
 			assertNotNull(ex, "configuration should have an exception");
 			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating ClassLoader"));
 			assertEquals(ClassLoaderException.class.getCanonicalName(), ex.getCause().getClass().getCanonicalName());
-			Throwable[] suppressed = ex.getCause().getSuppressed();
+			Throwable[] suppressed = ex.getCause().getCause().getSuppressed();
 			assertEquals(1, suppressed.length, "ClassLoaderException should have a supressed throwable with more information");
 		}
 	}
