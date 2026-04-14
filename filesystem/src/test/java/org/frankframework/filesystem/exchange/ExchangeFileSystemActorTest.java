@@ -141,4 +141,11 @@ public class ExchangeFileSystemActorTest extends FileSystemActorTest<MailItemId,
 		// NO OP: Wildcards are not supported
 		fail();
 	}
+
+	@Test
+	@Disabled("files get a new id, we don't check the subject, each mail is unique.")
+	@Override
+	public void fileSystemActorMoveActionFailsIfTargetExists() throws Exception {
+		fail();
+	}
 }

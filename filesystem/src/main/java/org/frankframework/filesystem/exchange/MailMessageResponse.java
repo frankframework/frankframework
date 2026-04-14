@@ -77,6 +77,11 @@ public class MailMessageResponse {
 		URI uri = URI.create(generatedUrl);
 		MailMessage response = client.execute(new HttpGet(uri), MailMessage.class);
 
+		// must be equal to the parent folder id
+		if (!filePointer.getMailFolder().getId().equals(response.getParentFolderId())) {
+			return null;
+		}
+
 		response.setMailFolder(filePointer.getMailFolder());
 		BeanUtils.copyProperties(response, filePointer, "url"); // should ignore the url as that's compiled already when setting the MailFolder
 		return response;

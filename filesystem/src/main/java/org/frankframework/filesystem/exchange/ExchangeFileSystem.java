@@ -43,6 +43,7 @@ import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.AbstractFileSystem;
+import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderNotFoundException;
@@ -417,6 +418,13 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public MailMessage moveFile(MailItemId file, String destinationFolder, boolean createFolder) throws FileSystemException {
+		MailItemId destination = toFile(destinationFolder, getName(file));
+		if (exists(destination)) {
+			throw new FileAlreadyExistsException("target already exists");
+		} else if (createFolder && !folderExists(destinationFolder)) {
+			createFolder(destinationFolder);
+		}
+
 		MailMessage mailMessage = getMailMessage(file);
 		MailFolder mailDestinationFolder = findSubFolder(mailFolder, destinationFolder);
 		try {
