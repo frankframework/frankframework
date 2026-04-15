@@ -18,9 +18,14 @@ package org.frankframework.cache;
 import static org.frankframework.cache.AbstractCacheAdapter.PARAM_KEY;
 import static org.frankframework.cache.AbstractCacheAdapter.PARAM_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -29,7 +34,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool.OutputType;
 
 public class EhCacheTransformTest {
-
 
 	@Test
 	public void transformKeyUsesKeyParameterBeforeDeprecatedSettings() throws ConfigurationException {
@@ -68,17 +72,47 @@ public class EhCacheTransformTest {
 		}
 	}
 
-	@Test
-	public void transformKeyReturnsEmptyWhenBlankParameterAndEmptyKeysAreAllowed() throws ConfigurationException {
+	@ValueSource(booleans = { false, true })
+	@ParameterizedTest
+	public void transformsKeyReturnsEmptyKeyWhenEmptyKeysAreAllowed(boolean useParameter) throws ConfigurationException {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-key-empty-" + System.nanoTime());
 		cache.setCacheEmptyKeys(true);
-		cache.addParameter(new Parameter(PARAM_KEY, "  "));
+
+		String resolvedMessage = "";
+		if (useParameter) {
+			cache.addParameter(new Parameter(PARAM_KEY, ""));
+			resolvedMessage = "ignore";
+		}
+
 		cache.configure();
 		cache.open();
 
 		try {
-			assertEquals("", cache.transformKey("ignoredInput", new PipeLineSession()));
+			assertEquals("", cache.transformKey(resolvedMessage, new PipeLineSession()));
+		} finally {
+			cache.close();
+		}
+	}
+
+	@MethodSource("provideNonEmptyValues")
+	@ParameterizedTest
+	public void transformKeyReturnsNonPrintableCharacters(String input, boolean asParameter) throws ConfigurationException {
+		EhCache<String> cache = new EhCache<>();
+		cache.setName("transform-key-empty-" + System.nanoTime());
+		//cache.setCacheEmptyKeys(true);
+
+		String resolvedMessage = input;
+		if (asParameter) {
+			cache.addParameter(new Parameter(PARAM_KEY, input));
+			resolvedMessage = "ignoredInput";
+		}
+
+		cache.configure();
+		cache.open();
+
+		try {
+			assertEquals(input, cache.transformKey(resolvedMessage, new PipeLineSession()));
 		} finally {
 			cache.close();
 		}
@@ -103,16 +137,36 @@ public class EhCacheTransformTest {
 		}
 	}
 
-	@Test
-	public void transformValueReturnsNullWhenBlankParameterAndEmptyValuesAreNotAllowed() throws ConfigurationException {
+	public static Stream<Arguments> provideNonEmptyValues() {
+			return Stream.of(
+					Arguments.of("   ", false),
+					Arguments.of("\t", false),
+					Arguments.of("\n", false),
+					Arguments.of("   ", true),
+					Arguments.of("\t", true),
+					Arguments.of("\n", true)
+			);
+	}
+
+	@MethodSource("provideNonEmptyValues")
+	@ParameterizedTest
+	public void transformValueReturnsNonPrintableCharactersWhenEmptyValuesAreNotAllowed(String input, boolean asParameter) throws ConfigurationException {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-value-null-" + System.nanoTime());
-		cache.addParameter(new Parameter(PARAM_VALUE, "\t"));
+
+		Message message;
+		if (asParameter) {
+			cache.addParameter(new Parameter(PARAM_VALUE, input));
+			message = new Message("ignoredInput");
+		} else {
+			message = new Message(input);
+		}
+
 		cache.configure();
 		cache.open();
 
 		try {
-			assertNull(cache.transformValue(new Message("ignoredInput"), new PipeLineSession()));
+			assertEquals(input, cache.transformValue(message, new PipeLineSession()));
 		} finally {
 			cache.close();
 		}
@@ -190,5 +244,4 @@ public class EhCacheTransformTest {
 			cache.close();
 		}
 	}
-
 }
