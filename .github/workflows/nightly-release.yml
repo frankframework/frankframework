@@ -33,6 +33,8 @@ jobs:
           body: |
             The Frank!Framework nightly (snapshot) build provides a daily compilation of the latest code changes and developments, allowing users to access cutting-edge features and updates before they are officially released.
             
+            For an overview of the changes in this version, please refer to the [Frank!Framework Insights](https://insights.frankframework.org/graph/${{ env.TAG }}?nightly=).
+            
             ## Copy version
             
             ```
