@@ -3,7 +3,7 @@ name: Frank!Framework
 applicationSuite: Frank!Platform
 url: https://github.com/frankframework/frankframework
 landingURL: https://frankframework.org/
-logo: https://avatars.githubusercontent.com/u/117156081
+logo: https://raw.githubusercontent.com/frankframework/frankframework.org/refs/heads/master/src/assets/favicon/icon.svg
 platforms:
   - linux
   - windows
@@ -26,23 +26,6 @@ usedBy:
 roadmap: https://insights.frankframework.org/roadmap
 developmentStatus: stable
 softwareType: standalone/backend
-intendedAudience:
-  countries:
-    - NL
-    - BE
-    - DE
-    - LU
-  scope:
-    - healthcare
-    - infrastructures
-    - local-authorities
-    - defence
-    - security
-    - transportation
-    - welfare
-    - education
-    - energy
-    - government
 description:
   en:
     localisedName: Frank!Framework
@@ -86,7 +69,6 @@ description:
       - integration-framework
     screenshots:
       - https://raw.githubusercontent.com/frankframework/frankframework/refs/heads/master/frank-framework-github-banner.png
-      - https://github.com/user-attachments/assets/a094486b-cabb-48a1-8718-37072162fa50
 legal:
   license: Apache-2.0
 maintenance:
