@@ -15,6 +15,8 @@
 */
 package org.frankframework.cache;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
@@ -104,14 +106,18 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 		// Tries to get the parameter with name 'key', or else falls back to the deprecated way of determining the key (using keyXPath or keyStyleSheet)
 		if (getParameterList().hasParameter(PARAM_KEY)) {
 			// To behave like the original flow, this obscure logic needs to remain
-			String resolvedKey = getParameter(PARAM_KEY, new Message(input), session);
+			try {
+				Message resolvedParameter = getParameter(PARAM_KEY, new Message(input), session);
 
-			if (StringUtils.isNotBlank(resolvedKey)) {
-				return resolvedKey;
-			}
+				if (!resolvedParameter.isEmpty()) {
+					return resolvedParameter.asString();
+				}
 
-			if (isCacheEmptyKeys()) {
-				return "";
+				if (isCacheEmptyKeys()) {
+					return "";
+				}
+			} catch (IOException e) {
+				log.error("Error resolving key parameter", e);
 			}
 
 			return null;
@@ -151,13 +157,12 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 		Message returnMessage = null;
 
 		if (getParameterList().hasParameter(PARAM_VALUE)) {
-			String resolvedValue = getParameter(PARAM_VALUE, value, session);
+			Message resolvedValue = getParameter(PARAM_VALUE, value, session);
 
-			// To behave like the original flow, this obscure logic needs to remain
-			if (StringUtils.isNotBlank(resolvedValue)) {
-				returnMessage = new Message(resolvedValue);
-			} else if (isCacheEmptyValues()) {
-				returnMessage = new Message("");
+			// To behave like the original flow, this obscure logic needs to remain, so toValue will use the original message
+			// as a value when resolvedValue.isEmpty && !isCacheEmptyValues
+			if (!resolvedValue.isEmpty() || isCacheEmptyValues()) {
+				returnMessage = resolvedValue;
 			}
 		} else {
 			returnMessage = deprecatedGetValue(value, session);
@@ -200,21 +205,21 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 	 * Gets a parameter with parameterName from the parameter list, if it exists. Returns the parameter value as a string, or null if the parameter does not
 	 * exist or an error occurs when trying to determine the parameter value.
 	 */
-	private String getParameter(String parameterName, Message input, PipeLineSession session) {
+	private Message getParameter(String parameterName, Message input, PipeLineSession session) {
 		if (getParameterList().hasParameter(parameterName)) {
 			try {
 				ParameterValueList parameterValueList = getParameterList().getValues(input, session);
 				ParameterValue parameterValue = parameterValueList.findParameterValue(parameterName);
 
 				if (parameterValue != null) {
-					return parameterValue.asStringValue();
+					return parameterValue.asMessage();
 				}
 			} catch (ParameterException e) {
 				log.error("{}cannot parameter '{}' from parameter list", getLogPrefix(), parameterName, e);
 			}
 		}
 
-		return null;
+		return Message.nullMessage();
 	}
 
 	@Override
