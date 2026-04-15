@@ -48,7 +48,7 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<adapter name="Cache-Sender" >
+	<adapter name="Cache-Sender">
 		<receiver
 			name="Cache-Sender-Java">
             <listener
@@ -81,61 +81,118 @@
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe name="SmallMemoryXPath" >
-				<sender className="org.frankframework.senders.SenderWrapper" >
-					<cache maxElementsInMemory="2">
-						<Param name="key" xpathExpression="*/@tag" />
-					</cache>
+			<pipe name="SmallMemoryXPath">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache maxElementsInMemory="2" keyXPath="*/@tag" />
 					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe name="OverflowToDisk" >
-				<sender className="org.frankframework.senders.SenderWrapper" >
-					<cache maxElementsInMemory="2" overflowToDisk="true" >
-						<Param name="key" xpathExpression="*/@tag" />
-					</cache>
+			<pipe name="OverflowToDisk">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache maxElementsInMemory="2" overflowToDisk="true" keyXPath="*/@tag" />
 					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe name="PersistentOverflowToDisk" >
-				<sender className="org.frankframework.senders.SenderWrapper" >
-					<cache maxElementsInMemory="2" overflowToDisk="true" diskPersistent="true">
-						<Param name="key" xpathExpression="*/@tag" />
-					</cache>
+			<pipe name="PersistentOverflowToDisk">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache maxElementsInMemory="2" overflowToDisk="true" diskPersistent="true" keyXPath="*/@tag" />
 					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe name="XPath" >
-				<sender className="org.frankframework.senders.SenderWrapper" >
-					<!-- was:
+			<pipe name="XPath">
+				<sender className="org.frankframework.senders.SenderWrapper">
 					<cache keyXPath="*/key" valueXPath="*/value[text()]" />
-					-->
-					<cache>
-						<Param name="key" xpathExpression="*/key" />
-						<Param name="value" xpathExpression="*/value[text()]" xpathResult="XML"/>
-					</cache>
 					<sender className="org.frankframework.senders.EchoSender" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe name="XPath-storeEmpty" >
-				<sender className="org.frankframework.senders.SenderWrapper" >
-					<cache cacheEmptyKeys="true" cacheEmptyValues="true">
-						<Param name="key" xpathExpression="*/key" />
-						<Param name="value" xpathExpression="*/value[text()]" xpathResult="XML"/>
-					</cache>
+			<pipe name="XPath-storeEmpty">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache keyXPath="*/key" valueXPath="*/value[text()]" cacheEmptyKeys="true" cacheEmptyValues="true" />
 					<sender className="org.frankframework.senders.EchoSender" />
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe name="Delay" >
+			<pipe name="Delay">
 				<sender className="org.frankframework.senders.DelaySender" delayTime="500" />
 				<forward name="success" path="READY"/>
 			</pipe>
 		</pipeline>
 	</adapter>
+	<adapter name="Cache-Sender-Params">
+		<!-- please note the custom names of the caches to don't clash with the ones above -->
+		<receiver
+			name="Cache-Sender-Params-Java">
+			<listener
+				className="org.frankframework.receivers.JavaListener"
+				serviceName="ibis4test-cache-sender-params"
+			/>
+		</receiver>
+		<pipeline firstPipe="selectSenderBasedOnRootNode">
+			<exits>
+				<exit name="READY" state="success"/>
+				<exit name="ERROR" state="error"/>
+			</exits>
 
+			<pipe
+				name="selectSenderBasedOnRootNode"
+				className="org.frankframework.pipes.SwitchPipe" >
+			</pipe>
+
+			<pipe name="SmallMemoryXPath">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache maxElementsInMemory="2" name="smallmemoryxpath-sender-cache-params">
+						<Param name="key" xpathExpression="*/@tag" />
+					</cache>
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="OverflowToDisk">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache maxElementsInMemory="2" overflowToDisk="true" name="overflowtodisk-sender-cache-params">
+						<Param name="key" xpathExpression="*/@tag" />
+					</cache>
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="PersistentOverflowToDisk">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache maxElementsInMemory="2" overflowToDisk="true" diskPersistent="true" name="persistentoverflowtodisk-sender-cache-params">
+						<Param name="key" xpathExpression="*/@tag" />
+					</cache>
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-cache-helper" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="XPath">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache name="xpath-sender-cache-params">
+						<Param name="key" xpathExpression="*/key" />
+						<Param name="value" xpathExpression="*/value[text()]" xpathResult="XML"/>
+					</cache>
+					<sender className="org.frankframework.senders.EchoSender" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="XPath-storeEmpty">
+				<sender className="org.frankframework.senders.SenderWrapper">
+					<cache cacheEmptyKeys="true" cacheEmptyValues="true" name="xpath-storeempty-sender-cache-params">
+						<Param name="key" xpathExpression="*/key" />
+						<Param name="value" xpathExpression="*/value[text()]" xpathResult="XML"/>
+					</cache>
+					<sender className="org.frankframework.senders.EchoSender" />
+				</sender>
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe name="Delay">
+				<sender className="org.frankframework.senders.DelaySender" delayTime="500" />
+				<forward name="success" path="READY"/>
+			</pipe>
+		</pipeline>
+	</adapter>
 </module>

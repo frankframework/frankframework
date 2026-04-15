@@ -161,8 +161,12 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 
 			// To behave like the original flow, this obscure logic needs to remain, so toValue will use the original message
 			// as a value when resolvedValue.isEmpty && !isCacheEmptyValues
-			if (!resolvedValue.isEmpty() || isCacheEmptyValues()) {
+			if (!resolvedValue.isEmpty()) {
 				returnMessage = resolvedValue;
+			} else if (isCacheEmptyValues()) {
+				returnMessage = new Message("");
+			} else {
+				returnMessage = value;
 			}
 		} else {
 			returnMessage = deprecatedGetValue(value, session);
