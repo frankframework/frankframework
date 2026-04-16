@@ -961,7 +961,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testNullMessageIsEmpty(String value) {
+	public void testNullMessageIsEmpty() {
 		assertTrue(Message.isEmpty(null));
 	}
 
