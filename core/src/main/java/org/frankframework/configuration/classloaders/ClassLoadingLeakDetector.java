@@ -86,7 +86,7 @@ public class ClassLoadingLeakDetector {
 		 * </p>
 		 */
 		private boolean isPotentiallyLeaked() {
-			return destroyed && classLoaderRef.get() != null;
+			return destroyed && !classLoaderRef.refersTo(null);
 		}
 	}
 
