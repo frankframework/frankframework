@@ -266,7 +266,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 
 		Element queryElement;
 		try {
-			if (XmlUtils.isWellFormed(message.asString(), "idin")) {
+			if (XmlUtils.isWellFormed(message, "idin")) {
 				queryElement = XmlUtils.buildElement(message.asString());
 			} else {
 				queryElement = XmlUtils.buildElement("<idin/>");

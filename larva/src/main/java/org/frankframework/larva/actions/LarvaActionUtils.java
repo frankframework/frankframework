@@ -33,10 +33,10 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.FileMessage;
+import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
@@ -166,41 +166,55 @@ public class LarvaActionUtils {
 	}
 
 	@Nullable
-	private static Object getParamValue(Properties properties, int i, String type, String name) {
+	private static String getPropertyValueAsString(Properties properties, int i) {
 		String propertyValue = properties.getProperty(PARAM_KEY + i + VALUE_KEY);
-		Object value = propertyValue;
 
-		if (value == null) {
-			String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
-			if (filename != null) {
-				File file = new File(filename);
-				if (!file.exists()) {
-					throw new IllegalArgumentException("file ["+filename+"] not found");
-				}
-				value = new FileMessage(file);
-			} else {
-				String inputStreamFilename = properties.getProperty(PARAM_KEY + i + ".valuefileinputstream.absolutepath");
-				if (inputStreamFilename != null) {
-					throw new IllegalArgumentException("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
-				}
+		if (propertyValue != null) {
+			return propertyValue;
+		}
+
+		String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
+		if (filename != null) {
+			File file = new File(filename);
+			if (!file.exists()) {
+				throw new IllegalArgumentException("file ["+filename+"] not found");
+			}
+			Message message = new FileMessage(file);
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new IllegalArgumentException("unable to read file ["+filename+"]", e);
+			}
+		} else {
+			String inputStreamFilename = properties.getProperty(PARAM_KEY + i + ".valuefileinputstream.absolutepath");
+			if (inputStreamFilename != null) {
+				throw new IllegalArgumentException("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
 			}
 		}
+
+		return null;
+	}
+
+	@Nullable
+	private static Object getParamValue(Properties properties, int i, String type, String name) {
+		String value = getPropertyValueAsString(properties, i);
+
 		if ("node".equalsIgnoreCase(type)) {
 			try {
-				value = XmlUtils.buildNode(MessageUtils.asString(value), true);
-			} catch (DomBuilderException | IOException e) {
+				return XmlUtils.buildNode(value, true);
+			} catch (DomBuilderException e) {
 				throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
 			}
 		} else if ("domdoc".equalsIgnoreCase(type)) {
 			try {
-				value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
-			} catch (DomBuilderException | IOException e) {
+				return XmlUtils.buildDomDocument(value, true);
+			} catch (DomBuilderException e) {
 				throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
 			}
 		} else if ("list".equalsIgnoreCase(type)) {
-			value = StringUtil.split(propertyValue);
+			return StringUtil.split(value);
 		} else if ("map".equalsIgnoreCase(type)) {
-			List<String> parts = StringUtil.split(propertyValue);
+			List<String> parts = StringUtil.split(value);
 			Map<String, String> map = new LinkedHashMap<>();
 
 			for (String part : parts) {
@@ -211,8 +225,9 @@ public class LarvaActionUtils {
 					map.put(splitted[0].strip(), "");
 				}
 			}
-			value = map;
+			return map;
 		}
+
 		return value;
 	}
 }

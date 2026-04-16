@@ -91,6 +91,10 @@ public class XmlJmsBrowserSender extends AbstractSenderWithParameters {
 
 	@Override
 	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+		if (Message.isEmpty(message)) {
+			throw new SenderException("unable to process message, no input provided");
+		}
+
 		Element queueBrowserElement;
 		String root = null;
 		String jmsRealm = null;

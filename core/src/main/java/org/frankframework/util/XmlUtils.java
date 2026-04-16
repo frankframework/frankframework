@@ -1120,6 +1120,10 @@ public class XmlUtils {
 	}
 
 	public static boolean isWellFormed(Message input, String root) {
+		if (Message.isEmpty(input)) {
+			return false;
+		}
+
 		RootValidations rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
 			rootValidations = new RootValidations(root);
