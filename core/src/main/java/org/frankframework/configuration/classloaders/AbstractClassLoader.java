@@ -295,7 +295,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	@Override
 	public Class<?> publicDefineClass(@NonNull String name, byte @NonNull [] b, @Nullable ProtectionDomain protectionDomain) {
 		Class<?> definedClass = super.defineClass(name, b, 0, b.length, protectionDomain);
-		ClassLoadingLeakDetector.registerResource(configurationName, definedClass);
+		ClassLoadingLeakDetector.registerResource(this, definedClass);
 		return definedClass;
 	}
 
@@ -335,7 +335,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 			}
 		}
 
-		throw new ClassNotFoundException("class ["+name+"] not found in classloader ["+this+"]"); // Throw ClassNotFoundException when nothing was found
+		throw new ClassNotFoundException("class [" + name + "] not found in classloader [" + this + "]"); // Throw ClassNotFoundException when nothing was found
 	}
 
 	@Override
@@ -350,7 +350,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		log.debug("removing classloader [{}]", this);
 
 		AppConstants.removeInstance(this);
-		ClassLoadingLeakDetector.destroyed(configurationName);
+		ClassLoadingLeakDetector.destroyed(this);
 	}
 
 	@Override
