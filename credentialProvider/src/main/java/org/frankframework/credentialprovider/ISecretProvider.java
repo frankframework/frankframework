@@ -18,8 +18,6 @@ package org.frankframework.credentialprovider;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
-import org.jspecify.annotations.Nullable;
-
 /**
  * <p>Interface for a CredentialFactory. A CredentialFactory is responsible for providing credentials to the framework.</p>
  *
@@ -33,16 +31,16 @@ public interface ISecretProvider {
 	 * initialize() of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
 	 */
 	@SuppressWarnings("java:S112")
-	void initialize() throws Exception;
+	void initialize() throws Exception; // Ignore 'Generic exceptions should never be thrown'
 
 	boolean hasSecret(CredentialAlias alias);
 
 	ISecret getSecret(CredentialAlias alias) throws NoSuchElementException;
 
 	/**
-	 * Return a list of all configured aliases, or null if such a list cannot be provided.
+	 * Return a list of all configured aliases, should provide an empty list if none can be provided.
 	 * @throws Exception Can throw an exception when failing to get the configured aliases.
 	 */
-	@SuppressWarnings("java:S112")
-	@Nullable Collection<String> getConfiguredAliases() throws Exception;
+	@SuppressWarnings("java:S112") // Ignore 'Generic exceptions should never be thrown'
+	Collection<String> getConfiguredAliases() throws Exception;
 }

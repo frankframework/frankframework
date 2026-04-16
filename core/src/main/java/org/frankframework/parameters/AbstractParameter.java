@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.dom.DOMResult;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -232,10 +231,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
-		TransformerPool pool = getTransformerPool();
-		DOMResult transformResult = new DOMResult();
-		pool.transform(xmlSource, transformResult, pvl ==null ? null : pvl.getValueMap());
-		return (Document) transformResult.getNode();
+		return getTransformerPool().transformToDocument(xmlSource, pvl == null ? null : pvl.getValueMap());
 	}
 
 	/**

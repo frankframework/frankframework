@@ -46,6 +46,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -961,6 +963,13 @@ public class MessageTest {
 	@Test
 	public void testNullMessageIsEmpty() {
 		assertTrue(Message.isEmpty(null));
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	public void testMessageEmptiness(String value) {
+		assertTrue(Message.isEmpty(new Message(value)));
+		assertTrue(Message.isEmpty(new Message(new byte[] {})));
 	}
 
 	@Test
