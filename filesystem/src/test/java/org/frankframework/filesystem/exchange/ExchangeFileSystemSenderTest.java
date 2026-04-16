@@ -1,6 +1,5 @@
 package org.frankframework.filesystem.exchange;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.AfterAll;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Tag;
 import org.frankframework.filesystem.FileSystemSenderTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.senders.ExchangeFileSystemSender;
-import org.frankframework.testutil.TestAssertions;
 
 @Tag("slow")
 @Tag("unstable") // Relies on a remote API that is not always available for the tests
@@ -18,7 +16,6 @@ public class ExchangeFileSystemSenderTest extends FileSystemSenderTest<ExchangeF
 
 	@BeforeAll
 	public static void beforeAll() {
-		assumeFalse(TestAssertions.isTestRunningOnCI());
 		assumeTrue(ExchangeConnectionCache.validateCredentials());
 	}
 

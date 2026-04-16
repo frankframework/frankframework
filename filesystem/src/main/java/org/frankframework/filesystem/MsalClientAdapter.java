@@ -225,6 +225,10 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 			return MailMessageResponse.get(this, file);
 		}
 
+		public String getMailMimeMessage(MailMessage file) throws IOException {
+			return MailMessageResponse.getMime(this, file);
+		}
+
 		public MailMessage moveMailMessage(MailMessage file, MailFolder destinationFolder) throws IOException {
 			return MailMessageResponse.move(this, file, destinationFolder);
 		}

@@ -20,16 +20,19 @@ import java.nio.file.DirectoryStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,6 +43,7 @@ import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.AbstractFileSystem;
+import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderNotFoundException;
@@ -56,6 +60,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
+import org.frankframework.xml.SaxElementBuilder;
 
 /**
  * Implementation of a {@link IBasicFileSystem} of an Exchange Mailbox.
@@ -72,7 +77,7 @@ import org.frankframework.util.StringUtil;
  * </ol>
  */
 @Log4j2
-public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore, ApplicationContextAware {
+public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore, ApplicationContextAware, IMailFileSystem<MailItemId, MailMessage> {
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -413,6 +418,13 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public MailMessage moveFile(MailItemId file, String destinationFolder, boolean createFolder) throws FileSystemException {
+		MailItemId destination = toFile(destinationFolder, getName(file));
+		if (exists(destination)) {
+			throw new FileAlreadyExistsException("target already exists");
+		} else if (createFolder && !folderExists(destinationFolder)) {
+			createFolder(destinationFolder);
+		}
+
 		MailMessage mailMessage = getMailMessage(file);
 		MailFolder mailDestinationFolder = findSubFolder(mailFolder, destinationFolder);
 		try {
@@ -615,5 +627,86 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	 */
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;
+	}
+
+
+	/* Mail FileSystem implementations */
+
+	@Override
+	public String getSubject(MailItemId emailMessage) throws FileSystemException {
+		if (emailMessage instanceof MailMessage message) {
+			return message.getSubject();
+		}
+
+		throw new FileSystemException("type is not a MailMessage");
+	}
+
+	@Override
+	public Message getMimeContent(MailItemId emailMessage) throws FileSystemException {
+		if (emailMessage instanceof MailMessage message) {
+			try {
+				String result = client.getMailMimeMessage(message);
+				return new Message(result, FileSystemUtils.getContext(this, message, null));
+			} catch (IOException e) {
+				throw new FileSystemException("unable to read MIMEmessage", e);
+			}
+		}
+
+		throw new FileSystemException("type is not a MailMessage");
+	}
+
+	@Override
+	public void forwardMail(MailItemId emailMessage, String destination) throws FileSystemException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void extractEmail(MailItemId emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
+		MailFileSystemUtils.addEmailInfo(this, emailMessage, emailXml);
+	}
+
+	@Override
+	public void extractAttachment(MailMessage attachment, SaxElementBuilder attachmentsXml) throws FileSystemException, SAXException {
+		MailFileSystemUtils.addAttachmentInfo(this, attachment, attachmentsXml);
+	}
+
+	@Override
+	public Iterator<MailMessage> listAttachments(MailItemId f) throws FileSystemException {
+		return null;
+	}
+
+	@Override
+	public String getAttachmentName(MailMessage a) throws FileSystemException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Message readAttachment(MailMessage a) throws FileSystemException, IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public long getAttachmentSize(MailMessage a) throws FileSystemException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public String getAttachmentContentType(MailMessage a) throws FileSystemException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public String getAttachmentFileName(MailMessage a) throws FileSystemException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public @Nullable MailItemId getFileFromAttachment(MailMessage a) throws FileSystemException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public Map<String, Object> getAdditionalAttachmentProperties(MailMessage a) throws FileSystemException {
+		throw new NotImplementedException();
 	}
 }

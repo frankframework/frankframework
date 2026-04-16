@@ -2,8 +2,6 @@ package org.frankframework.filesystem.exchange;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 
@@ -16,6 +14,7 @@ import org.frankframework.filesystem.MsalClientAdapter;
 import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.senders.ExchangeFileSystemSender;
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.CredentialFactory;
@@ -64,7 +63,9 @@ public class ExchangeConnectionCache {
 			log.debug("Creating new GraphClient and FS test helper");
 			configuration = new TestConfiguration();
 			MsalClientAdapter adapter = configuration.createBean();
-			adapter.setTimeout(30_000);
+
+			// Exchange has strange timeouts sometimes
+			adapter.setTimeout(TestAssertions.isTestRunningOnGitHub() ? 60_000 : 20_000);
 			adapter.configure();
 			adapter.start();
 
@@ -102,15 +103,16 @@ public class ExchangeConnectionCache {
 		return new ExchangeFileSystemTestHelper(clientId, clientSecret, tenantId, mailAddress, baseFolder);
 	}
 
-	private ExchangeFileSystem createFileSystem() {
-		ExchangeFileSystem exchange = spy(ExchangeFileSystem.class);
+	private ExchangeFileSystem createFileSystemWithConnectionCache() {
+		ExchangeFileSystem exchange = new ExchangeFileSystem() {
+			@Override
+			protected GraphClient getGraphClient() throws IOException {
+				return EXCHANGE_CONNECTION_CACHE.graphClient;
+			}
+		};
 
-		try {
-			doReturn(EXCHANGE_CONNECTION_CACHE.graphClient).when(exchange).getGraphClient();
-		} catch (IOException e) {
-			throw new IllegalStateException("unable to create GraphClient", e);
-		}
-
+		exchange.setClientId(clientId);
+		exchange.setClientSecret(clientSecret);
 		exchange.setTenantId(tenantId);
 		exchange.setMailAddress(mailAddress);
 		exchange.setBaseFolder(baseFolder);
@@ -120,8 +122,12 @@ public class ExchangeConnectionCache {
 	}
 
 	private ExchangeMailListener createListener() {
-		ExchangeMailListener exchange = spy(ExchangeMailListener.class);
-		doReturn(createFileSystem()).when(exchange).getFileSystem();
+		ExchangeMailListener exchange = new ExchangeMailListener() {
+			@Override
+			protected ExchangeFileSystem createFileSystem() {
+				return createFileSystemWithConnectionCache();
+			}
+		};
 
 		exchange.setClientId(clientId);
 		exchange.setClientSecret(clientSecret);
@@ -134,8 +140,8 @@ public class ExchangeConnectionCache {
 	}
 
 	private ExchangeFileSystemSender createSender() {
-		ExchangeFileSystemSender exchange = spy(ExchangeFileSystemSender.class);
-		doReturn(createFileSystem()).when(exchange).getFileSystem();
+		ExchangeFileSystemSender exchange = new ExchangeFileSystemSender();
+		exchange.setFileSystem(createFileSystemWithConnectionCache());
 
 		exchange.setClientId(clientId);
 		exchange.setClientSecret(clientSecret);
@@ -159,7 +165,7 @@ public class ExchangeConnectionCache {
 	public static ExchangeFileSystem getExchangeFileSystem() {
 		assumeTrue(validateCredentials());
 
-		return getInstance().createFileSystem();
+		return getInstance().createFileSystemWithConnectionCache();
 	}
 
 	public static ExchangeMailListener getExchangeMailListener() {

@@ -77,9 +77,24 @@ public class MailMessageResponse {
 		URI uri = URI.create(generatedUrl);
 		MailMessage response = client.execute(new HttpGet(uri), MailMessage.class);
 
+		// must be equal to the parent folder id
+		if (!filePointer.getMailFolder().getId().equals(response.getParentFolderId())) {
+			return null;
+		}
+
 		response.setMailFolder(filePointer.getMailFolder());
 		BeanUtils.copyProperties(response, filePointer, "url"); // should ignore the url as that's compiled already when setting the MailFolder
 		return response;
+	}
+
+	public static String getMime(GraphClient client, MailMessage filePointer) throws IOException {
+		String composedUrl = MESSAGE_URL_SUFFIX.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
+		String generatedUrl = filePointer.getUrl();
+		if (!composedUrl.equals(generatedUrl)) {
+			throw new IOException("url mismatch");
+		}
+		URI uri = URI.create(generatedUrl + "/$value");
+		return client.execute(new HttpGet(uri), String.class);
 	}
 
 	public static MailMessage move(GraphClient client, MailMessage filePointer, MailFolder destinationFolder) throws IOException {
