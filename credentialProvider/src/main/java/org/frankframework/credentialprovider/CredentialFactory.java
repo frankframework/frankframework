@@ -286,6 +286,7 @@ public class CredentialFactory {
 		for (ISecretProvider factory : getInstance().delegates) {
 			try {
 				Collection<String> configuredAliases = factory.getConfiguredAliases();
+				// It should never be null
 				if (configuredAliases != null) {
 					aliases.addAll(configuredAliases);
 				}

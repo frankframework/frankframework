@@ -361,7 +361,7 @@ public class XmlUtils {
 	 * Convert an XML string to a Document, then return the root-element
 	 */
 	public static @NonNull Element buildElement(@NonNull String s, boolean namespaceAware) throws DomBuilderException {
-		return buildDomDocument(s,namespaceAware).getDocumentElement();
+		return buildDomDocument(s, namespaceAware).getDocumentElement();
 	}
 
 	/**
