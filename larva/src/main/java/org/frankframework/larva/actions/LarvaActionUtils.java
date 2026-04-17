@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.Document;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -104,27 +105,24 @@ public class LarvaActionUtils {
 			String pattern = properties.getProperty(PARAM_KEY + i + PATTERN_KEY);
 			if (value == null && pattern == null) {
 				throw new IllegalArgumentException("Property '" + PARAM_KEY + i + " doesn't have a value or pattern");
-			} else {
-				try {
-					ParameterType paramType = StringUtils.isBlank(type) ? ParameterType.STRING : EnumUtils.parse(ParameterType.class, type);
-					IParameter parameter = ClassUtils.newInstance(paramType.getTypeClass());
+			}
 
-					parameter.setName(name);
-					if (value != null) {
-						if (value instanceof String string) {
-							parameter.setValue(string);
-							parameter.setPattern(pattern);
-						} else {
-							parameter.setSessionKey(name);
-							session.put(name, value);
-						}
-					}
+			try {
+				ParameterType paramType = StringUtils.isBlank(type) ? ParameterType.STRING : EnumUtils.parse(ParameterType.class, type);
+				IParameter parameter = ClassUtils.newInstance(paramType.getTypeClass());
 
-					parameter.configure();
-					result.put(name, parameter);
-				} catch (ReflectiveOperationException | SecurityException | ConfigurationException e) {
-					throw new IllegalArgumentException("Parameter '" + name + "' could not be configured");
+				parameter.setName(name);
+				parameter.setPattern(pattern);
+
+				if (value != null) {
+					parameter.setSessionKey(name);
+					session.put(name, value);
 				}
+
+				parameter.configure();
+				result.put(name, parameter);
+			} catch (ReflectiveOperationException | SecurityException | ConfigurationException e) {
+				throw new IllegalArgumentException("Parameter '" + name + "' could not be configured");
 			}
 			i++;
 		}
@@ -191,43 +189,53 @@ public class LarvaActionUtils {
 		return Message.nullMessage();
 	}
 
+	private static Document createDocument(String name, Message value) {
+		if (value.isEmpty()) throw new IllegalArgumentException("Could not build node for parameter '" + name + "' no value provided");
+
+		try {
+			return XmlUtils.buildDomDocument(value.asInputSource(), true);
+		} catch (DomBuilderException | IOException e) {
+			throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
+		}
+	}
+
+	// Returns an Element, List, Map or Message.
 	@Nullable
 	private static Object getParamValue(Properties properties, int i, String type, String name) {
 		Message value = getPropertyValue(properties, i);
 
-		try {
-			if ("node".equalsIgnoreCase(type)) {
-				try {
-					return XmlUtils.buildDomDocument(value.asInputSource(), true).getDocumentElement();
-				} catch (DomBuilderException e) {
-					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
-				}
-			} else if ("domdoc".equalsIgnoreCase(type)) {
-				try {
-					return XmlUtils.buildDomDocument(value.asInputSource(), true);
-				} catch (DomBuilderException e) {
-					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
-				}
-			} else if ("list".equalsIgnoreCase(type)) {
+		if ("node".equalsIgnoreCase(type)) {
+			return createDocument(name, value).getDocumentElement();
+		} else if ("domdoc".equalsIgnoreCase(type)) {
+			return createDocument(name, value);
+		} else if ("list".equalsIgnoreCase(type)) {
+			try {
 				return StringUtil.split(value.asString());
-			} else if ("map".equalsIgnoreCase(type)) {
-				List<String> parts = StringUtil.split(value.asString());
-				Map<String, String> map = new LinkedHashMap<>();
-
-				for (String part : parts) {
-					String[] splitted = part.split("=", 2);
-					if (splitted.length==2) {
-						map.put(splitted[0].strip(), splitted[1].strip());
-					} else {
-						map.put(splitted[0].strip(), "");
-					}
-				}
-				return map;
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Could not read value of property '" + name + "'", e);
 			}
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Could not read property value'" + name + "'.", e);
+		} else if ("map".equalsIgnoreCase(type)) {
+			List<String> parts;
+			try {
+				parts = StringUtil.split(value.asString());
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Could not read value of property '" + name + "'", e);
+			}
+
+			Map<String, String> map = new LinkedHashMap<>();
+
+			for (String part : parts) {
+				String[] splitted = part.split("=", 2);
+				if (splitted.length==2) {
+					map.put(splitted[0].strip(), splitted[1].strip());
+				} else {
+					map.put(splitted[0].strip(), "");
+				}
+			}
+			return map;
 		}
 
-		return value;
+		// We must return null when nothing is found
+		return Message.isNull(value) ? null : value;
 	}
 }
