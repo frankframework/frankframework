@@ -24,7 +24,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.Document;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -33,10 +35,10 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.FileMessage;
+import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
@@ -103,27 +105,24 @@ public class LarvaActionUtils {
 			String pattern = properties.getProperty(PARAM_KEY + i + PATTERN_KEY);
 			if (value == null && pattern == null) {
 				throw new IllegalArgumentException("Property '" + PARAM_KEY + i + " doesn't have a value or pattern");
-			} else {
-				try {
-					ParameterType paramType = StringUtils.isBlank(type) ? ParameterType.STRING : EnumUtils.parse(ParameterType.class, type);
-					IParameter parameter = ClassUtils.newInstance(paramType.getTypeClass());
+			}
 
-					parameter.setName(name);
-					if (value != null) {
-						if (value instanceof String string) {
-							parameter.setValue(string);
-							parameter.setPattern(pattern);
-						} else {
-							parameter.setSessionKey(name);
-							session.put(name, value);
-						}
-					}
+			try {
+				ParameterType paramType = StringUtils.isBlank(type) ? ParameterType.STRING : EnumUtils.parse(ParameterType.class, type);
+				IParameter parameter = ClassUtils.newInstance(paramType.getTypeClass());
 
-					parameter.configure();
-					result.put(name, parameter);
-				} catch (ReflectiveOperationException | SecurityException | ConfigurationException e) {
-					throw new IllegalArgumentException("Parameter '" + name + "' could not be configured");
+				parameter.setName(name);
+				parameter.setPattern(pattern);
+
+				if (value != null) {
+					parameter.setSessionKey(name);
+					session.put(name, value);
 				}
+
+				parameter.configure();
+				result.put(name, parameter);
+			} catch (ReflectiveOperationException | SecurityException | ConfigurationException e) {
+				throw new IllegalArgumentException("Parameter '" + name + "' could not be configured");
 			}
 			i++;
 		}
@@ -165,42 +164,64 @@ public class LarvaActionUtils {
 		return result;
 	}
 
-	@Nullable
-	private static Object getParamValue(Properties properties, int i, String type, String name) {
+	@NonNull
+	private static Message getPropertyValue(Properties properties, int i) {
 		String propertyValue = properties.getProperty(PARAM_KEY + i + VALUE_KEY);
-		Object value = propertyValue;
 
-		if (value == null) {
-			String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
-			if (filename != null) {
-				File file = new File(filename);
-				if (!file.exists()) {
-					throw new IllegalArgumentException("file ["+filename+"] not found");
-				}
-				value = new FileMessage(file);
-			} else {
-				String inputStreamFilename = properties.getProperty(PARAM_KEY + i + ".valuefileinputstream.absolutepath");
-				if (inputStreamFilename != null) {
-					throw new IllegalArgumentException("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
-				}
+		if (propertyValue != null) {
+			return new Message(propertyValue);
+		}
+
+		String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
+		if (filename != null) {
+			File file = new File(filename);
+			if (!file.exists()) {
+				throw new IllegalArgumentException("file ["+filename+"] not found");
+			}
+			return new FileMessage(file);
+		} else {
+			String inputStreamFilename = properties.getProperty(PARAM_KEY + i + ".valuefileinputstream.absolutepath");
+			if (inputStreamFilename != null) {
+				throw new IllegalArgumentException("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
 			}
 		}
+
+		return Message.nullMessage();
+	}
+
+	private static Document createDocument(String name, Message value) {
+		if (value.isEmpty()) throw new IllegalArgumentException("Could not build node for parameter '" + name + "' no value provided");
+
+		try {
+			return XmlUtils.buildDomDocument(value.asInputSource(), true);
+		} catch (DomBuilderException | IOException e) {
+			throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
+		}
+	}
+
+	// Returns an Element, List, Map or Message.
+	@Nullable
+	private static Object getParamValue(Properties properties, int i, String type, String name) {
+		Message value = getPropertyValue(properties, i);
+
 		if ("node".equalsIgnoreCase(type)) {
-			try {
-				value = XmlUtils.buildNode(MessageUtils.asString(value), true);
-			} catch (DomBuilderException | IOException e) {
-				throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
-			}
+			return createDocument(name, value).getDocumentElement();
 		} else if ("domdoc".equalsIgnoreCase(type)) {
-			try {
-				value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
-			} catch (DomBuilderException | IOException e) {
-				throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
-			}
+			return createDocument(name, value);
 		} else if ("list".equalsIgnoreCase(type)) {
-			value = StringUtil.split(propertyValue);
+			try {
+				return StringUtil.split(value.asString());
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Could not read value of property '" + name + "'", e);
+			}
 		} else if ("map".equalsIgnoreCase(type)) {
-			List<String> parts = StringUtil.split(propertyValue);
+			List<String> parts;
+			try {
+				parts = StringUtil.split(value.asString());
+			} catch (IOException e) {
+				throw new IllegalArgumentException("Could not read value of property '" + name + "'", e);
+			}
+
 			Map<String, String> map = new LinkedHashMap<>();
 
 			for (String part : parts) {
@@ -211,8 +232,10 @@ public class LarvaActionUtils {
 					map.put(splitted[0].strip(), "");
 				}
 			}
-			value = map;
+			return map;
 		}
-		return value;
+
+		// We must return null when nothing is found
+		return Message.isNull(value) ? null : value;
 	}
 }
