@@ -328,7 +328,7 @@
 		<dependency>
 			<groupId>io.swagger.parser.v3</groupId>
 			<artifactId>swagger-parser-v3</artifactId>
-			<version>2.1.39</version>
+			<version>2.1.40</version>
 			<exclusions>
 				<exclusion>
 					<groupId>io.swagger.core.v3</groupId>
@@ -344,12 +344,12 @@
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-core-jakarta</artifactId>
-			<version>2.2.47</version>
+			<version>2.2.48</version>
 		</dependency>
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-models-jakarta</artifactId>
-			<version>2.2.47</version>
+			<version>2.2.48</version>
 		</dependency>
 		<dependency>
 			<groupId>com.networknt</groupId>
