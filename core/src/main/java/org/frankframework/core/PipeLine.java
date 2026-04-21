@@ -43,6 +43,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
 import org.frankframework.configuration.AdapterAwareBeanPostProcessor;
+import org.frankframework.configuration.AopProxyBeanFactoryPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -172,6 +173,11 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			adapter = contextAdapter;
 		} else {
 			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
+		}
+
+		// AOP is required for the Ladybug to function.
+		if (getEnvironment().matchesProfiles("aop")) {
+			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 		}
 
 		super.afterPropertiesSet();
