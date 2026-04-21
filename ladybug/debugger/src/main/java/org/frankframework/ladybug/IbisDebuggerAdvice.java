@@ -267,29 +267,29 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
+	 * Provides advice for {@link ISender#sendMessage(Message message, PipeLineSession session)}
+	 */
+	public SenderResult debugSenderSendMessage(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
+	}
+
+	/**
 	 * Provides advice for {@link ISender#sendMessageOrThrow(Message message, PipeLineSession session)}
 	 */
-	public Message debugSenderSendMessageOrThrow(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession pipeLineSession) throws Throwable {
+	public Message debugSenderSendMessageOrThrow(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session) throws Throwable {
 		if (!isEnabled() || proceedingJoinPoint.getTarget() instanceof SendMessageJobSender) {
 			return (Message) proceedingJoinPoint.proceed();
 		}
 
-		SenderResult result = debugSenderInputOutputAbort(proceedingJoinPoint, message, pipeLineSession, 0);
+		SenderResult result = debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0);
 		return result.getResult();
-	}
-
-	/**
-	 * Provides advice for {@link ISender#sendMessage(Message message, PipeLineSession session)}
-	 */
-	public SenderResult debugSenderSendMessage(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession pipeLineSession) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, pipeLineSession, 0);
 	}
 
 	/**
 	 * Provides advice for {@link IBlockEnabledSender#sendMessage(Object blockHandle, Message message, PipeLineSession session)}
 	 */
-	public SenderResult debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, PipeLineSession pipeLineSession) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, pipeLineSession, 1);
+	public SenderResult debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, PipeLineSession session) throws Throwable {
+		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 1);
 	}
 
 	@Override
@@ -340,19 +340,19 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 
 	/**
-	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessage(AbstractSenderWrapper senderWrapperBase, Message message, PipeLineSession session)}
+	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessage(AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session)}
 	 */
-	public SenderResult debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, AbstractSenderWrapper senderWrapperBase, Message message, PipeLineSession pipeLineSession) throws Throwable {
+	public SenderResult debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
 			return (SenderResult)proceedingJoinPoint.proceed();
 		}
-		String correlationId = getCorrelationId(pipeLineSession);
+		String correlationId = getCorrelationId(session);
 		Message result = debugGetInputFrom(
-				pipeLineSession, correlationId, message,
-				senderWrapperBase.getGetInputFromSessionKey(),
-				senderWrapperBase.getGetInputFromFixedValue(),
+				session, correlationId, message,
+				abstractSenderWrapper.getGetInputFromSessionKey(),
+				abstractSenderWrapper.getGetInputFromFixedValue(),
 				null);
-		if (debugger.stubSender(senderWrapperBase, correlationId)) {
+		if (debugger.stubSender(abstractSenderWrapper, correlationId)) {
 			return null;
 		}
 		Object[] args = proceedingJoinPoint.getArgs();
