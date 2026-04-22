@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.console.util;
+package org.frankframework.core;
 
 import java.io.Serializable;
 import java.util.ArrayList;

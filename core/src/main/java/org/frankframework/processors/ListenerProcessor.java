@@ -26,6 +26,6 @@ import org.frankframework.stream.Message;
  */
 public interface ListenerProcessor<M> {
 
-	Message getMessage(ICorrelatedPullingListener<M> listener, String correlationID, PipeLineSession pipeLineSession) throws ListenerException, TimeoutException;
+	Message getMessage(ICorrelatedPullingListener<M> listener, String correlationId, PipeLineSession pipeLineSession) throws ListenerException, TimeoutException;
 
 }

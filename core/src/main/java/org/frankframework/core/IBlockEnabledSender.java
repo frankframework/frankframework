@@ -33,5 +33,6 @@ public interface IBlockEnabledSender<H> extends ISenderWithParameters {
 	 * after processing with the blockHandle ends. It should effectively be called in a finally clause of a try around the openBlock.
 	 */
 	void closeBlock(H blockHandle, PipeLineSession session) throws SenderException;
+
 	SenderResult sendMessage(H blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException;
 }

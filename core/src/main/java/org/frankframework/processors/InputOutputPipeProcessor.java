@@ -72,7 +72,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	// Should the skipPipe be handled before getInputFrom?
 	@NonNull
 	@Override
-	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull final Message inputMessage, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull final Message inputMessage, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		Message originalMessage = inputMessage;
 
 		// Get the input message for the pipe to be processed, does not return null.

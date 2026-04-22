@@ -62,7 +62,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, @NonNull Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-
 		if (message.isEmpty() && StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 			log.debug("running adapterBeforeOnEmptyInput");
 			Adapter adapter = configuration.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
