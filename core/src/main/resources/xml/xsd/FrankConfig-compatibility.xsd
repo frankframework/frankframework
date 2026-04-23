@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.1.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.1.0">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -346,12 +346,12 @@ This is so that errors coming from external systems so not overload those extern
     </xs:attribute>
     <xs:attribute name="transformNullMessage" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when specified and &lt;code&gt;null&lt;/code&gt; is received as a message the message is changed to the specified value</xs:documentation>
+        <xs:documentation>When specified and &lt;code&gt;null&lt;/code&gt; is received as a message the message is changed to the specified value.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="adapterToRunBeforeOnEmptyInput" type="xs:string">
       <xs:annotation>
-        <xs:documentation>when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline</xs:documentation>
+        <xs:documentation>When specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="expectsSessionKeys" type="xs:string">
@@ -4391,8 +4391,9 @@ If the alias refers to a password without a username, the password is treated as
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -4477,8 +4478,9 @@ If left empty, the xpathExpression will match any namespace</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -7627,6 +7629,33 @@ If the attribute tenantId is not empty, the username and password are treated as
   </xs:attributeGroup>
   <xs:attributeGroup name="ExchangeMailListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExchangeMailListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
+    <xs:attribute name="simple" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, the xml string passed to the pipeline only contains the subject of the mail (to save memory) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storeEmailAsStreamInSessionKey" type="xs:string" />
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
+&lt;/ul&gt; Default: EMAIL</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FrankListenerType">
@@ -7937,33 +7966,6 @@ If the alias refers to a password without a username, the password is treated as
   <xs:attributeGroup name="ImapListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ImapListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
-    <xs:attribute name="simple" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, the xml string passed to the pipeline only contains the subject of the mail (to save memory) Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="storeEmailAsStreamInSessionKey" type="xs:string" />
-    <xs:attribute name="messageType">
-      <xs:annotation>
-        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
-&lt;/ul&gt; Default: EMAIL</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JavaListenerType">
     <xs:sequence>
@@ -9901,7 +9903,8 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     </xs:attribute>
     <xs:attribute name="cmhVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/b&gt; Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
+        <xs:documentation>&lt;p&gt;Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/p&gt;
+Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -9995,13 +9998,14 @@ OpenAPI specification.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="reasonSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set: creates a sessionKey to store any errors when validating the json output Default: failureReason</xs:documentation>
+        <xs:documentation>Stores the validation errors, if any, in the sessionKey with this value. Defaults to 'failureReason' Default: failureReason</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useAsOutputValidator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Mark this Validator as configured for mixed validation, meaning it will be used for both request and response validation. Depending solely on the
-responseRoot being set is not sufficient, since in case of OpenApiValidator, the resposeRoot is not used, but it is still a mixed validator. Default: false</xs:documentation>
+        <xs:documentation>Set this validator to be used as an output validator. Please note that 'mixed' validation doesn't work well, and you need to define
+both an input and an output validator instance of this type with this value set to true for the output validator and false (default) for the input
+validator if you want to validate both input and output. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -10950,7 +10954,8 @@ responseRoot being set is not sufficient, since in case of OpenApiValidator, the
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
@@ -13032,8 +13037,9 @@ exceeds the timeout, or in other situations no reply message is received.</xs:do
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
-&lt;/p&gt;
-This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
+&lt;p&gt;
+This field controls how to iterate over the input and does not determine the pipe's output.
+&lt;/p&gt; Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -13196,8 +13202,9 @@ A sequence of lines with the same key is put in one block and send to the sender
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
-&lt;/p&gt;
-This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
+&lt;p&gt;
+This field controls how to iterate over the input and does not determine the pipe's output.
+&lt;/p&gt; Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -14240,8 +14247,9 @@ When direction is XML2JSON, can not be used. Default: root</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -14325,8 +14333,9 @@ If left empty, the xpathExpression will match any namespace</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>

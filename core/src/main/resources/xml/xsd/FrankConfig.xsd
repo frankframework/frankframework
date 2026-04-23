@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.1.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.1.0">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -577,11 +577,6 @@ or marked for roll back by the calling party.</xs:documentation>
     <xs:attribute name="messageSizeWarn" type="xs:string">
       <xs:annotation>
         <xs:documentation>If messageSizeWarn&gt;=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes &lt;code&gt;KB&lt;/code&gt;, &lt;code&gt;MB&lt;/code&gt; or &lt;code&gt;GB&lt;/code&gt; Default: application default (30MB)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="transformNullMessage" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when specified and &lt;code&gt;null&lt;/code&gt; is received as a message the message is changed to the specified value</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="expectsSessionKeys" type="xs:string">
@@ -1590,6 +1585,7 @@ If not specified, the default is INPUT.</xs:documentation>
     <xs:attribute name="xpathResult">
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
+&lt;p&gt;
 If xpathResult is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 This results in an xml-string including the XML tags, if you want the contents of the element (as scalar value), use TEXT.
 &lt;/p&gt;
@@ -1736,13 +1732,13 @@ to avoid potential duplicate filename errors. Prior to release 9.0, it is recomm
 
 A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -1768,7 +1764,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -1876,13 +1872,13 @@ ESB (Enterprise Service Bus) extension of JmsListener.
 
 A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -1908,7 +1904,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -1962,18 +1958,17 @@ This class sends messages with JMS.</xs:documentation>
 JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.
 &lt;p&gt;
 To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
-The JavaListener listens to Java method calls. You can issue Java method calls using a IbisJavaSender (external call)
+The JavaListener listens to Java method calls. You can issue Java method calls using a org.frankframework.senders.IbisJavaSender (external call)
 or IbisLocalSender (internal call).
 &lt;/p&gt;
 &lt;p&gt;
-    Calling the JavaListener via the IbisJavaSender forces all request messages to be passed as strings without
+    Calling the JavaListener via the org.frankframework.senders.IbisJavaSender forces all request messages to be passed as strings without
     metadata.
 &lt;/p&gt;
 &lt;p&gt;
     When calling the JavaListener via the IbisLocalSender all messages are passed in their native format,
     retaining all their metadata.
-&lt;/p&gt;
-&lt;p&gt;</xs:documentation>
+&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -2011,13 +2006,13 @@ or IbisLocalSender (internal call).
         <xs:annotation>
           <xs:documentation>A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -2043,7 +2038,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -2191,7 +2186,8 @@ flag can be used to set the disk storage location.</xs:documentation>
  specified in the message, the JmsListener sends the result of the processing
  in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  specified Sender, that in turn sends the message to
- whatever it is configured to.&lt;/p&gt;
+ whatever it is configured to.
+
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
@@ -2216,7 +2212,7 @@ This class sends messages with JMS.</xs:documentation>
           <xs:documentation>JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -2291,11 +2287,12 @@ to avoid potential duplicate filename errors. Prior to release 9.0, it is recomm
       </xs:element>
       <xs:element name="SapListener">
         <xs:annotation>
-          <xs:documentation>Implementation of a IPushingListener,
+          <xs:documentation>Implementation of a org.frankframework.core.IPushingListener,
 that enables a Receiver to receive messages from SAP-systems.
-
+&lt;p&gt;
 In SAP, the function to be called is an RFC-function to the destination that is registered using &lt;code&gt;progid&lt;/code&gt;.
-&lt;/b&gt;
+&lt;/p&gt;
+&lt;p&gt;
 N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
 If no replyFieldIndex or replyFieldName is specified, output is converted from xml.
 &lt;/p&gt;</xs:documentation>
@@ -2346,13 +2343,13 @@ other management of processing messages in parallel.</xs:documentation>
         <xs:annotation>
           <xs:documentation>A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -2378,7 +2375,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -3357,6 +3354,27 @@ If the attribute tenantId is not empty, the username and password are treated as
   </xs:attributeGroup>
   <xs:attributeGroup name="ExchangeMailListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExchangeMailListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
+&lt;/ul&gt; Default: EMAIL</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FrankListenerType">
@@ -3651,27 +3669,6 @@ If the alias refers to a password without a username, the password is treated as
   <xs:attributeGroup name="ImapListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ImapListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
-    <xs:attribute name="messageType">
-      <xs:annotation>
-        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
-&lt;/ul&gt; Default: EMAIL</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JavaListenerType">
     <xs:group ref="JavaListenerDeclaredChildGroup" />
@@ -6096,7 +6093,8 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     </xs:attribute>
     <xs:attribute name="cmhVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/b&gt; Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
+        <xs:documentation>&lt;p&gt;Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/p&gt;
+Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6178,13 +6176,14 @@ OpenAPI specification.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="reasonSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set: creates a sessionKey to store any errors when validating the json output Default: failureReason</xs:documentation>
+        <xs:documentation>Stores the validation errors, if any, in the sessionKey with this value. Defaults to 'failureReason' Default: failureReason</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useAsOutputValidator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Mark this Validator as configured for mixed validation, meaning it will be used for both request and response validation. Depending solely on the
-responseRoot being set is not sufficient, since in case of OpenApiValidator, the resposeRoot is not used, but it is still a mixed validator. Default: false</xs:documentation>
+        <xs:documentation>Set this validator to be used as an output validator. Please note that 'mixed' validation doesn't work well, and you need to define
+both an input and an output validator instance of this type with this value set to true for the output validator and false (default) for the input
+validator if you want to validate both input and output. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7521,7 +7520,8 @@ N.B. the default values shown can be overridden using properties in appConstants
  specified in the message, the JmsListener sends the result of the processing
  in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  specified Sender, that in turn sends the message to
- whatever it is configured to.&lt;/p&gt;
+ whatever it is configured to.
+
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
@@ -7906,14 +7906,16 @@ When &lt;code&gt;action=update&lt;/code&gt; the input (xml string) indicates doc
       </xs:element>
       <xs:element name="CompositeSender">
         <xs:annotation>
-          <xs:documentation>Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+          <xs:documentation>Pipe that allows you to call a Frank!Framework Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
 As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
 For example:
 
-&lt;pre&gt;&lt;code&gt;&amp;lt;CompositePipe name=&amp;quot;name-of-the-pipe&amp;quot; plugin=&amp;quot;name-of-the-plugin&amp;quot;&amp;gt;
-    &amp;lt;Param name=&amp;quot;inject-me&amp;quot; value=&amp;quot;im a value&amp;quot; /&amp;gt;
-    &amp;lt;Param name=&amp;quot;inject-me-too&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; /&amp;gt;
-&amp;lt;/CompositePipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;A plugin may have multiple entrypoints (or ref's), each one can be called independently.&lt;/p&gt;</xs:documentation>
+&lt;pre&gt;&lt;code&gt;&amp;lt;ForEachChildElementPipe name=&amp;quot;callPluginAsSender&amp;quot; ...&amp;gt;
+    &amp;lt;CompositeSender name=&amp;quot;plugin&amp;quot; plugin=&amp;quot;demo-plugin&amp;quot; ref=&amp;quot;demo-test-part.xml&amp;quot;&amp;gt;
+        &amp;lt;Param name=&amp;quot;inject-me&amp;quot; value=&amp;quot;im a value&amp;quot; /&amp;gt;
+        &amp;lt;Param name=&amp;quot;inject-me-too&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; /&amp;gt;
+    &amp;lt;/CompositeSender&amp;gt;
+&amp;lt;/ForEachChildElementPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;A plugin may have multiple entrypoints (or ref's), each one can be called independently.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8311,6 +8313,7 @@ This class sends messages with JMS.</xs:documentation>
 An IbisJavaSender makes a call to a Receiver with a JavaListener
 or any other application in the same JVM that has registered a &lt;code&gt;RequestProcessor&lt;/code&gt; with the IbisServiceDispatcher.
 &lt;/p&gt;
+&lt;p&gt;
 The IbisJavaSender is now considered to be legacy. The new way to call another adapter or java application from your own
 adapter is by using the FrankSender.
 &lt;/p&gt;
@@ -8810,7 +8813,7 @@ represents the nonce and the password the access token.&lt;/p&gt;</xs:documentat
         <xs:annotation>
           <xs:documentation>Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
 This prevents (long) open connections inside Senders and possible connection failures.
-
+&lt;p&gt;
 &lt;b&gt;Example:&lt;/b&gt;
 &lt;pre&gt;&lt;code&gt;&amp;lt;SenderPipe&amp;gt;
     &amp;lt;ReconnectSenderWrapper&amp;gt;
@@ -11152,8 +11155,9 @@ If the alias refers to a password without a username, the password is treated as
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -11234,8 +11238,9 @@ If left empty, the xpathExpression will match any namespace</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -13002,7 +13007,8 @@ The outputFields description can contain the following functions:
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
@@ -13570,7 +13576,7 @@ This pipe can be used in combination with IncreaseIntegerPipe to construct loops
       </xs:element>
       <xs:element name="CompositePipe">
         <xs:annotation>
-          <xs:documentation>Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+          <xs:documentation>Pipe that allows you to call a Frank!Framework Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
 As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
 For example:
 
@@ -15179,7 +15185,7 @@ Each line will be handled by this recordHandler and resultHandler.</xs:documenta
       <xs:element name="SwitchPipe">
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on either the content of the input message, by means
-of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.</xs:documentation>
+of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;When using a jPath, the pipe input message will be set to the JSON object called &lt;code&gt;$&lt;/code&gt;, so if you wish to switch on field 'key' in: &lt;code&gt;{ key:'forwardname'}&lt;/code&gt; use &lt;code&gt;$.key&lt;/code&gt;.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15832,8 +15838,9 @@ exceeds the timeout, or in other situations no reply message is received.</xs:do
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
-&lt;/p&gt;
-This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
+&lt;p&gt;
+This field controls how to iterate over the input and does not determine the pipe's output.
+&lt;/p&gt; Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -15989,8 +15996,9 @@ A sequence of lines with the same key is put in one block and send to the sender
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
-&lt;/p&gt;
-This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
+&lt;p&gt;
+This field controls how to iterate over the input and does not determine the pipe's output.
+&lt;/p&gt; Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -16557,11 +16565,6 @@ Be aware that memory consumption appears to increase with file size when this at
         <xs:union memberTypes="AlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Character set to use for converting the secret from String to bytes. Default: UTF-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="hashEncoding">
       <xs:annotation>
         <xs:documentation>Method to use for converting the hash from bytes to String. Default: Base64</xs:documentation>
@@ -16802,8 +16805,9 @@ When direction is XML2JSON, can not be used. Default: root</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -16883,8 +16887,9 @@ If left empty, the xpathExpression will match any namespace</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -20586,6 +20591,15 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
       <xs:enumeration value="JCEKS" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="MessageTypeAttributeValuesType_2">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="EMAIL" />
+      <xs:enumeration value="CONTENTS" />
+      <xs:enumeration value="MIME" />
+      <xs:enumeration value="NAME" />
+      <xs:enumeration value="PATH" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="FtpTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="FTP" />
@@ -20629,15 +20643,6 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
           <xs:documentation>Private</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="MessageTypeAttributeValuesType_2">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="EMAIL" />
-      <xs:enumeration value="CONTENTS" />
-      <xs:enumeration value="MIME" />
-      <xs:enumeration value="NAME" />
-      <xs:enumeration value="PATH" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MessageFieldTypeAttributeValuesType">
