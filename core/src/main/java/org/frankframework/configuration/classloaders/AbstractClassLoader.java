@@ -93,10 +93,6 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 				setBasePath(getConfigurationName());
 			}
 		}
-
-		// Register this instance so the leak-detection works even if it was not created via the ClassLoaderManager
-		ClassLoadingLeakDetector.registerClassLoader(configurationName, this);
-
 		log.info("[{}] created classloader [{}] basepath [{}]", getConfigurationName(), this, getBasePath());
 	}
 

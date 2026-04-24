@@ -16,6 +16,7 @@
 package org.frankframework.configuration.classloaders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,6 +24,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CleanerProvider;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
 
@@ -44,15 +47,19 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	}
 
 	private JarFileClassLoader createClassLoader(ClassLoader parent, String jarFile) throws Exception {
-		URL file = this.getClass().getResource(jarFile);
-		assertNotNull(file, "jar url ["+jarFile+"] not found");
+		URL jarFileUrl = this.getClass().getResource(jarFile);
+		assertNotNull(jarFileUrl, "jar url ["+jarFile+"] not found");
 
-		assertNotNull(new JarFile(file.getFile()), "jar file not found"); // verify the jar file
+		String file = jarFileUrl.getFile();
+		assertNotNull(file, "jar file not found");
+		try (JarFile _ = new JarFile(file)) { // verify the jar file
+			// No-op
+		}
 
 		JarFileClassLoader cl = new JarFileClassLoader(parent);
-		cl.setJar(file.getFile());
+		cl.setJar(file);
 		String key = "configurations."+getConfigurationName()+".jar";
-		appConstants.setProperty(key, file.getFile());
+		appConstants.setProperty(key, file);
 		return cl;
 	}
 
@@ -110,7 +117,8 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	public void loadCustomClassUsingForName() throws Exception {
 		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
-		classLoader.configure(ibisContext, "myConfig");
+		classLoader.configure(ibisContext, "myClassLoadingTestConfig");
+		// Not registered witih the leak detector so that the code-path for unregistered classloaders gets tested too.
 
 		classLoader.setAllowCustomClasses(true);
 		// native classloading
@@ -120,8 +128,11 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
 		Set<String> loadedCustomClasses = (Set<String>) loadedClassesField.get(classLoader);
-		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
+		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+ loadedCustomClasses); // base + 2 inner classes
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
+
+		// Destroy unregistered classloader to check that this code path works
+		classLoader.destroy();
 	}
 
 	@Test
@@ -129,7 +140,9 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	public void loadCustomClassUsingLoadClass() throws Exception {
 		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
-		classLoader.configure(ibisContext, "myConfig");
+		classLoader.configure(ibisContext, "myClassLoadingTestConfig");
+		// Register this instance so the leak-detection can be tested
+		ClassLoadingLeakDetector.registerClassLoader("myLeakTestConfig", classLoader);
 
 		classLoader.setAllowCustomClasses(true);
 		// native classloading
@@ -139,7 +152,61 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
 		Set<String> loadedCustomClasses = (Set<String>) loadedClassesField.get(classLoader);
-		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
+		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+ loadedCustomClasses); // base + 2 inner classes
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
+
+		classLoader.destroy();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testClassLoaderCleanup() throws Exception {
+		// TODO!!!!!!!!!!!!!!
+
+		AtomicBoolean isClassLoaderCleaned = new AtomicBoolean(false);
+		AtomicBoolean isClassCleaned = new AtomicBoolean(false);
+		// Use scope-blocks to inform the JVM when some variables can be cleaned.
+		{
+			Class<?> clazz;
+
+			{
+				AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
+				CleanerProvider.CLEANER.register(
+						classLoader, () -> {
+							isClassLoaderCleaned.set(true);
+						}
+				);
+				classLoader.setBasePath(".");
+				classLoader.configure(ibisContext, "myLeakTestConfig");
+				// Register this instance so the leak-detection can be tested
+				ClassLoadingLeakDetector.registerClassLoader("myLeakTestConfig", classLoader);
+
+				classLoader.setAllowCustomClasses(true);
+				// native classloading
+				clazz = classLoader.loadClass("org.frankframework.pipes.LargeBlockTester"); // With inner-class
+				ClassUtils.newInstance(clazz);
+				CleanerProvider.CLEANER.register(
+						clazz, () -> {
+							isClassCleaned.set(true);
+						}
+				);
+
+				// TODO BIT REALLY STARTS HERE
+
+
+				classLoader.destroy();
+			}
+			// Classloader out of scope, but the loaded class is not yet
+			System.gc();
+			Thread.sleep(1000L);
+			assertFalse(isClassCleaned.get());
+			assertFalse(isClassLoaderCleaned.get());
+		}
+		// Classloader and loaded class both out of scope
+		System.gc();
+		Thread.sleep(1000L);
+		assertTrue(isClassCleaned.get());
+		assertTrue(isClassLoaderCleaned.get());
+
 	}
 }

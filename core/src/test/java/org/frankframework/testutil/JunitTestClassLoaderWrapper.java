@@ -10,7 +10,10 @@ import org.apache.commons.io.FilenameUtils;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
+import org.frankframework.configuration.classloaders.ClassLoadingLeakDetector;
 
 /**
  * ClassLoader which appends the test classpath
@@ -25,7 +28,17 @@ public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 	}
 
 	@Override
+	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+		super.configure(ibisContext, configurationName);
+		// Register this instance so the leak-detection can be tested
+		ClassLoadingLeakDetector.registerClassLoader(configurationName, this);
+	}
+
+	@Override
 	public URL getLocalResource(String name) {
+		if (name == null) {
+			return null;
+		}
 		if (name.startsWith("/")) {
 			throw new IllegalArgumentException("file names should be relative, and not absolute (starting with a slash)");
 		}
