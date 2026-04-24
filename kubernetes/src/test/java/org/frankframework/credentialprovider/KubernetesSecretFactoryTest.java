@@ -16,8 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,6 +31,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 
+import org.frankframework.TestAppender;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class KubernetesSecretFactoryTest {
@@ -53,8 +52,9 @@ class KubernetesSecretFactoryTest {
 		when(client.secrets()).thenReturn(mock(MixedOperation.class));
 		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE)).thenReturn(mock(NonNamespaceOperation.class));
 		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list()).thenReturn(mock(SecretList.class));
-		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list().getItems()).thenReturn(List.of(secret1, secret2, secret3,
-				secret4, secret5));
+		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list().getItems()).thenReturn(List.of(
+				secret1, secret2, secret3, secret4, secret5
+		));
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
 		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
@@ -147,20 +147,11 @@ class KubernetesSecretFactoryTest {
 
 	@Test
 	void testInvalidStartAndEndCharactersLogWarnings() {
-		Logger rootLogger = Logger.getLogger("");
-		rootLogger.setLevel(Level.WARNING);
-
-		TestLogHandler handler = new TestLogHandler();
-		rootLogger.addHandler(handler);
-
-		CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
-
-		// Call getSecret to trigger logging, expect an exception
-		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
-
-		assertTrue(handler.contains("must start and end with an alphanumeric"));
-
-		rootLogger.removeHandler(handler);
+		try (TestAppender appender = TestAppender.attach(BaseKubernetesCredentialProvider.class)) {
+			CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
+			assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
+			assertTrue(appender.contains("must start and end with an alphanumeric"));
+		}
 	}
 
 	@Test

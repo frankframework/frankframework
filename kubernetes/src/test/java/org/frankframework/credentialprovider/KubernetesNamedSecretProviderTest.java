@@ -15,14 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.config.Property;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,6 +28,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 
+import org.frankframework.TestAppender;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class KubernetesNamedSecretProviderTest {
@@ -47,13 +40,13 @@ class KubernetesNamedSecretProviderTest {
 	private static final KubernetesClient client = mock(KubernetesClient.class);
 
 	@BeforeAll
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void setUp() {
 		Map<String, String> dataA = new HashMap<>();
 		dataA.put("authdatabase.username", encode("dbUser"));
 		dataA.put("authdatabase.password", encode("dbPass"));
-		dataA.put("authqueue.token",       encode("queueToken"));
-		dataA.put("standalonekey",         encode("ignored"));
+		dataA.put("authqueue.token", encode("queueToken"));
+		dataA.put("standalonekey", encode("ignored"));
 		Secret secretA = buildSecret(SECRET_A, dataA);
 
 		Map<String, String> dataB = new HashMap<>();
@@ -155,13 +148,10 @@ class KubernetesNamedSecretProviderTest {
 
 	@Test
 	void testInvalidStartAndEndCharactersLogWarnings() {
-		TestLog4j2Appender appender = TestLog4j2Appender.attach(KubernetesNamedSecretProvider.class);
-		try {
+		try (TestAppender appender = TestAppender.attach(BaseKubernetesCredentialProvider.class)) {
 			CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
 			assertThrows(NoSuchElementException.class, () -> provider.getSecret(illegalChars));
 			assertTrue(appender.contains("must start and end with an alphanumeric"));
-		} finally {
-			appender.detach();
 		}
 	}
 
@@ -184,49 +174,5 @@ class KubernetesNamedSecretProviderTest {
 	private static Secret buildSecret(String name, Map<String, String> data) {
 		ObjectMeta meta = new ObjectMeta().toBuilder().withName(name).build();
 		return new Secret().toBuilder().withMetadata(meta).withData(data).build();
-	}
-
-	/**
-	 * Minimal Log4j2 appender for asserting on log output.
-	 * The existing TestLogHandler is tied to java.util.logging, which this class doesn't use.
-	 */
-	private static class TestLog4j2Appender extends AbstractAppender {
-		private final StringBuilder buffer = new StringBuilder();
-		private LoggerConfig loggerConfig;
-		private Level previousLevel;
-
-		private TestLog4j2Appender() {
-			super("TestLog4j2Appender", null, null, false, Property.EMPTY_ARRAY);
-		}
-
-		static TestLog4j2Appender attach(Class<?> loggerClass) {
-			TestLog4j2Appender appender = new TestLog4j2Appender();
-			appender.start();
-
-			LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-			Configuration config = ctx.getConfiguration();
-			appender.loggerConfig = config.getLoggerConfig(loggerClass.getName());
-			appender.previousLevel = appender.loggerConfig.getLevel();
-			appender.loggerConfig.setLevel(Level.WARN);
-			appender.loggerConfig.addAppender(appender, Level.WARN, null);
-			ctx.updateLoggers();
-			return appender;
-		}
-
-		void detach() {
-			loggerConfig.removeAppender(getName());
-			loggerConfig.setLevel(previousLevel);
-			((LoggerContext) LogManager.getContext(false)).updateLoggers();
-			stop();
-		}
-
-		@Override
-		public void append(LogEvent event) {
-			buffer.append(event.getMessage().getFormattedMessage()).append('\n');
-		}
-
-		boolean contains(String text) {
-			return buffer.toString().contains(text);
-		}
 	}
 }
