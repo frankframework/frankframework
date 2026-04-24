@@ -12,7 +12,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 class RabbitMQ4AmqpListenerTest extends AmqpListenerTest {
 
-	private static final String RABBIT_MQ_DOCKER_TAG = "rabbitmq:4-alpine";
+	private static final String RABBIT_MQ_DOCKER_TAG = "rabbitmq:4.2-alpine";
 
 	@Container
 	private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(RABBIT_MQ_DOCKER_TAG)
