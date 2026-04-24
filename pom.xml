@@ -72,7 +72,7 @@
 	</scm>
 
 	<properties>
-		<revision>10.1.0-SNAPSHOT</revision>
+		<revision>10.2.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>21</maven.compiler.target>
 		<maven.compiler.source>25</maven.compiler.source>
@@ -89,17 +89,17 @@
 
 		<jackson.version>2.21.2</jackson.version>
 		<cxf.version>4.2.0</cxf.version>
-		<spring.version>7.0.6</spring.version>
+		<spring.version>7.0.7</spring.version>
 		<spring-security.version>7.0.4</spring-security.version>
 		<spring-integration.version>7.0.4</spring-integration.version>
 		<spring.boot.version>4.0.5</spring.boot.version>
 		<tomcat.version>11.0.21</tomcat.version>
-		<bouncycastle.version>1.83</bouncycastle.version>
+		<bouncycastle.version>1.84</bouncycastle.version>
 		<tika.version>3.3.0</tika.version>
 
 		<narayana.version>7.3.3.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
-		<micrometer.version>1.16.4</micrometer.version>
+		<micrometer.version>1.16.5</micrometer.version>
 		<argLine />
 		<!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
@@ -121,7 +121,7 @@
 		<activemq.driver.version>6.2.4</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
-		<rabbitmq.driver.version>5.29.0</rabbitmq.driver.version>
+		<rabbitmq.driver.version>5.30.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.6.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.39.2</aws.java.sdk.version>
@@ -258,7 +258,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.5.0-jre</version>
+				<version>33.6.0-jre</version>
 			</dependency>
 			<dependency>
 				<!-- needed for io.fabric8:kubernetes-client transitive deps -->
@@ -804,7 +804,7 @@
 							<path>
 								<groupId>com.uber.nullaway</groupId>
 								<artifactId>nullaway</artifactId>
-								<version>0.13.2</version>
+								<version>0.13.3</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>

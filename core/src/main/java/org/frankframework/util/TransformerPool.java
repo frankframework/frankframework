@@ -32,6 +32,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
@@ -46,6 +47,7 @@ import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
+import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -482,6 +484,23 @@ public class TransformerPool {
 		return output;
 	}
 
+	/**
+	 * Transforms a Source into a XML Document.
+	 */
+	public Document transformToDocument(@NonNull Source source, @Nullable Map<String, Object> parameterMap) throws TransformerException, IOException {
+		DOMResult result = new DOMResult();
+		transform(source, result, parameterMap);
+		return (Document) result.getNode();
+	}
+
+	/**
+	 * Transforms a Source into an OutputStream.
+	 */
+	public void transformToStream(@NonNull Source source, @NonNull OutputStream resultStream, @Nullable Map<String, Object> parameterMap) throws TransformerException, IOException {
+		StreamResult result = new StreamResult(resultStream);
+		transform(source, result, parameterMap);
+	}
+
 	private MessageContext createMessageContext() {
 		try {
 			MessageContext context = new MessageContext();
@@ -503,9 +522,9 @@ public class TransformerPool {
 	}
 
 	/*
-	 * Should ideally only be used internally, however there is one use outside this class.
+	 * Should ideally only be used internally, however there is one (test class) use outside this class.
 	 */
-	public void transform(@NonNull Source s, @NonNull Result r, Map<String,Object> parameters) throws TransformerException, IOException {
+	protected void transform(@NonNull Source s, @NonNull Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Exception exceptionToThrow;
 		Transformer transformer = getTransformer();
 		try {

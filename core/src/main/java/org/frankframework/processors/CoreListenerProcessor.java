@@ -35,14 +35,14 @@ public class CoreListenerProcessor<M> implements ListenerProcessor<M> {
 	private final Logger log = LogUtil.getLogger(this);
 
 	@Override
-	public Message getMessage(ICorrelatedPullingListener<M> listener, String correlationID, PipeLineSession pipeLineSession) throws ListenerException, TimeoutException {
+	public Message getMessage(ICorrelatedPullingListener<M> listener, String correlationId, PipeLineSession pipeLineSession) throws ListenerException, TimeoutException {
 		if (log.isDebugEnabled())
-			log.debug("{}starts listening for return message with correlationID [{}]", getLogPrefix(listener, pipeLineSession), correlationID);
+			log.debug("{}starts listening for return message with correlationID [{}]", getLogPrefix(listener, pipeLineSession), correlationId);
 		Message result;
 		Map<String,Object> threadContext = new HashMap<>();
 		try {
 			threadContext = listener.openThread();
-			RawMessageWrapper<M> msg = listener.getRawMessage(correlationID, threadContext);
+			RawMessageWrapper<M> msg = listener.getRawMessage(correlationId, threadContext);
 			// TODO: Add a method to check if it is an empty / null RawMessageWrapper?
 			if (msg==null) {
 				log.info("{}received null reply message", getLogPrefix(listener, pipeLineSession));

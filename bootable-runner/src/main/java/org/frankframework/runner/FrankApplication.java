@@ -22,6 +22,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -175,6 +176,7 @@ public class FrankApplication {
 	public static class NoopCredentialFactory implements ISecretProvider {
 		@Override
 		public void initialize() throws Exception {
+			getApplicationLogger().info("!! no credentialprovider configured !!");
 			// Nothing to initialize
 		}
 
@@ -190,7 +192,7 @@ public class FrankApplication {
 
 		@Override
 		public Collection<String> getConfiguredAliases() {
-			return null;
+			return Collections.emptyList();
 		}
 	}
 

@@ -100,5 +100,5 @@ public class RequestMessageBuilderTest {
 		assertThrows(IllegalStateException.class, () -> builder.addHeader("topic", "aaa"));
 	}
 
-	public record TestObject(String one, boolean two) {};
+	public record TestObject(String one, boolean two) {}
 }

@@ -102,10 +102,10 @@
 						)
 					)
 					and
-					args(message, pipeLineSession)
+					args(message, session)
 					"
 				method="debugSenderSendMessage"
-				arg-names="proceedingJoinPoint, message, pipeLineSession"
+				arg-names="proceedingJoinPoint, message, session"
 			/>
 			<aop:around
 				pointcut=
@@ -118,10 +118,10 @@
 						)
 					)
 					and
-					args(message, pipeLineSession)
+					args(message, session)
 					"
 				method="debugSenderSendMessageOrThrow"
-				arg-names="proceedingJoinPoint, message, pipeLineSession"
+				arg-names="proceedingJoinPoint, message, session"
 			/>
 			<aop:around
 				pointcut=
@@ -135,10 +135,10 @@
 						)
 					)
 					and
-					args(blockHandle, message, pipeLineSession)
+					args(blockHandle, message, session)
 					"
 				method="debugBlockEnabledSenderInputOutputAbort"
-				arg-names="proceedingJoinPoint, blockHandle, message, pipeLineSession"
+				arg-names="proceedingJoinPoint, blockHandle, message, session"
 			/>
 			<aop:around
 				pointcut=
@@ -152,10 +152,10 @@
 						)
 					)
 					and
-					args(senderWrapperBase, message, pipeLineSession)
+					args(abstractSenderWrapper, message, session)
 					"
 				method="debugSenderGetInputFrom"
-				arg-names="proceedingJoinPoint, senderWrapperBase, message, pipeLineSession"
+				arg-names="proceedingJoinPoint, abstractSenderWrapper, message, session"
 			/>
 			<aop:around
 				pointcut=

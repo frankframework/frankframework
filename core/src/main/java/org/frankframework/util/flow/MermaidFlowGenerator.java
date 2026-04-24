@@ -19,12 +19,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.jspecify.annotations.NonNull;
@@ -63,9 +63,12 @@ import org.frankframework.xml.XmlWriter;
  */
 @Log4j2
 public class MermaidFlowGenerator implements IFlowGenerator {
-
 	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
+
+	private final String adapterXslt;
+	private final String configXslt;
+
 	// List that contains all class patterns that extend FileSystemListener or FileSystemSender
 	private static final List<String> extendsFileSystem = List.of("FileSystem", "Directory", "Samba", "Ftp", "Imap", "Sftp", "S3", "Exchange", "Mail");
 
@@ -76,10 +79,17 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	protected TransformerPool transformerPoolConfig;
 
 	public MermaidFlowGenerator() {
+		this(ADAPTER2MERMAID_XSLT, CONFIGURATION2MERMAID_XSLT);
+	}
+
+	protected MermaidFlowGenerator(String adapterXslt, String configXslt) {
 		resourceMethods = List.of(
 				"setAction", "setWsdl", "setSchema", "setSchemaLocation", "setDirection", "setOutputFormat",
 				"setResponseRoot", "setXpathExpression", "setStyleSheetName", "setStyleSheetNameSessionKey"
 		);
+
+		this.adapterXslt = adapterXslt;
+		this.configXslt = configXslt;
 	}
 
 	@Override
@@ -88,10 +98,10 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		log.trace("generated frankElementList [{}]", frankElementsList);
 		frankElements = XmlUtils.buildDomDocument(new InputSource(new StringReader(frankElementsList)), true);
 
-		Resource xsltSourceAdapter = Resource.getResource(ADAPTER2MERMAID_XSLT);
+		Resource xsltSourceAdapter = Resource.getResource(adapterXslt);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceAdapter, 2);
 
-		Resource xsltSourceConfig = Resource.getResource(CONFIGURATION2MERMAID_XSLT);
+		Resource xsltSourceConfig = Resource.getResource(configXslt);
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceConfig, 2);
 	}
 
@@ -207,22 +217,13 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	@Override
 	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
 		try {
-			String flow = generateMermaid(xml);
-
-			outputStream.write(flow.getBytes(StandardCharsets.UTF_8));
-		} catch (IOException e) {
-			throw new FlowGenerationException(e);
-		}
-	}
-
-	protected String generateMermaid(String xml) throws FlowGenerationException {
-		try {
-			Map<String, Object> xsltParams = new HashMap<>(1);// frankElements
+			Map<String, Object> xsltParams = HashMap.newHashMap(1); // frankElements
 			xsltParams.put("frankElements", frankElements);
+			Source source = XmlUtils.stringToSourceForSingleUse(xml);
 			if (xml.startsWith("<adapter")) {
-				return transformerPoolAdapter.transformToString(xml, xsltParams);
+				transformerPoolAdapter.transformToStream(source, outputStream, xsltParams);
 			} else {
-				return transformerPoolConfig.transformToString(xml, xsltParams);
+				transformerPoolConfig.transformToStream(source, outputStream, xsltParams);
 			}
 		} catch (IOException | TransformerException | SAXException e) {
 			throw new FlowGenerationException("error transforming [xml] to [mermaid]", e);

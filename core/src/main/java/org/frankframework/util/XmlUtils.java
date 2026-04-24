@@ -361,7 +361,7 @@ public class XmlUtils {
 	 * Convert an XML string to a Document, then return the root-element
 	 */
 	public static @NonNull Element buildElement(@NonNull String s, boolean namespaceAware) throws DomBuilderException {
-		return buildDomDocument(s,namespaceAware).getDocumentElement();
+		return buildDomDocument(s, namespaceAware).getDocumentElement();
 	}
 
 	/**
@@ -1120,6 +1120,10 @@ public class XmlUtils {
 	}
 
 	public static boolean isWellFormed(Message input, String root) {
+		if (Message.isEmpty(input)) {
+			return false;
+		}
+
 		RootValidations rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
 			rootValidations = new RootValidations(root);
