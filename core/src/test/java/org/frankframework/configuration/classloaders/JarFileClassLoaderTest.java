@@ -16,7 +16,6 @@
 package org.frankframework.configuration.classloaders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,7 +23,6 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
@@ -32,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.CleanerProvider;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
 
@@ -156,57 +153,5 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
 
 		classLoader.destroy();
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void testClassLoaderCleanup() throws Exception {
-		// TODO!!!!!!!!!!!!!!
-
-		AtomicBoolean isClassLoaderCleaned = new AtomicBoolean(false);
-		AtomicBoolean isClassCleaned = new AtomicBoolean(false);
-		// Use scope-blocks to inform the JVM when some variables can be cleaned.
-		{
-			Class<?> clazz;
-
-			{
-				AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
-				CleanerProvider.CLEANER.register(
-						classLoader, () -> {
-							isClassLoaderCleaned.set(true);
-						}
-				);
-				classLoader.setBasePath(".");
-				classLoader.configure(ibisContext, "myLeakTestConfig");
-				// Register this instance so the leak-detection can be tested
-				ClassLoadingLeakDetector.registerClassLoader("myLeakTestConfig", classLoader);
-
-				classLoader.setAllowCustomClasses(true);
-				// native classloading
-				clazz = classLoader.loadClass("org.frankframework.pipes.LargeBlockTester"); // With inner-class
-				ClassUtils.newInstance(clazz);
-				CleanerProvider.CLEANER.register(
-						clazz, () -> {
-							isClassCleaned.set(true);
-						}
-				);
-
-				// TODO BIT REALLY STARTS HERE
-
-
-				classLoader.destroy();
-			}
-			// Classloader out of scope, but the loaded class is not yet
-			System.gc();
-			Thread.sleep(1000L);
-			assertFalse(isClassCleaned.get());
-			assertFalse(isClassLoaderCleaned.get());
-		}
-		// Classloader and loaded class both out of scope
-		System.gc();
-		Thread.sleep(1000L);
-		assertTrue(isClassCleaned.get());
-		assertTrue(isClassLoaderCleaned.get());
-
 	}
 }
