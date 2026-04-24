@@ -186,18 +186,15 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		}
 
 		// The configurationFile (Configuration.xml) should only be found in the current and not it's parent classloader
-		if (getBasePath() != null && name.equals(getConfigurationFile())) {
-			return getResource(name, false); // Search for the resource in the local ClassLoader only
-		}
-
-		return getResource(name, true);
+		boolean searchInParentClassLoader = getBasePath() == null || !name.equals(getConfigurationFile());
+		return getResource(name, searchInParentClassLoader);
 	}
 
 	/**
 	 * @param name of the file to search for in the current local classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>null</code> when the file cannot be found
 	 */
-	protected abstract URL getLocalResource(String name);
+	protected abstract @Nullable URL getLocalResource(@Nullable String name);
 
 	/**
 	 * In case of the {@link #getResources(String)} we only want the local paths and not the parent path
@@ -205,7 +202,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * @param useParent only use local classpath or also traverse down the classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>null</code>
 	 */
-	public @Nullable URL getResource(String name, boolean useParent) {
+	public @Nullable URL getResource(@Nullable String name, boolean useParent) {
 		URL url;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
 		if (normalizedFilename == null) {
@@ -231,7 +228,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public final Enumeration<URL> getResources(String name) throws IOException {
+	public final @NonNull Enumeration<URL> getResources(@NonNull String name) throws IOException {
 		// It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
 		if (name.startsWith("META-INF/services")) {
 			return getParent().getResources(name);
