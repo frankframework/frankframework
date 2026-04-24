@@ -12,6 +12,43 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
+/**
+ * <p>CredentialFactory for Kubernetes Secret. Fetches credentials from Kubernetes secrets.</p>
+ *
+ * <p>The credentials are stored in Kubernetes secrets, which are base64 encoded. The keys used for the secrets are "username" and "password".</p>
+ *
+ * <p>The `KubernetesCredentialFactory` class uses several properties to configure its behavior. These properties are set in the
+ * {@code credentialproperties.properties} file and are used to customize the connection to the Kubernetes cluster and the namespace from which secrets are
+ * fetched. Here's a description of the properties:</p>
+ * <ul>
+ *     <li>{@code credentialFactory.kubernetes.username} - the username for authenticating with the Kubernetes cluster</li>
+ *     <li>{@code credentialFactory.kubernetes.password} - the password for authenticating with the Kubernetes cluster</li>
+ *     <li>{@code credentialFactory.kubernetes.masterUrl} - the master URL of the Kubernetes cluster</li>
+ *     <li>{@code credentialFactory.kubernetes.namespace} - the namespace from which secrets should be fetched (default value: 'current-namespace')</li>
+ * </ul>
+ *
+ * <p>Example configuration:</p>
+ * <pre>{@code
+ * credentialFactory.kubernetes.username=admin
+ * credentialFactory.kubernetes.password=example-password
+ * credentialFactory.kubernetes.masterUrl=http://localhost:8080
+ * credentialFactory.kubernetes.namespace=my-namespace
+ * }</pre>
+ *
+ * <p>By setting these properties, you can control how the `KubernetesCredentialFactory` interacts with the Kubernetes cluster and retrieves credentials.</p>
+ *
+ * <p>Adding a Kubernetes secret can be done by executing:
+ * <pre>{@code
+ * kubectl create secret generic db-alias-name \
+ * --from-literal=username=admin --from-literal=password='example-password'
+ * }</pre>
+ * </p>
+ *
+ * @ff.info Please note that the namespace value requires to be valid according to the rules defined in
+ * <a href="https://tools.ietf.org/html/rfc1123">RFC 1123</a>. This means the namespace must consist of lower case alphanumeric characters, '-' or '.',
+ * and must start and end with an alphanumeric character
+ * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
+ */
 @Log4j2
 public class KubernetesCredentialFactory extends BaseKubernetesCredentialProvider {
 
