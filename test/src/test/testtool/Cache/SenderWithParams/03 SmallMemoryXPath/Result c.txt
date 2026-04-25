@@ -1,0 +1,3 @@
+<result>
+	<input><SmallMemoryXPath tag="c"/></input>
+</result>

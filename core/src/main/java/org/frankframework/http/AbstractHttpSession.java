@@ -793,6 +793,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	public void setTokenEndpoint(String string) {
 		tokenEndpoint = string;
 	}
+
 	/**
 	 * If set to a non-negative value, then determines the time (in seconds) after which the token will be refreshed. Otherwise the token
 	 * will be refreshed when it is half way its lifetime as defined by the <code>expires_in</code> clause of the token response,
@@ -803,10 +804,12 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	public void setTokenExpiry(int value) {
 		tokenExpiry = value;
 	}
+
 	/** Alias used to obtain client_id and client_secret for authentication to <code>tokenEndpoint</code> */
 	public void setClientAlias(String clientAuthAlias) {
 		this.clientAuthAlias = clientAuthAlias;
 	}
+
 	/** Client_id used in authentication to <code>tokenEndpoint</code> */
 	public void setClientId(String clientId) {
 		this.clientId = clientId;

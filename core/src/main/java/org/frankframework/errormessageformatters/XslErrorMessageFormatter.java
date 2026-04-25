@@ -70,7 +70,6 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 		paramList.setNamesMustBeUnique(true);
 		paramList.configure();
 
-
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			if (StringUtils.isNotEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Cannot configure both stylesheet and xpathExpression in XslErrorMessageFormatter");
