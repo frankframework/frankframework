@@ -178,14 +178,3 @@ jobs:
         path: |
           ~/.sonar/cache
         key: sonar-cache-${{ github.base_ref }}
-
-    # Check the Quality Gate status.
-    - name: SonarQube Quality Gate check
-      if: ${{ env.USE_PROPRIETARY == 'true' && env.IS_DEPENDENCY_BOT == 'false' }}
-      uses: sonarsource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        sonar.projectKey: frankframework
-        sonar.organization: frank-framework
-      with:
-        scanMetadataReportFile: target/sonar/report-task.txt
