@@ -20,7 +20,7 @@
   },
   "private": true,
   "engines": {
-    "node": ">=24.14.1"
+    "node": ">=24.15.0"
   },
   "dependencies": {
     "@angular/animations": "^21.2.8",
@@ -80,13 +80,13 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-sonarjs": "^4.0.2",
     "eslint-plugin-unicorn": "^64.0.0",
-    "jasmine-core": "~6.1.0",
+    "jasmine-core": "~6.2.0",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.2.0",
-    "prettier": "^3.8.2",
+    "prettier": "^3.8.3",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.58.1"
   },
