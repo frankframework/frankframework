@@ -47,8 +47,9 @@ public class CachePipeLineProcessor extends AbstractPipeLineProcessor {
 		} catch (IOException e) {
 			throw new PipeRunException(pipeLine.getPipe(firstPipe), "cannot open stream", e);
 		}
-		String key=cache.transformKey(input, pipeLineSession);
-		if (key==null) {
+		String key = cache.transformKey(input, pipeLineSession);
+
+		if (key == null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
