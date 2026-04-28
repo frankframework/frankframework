@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClientException;
@@ -101,12 +102,7 @@ public class KubernetesNamedSecretProvider extends BaseKubernetesCredentialProvi
 		Set<String> result = new LinkedHashSet<>();
 
 		for (String configuredSecretName : configuredSecretNames) {
-			Secret secret;
-			try {
-				secret = secretCache.computeIfAbsentOrExpired(configuredSecretName, this::getConfiguredSecretByName);
-			} catch (NoSuchElementException e) {
-				continue;
-			}
+			Secret secret = fetchSecretOrNull(configuredSecretName);
 			if (secret == null || secret.getData() == null || secret.getData().isEmpty()) {
 				continue;
 			}
@@ -122,6 +118,15 @@ public class KubernetesNamedSecretProvider extends BaseKubernetesCredentialProvi
 		return result;
 	}
 
+	@Nullable
+	private Secret fetchSecretOrNull(String configuredSecretName) {
+		try {
+			return secretCache.computeIfAbsentOrExpired(configuredSecretName, this::getConfiguredSecretByName);
+		} catch (NoSuchElementException e) {
+			return null;
+		}
+	}
+
 	private Secret getConfiguredSecretByName(String secretName) throws NoSuchElementException {
 		Secret secret = readSecretByName(secretName);
 		if (secret == null) {
@@ -130,6 +135,7 @@ public class KubernetesNamedSecretProvider extends BaseKubernetesCredentialProvi
 		return secret;
 	}
 
+	@Nullable
 	protected synchronized Secret readSecretByName(String secretName) {
 		return client.secrets()
 				.inNamespace(namespace)
