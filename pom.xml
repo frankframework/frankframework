@@ -77,7 +77,7 @@
 		<maven.compiler.target>25</maven.compiler.target>
 		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
-		<lombok.version>1.18.44</lombok.version>
+		<lombok.version>1.18.46</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
 		<log4j2.version>2.25.4</log4j2.version>
 
@@ -90,7 +90,7 @@
 		<jackson.version>2.21.2</jackson.version>
 		<cxf.version>4.2.0</cxf.version>
 		<spring.version>7.0.7</spring.version>
-		<spring-security.version>7.0.4</spring-security.version>
+		<spring-security.version>7.0.5</spring-security.version>
 		<spring-integration.version>7.0.4</spring-integration.version>
 		<spring.boot.version>4.0.5</spring.boot.version>
 		<tomcat.version>11.0.21</tomcat.version>
@@ -112,13 +112,13 @@
 		<oracle.driver.version>23.26.1.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>13.4.0.jre11</mssql.driver.version>
-		<mysql.driver.version>9.6.0</mysql.driver.version>
+		<mysql.driver.version>9.7.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.8</mariadb.driver.version>
 		<postgresql.driver.version>42.7.10</postgresql.driver.version>
 		<mongodb.driver.version>5.6.5</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>6.2.4</activemq.driver.version>
+		<activemq.driver.version>6.2.5</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.30.0</rabbitmq.driver.version>
@@ -203,7 +203,7 @@
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
-				<version>2.0.4</version>
+				<version>2.0.5</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -804,7 +804,7 @@
 							<path>
 								<groupId>com.uber.nullaway</groupId>
 								<artifactId>nullaway</artifactId>
-								<version>0.13.3</version>
+								<version>0.13.4</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>
