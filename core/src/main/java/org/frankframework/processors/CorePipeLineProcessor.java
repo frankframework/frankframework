@@ -18,16 +18,11 @@ package org.frankframework.processors;
 
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.Configuration;
-import org.frankframework.core.Adapter;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
@@ -47,36 +42,11 @@ import org.frankframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 @Log4j2
-public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationContextAware {
+public class CorePipeLineProcessor implements PipeLineProcessor {
 	private @Setter PipeProcessor pipeProcessor;
-	private Configuration configuration;
-
-	@Override
-	public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
-		if (applicationContext instanceof Configuration config) {
-			configuration = config;
-		} else {
-			throw new IllegalStateException("unable to determine configuration");
-		}
-	}
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, @NonNull Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		if (message.isEmpty() && StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
-			log.debug("running adapterBeforeOnEmptyInput");
-			Adapter adapter = configuration.getRegisteredAdapter(pipeLine.getAdapterToRunBeforeOnEmptyInput());
-			if (adapter == null) {
-				log.warn("adapterToRunBefore with specified name [{}] could not be retrieved", pipeLine.getAdapterToRunBeforeOnEmptyInput());
-			} else {
-				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pipeLineSession);
-				if (plr == null || !plr.isSuccessful()) {
-					throw new PipeRunException(null, "adapterToRunBefore [" + pipeLine.getAdapterToRunBeforeOnEmptyInput() + "] ended with state [" + (plr==null?"null":plr.getState()) + "]");
-				}
-				message = plr.getResult();
-				log.debug("input after running adapterBeforeOnEmptyInput [{}]", message);
-			}
-		}
-
 		// ready indicates whether the pipeline processing is complete
 		boolean ready=false;
 
