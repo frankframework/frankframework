@@ -16,6 +16,7 @@
 package org.frankframework.configuration.classloaders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -130,6 +131,10 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		// Destroy unregistered classloader to check that this code path works
 		classLoader.destroy();
+
+		// Call this to add some coverage to this code
+		int s = ClassLoadingLeakDetector.logLeakStatistics();
+		assertNotEquals(0, s, "Expected at least 1 ClassLoader registered");
 	}
 
 	@Test

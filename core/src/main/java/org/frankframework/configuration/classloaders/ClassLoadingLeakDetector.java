@@ -107,28 +107,30 @@ public class ClassLoadingLeakDetector {
 	}
 
 	@SuppressWarnings({"java:S1215", "java:S1181"}) // Ignore warnings for calling gc() and catching Throwable
-	public static void logLeakStatistics() {
+	public static int logLeakStatistics() {
 		// Force system to run garbage collection to clean up as much as possible and collect as much leak-info before logging it
 		System.gc();
 		try {
 			// Give time to GC thread.
 			Thread.sleep(500L);
-		} catch (InterruptedException e) {
+		} catch (InterruptedException _) {
 			Thread.currentThread().interrupt();
 		}
 
 		try {
 			if (classLoaders.isEmpty()) {
 				LEAK_LOG.info("No remaining classloaders registered with the leak-detector; total that have been registered: [{}]", COUNTER::get);
-				return;
+				return 0;
 			}
 			LEAK_LOG.warn("Currently registered classloaders out of total [{}] registered:", COUNTER::get);
 			for (ClassLoaderMeta classLoaderMeta : classLoaders.values()) {
 				LEAK_LOG.warn(" {}", classLoaderMeta);
 			}
-		} catch (Throwable e) {
+			return classLoaders.size();
+		} catch (Throwable _) {
 			// Ignore log exceptions which may cause the application to not terminate properly.
 			// Such as `Exception in thread "Thread-462" java.lang.NoClassDefFoundError: org/apache/logging/log4j/message/ParameterizedNoReferenceMessageFactory$StatusMessage`
+			return -1;
 		}
 	}
 
