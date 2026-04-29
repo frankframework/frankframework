@@ -1705,7 +1705,7 @@
 						<updatePolicy>always</updatePolicy>
 					</snapshots>
 					<id>frankframework</id>
-					<url>https://nexus.frankframework.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/repository/snapshots</url>
 				</pluginRepository>
 			</pluginRepositories>
 			<build>
