@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.extensions.sap.IdocSender;
+import org.frankframework.extensions.sap.SapSystem;
 import org.frankframework.util.SapSystemListItem;
 
 public class IDocSenderTest {

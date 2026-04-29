@@ -34,7 +34,6 @@ public interface ISapSystem extends org.frankframework.configuration.extensions.
 	void setUnicode(boolean b);
 	void setMaxConnections(int i);
 	void setTraceLevel(int i);
-	void setServiceOffset(int i);
 	void setSystemnr(String string);
 
 	void setHost(String string);

@@ -26,6 +26,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.extensions.sap.SapException;
+import org.frankframework.extensions.sap.SapSender;
+import org.frankframework.extensions.sap.SapSystem;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SapSystemListItem;
