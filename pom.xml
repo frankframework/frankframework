@@ -1698,14 +1698,24 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<repositories>
+				<repository>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+					<id>frankdoc</id>
+					<url>https://nexus.frankframework.org/repository/snapshots</url>
+				</repository>
+			</repositories>
 			<pluginRepositories>
 				<pluginRepository>
 					<snapshots>
 						<enabled>true</enabled>
 						<updatePolicy>always</updatePolicy>
 					</snapshots>
-					<id>frankframework</id>
-					<url>https://nexus.frankframework.org/content/repository/snapshots</url>
+					<id>frankdoc</id>
+					<url>https://nexus.frankframework.org/repository/snapshots</url>
 				</pluginRepository>
 			</pluginRepositories>
 			<build>
