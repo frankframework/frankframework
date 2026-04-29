@@ -962,15 +962,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		timeoutOnResult = string;
 	}
 
-	/** If not empty, a TimeoutException is thrown when the result equals this value (for testing purposes only)
-	 * @deprecated use {@link #setTimeoutOnResult(String)} instead
-	 */
-	@Deprecated(since = "8.1")
-	@ConfigurationWarning("Use attribute timeoutOnResult instead")
-	public void setTimeOutOnResult(String string) {
-		timeoutOnResult = string;
-	}
-
 	/** If not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only) */
 	public void setExceptionOnResult(String string) {
 		exceptionOnResult = string;
