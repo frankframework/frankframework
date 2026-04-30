@@ -2150,12 +2150,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		this.processResultCacheSize = processResultCacheSize;
 	}
 
-	@Deprecated(forRemoval = true, since = "7.9.0")
-	@ConfigurationWarning("attribute is no longer used. Please use attribute returnedSessionKeys of the JavaListener if the set of sessionsKeys that can be returned to callers session must be limited.")
-	public void setReturnedSessionKeys(String string) {
-		// no longer used
-	}
-
 	/** XPath expression to extract correlationId from message */
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;

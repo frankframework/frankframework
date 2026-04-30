@@ -523,12 +523,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		blobsCompressed = b;
 	}
 
-	/** Charset used to read BLOB. When specified, then the BLOB will be converted into a string */
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	public void setBlobCharset(String string) {
-		blobCharset = string;
-	}
-
 	/**
 	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string
 	 * @ff.default false

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
 import org.frankframework.extensions.messaging.MessageProtocol;
 import org.frankframework.jms.JmsSender;
@@ -76,17 +75,6 @@ public class EsbJmsSender extends JmsSender {
 	 * @ff.default 20000 (20s)
 	 */
 	public void setTimeout(long l) {
-		timeout = l;
-	}
-
-	/**
-	 * receiver timeout, in milliseconds.
-	 * @deprecated use {@link #setTimeout(long)} instead.
-	 * @ff.default 20000 (20s)
-	 */
-	@Deprecated(since = "8.1")
-	@ConfigurationWarning("Use attribute timeout instead")
-	public void setTimeOut(long l) {
 		timeout = l;
 	}
 

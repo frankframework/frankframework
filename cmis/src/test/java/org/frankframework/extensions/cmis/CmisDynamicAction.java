@@ -22,7 +22,7 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 	public void deleteObject() throws Exception {
 		sender.setBindingType(CmisSessionBuilder.BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DYNAMIC);
-		sender.setResultOnNotFound("document-not-found");
+
 		sender.configure();
 		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.DELETE_OBJECT.getLabel());
 
@@ -34,7 +34,7 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 	public void createDocument() throws Exception {
 		sender.setBindingType(CmisSessionBuilder.BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DYNAMIC);
-		sender.setResultOnNotFound("document-not-found");
+
 		sender.configure();
 		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.CREATE_DOCUMENT.getLabel());
 		session.put("ContentStream", "text");
@@ -47,8 +47,8 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 	public void getContentStream() throws Exception {
 		sender.setBindingType(CmisSessionBuilder.BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DYNAMIC);
-		sender.setResultOnNotFound("document-not-found");
 		sender.configure();
+
 		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.GET_CONTENTSTREAM.getLabel());
 		session.put("ContentStream", "text");
 
