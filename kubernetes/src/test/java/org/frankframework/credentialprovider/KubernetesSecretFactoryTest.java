@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,7 +33,6 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 
-import org.frankframework.TestAppender;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class KubernetesSecretFactoryTest {
@@ -41,7 +42,7 @@ class KubernetesSecretFactoryTest {
 
 	@BeforeAll
 	@SuppressWarnings("unchecked")
-	public static void setUp() {
+	static void setUp() {
 		Secret secret1 = createSecret("alias1", "testUsername1", "testPassword1");
 		Secret secret2 = createSecret("alias2", "testUsername2", "testPassword2");
 		Secret secret3 = createSecret(null, "noAliasUsername", "noAliasPassword");
@@ -63,7 +64,7 @@ class KubernetesSecretFactoryTest {
 	}
 
 	@AfterAll
-	public static void tearDown() {
+	static void tearDown() {
 		credentialFactory.close();
 	}
 
@@ -147,11 +148,17 @@ class KubernetesSecretFactoryTest {
 
 	@Test
 	void testInvalidStartAndEndCharactersLogWarnings() {
-		try (TestAppender appender = TestAppender.attach(BaseKubernetesCredentialProvider.class)) {
-			CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
-			assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
-			assertTrue(appender.contains("must start and end with an alphanumeric"));
-		}
+		Logger rootLogger = Logger.getLogger("");
+		rootLogger.setLevel(Level.WARNING);
+
+		TestLogHandler handler = new TestLogHandler();
+		rootLogger.addHandler(handler);
+
+		CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
+		assertTrue(handler.contains("must start and end with an alphanumeric"));
+
+		rootLogger.removeHandler(handler);
 	}
 
 	@Test

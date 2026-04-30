@@ -26,12 +26,12 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
-@Log4j2
-public abstract class BaseKubernetesCredentialProvider implements ISecretProvider {
+@Log
+public abstract class AbstractKubernetesCredentialProvider implements ISecretProvider {
 	static final String K8_USERNAME = "credentialFactory.kubernetes.username";
 	static final String K8_PASSWORD = "credentialFactory.kubernetes.password";
 	static final String K8_MASTER_URL = "credentialFactory.kubernetes.masterUrl";
@@ -47,7 +47,7 @@ public abstract class BaseKubernetesCredentialProvider implements ISecretProvide
 	@Override
 	public final void initialize() {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
-		log.info("initializing {}", getClass().getSimpleName());
+		log.info("initializing " + getClass().getSimpleName());
 
 		initializeClientIfNull();
 		configureClient(appConstants);
@@ -81,7 +81,7 @@ public abstract class BaseKubernetesCredentialProvider implements ISecretProvide
 		if (k8Passwd != null) config.setPassword(k8Passwd);
 		if (k8MasterURL != null) {
 			config.setMasterUrl(k8MasterURL);
-			log.info("Using Kubernetes master URL: {}", k8MasterURL);
+			log.info("Using Kubernetes master URL: " + k8MasterURL);
 		}
 	}
 
@@ -89,7 +89,7 @@ public abstract class BaseKubernetesCredentialProvider implements ISecretProvide
 		URL masterUrl = client.getMasterUrl();
 		try {
 			client.getKubernetesVersion();
-			log.info("Connected to K8s cluster: {}", masterUrl);
+			log.info("Connected to K8s cluster: " + masterUrl);
 		} catch (Exception e) {
 			throw new KubernetesClientException("unable to connect to cluster: " + masterUrl, e);
 		}
@@ -122,7 +122,7 @@ public abstract class BaseKubernetesCredentialProvider implements ISecretProvide
 
 	protected void warnIfAliasNameInvalid(CredentialAlias alias) {
 		if (!isAliasNameValid(alias)) {
-			log.warn("A Kubernetes alias must start and end with an alphanumeric character. Given alias: {}", alias.getName());
+			log.warning("A Kubernetes alias must start and end with an alphanumeric character. Given alias: " + alias.getName());
 		}
 	}
 
@@ -132,7 +132,7 @@ public abstract class BaseKubernetesCredentialProvider implements ISecretProvide
 
 	// For testing purposes
 	void setClient(KubernetesClient client) {
-		log.info("Setting Kubernetes client to: {}", client.getClass().getName());
+		log.info("Setting Kubernetes client to: " + client.getClass().getName());
 		this.client = client;
 	}
 }

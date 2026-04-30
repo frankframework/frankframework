@@ -22,10 +22,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import io.fabric8.kubernetes.api.model.Secret;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.java.Log;
 
 @NullMarked
-@Log4j2
+@Log
 public class KubernetesSecret extends org.frankframework.credentialprovider.Secret {
 
 	private final Secret secret;
@@ -45,7 +45,7 @@ public class KubernetesSecret extends org.frankframework.credentialprovider.Secr
 	public String getField(@Nullable String key) {
 		String foundKey = secret.getData().get(key);
 		if (StringUtils.isEmpty(foundKey)) {
-			log.info("no value found for alias [{}] field [{}]", getAlias(), key);
+			log.info("no value found for alias [" + getAlias() + "] and field " +  key);
 			return null;
 		}
 		return new String(Base64.getDecoder().decode(foundKey));

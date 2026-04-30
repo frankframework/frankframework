@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 import org.jspecify.annotations.NonNull;
 
 import io.fabric8.kubernetes.api.model.Secret;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -64,16 +64,16 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * and must start and end with an alphanumeric character
  * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
  */
-@Log4j2
-public class KubernetesCredentialFactory extends BaseKubernetesCredentialProvider {
+@Log
+public class KubernetesCredentialFactory extends AbstractKubernetesCredentialProvider {
 
 	private final Cache<String, Secret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
 	@Override
 	protected void postInitialize(CredentialConstants appConstants) {
-		log.info("fetching secrets from Kubernetes namespace [{}]", namespace);
+		log.info("fetching secrets from Kubernetes namespace " + namespace);
 		List<Secret> secrets = getSecretsFromKubernetes();
-		log.info("found [{}] secrets in namespace [{}]", secrets.size(), namespace);
+		log.info("found " + secrets.size() + " secrets in namespace " + namespace);
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public class KubernetesCredentialFactory extends BaseKubernetesCredentialProvide
 	protected synchronized List<Secret> getSecretsFromKubernetes() {
 		List<Secret> secrets = client.secrets().inNamespace(namespace).list().getItems();
 		if (secrets.isEmpty()) {
-			log.warn("no secrets found in namespace: {}", namespace);
+			log.warning("no secrets found in namespace: " + namespace);
 		}
 		return secrets;
 	}

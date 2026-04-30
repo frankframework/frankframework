@@ -21,9 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
 import io.fabric8.kubernetes.api.model.Secret;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.java.Log;
 
-@Log4j2
+@Log
 public class AuthAliasPrefixKubernetesSecret extends org.frankframework.credentialprovider.Secret {
 
 	private final Secret secret;
@@ -44,7 +44,7 @@ public class AuthAliasPrefixKubernetesSecret extends org.frankframework.credenti
 		String fullKey = prefix + fieldname;
 		String found = secret.getData() != null ? secret.getData().get(fullKey) : null;
 		if (StringUtils.isEmpty(found)) {
-			log.info("no value found for alias [{}] field [{}] (fullKey [{}])", getAlias(), fieldname, fullKey);
+			log.info("no value found for alias ["+getAlias()+"] field ["+fieldname+"] (fullKey ["+fullKey+"])");
 			return null;
 		}
 

@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,7 +30,6 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 
-import org.frankframework.TestAppender;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class KubernetesNamedSecretProviderTest {
@@ -41,7 +42,7 @@ class KubernetesNamedSecretProviderTest {
 
 	@BeforeAll
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static void setUp() {
+	static void setUp() {
 		Map<String, String> dataA = new HashMap<>();
 		dataA.put("authdatabase.username", encode("dbUser"));
 		dataA.put("authdatabase.password", encode("dbPass"));
@@ -60,7 +61,7 @@ class KubernetesNamedSecretProviderTest {
 		Resource resourceB = mock(Resource.class);
 
 		when(client.secrets()).thenReturn(secretsOp);
-		when(secretsOp.inNamespace(BaseKubernetesCredentialProvider.DEFAULT_NAMESPACE)).thenReturn(nsOp);
+		when(secretsOp.inNamespace(AbstractKubernetesCredentialProvider.DEFAULT_NAMESPACE)).thenReturn(nsOp);
 
 		when(nsOp.withName(SECRET_A)).thenReturn(resourceA);
 		when(nsOp.withName(SECRET_B)).thenReturn(resourceB);
@@ -70,7 +71,7 @@ class KubernetesNamedSecretProviderTest {
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
 
-		CredentialConstants.getInstance().setProperty(BaseKubernetesCredentialProvider.K8_MASTER_URL, "http://localhost:8080");
+		CredentialConstants.getInstance().setProperty(AbstractKubernetesCredentialProvider.K8_MASTER_URL, "http://localhost:8080");
 		CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
 
 		provider.setClient(client);
@@ -78,7 +79,7 @@ class KubernetesNamedSecretProviderTest {
 	}
 
 	@AfterAll
-	public static void tearDown() {
+	static void tearDown() {
 		provider.close();
 	}
 
@@ -148,11 +149,17 @@ class KubernetesNamedSecretProviderTest {
 
 	@Test
 	void testInvalidStartAndEndCharactersLogWarnings() {
-		try (TestAppender appender = TestAppender.attach(BaseKubernetesCredentialProvider.class)) {
-			CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
-			assertThrows(NoSuchElementException.class, () -> provider.getSecret(illegalChars));
-			assertTrue(appender.contains("must start and end with an alphanumeric"));
-		}
+		Logger rootLogger = Logger.getLogger("");
+		rootLogger.setLevel(Level.WARNING);
+
+		TestLogHandler handler = new TestLogHandler();
+		rootLogger.addHandler(handler);
+
+		CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
+		assertThrows(NoSuchElementException.class, () -> provider.getSecret(illegalChars));
+		assertTrue(handler.contains("must start and end with an alphanumeric"));
+
+		rootLogger.removeHandler(handler);
 	}
 
 	@Test

@@ -29,13 +29,13 @@ import org.jspecify.annotations.Nullable;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClientException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
-@Log4j2
-public class KubernetesNamedSecretProvider extends BaseKubernetesCredentialProvider {
+@Log
+public class KubernetesNamedSecretProvider extends AbstractKubernetesCredentialProvider {
 
 	static final String K8_SECRET_NAMES_PROPERTY = "credentialFactory.kubernetes.secretNames";
 
@@ -47,7 +47,7 @@ public class KubernetesNamedSecretProvider extends BaseKubernetesCredentialProvi
 	@Override
 	protected void postInitialize(CredentialConstants appConstants) {
 		loadConfiguredSecretNames(appConstants);
-		log.info("configured [{}] Kubernetes named secret(s) in namespace [{}]", configuredSecretNames.size(), namespace);
+		log.info("configured " + configuredSecretNames.size() + " Kubernetes named secret(s) in namespace " + namespace);
 	}
 
 	private void loadConfiguredSecretNames(CredentialConstants appConstants) {
