@@ -1755,7 +1755,7 @@
 								<additionalOption>org.frankframework.configuration.Configuration</additionalOption>
 								<additionalOption>-frankFrameworkVersion</additionalOption>
 								<additionalOption>${project.version}</additionalOption>
-								<additionalOption>-skippableContainersClass</additionalOption>
+								<additionalOption>-skippableContainerElements</additionalOption>
 								<additionalOption>Exits,Forwards,Module,Root,GlobalForwards,Global-forwards,Scheduler,PipelinePart</additionalOption>
 							</additionalOptions>
 							<show>private</show>
