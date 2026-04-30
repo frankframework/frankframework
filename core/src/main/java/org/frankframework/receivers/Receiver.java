@@ -912,7 +912,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			plr.setResult(result);
 			plr.setState(ExitState.REJECTED);
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(result);
+				String sendMsg = sendResultToSender(result, session);
 				if (sendMsg != null) {
 					log.warn("problem sending result: {}", sendMsg);
 				}
@@ -1326,7 +1326,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					throw wrapExceptionAsListenerException(t);
 				}
 				if (getSender()!=null) {
-					String sendMsg = sendResultToSender(result);
+					// Implement LinkViaCorrelationID
+					String sendMsg = sendResultToSender(result, session);
 					if (sendMsg != null) {
 						statusMessage = sendMsg;
 					}
@@ -1909,9 +1910,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return currentRunState==someRunState;
 	}
 
-	private String sendResultToSender(Message result) {
+	private String sendResultToSender(Message result, PipeLineSession parentSession) {
 		String errorMessage = null;
 		try(PipeLineSession session = new PipeLineSession()) {
+			session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getMessageId());
 			log.debug("Receiver [{}] sending result to configured sender [{}]", this::getName, this::getSender);
 			getSender().sendMessageOrThrow(result, session); // sending correlated responses via a receiver embedded sender is not supported
 		} catch (Exception e) {

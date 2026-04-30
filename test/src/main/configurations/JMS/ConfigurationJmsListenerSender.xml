@@ -15,15 +15,6 @@
 				<forward name="success" path="EXIT" />
 			</EchoPipe>
 
-			<pipe name="CallListenerWithListenerEmbeddedResponseSender,LinkViaMessageID"
-				className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
-					replyToName="${jms.destination.i4testiaf_out}">
-					<param name="SOURCE" value="${hostname}_I4TIAF1a" />
-				</sender>
-				<forward name="success" path="EXIT" />
-			</pipe>
 			<pipe name="CallListenerWithReceiverEmbeddedResponseSender,LinkViaMessageID"
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.jms.JmsSender"
@@ -60,15 +51,6 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="CallListenerWithListenerEmbeddedResponseSender,LinkViaCorrelationID"
-				className="org.frankframework.pipes.SenderPipe">
-				<sender className="org.frankframework.jms.JmsSender"
-					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true" linkMethod="CORRELATIONID"
-					replyToName="${jms.destination.i4testiaf_out}">
-					<param name="SOURCE" value="${hostname}_I4TIAF1f" />
-				</sender>
-				<forward name="success" path="EXIT" />
-			</pipe>
 			<pipe name="CallListenerWithReceiverEmbeddedResponseSender,LinkViaCorrelationID"
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.jms.JmsSender"
@@ -108,16 +90,6 @@
 	</adapter>
 	<adapter name="JmsRRListener" description="Test the functioning of the JmsListener (RR)"
 		active="${active.jms}">
-		<receiver name="JmsRRListener with listener embedded response sender, ignore inbound correlationId">
-			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
-				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF1a'">
-				<sender className="org.frankframework.jms.JmsSender"
-					destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
-					<param name="SOURCE" value="${hostname}_I4TIAF1a" />
-				</sender>
-			</listener>
-		</receiver>
 		<receiver name="JmsRRListener with receiver embedded response sender, ignore inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
@@ -147,16 +119,6 @@
 			</listener>
 		</receiver>
 
-		<receiver name="JmsRRListener with listener embedded response sender, use inbound correlationId">
-			<listener className="org.frankframework.jms.JmsListener"
-				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
-				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1f'">
-				<sender className="org.frankframework.jms.JmsSender"
-					destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
-					<param name="SOURCE" value="${hostname}_I4TIAF1f" />
-				</sender>
-			</listener>
-		</receiver>
 		<receiver name="JmsRRListener with receiver embedded response sender, use inbound correlationId">
 			<listener className="org.frankframework.jms.JmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
