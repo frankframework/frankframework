@@ -76,6 +76,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- NB: We need to stay on target JDK21 as long as the JBoss / WildFly images we build for our Larva tests do not support JDK25 -->
 		<maven.compiler.release>21</maven.compiler.release>
+		<!-- Need this property only for the Jenkins build system to determine build JDK version -->
+		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<lombok.version>1.18.46</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
