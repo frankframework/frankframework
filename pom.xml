@@ -74,8 +74,8 @@
 	<properties>
 		<revision>10.2.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>25</maven.compiler.target>
-		<maven.compiler.source>25</maven.compiler.source>
+		<!-- NB: We need to stay on target JDK21 as long as the JBoss / WildFly images we build for our Larva tests do not support JDK25 -->
+		<maven.compiler.release>21</maven.compiler.release>
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<lombok.version>1.18.46</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
@@ -784,9 +784,7 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.15.0</version>
 					<configuration>
-						<release>${maven.compiler.target}</release>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
+						<release>${maven.compiler.release}</release>
 						<compilerArgs>
 							<arg>-parameters</arg>
 							<!-- Flags required for ErrorProne -->

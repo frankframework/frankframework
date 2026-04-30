@@ -54,7 +54,7 @@ public class CleanerProvider {
 		try {
 			// Give time to GC thread.
 			Thread.sleep(500L);
-		} catch (InterruptedException _) {
+		} catch (InterruptedException ignored) {
 			Thread.currentThread().interrupt();
 		}
 
@@ -69,7 +69,7 @@ public class CleanerProvider {
 					.map(AtomicInteger::get)
 					.reduce(0, Integer::sum);
 			LEAK_LOG.warn("Total of {} leaks from {} locations", totalLeaks, LEAK_MAP.size());
-		} catch (Throwable _) {
+		} catch (Throwable ignored) {
 			// Ignore log exceptions which may cause the application to not terminate properly.
 			// Such as `Exception in thread "Thread-462" java.lang.NoClassDefFoundError: org/apache/logging/log4j/message/ParameterizedNoReferenceMessageFactory$StatusMessage`
 

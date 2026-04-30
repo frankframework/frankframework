@@ -147,7 +147,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		try {
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
 		}
-		catch (IllegalArgumentException _) {
+		catch (IllegalArgumentException ignored) {
 			ApplicationWarnings.add(log, "invalid reportLevel ["+level+"], using default [ERROR]");
 		}
 	}
