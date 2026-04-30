@@ -50,6 +50,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		String file = jarFileUrl.getFile();
 		assertNotNull(file, "jar file not found");
+		//noinspection EmptyTryBlock
 		try (JarFile _ = new JarFile(file)) { // verify the jar file
 			// No-op
 		}
@@ -134,7 +135,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		// Call this to add some coverage to this code
 		int s = ClassLoadingLeakDetector.logLeakStatistics();
-		assertNotEquals(0, s, "Expected at least 1 ClassLoader registered");
+		assertEquals(0, s, "Expected no ClassLoaders registered");
 	}
 
 	@Test
@@ -158,5 +159,9 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
 
 		classLoader.destroy();
+
+		// Call this to add some coverage to this code
+		int s = ClassLoadingLeakDetector.logLeakStatistics();
+		assertNotEquals(0, s, "Expected at least 1 ClassLoader registered");
 	}
 }
