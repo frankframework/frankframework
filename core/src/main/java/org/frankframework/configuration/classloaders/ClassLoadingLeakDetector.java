@@ -33,13 +33,11 @@ public class ClassLoadingLeakDetector {
 	private static final Logger LEAK_LOG = LogManager.getLogger("LEAK_LOG");
 
 	private static final AtomicInteger COUNTER = new AtomicInteger();
+	private static final ConcurrentMap<Integer, ClassLoaderMeta> CLASS_LOADERS = new ConcurrentHashMap<>();
 
 	private ClassLoadingLeakDetector() {
 		// Private constructor to prevent creation of instances
 	}
-
-	private static final ConcurrentMap<Integer, ClassLoaderMeta> classLoaders = new ConcurrentHashMap<>();
-
 
 	private static class ClassLoaderMeta implements Runnable {
 		final int sequenceNr;
@@ -60,7 +58,7 @@ public class ClassLoadingLeakDetector {
 
 		@Override
 		public void run() {
-			classLoaders.remove(classLoaderId);
+			CLASS_LOADERS.remove(classLoaderId);
 			LEAK_LOG.info("Cleaning [{}] for configuration [{}], classes not unloaded: [{}]", className, configurationName, resourceLeakTracker);
 		}
 
@@ -118,15 +116,15 @@ public class ClassLoadingLeakDetector {
 		}
 
 		try {
-			if (classLoaders.isEmpty()) {
+			if (CLASS_LOADERS.isEmpty()) {
 				LEAK_LOG.info("No remaining classloaders registered with the leak-detector; total that have been registered: [{}]", COUNTER::get);
 				return 0;
 			}
 			LEAK_LOG.warn("Currently registered classloaders out of total [{}] registered:", COUNTER::get);
-			for (ClassLoaderMeta classLoaderMeta : classLoaders.values()) {
+			for (ClassLoaderMeta classLoaderMeta : CLASS_LOADERS.values()) {
 				LEAK_LOG.warn(" {}", classLoaderMeta);
 			}
-			return classLoaders.size();
+			return CLASS_LOADERS.size();
 		} catch (Throwable ignored) {
 			// Ignore log exceptions which may cause the application to not terminate properly.
 			// Such as `Exception in thread "Thread-462" java.lang.NoClassDefFoundError: org/apache/logging/log4j/message/ParameterizedNoReferenceMessageFactory$StatusMessage`
@@ -135,7 +133,7 @@ public class ClassLoadingLeakDetector {
 	}
 
 	public static void registerClassLoader(String configurationName, ClassLoader classLoader) {
-		classLoaders.computeIfAbsent(
+		CLASS_LOADERS.computeIfAbsent(
 				getClassLoaderKey(classLoader), k -> {
 					ClassLoaderMeta classLoaderMeta = new ClassLoaderMeta(configurationName, classLoader);
 					CleanerProvider.CLEANER.register(classLoader, classLoaderMeta);
@@ -149,14 +147,14 @@ public class ClassLoadingLeakDetector {
 	}
 
 	static void destroyed(ClassLoader classLoader) {
-		ClassLoaderMeta classLoaderMeta = classLoaders.get(getClassLoaderKey(classLoader));
+		ClassLoaderMeta classLoaderMeta = CLASS_LOADERS.get(getClassLoaderKey(classLoader));
 		if (classLoaderMeta != null) {
 			classLoaderMeta.destroyed = true;
 		}
 	}
 
 	static void registerResource(ClassLoader classLoader, Class<?> definedClass) {
-		ClassLoaderMeta classLoaderMeta = classLoaders.get(getClassLoaderKey(classLoader));
+		ClassLoaderMeta classLoaderMeta = CLASS_LOADERS.get(getClassLoaderKey(classLoader));
 		if (classLoaderMeta == null) {
 			LEAK_LOG.warn("CassLoader [{}] not registered", classLoader.getClass().getName());
 			return;
