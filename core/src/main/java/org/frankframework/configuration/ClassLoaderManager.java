@@ -46,7 +46,7 @@ import org.frankframework.util.StringUtil;
 @Log4j2
 public class ClassLoaderManager {
 
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(); // Cannot make this final because of tests
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(); // Cannot make this static final because of tests
 	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
 	private final Map<String, ClassLoader> classLoaders = new TreeMap<>();
 	private final ClassLoader classPathClassLoader;
@@ -89,28 +89,7 @@ public class ClassLoaderManager {
 		// If the classLoader implements IClassLoader, configure it
 		if (classLoader instanceof IConfigurationClassLoader loader) {
 
-			String parentProperty = "configurations." + configurationName + ".";
-
-			for (Method method: loader.getClass().getMethods()) {
-				if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
-					continue;
-
-				String setter = StringUtil.lcFirst(method.getName().substring(3));
-				String value = APP_CONSTANTS.getProperty(parentProperty+setter);
-				if(value == null)
-					continue;
-
-				// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
-				Object castValue = getCastValue(method.getParameterTypes()[0], value);
-				log.debug("trying to set property [{}{}] with value [{}] of type [{}] on [{}]", parentProperty, setter, value, castValue.getClass()
-						.getCanonicalName(), ClassUtils.nameOf(loader));
-
-				try {
-					method.invoke(loader, castValue);
-				} catch (Exception e) {
-					throw new ClassLoaderException("error while calling method ["+setter+"] on classloader ["+ClassUtils.nameOf(loader)+"]", e);
-				}
-			}
+			applyConfigurationProperties(configurationName, loader);
 
 			try {
 				loader.configure(ibisContext, configurationName);
@@ -130,6 +109,32 @@ public class ClassLoaderManager {
 		}
 
 		return classLoader;
+	}
+
+	@SuppressWarnings("java:S135") // Suppress warning for multiple continue statements in for loop
+	private void applyConfigurationProperties(@NonNull String configurationName, IConfigurationClassLoader loader) throws ClassLoaderException {
+		String parentProperty = "configurations." + configurationName + ".";
+
+		for (Method method: loader.getClass().getMethods()) {
+			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+				continue;
+
+			String setter = StringUtil.lcFirst(method.getName().substring(3));
+			String value = APP_CONSTANTS.getProperty(parentProperty+setter);
+			if (value == null)
+				continue;
+
+			// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+			Object castValue = getCastValue(method.getParameterTypes()[0], value);
+			log.debug("trying to set property [{}{}] with value [{}] of type [{}] on [{}]", parentProperty, setter, value, castValue.getClass()
+					.getCanonicalName(), ClassUtils.nameOf(loader));
+
+			try {
+				method.invoke(loader, castValue);
+			} catch (Exception e) {
+				throw new ClassLoaderException("error while calling method ["+setter+"] on classloader ["+ClassUtils.nameOf(loader)+"]", e);
+			}
+		}
 	}
 
 	private Object getCastValue(Class<?> class1, String value) {
