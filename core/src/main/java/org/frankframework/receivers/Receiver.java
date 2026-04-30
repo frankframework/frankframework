@@ -1913,13 +1913,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private String sendResultToSender(Message result, PipeLineSession parentSession) {
 		String errorMessage = null;
 		try(PipeLineSession session = new PipeLineSession()) {
-			if (getSender().getLinkMethod() == LinkMethod.CORRELATIONID) {
-				session.put(PipeLineSession.MESSAGE_ID_KEY, parentSession.getMessageId());
-				session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getCorrelationId());
-			} else {
+			if (getSender().getLinkMethod() == LinkMethod.MESSAGEID) {
 				session.put(PipeLineSession.MESSAGE_ID_KEY, parentSession.getMessageId());
 				// Response should use the messageid
 				session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getMessageId());
+			} else {
+				session.put(PipeLineSession.MESSAGE_ID_KEY, parentSession.getMessageId());
+				session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getCorrelationId());
 			}
 
 			log.debug("Receiver [{}] sending result to configured sender [{}]", this::getName, this::getSender);

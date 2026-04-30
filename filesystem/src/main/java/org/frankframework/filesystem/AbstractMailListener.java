@@ -18,9 +18,13 @@ package org.frankframework.filesystem;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
@@ -57,6 +61,9 @@ import org.frankframework.xml.SaxDocumentBuilder;
  */
 public abstract class AbstractMailListener<M, A, S extends IMailFileSystem<M,A>> extends AbstractFileSystemListener<M,S> {
 
+	private @Getter String storeEmailAsStreamInSessionKey;
+	private @Getter boolean simple = false;
+
 	public enum MessageType implements IMessageType {
 		EMAIL,
 		CONTENTS,
@@ -81,22 +88,48 @@ public abstract class AbstractMailListener<M, A, S extends IMailFileSystem<M,A>>
 				}
 			}
 			case "EMAIL" -> {
+				final MessageBuilder msgBuilder;
 				try {
-					final MessageBuilder msgBuilder = new MessageBuilder();
-					try (SaxDocumentBuilder emailXml = new SaxDocumentBuilder("email", msgBuilder.asXmlWriter(), false)) {
-						emailXml.addAttribute("name", getFileSystem().getName(rawMessage.getRawMessage()));
-
-						getFileSystem().extractEmail(rawMessage.getRawMessage(), emailXml);
-					}
-					yield msgBuilder.build();
-				} catch (SAXException | FileSystemException e) {
-					throw new ListenerException(e);
+					msgBuilder = new MessageBuilder();
 				} catch (IOException e) {
 					throw new ListenerException("unable to create XmlWriter", e);
 				}
+
+				try (SaxDocumentBuilder emailXml = new SaxDocumentBuilder("email", msgBuilder.asXmlWriter(), false)) {
+					emailXml.addAttribute("name", getFileSystem().getName(rawMessage.getRawMessage()));
+
+					if (isSimple()) {
+						MailFileSystemUtils.addEmailInfoSimple(getFileSystem(), rawMessage.getRawMessage(), emailXml);
+					} else {
+						getFileSystem().extractEmail(rawMessage.getRawMessage(), emailXml);
+					}
+					if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
+						Message mimeContent = getFileSystem().getMimeContent(rawMessage.getRawMessage());
+						context.put(getStoreEmailAsStreamInSessionKey(), mimeContent.asInputStream());
+					}
+				} catch (SAXException | IOException | FileSystemException e) {
+					throw new ListenerException(e);
+				}
+				yield msgBuilder.build();
 			}
 			default -> super.extractMessage(rawMessage, context);
 		};
+	}
+
+	/**
+	 * when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)
+	 * @ff.default false
+	 */
+	@Deprecated(since = "7.7", forRemoval = true)
+	@ConfigurationWarning("Please use <code>messageType</code> to control the message produced by the listener")
+	public void setSimple(boolean b) {
+		simple = b;
+	}
+
+	@Deprecated(since = "7.5", forRemoval = true)
+	@ConfigurationWarning("Please use <code>messageType=mime</code> and sessionKey originalMessage")
+	public void setStoreEmailAsStreamInSessionKey(String string) {
+		storeEmailAsStreamInSessionKey = string;
 	}
 
 	/**

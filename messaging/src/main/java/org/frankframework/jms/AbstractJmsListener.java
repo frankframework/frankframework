@@ -33,15 +33,21 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.HasSender;
 import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IRedeliveringListener;
+import org.frankframework.core.ISender;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.TimeoutException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -58,7 +64,7 @@ import org.frankframework.util.TimeProvider;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class AbstractJmsListener extends JMSFacade implements IWithParameters, IRedeliveringListener<jakarta.jms.Message>, ReceiverAware<jakarta.jms.Message> {
+public abstract class AbstractJmsListener extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<jakarta.jms.Message>, ReceiverAware<jakarta.jms.Message> {
 
 	private @Getter long timeout = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private @Getter boolean useReplyTo = true;
@@ -67,6 +73,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements IWithPara
 	private @Getter long replyMessageTimeToLive = 0;
 	private @Getter int replyPriority = -1;
 	private @Getter DeliveryMode replyDeliveryMode = DeliveryMode.NON_PERSISTENT;
+	private @Getter ISender sender;
 	private @Getter @Setter Receiver<jakarta.jms.Message> receiver;
 
 	private @Getter Boolean forceMessageIdAsCorrelationId = null;
@@ -90,10 +97,35 @@ public abstract class AbstractJmsListener extends JMSFacade implements IWithPara
 		if (isSoap()) {
 			soapWrapper = SoapWrapper.getInstance();
 		}
+		ISender sender = getSender();
+		if (sender != null) {
+			sender.configure();
+		}
 
 		paramList.configure();
 		if (forceMessageIdAsCorrelationId == null) {
 			forceMessageIdAsCorrelationId = false;
+		}
+	}
+
+	@Override
+	public void start() {
+		super.start();
+
+		if (getSender() != null) {
+			getSender().start();
+		}
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
+		try {
+			if (getSender() != null) {
+				getSender().stop();
+			}
+		} catch (LifecycleException e) {
+			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
 		}
 	}
 
@@ -255,9 +287,19 @@ public abstract class AbstractJmsListener extends JMSFacade implements IWithPara
 				Map<String, Object> properties = getMessageProperties(session);
 				sendReply(plr, replyTo, replyCid, timeToLive, ignoreInvalidDestinationException, session, properties);
 			} else {
-				log.info("[{}] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.", getName());
+				if (getSender() == null) {
+					log.info("[{}] no replyTo address found or not configured to use replyTo, and no sender, not sending the result.", getName());
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("[{}] no replyTo address found or not configured to use replyTo, sending message on nested sender with correlationID [{}] [{}]", getName(), replyCid, plr.getResult());
+					}
+					try (PipeLineSession pipeLineSession = new PipeLineSession()) {
+						pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, replyCid);
+						getSender().sendMessageOrThrow(plr.getResult(), pipeLineSession);
+					}
+				}
 			}
-		} catch (JMSException | SenderException | IOException e) {
+		} catch (JMSException | SenderException | TimeoutException | IOException e) {
 			throw new ListenerException(e);
 		}
 
@@ -287,6 +329,12 @@ public abstract class AbstractJmsListener extends JMSFacade implements IWithPara
 	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws ListenerException, JMSException, IOException, SenderException {
 		Session session = (Session) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in PipeLineSession by JmsConnector
 		send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+	}
+
+	@Deprecated(forRemoval = true, since = "7.9.0")
+	public void setSender(ISender newSender) {
+		sender = newSender;
+		ConfigurationWarnings.add(this, log, "["+getName()+"] has a nested Sender, which is deprecated. Please use attribute replyDestinationName or a Sender nested in Receiver instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 	}
 
 	/**
