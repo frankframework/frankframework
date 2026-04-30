@@ -96,15 +96,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	private DistributionSummary sessionStatistics;
 	private @Getter @Setter Adapter adapter;
 
-	public enum LinkMethod {
-		/** use the generated messageId as the correlationId in the selector for response messages */
-		MESSAGEID,
-		/** set the correlationId of the pipeline as the correlationId of the message sent, and use that as the correlationId in the selector for response messages */
-		CORRELATIONID,
-		/** do not automatically set the correlationId of the message sent, but use use the value found in that header after sending the message as the selector for response messages */
-		CORRELATIONID_FROM_MESSAGE
-	}
-
 	/**
 	 * Configures the sender
 	 */

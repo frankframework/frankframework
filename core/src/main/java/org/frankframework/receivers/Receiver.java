@@ -68,6 +68,7 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ICorrelatedSender;
+import org.frankframework.core.ICorrelatedSender.LinkMethod;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IKnowsDeliveryCount;
 import org.frankframework.core.IListener;
@@ -1325,8 +1326,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					}
 					throw wrapExceptionAsListenerException(t);
 				}
-				if (getSender()!=null) {
-					// Implement LinkViaCorrelationID
+				if (getSender() != null) {
 					String sendMsg = sendResultToSender(result, session);
 					if (sendMsg != null) {
 						statusMessage = sendMsg;
@@ -1913,7 +1913,15 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private String sendResultToSender(Message result, PipeLineSession parentSession) {
 		String errorMessage = null;
 		try(PipeLineSession session = new PipeLineSession()) {
-			session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getMessageId());
+			if (getSender().getLinkMethod() == LinkMethod.CORRELATIONID) {
+				session.put(PipeLineSession.MESSAGE_ID_KEY, parentSession.getMessageId());
+				session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getCorrelationId());
+			} else {
+				session.put(PipeLineSession.MESSAGE_ID_KEY, parentSession.getMessageId());
+				// Response should use the messageid
+				session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getMessageId());
+			}
+
 			log.debug("Receiver [{}] sending result to configured sender [{}]", this::getName, this::getSender);
 			getSender().sendMessageOrThrow(result, session); // sending correlated responses via a receiver embedded sender is not supported
 		} catch (Exception e) {

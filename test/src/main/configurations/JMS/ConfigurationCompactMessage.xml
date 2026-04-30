@@ -26,8 +26,8 @@
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE ='I4TIAF3'">
 			</listener>
 			<sender className="org.frankframework.jms.JmsSender"
-				destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
-				<param name="SOURCE" value="I4TIAF3" />
+					destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
+					<param name="SOURCE" value="I4TIAF3" />
 			</sender>
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
