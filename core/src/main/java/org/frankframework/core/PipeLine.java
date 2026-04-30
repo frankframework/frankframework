@@ -129,7 +129,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
-	private @Getter String adapterToRunBeforeOnEmptyInput = null;
 
 	private @Getter IValidator inputValidator = null;
 	private @Getter IValidator outputValidator = null;
@@ -732,13 +731,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	@ConfigurationWarning("Please use an IfPipe to retrieve a new/different response")
 	public void setTransformNullMessage(String s) {
 		transformNullMessage = new Message(s);
-	}
-
-	/** When specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
-	@Deprecated(forRemoval = true, since = "7.9")
-	@ConfigurationWarning("Please use an IfPipe and call a sub-adapter to retrieve a new/different response")
-	public void setAdapterToRunBeforeOnEmptyInput(String s) {
-		adapterToRunBeforeOnEmptyInput = s;
 	}
 
 	/**
