@@ -787,6 +787,7 @@
 					<version>3.15.0</version>
 					<configuration>
 						<release>${maven.compiler.release}</release>
+						<source>${maven.compiler.source}</source> <!-- needed for Jenkins build scripts to pick the right JDK version? -->
 						<compilerArgs>
 							<arg>-parameters</arg>
 							<!-- Flags required for ErrorProne -->
