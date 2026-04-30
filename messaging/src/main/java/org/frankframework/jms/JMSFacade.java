@@ -110,7 +110,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	private @Getter SubscriberType subscriberType = SubscriberType.DURABLE;
 
 	private @Getter AcknowledgeMode acknowledgeMode = AcknowledgeMode.AUTO_ACKNOWLEDGE;
-	private @Getter boolean persistent;
 	private @Getter long messageTimeToLive = 0;
 	private @Getter String destinationName;
 	private @Getter boolean useTopicFunctions = false;
@@ -444,7 +443,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 			throw new NamingException("no destinationName specified");
 		}
 		if (isLookupDestination()) {
-			if (!useTopicFunctions || isPersistent()) {
+			if (!useTopicFunctions) {
 				result = getJmsMessagingSource().lookupDestination(destinationName);
 			} else {
 				TopicSession session = null;
@@ -792,7 +791,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 			sb.append("[queueConnectionFactoryName=").append(queueConnectionFactoryName).append("]");
 		}
 		sb.append("[ackMode=").append(getAcknowledgeMode()).append("]");
-		sb.append("[persistent=").append(isPersistent()).append("]");
 		sb.append("[transacted=").append(transacted).append("]");
 		return sb.toString();
 	}
@@ -819,16 +817,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	 */
 	public void setAcknowledgeMode(AcknowledgeMode acknowledgeMode) {
 		this.acknowledgeMode = acknowledgeMode;
-	}
-
-	/**
-	 * Controls whether messages are processed persistently.
-	 *
-	 * When set <code>true</code>, the JMS provider ensures that messages aren't lost when the application might crash.
-	 */
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	public void setPersistent(boolean value) {
-		persistent = value;
 	}
 
 	/**

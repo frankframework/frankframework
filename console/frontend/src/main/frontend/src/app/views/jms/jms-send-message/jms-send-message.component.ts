@@ -13,7 +13,6 @@ type Form = {
   destination: string;
   replyTo: string;
   message: string;
-  persistent: boolean;
   propertyValue: string;
   propertyKey: string;
   type: string;
@@ -40,7 +39,6 @@ export class JmsSendMessageComponent implements OnInit {
     destination: '',
     replyTo: '',
     message: '',
-    persistent: false,
     propertyValue: '',
     propertyKey: '',
     type: this.destinationTypes[0],
@@ -85,7 +83,6 @@ export class JmsSendMessageComponent implements OnInit {
     if (formData.type && formData.type != '') fd.append('type', formData.type);
     else fd.append('type', this.destinationTypes[0]);
     fd.append('replyTo', formData.replyTo);
-    fd.append('persistent', formData.persistent.toString());
     fd.append('synchronous', formData.synchronous.toString());
     fd.append('lookupDestination', formData.lookupDestination.toString());
 
@@ -130,7 +127,6 @@ export class JmsSendMessageComponent implements OnInit {
       destination: '',
       replyTo: '',
       message: '',
-      persistent: false,
       propertyValue: '',
       propertyKey: '',
       type: this.destinationTypes[0],

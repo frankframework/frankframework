@@ -1276,17 +1276,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		msgLogLevel = level.getEffectiveLevel();
 	}
 
-	@Deprecated
-	public void setRequestReplyLogging(boolean requestReplyLogging) {
-		if (requestReplyLogging) {
-			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=true as msgLogLevel=DEBUG");
-			msgLogLevel = Level.DEBUG;
-		} else {
-			ConfigurationWarnings.add(this, log, "implementing setting of requestReplyLogging=false as msgLogLevel=OFF");
-			msgLogLevel = Level.OFF;
-		}
-	}
-
 	/**
 	 * If set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message
 	 * @ff.default <code>false</code>

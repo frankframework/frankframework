@@ -70,7 +70,6 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 	public JmsTransactionalStorage() {
 		super();
 		setTransacted(true);
-		setPersistent(true);
 		setDestinationType(JmsDestinationType.QUEUE);
 	}
 

@@ -65,16 +65,16 @@ public class EhCache<V> extends AbstractCacheAdapter<V> {
 
 	public EhCache() {
 		super();
-		AppConstants ac = AppConstants.getInstance();
-		maxElementsInMemory=ac.getInt(KEY_MAX_ELEMENTS_IN_MEMORY, maxElementsInMemory);
-		memoryStoreEvictionPolicy=ac.getProperty(KEY_MEMORYSTORE_EVICTION_POLICY, memoryStoreEvictionPolicy);
-		eternal=ac.getBoolean(KEY_ETERNAL, eternal);
-		timeToLiveSeconds=ac.getInt(KEY_TIME_TO_LIVE_SECONDS, timeToLiveSeconds);
-		timeToIdleSeconds=ac.getInt(KEY_TIME_TO_IDLE_SECONDS, timeToIdleSeconds);
-		overflowToDisk=ac.getBoolean(KEY_OVERFLOW_TO_DISK, overflowToDisk);
-		maxElementsOnDisk=ac.getInt(KEY_MAX_ELEMENTS_ON_DISK, maxElementsOnDisk);
-		diskPersistent=ac.getBoolean(KEY_DISK_PERSISTENT, diskPersistent);
-		diskExpiryThreadIntervalSeconds=ac.getInt(KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS, diskExpiryThreadIntervalSeconds);
+		AppConstants appConstants = AppConstants.getInstance();
+		maxElementsInMemory = appConstants.getInt(KEY_MAX_ELEMENTS_IN_MEMORY, maxElementsInMemory);
+		memoryStoreEvictionPolicy = appConstants.getProperty(KEY_MEMORYSTORE_EVICTION_POLICY, memoryStoreEvictionPolicy);
+		eternal = appConstants.getBoolean(KEY_ETERNAL, eternal);
+		timeToLiveSeconds = appConstants.getInt(KEY_TIME_TO_LIVE_SECONDS, timeToLiveSeconds);
+		timeToIdleSeconds = appConstants.getInt(KEY_TIME_TO_IDLE_SECONDS, timeToIdleSeconds);
+		overflowToDisk = appConstants.getBoolean(KEY_OVERFLOW_TO_DISK, overflowToDisk);
+		maxElementsOnDisk = appConstants.getInt(KEY_MAX_ELEMENTS_ON_DISK, maxElementsOnDisk);
+		diskPersistent = appConstants.getBoolean(KEY_DISK_PERSISTENT, diskPersistent);
+		diskExpiryThreadIntervalSeconds = appConstants.getInt(KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS, diskExpiryThreadIntervalSeconds);
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class EhCache<V> extends AbstractCacheAdapter<V> {
 				null,
 				getMaxElementsOnDisk()
 				);
-		cacheManager=IbisCacheManager.getInstance();
+		cacheManager = IbisCacheManager.getInstance();
 		cache = cacheManager.addCache(configCache);
 	}
 
@@ -118,25 +118,29 @@ public class EhCache<V> extends AbstractCacheAdapter<V> {
 			log.debug("cache [{}] clearing data", getName());
 			cache.removeAll();
 		}
-		if (cacheManager!=null) {
+
+		if (cacheManager != null) {
 			cacheManager.destroyCache(cache.getName());
-			cacheManager=null;
+			cacheManager = null;
 		}
-		cache=null;
+
+		cache = null;
 	}
 
 	@Override
 	protected V getElement(String key) {
 		Element element = cache.get(key);
-		if (element==null) {
+
+		if (element == null) {
 			return null;
 		}
+
 		return (V)element.getValue();
 	}
 
 	@Override
 	protected void putElement(String key, V value) {
-		Element element=new Element(key,value);
+		Element element = new Element(key,value);
 		cache.put(element);
 	}
 

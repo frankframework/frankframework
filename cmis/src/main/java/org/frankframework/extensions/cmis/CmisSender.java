@@ -58,7 +58,6 @@ import org.w3c.dom.Node;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -228,7 +227,6 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	private @Getter boolean getProperties = false;
 	private @Getter boolean getDocumentContent = true;
 	private @Getter boolean useRootFolder = true;
-	private @Getter String resultOnNotFound;
 	private boolean runtimeSession = false;
 	private @Getter boolean keepSession = true;
 
@@ -372,12 +370,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		try {
 			object = getCmisObject(cmisSession, message);
 		} catch (CmisObjectNotFoundException e) {
-			String errorMessage= "document with id [" + message + "] not found";
-			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info("{}", errorMessage, e);
-				return new SenderResult(getResultOnNotFound());
-			}
-			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
+			return new SenderResult(false, Message.nullMessage(), "document with id [" + message + "] not found", NOT_FOUND_FORWARD_NAME);
 		}
 
 		Document document = (Document) object;
@@ -563,12 +556,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		try {
 			object = getCmisObject(cmisSession, message);
 		} catch (CmisObjectNotFoundException e) {
-			String errorMessage="document with id [" + message + "] not found";
-			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(errorMessage, e);
-				return new SenderResult(getResultOnNotFound());
-			}
-			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
+			return new SenderResult(false, Message.nullMessage(), "document with id [" + message + "] not found", NOT_FOUND_FORWARD_NAME);
 		}
 		if (object.hasAllowableAction(Action.CAN_DELETE_OBJECT)) { //// You can delete
 			Document suppDoc = (Document) object;
@@ -898,12 +886,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		try {
 			object = cmisSession.getObject(cmisSession.createObjectId(objectId));
 		} catch (CmisObjectNotFoundException e) {
-			String errorMessage="document with id [" + message + "] not found";
-			if (StringUtils.isNotEmpty(getResultOnNotFound())) {
-				log.info(errorMessage, e);
-				return new SenderResult(getResultOnNotFound());
-			}
-			return new SenderResult(false, Message.nullMessage(), errorMessage, NOT_FOUND_FORWARD_NAME);
+			return new SenderResult(false, Message.nullMessage(), "document with id [" + message + "] not found", NOT_FOUND_FORWARD_NAME);
 		}
 		object.updateProperties(props);
 		return new SenderResult(object.getId());
@@ -1009,13 +992,6 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	 */
 	public void setUseRootFolder(boolean b) {
 		useRootFolder = b;
-	}
-
-	/** (Only used when <code>action=get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name */
-	@Deprecated(forRemoval = true, since = "7.9.0")
-	@ConfigurationWarning("configure forward 'notFound' instead")
-	public void setResultOnNotFound(String string) {
-		resultOnNotFound = string;
 	}
 
 	/**

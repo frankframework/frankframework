@@ -35,13 +35,13 @@ public interface ICache<K,V> extends IConfigurable, FrankElement, NameAware {
 	void close();
 
 	/**
-	 * Transform the the current request message to a key in the cache-map.
+	 * Transform the current request message to a key in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
 	K transformKey(String input, PipeLineSession session);
 
 	/**
-	 * Transform the the current response message to a value in the cache-map.
+	 * Transform the current response message to a value in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
 	V transformValue(Message input, PipeLineSession session);
@@ -51,6 +51,7 @@ public interface ICache<K,V> extends IConfigurable, FrankElement, NameAware {
 	 * Obtain a potentially cached value, set by put().
 	 */
 	V get(K key);
+
 	/**
 	 * store a value in the cache, that can be retrieved later using get().
 	 */

@@ -15,17 +15,9 @@
 */
 package org.frankframework.compression;
 
-import org.jspecify.annotations.NonNull;
-
 import org.frankframework.collection.AbstractCollectorPipe.Action;
 import org.frankframework.collection.AbstractCollectorSender;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.stream.Message;
 
 /**
  * Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'.
@@ -40,8 +32,6 @@ import org.frankframework.stream.Message;
  */
 public class ZipWriterSender extends AbstractCollectorSender<ZipWriter, MessageZipEntry> {
 
-	private boolean backwardsCompatibility = false;
-
 	public ZipWriterSender() {
 		setCollectionName("zipwriterhandle");
 	}
@@ -50,33 +40,5 @@ public class ZipWriterSender extends AbstractCollectorSender<ZipWriter, MessageZ
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ZipWriter.validateParametersForAction(Action.WRITE, getParameterList());
-	}
-
-	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
-		if(backwardsCompatibility) {
-			super.sendMessage(message, session);
-			return new SenderResult(message);
-		}
-
-		return super.sendMessage(message, session);
-	}
-
-	/**
-	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested
-	 * @ff.default zipwriterhandle
-	 */
-	@Deprecated(forRemoval = true, since = "7.9.0")
-	@ConfigurationWarning("Replaced with attribute collectionName")
-	public void setZipWriterHandle(String string) {
-		setCollectionName(string);
-	}
-
-	/**
-	 * Input will be 'piped' to the output, and the message will be preserved. Avoid using this if possible.
-	 */
-	@Deprecated(forRemoval = true, since = "7.9.0")
-	public void setBackwardsCompatibility(boolean backwardsCompatibility) {
-		this.backwardsCompatibility = backwardsCompatibility;
 	}
 }
