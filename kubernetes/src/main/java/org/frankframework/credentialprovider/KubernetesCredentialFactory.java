@@ -15,20 +15,13 @@
 */
 package org.frankframework.credentialprovider;
 
-import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
@@ -72,100 +65,26 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
  */
 @Log
-public class KubernetesCredentialFactory implements ISecretProvider {
-
-	private static final String K8_USERNAME = "credentialFactory.kubernetes.username";
-	private static final String K8_PASSWORD = "credentialFactory.kubernetes.password";
-	static final String K8_MASTER_URL = "credentialFactory.kubernetes.masterUrl";
-	private static final String K8_NAMESPACE_PROPERTY = "credentialFactory.kubernetes.namespace";
-
-	private static final int CACHE_DURATION_MILLIS = 60_000;
-	public static final String DEFAULT_NAMESPACE = "default";
-
-	protected String namespace;
-	private KubernetesClient client;
+public class KubernetesCredentialFactory extends AbstractKubernetesCredentialProvider {
 
 	private final Cache<String, Secret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
 	@Override
-	public void initialize() {
-		CredentialConstants appConstants = CredentialConstants.getInstance();
-		log.info("initializing KubernetesCredentialFactory");
-
-		if (client == null) { // For testing purposes
-			client = new KubernetesClientBuilder()
-					.editOrNewConfig()
-					.withConnectionTimeout(3_000)
-					.withRequestTimeout(3_000)
-					.withRequestRetryBackoffLimit(0)
-					.endConfig()
-					.build();
-		}
-
-		String defaultNamespace = Optional.ofNullable(client.getNamespace()).orElse(DEFAULT_NAMESPACE);
-		namespace = appConstants.getProperty(K8_NAMESPACE_PROPERTY, defaultNamespace);
-
-		String k8Username = appConstants.getProperty(K8_USERNAME, null);
-		String k8Passwd = appConstants.getProperty(K8_PASSWORD, null);
-		String k8MasterURL = appConstants.getProperty(K8_MASTER_URL, null);
-		Config config = client.getConfiguration();
-		if (k8Username != null) config.setUsername(k8Username);
-		if (k8Passwd != null) config.setPassword(k8Passwd);
-		if (k8MasterURL != null) {
-			config.setMasterUrl(k8MasterURL);
-			log.info("Using Kubernetes master URL: " + k8MasterURL);
-		}
-
-		URL masterUrl = client.getMasterUrl();
-		try {
-			// Call the API, doesn't matter which endpoint
-			client.getKubernetesVersion();
-			log.info("Connected to K8s cluster: " + masterUrl);
-		} catch (Exception e) {
-			throw new KubernetesClientException("unable to connect to cluster: " + masterUrl, e);
-		}
-
-		// Fetch secrets directly at startup, from Kubernetes cluster
-		log.info("fetching secrets from Kubernetes namespace [" + namespace + "]");
+	protected void postInitialize(CredentialConstants appConstants) {
+		log.info("fetching secrets from Kubernetes namespace " + namespace);
 		List<Secret> secrets = getSecretsFromKubernetes();
-		log.info("found [" + secrets.size() + "] secrets in namespace [" + namespace + "]");
-	}
-
-	@Override
-	public boolean hasSecret(@NonNull CredentialAlias alias) {
-		try {
-			return getSecret(alias) != null;
-		} catch (NoSuchElementException e) {
-			return false;
-		}
+		log.info("found " + secrets.size() + " secrets in namespace " + namespace);
 	}
 
 	@Override
 	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
-		if (!isAliasNameValid(alias)) {
-			log.warning("A Kubernetes alias must start and end with an alphanumeric character. Given alias: " + alias.getName());
-		}
+		warnIfAliasNameInvalid(alias);
 
-		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
-
+		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::findSecretByName);
 		if (secret == null) {
 			throw new NoSuchElementException();
 		}
-
 		return new KubernetesSecret(alias, secret);
-	}
-
-	private boolean isAliasNameValid(CredentialAlias alias) {
-		if (StringUtils.isEmpty(alias.getName())) {
-			return false;
-		}
-
-		// Allowed characters are already validated by CredentialAlias constructor. What we need to check is if the alias starts and ends with an alphanumeric character.
-		String name = alias.getName();
-		char firstChar = name.charAt(0);
-		char lastChar = name.charAt(name.length() - 1);
-
-		return Character.isLetterOrDigit(firstChar) && Character.isLetterOrDigit(lastChar);
 	}
 
 	@Override
@@ -173,11 +92,11 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 		return configuredAliases.keySet();
 	}
 
-	private Secret getSecret(String aliasToRetrieve) throws NoSuchElementException {
+	private Secret findSecretByName(String aliasToRetrieve) throws NoSuchElementException {
 		return getSecretsFromKubernetes().stream()
 				.filter(e -> aliasToRetrieve.equals(e.getMetadata().getName()))
 				.findFirst()
-				.orElseThrow(() -> new NoSuchElementException("alias ["+aliasToRetrieve+"] not found"));
+				.orElseThrow(() -> new NoSuchElementException("alias [" + aliasToRetrieve + "] not found"));
 	}
 
 	protected synchronized List<Secret> getSecretsFromKubernetes() {
@@ -185,18 +104,6 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 		if (secrets.isEmpty()) {
 			log.warning("no secrets found in namespace: " + namespace);
 		}
-
 		return secrets;
-	}
-
-	/** Close Kubernetes client */
-	public void close() {
-		client.close();
-	}
-
-	// For testing purposes
-	void setClient(KubernetesClient client) {
-		log.info("Setting Kubernetes client to: " + client.getClass().getName());
-		this.client = client;
 	}
 }
