@@ -105,7 +105,7 @@
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 
 		<!-- There is in error in the latest frankdoc version, which causes the build to fail. Until that is fixed, we need to use a specific version -->
-		<frankdoc.version>4.4.0-20260426.104314-5</frankdoc.version>
+		<frankdoc.version>4.4.1-SNAPSHOT</frankdoc.version>
 		<javadoc-plugin.version>3.12.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
@@ -1755,6 +1755,8 @@
 								<additionalOption>org.frankframework.configuration.Configuration</additionalOption>
 								<additionalOption>-frankFrameworkVersion</additionalOption>
 								<additionalOption>${project.version}</additionalOption>
+								<additionalOption>-skippableContainersClass</additionalOption>
+								<additionalOption>Exits,Forwards,Module,Root,GlobalForwards,Global-forwards,Scheduler,PipelinePart</additionalOption>
 							</additionalOptions>
 							<show>private</show>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
