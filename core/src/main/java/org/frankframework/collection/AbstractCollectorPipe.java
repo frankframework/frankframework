@@ -51,8 +51,6 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 		LAST,
 		/** Finalize the collection */
 		CLOSE,
-		@Deprecated(forRemoval = true, since = "7.9.0")
-		STREAM
 	}
 
 	/**
