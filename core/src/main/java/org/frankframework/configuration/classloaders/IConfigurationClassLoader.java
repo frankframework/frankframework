@@ -17,6 +17,8 @@ package org.frankframework.configuration.classloaders;
 
 import java.net.URL;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
 
@@ -55,7 +57,7 @@ public interface IConfigurationClassLoader {
 	/**
 	 * @return the {@link ReportLevel} set for this {@link IConfigurationClassLoader}
 	 */
-	public ReportLevel getReportLevel();
+	public @NonNull ReportLevel getReportLevel();
 
 	/**
 	 * Unload the current IConfigurationClassLoader and load again upon successful unload.

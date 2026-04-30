@@ -36,6 +36,7 @@ public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
 	}
 
 	@Override
+	@SuppressWarnings({"java:S1181"}) // Ignore warnings for catching Throwable
 	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
 		Map<String, Object> loadedConfiguration;
 		try {

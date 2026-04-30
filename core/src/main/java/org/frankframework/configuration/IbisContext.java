@@ -380,7 +380,7 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.info("configured configuration [{}] successfully", currentConfigurationName);
 		} catch (ConfigurationException e) {
 			// Unable to configure, but able to create configuration.
-			LOG.info("unable to configure configuration [{}]", currentConfigurationName);
+			LOG.info("unable to configure configuration [{}]", currentConfigurationName, e);
 		} catch (Exception e) {
 			// Something is wrong, unable to create configuration.
 			configuration.setConfigurationException(new ConfigurationException(e));
