@@ -1,5 +1,5 @@
 /*
-   Copyright 2025-2026 WeAreFrank!
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,36 +18,42 @@ package org.frankframework.credentialprovider;
 import java.util.Base64;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
-@NullMarked
 @Log
-public class KubernetesSecret extends org.frankframework.credentialprovider.Secret {
+public class AuthAliasPrefixKubernetesSecret extends org.frankframework.credentialprovider.Secret {
 
 	private final Secret secret;
+	private final String prefix;
 
-	public KubernetesSecret(CredentialAlias alias, Secret secret) {
+	AuthAliasPrefixKubernetesSecret(CredentialAlias alias, Secret secret, String prefix) {
 		super(alias);
-
-		String secretAlias = secret.getMetadata().getName();
-		if (!getAlias().equals(secretAlias)) {
-			throw new IllegalStateException("alias does not match secret");
-		}
-
 		this.secret = secret;
+		this.prefix = prefix;
 	}
 
 	@Override
-	public String getField(@Nullable String key) {
-		String foundKey = secret.getData().get(key);
-		if (StringUtils.isEmpty(foundKey)) {
-			log.info("no value found for alias [" + getAlias() + "] and field " +  key);
+	public @Nullable String getField(@Nullable String fieldname) {
+		if (StringUtils.isEmpty(fieldname)) {
 			return null;
 		}
-		return new String(Base64.getDecoder().decode(foundKey));
+
+		String fullKey = prefix + fieldname;
+		String found = secret.getData() != null ? secret.getData().get(fullKey) : null;
+		if (StringUtils.isEmpty(found)) {
+			log.info("no value found for alias ["+getAlias()+"] field ["+fieldname+"] (fullKey ["+fullKey+"])");
+			return null;
+		}
+
+		return new String(Base64.getDecoder().decode(found));
+	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) +
+				" alias [" + getAlias() + "] prefix [" + prefix + "]";
 	}
 }

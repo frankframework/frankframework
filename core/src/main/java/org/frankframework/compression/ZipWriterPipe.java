@@ -15,26 +15,14 @@
 */
 package org.frankframework.compression;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
-
 import lombok.Getter;
 
 import org.frankframework.collection.AbstractCollectorPipe;
 import org.frankframework.collection.CollectionException;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.PathMessage;
-import org.frankframework.util.TemporaryDirectoryUtils;
 
 /**
  * Pipe that creates a ZIP archive (on action close).
@@ -54,8 +42,6 @@ public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEn
 
 	private @Getter boolean includeFileHeaders = false;
 
-	private boolean backwardsCompatibility = false;
-
 	public ZipWriterPipe() {
 		setCollectionName("zipwriterhandle");
 	}
@@ -69,68 +55,7 @@ public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEn
 	@Override
 	protected ZipWriter createCollector(Message input, PipeLineSession session) throws CollectionException {
 		String filename = ParameterValueList.getValue(getParameterValueList(input, session), ZipWriter.PARAMETER_FILENAME, "");
-		if(backwardsCompatibility && input.isRequestOfType(String.class) && StringUtils.isEmpty(filename)) {
-			try {
-				filename = input.asString();
-			} catch (IOException e) {
-				throw new CollectionException("unable to convert inputstring to filename");
-			}
-		}
 		return new ZipWriter(includeFileHeaders, filename);
-	}
-
-	@NonNull
-	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
-		if(backwardsCompatibility) {
-			try {
-				if(Action.STREAM == getAction()) {
-					return handleStreamAction(input, session);
-				}
-
-				super.doPipe(input, session);
-
-				return new PipeRunResult(getSuccessForward(), input);
-			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
-			}
-		}
-
-		return super.doPipe(input, session);
-	}
-
-	private PipeRunResult handleStreamAction(Message input, PipeLineSession session) throws PipeRunException, IOException {
-		try {
-			ParameterValueList pvl = getParameterValueList(input, session);
-			String filename = ParameterValueList.getValue(pvl, ZipWriter.PARAMETER_FILENAME, "");
-			if(StringUtils.isEmpty(filename)) {
-				throw new PipeRunException(this, "filename may not be empty");
-			}
-
-			Path collectorsTempFolder = TemporaryDirectoryUtils.getTempDirectory("collectors");
-			Path file = Files.createTempFile(collectorsTempFolder, "msg", ".zip");
-
-			// Unfortunately we cannot call doAction(Action.WRITE, PathMessage, session);
-			// directly because the ParameterList is resolved against the input message.
-			// We have to change the input here, but want to keep the original PVL.
-			PathMessage tempZipArchive = PathMessage.asTemporaryMessage(file);
-			addPartToCollection(getCollection(session), tempZipArchive, session, pvl);
-
-			// We must return a file location, not the reference or file itself
-			return new PipeRunResult(getSuccessForward(), new Message(file.toString()));
-		} catch (CollectionException e) {
-			throw new PipeRunException(this, "unable to preserve message for action ["+getAction()+"]", e);
-		}
-	}
-
-	/**
-	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested. Deprecated, use collectionName instead.
-	 * @ff.default zipwriterhandle
-	 */
-	@Deprecated(forRemoval = true, since = "7.9.0")
-	@ConfigurationWarning("Replaced with attribute collectionName")
-	public void setZipWriterHandle(String string) {
-		setCollectionName(string);
 	}
 
 	/**
@@ -139,15 +64,5 @@ public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEn
 	 */
 	public void setCompleteFileHeader(boolean b) {
 		includeFileHeaders = b;
-	}
-
-	/**
-	 * When action is OPEN: If input is a string, it's assumed it's the location where to save the Zip Archive.
-	 * When action is WRITE: Input will be 'piped' to the output, and the message will be preserved.
-	 * Avoid using this if possible.
-	 */
-	@Deprecated(forRemoval = true, since = "7.9.0")
-	public void setBackwardsCompatibility(boolean backwardsCompatibility) {
-		this.backwardsCompatibility = backwardsCompatibility;
 	}
 }

@@ -61,11 +61,6 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' cannot not be configured on action [close]");
 				}
 				break;
-			case STREAM:
-				if(!parameterList.hasParameter(PARAMETER_FILENAME)) {
-					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' is required");
-				}
-				break;
 			default:
 				throw new ConfigurationException("unknown action ["+action+"]");
 		}
