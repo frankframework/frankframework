@@ -51,7 +51,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		String file = jarFileUrl.getFile();
 		assertNotNull(file, "jar file not found");
 		//noinspection EmptyTryBlock
-		try (JarFile _ = new JarFile(file)) { // verify the jar file
+		try (JarFile ignored = new JarFile(file)) { // verify the jar file
 			// No-op
 		}
 
