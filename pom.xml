@@ -75,8 +75,8 @@
 		<revision>10.2.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- NB: We need to stay on target JDK21 as long as the JBoss / WildFly images we build for our Larva tests do not support JDK25 -->
-		<maven.compiler.release>21</maven.compiler.release>
-		<!-- Need this property only for the Jenkins build system to determine build JDK version -->
+		<maven.compiler.target>21</maven.compiler.target>
+		<!-- Need this property for the Jenkins build system to determine correct build JDK version, which needs to be JDK25 for Frank!Doc (and JDK25 changes in JavaDoc) -->
 		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<lombok.version>1.18.46</lombok.version>
@@ -786,8 +786,7 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.15.0</version>
 					<configuration>
-						<release>${maven.compiler.release}</release>
-						<source>${maven.compiler.source}</source> <!-- needed for Jenkins build scripts to pick the right JDK version? -->
+						<release>${maven.compiler.target}</release>
 						<compilerArgs>
 							<arg>-parameters</arg>
 							<!-- Flags required for ErrorProne -->
