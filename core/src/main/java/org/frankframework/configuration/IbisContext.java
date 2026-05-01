@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -209,6 +209,7 @@ public class IbisContext extends IbisApplicationContext {
 				log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageEventLevel.ERROR);
 			}
 			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
+			classLoaderManager.remove(configurationName);
 		} else {
 			log("Configuration [" + configurationName + "] to unload not found", MessageEventLevel.WARN);
 		}
@@ -379,7 +380,7 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.info("configured configuration [{}] successfully", currentConfigurationName);
 		} catch (ConfigurationException e) {
 			// Unable to configure, but able to create configuration.
-			LOG.info("unable to configure configuration [{}]", currentConfigurationName);
+			LOG.info("unable to configure configuration [{}]", currentConfigurationName, e);
 		} catch (Exception e) {
 			// Something is wrong, unable to create configuration.
 			configuration.setConfigurationException(new ConfigurationException(e));

@@ -47,13 +47,14 @@ public class CleanerProvider {
 		Runtime.getRuntime().addShutdownHook(new Thread(CleanerProvider::logLeakStatistics));
 	}
 
+	@SuppressWarnings({"java:S1215", "java:S1181"}) // Ignore warnings for calling gc() and catching Throwable
 	public static void logLeakStatistics() {
 		// Force system to run garbage collection to clean up as much as possible and collect as much leak-info before logging it
 		System.gc();
 		try {
 			// Give time to GC thread.
-			Thread.sleep(1000L);
-		} catch (InterruptedException e) {
+			Thread.sleep(500L);
+		} catch (InterruptedException ignored) {
 			Thread.currentThread().interrupt();
 		}
 
@@ -68,7 +69,7 @@ public class CleanerProvider {
 					.map(AtomicInteger::get)
 					.reduce(0, Integer::sum);
 			LEAK_LOG.warn("Total of {} leaks from {} locations", totalLeaks, LEAK_MAP.size());
-		} catch (Throwable e) {
+		} catch (Throwable ignored) {
 			// Ignore log exceptions which may cause the application to not terminate properly.
 			// Such as `Exception in thread "Thread-462" java.lang.NoClassDefFoundError: org/apache/logging/log4j/message/ParameterizedNoReferenceMessageFactory$StatusMessage`
 

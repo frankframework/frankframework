@@ -27,6 +27,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.NameAware;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.lifecycle.ConfigurableApplicationContext;
@@ -86,5 +87,14 @@ public class LarvaScenarioContext extends ConfigurableApplicationContext {
 				return bean;
 			}
 		});
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		if (getClassLoader() instanceof IConfigurationClassLoader classLoader) {
+			classLoader.destroy();
+		}
+		setClassLoader(null);
 	}
 }

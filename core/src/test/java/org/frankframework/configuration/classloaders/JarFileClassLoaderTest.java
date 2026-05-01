@@ -16,12 +16,14 @@
 package org.frankframework.configuration.classloaders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
@@ -43,15 +45,20 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	}
 
 	private JarFileClassLoader createClassLoader(ClassLoader parent, String jarFile) throws Exception {
-		URL file = this.getClass().getResource(jarFile);
-		assertNotNull(file, "jar url ["+jarFile+"] not found");
+		URL jarFileUrl = this.getClass().getResource(jarFile);
+		assertNotNull(jarFileUrl, "jar url ["+jarFile+"] not found");
 
-		assertNotNull(new JarFile(file.getFile()), "jar file not found"); // verify the jar file
+		String file = jarFileUrl.getFile();
+		assertNotNull(file, "jar file not found");
+		//noinspection EmptyTryBlock
+		try (JarFile ignored = new JarFile(file)) { // verify the jar file
+			// No-op
+		}
 
 		JarFileClassLoader cl = new JarFileClassLoader(parent);
-		cl.setJar(file.getFile());
+		cl.setJar(file);
 		String key = "configurations."+getConfigurationName()+".jar";
-		appConstants.setProperty(key, file.getFile());
+		appConstants.setProperty(key, file);
 		return cl;
 	}
 
@@ -109,7 +116,8 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	public void loadCustomClassUsingForName() throws Exception {
 		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
-		classLoader.configure(ibisContext, "myConfig");
+		classLoader.configure(ibisContext, "myClassLoadingTestConfig");
+		// Not registered witih the leak detector so that the code-path for unregistered classloaders gets tested too.
 
 		classLoader.setAllowCustomClasses(true);
 		// native classloading
@@ -118,9 +126,16 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
-		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
-		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
+		Set<String> loadedCustomClasses = (Set<String>) loadedClassesField.get(classLoader);
+		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+ loadedCustomClasses); // base + 2 inner classes
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
+
+		// Destroy unregistered classloader to check that this code path works
+		classLoader.destroy();
+
+		// Call this to add some coverage to this code
+		int s = ClassLoadingLeakDetector.logLeakStatistics();
+		assertEquals(0, s, "Expected no ClassLoaders registered");
 	}
 
 	@Test
@@ -128,7 +143,9 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	public void loadCustomClassUsingLoadClass() throws Exception {
 		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
-		classLoader.configure(ibisContext, "myConfig");
+		classLoader.configure(ibisContext, "myClassLoadingTestConfig");
+		// Register this instance so the leak-detection can be tested
+		ClassLoadingLeakDetector.registerClassLoader("myLeakTestConfig", classLoader);
 
 		classLoader.setAllowCustomClasses(true);
 		// native classloading
@@ -137,8 +154,14 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		Field loadedClassesField = AbstractClassLoader.class.getDeclaredField("loadedCustomClasses");
 		loadedClassesField.setAccessible(true);
-		List<String> loadedCustomClasses = (List<String>) loadedClassesField.get(classLoader);
-		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+loadedCustomClasses.toString()); // base + 2 inner classes
+		Set<String> loadedCustomClasses = (Set<String>) loadedClassesField.get(classLoader);
+		assertEquals(3, loadedCustomClasses.size(), "too many classes: "+ loadedCustomClasses); // base + 2 inner classes
 		assertTrue(loadedCustomClasses.contains("org.frankframework.pipes.LargeBlockTester"));
+
+		classLoader.destroy();
+
+		// Call this to add some coverage to this code
+		int s = ClassLoadingLeakDetector.logLeakStatistics();
+		assertNotEquals(0, s, "Expected at least 1 ClassLoader registered");
 	}
 }
