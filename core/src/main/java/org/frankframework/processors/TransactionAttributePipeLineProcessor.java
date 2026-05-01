@@ -39,6 +39,7 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
+	@SuppressWarnings({ "java:S1141", "java:S1181" })
 	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		try {
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
@@ -51,14 +52,9 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 
 					boolean mustRollback=false;
 
-					if (pipeLineResult==null) {
-						mustRollback=true;
-						log.warn("Pipeline received null result for messageId [{}], transaction (when present and active) will be rolled back", messageId);
-					} else {
-						if (!pipeLineResult.isSuccessful()) {
-							mustRollback=true;
-							log.warn("Pipeline result state [{}] for messageId [{}] is not equal to [{}], transaction (when present and active) will be rolled back", pipeLineResult.getState(), messageId, ExitState.SUCCESS);
-						}
+					if (!pipeLineResult.isSuccessful()) {
+						mustRollback = true;
+						log.warn("Pipeline result state [{}] for messageId [{}] is not equal to [{}], transaction (when present and active) will be rolled back", pipeLineResult.getState(), messageId, ExitState.SUCCESS);
 					}
 					if (mustRollback) {
 						try {
@@ -83,14 +79,16 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 			} catch (Throwable t) {
 				log.debug("setting RollBackOnly for pipeline after catching exception");
 				itx.setRollbackOnly();
-				if (t instanceof Error error) {
-					throw error;
-				} else if (t instanceof RuntimeException exception) {
-					throw exception;
-				} else if (t instanceof PipeRunException exception) {
-					throw exception;
-				} else {
-					throw new PipeRunException(null, "Caught unknown checked exception", t);
+				switch (t) {
+					case Error error -> throw error;
+					case RuntimeException exception -> throw exception;
+					case PipeRunException exception -> throw exception;
+					default -> {
+						if (t instanceof InterruptedException) {
+							Thread.currentThread().interrupt();
+						}
+						throw new PipeRunException(null, "Caught unknown checked exception", t);
+					}
 				}
 			} finally {
 				// txManager.commit(txStatus);

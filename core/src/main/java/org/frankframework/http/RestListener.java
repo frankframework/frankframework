@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -167,14 +167,18 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		} catch (ConfigurationException e) {
 			throw new ConfigurationException("unable to configure ");
 		}
-		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
-		return pipeResult.getResult();
+		try (PipeLineSession session = new PipeLineSession()) {
+			PipeRunResult pipeResult = pipe.doPipe(message, session);
+			return pipeResult.getResult();
+		}
 	}
 
 	public Message transformToXml(Message message) throws PipeRunException {
 		JsonPipe pipe = new JsonPipe();
-		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
-		return pipeResult.getResult();
+		try (PipeLineSession session = new PipeLineSession()) {
+			PipeRunResult pipeResult = pipe.doPipe(message, session);
+			return pipeResult.getResult();
+		}
 	}
 
 	@Override

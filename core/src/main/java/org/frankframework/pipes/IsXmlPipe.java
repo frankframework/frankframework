@@ -16,8 +16,8 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.PipeForward;
@@ -48,7 +48,8 @@ public class IsXmlPipe extends AbstractPipe {
 	@Override
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		String forward = "";
-		if (message==null) {
+		Objects.requireNonNull(message, "Message may not be null");
+		if (Message.isEmpty(message)) {
 			if (isElseForwardOnEmptyInput()) {
 				forward = elseForwardName;
 			} else {
@@ -57,23 +58,15 @@ public class IsXmlPipe extends AbstractPipe {
 		} else {
 			String sInput;
 			try {
-				sInput = message.asString();
+				sInput = Objects.requireNonNull(message.asString(), "Message is not empty, should never result in NULL string");
 			} catch (IOException e) {
 				throw new PipeRunException(this, "cannot open stream", e);
 			}
-			if (StringUtils.isEmpty(sInput)) {
-				if (isElseForwardOnEmptyInput()) {
-					forward = elseForwardName;
-				} else {
-					forward = thenForwardName;
-				}
+			String firstChar = sInput.replaceAll("^\\s+", "").substring(0, 1);
+			if ("<".equals(firstChar)) {
+				forward = thenForwardName;
 			} else {
-				String firstChar = sInput.replaceAll("^\\s+", "").substring(0, 1);
-				if ("<".equals(firstChar)) {
-					forward = thenForwardName;
-				} else {
-					forward = elseForwardName;
-				}
+				forward = elseForwardName;
 			}
 		}
 
