@@ -20,7 +20,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import org.frankframework.configuration.AdapterAware;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -38,9 +43,10 @@ import org.frankframework.util.SpringUtils;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public abstract class JdbcIteratingPipeBase extends StringIteratorPipe {
+public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements AdapterAware {
 
 	protected MixedQuerySender querySender = new MixedQuerySender();
+	private @Getter @Setter Adapter adapter;
 
 	protected class MixedQuerySender extends DirectQuerySender {
 

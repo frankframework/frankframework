@@ -44,7 +44,7 @@ public class JsonWellFormedCheckerPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		if (Message.isEmpty(message)) {
 			return new PipeRunResult(findForward("failure"), message);
 		}

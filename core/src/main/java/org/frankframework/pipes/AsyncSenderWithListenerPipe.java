@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
@@ -124,7 +126,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	}
 
 	@Override
-	protected String doLogToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws SenderException {
+	protected String doLogToMessageLog(@Nonnull final Message input, @Nonnull final PipeLineSession session, @Nonnull final Message originalMessage, @Nonnull final String messageID, @Nonnull String correlationID) throws SenderException {
 		try {
 			String messageTrail="no audit trail";
 			if (auditTrailTp!=null) {

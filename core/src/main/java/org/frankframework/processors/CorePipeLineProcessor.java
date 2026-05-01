@@ -46,7 +46,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	private @Setter PipeProcessor pipeProcessor;
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, @NonNull Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		// ready indicates whether the pipeline processing is complete
 		boolean ready=false;
 

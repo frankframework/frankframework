@@ -101,7 +101,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();
 			try (Reader reader = message.asReader(); SaxDocumentBuilder document = new SaxDocumentBuilder("csv", messageBuilder.asXmlWriter(), isPrettyPrint())) {

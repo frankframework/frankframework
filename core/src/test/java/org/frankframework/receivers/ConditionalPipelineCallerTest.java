@@ -93,7 +93,7 @@ public class ConditionalPipelineCallerTest {
 		EchoPipe pipe = new EchoPipe() {
 			@NonNull
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+			public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 				session.put(SESSION_VALUE_ECHO_PIPE_CALLED, "true");
 				return super.doPipe(message, session);
 			}

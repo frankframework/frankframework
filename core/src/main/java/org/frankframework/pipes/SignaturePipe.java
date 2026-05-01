@@ -134,7 +134,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		try {
 			Signature dsa = StringUtils.isNotEmpty(getProvider()) ? Signature.getInstance(getAlgorithm(), getProvider()) : Signature.getInstance(getAlgorithm());
 			switch (getAction()) {

@@ -54,9 +54,9 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.CacheSenderWrapperProcessor;
-import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.processors.LimitingParallelExecutionPipeProcessor;
+import org.frankframework.processors.PipeLineProcessor;
 import org.frankframework.scheduler.job.SendMessageJob.SendMessageJobSender;
 import org.frankframework.senders.AbstractSenderWrapper;
 import org.frankframework.senders.ParallelSenderExecutor;
@@ -103,7 +103,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
-	 * Provides advice for {@link CorePipeLineProcessor#processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession session, String firstPipe)}
+	 * Provides advice for {@link PipeLineProcessor#processPipeLine(PipeLine, String, Message, PipeLineSession, String)}
 	 */
 	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {

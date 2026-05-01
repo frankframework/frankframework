@@ -106,7 +106,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message invoer, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message invoer, @NonNull PipeLineSession session) throws PipeRunException {
 		StringBuilder builder = new StringBuilder();
 
 		try(Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(getQuery())) {

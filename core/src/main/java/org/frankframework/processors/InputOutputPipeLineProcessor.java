@@ -16,6 +16,7 @@
 package org.frankframework.processors;
 
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
@@ -31,7 +32,7 @@ public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	// We have tests to validate that the messageId, if already set in the LogContext, is technically overwritten, but not removed upon the try-with-resources closure.
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		// Reset the PipeLineSession and store the message and its id in the session
 		if (messageId == null) {
 			// This should not be touched anymore

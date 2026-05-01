@@ -124,7 +124,7 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 	}
 
 	@Override
-	public @NonNull PipeRunResult doPipe(Message message, PipeLineSession parentSession) throws PipeRunException {
+	public @NonNull PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession parentSession) throws PipeRunException {
 		ParameterValueList pvl;
 		try {
 			pvl = getParameterList().getValues(message, parentSession);

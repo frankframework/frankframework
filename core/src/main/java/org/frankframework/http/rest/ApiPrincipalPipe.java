@@ -68,7 +68,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		if (message==null) {
 			throw new PipeRunException(this, "got null input");
 		}

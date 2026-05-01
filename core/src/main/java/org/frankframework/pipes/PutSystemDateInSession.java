@@ -95,7 +95,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 
 		String formattedDate;
 		if(isGetCurrentTimeStampInMillis()) {

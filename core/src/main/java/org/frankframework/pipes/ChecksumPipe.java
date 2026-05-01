@@ -70,7 +70,7 @@ public class ChecksumPipe extends HashPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		try (InputStream fis = message.asInputStream(getCharset())) {
 
 			return super.doPipe(new Message(fis, message.getContext()), session);

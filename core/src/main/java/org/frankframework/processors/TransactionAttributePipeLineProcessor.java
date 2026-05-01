@@ -15,6 +15,7 @@
 */
 package org.frankframework.processors;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import lombok.Getter;
@@ -38,7 +39,7 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		try {
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
 			try {

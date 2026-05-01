@@ -16,6 +16,7 @@
 package org.frankframework.processors;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Setter;
 
@@ -47,7 +48,7 @@ public abstract class AbstractPipeProcessor implements PipeProcessor {
 	}
 
 	@Override
-	public @NonNull PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	public @NonNull PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @Nullable String messageRoot) throws PipeRunException {
 		return processPipe(pipeLine, validator, message, pipeLineSession, m -> pipeProcessor.validate(pipeLine, validator, m, pipeLineSession, messageRoot));
 	}
 
