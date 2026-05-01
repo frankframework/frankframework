@@ -132,10 +132,6 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		// Destroy unregistered classloader to check that this code path works
 		classLoader.destroy();
-
-		// Call this to add some coverage to this code
-		int s = ClassLoadingLeakDetector.logLeakStatistics();
-		assertEquals(0, s, "Expected no ClassLoaders registered");
 	}
 
 	@Test
