@@ -236,6 +236,8 @@ public class CompressPipe extends FixedForwardPipe {
 	 * A flag that indicates whether the message is the content or the path to a file with the contents. For multiple files, use ';' as a delimiter.
 	 * @ff.default false
 	 */
+	@Deprecated(forRemoval = true, since = "10.2")
+	@ConfigurationWarning("Please use a LocalFileSystemPipe to read the file. If you wish to zip multiple files, use a ZipWriter.")
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
 	}
@@ -251,6 +253,8 @@ public class CompressPipe extends FixedForwardPipe {
 	 * A flag that indicates whether the result must be written to the message or to a file (filename = message).
 	 * @ff.default true when outputDirectory is not set.
 	 */
+	@Deprecated(forRemoval = true, since = "10.2")
+	@ConfigurationWarning("Please use a LocalFileSystemPipe if you wish to save the zip")
 	public void setResultIsContent(boolean b) {
 		resultIsContent = b;
 	}
