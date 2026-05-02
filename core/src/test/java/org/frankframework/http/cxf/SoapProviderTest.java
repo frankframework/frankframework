@@ -45,6 +45,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -555,21 +557,32 @@ public class SoapProviderTest {
 	 * we just focus on the messageId here.
 	 */
 	@ParameterizedTest
-	@ValueSource(strings = {"soap-addressing.xml", "soap-addressing-ns-on-header.xml"})
+	@ValueSource(strings = {"soap-addressing.xml", "soap-addressing-ns.xml", "soap-addressing-minimal.xml", "soap-addressing-ns-on-header.xml"})
 	public void soapAddressing(String input) throws Throwable {
 		SOAPMessage request = createMessage(input);
-		SOAPProvider.invoke(request);
+		SOAPMessage response = SOAPProvider.invoke(request);
 
 		assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", SOAPProvider.getSession().getMessageId());
+
+		NodeList nodes = response.getSOAPHeader().getElementsByTagNameNS("https://www.w3.org/2006/03/addressing/ws-addr.xsd", "RelatesTo");
+		if (nodes.getLength() > 0 && nodes.item(0).getNodeType() == Node.ELEMENT_NODE) {
+			String messageId = nodes.item(0).getTextContent();
+			assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", messageId);
+		} else {
+			fail("no message id found in response: " + XmlUtils.nodeToString(response.getSOAPPart()));
+		}
 	}
 
 	@Test
 	public void soapAddresNoMid() throws Throwable {
 		SOAPMessage request = createMessage("soap-addressing-ns-but-no-mid.xml");
-		SOAPProvider.invoke(request);
+		SOAPMessage response = SOAPProvider.invoke(request);
 
 		String mid = SOAPProvider.getSession().getMessageId();
 		assertNotNull(mid);
 		assertTrue(mid.startsWith(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX));
+
+		NodeList nodes = response.getSOAPHeader().getElementsByTagNameNS("https://www.w3.org/2006/03/addressing/ws-addr.xsd", "RelatesTo");
+		assertEquals(0, nodes.getLength());
 	}
 }

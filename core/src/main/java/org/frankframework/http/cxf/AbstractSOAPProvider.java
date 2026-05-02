@@ -26,6 +26,7 @@ import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.MimeHeader;
 import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPElement;
 import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPHeader;
 import jakarta.xml.soap.SOAPMessage;
@@ -76,6 +77,7 @@ import org.frankframework.util.XmlUtils;
 @ServiceMode(value=jakarta.xml.ws.Service.Mode.MESSAGE)
 @BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
+	private static final String WS_ADDR_NS = "https://www.w3.org/2006/03/addressing/ws-addr.xsd";
 
 	private String attachmentXmlSessionKey = null;
 	private Map<String, MessageFactory> factory = new HashMap<>();
@@ -129,62 +131,79 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 			String soapProtocol = pipelineSession.get(SOAP_PROTOCOL_KEY, SOAPConstants.SOAP_1_1_PROTOCOL);
 			SOAPMessage soapMessage = convertResponseToSoapMessage(response, soapProtocol);
 
-			String multipartXml = pipelineSession.getString(attachmentXmlSessionKey);
-			log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
-			if (StringUtils.isNotEmpty(multipartXml)) {
-				Element partsElement;
-				try {
-					partsElement = XmlUtils.buildElement(multipartXml);
-				}
-				catch (DomBuilderException e) {
-					String m = "error building multipart xml";
-					log.error(m, e);
-					throw new WebServiceException(m, e);
-				}
-				List<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts.isEmpty()) {
-					log.warn("no part(s) in multipart xml [{}]", multipartXml);
-				} else {
-					for (final Node part : parts) {
-						Element partElement = (Element) part;
-
-						String partSessionKey = partElement.getAttribute("sessionKey");
-						String name = partElement.getAttribute("name");
-						Message partObject = pipelineSession.getMessage(partSessionKey);
-
-						if (!partObject.isNull()) {
-							String mimeType = partElement.getAttribute("mimeType"); // Optional, auto-detected if not set
-							MessageDataSource ds = new MessageDataSource(partObject, mimeType);
-							SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);
-							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-							attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
-
-							String filename = StringUtils.isNotBlank(name) ? name : ds.getName();
-							attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\""+filename+"\"; filename=\""+filename+"\"");
-							soapMessage.addAttachmentPart(attachmentPart);
-
-							log.debug("appended filepart [{}] key [{}]", filename, partSessionKey);
-						} else {
-							log.debug("skipping filepart [{}] key [{}], content is <NULL>", name, partSessionKey);
-						}
-					}
-				}
+			if (StringUtils.isNotEmpty(attachmentXmlSessionKey) && pipelineSession.containsKey(attachmentXmlSessionKey)) {
+				log.debug("building multipart message with MultipartXmlSessionKey [{}]", attachmentXmlSessionKey);
+				addAttachments(soapMessage, pipelineSession);
 			}
+
+			setMessageId(soapMessage, messageId);
 
 			return soapMessage;
 		}
 	}
 
+	private void addAttachments(SOAPMessage soapMessage, PipeLineSession pipelineSession) {
+		String multipartXml = pipelineSession.getString(attachmentXmlSessionKey);
+
+		Element partsElement;
+		try {
+			partsElement = XmlUtils.buildElement(multipartXml);
+		}
+		catch (DomBuilderException e) {
+			String m = "error building multipart xml";
+			log.error(m, e);
+			throw new WebServiceException(m, e);
+		}
+		List<Node> parts = XmlUtils.getChildTags(partsElement, "part");
+		if (parts.isEmpty()) {
+			log.warn("no part(s) in multipart xml [{}]", multipartXml);
+		} else {
+			log.debug("found [{}] part(s) in multipart xml [{}]", parts::size, () -> multipartXml);
+
+			for (final Node part : parts) {
+				Element partElement = (Element) part;
+
+				String partSessionKey = partElement.getAttribute("sessionKey");
+				String name = partElement.getAttribute("name");
+				Message partObject = pipelineSession.getMessage(partSessionKey);
+
+				if (!partObject.isNull()) {
+					String mimeType = partElement.getAttribute("mimeType"); // Optional, auto-detected if not set
+					MessageDataSource ds = new MessageDataSource(partObject, mimeType);
+					SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);
+					AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
+					attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
+
+					String filename = StringUtils.isNotBlank(name) ? name : ds.getName();
+					attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\""+filename+"\"; filename=\""+filename+"\"");
+					soapMessage.addAttachmentPart(attachmentPart);
+
+					log.debug("appended filepart [{}] key [{}]", filename, partSessionKey);
+				} else {
+					log.debug("skipping filepart [{}] key [{}], content is <NULL>", name, partSessionKey);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get or generate a MessageID.
+	 * Inherits the WSA MessageID if present or generates one.
+	 * 
+	 * Ideally we should ensure the MessageID element uses the {@value #WS_ADDR_NS} namespace,
+	 * but some people use http vs https or an older version of the spec...
+	 */
 	private String getMessageId(@Nullable SOAPMessage request) {
 		if (request == null) {
+			// We're not going to process the message, but require an identifier for traceability.
 			return MessageUtils.generateFallbackMessageId();
 		}
 
 		try {
 			SOAPHeader header = request.getSOAPHeader();
-			// Verify we have a SOAPHeader and the Addressing namespace is present.
-			if (header != null && header.lookupPrefix("http://www.w3.org/2005/08/addressing") != null) {
-				NodeList nodes = header.getElementsByTagNameNS("http://www.w3.org/2005/08/addressing", "MessageID");
+			// Verify we have a SOAPHeader. Possibly also that the Addressing namespace is present?
+			if (header != null) {
+				NodeList nodes = header.getElementsByTagName("MessageID");
 				if (nodes.getLength() > 0 && nodes.item(0).getNodeType() == Node.ELEMENT_NODE) {
 					String messageId = nodes.item(0).getTextContent();
 					if (StringUtils.isNotBlank(messageId)) {
@@ -193,10 +212,29 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 				}
 			}
 		} catch (SOAPException e) {
-			// Perhaps there is no header?
+			log.warn("determined we should read the WSA [MessageID] element but was unable to", e);
 		}
 
 		return MessageUtils.generateMessageId();
+	}
+
+	/**
+	 * If a MessageID was provided, ensure we return a 'RelatesTo' header conform the ws-addr specification.
+	 */
+	private void setMessageId(SOAPMessage soapMessage, String messageId) {
+		if (MessageUtils.isFallbackMessageId(messageId) || messageId.startsWith(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX)) {
+			return;
+		}
+
+		try {
+			SOAPHeader header = soapMessage.getSOAPHeader();
+			if (header != null) {
+				SOAPElement relatesTo = header.addChildElement("RelatesTo", "wsa", WS_ADDR_NS);
+				relatesTo.addTextNode(messageId);
+			}
+		} catch (SOAPException e) {
+			log.warn("determined we should add a WSA [RelatesTo] element but was unable to", e);
+		}
 	}
 
 	/**

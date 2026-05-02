@@ -1,5 +1,7 @@
 <Envelope xmlns="http://www.w3.org/2003/05/soap-envelope"
-	xmlns:wsa="http://www.w3.org/2006/03/addressing/ws-addr.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3.org/2005/08/addressing https://www.w3.org/2006/03/addressing/ws-addr.xsd"
+	xmlns:wsa="http://www.w3.org/2005/08/addressing">
 	<Header>
 		<wsa:MessageID>6B29FC40-CA47-1067-B31D-00DD010662DA</wsa:MessageID>
 		<wsa:ReplyTo>
