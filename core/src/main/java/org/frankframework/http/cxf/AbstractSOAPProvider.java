@@ -203,7 +203,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 			SOAPHeader header = request.getSOAPHeader();
 			// Verify we have a SOAPHeader. Possibly also that the Addressing namespace is present?
 			if (header != null) {
-				NodeList nodes = header.getElementsByTagName("MessageID");
+				NodeList nodes = header.getElementsByTagNameNS("*", "MessageID");
 				if (nodes.getLength() > 0 && nodes.item(0).getNodeType() == Node.ELEMENT_NODE) {
 					String messageId = nodes.item(0).getTextContent();
 					if (StringUtils.isNotBlank(messageId)) {
