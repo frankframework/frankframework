@@ -55,6 +55,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 
@@ -547,5 +548,28 @@ public class SoapProviderTest {
 	@Test
 	public void nullAction() {
 		assertNull(SOAPProvider.findAction("application/soap+xml;charset=UTF-8;action"));
+	}
+
+	/**
+	 * Since we have plenty of tests that verify request / responses,
+	 * we just focus on the messageId here.
+	 */
+	@ParameterizedTest
+	@ValueSource(strings = {"soap-addressing.xml", "soap-addressing-ns-on-header.xml"})
+	public void soapAddressing(String input) throws Throwable {
+		SOAPMessage request = createMessage(input);
+		SOAPProvider.invoke(request);
+
+		assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", SOAPProvider.getSession().getMessageId());
+	}
+
+	@Test
+	public void soapAddresNoMid() throws Throwable {
+		SOAPMessage request = createMessage("soap-addressing-ns-but-no-mid.xml");
+		SOAPProvider.invoke(request);
+
+		String mid = SOAPProvider.getSession().getMessageId();
+		assertNotNull(mid);
+		assertTrue(mid.startsWith(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX));
 	}
 }

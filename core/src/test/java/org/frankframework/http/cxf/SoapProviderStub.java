@@ -19,7 +19,8 @@ public class SoapProviderStub extends AbstractSOAPProvider {
 	Message processRequest(SOAPMessage message, PipeLineSession pipelineSession) {
 		pipelineSession.putAll(session);
 
-		pipelineSession.mergeToParentSession("*", session);
+//		pipelineSession.mergeToParentSession("*", session);
+		session.putAll(pipelineSession);
 		return parseSOAPMessage(message);
 	}
 

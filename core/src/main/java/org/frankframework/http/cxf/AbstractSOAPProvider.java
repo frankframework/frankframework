@@ -27,6 +27,7 @@ import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.MimeHeader;
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPHeader;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPPart;
 import jakarta.xml.ws.BindingType;
@@ -40,9 +41,11 @@ import jakarta.xml.ws.handler.MessageContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -111,8 +114,8 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 	}
 
 	@Override
-	public SOAPMessage invoke(SOAPMessage request) {
-		String messageId = MessageUtils.generateFallbackMessageId();
+	public SOAPMessage invoke(@Nullable SOAPMessage request) {
+		String messageId = getMessageId(request);
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_MESSAGE_ID_KEY, messageId);
 				PipeLineSession pipelineSession = new PipeLineSession()) {
 
@@ -170,6 +173,30 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 			return soapMessage;
 		}
+	}
+
+	private String getMessageId(@Nullable SOAPMessage request) {
+		if (request == null) {
+			return MessageUtils.generateFallbackMessageId();
+		}
+
+		try {
+			SOAPHeader header = request.getSOAPHeader();
+			// Verify we have a SOAPHeader and the Addressing namespace is present.
+			if (header != null && header.lookupPrefix("http://www.w3.org/2005/08/addressing") != null) {
+				NodeList nodes = header.getElementsByTagNameNS("http://www.w3.org/2005/08/addressing", "MessageID");
+				if (nodes.getLength() > 0 && nodes.item(0).getNodeType() == Node.ELEMENT_NODE) {
+					String messageId = nodes.item(0).getTextContent();
+					if (StringUtils.isNotBlank(messageId)) {
+						return messageId;
+					}
+				}
+			}
+		} catch (SOAPException e) {
+			// Perhaps there is no header?
+		}
+
+		return MessageUtils.generateMessageId();
 	}
 
 	/**
