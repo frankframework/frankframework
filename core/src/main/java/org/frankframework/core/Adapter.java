@@ -82,7 +82,6 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;
@@ -745,12 +744,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @param pipeLineSession {@link PipeLineSession} session in which message is to be processed
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
-	public PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession) {
-		if (StringUtils.isEmpty(messageId)) {
-			messageId = MessageUtils.generateFallbackMessageId();
-			log.info("messageId not set, creating synthetic id [{}]", messageId);
-			pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
-		}
+	public PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, PipeLineSession pipeLineSession) {
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
 			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
 		) {

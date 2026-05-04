@@ -505,7 +505,7 @@ public class MessageUtils {
 	}
 
 	public static @NonNull String generateMessageId(String prefix) {
-		return prefix + "-" + Misc.getHostname() + "-" + UUIDUtil.createSimpleUUID();
+		return prefix + "-" + UUIDUtil.createSimpleUUID();
 	}
 
 	public static @NonNull String generateFallbackMessageId() {
