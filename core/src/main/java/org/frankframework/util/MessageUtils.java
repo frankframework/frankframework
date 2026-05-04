@@ -510,7 +510,7 @@ public class MessageUtils {
 	}
 
 	public static @Nonnull String generateMessageId(String prefix) {
-		return prefix + "-" + Misc.getHostname() + "-" + UUIDUtil.createSimpleUUID();
+		return prefix + "-" + UUIDUtil.createSimpleUUID();
 	}
 
 	public static @Nonnull String generateFallbackMessageId() {
