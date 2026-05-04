@@ -472,17 +472,13 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		return dm;
 	}
 
+	/**
+	 * The MessageID is never null as it's set in {@link #setupChildSession(PipeLineSession, ParameterValueList, PipeLineSession)}.
+	 */
 	private ServiceClient getAdapterServiceClient(String target) throws SenderException {
 		Adapter adapter = findAdapter(target);
 		return (message, session) -> {
-			String messageId = session.getMessageId();
-			if (StringUtils.isEmpty(messageId)) {
-				// TODO figure out if this can actually happen
-				messageId = MessageUtils.generateFallbackMessageId();
-				log.info("messageId not set, creating synthetic id [{}]", messageId);
-			}
-
-			PipeLineResult plr = adapter.processMessageDirect(messageId, message, session);
+			PipeLineResult plr = adapter.processMessageDirect(session.getMessageId(), message, session);
 			session.setExitState(plr);
 			// TODO: The code here seems rather dubious actually. Check if we really want to keep this special behaviour on having the text "ListenerException" in our error message.
 			if (plr.getState() == PipeLine.ExitState.ERROR) {
