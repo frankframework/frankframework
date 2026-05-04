@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.extern.log4j.Log4j2;
@@ -78,7 +79,7 @@ public class LimitingParallelExecutionPipeProcessor extends AbstractPipeProcesso
 
 	@Override
 	@SuppressWarnings("java:S1185") // method needs to be overridden to enable AOP for debugger
-	public @NonNull PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	public @NonNull PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @Nullable String messageRoot) throws PipeRunException {
 		return super.validate(pipeLine, validator, message, pipeLineSession, messageRoot);
 	}
 

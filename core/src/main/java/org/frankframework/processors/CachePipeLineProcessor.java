@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.frankframework.processors;
 
 import java.io.IOException;
+
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.cache.ICache;
 import org.frankframework.core.PipeLine;
@@ -35,7 +37,7 @@ import org.frankframework.util.EnumUtils;
 public class CachePipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		ICache<String,String> cache=pipeLine.getCache();
 		if (cache==null) {
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);

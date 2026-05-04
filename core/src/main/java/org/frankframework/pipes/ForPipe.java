@@ -96,7 +96,7 @@ public class ForPipe extends AbstractPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		Integer stopAtValue = determineStopAtValue(message, session);
 		String sessionKey = getIncrementSessionKey();
 

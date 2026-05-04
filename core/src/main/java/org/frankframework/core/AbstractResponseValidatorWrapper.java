@@ -52,7 +52,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		return owner.doPipe(message, session, true, null);
 	}
 

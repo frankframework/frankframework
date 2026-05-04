@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package org.frankframework.processors;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -26,6 +28,6 @@ import org.frankframework.stream.Message;
  */
 public interface PipeLineProcessor {
 
-	PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException;
+	@NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException;
 
 }

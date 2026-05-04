@@ -15,6 +15,8 @@
 */
 package org.frankframework.processors;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
@@ -29,7 +31,7 @@ import org.frankframework.util.Locker;
 public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		PipeLineResult pipeLineResult;
 		Locker locker = pipeLine.getLocker();
 		String objectId = null;

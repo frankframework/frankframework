@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.frankframework.processors;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.DistributionSummary;
 
@@ -37,7 +39,7 @@ public class LimitingParallelExecutionPipeLineProcessor extends AbstractPipeLine
 	private final Map<PipeLine, ResourceLimiter> pipeLineThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		ResourceLimiter threadCountLimiter = getThreadLimiter(pipeLine);
 		if (threadCountLimiter == null) { // no restrictions on the maximum number of threads
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);

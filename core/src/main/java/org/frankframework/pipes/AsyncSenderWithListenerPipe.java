@@ -20,6 +20,7 @@ import java.io.IOException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -124,7 +125,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	}
 
 	@Override
-	protected String doLogToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws SenderException {
+	protected String doLogToMessageLog(@NonNull final Message input, @NonNull final PipeLineSession session, @NonNull final Message originalMessage, @NonNull final String messageID, @NonNull String correlationID) throws SenderException {
 		try {
 			String messageTrail="no audit trail";
 			if (auditTrailTp!=null) {
@@ -137,10 +138,6 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 				if (StringUtils.isNotEmpty(getAuditTrailSessionKey())) {
 					messageTrail = session.getString(getAuditTrailSessionKey());
 				}
-			}
-			String storedMessageID= messageID;
-			if (storedMessageID==null) {
-				storedMessageID="-";
 			}
 			if (correlationIDTp!=null) {
 				if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
@@ -166,7 +163,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 				}
 			}
 
-			return storeMessage(storedMessageID, correlationID, input, messageTrail, label);
+			return storeMessage(messageID, correlationID, input, messageTrail, label);
 		} catch (TransformerException | IOException | SAXException e) {
 			throw new SenderException("unable to apply xml transformation", e);
 		}

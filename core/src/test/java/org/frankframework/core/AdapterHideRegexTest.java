@@ -24,6 +24,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import org.frankframework.configuration.AdapterAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -117,27 +121,7 @@ public class AdapterHideRegexTest {
 	}
 
 	private static @NonNull IPipe createLoggingPipe(String name, String hideRegex, boolean doThrowException) {
-		IPipe pipe = new FixedForwardPipe() {
-			@NonNull
-			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-				// Should be hidden in context of main adapter, may be visible when logged from receiver logs
-				message.getContext().put("secret1", MAIN_ADAPTER_SECRET);
-
-				// Should be hidden only in context of sub adapter, should be visible when from receiver or main adapter logs
-				message.getContext().put("secret2", SUB_ADAPTER_SECRET);
-
-				// Log something containing current adapter name and all the things we're trying to hide
-				log.info("[{}] I expect logging to hide the text in brackets: Main Adapter - [{}]-[{}]; Sub Adapter - [{}]-[{}]", getAdapter().getName(), MAIN_ADAPTER_SECRET, MAIN_RECEIVER_SECRET, SUB_ADAPTER_SECRET, SUB_RECEIVER_SECRET);
-
-				if (doThrowException) { // Exception Messages should not contain strings you want hidden
-					throw new PipeRunException(this, "[%s] Gotta Throw what we Gotta Throw" // + " [%s]-[%s] [%s]-[%s]"
-							.formatted(getAdapter().getName())); //, MAIN_ADAPTER_SECRET, MAIN_RECEIVER_SECRET, SUB_ADAPTER_SECRET, SUB_RECEIVER_SECRET));
-				}
-				// Return a result
-				return new PipeRunResult(getSuccessForward(), message);
-			}
-		};
+		IPipe pipe = new LoggingTestPipe(doThrowException);
 		pipe.setName(name);
 		pipe.setHideRegex(hideRegex);
 		return pipe;
@@ -389,6 +373,35 @@ public class AdapterHideRegexTest {
 			// Stop capturing logs
 			List<String> logLines = appender.getLogLines();
 			verifyLoglinesNestedAdapterScenario(logLines);
+		}
+	}
+
+	private static class LoggingTestPipe extends FixedForwardPipe implements AdapterAware {
+		private final boolean doThrowException;
+		private @Getter @Setter Adapter adapter;
+
+		public LoggingTestPipe(boolean doThrowException) {
+			this.doThrowException = doThrowException;
+		}
+
+		@NonNull
+		@Override
+		public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
+			// Should be hidden in context of main adapter, may be visible when logged from receiver logs
+			message.getContext().put("secret1", MAIN_ADAPTER_SECRET);
+
+			// Should be hidden only in context of sub adapter, should be visible when from receiver or main adapter logs
+			message.getContext().put("secret2", SUB_ADAPTER_SECRET);
+
+			// Log something containing current adapter name and all the things we're trying to hide
+			log.info("[{}] I expect logging to hide the text in brackets: Main Adapter - [{}]-[{}]; Sub Adapter - [{}]-[{}]", getAdapter().getName(), MAIN_ADAPTER_SECRET, MAIN_RECEIVER_SECRET, SUB_ADAPTER_SECRET, SUB_RECEIVER_SECRET);
+
+			if (doThrowException) { // Exception Messages should not contain strings you want hidden
+				throw new PipeRunException(this, "[%s] Gotta Throw what we Gotta Throw" // + " [%s]-[%s] [%s]-[%s]"
+						.formatted(getAdapter().getName())); //, MAIN_ADAPTER_SECRET, MAIN_RECEIVER_SECRET, SUB_ADAPTER_SECRET, SUB_RECEIVER_SECRET));
+			}
+			// Return a result
+			return new PipeRunResult(getSuccessForward(), message);
 		}
 	}
 }

@@ -175,7 +175,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		if (getDirection()==Direction.WRAP) {
 			XmlBuilder xmlStartTransfer_Action = new XmlBuilder("StartTransfer_Action");
 			xmlStartTransfer_Action.addAttribute("xmlns", TRANSFER_ACTION_NAMESPACE_PREFIX+retrieveStartTransferVersion());

@@ -159,7 +159,7 @@ public class UnzipPipe extends FixedForwardPipe {
 	}
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		try (InputStream in = getInputStream(message, session)) {
 			File targetDirectory = this.dir;
 			if (StringUtils.isEmpty(getDirectory())) {
