@@ -139,10 +139,6 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 					messageTrail = session.getString(getAuditTrailSessionKey());
 				}
 			}
-			String storedMessageID= messageID;
-			if (storedMessageID==null) {
-				storedMessageID="-";
-			}
 			if (correlationIDTp!=null) {
 				if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
 					String sourceString = session.getString(getCorrelationIDSessionKey());
@@ -167,7 +163,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 				}
 			}
 
-			return storeMessage(storedMessageID, correlationID, input, messageTrail, label);
+			return storeMessage(messageID, correlationID, input, messageTrail, label);
 		} catch (TransformerException | IOException | SAXException e) {
 			throw new SenderException("unable to apply xml transformation", e);
 		}

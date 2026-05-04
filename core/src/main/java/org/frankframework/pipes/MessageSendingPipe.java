@@ -685,7 +685,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	private boolean isPresumedTimeout(final long startTime) {
-		Adapter adapter = getAdapter();
 		if (adapter == null) {
 			return false;
 		}
@@ -700,7 +699,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	private void updatePresumedTimeoutStats(final String exitState) {
-		Adapter adapter = getAdapter();
 		if (adapter == null) {
 			return;
 		}

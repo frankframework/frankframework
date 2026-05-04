@@ -41,6 +41,7 @@ public class DelayPipe extends FixedForwardPipe {
 			log.info("starts waiting for {} ms.", getDelayTime());
 			Thread.sleep(getDelayTime());
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new PipeRunException(this, "delay interrupted", e);
 		}
 		log.info("ends waiting for {} ms.", getDelayTime());

@@ -163,8 +163,8 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			}
 			builder.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 
-		} catch (Throwable t) {
-			throw new PipeRunException(this, " Exception on transforming domain", t);
+		} catch (Exception e) {
+			throw new PipeRunException(this, " Exception on transforming domain", e);
 		}
 
 		return new PipeRunResult(getSuccessForward(), builder.toString());
