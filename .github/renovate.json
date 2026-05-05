@@ -29,11 +29,6 @@
     "commitMessageSuffix": "",
     "packageRules": [
         {
-          "description": "Automerge non-major updates",
-          "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-          "automerge": true
-        },
-        {
             "description": "Maven dependencies - daily at 6 AM, ignore major updates",
             "matchManagers": [
                 "maven"
