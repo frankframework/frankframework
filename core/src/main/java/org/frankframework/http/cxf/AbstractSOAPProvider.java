@@ -189,7 +189,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 	/**
 	 * Get or generate a MessageID.
 	 * Inherits the WSA MessageID if present or generates one.
-	 * 
+	 *
 	 * Ideally we should ensure the MessageID element uses the {@value #WS_ADDR_NS} namespace,
 	 * but some people use http vs https or an older version of the spec...
 	 */
@@ -228,7 +228,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 		try {
 			SOAPHeader header = soapMessage.getSOAPHeader();
-			if (header != null) {
+			if (header != null && header.getElementsByTagNameNS("*", "RelatesTo").getLength() == 0) {
 				SOAPElement relatesTo = header.addChildElement("RelatesTo", "wsa", WS_ADDR_NS);
 				relatesTo.addTextNode(messageId);
 			}

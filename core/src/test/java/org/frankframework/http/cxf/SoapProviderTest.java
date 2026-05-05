@@ -566,8 +566,8 @@ public class SoapProviderTest {
 
 		NodeList nodes = response.getSOAPHeader().getElementsByTagNameNS("https://www.w3.org/2006/03/addressing/ws-addr.xsd", "RelatesTo");
 		if (nodes.getLength() > 0 && nodes.item(0).getNodeType() == Node.ELEMENT_NODE) {
-			String messageId = nodes.item(0).getTextContent();
-			assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", messageId);
+			String relatesTo = nodes.item(0).getTextContent();
+			assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", relatesTo);
 		} else {
 			fail("no message id found in response: " + XmlUtils.nodeToString(response.getSOAPPart()));
 		}
@@ -584,5 +584,24 @@ public class SoapProviderTest {
 
 		NodeList nodes = response.getSOAPHeader().getElementsByTagNameNS("https://www.w3.org/2006/03/addressing/ws-addr.xsd", "RelatesTo");
 		assertEquals(0, nodes.getLength());
+	}
+
+	@Test
+	/**
+	 * We want to ensure that when somebody has manually set a relatesTo (although I cannot imaging why) we don't overwrite it.
+	 */
+	public void soapWithManualRelatesTo() throws Throwable {
+		SOAPMessage request = createMessage("soap-addressing-with-relatesto.xml");
+		SOAPMessage response = SOAPProvider.invoke(request);
+
+		assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", SOAPProvider.getSession().getMessageId());
+
+		NodeList nodes = response.getSOAPHeader().getElementsByTagNameNS("*", "RelatesTo");
+		if (nodes.getLength() > 0 && nodes.item(0).getNodeType() == Node.ELEMENT_NODE) {
+			String relatesTo = nodes.item(0).getTextContent();
+			assertEquals("test123", relatesTo);
+		} else {
+			fail("no message id found in response: " + XmlUtils.nodeToString(response.getSOAPPart()));
+		}
 	}
 }
