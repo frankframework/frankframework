@@ -1,5 +1,7 @@
 package org.frankframework.soap;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -49,7 +51,7 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	void validateWithMustUnderstandAttrib() throws Exception {
+	void validateWithMustUnderstandAttribMultipleHeaders() throws Exception {
 		pipe.setAddNamespaceToSchema(true);
 		pipe.setThrowException(true);
 		pipe.setSchemaLocation(SCHEMALOCATION_WITH_SOAP_MUST_UNDERSTAND);
@@ -62,6 +64,25 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		String expected = TestFileUtils.getTestFile(INPUT_FILE_VALID_SOAP_MUST_UNDERSTAND);
 		PipeRunResult prr = doPipe(input);
 		MatchUtils.assertXmlEquals(expected, prr.getResult().asString());
+	}
+
+	@Test
+	void validateMultipleHeadersAndHeadersSet() throws Exception {
+		pipe.setAddNamespaceToSchema(true);
+		// When setting this attribute to an array of allowed headers, only one of these headers is allowed in addition to restrictions in the XSD.
+		pipe.setSoapHeader("MessageHeader, SyncReply, To, Action");
+		pipe.setThrowException(true);
+		pipe.setSchemaLocation(SCHEMALOCATION_WITH_SOAP_MUST_UNDERSTAND);
+		pipe.setSoapBody("Request");
+		pipe.setSoapVersion(SoapVersion.AUTO);
+		pipe.setIgnoreUnknownNamespaces(true);
+		pipe.configure();
+		pipe.start();
+
+		Message input = MessageTestUtils.getMessage(INPUT_FILE_VALID_SOAP_MUST_UNDERSTAND);
+
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(input));
+		assertThat(e.getMessage(), containsString("MessageHeader, SyncReply, To, Action"));
 	}
 
 	@Test
