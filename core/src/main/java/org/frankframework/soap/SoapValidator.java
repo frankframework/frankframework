@@ -80,11 +80,15 @@ public class SoapValidator extends Json2XmlValidator {
 			if (StringUtils.isNotEmpty(outputSoapBody)) {
 				addResponseRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, outputSoapBody));
 			}
-			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader));
+			if (StringUtils.isNotEmpty(soapHeader)) {
+				addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader));
+			}
 
 			List<String> soapRootNamespaces = new ArrayList<>(soapVersion.getNamespaces());
 			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, soapBody), soapRootNamespaces);
-			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader), soapRootNamespaces);
+			if (StringUtils.isNotEmpty(soapHeader)) {
+				addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader), soapRootNamespaces);
+			}
 		}
 		super.configure();
 	}
