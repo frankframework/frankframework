@@ -33,7 +33,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.BinaryMessage;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 
@@ -48,7 +48,7 @@ public class FileViewer extends BusEndpointBase {
 	public Message<?> getFileContent(Message<?> message) {
 		String resultType = BusMessageUtils.getHeader(message, "resultType");
 		String fileName = BusMessageUtils.getHeader(message, "fileName");
-		MessageBase<?> response;
+		AbstractMessage<?> response;
 
 		if (fileName == null || resultType == null) {
 			throw new BusException("fileName or type not specified");

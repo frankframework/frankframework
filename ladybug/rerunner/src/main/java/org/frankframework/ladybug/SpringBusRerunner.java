@@ -18,12 +18,9 @@ package org.frankframework.ladybug;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
@@ -36,6 +33,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.UUIDUtil;
 
@@ -105,12 +103,13 @@ public class SpringBusRerunner implements Rerunner {
 		threadContext.put(MESSAGE_ID_KEY, messageId);
 		threadContext.put(CORRELATION_ID_KEY, correlationId);
 
-		MessageBuilder<String> builder = createRequestMessage(BusTopic.TEST_PIPELINE, BusAction.UPLOAD, inputMessage, null);
-		builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
-		builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
-		builder.setHeader(BusMessageUtils.HEADER_PREFIX+"sessionKeys", toJson(threadContext));
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
+		builder.setPayload(inputMessage);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+		builder.addHeader("sessionKeys", toJson(threadContext));
 
-		return processRequest(builder.build()); // A null result implies success
+		return processRequest(builder.build(null)); // A null result implies success
 	}
 
 	protected String toJson(Map<String, String> threadContext) {
@@ -128,20 +127,7 @@ public class SpringBusRerunner implements Rerunner {
 		}
 	}
 
-	private MessageBuilder<String> createRequestMessage(BusTopic topic, BusAction action, String payload, @Nullable UUID uuid) {
-		MessageBuilder<String> builder = MessageBuilder.withPayload(payload);
-		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
-
-		// Optional target parameter, to target a specific backend node.
-		if(uuid != null) {
-			builder.setHeader(BusMessageUtils.HEADER_TARGET_KEY, uuid);
-		}
-
-		return builder;
-	}
-
-	private String processRequest(Message<String> request) {
+	private String processRequest(Message<?> request) {
 		try {
 			getGateway().sendSyncMessage(request);
 			// Nothing is done with the response at the moment

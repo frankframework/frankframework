@@ -31,7 +31,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.core.GenericMessagingTemplate;
 
@@ -105,9 +104,9 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		// Create the response queue here, before sending the request.
 		IQueue<Message<O>> responseQueue = hzInstance.getQueue(tempReplyChannelName);
 
-		Message<I> requestMessage = MessageBuilder.fromMessage(in)
+		Message<I> requestMessage = OogaBooga.fromMessage(in)
 				.setReplyChannelName(tempReplyChannelName)
-				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
+				.setAuthentication(getAuthentication())
 				.build();
 		requestTopic.publish(requestMessage);
 
@@ -193,9 +192,9 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	@Override
 	public <I> void sendAsyncMessage(Message<I> in) {
 		log.debug("sending asynchronous request to topic [{}] message [{}]", requestTopicName, in);
-		Message<I> requestMessage = MessageBuilder.fromMessage(in)
+		Message<I> requestMessage = OogaBooga.fromMessage(in)
 				.setReplyChannelName(null)
-				.setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, getAuthentication())
+				.setAuthentication(getAuthentication())
 				.build();
 
 		requestTopic.publishAsync(requestMessage);
