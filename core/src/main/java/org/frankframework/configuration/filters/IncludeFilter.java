@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,13 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.core.Resource;
 import org.frankframework.util.XmlUtils;
@@ -39,6 +43,8 @@ public class IncludeFilter extends FullXmlFilter {
 
 	private static final String TARGET_ELEMENT = "Include";
 	private static final String TARGET_ATTRIBUTE = "ref";
+
+	private @Getter @Setter Locator documentLocator;
 
 	private final Resource resource;
 	private final ClassLoaderURIResolver uriResolver;
@@ -71,21 +77,25 @@ public class IncludeFilter extends FullXmlFilter {
 					throw new SaxException("Cannot find include ["+ref+"]");
 				}
 				XMLFilterImpl handlerTail = new BodyOnlyFilter(getContentHandler(), false);
-				ContentHandler includeHandler;
+				IncludeFilter includeHandler;
 				// the below filters need to be included if the filter is placed higher in the chain
 				// includeHandler = new OnlyActiveFilter(includeHandler, appConstants);
 				// includeHandler = new ElementPropertyResolver(includeHandler, appConstants);
 				includeHandler = new IncludeFilter(handlerTail, subResource);
 				XMLReader curParent = getParent();
 				try {
-					if (curParent!=null) {
+					// Update our 'parent' to the newly created handler.
+					if (curParent != null) {
 						setParent(handlerTail);
 					}
 					XmlUtils.parseXml(subResource, includeHandler);
-				} catch (IOException e) {
-					throw new SaxException("Cannot parse include ["+ref+"]", e);
+
+				} catch (SAXException | IOException e) {
+					// Catch the SAXException in order to include the location.
+					throw SaxException.createSaxException("cannot parse include ["+ref+"]", includeHandler.getDocumentLocator(), e);
 				} finally {
-					if (curParent!=null) {
+					// Revert our parent to the original one now that we're done processing the include.
+					if (curParent != null) {
 						setParent(curParent);
 					}
 				}
@@ -104,5 +114,4 @@ public class IncludeFilter extends FullXmlFilter {
 		}
 		super.endElement(uri, localName, qName);
 	}
-
 }

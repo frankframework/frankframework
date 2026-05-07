@@ -230,7 +230,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			}
 		} catch (BeansException | ConfigurationException e) {
 			state = RunState.STOPPED;
-			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage(),  MessageEventLevel.WARN));
+			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage(), MessageEventLevel.WARN));
 			applicationLog.info("Configuration [{}] was not able to startup", this::getNameWithOptionalVersion);
 
 			// TODO configurationException is more like an instantiation exception, shouldn't it be more generic?
