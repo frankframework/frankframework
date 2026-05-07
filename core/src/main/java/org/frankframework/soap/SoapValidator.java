@@ -153,7 +153,16 @@ public class SoapValidator extends Json2XmlValidator {
 		this.outputSoapBody = outputSoapBody;
 	}
 
-	/** Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed). This is a restriction that is enforced on top of the XSD validations. (The wsdl generator will use the first element). When not set, any header is allowed that is accepted by the XSD, including no header. */
+	/**
+	 *  Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed). This is a restriction that is enforced on top of the XSD validations.
+	 *
+	 *  <p>
+	 *  When not set, any header is allowed that is accepted by the XSD, including no header. To allow a specific set of headers but have them be optional, specify an empty element in the list, like this: {@literal "MessageHeader,"}.
+	 *  </p>
+	 *  <p>
+	 *  The wsdl generator will only use the first element specified.
+	 *  </p>
+	 */
 	public void setSoapHeader(String soapHeader) {
 		this.soapHeader = soapHeader;
 	}
