@@ -486,7 +486,7 @@ public class Message implements Serializable {
 			return "";
 		}
 		if (request instanceof String string) {
-			return string.substring(0, Math.min(string.length(), readLimit));
+			return StringUtils.truncate(string, readLimit);
 		}
 		try (Reader r = asReader()) {
 			char[] buffer = new char[readLimit];

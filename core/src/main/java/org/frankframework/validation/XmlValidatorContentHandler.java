@@ -152,8 +152,8 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 			for (RootValidation rootValidation: rootValidations) {
 				List<String> path = rootValidation.getPath();
 				String validLastElements = rootValidation.getValidLastElements();
-				List<String> validLastElementsAsList = StringUtil.split(validLastElements);
-				if (!validLastElementsAsList.isEmpty() && !rootElementsFound.contains(rootValidation)) {
+				List<String> validLastElementsAsList = StringUtil.splitKeepEmpty(validLastElements); // Configuration "Element," is recommended for an optional element; this results in empty string in list validLastElementsAsList
+				if (!validLastElementsAsList.contains("") && !rootElementsFound.contains(rootValidation)) {
 					String message = "Element(s) '" + validLastElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
 						xmlValidatorErrorHandler.addReason(message, getXpath(path.subList(0, path.size() - 1)), null, XmlValidatorErrorHandler.ReasonType.ERROR);
