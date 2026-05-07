@@ -104,7 +104,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		// Create the response queue here, before sending the request.
 		IQueue<Message<O>> responseQueue = hzInstance.getQueue(tempReplyChannelName);
 
-		Message<I> requestMessage = OogaBooga.fromMessage(in)
+		Message<I> requestMessage = HazelcastMessageBuilder.fromMessage(in)
 				.setReplyChannelName(tempReplyChannelName)
 				.setAuthentication(getAuthentication())
 				.build();
@@ -192,7 +192,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	@Override
 	public <I> void sendAsyncMessage(Message<I> in) {
 		log.debug("sending asynchronous request to topic [{}] message [{}]", requestTopicName, in);
-		Message<I> requestMessage = OogaBooga.fromMessage(in)
+		Message<I> requestMessage = HazelcastMessageBuilder.fromMessage(in)
 				.setReplyChannelName(null)
 				.setAuthentication(getAuthentication())
 				.build();

@@ -23,12 +23,12 @@ import org.springframework.integration.support.BaseMessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
-public class OogaBooga<T> extends BaseMessageBuilder<T, OogaBooga<T>> {
+public class HazelcastMessageBuilder<T> extends BaseMessageBuilder<T, HazelcastMessageBuilder<T>> {
 
 	/**
 	 * Private constructor to be invoked from the static factory methods only.
 	 */
-	private OogaBooga(T payload, @Nullable Message<T> originalMessage) {
+	private HazelcastMessageBuilder(T payload, @Nullable Message<T> originalMessage) {
 		super(payload, originalMessage);
 	}
 
@@ -37,20 +37,20 @@ public class OogaBooga<T> extends BaseMessageBuilder<T, OogaBooga<T>> {
 	 * Ensure messages are safely exchanged between nodes and ensures that they are always Serializable.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static <T> OogaBooga<T> fromMessage(Message<T> message) {
+	public static <T> HazelcastMessageBuilder<T> fromMessage(Message<T> message) {
 		Assert.notNull(message, "message must not be null");
 
 		if (message.getPayload() instanceof InputStream in && !(in instanceof Serializable)) {
-			return new OogaBooga(new SerializableInputStream(in), message);
+			return new HazelcastMessageBuilder(new SerializableInputStream(in), message);
 		}
 
-		return new OogaBooga<>(message.getPayload(), message);
+		return new HazelcastMessageBuilder<>(message.getPayload(), message);
 	}
 
 	/**
 	 * Set the authentication header.
 	 */
-	public OogaBooga<T> setAuthentication(String authentication) {
+	public HazelcastMessageBuilder<T> setAuthentication(String authentication) {
 		setHeader(HazelcastConfig.AUTHENTICATION_HEADER_KEY, authentication);
 		return this;
 	}
