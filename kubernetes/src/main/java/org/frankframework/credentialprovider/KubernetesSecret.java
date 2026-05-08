@@ -24,6 +24,17 @@ import org.jspecify.annotations.Nullable;
 import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
+/**
+ * An {@link ISecret} implementation backed by a single Kubernetes secret.
+ *
+ * <p>The Kubernetes secret name must match the auth alias name exactly. Fields are looked up
+ * directly by key (e.g. {@code username}, {@code password}), and the Base64-encoded values
+ * stored by Kubernetes are decoded before being returned.
+ *
+ * <p>Returns {@code null} if the requested field key is not present in the secret.
+ *
+ * @see KubernetesCredentialFactory
+ */
 @NullMarked
 @Log
 public class KubernetesSecret extends org.frankframework.credentialprovider.Secret {
@@ -45,7 +56,7 @@ public class KubernetesSecret extends org.frankframework.credentialprovider.Secr
 	public String getField(@Nullable String key) {
 		String foundKey = secret.getData().get(key);
 		if (StringUtils.isEmpty(foundKey)) {
-			log.info("no value found for alias [" + getAlias() + "] and field " +  key);
+			log.info("no value found for alias [" + getAlias() + "] and field " + key);
 			return null;
 		}
 		return new String(Base64.getDecoder().decode(foundKey));

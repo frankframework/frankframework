@@ -23,6 +23,17 @@ import org.jspecify.annotations.Nullable;
 import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
+/**
+ * An {@link ISecret} implementation that reads credential fields from a Kubernetes secret
+ * using a dot-separated key prefix derived from the auth alias name.
+ *
+ * <p>Keys in the Kubernetes secret are expected to follow the convention
+ * {@code <alias>.<fieldname>}, for example {@code myalias.username} or {@code myalias.password}.
+ * When {@link #getField(String)} is called, the alias prefix is prepended to the field name
+ * to form the full key, and the corresponding Base64-encoded value is decoded and returned.
+ *
+ * <p>Returns {@code null} if the field name is blank or no matching key exists in the secret.
+ */
 @Log
 public class AuthAliasPrefixKubernetesSecret extends org.frankframework.credentialprovider.Secret {
 
