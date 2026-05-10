@@ -95,7 +95,7 @@
 		<spring-security.version>7.0.5</spring-security.version>
 		<spring-integration.version>7.0.4</spring-integration.version>
 		<spring.boot.version>4.0.6</spring.boot.version>
-		<tomcat.version>11.0.21</tomcat.version>
+		<tomcat.version>11.0.22</tomcat.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<tika.version>3.3.0</tika.version>
 
@@ -167,7 +167,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.12.Final</version>
+				<version>4.2.13.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -494,7 +494,7 @@
 			<dependency>
 				<groupId>org.glassfish.jaxb</groupId>
 				<artifactId>jaxb-runtime</artifactId>
-				<version>4.0.7</version>
+				<version>4.0.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -1151,7 +1151,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>13.4.1</version>
+							<version>13.4.2</version>
 						</dependency>
 					</dependencies>
 					<executions>
