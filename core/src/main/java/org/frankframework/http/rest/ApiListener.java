@@ -517,18 +517,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
-	 * Whitelist of request parameters (Query and POST Parameters) that are allowed to be
-	 * copied into the session.
+	 * Whitelist of request parameters (Query and POST Parameters) that are allowed to be copied into the session.
 	 * <br/>
 	 * Entered as a comma-separated value.
 	 * <br/>
-	 * If the list contains any names that are in {@link #RESERVED_NAMES}, these will be removed from the list.
-	 * <br/>
-	 * If left empty, then all HTTP parameters are copied into the session, which can pose
+	 * <strong>If left empty, then all HTTP parameters are copied into the session, which can pose
 	 * a security risk and is therefore discouraged. The risk is that parameters could be sent,
-	 * that overwrite system session variables.
-	 * <br/>
-	 * This only works as a backwards-compatibility feature and can be switched off setting {@link #setAllowAllParams(boolean)} to {@code false}.
+	 * that overwrite system session variables.</strong>
 	 *
 	 * @param paramWhitelist Comma-separated list of allowed HTTP parameters.
 	 */
@@ -542,12 +537,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * Copying all POST and query parameters to the session is considered a security risk,
 	 * so this should not be left enabled.
 	 * <br/>
-	 * Even so, names listed in {@link #RESERVED_NAMES} will never be copied from the HTTP parameters to the session.
+	 * <strong>When setting {@link #setAllowedParameters(String)}, this value is ignored. This value is only
+	 * used when the allowed parameter list has not been set, or set empty.</strong>
 	 * <br/>
-	 * When setting {@link #setAllowedParameters(String)}, this value is ignored. This value is only
-	 * used when the allowed parameter list has not been set, or set empty.
-	 * <br/>
-	 * For backwards compatibility, this is {@code true} by default.
+	 * <strong>For backwards compatibility, this is {@code true} by default.</strong>
 	 *
 	 * @ff.default true
 	 */
