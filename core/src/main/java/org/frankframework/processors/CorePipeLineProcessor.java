@@ -73,7 +73,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		ExitState state=plExit.getState();
 		pipeLineResult.setState(state);
 		pipeLineResult.setExitCode(plExit.getExitCode());
-		if (!Message.isNull(result.message) && !plExit.isEmptyResult()) { // TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
+		if (!plExit.isEmptyResult() || result.message.isEmpty()) { // If message is empty always store it so meta-data is preserved even when the exit wants an empty result
 			pipeLineResult.setResult(result.message);
 		} else {
 			pipeLineResult.setResult(Message.nullMessage());
