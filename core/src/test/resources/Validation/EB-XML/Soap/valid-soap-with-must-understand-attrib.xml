@@ -1,0 +1,28 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:eb="http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd">
+	<soap:Header>
+		<eb:MessageHeader eb:version="2.0" soap:mustUnderstand="1">
+			<eb:From>
+				<eb:PartyId eb:type="urn:osb:oin">00000000000000000000</eb:PartyId>
+			</eb:From>
+			<eb:To>
+				<eb:PartyId eb:type="urn:osb:oin">00000000000000000001</eb:PartyId>
+			</eb:To>
+			<eb:CPAId>data</eb:CPAId>
+			<eb:ConversationId>id</eb:ConversationId>
+			<eb:Service>svc</eb:Service>
+			<eb:Action>action</eb:Action>
+			<eb:MessageData>
+				<eb:MessageId>id</eb:MessageId>
+				<eb:Timestamp>2026-06-06T00:00:00.000</eb:Timestamp>
+			</eb:MessageData>
+		</eb:MessageHeader>
+		<eb:To>
+			<eb:PartyId>prty</eb:PartyId>
+		</eb:To>
+		<eb:Action>act</eb:Action>
+		<eb:SyncReply eb:version="2.0" soap:actor="http://schemas.xmlsoap.org/soap/actor/next" soap:mustUnderstand="1"/>
+	</soap:Header>
+	<soap:Body>
+		<Request/>
+	</soap:Body>
+</soap:Envelope>

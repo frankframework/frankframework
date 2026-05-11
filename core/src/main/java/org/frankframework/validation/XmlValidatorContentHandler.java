@@ -98,7 +98,12 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 						List<String> validElementsAsList = listOf(validElements);
 						if (validElementsAsList.contains(lName)) {
 							if (rootElementsFound.contains(rootValidation)) {
-								String message = "Element(s) '" + lName + "' should occur only once.";
+								String message;
+								if (validElementsAsList.size() == 1) {
+									message = "Element '" + lName + "' should occur only once.";
+								} else {
+									message = "Only one of element(s) '" + validElements + "' may be used, and should occur only once. Found extra element: '" + lName + "'";
+								}
 								if (xmlValidatorErrorHandler != null) {
 									xmlValidatorErrorHandler.addReason(message, null, null, XmlValidatorErrorHandler.ReasonType.ERROR);
 								} else {
