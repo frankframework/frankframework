@@ -98,7 +98,7 @@ jobs:
 
     - name: Install pnpm
       if: needs.check-changes.outputs.relevant == 'true'
-      uses: pnpm/action-setup@26f6d4f2c533a43e6b5da0b4a5dd983f98f7b49a # v6
+      uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6
       with:
         version: 10.28.2
 
