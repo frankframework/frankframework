@@ -18,8 +18,6 @@ package org.frankframework.processors;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.jspecify.annotations.NonNull;
 
 import lombok.Setter;
@@ -52,27 +50,24 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		// Validate / wrap message and get the first pipe to run
 		ProcessingResult<IForwardTarget> preProcessingResult = preProcessInput(pipeLine, input, pipeLineSession, firstPipe);
-		IForwardTarget forwardTarget = preProcessingResult.forwardTarget;
-		Message message = preProcessingResult.message;
 
-		long size = message.size();
-		if (size > 0) {
+		long size = preProcessingResult.message.size();
+		if (size > 0L) {
 			pipeLine.getRequestSizeStats().record(size);
 		}
 
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
-			storeOriginalMessageWithoutNamespaces(message, pipeLineSession, forwardTarget);
+			storeOriginalMessageWithoutNamespaces(preProcessingResult, pipeLineSession);
 		}
 
 		ProcessingResult<PipeLineExit> result = runToExit(pipeLine, preProcessingResult.forwardTarget, preProcessingResult.message, pipeLineSession);
 
-		ProcessingResult<PipeLineExit> postProcessingResult = postProcessOutput(pipeLine, result.forwardTarget, result.message, pipeLineSession, false);
-
+		ProcessingResult<PipeLineExit> postProcessingResult = postProcessOutput(pipeLine, result, pipeLineSession, false);
 		return createPipeLineResult(pipeLine, messageId, pipeLineSession, postProcessingResult);
 	}
 
-	@Nonnull
-	private static PipeLineResult createPipeLineResult(@Nonnull PipeLine pipeLine, @Nonnull String messageId, @Nonnull PipeLineSession pipeLineSession, ProcessingResult<PipeLineExit> result) {
+	@NonNull
+	private static PipeLineResult createPipeLineResult(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull PipeLineSession pipeLineSession, @NonNull ProcessingResult<PipeLineExit> result) {
 		PipeLineResult pipeLineResult = new PipeLineResult();
 		PipeLineExit plExit = result.forwardTarget;
 		ExitState state=plExit.getState();
@@ -97,9 +92,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		return pipeLineResult;
 	}
 
-	private static void storeOriginalMessageWithoutNamespaces(@Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, IForwardTarget forwardTarget) throws PipeRunException {
+	private static void storeOriginalMessageWithoutNamespaces(@NonNull ProcessingResult<IForwardTarget> processingResult, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+		Message message = processingResult.message;
 		if (XmlUtils.isWellFormed(message, null)) {
-			IPipe pipe = forwardTarget instanceof IPipe ip ? ip : null;
+			IPipe pipe = processingResult.forwardTarget instanceof IPipe ip ? ip : null;
 			try {
 				Message xsltResult = XmlUtils.removeNamespaces(message);
 				pipeLineSession.put("originalMessageWithoutNamespaces", xsltResult);
@@ -150,7 +146,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		return new ProcessingResult<>(forwardTarget, message);
 	}
 
-	private ProcessingResult<PipeLineExit> postProcessOutput(PipeLine pipeLine, PipeLineExit plExit, Message result, PipeLineSession pipeLineSession, boolean outputValidationFailed) throws PipeRunException {
+	private ProcessingResult<PipeLineExit> postProcessOutput(PipeLine pipeLine, ProcessingResult<PipeLineExit> processingResult, PipeLineSession pipeLineSession, boolean outputValidationFailedPreviously) throws PipeRunException {
+		PipeLineExit plExit = processingResult.forwardTarget;
+		Message result = processingResult.message;
 		if (plExit.isEmptyResult()) {
 			// No validation or wrapping on empty results
 			return new ProcessingResult<>(plExit, result);
@@ -180,7 +178,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		if (!outputWrapError && !plExit.isSkipValidation()) {
 			IValidator outputValidator = pipeLine.getOutputValidator();
 			if (outputValidator != null) {
-				if (outputValidationFailed) {
+				if (outputValidationFailedPreviously) {
 					log.debug("validating error message after PipeLineResult validation failed");
 				} else {
 					log.debug("validating PipeLineResult");
@@ -188,7 +186,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				String exitSpecificResponseRoot = plExit.getResponseRoot();
 				PipeRunResult validationResult = pipeProcessor.validate(pipeLine, outputValidator, message, pipeLineSession, exitSpecificResponseRoot);
 				if (!validationResult.isSuccessful()) {
-					if (!outputValidationFailed) {
+					if (!outputValidationFailedPreviously) {
 						forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
 						log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget::getName);
 					} else {
@@ -208,12 +206,12 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		} else {
 			// Forwarding to a pipe that handles output-validation errors
 			ProcessingResult<PipeLineExit> errorHandlerResult = runToExit(pipeLine, forwardTarget, message, pipeLineSession);
-			if (outputValidationFailed) {
+			if (outputValidationFailedPreviously) {
 				// If output validation already failed previously, do not again try to apply post-processing
 				return errorHandlerResult;
 			}
 			// Recursive call to do post-processing of the output from error-handling pipe
-			return postProcessOutput(pipeLine, errorHandlerResult.forwardTarget, errorHandlerResult.message, pipeLineSession, true);
+			return postProcessOutput(pipeLine, errorHandlerResult, pipeLineSession, true);
 		}
 	}
 
@@ -224,7 +222,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
 			message = pipeRunResult.getResult();
 
-			PipeForward pipeForward=pipeRunResult.getPipeForward();
+			PipeForward pipeForward = pipeRunResult.getPipeForward();
 			// get the next pipe to run
 			forwardTarget = pipeLine.resolveForward(pipeToRun, pipeForward);
 
