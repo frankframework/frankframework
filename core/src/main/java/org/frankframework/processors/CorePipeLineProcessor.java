@@ -18,7 +18,7 @@ package org.frankframework.processors;
 
 import java.util.Map;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -42,11 +42,12 @@ import org.frankframework.util.XmlUtils;
  * @author Jaco de Groot
  */
 @Log4j2
+@NullMarked
 public class CorePipeLineProcessor implements PipeLineProcessor {
 	private @Setter PipeProcessor pipeProcessor;
 
 	@Override
-	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message input, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message input, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 
 		// Validate / wrap message and get the first pipe to run
 		ProcessingResult<IForwardTarget> preProcessingResult = preProcessInput(pipeLine, input, pipeLineSession, firstPipe);
@@ -66,8 +67,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		return createPipeLineResult(pipeLine, messageId, pipeLineSession, postProcessingResult);
 	}
 
-	@NonNull
-	private static PipeLineResult createPipeLineResult(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull PipeLineSession pipeLineSession, @NonNull ProcessingResult<PipeLineExit> result) {
+	private static PipeLineResult createPipeLineResult(PipeLine pipeLine, String messageId, PipeLineSession pipeLineSession, ProcessingResult<PipeLineExit> result) {
 		PipeLineResult pipeLineResult = new PipeLineResult();
 		PipeLineExit plExit = result.forwardTarget;
 		ExitState state=plExit.getState();
@@ -92,7 +92,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		return pipeLineResult;
 	}
 
-	private static void storeOriginalMessageWithoutNamespaces(@NonNull ProcessingResult<IForwardTarget> processingResult, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+	private static void storeOriginalMessageWithoutNamespaces(ProcessingResult<IForwardTarget> processingResult, PipeLineSession pipeLineSession) throws PipeRunException {
 		Message message = processingResult.message;
 		if (XmlUtils.isWellFormed(message, null)) {
 			IPipe pipe = processingResult.forwardTarget instanceof IPipe ip ? ip : null;
