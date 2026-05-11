@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.validation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
+
+import org.frankframework.util.StringUtil;
 
 /**
  * SAX ContentHandler used during XML validation for some additional validation
@@ -95,7 +96,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 							throw new IllegalRootElementException(message);
 						}
 					} else {
-						List<String> validElementsAsList = listOf(validElements);
+						List<String> validElementsAsList = StringUtil.split(validElements);
 						if (validElementsAsList.contains(lName)) {
 							if (rootElementsFound.contains(rootValidation)) {
 								String message;
@@ -110,9 +111,8 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 									throw new IllegalRootElementException(message);
 								}
 							} else {
-								String message = null;
 								if (invalidRootNamespaces != null && !rootValidation.isNamespaceAllowedOnElement(invalidRootNamespaces, namespaceURI, lName)) {
-									message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
+									String message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
 									if (xmlValidatorErrorHandler != null) {
 										xmlValidatorErrorHandler.addReason(message, null, null, XmlValidatorErrorHandler.ReasonType.ERROR);
 									} else {
@@ -135,7 +135,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		}
 		elements.add(lName);
 		if(!isInSoapFault()) {
-			checkNamespaceExistance(namespaceURI);
+			checkNamespaceExistence(namespaceURI);
 		}
 	}
 
@@ -157,7 +157,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 			for (RootValidation rootValidation: rootValidations) {
 				List<String> path = rootValidation.getPath();
 				String validLastElements = rootValidation.getValidLastElements();
-				List<String> validLastElementsAsList = listOf(validLastElements);
+				List<String> validLastElementsAsList = StringUtil.splitKeepEmpty(validLastElements); // Configuration "Element," is recommended for an optional element; this results in empty string in list validLastElementsAsList
 				if (!validLastElementsAsList.contains("") && !rootElementsFound.contains(rootValidation)) {
 					String message = "Element(s) '" + validLastElements + "' not found";
 					if (xmlValidatorErrorHandler != null) {
@@ -170,11 +170,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		}
 	}
 
-	private List<String> listOf(String validElements) {
-		return Arrays.asList(validElements.trim().split("\\s*\\,\\s*", -1));
-	}
-
-	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
+	protected void checkNamespaceExistence(String namespace) throws UnknownNamespaceException {
 		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
 			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) {
 				if (currentInvalidNamespace == null || !currentInvalidNamespace.equals(namespace)) { // avoid invalid namespace to be reported for each sub element
