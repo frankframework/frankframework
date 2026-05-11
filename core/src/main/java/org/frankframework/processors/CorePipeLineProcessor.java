@@ -206,5 +206,5 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		return new PreProcessingResult(forwardTarget, message);
 	}
 
-	private record PreProcessingResult(IForwardTarget forwardTarget, Message message)
+	private record PreProcessingResult(IForwardTarget forwardTarget, Message message) {}
 }
