@@ -158,45 +158,41 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		IForwardTarget forwardTarget = plExit;
 		Message message = result;
 
-		if (!plExit.isSkipWrapping()) {
-			IPipe outputWrapper = pipeLine.getOutputWrapper();
-			if (outputWrapper !=null) {
-				log.debug("wrapping PipeLineResult");
-				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-				if (!wrapResult.isSuccessful()) {
-					forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
-					log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget::getName);
-					outputWrapError = true;
-				} else {
-					log.debug("wrap succeeded");
-					message = wrapResult.getResult();
-				}
-				log.debug("PipeLineResult after wrapping: ({}) [{}]", message.getClass().getSimpleName(), message);
+		IPipe outputWrapper = pipeLine.getOutputWrapper();
+		if (!plExit.isSkipWrapping() && outputWrapper != null) {
+			log.debug("wrapping PipeLineResult");
+			PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
+			if (!wrapResult.isSuccessful()) {
+				forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
+				log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget::getName);
+				outputWrapError = true;
+			} else {
+				log.debug("wrap succeeded");
+				message = wrapResult.getResult();
 			}
+			log.debug("PipeLineResult after wrapping: ({}) [{}]", message.getClass().getSimpleName(), message);
 		}
 
-		if (!outputWrapError && !plExit.isSkipValidation()) {
-			IValidator outputValidator = pipeLine.getOutputValidator();
-			if (outputValidator != null) {
-				if (outputValidationFailedPreviously) {
-					log.debug("validating error message after PipeLineResult validation failed");
+		IValidator outputValidator = pipeLine.getOutputValidator();
+		if (!outputWrapError && !plExit.isSkipValidation() &&  outputValidator != null) {
+			if (outputValidationFailedPreviously) {
+				log.debug("validating error message after PipeLineResult validation failed");
+			} else {
+				log.debug("validating PipeLineResult");
+			}
+			String exitSpecificResponseRoot = plExit.getResponseRoot();
+			PipeRunResult validationResult = pipeProcessor.validate(pipeLine, outputValidator, message, pipeLineSession, exitSpecificResponseRoot);
+			if (!validationResult.isSuccessful()) {
+				if (!outputValidationFailedPreviously) {
+					forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
+					log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget::getName);
 				} else {
-					log.debug("validating PipeLineResult");
-				}
-				String exitSpecificResponseRoot = plExit.getResponseRoot();
-				PipeRunResult validationResult = pipeProcessor.validate(pipeLine, outputValidator, message, pipeLineSession, exitSpecificResponseRoot);
-				if (!validationResult.isSuccessful()) {
-					if (!outputValidationFailedPreviously) {
-						forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
-						log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget::getName);
-					} else {
-						log.warn("validation of error message by validator [{}] failed, returning result anyhow", outputValidator::getName); // to avoid endless looping
-						message = validationResult.getResult();
-					}
-				} else {
-					log.debug("validation succeeded");
+					log.warn("validation of error message by validator [{}] failed, returning result anyhow", outputValidator::getName); // to avoid endless looping
 					message = validationResult.getResult();
 				}
+			} else {
+				log.debug("validation succeeded");
+				message = validationResult.getResult();
 			}
 		}
 
