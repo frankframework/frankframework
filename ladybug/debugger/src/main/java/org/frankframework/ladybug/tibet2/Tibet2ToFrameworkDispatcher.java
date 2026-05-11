@@ -18,12 +18,9 @@ package org.frankframework.ladybug.tibet2;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.UUID;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
@@ -34,7 +31,8 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.StreamUtil;
 
@@ -55,13 +53,13 @@ public class Tibet2ToFrameworkDispatcher {
 
 	public String authorisationCheck(String storageId, String viewName) {
 		try {
-			MessageBuilder<String> builder = createRequestMessage("<dummy />", AUTHORISATION_CHECK_ADAPTER_CONFIG, AUTHORISATION_CHECK_ADAPTER_NAME);
-			builder.setHeader(BusMessageUtils.HEADER_PREFIX+"sessionKeys", toJson(storageId, viewName));
+			RequestMessageBuilder builder = createRequestMessage("<dummy />", AUTHORISATION_CHECK_ADAPTER_CONFIG, AUTHORISATION_CHECK_ADAPTER_NAME);
+			builder.addHeader("sessionKeys", toJson(storageId, viewName));
 
 			@NonNull
-			Message<Object> result = sendMessage(builder.build());
+			Message<Object> result = sendMessage(builder.build(null));
 
-			if ("SUCCESS".equalsIgnoreCase(BusMessageUtils.getHeader(result, MessageBase.STATE_KEY))) {
+			if ("SUCCESS".equalsIgnoreCase(BusMessageUtils.getHeader(result, AbstractMessage.STATE_KEY))) {
 				return ReportsComponent.OPEN_REPORT_ALLOWED;
 			} else {
 				return "Not allowed. Result of adapter " + AUTHORISATION_CHECK_ADAPTER_NAME + ": " + convertPayload(result.getPayload());
@@ -73,12 +71,12 @@ public class Tibet2ToFrameworkDispatcher {
 
 	public void deleteReport(String checkpointMessage) throws StorageException {
 		try {
-			MessageBuilder<String> builder = createRequestMessage(checkpointMessage, AUTHORISATION_CHECK_ADAPTER_CONFIG, AUTHORISATION_CHECK_DELETE_ADAPTER_NAME);
+			RequestMessageBuilder builder = createRequestMessage(checkpointMessage, AUTHORISATION_CHECK_ADAPTER_CONFIG, AUTHORISATION_CHECK_DELETE_ADAPTER_NAME);
 
 			@NonNull
-			Message<Object> result = sendMessage(builder.build());
+			Message<Object> result = sendMessage(builder.build(null));
 
-			if (BusMessageUtils.getIntHeader(result, MessageBase.STATUS_KEY, 500) == 200) {
+			if (BusMessageUtils.getIntHeader(result, AbstractMessage.STATUS_KEY, 500) == 200) {
 				String stringResult = convertPayload(result.getPayload());
 				if (!"<ok/>".equalsIgnoreCase(stringResult)) {
 					throw new StorageException("Delete failed: " + stringResult);
@@ -94,7 +92,7 @@ public class Tibet2ToFrameworkDispatcher {
 	/**
 	 * Ideally we only get BusExceptions and MessageHandlingException which wrap one.
 	 */
-	private Message<Object> sendMessage(Message<String> message) throws BusException {
+	private Message<Object> sendMessage(Message<?> message) throws BusException {
 		try {
 			return gateway.sendSyncMessage(message);
 		} catch (BusException e) {
@@ -108,24 +106,11 @@ public class Tibet2ToFrameworkDispatcher {
 	}
 
 	@NonNull
-	private static MessageBuilder<String> createRequestMessage(BusTopic topic, BusAction action, String payload, @Nullable UUID uuid) {
-		MessageBuilder<String> builder = MessageBuilder.withPayload(payload);
-		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
-		builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
-
-		// Optional target parameter, to target a specific backend node.
-		if(uuid != null) {
-			builder.setHeader(BusMessageUtils.HEADER_TARGET_KEY, uuid);
-		}
-
-		return builder;
-	}
-
-	@NonNull
-	private static MessageBuilder<String> createRequestMessage(String inputMessage, String configName, String adapterName) {
-		MessageBuilder<String> builder = createRequestMessage(BusTopic.TEST_PIPELINE, BusAction.UPLOAD, inputMessage, null);
-		builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
-		builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
+	private static RequestMessageBuilder createRequestMessage(String inputMessage, String configName, String adapterName) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
+		builder.setPayload(inputMessage);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configName);
+		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
 		return builder;
 	}
 

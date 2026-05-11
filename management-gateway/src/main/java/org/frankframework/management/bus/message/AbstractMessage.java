@@ -25,7 +25,7 @@ import org.springframework.util.MimeType;
 
 import org.frankframework.management.bus.BusMessageUtils;
 
-public class MessageBase<T> implements Message<T> {
+public class AbstractMessage<T> implements Message<T> {
 	public static final String STATUS_KEY = "status";
 	public static final String MIMETYPE_KEY = "type";
 	public static final String CONTENT_DISPOSITION_KEY = "contentdisposition";
@@ -35,7 +35,7 @@ public class MessageBase<T> implements Message<T> {
 	private final Map<String, Object> headers = new HashMap<>();
 	private MessageHeaders messageHeaders;
 
-	protected MessageBase(T payload, MimeType defaultMimeType) {
+	protected AbstractMessage(T payload, MimeType defaultMimeType) {
 		this.payload = payload;
 		setStatus(200);
 		setMimeType(defaultMimeType);

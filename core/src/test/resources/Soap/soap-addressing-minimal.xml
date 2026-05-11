@@ -1,0 +1,8 @@
+<Envelope xmlns="http://www.w3.org/2003/05/soap-envelope">
+	<Header>
+		<wsa:MessageID xmlns:wsa="https://www.w3.org/2006/03/addressing/ws-addr.xsd">6B29FC40-CA47-1067-B31D-00DD010662DA</wsa:MessageID>
+	</Header>
+	<Body>
+		<GetVehicleTypeDetailsREQ />
+	</Body>
+</Envelope>

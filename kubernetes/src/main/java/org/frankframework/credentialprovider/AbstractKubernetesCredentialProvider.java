@@ -30,6 +30,25 @@ import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
+/**
+ * Abstract base class for Kubernetes-backed credential providers.
+ *
+ * <p>Handles shared concerns: building and configuring the {@link KubernetesClient},
+ * verifying connectivity to the cluster, and validating alias names against the
+ * Kubernetes RFC 1123 naming rules (must start and end with an alphanumeric character).
+ *
+ * <p>Subclasses implement {@link #postInitialize(CredentialConstants)} to perform
+ * their own startup work after the client is ready, and must provide implementations
+ * of {@link #getSecret(CredentialAlias)} and {@link #getConfiguredAliases()}.
+ *
+ * <p>The following properties are read from {@link CredentialConstants} during initialization:
+ * <ul>
+ *   <li>{@value #K8_MASTER_URL} — override the Kubernetes API server URL</li>
+ *   <li>{@value #K8_USERNAME} — optional username for cluster authentication</li>
+ *   <li>{@value #K8_PASSWORD} — optional password for cluster authentication</li>
+ *   <li>{@value #K8_NAMESPACE_PROPERTY} — namespace to operate in (defaults to {@value #DEFAULT_NAMESPACE})</li>
+ * </ul>
+ */
 @Log
 public abstract class AbstractKubernetesCredentialProvider implements ISecretProvider {
 	static final String K8_USERNAME = "credentialFactory.kubernetes.username";

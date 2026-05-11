@@ -2078,9 +2078,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	/**
-	 * Sender to which the response (output of {@link PipeLine}) should be sent. Applies if the receiver
-	 * has an asynchronous listener.
-	 * N.B. Sending correlated responses via this sender is not supported.
+	 * Sender to which the response (output of {@link PipeLine}) should be sent. Applies <i>only</i> if the receiver
+	 * has an asynchronous listener. <br/>
+	 * If possible, please use the replyDestinationName attribute on the JmsListener instead.
 	 */
 	public void setSender(ICorrelatedSender sender) {
 		this.sender = sender;
