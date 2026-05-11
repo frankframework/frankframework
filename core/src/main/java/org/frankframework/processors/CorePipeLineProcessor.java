@@ -174,12 +174,12 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		boolean inputValidateError = false;
 		IValidator inputValidator = pipeLine.getInputValidator();
-		if (inputValidator!=null) {
+		if (inputValidator != null) {
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
 			if (!validationResult.isSuccessful()) {
 				forwardTarget = pipeLine.resolveForward(inputValidator, validationResult.getPipeForward());
-				log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget.getName());
+				log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget::getName);
 				inputValidateError = true;
 			}
 			Message validatedMessage = validationResult.getResult();
@@ -190,12 +190,12 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		if (!inputValidateError) {
 			IPipe inputWrapper = pipeLine.getInputWrapper();
-			if (inputWrapper!=null) {
+			if (inputWrapper != null) {
 				log.debug("wrapping input");
 				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
 				if (!wrapResult.isSuccessful()) {
 					forwardTarget = pipeLine.resolveForward(inputWrapper, wrapResult.getPipeForward());
-					log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget.getName());
+					log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget::getName);
 				} else {
 					message = wrapResult.getResult();
 				}
