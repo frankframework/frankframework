@@ -75,6 +75,7 @@ import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowser.HideMethod;
 import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.IPipe;
 import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
@@ -83,6 +84,8 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.IThreadCountControllable;
 import org.frankframework.core.ITransactionRequirements;
 import org.frankframework.core.ITransactionalStorage;
+import org.frankframework.core.IValidator;
+import org.frankframework.core.IWrapperPipe;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.ListenerException;
@@ -325,6 +328,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private final List<DistributionSummary> processStatistics = new ArrayList<>();
 
+	private @Getter IValidator inputValidator = null;
+	private @Getter IValidator outputValidator = null;
+	private @Getter IWrapperPipe inputWrapper = null;
+	private @Getter IWrapperPipe outputWrapper = null;
+
 	// The adapter that handles the messages and initiates this listener
 	private @Getter Adapter adapter;
 
@@ -443,12 +451,31 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * if IPullingListener -> PullingListenerContainer has to call closeAllResources();
 	 */
 	protected void tellResourcesToStop() {
+		stopPipe("InputWrapper", getInputWrapper());
+		stopPipe("InputValidator", getInputValidator());
+		stopPipe("OutputValidator", getOutputValidator());
+		stopPipe("OutputWrapper", getOutputWrapper());
 		if (getListener() instanceof IPushingListener) {
 			closeAllResources();
 		}
 		// IPullingListeners stop as their threads finish, as the runstate is set to stopping
 		// See PullingListenerContainer that calls receiver.isInRunState(RunStateEnum.STARTED)
 		// and receiver.closeAllResources()
+	}
+
+	private void stopPipe(String type, IPipe pipe) {
+		if (pipe == null) {
+			return;
+		}
+		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
+			log.debug("stopping {}", type);
+			pipe.stop();
+			log.debug("successfully stopped {}", type);
+		} catch (Exception t) {
+			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
+			throw t;
+		}
+
 	}
 
 	/**
@@ -715,6 +742,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	@Override
+	@SuppressWarnings("java:S1181") // Ignore Sonar complaint for catching Throwable
 	public void start() {
 		try {
 			RunState adapterRunState = adapter.getRunState();
@@ -735,7 +763,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				warn("configuration unload in progress or done. Starting the receiver ["+getName()+"] is not possible");
 				return;
 			}
-			log.trace("{} Receiver StartRunning - synchronize (lock) on Receiver runState[{}]", this::getLogPrefix, runState::toString);
 			synchronized (runState) {
 				RunState currentRunState = getRunState();
 				if (currentRunState!=RunState.STOPPED
@@ -752,7 +779,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				}
 				runState.setRunState(RunState.STARTING);
 			}
-			log.trace("{} Receiver StartRunning - lock on Receiver runState[{}] released", this::getLogPrefix, runState::toString);
 
 			openAllResources();
 
@@ -783,6 +809,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				if (getMessageLog()!=null) {
 					getMessageLog().start();
 				}
+				startPipe("InputWrapper",getInputWrapper());
+				startPipe("InputValidator",getInputValidator());
+				startPipe("OutputValidator",getOutputValidator());
+				startPipe("OutputWrapper",getOutputWrapper());
 			} catch (Exception e) {
 				throw new LifecycleException(e);
 			}
@@ -797,6 +827,20 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			listenerContainer.start();
 		}
 		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
+	}
+
+	private void startPipe(String type, IPipe pipe) {
+		if (pipe == null) {
+			return;
+		}
+		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put(type, pipe.getName())) {
+			log.debug("starting {}", type);
+			pipe.start();
+			log.debug("successfully started {}", type);
+		} catch (Exception t) {
+			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
+			throw t;
+		}
 	}
 
 	// After successfully closing all resources the state should be set to stopped
@@ -2278,5 +2322,25 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	public void setMaxBackoffDelay(Integer maxBackoffDelaySeconds) {
 		this.maxBackoffDelay = maxBackoffDelaySeconds;
+	}
+
+	/** Request validator, or combined validator for request and response */
+	public void setInputValidator(IValidator inputValidator) {
+		this.inputValidator = inputValidator;
+	}
+
+	/** Optional pipe to validate the response. Can be specified if the response cannot be validated by the request validator */
+	public void setOutputValidator(IValidator outputValidator) {
+		this.outputValidator = outputValidator;
+	}
+
+	/** Optional pipe to extract the request message from its envelope */
+	public void setInputWrapper(IWrapperPipe inputWrapper) {
+		this.inputWrapper = inputWrapper;
+	}
+
+	/** Optional pipe to wrap the response message in an envelope */
+	public void setOutputWrapper(IWrapperPipe outputWrapper) {
+		this.outputWrapper = outputWrapper;
 	}
 }

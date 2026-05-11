@@ -520,7 +520,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	@SneakyThrows({PipeRunException.class}) // SneakyThrows because it's used in a Lambda
-	@SuppressWarnings("java:S1181")
+	@SuppressWarnings({"java:S1181"}) // Ignore warnings for catching Throwable
 	private Message loadMessageFromClasspathResource(final String stubFileName) {
 		Message result;
 		try {
