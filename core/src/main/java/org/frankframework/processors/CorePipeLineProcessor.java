@@ -51,43 +51,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		boolean ready=false;
 
 		// get the first pipe to run
-		IForwardTarget forwardTarget = pipeLine.getPipe(firstPipe);
-
-		boolean inputValidateError = false;
-		IValidator inputValidator = pipeLine.getInputValidator();
-		if (inputValidator!=null) {
-			log.debug("validating input");
-			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
-			if (validationResult!=null) {
-				if (!validationResult.isSuccessful()) {
-					forwardTarget = pipeLine.resolveForward(inputValidator, validationResult.getPipeForward());
-					log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget.getName());
-					inputValidateError = true;
-				}
-				Message validatedMessage = validationResult.getResult();
-				if (!validatedMessage.isEmpty()) {
-					message=validatedMessage;
-				}
-			}
-		}
-
-		if (!inputValidateError) {
-			IPipe inputWrapper = pipeLine.getInputWrapper();
-			if (inputWrapper!=null) {
-				log.debug("wrapping input");
-				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
-				if (wrapResult == null) {
-					throw new PipeRunException(inputWrapper, "Input Wrapper produced NULL result");
-				}
-				if (!wrapResult.isSuccessful()) {
-					forwardTarget = pipeLine.resolveForward(inputWrapper, wrapResult.getPipeForward());
-					log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget.getName());
-				} else {
-					message = wrapResult.getResult();
-				}
-				log.debug("input after wrapping [{}]", message);
-			}
-		}
+		PreProcessingResult preProcessingResult = preProcessInput(pipeLine, message, pipeLineSession, firstPipe);
+		IForwardTarget forwardTarget = preProcessingResult.forwardTarget;
+		message = preProcessingResult.message;
 
 		long size = message.size();
 		if (size > 0) {
@@ -120,9 +86,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						if (outputWrapper !=null) {
 							log.debug("wrapping PipeLineResult");
 							PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-							if (wrapResult == null) {
-								throw new PipeRunException(outputWrapper, "OutputWrapper produced NULL result");
-							}
 							if (!wrapResult.isSuccessful()) {
 								forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
 								log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget.getName());
@@ -205,4 +168,43 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		return pipeLineResult;
 	}
 
+	private PreProcessingResult preProcessInput(PipeLine pipeLine, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+		// get the first pipe to run
+		IForwardTarget forwardTarget = pipeLine.getPipe(firstPipe);
+
+		boolean inputValidateError = false;
+		IValidator inputValidator = pipeLine.getInputValidator();
+		if (inputValidator!=null) {
+			log.debug("validating input");
+			PipeRunResult validationResult = pipeProcessor.processPipe(pipeLine, inputValidator, message, pipeLineSession);
+			if (!validationResult.isSuccessful()) {
+				forwardTarget = pipeLine.resolveForward(inputValidator, validationResult.getPipeForward());
+				log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget.getName());
+				inputValidateError = true;
+			}
+			Message validatedMessage = validationResult.getResult();
+			if (!validatedMessage.isEmpty()) {
+				message=validatedMessage;
+			}
+		}
+
+		if (!inputValidateError) {
+			IPipe inputWrapper = pipeLine.getInputWrapper();
+			if (inputWrapper!=null) {
+				log.debug("wrapping input");
+				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
+				if (!wrapResult.isSuccessful()) {
+					forwardTarget = pipeLine.resolveForward(inputWrapper, wrapResult.getPipeForward());
+					log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget.getName());
+				} else {
+					message = wrapResult.getResult();
+				}
+				log.debug("input after wrapping [{}]", message);
+			}
+		}
+
+		return new PreProcessingResult(forwardTarget, message);
+	}
+
+	private record PreProcessingResult(IForwardTarget forwardTarget, Message message)
 }
