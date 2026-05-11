@@ -15,7 +15,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
@@ -46,8 +46,8 @@ public class TestFileViewer extends BusTestBase {
 		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
 
 		Message<?> response = callSyncGateway(request);
-		String contentType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
-		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
+		String contentType = BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, AbstractMessage.CONTENT_DISPOSITION_KEY, null);
 		Assertions.assertEquals(MediaType.TEXT_HTML_VALUE, contentType);
 		Assertions.assertEquals("inline; filename=\""+TestFileName+"\"", contentDisposition);
 	}
@@ -59,8 +59,8 @@ public class TestFileViewer extends BusTestBase {
 		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
 
 		Message<?> response = callSyncGateway(request);
-		String contentType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
-		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
+		String contentType = BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, AbstractMessage.CONTENT_DISPOSITION_KEY, null);
 		Assertions.assertEquals(MediaType.APPLICATION_XML_VALUE, contentType);
 		Assertions.assertEquals("inline; filename=\""+TestFileName+"\"", contentDisposition);
 	}
@@ -72,8 +72,8 @@ public class TestFileViewer extends BusTestBase {
 		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
 
 		Message<?> response = callSyncGateway(request);
-		String contentType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
-		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
+		String contentType = BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, AbstractMessage.CONTENT_DISPOSITION_KEY, null);
 		Assertions.assertEquals(MediaType.TEXT_PLAIN_VALUE, contentType);
 		Assertions.assertEquals("inline; filename=\""+TestFileName+"\"", contentDisposition);
 	}
@@ -85,8 +85,8 @@ public class TestFileViewer extends BusTestBase {
 		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
 
 		Message<?> response = callSyncGateway(request);
-		String contentType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
-		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
+		String contentType = BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, AbstractMessage.CONTENT_DISPOSITION_KEY, null);
 		Assertions.assertEquals("application/zip", contentType);
 		Assertions.assertEquals("attachment; filename=\""+TestFileName+"\"", contentDisposition);
 	}
@@ -98,8 +98,8 @@ public class TestFileViewer extends BusTestBase {
 		request.setHeader("fileName", TestFileUtils.getTestFilePath(TestFilePath));
 
 		Message<?> response = callSyncGateway(request);
-		String contentType = BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY, null);
-		String contentDisposition = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY, null);
+		String contentType = BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(response, AbstractMessage.CONTENT_DISPOSITION_KEY, null);
 		Assertions.assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, contentType);
 		Assertions.assertEquals("attachment; filename=\""+TestFileName+"\"", contentDisposition);
 	}

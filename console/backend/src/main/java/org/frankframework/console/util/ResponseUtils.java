@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 import org.frankframework.console.ApiException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.message.EmptyMessage;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.util.StreamUtil;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
@@ -57,8 +57,8 @@ public class ResponseUtils {
 	}
 
 	public static ResponseEntity<?> convertToSpringResponse(Message<?> message, StreamingResponseBody response) {
-		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
-		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
+		int status = BusMessageUtils.getIntHeader(message, AbstractMessage.STATUS_KEY, 200);
+		String mimeType = BusMessageUtils.getHeader(message, AbstractMessage.MIMETYPE_KEY, null);
 		ResponseEntity.BodyBuilder responseEntity = ResponseEntity.status(status);
 		HttpHeaders httpHeaders = new HttpHeaders();
 
@@ -66,7 +66,7 @@ public class ResponseUtils {
 			httpHeaders.setContentType(MediaType.valueOf(mimeType));
 		}
 
-		String contentDisposition = BusMessageUtils.getHeader(message, MessageBase.CONTENT_DISPOSITION_KEY, null);
+		String contentDisposition = BusMessageUtils.getHeader(message, AbstractMessage.CONTENT_DISPOSITION_KEY, null);
 		if (contentDisposition != null) {
 			httpHeaders.setContentDisposition(ContentDisposition.parse(contentDisposition));
 		}
@@ -93,12 +93,12 @@ public class ResponseUtils {
 
 	@Nullable
 	public static String parseAsString(Message<?> message) {
-		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
+		int status = BusMessageUtils.getIntHeader(message, AbstractMessage.STATUS_KEY, 200);
 		if (!hasPayload(status)) {
 			return null;
 		}
 
-		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
+		String mimeType = BusMessageUtils.getHeader(message, AbstractMessage.MIMETYPE_KEY, null);
 		if (mimeType != null) {
 			MediaType mime = MediaType.valueOf(mimeType);
 			if (MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mime) || MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mime)) {

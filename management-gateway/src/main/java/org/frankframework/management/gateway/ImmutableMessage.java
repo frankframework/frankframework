@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,18 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.bus.message;
+package org.frankframework.management.gateway;
 
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
+import java.util.Map;
 
-public class StringMessage extends AbstractMessage<String> {
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.GenericMessage;
 
-	public StringMessage(String payload) {
-		this(payload, MediaType.TEXT_PLAIN);
+public final class ImmutableMessage<T> extends GenericMessage<T> implements Message<T> {
+
+	public ImmutableMessage(T payload, Map<String, Object> headers) {
+		super(payload, headers);
 	}
 
-	public StringMessage(String payload, MimeType defaultMediaType) {
-		super(payload, defaultMediaType);
+	@Override
+	public String toString() {
+		return "ImmutableMessage@" + Integer.toHexString(hashCode());
 	}
 }

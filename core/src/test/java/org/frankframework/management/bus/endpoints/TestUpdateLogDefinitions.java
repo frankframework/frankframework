@@ -22,7 +22,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.testutil.SpringRootInitializer;
 
 /**
@@ -113,7 +113,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		request.setHeader("reconfigure", "true");
 		Message<?> response = callSyncGateway(request);
 
-		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, AbstractMessage.STATUS_KEY, 0));
 	}
 
 	@Test
@@ -152,7 +152,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		request.setHeader("level", "debug");
 		Message<?> response = callSyncGateway(request);
 
-		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, AbstractMessage.STATUS_KEY, 0));
 	}
 
 	@Test
@@ -191,6 +191,6 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 		request.setHeader("level", "debug");
 		Message<?> response = callSyncGateway(request);
 
-		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, AbstractMessage.STATUS_KEY, 0));
 	}
 }

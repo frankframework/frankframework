@@ -16,7 +16,7 @@
 package org.frankframework.management.gateway;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,7 +26,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
@@ -110,7 +109,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 
 		log.trace("received message with id [{}] from member [{}]", () -> messageId, () -> rawMessage.getPublishingMember().getUuid());
 
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("messageId", messageId.toString())) {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("mid", messageId.toString())) {
 			String tempReplyChannel = (String) message.getHeaders().getReplyChannel();
 
 			log.debug("received message [{}] {} reply-channel", message, tempReplyChannel == null ? "without" : "with");
@@ -129,10 +128,10 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 			propagateAuthenticationContext(headers);
 
 			if (tempReplyChannel == null) { // send async
-				log.trace("processing message id [{}] asynchronous", headers::getId);
+				log.trace("processing asynchronous");
 				super.send(incomingMessage);
 			} else {
-				log.trace("processing message id [{}] synchronous", headers::getId);
+				log.trace("processing synchronous");
 				Message<?> response = super.sendAndReceiveMessage(incomingMessage);
 				if (response == null) {
 					log.trace("synchronous message did not return a response");
@@ -144,14 +143,14 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 			// Catch all exceptions with a failed-message.
 			if (log.isInfoEnabled()) {
 				// Only log the stacktrace if loglevel is INFO.
-				log.warn("error processing message id [{}]", headers.getId(), e);
+				log.warn("error processing", e);
 			} else {
 				// Hide the message when the loglevel is WARN.
-				log.warn("error processing message id [{}]", headers.getId());
+				log.warn("error processing");
 			}
 		} catch (Exception e) {
 			// Log other exceptions normally.
-			log.error("error processing message id [{}]", headers.getId(), e);
+			log.error("error processing", headers.getId(), e);
 		}
 	}
 
@@ -164,10 +163,13 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		MessageHeaders headers = response.getHeaders();
 
 		if (response instanceof ErrorMessage errMsg) {
+			// Don't leak the error to others.
 			throw Lombok.sneakyThrow(errMsg.getPayload());
 		}
-		if (response.getPayload() instanceof InputStream inputStream) {
-			response = MessageBuilder.withPayload(new SerializableInputStream(inputStream)).copyHeaders(headers).build();
+
+		if (!(response.getPayload() instanceof Serializable)) {
+			// Since we have control over the responses, always expect valid -serializable- response messages.
+			throw new MessagingException(response, "unable to send response, message  is not serializable");
 		}
 
 		log.trace("sending response message id [{}] to reply-channel [{}]", headers::getId, () -> tempReplyChannel);
