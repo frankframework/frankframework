@@ -45,7 +45,7 @@ import org.frankframework.stream.Message;
  * @author  Peter Leeuwenburgh
  */
 @Deprecated(forRemoval = true, since = "10.2")
-@ConfigurationWarning("Please use JdbcTableListener to perform a count query")
+@ConfigurationWarning("Please use JdbcTableListener (also non-locking) to perform a count query or let it directly return messages.")
 public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<String> {
 	protected static final String KEYWORD_SELECT_COUNT = "select count(";
 
