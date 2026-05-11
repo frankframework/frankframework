@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
@@ -43,6 +44,8 @@ import org.frankframework.stream.Message;
  *
  * @author  Peter Leeuwenburgh
  */
+@Deprecated(forRemoval = true, since = "10.2")
+@ConfigurationWarning("Please use JdbcTableListener to perform a count query")
 public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<String> {
 	protected static final String KEYWORD_SELECT_COUNT = "select count(";
 
