@@ -3,6 +3,6 @@ packages:
   - 'console/frontend/src/main/frontend/cypress'
 overrides:
   diff@>=6.0.0 <8.0.3: '~8.0.4'
-  dompurify@<3.4.0: '>=3.4.0'
+  dompurify@<3.4.0: '>=3.4.2'
   serialize-javascript@<7.0.5: '~7.0.5'
   uuid@<14.0.0: '>=14.0.0'

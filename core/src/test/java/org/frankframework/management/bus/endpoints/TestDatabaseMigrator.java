@@ -3,11 +3,11 @@ package org.frankframework.management.bus.endpoints;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
@@ -44,8 +44,8 @@ public class TestDatabaseMigrator extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
-		InputStream resource = (InputStream) response.getPayload();
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
+		InputStream resource = assertInstanceOf(InputStream.class, response.getPayload());
 		String payload = StreamUtil.streamToString(resource);
 
 		assertThat(payload, Matchers.startsWith("<databaseChangeLog"));
@@ -56,11 +56,11 @@ public class TestDatabaseMigrator extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, BusMessageUtils.ALL_CONFIGS_KEY);
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/octet-stream", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
-		Object cdk = BusMessageUtils.getHeader(response, MessageBase.CONTENT_DISPOSITION_KEY);
+		assertEquals("application/octet-stream", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
+		Object cdk = BusMessageUtils.getHeader(response, AbstractMessage.CONTENT_DISPOSITION_KEY);
 		assertNotNull(cdk);
 		assertThat(""+cdk, Matchers.containsString("DatabaseChangelog.zip"));
-		ByteArrayInputStream bais = (ByteArrayInputStream) response.getPayload();
+		InputStream bais = assertInstanceOf(InputStream.class, response.getPayload());
 		List<Resource> changelogs = new ArrayList<>();
 		try (ZipInputStream is = new ZipInputStream(bais)) {
 			ZipEntry entry;
@@ -82,7 +82,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader("filename", "DatabaseChangelog.xml");
 		Message<?> response = callSyncGateway(request);
-		assertEquals("text/plain", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("text/plain", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 		String payload = (String) response.getPayload();
 
 		assertEquals(script, payload);
@@ -95,7 +95,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader("filename", getConfiguration().getName()+"-DatabaseChangelog.xml");
 		Message<?> response = callSyncGateway(request);
-		assertEquals("text/plain", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("text/plain", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 		String payload = (String) response.getPayload();
 
 		assertEquals(script, payload);
@@ -106,7 +106,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 		String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
 		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
-		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, () -> { callSyncGateway(request); }, "expected: filename not provided exception");
+		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request), "expected: filename not provided exception");
 		assertTrue(mhe.getCause() instanceof BusException);
 	}
 
@@ -116,7 +116,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader("filename", "wrong-name.xml");
-		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, () -> { callSyncGateway(request); }, "expected: filename not provided exception");
+		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request), "expected: filename not provided exception");
 		assertTrue(mhe.getCause() instanceof BusException);
 	}
 }
