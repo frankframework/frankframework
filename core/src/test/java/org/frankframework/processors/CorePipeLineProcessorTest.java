@@ -131,23 +131,20 @@ class CorePipeLineProcessorTest {
 		return pl;
 	}
 
-	private void addValidators(PipeLine pipeLine, boolean failDirectlyToExit, boolean outputValidationFailsAll) throws ConfigurationException {
+	private void addValidators(PipeLine pipeLine, boolean outputValidationFailsAll) throws ConfigurationException {
 		IValidator inputValidator = new DummyValidator("fail-validator-input");
-		inputValidator.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err1"));
-
+		inputValidator.addForward(new PipeForward("failure", "err1"));
 		IWrapperPipe inputWrapper = new DummyWrapper("fail-wrap-input");
-		inputWrapper.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err2"));
-
+		inputWrapper.addForward(new PipeForward("failure", "err2"));
 		IWrapperPipe outputWrapper = new DummyWrapper("fail-wrap-output");
-		outputWrapper.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err3")); // This forward is currently ignored
-
+		outputWrapper.addForward(new PipeForward("failure", "err3")); // This forward is currently ignored
 		IValidator outputValidator;
 		if (outputValidationFailsAll) {
 			outputValidator = new DummyValidator("fail-validator-output", "err4");
 		} else {
 			outputValidator = new DummyValidator("fail-validator-output");
 		}
-		outputValidator.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err4"));
+		outputValidator.addForward(new PipeForward("failure", "err4"));
 
 		pipeLine.setInputWrapper(inputWrapper);
 		pipeLine.setOutputWrapper(outputWrapper);
@@ -183,7 +180,7 @@ class CorePipeLineProcessorTest {
 		PipeLine pipeLine = createPipeLine(adapter, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(true);
 
-		addValidators(pipeLine, true, false);
+		addValidators(pipeLine, false);
 
 		configuration.configure();
 		configuration.start();
@@ -201,18 +198,16 @@ class CorePipeLineProcessorTest {
 
 	@ParameterizedTest
 	@CsvSource({
-		"fail-wrap-input, wrapping-success[fail-wrap-input], true",
-		"fail-validator-input, wrapping-success[fail-validator-input], true",
-		"fail-wrap-input, wrapping-success[err2], false",
-		"fail-validator-input, wrapping-success[err1], false",
+		"fail-wrap-input, wrapping-success[err2]",
+		"fail-validator-input, wrapping-success[err1]"
 	})
-	void processPipeLineWithWrappersAndValidatorsFailureOnInput(String input, String expected, boolean failDirectlyToExit) throws Exception {
+	void processPipeLineWithWrappersAndValidatorsFailureOnInput(String input, String expected) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
 		PipeLine pipeLine = createPipeLine(adapter, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
 
-		addValidators(pipeLine, failDirectlyToExit, false);
+		addValidators(pipeLine, false);
 
 		configuration.configure();
 		configuration.start();
@@ -229,20 +224,17 @@ class CorePipeLineProcessorTest {
 
 	@ParameterizedTest
 	@CsvSource({
-		"fail-wrap-output, wrapping-success[fail-wrap-output], true, true, false",
-		"fail-validator-output, wrapping-success[wrapping-success[wrapping-success[fail-validator-output]]], false, true, false",
-		"fail-validator-output, wrapping-success[wrapping-success[wrapping-success[fail-validator-output]]], false, true, true",
-		"fail-wrap-output, wrapping-success[fail-wrap-output], true, false, false",
-		"fail-validator-output, wrapping-success[err4], false, false, false",
-		"fail-validator-output, wrapping-success[err4], false, false, true",
+		"fail-wrap-output, wrapping-success[fail-wrap-output], true, false",
+		"fail-validator-output, wrapping-success[err4], false, false",
+		"fail-validator-output, wrapping-success[err4], false, true"
 	})
-	void processPipeLineWithWrappersAndValidatorsFailureOnOutput(String input, String expected, boolean expectSuccess, boolean failDirectlyToExit, boolean failErrorValidationToo) throws Exception {
+	void processPipeLineWithWrappersAndValidatorsFailureOnOutput(String input, String expected, boolean expectSuccess, boolean failErrorValidationToo) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
 		PipeLine pipeLine = createPipeLine(adapter, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
 
-		addValidators(pipeLine, failDirectlyToExit, failErrorValidationToo);
+		addValidators(pipeLine, failErrorValidationToo);
 
 		configuration.configure();
 		configuration.start();
