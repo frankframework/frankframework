@@ -31,11 +31,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.Attributes;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
@@ -45,6 +43,17 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.FullXmlFilter;
 
+/**
+ * This class was made to be a replacement for the Apache Commons Digester, which was used in the old configuration parsing.
+ * The main reason for this replacement was to have better control over the parsing process, as well as ways to create beans.
+ * <p>
+ * The Digester works by having a list of {@link DigesterRule}s, which are matched against the current element stack.
+ * When a rule is matched, the appropriate factory is used to create a bean.
+ * If the newly created bean is an {@link ApplicationContext}, it is pushed on the context stack and used for the creation of child elements.
+ * <p>
+ * 
+ * @author Niels Meijer
+ */
 @Log4j2
 public class Digester extends FullXmlFilter implements InitializingBean, ApplicationContextAware {
 	private final Set<DigesterRule> parsedPatterns = new HashSet<>();
@@ -55,7 +64,6 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	private final Map<DigesterRule, IDigesterFactory> beanFactories = new ConcurrentHashMap<>();
 
 	private ValidateAttributeRule handleAttributeRule;
-	private @Getter @Setter Locator documentLocator;
 
 	record BeanRuleWrapper (DigesterRule rule, @NonNull Object bean) {}
 
@@ -169,8 +177,10 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	 * Once created it uses the {@link ValidateAttributeRule} to call all setters and populate the bean properties.
 	 * <p>
 	 * The newly created bean is not yet added to the parent, see {@link #endElement(String, String, String)}.
+	 * 
+	 * @throws SAXParseException which contains the document-location, thrown when the bean cannot be created or populated.
 	 */
-	private void createBeanThroughFactory(DigesterRule rule, String localName, Attributes atts) throws SAXException {
+	private void createBeanThroughFactory(DigesterRule rule, String localName, Attributes atts) throws SAXParseException {
 		try {
 			IDigesterFactory factory = getFactoryForRule(rule);
 			if (factory != null) { // Only the Configuration element doesn't have a factory
@@ -181,20 +191,22 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 				elementBeans.push(new BeanRuleWrapper(rule, bean));
 			}
 		} catch (Exception e) {
-			throw new SAXException("unable to create bean for element [%s] using DigesterRule [%s]".formatted(localName, rule), e);
+			throw new SAXParseException("unable to create bean for element [%s] using DigesterRule [%s]".formatted(localName, rule), getDocumentLocator(), e);
 		}
 
 		try {
 			handleAttributeRule.begin(localName, atts);
 		} catch (Exception e) {
-			throw new SAXException("unable to populate bean attributes for element [%s]".formatted(localName), e);
+			throw new SAXParseException("unable to populate bean attributes for element [%s]".formatted(localName), getDocumentLocator(), e);
 		}
 	}
 
 	/**
 	 * Verify if the target bean has a rule assigned to it, and if so register it with it's parent.
+	 * 
+	 * @throws SAXParseException which contains the document-location, thrown when the bean cannot be set/registered on the parent.
 	 */
-	private void registerDigestedBeanOnParent(BeanRuleWrapper beanWrapper) throws SAXException {
+	private void registerDigestedBeanOnParent(BeanRuleWrapper beanWrapper) throws SAXParseException {
 		DigesterRule rule = beanWrapper.rule();
 		if (rule == null) {
 			return; // Technically this is possible for the first rule...
@@ -211,7 +223,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 				ClassUtils.invokeSetter(parent, rule.getRegisterMethod(), bean);
 			}
 		} catch (Exception e) {
-			throw new SAXException("unable to register text or bean on parent [%s]".formatted(parent), e);
+			throw new SAXParseException("unable to register text or bean on parent [%s]".formatted(parent), getDocumentLocator(), e);
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.lifecycle.events.ApplicationMessageEvent;
-import org.frankframework.lifecycle.events.MessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.StreamUtil;
@@ -216,7 +215,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			List<LogEvent> log = appender.getLogEvents();
 			LogEvent firstLogEntry = log.get(log.size()-1);
-			assertEquals(MessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
+			assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.INFO, firstLogEntry.getLevel());
 
 			String msg = firstLogEntry.getMessage().getFormattedMessage();

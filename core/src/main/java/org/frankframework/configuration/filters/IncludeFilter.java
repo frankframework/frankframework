@@ -22,13 +22,10 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
-
-import lombok.Getter;
-import lombok.Setter;
 
 import org.frankframework.core.Resource;
 import org.frankframework.util.XmlUtils;
@@ -43,8 +40,6 @@ public class IncludeFilter extends FullXmlFilter {
 
 	private static final String TARGET_ELEMENT = "Include";
 	private static final String TARGET_ATTRIBUTE = "ref";
-
-	private @Getter @Setter Locator documentLocator;
 
 	private final Resource resource;
 	private final ClassLoaderURIResolver uriResolver;
@@ -73,7 +68,7 @@ public class IncludeFilter extends FullXmlFilter {
 				} catch (TransformerException e) {
 					throw new SaxException("Cannot open include ["+ref+"]", e);
 				}
-				if (subResource==null) {
+				if (subResource == null) {
 					throw new SaxException("Cannot find include ["+ref+"]");
 				}
 				XMLFilterImpl handlerTail = new BodyOnlyFilter(getContentHandler(), false);
@@ -90,9 +85,12 @@ public class IncludeFilter extends FullXmlFilter {
 					}
 					XmlUtils.parseXml(subResource, includeHandler);
 
+				} catch (SAXParseException e) {
+					// Assuming we already have a structured exception with Locator, rethrow it immediately.
+					// Possibly from an earlier created SAXParseException, see below.
+					throw e;
 				} catch (SAXException | IOException e) {
-					// Catch the SAXException in order to include the location.
-					throw SaxException.createSaxException("cannot parse include ["+ref+"]", includeHandler.getDocumentLocator(), e);
+					throw new SAXParseException("cannot parse include ["+ref+"]", includeHandler.getDocumentLocator(), e);
 				} finally {
 					// Revert our parent to the original one now that we're done processing the include.
 					if (curParent != null) {
