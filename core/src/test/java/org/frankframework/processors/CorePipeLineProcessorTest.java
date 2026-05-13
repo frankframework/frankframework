@@ -110,7 +110,7 @@ class CorePipeLineProcessorTest {
 		return new IPipe[]{p1, p2, err1, err2, err3, err4};
 	}
 
-	private static PipeLine createPipeLine(Adapter adapter, boolean expectEmptyResult, IPipe... testPipes) throws ConfigurationException {
+	private static PipeLine createPipeLine(Adapter adapter, boolean expectEmptyResult, boolean skipWrappingValidation, IPipe... testPipes) throws ConfigurationException {
 		PipeLine pl = SpringUtils.createBean(adapter);
 		adapter.setPipeLine(pl);
 		for (IPipe pipe : testPipes) {
@@ -125,12 +125,16 @@ class CorePipeLineProcessorTest {
 		success.setName("success");
 		success.setState(PipeLine.ExitState.SUCCESS);
 		success.setEmpty(expectEmptyResult);
+		success.setSkipValidation(skipWrappingValidation);
+		success.setSkipWrapping(skipWrappingValidation);
 		pl.addPipeLineExit(success);
 
 		PipeLineExit error = new PipeLineExit();
 		error.setName("error");
 		error.setState(PipeLine.ExitState.ERROR);
 		error.setEmpty(expectEmptyResult);
+		error.setSkipValidation(skipWrappingValidation);
+		error.setSkipWrapping(expectEmptyResult);
 		pl.addPipeLineExit(error);
 
 		return pl;
@@ -164,7 +168,7 @@ class CorePipeLineProcessorTest {
 	void processPipeLineNoWrappersOrValidators() throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, false, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, false, false, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(true);
 
 		configuration.configure();
@@ -187,7 +191,7 @@ class CorePipeLineProcessorTest {
 	void processPipeLineWithWrappersAndValidatorsSuccess() throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, false, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, false, false, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(true);
 
 		addValidators(pipeLine, true, false);
@@ -210,15 +214,17 @@ class CorePipeLineProcessorTest {
 
 	@ParameterizedTest
 	@CsvSource({
-		"true, fail-wrap-input, wrapping-success- pipeline outputWrapper[fail-wrap-input]",
-		"true, fail-validator-input, wrapping-success- pipeline outputWrapper[fail-validator-input]",
-		"false, fail-wrap-input, wrapping-success- pipeline outputWrapper[err2]",
-		"false, fail-validator-input, wrapping-success- pipeline outputWrapper[err1]",
+		"true, false, fail-wrap-input, wrapping-success- pipeline outputWrapper[fail-wrap-input]",
+		"true, false, fail-validator-input, wrapping-success- pipeline outputWrapper[fail-validator-input]",
+		"false, false, fail-wrap-input, wrapping-success- pipeline outputWrapper[err2]",
+		"false, false, fail-validator-input, wrapping-success- pipeline outputWrapper[err1]",
+		"false, true, fail-wrap-input, wrapping-success- pipeline outputWrapper[err2]",
+		"false, true, fail-validator-input, wrapping-success- pipeline outputWrapper[err1]",
 	})
-	void processPipeLineWithWrappersAndValidatorsFailureOnInput(boolean failDirectlyToExit, String input, String expected) throws Exception {
+	void processPipeLineWithWrappersAndValidatorsFailureOnInput(boolean failDirectlyToExit, boolean skipWrappingValidation, String input, String expected) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, false, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, false, skipWrappingValidation, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
 
 		addValidators(pipeLine, failDirectlyToExit, false);
@@ -240,17 +246,20 @@ class CorePipeLineProcessorTest {
 
 	@ParameterizedTest
 	@CsvSource({
-		"true, false, fail-wrap-output, wrapping-success- pipeline inputWrapper[fail-wrap-output]",
-		"true, false, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]",
-		"true, true, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]",
-		"false, false, fail-wrap-output, wrapping-success- pipeline outputWrapper[err3]",
-		"false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
-		"false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
+		"true, false, false, fail-wrap-output, wrapping-success- pipeline inputWrapper[fail-wrap-output]",
+		"true, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]",
+		"true, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]",
+		"false, false, false, fail-wrap-output, wrapping-success- pipeline outputWrapper[err3]",
+		"false, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
+		"false, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
+		"false, true, false, fail-wrap-output, wrapping-success- pipeline inputWrapper[fail-wrap-output]",
+		"false, true, false, fail-validator-output, wrapping-success- pipeline inputWrapper[fail-validator-output]",
+		"false, true, true, fail-validator-output, wrapping-success- pipeline inputWrapper[fail-validator-output]",
 	})
-	void processPipeLineWithWrappersAndValidatorsFailureOnOutput(boolean failDirectlyToExit, boolean failErrorValidationToo, String input, String expected) throws Exception {
+	void processPipeLineWithWrappersAndValidatorsFailureOnOutput(boolean failDirectlyToExit, boolean skipWrappingValidation, boolean failErrorValidationToo, String input, String expected) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, false, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, false, skipWrappingValidation, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
 
 		addValidators(pipeLine, failDirectlyToExit, failErrorValidationToo);
@@ -262,7 +271,7 @@ class CorePipeLineProcessorTest {
 		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
-		assertFalse(pipeLineResult.isSuccessful(), "Expected failure pipeline result");
+		assertEquals(skipWrappingValidation, pipeLineResult.isSuccessful(), "Expected " + (skipWrappingValidation ? "success" : "failure") + " pipeline result");
 		assertEquals(expected, pipeLineResult.getResult().asString());
 
 		// Verify that pipes 1 & 2 have both been executed
@@ -280,7 +289,7 @@ class CorePipeLineProcessorTest {
 	void processPipeLineWithWrappersAndValidatorsFailureOnInputEmptyResult(boolean failDirectlyToExit, String input) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, true, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, true, false, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
 
 		addValidators(pipeLine, failDirectlyToExit, false);
@@ -312,7 +321,7 @@ class CorePipeLineProcessorTest {
 	void processPipeLineWithWrappersAndValidatorsFailureOnOutputEmptyResult(boolean failDirectlyToExit, boolean failErrorValidationToo, String input) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, true, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, true, false, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
 
 		addValidators(pipeLine, failDirectlyToExit, failErrorValidationToo);
