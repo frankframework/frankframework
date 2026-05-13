@@ -2,6 +2,7 @@ package org.frankframework.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -109,7 +110,7 @@ class CorePipeLineProcessorTest {
 		return new IPipe[]{p1, p2, err1, err2, err3, err4};
 	}
 
-	private static PipeLine createPipeLine(Adapter adapter, IPipe... testPipes) throws ConfigurationException {
+	private static PipeLine createPipeLine(Adapter adapter, boolean expectEmptyResult, IPipe... testPipes) throws ConfigurationException {
 		PipeLine pl = SpringUtils.createBean(adapter);
 		adapter.setPipeLine(pl);
 		for (IPipe pipe : testPipes) {
@@ -123,11 +124,15 @@ class CorePipeLineProcessorTest {
 		PipeLineExit success = new PipeLineExit();
 		success.setName("success");
 		success.setState(PipeLine.ExitState.SUCCESS);
+		success.setEmpty(expectEmptyResult);
 		pl.addPipeLineExit(success);
+
 		PipeLineExit error = new PipeLineExit();
 		error.setName("error");
 		error.setState(PipeLine.ExitState.ERROR);
+		error.setEmpty(expectEmptyResult);
 		pl.addPipeLineExit(error);
+
 		return pl;
 	}
 
@@ -159,7 +164,7 @@ class CorePipeLineProcessorTest {
 	void processPipeLineNoWrappersOrValidators() throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, false, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(true);
 
 		configuration.configure();
@@ -169,9 +174,11 @@ class CorePipeLineProcessorTest {
 		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message("<ns1:input xmlns:ns1=\"xyx\"/>"), session, "p1");
 
 		// Assert
-		assertTrue(pipeLineResult.isSuccessful(), "Expected successful Pipe result");
+		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
 		assertEquals("<ns1:input xmlns:ns1=\"xyx\"/>", pipeLineResult.getResult().asString());
 		assertEquals("<input/>", session.getString("originalMessageWithoutNamespaces"));
+
+		// Verify that pipes 1 & 2 have both been executed
 		assertEquals("1", session.getString("s1"));
 		assertEquals("2", session.getString("s2"));
 	}
@@ -180,7 +187,7 @@ class CorePipeLineProcessorTest {
 	void processPipeLineWithWrappersAndValidatorsSuccess() throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, false, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(true);
 
 		addValidators(pipeLine, true, false);
@@ -192,9 +199,11 @@ class CorePipeLineProcessorTest {
 		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message("<ns1:input/>"), session, "p1");
 
 		// Assert
-		assertTrue(pipeLineResult.isSuccessful(), "Expected successful Pipe result");
+		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
 		assertEquals("wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[<ns1:input/>]]", pipeLineResult.getResult().asString());
 		assertEquals("wrapping-success- pipeline inputWrapper[<ns1:input/>]", session.getString("originalMessageWithoutNamespaces")); // Not wellformed XML so namespace not stripped
+
+		// Verify that pipes 1 & 2 have both been executed
 		assertEquals("1", session.getString("s1"));
 		assertEquals("2", session.getString("s2"));
 	}
@@ -209,7 +218,7 @@ class CorePipeLineProcessorTest {
 	void processPipeLineWithWrappersAndValidatorsFailureOnInput(boolean failDirectlyToExit, String input, String expected) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, false, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
 
 		addValidators(pipeLine, failDirectlyToExit, false);
@@ -221,8 +230,10 @@ class CorePipeLineProcessorTest {
 		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
-		assertFalse(pipeLineResult.isSuccessful(), "Expected failure Pipe result");
+		assertFalse(pipeLineResult.isSuccessful(), "Expected failure pipeline result");
 		assertEquals(expected, pipeLineResult.getResult().asString());
+
+		// Verify that pipes 1 & 2 have not been executed
 		assertFalse(session.containsKey("s1"), "Did not expect pipe 1 to be executed");
 		assertFalse(session.containsKey("s2"), "Did not expect pipe 2 to be executed");
 	}
@@ -239,7 +250,7 @@ class CorePipeLineProcessorTest {
 	void processPipeLineWithWrappersAndValidatorsFailureOnOutput(boolean expectSuccess, boolean failDirectlyToExit, boolean failErrorValidationToo, String input, String expected) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
-		PipeLine pipeLine = createPipeLine(adapter, pipes);
+		PipeLine pipeLine = createPipeLine(adapter, false, pipes);
 		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
 
 		addValidators(pipeLine, failDirectlyToExit, failErrorValidationToo);
@@ -251,8 +262,72 @@ class CorePipeLineProcessorTest {
 		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
-		assertEquals(expectSuccess, pipeLineResult.isSuccessful(), "Expected " + (expectSuccess ? "success" : "failure") + " Pipe result");
+		assertEquals(expectSuccess, pipeLineResult.isSuccessful(), "Expected " + (expectSuccess ? "successful" : "failure") + " pipeline result");
 		assertEquals(expected, pipeLineResult.getResult().asString());
+
+		// Verify that pipes 1 & 2 have both been executed
+		assertEquals("1", session.getString("s1"));
+		assertEquals("2", session.getString("s2"));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"true, fail-wrap-input",
+			"true, fail-validator-input",
+			"false, fail-wrap-input",
+			"false, fail-validator-input",
+	})
+	void processPipeLineWithWrappersAndValidatorsFailureOnInputEmptyResult(boolean failDirectlyToExit, String input) throws Exception {
+		// Arrange
+		IPipe[] pipes = createPipes();
+		PipeLine pipeLine = createPipeLine(adapter, true, pipes);
+		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
+
+		addValidators(pipeLine, failDirectlyToExit, false);
+
+		configuration.configure();
+		configuration.start();
+
+		// Act
+		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+
+		// Assert
+		assertFalse(pipeLineResult.isSuccessful(), "Expected failure pipeline result");
+		assertNull(pipeLineResult.getResult().asString(), "Expected pipeline result to be NULL");
+
+		// Verify that pipes 1 & 2 have not been executed
+		assertFalse(session.containsKey("s1"), "Did not expect pipe 1 to be executed");
+		assertFalse(session.containsKey("s2"), "Did not expect pipe 2 to be executed");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"true, false, fail-wrap-output",
+		"true, false, fail-validator-output",
+		"true, true, fail-validator-output",
+		"false, false, fail-wrap-output",
+		"false, false, fail-validator-output",
+		"false, true, fail-validator-output",
+	})
+	void processPipeLineWithWrappersAndValidatorsFailureOnOutputEmptyResult(boolean failDirectlyToExit, boolean failErrorValidationToo, String input) throws Exception {
+		// Arrange
+		IPipe[] pipes = createPipes();
+		PipeLine pipeLine = createPipeLine(adapter, true, pipes);
+		pipeLine.setStoreOriginalMessageWithoutNamespaces(false);
+
+		addValidators(pipeLine, failDirectlyToExit, failErrorValidationToo);
+
+		configuration.configure();
+		configuration.start();
+
+		// Act
+		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+
+		// Assert
+		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
+		assertNull(pipeLineResult.getResult().asString(), "Expected pipeline result to be NULL");
+
+		// Verify that pipes 1 & 2 have both been executed
 		assertEquals("1", session.getString("s1"));
 		assertEquals("2", session.getString("s2"));
 	}
