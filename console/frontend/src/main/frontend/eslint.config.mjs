@@ -54,7 +54,9 @@ export default [
               'public-instance-field',
               'protected-instance-field',
               'private-instance-field',
+              'private-instance-readonly-field',
               '#private-instance-field',
+              '#private-instance-readonly-field',
 
               'public-abstract-field',
               'protected-abstract-field',
