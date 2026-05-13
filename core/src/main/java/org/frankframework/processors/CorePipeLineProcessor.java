@@ -183,12 +183,14 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			String exitSpecificResponseRoot = plExit.getResponseRoot();
 			PipeRunResult validationResult = pipeProcessor.validate(pipeLine, outputValidator, message, pipeLineSession, exitSpecificResponseRoot);
 			if (!validationResult.isSuccessful()) {
-				forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
 				if (!outputValidationFailedPreviously) {
+					forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
 					log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget::getName);
 				} else {
 					log.warn("validation of error message by validator [{}] failed, returning result anyhow", outputValidator::getName); // to avoid endless looping
 					message = validationResult.getResult();
+					// If output validation had already failed previously, and we fail again, do not again try to apply post-processing, use previous exit
+					return new ProcessingResult<>(plExit, message);
 				}
 			} else {
 				log.debug("validation succeeded");
@@ -200,10 +202,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			// If forwarding to an exit, return results as they now are
 			return new  ProcessingResult<>(pipeLineExit, message);
 		} else {
-			if (outputValidationFailedPreviously) {
-				// If output validation had already failed previously, and we fail again, do not again try to apply post-processing
-				return new ProcessingResult<>(plExit, message);
-			}
 			// Forwarding to a pipe that handles output-validation errors
 			ProcessingResult<PipeLineExit> errorHandlerResult = runToExit(pipeLine, forwardTarget, message, pipeLineSession);
 			// Recursive call to do post-processing of the output from error-handling pipe
