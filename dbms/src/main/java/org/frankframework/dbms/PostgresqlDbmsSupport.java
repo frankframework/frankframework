@@ -276,14 +276,26 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		String schema = schemaOwner != null ? schemaOwner : "public";
 		String query = "SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE indrelid=?::regclass";
 		StringBuilder target = new StringBuilder().append(" (").append(columns.get(0).toLowerCase());
+
 		for (int i = 1; i < columns.size(); i++) {
 			target.append(", ").append(columns.get(i).toLowerCase());
 		}
+
+		// Target looks like (type, slotid, messagedate
+		log.trace("Trying to resolve index which contains: {}", target);
+
 		try (PreparedStatement stmt = conn.prepareStatement(query)) {
 			stmt.setString(1, schema + "." + tableName.toLowerCase());
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
+					// resultString looks like: CREATE INDEX ix_ibisstore ON public.ibisstore USING btree (type, slotid, messagedate)
+					String resultString = rs.getString(1);
+
+					// Target looks like (type, slotid, messagedate
+					log.trace("Retrieved result string: {}", resultString);
+
 					if (rs.getString(1).indexOf(target.toString()) > 0) {
+						log.trace("{} has indexOf {}", resultString, target);
 						return true;
 					}
 				}
