@@ -193,20 +193,20 @@ class CorePipeLineProcessorTest {
 
 		// Assert
 		assertTrue(pipeLineResult.isSuccessful(), "Expected successful Pipe result");
-		assertEquals("wrapping-success[wrapping-success[<ns1:input/>]]", pipeLineResult.getResult().asString());
-		assertEquals("wrapping-success[<ns1:input/>]", session.getString("originalMessageWithoutNamespaces")); // Not wellformed XML so namespace not stripped
+		assertEquals("wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[<ns1:input/>]]", pipeLineResult.getResult().asString());
+		assertEquals("wrapping-success- pipeline inputWrapper[<ns1:input/>]", session.getString("originalMessageWithoutNamespaces")); // Not wellformed XML so namespace not stripped
 		assertEquals("1", session.getString("s1"));
 		assertEquals("2", session.getString("s2"));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-		"fail-wrap-input, wrapping-success[fail-wrap-input], true",
-		"fail-validator-input, wrapping-success[fail-validator-input], true",
-		"fail-wrap-input, wrapping-success[err2], false",
-		"fail-validator-input, wrapping-success[err1], false",
+		"true, fail-wrap-input, wrapping-success- pipeline outputWrapper[fail-wrap-input]",
+		"true, fail-validator-input, wrapping-success- pipeline outputWrapper[fail-validator-input]",
+		"false, fail-wrap-input, wrapping-success- pipeline outputWrapper[err2]",
+		"false, fail-validator-input, wrapping-success- pipeline outputWrapper[err1]",
 	})
-	void processPipeLineWithWrappersAndValidatorsFailureOnInput(String input, String expected, boolean failDirectlyToExit) throws Exception {
+	void processPipeLineWithWrappersAndValidatorsFailureOnInput(boolean failDirectlyToExit, String input, String expected) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
 		PipeLine pipeLine = createPipeLine(adapter, pipes);
@@ -229,14 +229,14 @@ class CorePipeLineProcessorTest {
 
 	@ParameterizedTest
 	@CsvSource({
-		"fail-wrap-output, wrapping-success[fail-wrap-output], true, true, false",
-		"fail-validator-output, wrapping-success[wrapping-success[wrapping-success[fail-validator-output]]], false, true, false",
-		"fail-validator-output, wrapping-success[wrapping-success[wrapping-success[fail-validator-output]]], false, true, true",
-		"fail-wrap-output, wrapping-success[fail-wrap-output], true, false, false",
-		"fail-validator-output, wrapping-success[err4], false, false, false",
-		"fail-validator-output, wrapping-success[err4], false, false, true",
+		"true, true, false, fail-wrap-output, wrapping-success- pipeline inputWrapper[fail-wrap-output]",
+		"false, true, false, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]]",
+		"false, true, true, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]]",
+		"true, false, false, fail-wrap-output, wrapping-success- pipeline inputWrapper[fail-wrap-output]",
+		"false, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
+		"false, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
 	})
-	void processPipeLineWithWrappersAndValidatorsFailureOnOutput(String input, String expected, boolean expectSuccess, boolean failDirectlyToExit, boolean failErrorValidationToo) throws Exception {
+	void processPipeLineWithWrappersAndValidatorsFailureOnOutput(boolean expectSuccess, boolean failDirectlyToExit, boolean failErrorValidationToo, String input, String expected) throws Exception {
 		// Arrange
 		IPipe[] pipes = createPipes();
 		PipeLine pipeLine = createPipeLine(adapter, pipes);
@@ -270,10 +270,10 @@ class CorePipeLineProcessorTest {
 			try {
 				String data = message.asString();
 				if (data != null && data.contains(failOnValue)) {
-					Message result = new Message("wrapping-failed[" + data + "]");
+					Message result = new Message("wrapping-failed" + getName() + "[" + data + "]");
 					return new PipeRunResult(findForward("failure"), result);
 				}
-				Message result = new Message("wrapping-success[" + data + "]");
+				Message result = new Message("wrapping-success" + getName() + "[" + data + "]");
 				return new PipeRunResult(findForward("success"), result);
 			} catch (IOException e) {
 				throw new PipeRunException(this, "Failure to get data from message", e);
