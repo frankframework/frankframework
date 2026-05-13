@@ -9,7 +9,7 @@
     "dependencyDashboardApproval": false,
     "baseBranchPatterns": [
         "master",
-        "/^release\\/9\\./",
+        "/^release\\/(9\\.0|9\\.4)$/",
         "/^release\\/8\\.0$/",
         "/^release\\/10\\./"
     ],
@@ -92,6 +92,16 @@
                 "/^org\\.springframework\\.security:/"
             ],
             "separateMinorPatch": true
+        },
+        {
+            "description": "Ungroup Maven major updates - each major gets its own PR",
+            "matchManagers": [
+                "maven"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "groupName": null
         },
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
