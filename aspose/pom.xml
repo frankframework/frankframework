@@ -17,10 +17,10 @@
 		<!-- AsposeJava Maven repository: https://releases.aspose.com/java/repo/com/aspose/ -->
 		<aspose.cells.version>26.4</aspose.cells.version>
 		<aspose.email.version>26.3</aspose.email.version>
-		<aspose.imaging.version>26.4</aspose.imaging.version>
-		<aspose.pdf.version>26.3</aspose.pdf.version>
+		<aspose.imaging.version>26.5</aspose.imaging.version>
+		<aspose.pdf.version>26.4</aspose.pdf.version>
 		<aspose.slides.version>26.4</aspose.slides.version>
-		<aspose.words.version>26.3</aspose.words.version>
+		<aspose.words.version>26.4</aspose.words.version>
 	</properties>
 
 	<dependencies>

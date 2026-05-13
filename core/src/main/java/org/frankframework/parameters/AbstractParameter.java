@@ -490,9 +490,9 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			try {
 				Message message1 = Message.asMessage(result);
 				return getValueAsType(message1, namespaceAware);
-			} catch(IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {
 				return result; // oh no, we cannot convert to message! Return raw value.
-			} catch(IOException e) {
+			} catch (IOException e) {
 				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to type ["+getType()+"]", e);
 			}
 		}

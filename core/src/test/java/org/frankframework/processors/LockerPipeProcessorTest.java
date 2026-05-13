@@ -105,7 +105,7 @@ public class LockerPipeProcessorTest extends PipeProcessorTestBase {
 
 		@NonNull
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 			throw new PipeRunException(this, "this operation should not be called");
 		}
 	}

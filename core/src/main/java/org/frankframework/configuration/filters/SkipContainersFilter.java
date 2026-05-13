@@ -31,12 +31,14 @@ import org.frankframework.xml.FullXmlFilter;
 public class SkipContainersFilter extends FullXmlFilter {
 
 	/**
-	  * Here are the omitted XML elements.
-	  * <br/>
-	  * The Frank!Doc trusts that this class is used to omit the <Module> element.
-	  * If you ever want to remove Module from this list, please update the Frank!Doc.
-	  * To search for the relevant Frank!Doc code, you can start at
-	  * org.frankframework.frankdoc.Constants.MODULE_ELEMENT_NAME and org.frankframework.frankdoc.wrapper.AdditionalRootElement
+	 * Here are the omitted XML elements.
+	 * <br/>
+	 * The Frank!Doc trusts that this class is used to omit the <Module> element.
+	 * If you ever want to remove Module from this list, please update the Frank!Doc.
+	 * To search for the relevant Frank!Doc code, you can start at
+	 * org.frankframework.frankdoc.Constants.MODULE_ELEMENT_NAME and org.frankframework.frankdoc.wrapper.AdditionalRootElement
+	 * <br/>
+	 * When updating this list, please also update the list in pom.xml, in the configuration option "-skippableContainersClass" used by the Frank!Doc plugin.
 	 */
 	private static final Set<String> SKIPPABLE_CONTAINERS = Set.of("Exits", "Forwards", "Module", "Root", "GlobalForwards", "Global-forwards", "Scheduler", "PipelinePart");
 

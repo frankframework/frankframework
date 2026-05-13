@@ -106,7 +106,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message invoer, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message invoer, @NonNull PipeLineSession session) throws PipeRunException {
 		StringBuilder builder = new StringBuilder();
 
 		try(Connection conn = qs.getConnection(); PreparedStatement stmt = conn.prepareStatement(getQuery())) {
@@ -163,8 +163,8 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			}
 			builder.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 
-		} catch (Throwable t) {
-			throw new PipeRunException(this, " Exception on transforming domain", t);
+		} catch (Exception e) {
+			throw new PipeRunException(this, " Exception on transforming domain", e);
 		}
 
 		return new PipeRunResult(getSuccessForward(), builder.toString());

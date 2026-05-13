@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -35,6 +36,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+import org.frankframework.configuration.AdapterAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.util.ConfigurationUtils;
@@ -98,7 +100,7 @@ import org.frankframework.util.XmlUtils;
 @Forward(name = "presumedTimeout")
 @Forward(name = "interrupt")
 @Forward(name = "*", description = "{@link ISender sender} provided forward, such as the http statuscode or exit name (or code) of a sub-adapter.")
-public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
+public class MessageSendingPipe extends FixedForwardPipe implements HasSender, AdapterAware {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
@@ -110,10 +112,21 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private static final String PRESUMED_TIMEOUT_FORWARD = "presumedTimeout";
 	private static final String INTERRUPT_FORWARD = "interrupt";
 
-	private static final String STUBFILENAME = "stubFilename";
+	private static final String STUBFILENAME_PARAM_NAME = "stubFilename";
 
 	public static final int MIN_RETRY_INTERVAL=1;
 	public static final int MAX_RETRY_INTERVAL=600;
+
+	public static final String INPUT_VALIDATOR_NAME_PREFIX="- ";
+	public static final String INPUT_VALIDATOR_NAME_SUFFIX=": validate input";
+	public static final String OUTPUT_VALIDATOR_NAME_PREFIX="- ";
+	public static final String OUTPUT_VALIDATOR_NAME_SUFFIX=": validate output";
+	public static final String INPUT_WRAPPER_NAME_PREFIX="- ";
+	public static final String INPUT_WRAPPER_NAME_SUFFIX=": wrap input";
+	public static final String OUTPUT_WRAPPER_NAME_PREFIX="- ";
+	public static final String OUTPUT_WRAPPER_NAME_SUFFIX=": wrap output";
+	public static final String MESSAGE_LOG_NAME_PREFIX="- ";
+	public static final String MESSAGE_LOG_NAME_SUFFIX=": message log";
 
 	private @Getter LinkMethod linkMethod = LinkMethod.CORRELATIONID;
 
@@ -134,29 +147,18 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private @Getter String timeoutOnResult;
 	private @Getter String exceptionOnResult;
 
-	private @Getter ISender sender = null;
-	private @Getter ITransactionalStorage messageLog=null;
+	private @Getter @Nullable ISender sender = null;
+	private @Getter @Nullable ITransactionalStorage messageLog = null;
 
 	private String returnString; // contains contents of stubUrl
 	private TransformerPool retryTp=null;
 
-	public static final String INPUT_VALIDATOR_NAME_PREFIX="- ";
-	public static final String INPUT_VALIDATOR_NAME_SUFFIX=": validate input";
-	public static final String OUTPUT_VALIDATOR_NAME_PREFIX="- ";
-	public static final String OUTPUT_VALIDATOR_NAME_SUFFIX=": validate output";
-	public static final String INPUT_WRAPPER_NAME_PREFIX="- ";
-	public static final String INPUT_WRAPPER_NAME_SUFFIX=": wrap input";
-	public static final String OUTPUT_WRAPPER_NAME_PREFIX="- ";
-	public static final String OUTPUT_WRAPPER_NAME_SUFFIX=": wrap output";
-	public static final String MESSAGE_LOG_NAME_PREFIX="- ";
-	public static final String MESSAGE_LOG_NAME_SUFFIX=": message log";
+	private @Getter @Nullable IValidator inputValidator = null;
+	private @Getter @Nullable IValidator outputValidator = null;
+	private @Getter @Nullable IWrapperPipe inputWrapper = null;
+	private @Getter @Nullable IWrapperPipe outputWrapper = null;
 
-	private @Getter IValidator inputValidator=null;
-	private @Getter IValidator outputValidator=null;
-	private @Getter IWrapperPipe inputWrapper=null;
-	private @Getter IWrapperPipe outputWrapper=null;
-
-	private boolean timeoutPending=false;
+	private boolean timeoutPending = false;
 
 	private final boolean isConfigurationStubbed = ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader());
 	private final boolean msgLogHumanReadable = AppConstants.getInstance(getConfigurationClassLoader()).getBoolean("msg.log.humanReadable", false);
@@ -165,12 +167,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 	protected @Setter @Getter MetricsInitializer configurationMetrics;
+	private @Getter @Setter Adapter adapter;
 
 	public enum LinkMethod {
 		MESSAGEID, CORRELATIONID
 	}
 
 	@Override
+	@SuppressWarnings("java:S1181")
 	public void configure() throws ConfigurationException {
 		super.configure();
 		msgLog = LogUtil.getMsgLogger(getAdapter(), this);
@@ -181,7 +185,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			} catch (Throwable e) {
 				throw new ConfigurationException("got exception finding resource for stubfile ["+getStubFilename()+"]", e);
 			}
-			if (stubUrl==null) {
+			if (stubUrl == null) {
 				throw new ConfigurationException("could not find resource for stubfile ["+getStubFilename()+"]");
 			}
 			try {
@@ -198,7 +202,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			// because sender might not have been set when addPipe() is called.
 			if (getSender() instanceof ISenderWithParameters senderWithParams) {
 				for (IParameter p : getParameterList()) {
-					if (!p.getName().equals(STUBFILENAME)) {
+					if (!p.getName().equals(STUBFILENAME_PARAM_NAME)) {
 						senderWithParams.addParameter(p);
 					}
 				}
@@ -214,14 +218,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			} catch (ConfigurationException e) {
 				throw new ConfigurationException("while configuring sender",e);
 			}
-			if (getSender() instanceof HasPhysicalDestination) {
-				log.debug("has sender on {}", ((HasPhysicalDestination)sender)::getPhysicalDestinationName);
+			if (getSender() instanceof HasPhysicalDestination physicalDestination) {
+				log.debug("has sender on {}", physicalDestination::getPhysicalDestinationName);
 			}
 
-			if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
-				if (findForward(ILLEGAL_RESULT_FORWARD) == null)
+			if ((isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) && findForward(ILLEGAL_RESULT_FORWARD) == null)
 					throw new ConfigurationException("has no forward with name [illegalResult]");
-			}
+
 			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
 				if (StringUtils.isNotEmpty(getTimeoutOnResult())) {
 					throw new ConfigurationException("timeoutOnResult only allowed in stub mode");
@@ -230,7 +233,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					throw new ConfigurationException("exceptionOnResult only allowed in stub mode");
 				}
 			}
-			if (getMaxRetries()>0) {
+			if (getMaxRetries() > 0) {
 				if (getRetryMinInterval() < MIN_RETRY_INTERVAL) {
 					ConfigurationWarnings.add(this, log, "retryMinInterval ["+getRetryMinInterval()+"] should be greater than or equal to ["+MIN_RETRY_INTERVAL+"], assuming the lower limit");
 					setRetryMinInterval(MIN_RETRY_INTERVAL);
@@ -322,7 +325,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull  Message input, @NonNull PipeLineSession session) throws PipeRunException {
 		Message originalMessage = null;
 		PipeForward forward = getSuccessForward();
 
@@ -494,12 +497,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		}
 	}
 
-	protected String doLogToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws SenderException {
+	protected String doLogToMessageLog(@NonNull final Message input, @NonNull final PipeLineSession session, @NonNull final Message originalMessage, @NonNull final String messageID, @NonNull String correlationID) throws SenderException {
 		return storeMessage(messageID, correlationID, input, "no audit trail", null);
 	}
 
 	protected final String storeMessage(String messageID, String correlationID, Message messageToStore, String messageTrail, String label) throws SenderException {
-		messageLog.storeMessage(messageID, correlationID, TimeProvider.nowAsDate(), messageTrail, null, new MessageWrapper(messageToStore, messageID, correlationID));
+		messageLog.storeMessage(messageID, correlationID, TimeProvider.nowAsDate(), messageTrail, label, new MessageWrapper<>(messageToStore, messageID, correlationID));
 		return correlationID;
 	}
 
@@ -517,6 +520,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	@SneakyThrows({PipeRunException.class}) // SneakyThrows because it's used in a Lambda
+	@SuppressWarnings("java:S1181")
 	private Message loadMessageFromClasspathResource(final String stubFileName) {
 		Message result;
 		try {
@@ -531,17 +535,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return result;
 	}
 
-	private Optional<String> getStubFilename(final Message input, final PipeLineSession session) throws PipeRunException {
+	private @NonNull Optional<@NonNull String> getStubFilename(@NonNull final Message input, @NonNull final PipeLineSession session) throws PipeRunException {
 		ParameterList pl = getParameterList();
 		try {
-			ParameterValue pv = pl.getValues(input, session).get(STUBFILENAME);
+			ParameterValue pv = pl.getValues(input, session).get(STUBFILENAME_PARAM_NAME);
 			return pv != null ? Optional.ofNullable(pv.asStringValue()) : Optional.empty();
 		} catch (ParameterException e1) {
 			throw new PipeRunException(this, "got exception evaluating parameters", e1);
 		}
 	}
 
-	private PipeRunResult preProcessInput(Message input, PipeLineSession session) throws PipeRunException {
+	private @NonNull PipeRunResult preProcessInput(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
 		long preProcessInputStartTime = System.currentTimeMillis();
 		if (inputWrapper != null) {
 			log.debug("wrapping input");
@@ -569,7 +573,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), input);
 	}
 
-	private PipeRunResult postProcessOutput(Message output, PipeLineSession session) throws PipeRunException {
+	private @NonNull PipeRunResult postProcessOutput(@NonNull Message output, @NonNull PipeLineSession session) throws PipeRunException {
 		long postProcessInputStartTime = System.currentTimeMillis();
 		if (outputValidator != null) {
 			log.debug("validating response");
@@ -681,7 +685,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	private boolean isPresumedTimeout(final long startTime) {
-		Adapter adapter = getAdapter();
 		if (adapter == null) {
 			return false;
 		}
@@ -696,7 +699,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	private void updatePresumedTimeoutStats(final String exitState) {
-		Adapter adapter = getAdapter();
 		if (adapter == null) {
 			return;
 		}

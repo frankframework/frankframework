@@ -33,7 +33,7 @@ public class XmlParsersPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		Map<String, String> xmlInfo = XmlUtils.getVersionInfo();
 		XmlBuilder builder = new XmlBuilder("parsers");
 		for (Map.Entry<String, String> entry : xmlInfo.entrySet()) {

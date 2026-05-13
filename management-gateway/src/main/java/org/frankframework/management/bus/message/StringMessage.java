@@ -18,7 +18,7 @@ package org.frankframework.management.bus.message;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
-public class StringMessage extends MessageBase<String> {
+public class StringMessage extends AbstractMessage<String> {
 
 	public StringMessage(String payload) {
 		this(payload, MediaType.TEXT_PLAIN);

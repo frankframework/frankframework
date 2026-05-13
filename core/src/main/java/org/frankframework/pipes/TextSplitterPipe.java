@@ -39,7 +39,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 	@SuppressWarnings("StatementWithEmptyBody")
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		if (Message.isNull(message) || message.isEmpty()) {
 			return new PipeRunResult(getSuccessForward(), new Message("<text/>"));
 		}

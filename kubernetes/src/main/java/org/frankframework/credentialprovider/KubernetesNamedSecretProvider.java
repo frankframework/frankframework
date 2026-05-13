@@ -34,6 +34,25 @@ import lombok.extern.java.Log;
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
+/**
+ * Credential provider that resolves auth aliases from a fixed set of named Kubernetes secrets.
+ *
+ * <p>Unlike {@link KubernetesCredentialFactory}, which maps one Kubernetes secret to one alias,
+ * this provider expects each configured secret to hold credentials for <em>multiple</em> aliases
+ * using a dot-prefixed key convention. For example, a secret containing the keys
+ * {@code myalias.username} and {@code myalias.password} exposes the alias {@code myalias}
+ * with fields {@code username} and {@code password}.
+ *
+ * <p>The names of the Kubernetes secrets to read from must be specified via the property
+ * {@value #K8_SECRET_NAMES_PROPERTY} as a comma-separated list. Secrets are searched in order;
+ * the first secret that contains any key with the requested alias prefix is used.
+ *
+ * <p>Both individual secrets and the full alias discovery result are cached for
+ * {@value AbstractKubernetesCredentialProvider#CACHE_DURATION_MILLIS} ms to limit calls
+ * to the Kubernetes API.
+ * <p>
+ * The credentials are cached for 60 seconds to prevent unnecessary calls to the Kubernetes API.
+ */
 @Log
 public class KubernetesNamedSecretProvider extends AbstractKubernetesCredentialProvider {
 

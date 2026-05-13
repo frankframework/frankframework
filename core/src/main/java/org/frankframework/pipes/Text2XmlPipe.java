@@ -65,7 +65,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		if (Message.isNull(message)) {
 			return new PipeRunResult(getSuccessForward(), new Message("<" + getXmlTag() + " nil=\"true\" />"));
 		} else if (message.isEmpty() && isUseCdataSection()) {

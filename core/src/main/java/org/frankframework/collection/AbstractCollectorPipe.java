@@ -75,7 +75,7 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
 		try {
 			Message result = doAction(getAction(), input, session);
 

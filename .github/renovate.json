@@ -29,9 +29,16 @@
     "commitMessageSuffix": "",
     "packageRules": [
         {
-          "description": "Automerge non-major updates",
-          "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-          "automerge": true
+            "description": "Automerge non-major updates",
+            "matchUpdateTypes": [
+                "minor",
+                "patch",
+                "pin",
+                "digest"
+            ],
+            "addLabels": [
+                "automerge"
+            ]
         },
         {
             "description": "Maven dependencies - daily at 6 AM, ignore major updates",
@@ -47,7 +54,7 @@
             "addLabels": [
                 "Java"
             ],
-            "ignoreDeps" : [
+            "ignoreDeps": [
                 "software.amazon.awssdk:bom",
                 "org.ibissource:ibis-ladybug",
                 "org.wearefrank:ladybug",
@@ -107,7 +114,7 @@
             "matchBaseBranches": [
                 "/^release\\/8\\.0$/"
             ],
-            "ignoreDeps" : [
+            "ignoreDeps": [
                 "org.apache.tika:tika-parsers",
                 "org.springframework.boot:spring-boot-loader",
                 "org.springframework:"

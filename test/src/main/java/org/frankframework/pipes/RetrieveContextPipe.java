@@ -38,7 +38,7 @@ public class RetrieveContextPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		try {
 			MessageBuilder builder = new MessageBuilder();
 			try (ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.JSON, "context", builder, true)) {

@@ -16,6 +16,7 @@
 package org.frankframework.processors;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
@@ -33,6 +34,6 @@ public interface PipeProcessor {
 	@NonNull
 	PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException;
 	@NonNull
-	PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException;
+	PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @Nullable String messageRoot) throws PipeRunException;
 
 }

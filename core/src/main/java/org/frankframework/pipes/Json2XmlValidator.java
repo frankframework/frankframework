@@ -232,11 +232,7 @@ public class Json2XmlValidator extends XmlValidator {
 
 		Message xmlMessage;
 		if (isAcceptNamespacelessXml()) {
-			try {
-				xmlMessage = addNamespace(input);
-			} catch (IOException e) {
-				throw new PipeRunException(this, "Cannot read message", e);
-			}
+			xmlMessage = addNamespace(input);
 		} else {
 			xmlMessage = input;
 		}
@@ -413,7 +409,7 @@ public class Json2XmlValidator extends XmlValidator {
 		return new PipeRunResult(forward, resultMessage);
 	}
 
-	public Message addNamespace(Message xml) throws IOException {
+	public Message addNamespace(Message xml) {
 		if (Message.isNull(xml)) {
 			return xml;
 		}

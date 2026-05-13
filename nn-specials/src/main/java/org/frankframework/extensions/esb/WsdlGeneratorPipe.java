@@ -68,7 +68,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		Message fileInSession = session.getMessage(getSessionKey());
 		if (Message.isNull(fileInSession)) {
 			throw new PipeRunException(this, "got null value from session under key [" + getSessionKey() + "]");

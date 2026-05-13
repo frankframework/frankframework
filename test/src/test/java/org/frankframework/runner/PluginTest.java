@@ -27,7 +27,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 
 @Tag("slow")
@@ -88,7 +88,7 @@ class PluginTest {
 
 		Message<Object> response = gateway.sendSyncMessage(builder.build(null));
 
-		assertEquals("SUCCESS", BusMessageUtils.getHeader(response, MessageBase.STATE_KEY));
+		assertEquals("SUCCESS", BusMessageUtils.getHeader(response, AbstractMessage.STATE_KEY));
 		assertEquals("Niels was here!", ResponseUtils.parseAsString(response));
 	}
 }

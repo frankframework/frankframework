@@ -150,7 +150,7 @@ public class SwitchPipe extends AbstractPipe {
 	 */
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		String forward = getForwardName(message, session);
 
 		log.debug("determined forward [{}]", forward);

@@ -472,6 +472,9 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		return dm;
 	}
 
+	/**
+	 * The MessageID is never null as it's set in {@link #setupChildSession(PipeLineSession, ParameterValueList, PipeLineSession)}.
+	 */
 	private ServiceClient getAdapterServiceClient(String target) throws SenderException {
 		Adapter adapter = findAdapter(target);
 		return (message, session) -> {

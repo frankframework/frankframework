@@ -61,7 +61,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.pipes.SenderPipe;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -155,7 +155,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(JSON_MESSAGE, response.getPayload());
-		assertEquals("application/json", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("application/json", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -169,7 +169,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(XML_MESSAGE, response.getPayload());
-		assertEquals("application/xml", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -197,7 +197,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(JSON_MESSAGE, response.getPayload());
-		assertEquals("application/json", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("application/json", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 	}
 
 	@Test
@@ -211,7 +211,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 		Message<?> response = callSyncGateway(request);
 		assertEquals(XML_MESSAGE, response.getPayload());
-		assertEquals("application/xml", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 	}
 
 	@Test

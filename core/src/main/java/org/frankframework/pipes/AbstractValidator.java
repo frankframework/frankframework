@@ -67,7 +67,7 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 
 	@NonNull
 	@Override
-	public final PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public final PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		return doPipe(message, session, false, null);
 	}
 

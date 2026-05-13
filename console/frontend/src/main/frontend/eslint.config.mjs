@@ -54,7 +54,9 @@ export default [
               'public-instance-field',
               'protected-instance-field',
               'private-instance-field',
+              'private-instance-readonly-field',
               '#private-instance-field',
+              '#private-instance-readonly-field',
 
               'public-abstract-field',
               'protected-abstract-field',
@@ -119,13 +121,14 @@ export default [
               ['private-static-get', 'private-static-set'],
               ['#private-static-get', '#private-static-set'],
 
-              ['public-decorated-get', 'public-decorated-set'],
-              ['protected-decorated-get', 'protected-decorated-set'],
-              ['private-decorated-get', 'private-decorated-set'],
-
-              ['public-instance-get', 'public-instance-set'],
-              ['protected-instance-get', 'protected-instance-set'],
-              ['private-instance-get', 'private-instance-set'],
+              ['public-decorated-get', 'public-decorated-set', 'public-instance-get', 'public-instance-set'],
+              [
+                'protected-decorated-get',
+                'protected-decorated-set',
+                'protected-instance-get',
+                'protected-instance-set',
+              ],
+              ['private-decorated-get', 'private-decorated-set', 'private-instance-get', 'private-instance-set'],
               ['#private-instance-get', '#private-instance-set'],
 
               ['public-abstract-get', 'public-abstract-set'],
