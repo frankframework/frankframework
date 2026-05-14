@@ -99,7 +99,7 @@
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<tika.version>3.3.0</tika.version>
 
-		<narayana.version>7.3.3.Final</narayana.version>
+		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
 		<micrometer.version>1.16.5</micrometer.version>
 		<argLine />
