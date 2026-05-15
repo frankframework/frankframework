@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.cxf.AbstractSOAPProvider;
 import org.frankframework.http.cxf.MessageProvider;
+import org.frankframework.http.cxf.MustUnderstandHeaderProvider;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.soap.SoapWrapper;
@@ -79,6 +80,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private @Getter boolean mtomEnabled = false;
 	private @Getter String attachmentSessionKeys = "";
 	private @Getter String multipartXmlSessionKey = "multipartXml";
+	private @Getter String understandsHeaders;
+
 	private final List<String> attachmentSessionKeysList = new ArrayList<>();
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
@@ -113,7 +116,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 
 		if (StringUtils.isNotEmpty(getAddress())) {
-			if(getAddress().contains(":")) {
+			if (getAddress().contains(":")) {
 				throw new ConfigurationException("address cannot contain colon ( : ) character");
 			}
 
@@ -133,6 +136,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
+			if (StringUtils.isNotBlank(understandsHeaders)) {
+				endpoint.getInInterceptors().add(new MustUnderstandHeaderProvider(understandsHeaders));
+			}
+
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
@@ -265,8 +272,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	 * where mydomain.com and ibis4something refer to 'your ibis'.
 	 */
 	public void setAddress(String address) {
-		if(!address.isEmpty()) {
-			if(address.startsWith("/"))
+		if (!address.isEmpty()) {
+			if (address.startsWith("/"))
 				this.address = address.substring(1);
 			else
 				this.address = address;
@@ -297,5 +304,13 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
+	}
+
+	/**
+	 * Comma-separated list of SOAP headers that have attribute {@code mustUnderstand="1"} that this webservice understands. The headers must be specified
+	 * in the format {@literal  namespace-uri|element-name}, so for instance: {@code understandsHeaders="https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|SyncReply,https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|MessageHeader"}
+	 */
+	public void setUnderstandsHeaders(String understandsHeaders) {
+		this.understandsHeaders = understandsHeaders;
 	}
 }
