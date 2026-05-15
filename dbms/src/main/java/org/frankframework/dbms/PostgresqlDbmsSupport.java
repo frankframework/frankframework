@@ -282,7 +282,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		}
 
 		// Target looks like (type, slotid, messagedate
-		log.trace("Trying to resolve index which contains: {}", target);
+		log.trace("trying to resolve index which contains [{}]", target);
 
 		try (PreparedStatement stmt = conn.prepareStatement(query)) {
 			stmt.setString(1, schema + "." + tableName.toLowerCase());
