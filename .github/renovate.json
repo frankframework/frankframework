@@ -94,6 +94,23 @@
             "separateMinorPatch": true
         },
         {
+            "description": "Ungroup npm major updates (non-Angular) - each major gets its own PR",
+            "matchManagers": [
+                "npm"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "excludePackageNames": [
+                "/^@angular\\//",
+                "/^@angular-devkit\\//",
+                "@angular/common",
+                "zone.js",
+                "/(eslint)/"
+            ],
+            "groupName": null
+        },
+        {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
             "matchManagers": [
                 "npm",
