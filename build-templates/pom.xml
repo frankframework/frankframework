@@ -139,6 +139,9 @@
 								<Project-URL>${project.url}</Project-URL>
 								<Sealed>true</Sealed>
 								<Classifier>${plugin.type}</Classifier>
+
+								<Plugin-Class>${plugin.class}</Plugin-Class>
+								<Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
 							</manifestEntries>
 						</archive>
 					</configuration>
@@ -274,6 +277,42 @@
 							<id>make-assembly</id>
 							<goals>
 								<goal>single</goal>
+							</goals>
+							<phase>package</phase>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>3.6.2</version>
+					<configuration>
+						<createDependencyReducedPom>false</createDependencyReducedPom>
+						<minimizeJar>true</minimizeJar>
+						<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+						<shadedArtifactAttached>true</shadedArtifactAttached>
+						<shadedClassifierName>${plugin.type}</shadedClassifierName>
+						<filters>
+							<filter>
+								<artifact>*:*</artifact>
+								<includes>
+									<include>**</include>
+								</includes>
+								<excludes>
+									<exclude>**/module-info.class</exclude>
+								</excludes>
+							</filter>
+						</filters>
+						<transformers>
+							<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
+							<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer" />
+							<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+						</transformers>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>shade</goal>
 							</goals>
 							<phase>package</phase>
 						</execution>
@@ -485,6 +524,13 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<configuration>
 							<skipAssembly>true</skipAssembly>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-shade-plugin</artifactId>
+						<configuration>
+							<skip>true</skip>
 						</configuration>
 					</plugin>
 				</plugins>
