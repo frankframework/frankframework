@@ -18,15 +18,18 @@ package org.frankframework.lifecycle.events;
 import java.io.Serial;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ApplicationContextEvent;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
 public abstract class MessageEvent<T extends ApplicationContext> extends ApplicationContextEvent {
+
+	// Uses the LogManager so the implementation class is used.
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Serial
 	private static final long serialVersionUID = 1L;
