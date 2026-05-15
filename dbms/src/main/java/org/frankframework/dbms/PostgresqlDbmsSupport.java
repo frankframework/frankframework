@@ -292,7 +292,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 					String resultString = rs.getString(1);
 
 					// Target looks like (type, slotid, messagedate
-					log.trace("Retrieved result string: {}", resultString);
+					log.trace("retrieved query result [{}]", resultString);
 
 					if (rs.getString(1).indexOf(target.toString()) > 0) {
 						log.trace("{} has indexOf {}", resultString, target);
