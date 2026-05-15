@@ -2,6 +2,7 @@
 	<adapter name="WebServiceListener" description="Test the functioning of the WebServiceListener">
 		<receiver>
 			<listener className="org.frankframework.http.WebServiceListener"
+				understandsHeaders="https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|SyncReply,https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|MessageHeader"
 				name="urn:ws" />
 		</receiver>
 		<pipeline>

@@ -15,7 +15,6 @@
 */
 package org.frankframework.http.cxf;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,14 +26,16 @@ import org.apache.cxf.binding.soap.interceptor.SoapInterceptor;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
 
+import org.frankframework.util.StringUtil;
+
 public class MustUnderstandHeaderProvider extends AbstractSoapInterceptor implements SoapInterceptor {
 
 	private final Set<QName> understandsHeaders;
 
-	public MustUnderstandHeaderProvider(String... understoodHeaderNames) {
+	public MustUnderstandHeaderProvider(String understoodHeaderNames) {
 		super(Phase.PRE_PROTOCOL);
-		this.understandsHeaders = Arrays.stream(understoodHeaderNames).
-				map(this::splitAttributeName)
+		this.understandsHeaders = StringUtil.splitToStream(understoodHeaderNames)
+				.map(this::splitAttributeName)
 				.map(this::createQName)
 				.collect(Collectors.toUnmodifiableSet());
 	}

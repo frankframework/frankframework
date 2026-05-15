@@ -80,6 +80,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private @Getter boolean mtomEnabled = false;
 	private @Getter String attachmentSessionKeys = "";
 	private @Getter String multipartXmlSessionKey = "multipartXml";
+	private @Getter String understandsHeaders;
+
 	private final List<String> attachmentSessionKeysList = new ArrayList<>();
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
@@ -114,7 +116,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 
 		if (StringUtils.isNotEmpty(getAddress())) {
-			if(getAddress().contains(":")) {
+			if (getAddress().contains(":")) {
 				throw new ConfigurationException("address cannot contain colon ( : ) character");
 			}
 
@@ -122,7 +124,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			if(bus instanceof SpringBus springBus) {
 				cxfBus = springBus;
 				log.debug("found CXF SpringBus id [{}]", bus::getId);
-				springBus.getInInterceptors().add(new MustUnderstandHeaderProvider("https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|SyncReply", "https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|MessageHeader"));
+				if (StringUtils.isNotBlank(understandsHeaders)) {
+					springBus.getInInterceptors().add(new MustUnderstandHeaderProvider(understandsHeaders));
+				}
 			} else {
 				throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 			}
@@ -134,7 +138,6 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (StringUtils.isNotEmpty(getAddress())) {
 			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
-//			endpoint.getServer().getEndpoint().getInInterceptors().add(new MustUnderstandHeaderProvider("eb:SyncReply", "eb:MessageHeader"));
 			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
 
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
@@ -269,8 +272,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	 * where mydomain.com and ibis4something refer to 'your ibis'.
 	 */
 	public void setAddress(String address) {
-		if(!address.isEmpty()) {
-			if(address.startsWith("/"))
+		if (!address.isEmpty()) {
+			if (address.startsWith("/"))
 				this.address = address.substring(1);
 			else
 				this.address = address;
@@ -301,5 +304,13 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
+	}
+
+	/**
+	 * Comma-separated list of SOAP headers that have attribute {@code mustUnderstand="1"} that this webservice understands. The headers must be specified
+	 * in the format {@literal  namespace-uri|element-name}, so for instance: {@code understandsHeaders="https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|SyncReply,https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|MessageHeader"}
+	 */
+	public void setUnderstandsHeaders(String understandsHeaders) {
+		this.understandsHeaders = understandsHeaders;
 	}
 }
