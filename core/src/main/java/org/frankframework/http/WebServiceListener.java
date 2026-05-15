@@ -37,6 +37,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.cxf.AbstractSOAPProvider;
 import org.frankframework.http.cxf.MessageProvider;
+import org.frankframework.http.cxf.MustUnderstandHeaderProvider;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.soap.SoapWrapper;
@@ -121,6 +122,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			if(bus instanceof SpringBus springBus) {
 				cxfBus = springBus;
 				log.debug("found CXF SpringBus id [{}]", bus::getId);
+				springBus.getInInterceptors().add(new MustUnderstandHeaderProvider("https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|SyncReply", "https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|MessageHeader"));
 			} else {
 				throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 			}
@@ -132,7 +134,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (StringUtils.isNotEmpty(getAddress())) {
 			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
+//			endpoint.getServer().getEndpoint().getInInterceptors().add(new MustUnderstandHeaderProvider("eb:SyncReply", "eb:MessageHeader"));
 			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
+
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
