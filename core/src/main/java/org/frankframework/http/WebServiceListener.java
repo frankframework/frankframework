@@ -124,9 +124,6 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			if(bus instanceof SpringBus springBus) {
 				cxfBus = springBus;
 				log.debug("found CXF SpringBus id [{}]", bus::getId);
-				if (StringUtils.isNotBlank(understandsHeaders)) {
-					springBus.getInInterceptors().add(new MustUnderstandHeaderProvider(understandsHeaders));
-				}
 			} else {
 				throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
 			}
@@ -139,6 +136,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
+			if (StringUtils.isNotBlank(understandsHeaders)) {
+				endpoint.getInInterceptors().add(new MustUnderstandHeaderProvider(understandsHeaders));
+			}
 
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
