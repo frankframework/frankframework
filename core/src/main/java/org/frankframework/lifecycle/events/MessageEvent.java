@@ -29,7 +29,7 @@ import lombok.Getter;
 public abstract class MessageEvent<T extends ApplicationContext> extends ApplicationContextEvent {
 
 	// Uses the LogManager so the implementation class is used.
-	private final Logger log = LogManager.getLogger(getClass());
+	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Serial
 	private static final long serialVersionUID = 1L;
