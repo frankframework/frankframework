@@ -63,7 +63,6 @@
                 "org.eclipse.m2e:lifecycle-mapping",
                 "com.eclipsesource.j2v8:j2v8_linux_x86_64"
             ],
-            "groupName": "maven-dependencies",
             "separateMajorMinor": true,
             "separateMultipleMinor": true,
             "separateMultipleMajor": true,
@@ -94,14 +93,26 @@
             "separateMinorPatch": true
         },
         {
-            "description": "Ungroup Maven major updates - each major gets its own PR",
+            "description": "Tomcat Dependencies",
+            "matchManagers": [
+                "maven",
+                "docker"
+            ],
+            "groupName": "Tomcat",
+            "matchPackageNames": [
+                "/^org\\.apache\\.tomcat:/"
+            ],
+            "separateMinorPatch": true
+        },
+        {
+            "description": "Group Maven patch updates",
             "matchManagers": [
                 "maven"
             ],
             "matchUpdateTypes": [
-                "major"
+                "patch"
             ],
-            "groupName": null
+            "groupName": "maven-dependencies"
         },
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
@@ -134,6 +145,10 @@
             "description": "All NPM dependencies - weekly schedule, ignore major updates",
             "matchManagers": [
                 "npm"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch",
             ],
             "schedule": [
                 "before 6am on the first day of the week"
