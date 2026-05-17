@@ -72,8 +72,8 @@
     "@types/markdown-it": "^14.1.2",
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.7",
-    "@typescript-eslint/eslint-plugin": "^8.59.2",
-    "@typescript-eslint/parser": "^8.59.2",
+    "@typescript-eslint/eslint-plugin": "^8.59.3",
+    "@typescript-eslint/parser": "^8.59.3",
     "angular-eslint": "^21.3.1",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
@@ -88,7 +88,7 @@
     "karma-jasmine-html-reporter": "~2.2.0",
     "prettier": "^3.8.3",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.59.2"
+    "typescript-eslint": "^8.59.3"
   },
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
 }
