@@ -37,6 +37,8 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
 /**
  * Credential provider that resolves auth aliases from a fixed set of named Kubernetes secrets.
  *
+ * {@inheritClassDoc}
+ *
  * <p>Unlike {@link KubernetesCredentialFactory}, which maps one Kubernetes secret to one alias,
  * this provider expects each configured secret to hold credentials for <em>multiple</em> aliases
  * using a dot-prefixed key convention. For example, a secret containing the keys
