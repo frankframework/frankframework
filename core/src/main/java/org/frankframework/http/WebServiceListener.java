@@ -37,7 +37,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.cxf.AbstractSOAPProvider;
 import org.frankframework.http.cxf.MessageProvider;
-import org.frankframework.http.cxf.MustUnderstandHeaderProvider;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.soap.SoapWrapper;

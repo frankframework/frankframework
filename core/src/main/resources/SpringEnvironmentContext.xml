@@ -45,11 +45,11 @@
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.BusExtensionPostProcessor" class="org.apache.cxf.bus.spring.BusExtensionPostProcessor"/>
-	<bean id="MustUnderstandHeaderProvider" class="org.frankframework.http.cxf.MustUnderstandHeaderProvider" />
+	<bean id="MustUnderstandHeaderExtractor" class="org.frankframework.http.cxf.MustUnderstandHeaderExtractor" />
 
 	<cxf:bus>
 		<cxf:inInterceptors>
-			<ref bean="MustUnderstandHeaderProvider"/>
+			<ref bean="MustUnderstandHeaderExtractor"/>
 		</cxf:inInterceptors>
 	</cxf:bus>
 

@@ -28,11 +28,11 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
 
-public class MustUnderstandHeaderProvider extends AbstractSoapInterceptor implements SoapInterceptor {
+public class MustUnderstandHeaderExtractor extends AbstractSoapInterceptor implements SoapInterceptor {
 
 	private final Set<QName> understandsHeaders = ConcurrentHashMap.newKeySet();
 
-	public MustUnderstandHeaderProvider() {
+	public MustUnderstandHeaderExtractor() {
 		super(Phase.PRE_PROTOCOL);
 	}
 
