@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ClassUtils;
 import org.wearefrank.ladybug.TestTool;
 
 import lombok.Setter;
@@ -38,7 +39,6 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -46,13 +46,12 @@ import org.frankframework.util.LogUtil;
  */
 @Log4j2
 public class LadybugReportGenerator implements InitializingBean {
-	public static final String REPORT_PIPELINE_PREFIX = "Pipeline ";
-	public static final String REPORT_PARAMETER_PREFIX = "Parameter ";
-	public static final String REPORT_SENDER_PREFIX = "Sender ";
-	public static final String REPORT_LISTENER_PREFIX = "Listener ";
-
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
-	private static final String REPORT_ROOT_PREFIX = REPORT_PIPELINE_PREFIX;
+
+	private static final String REPORT_PIPELINE_PREFIX = "Pipeline ";
+	private static final String REPORT_PARAMETER_PREFIX = "Parameter ";
+	private static final String REPORT_SENDER_PREFIX = "Sender ";
+	private static final String REPORT_LISTENER_PREFIX = "Listener ";
 
 	private TestTool testTool;
 	private @Setter @Autowired PipeDescriptionProvider pipeDescriptionProvider;
@@ -79,11 +78,11 @@ public class LadybugReportGenerator implements InitializingBean {
 
 		String adapterName = pipeLine.getAdapter().getName();
 		String configName = pipeLine.getAdapter().getConfiguration().getName();
-		return REPORT_ROOT_PREFIX + configName + "/" + adapterName;
+		return REPORT_PIPELINE_PREFIX + configName + "/" + adapterName;
 	}
 
 	public Message pipelineInput(PipeLine pipeLine, String correlationId, Message input) {
-		return testTool.startpoint(correlationId, ClassUtils.classNameOf(pipeLine), getName(pipeLine), input, extractMessageContext(input));
+		return testTool.startpoint(correlationId, classNameOf(pipeLine), getName(pipeLine), input, extractMessageContext(input));
 	}
 
 	@NonNull
@@ -99,25 +98,25 @@ public class LadybugReportGenerator implements InitializingBean {
 	}
 
 	public Message pipelineOutput(PipeLine pipeLine, String correlationId, Message output) {
-		return testTool.endpoint(correlationId, ClassUtils.classNameOf(pipeLine), getName(pipeLine), output, extractMessageContext(output));
+		return testTool.endpoint(correlationId, classNameOf(pipeLine), getName(pipeLine), output, extractMessageContext(output));
 	}
 
 	public Message pipelineAbort(PipeLine pipeLine, String correlationId, Message output) {
-		return testTool.abortpoint(correlationId, ClassUtils.classNameOf(pipeLine), getName(pipeLine), output, extractMessageContext(output));
+		return testTool.abortpoint(correlationId, classNameOf(pipeLine), getName(pipeLine), output, extractMessageContext(output));
 	}
 
 	public Throwable pipelineAbort(PipeLine pipeLine, String correlationId, Throwable throwable) {
-		testTool.abortpoint(correlationId, ClassUtils.classNameOf(pipeLine), getName(pipeLine), throwable);
+		testTool.abortpoint(correlationId, classNameOf(pipeLine), getName(pipeLine), throwable);
 		return throwable;
 	}
 
 	public <T> T pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, T input) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		T result = testTool.startpoint(correlationId, ClassUtils.classNameOf(pipe), pipeDescription.getCheckpointName(), input, extractMessageContext(input));
+		T result = testTool.startpoint(correlationId, classNameOf(pipe), pipeDescription.getCheckpointName(), input, extractMessageContext(input));
 		if (pipeDescription.getDescription() != null) {
-			testTool.infopoint(correlationId, ClassUtils.classNameOf(pipe), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
+			testTool.infopoint(correlationId, classNameOf(pipe), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
 			for (String resourceName : pipeDescription.getResourceNames()) {
-				testTool.infopoint(correlationId, ClassUtils.classNameOf(pipe), resourceName, pipeDescriptionProvider.getResource(pipeLine, resourceName));
+				testTool.infopoint(correlationId, classNameOf(pipe), resourceName, pipeDescriptionProvider.getResource(pipeLine, resourceName));
 			}
 		}
 		return result;
@@ -125,38 +124,38 @@ public class LadybugReportGenerator implements InitializingBean {
 
 	public <T> T pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, T output) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		return testTool.endpoint(correlationId, ClassUtils.classNameOf(pipe), pipeDescription.getCheckpointName(), output, extractMessageContext(output));
+		return testTool.endpoint(correlationId, classNameOf(pipe), pipeDescription.getCheckpointName(), output, extractMessageContext(output));
 	}
 
 	public Throwable pipeAbort(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable) {
 		PipeDescription pipeDescription = pipeDescriptionProvider.getPipeDescription(pipeLine, pipe);
-		testTool.abortpoint(correlationId, ClassUtils.classNameOf(pipe), pipeDescription.getCheckpointName(), throwable);
+		testTool.abortpoint(correlationId, classNameOf(pipe), pipeDescription.getCheckpointName(), throwable);
 		return throwable;
 	}
 
 	public <T> T senderInput(ISender sender, String correlationId, T input) {
-		return testTool.startpoint(correlationId, ClassUtils.classNameOf(sender), getCheckpointNameForINamedObject(REPORT_SENDER_PREFIX, sender), input, extractMessageContext(input));
+		return testTool.startpoint(correlationId, classNameOf(sender), getCheckpointNameForINamedObject(REPORT_SENDER_PREFIX, sender), input, extractMessageContext(input));
 	}
 
 	public <T> T senderOutput(ISender sender, String correlationId, T output) {
-		return testTool.endpoint(correlationId, ClassUtils.classNameOf(sender), getCheckpointNameForINamedObject(REPORT_SENDER_PREFIX, sender), output, extractMessageContext(output));
+		return testTool.endpoint(correlationId, classNameOf(sender), getCheckpointNameForINamedObject(REPORT_SENDER_PREFIX, sender), output, extractMessageContext(output));
 	}
 
 	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable){
-		testTool.abortpoint(correlationId, ClassUtils.classNameOf(sender), getCheckpointNameForINamedObject(REPORT_SENDER_PREFIX, sender), throwable);
+		testTool.abortpoint(correlationId, classNameOf(sender), getCheckpointNameForINamedObject(REPORT_SENDER_PREFIX, sender), throwable);
 		return throwable;
 	}
 
 	public String replyListenerInput(IListener<?> listener, String correlationId, String input) {
-		return testTool.startpoint(correlationId, ClassUtils.classNameOf(listener), getCheckpointNameForINamedObject(REPORT_LISTENER_PREFIX, listener), input, extractMessageContext(input));
+		return testTool.startpoint(correlationId, classNameOf(listener), getCheckpointNameForINamedObject(REPORT_LISTENER_PREFIX, listener), input, extractMessageContext(input));
 	}
 
 	public <M> M replyListenerOutput(IListener<M> listener, String correlationId, M output) {
-		return testTool.endpoint(correlationId, ClassUtils.classNameOf(listener), getCheckpointNameForINamedObject(REPORT_LISTENER_PREFIX, listener), output, extractMessageContext(output));
+		return testTool.endpoint(correlationId, classNameOf(listener), getCheckpointNameForINamedObject(REPORT_LISTENER_PREFIX, listener), output, extractMessageContext(output));
 	}
 
 	public Throwable replyListenerAbort(IListener<?> listener, String correlationId, Throwable throwable){
-		testTool.abortpoint(correlationId, ClassUtils.classNameOf(listener), getCheckpointNameForINamedObject(REPORT_LISTENER_PREFIX, listener), throwable);
+		testTool.abortpoint(correlationId, classNameOf(listener), getCheckpointNameForINamedObject(REPORT_LISTENER_PREFIX, listener), throwable);
 		return throwable;
 	}
 
@@ -169,11 +168,11 @@ public class LadybugReportGenerator implements InitializingBean {
 	}
 
 	public Object startThread(Object sourceObject, String threadId, String correlationId, Object input) {
-		return testTool.threadStartpoint(correlationId, threadId, ClassUtils.classNameOf(sourceObject), getCheckpointNameForThread(), input, extractMessageContext(input));
+		return testTool.threadStartpoint(correlationId, threadId, classNameOf(sourceObject), getCheckpointNameForThread(), input, extractMessageContext(input));
 	}
 
 	public Object endThread(Object sourceObject, String correlationId, Object output) {
-		return testTool.threadEndpoint(correlationId, ClassUtils.classNameOf(sourceObject), getCheckpointNameForThread(), output, extractMessageContext(output));
+		return testTool.threadEndpoint(correlationId, classNameOf(sourceObject), getCheckpointNameForThread(), output, extractMessageContext(output));
 	}
 
 	public Throwable abortThread(Object sourceObject, String correlationId, Throwable throwable) {
@@ -247,7 +246,7 @@ public class LadybugReportGenerator implements InitializingBean {
 	private static String getCheckpointNameForINamedObject(String checkpointNamePrefix, HasName object) {
 		String name = object.getName();
 		if (name == null) {
-			name = ClassUtils.classNameOf(object);
+			name = classNameOf(object);
 			name = name.substring(name.lastIndexOf('.') + 1);
 		}
 		return checkpointNamePrefix + name;
@@ -264,5 +263,13 @@ public class LadybugReportGenerator implements InitializingBean {
 			name = "Thread SimpleAsyncTaskExecutor";
 		}
 		return name;
+	}
+
+	/**
+	 * Return the sanitized ClassName for the given object.
+	 * Usually simply the class of the given instance, but the original class in case of a CGLIB-generated subclass.
+	 */
+	private static String classNameOf(Object object) {
+		return ClassUtils.getUserClass(object).getName();
 	}
 }
