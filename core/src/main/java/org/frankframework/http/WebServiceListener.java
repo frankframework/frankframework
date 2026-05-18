@@ -80,8 +80,6 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private @Getter boolean mtomEnabled = false;
 	private @Getter String attachmentSessionKeys = "";
 	private @Getter String multipartXmlSessionKey = "multipartXml";
-	private @Getter String understandsHeaders;
-
 	private final List<String> attachmentSessionKeysList = new ArrayList<>();
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
@@ -136,9 +134,6 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
-			if (StringUtils.isNotBlank(understandsHeaders)) {
-				endpoint.getInInterceptors().add(new MustUnderstandHeaderProvider(understandsHeaders));
-			}
 
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
@@ -304,13 +299,5 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
-	}
-
-	/**
-	 * Comma-separated list of SOAP headers that have attribute {@code mustUnderstand="1"} that this webservice understands. The headers must be specified
-	 * in the format {@literal  namespace-uri|element-name}, so for instance: {@code understandsHeaders="https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|SyncReply,https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd|MessageHeader"}
-	 */
-	public void setUnderstandsHeaders(String understandsHeaders) {
-		this.understandsHeaders = understandsHeaders;
 	}
 }
