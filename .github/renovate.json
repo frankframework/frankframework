@@ -9,7 +9,7 @@
     "dependencyDashboardApproval": false,
     "baseBranchPatterns": [
         "master",
-        "/^release\\/9\\./",
+        "/^release\\/(9\\.0|9\\.4)$/",
         "/^release\\/8\\.0$/",
         "/^release\\/10\\./"
     ],
@@ -63,7 +63,6 @@
                 "org.eclipse.m2e:lifecycle-mapping",
                 "com.eclipsesource.j2v8:j2v8_linux_x86_64"
             ],
-            "groupName": "maven-dependencies",
             "separateMajorMinor": true,
             "separateMultipleMinor": true,
             "separateMultipleMajor": true,
@@ -92,6 +91,28 @@
                 "/^org\\.springframework\\.security:/"
             ],
             "separateMinorPatch": true
+        },
+        {
+            "description": "Tomcat Dependencies",
+            "matchManagers": [
+                "maven",
+                "docker"
+            ],
+            "groupName": "Tomcat",
+            "matchPackageNames": [
+                "/^org\\.apache\\.tomcat:/"
+            ],
+            "separateMinorPatch": true
+        },
+        {
+            "description": "Group Maven patch updates",
+            "matchManagers": [
+                "maven"
+            ],
+            "matchUpdateTypes": [
+                "patch"
+            ],
+            "groupName": "maven-dependencies"
         },
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
@@ -124,6 +145,10 @@
             "description": "All NPM dependencies - weekly schedule, ignore major updates",
             "matchManagers": [
                 "npm"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
             ],
             "schedule": [
                 "before 6am on the first day of the week"
