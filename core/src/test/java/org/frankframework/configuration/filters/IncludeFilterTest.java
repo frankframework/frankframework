@@ -36,9 +36,10 @@ public class IncludeFilterTest {
 		XmlWriter writer = new XmlWriter();
 		IncludeFilter filter = new IncludeFilter(writer, root);
 
-		SAXParseException e = assertThrows(SAXParseException.class, ()->XmlUtils.parseXml(root, filter));
+		SAXParseException e = assertThrows(SAXParseException.class, () -> XmlUtils.parseXml(root, filter));
 
 		assertThat(e.getSystemId(), containsString("ErrA.xml"));
+		assertEquals(3, e.getLineNumber());
 		assertEquals(expected, writer.toString().trim());
 	}
 }

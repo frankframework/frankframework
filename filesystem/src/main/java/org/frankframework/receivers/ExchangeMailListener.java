@@ -21,6 +21,7 @@ import org.frankframework.doc.ReferTo;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
+import org.frankframework.filesystem.AbstractFileSystemSender;
 import org.frankframework.filesystem.AbstractMailFileSystem;
 import org.frankframework.filesystem.AbstractMailListener;
 import org.frankframework.filesystem.exchange.ExchangeFileSystem;
@@ -29,7 +30,13 @@ import org.frankframework.filesystem.exchange.MailMessage;
 import org.frankframework.util.SpringUtils;
 
 /**
- * Microsoft Exchange Implementation of a mailbox based filesystem.
+ * Implementation of a {@link AbstractFileSystemSender} that enables to manipulate messages in an Exchange folder.
+ * Uses the MS Graph API to manage a mailbox.
+ * 
+ * Compared to older versions of the Frank!Framework the {@code DELETE} action was a soft delete. Now it's a hard delete and 
+ * thus no longer moves the mail item to the {@code Archive} or {@code Deleted items}.
+ * 
+ * @see <a href="https://learn.microsoft.com/en-us/graph/api/message-delete?view=graph-rest-1.0&tabs=http">MS Graph API</a>
  */
 @Category(Category.Type.ADVANCED)
 public class ExchangeMailListener extends AbstractMailListener<MailItemId, MailMessage, ExchangeFileSystem> {

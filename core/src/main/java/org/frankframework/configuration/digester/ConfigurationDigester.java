@@ -152,7 +152,8 @@ public class ConfigurationDigester implements ConfigurationAware {
 			parseAndResolveEntitiesAndProperties(digester, applicationContext, configurationResource, properties);
 
 			CONFIGURATION_LOG.info(getLoadedConfiguration());
-		} catch (IOException | TransformerConfigurationException e) {
+		} catch (SAXParseException | IOException | TransformerConfigurationException e) {
+			// IbisException automatically adds the locator information when present.
 			throw new ConfigurationException("error loading configuration", e);
 		} catch (SAXException e) {
 			Locator locator = digester.getDocumentLocator();
