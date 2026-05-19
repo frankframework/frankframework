@@ -43,29 +43,38 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 
 	@Test
 	void testRelativeCreateRootFolder() throws Exception {
-		fileSystem.setRoot("x/y");
+		String filename = "createFileAbsolute" + FILE1;
+		String contents = "regeltje tekst";
+		Path currentWorkingDirectory = Paths.get("").toAbsolutePath().normalize();
+		Path relativeRootParent = folder.resolve("relative-root-" + System.nanoTime());
+		Path absoluteRoot = relativeRootParent.resolve("x").resolve("y");
+		Path relativeRoot = currentWorkingDirectory.relativize(absoluteRoot);
+
+		fileSystem.setRoot(relativeRoot.toString());
 		fileSystem.setCreateRootFolder(true);
 		fileSystem.configure();
 		fileSystem.open();
 
-		String filename = "createFileAbsolute" + FILE1;
-		String contents = "regeltje tekst";
+		Path file = null;
+		try {
+			file = fileSystem.toFile(filename);
+			fileSystem.createFile(file, new ByteArrayInputStream(contents.getBytes()));
 
-		Path file = fileSystem.toFile(filename);
-		fileSystem.createFile(file, new ByteArrayInputStream(contents.getBytes()));
+			waitForActionToFinish();
+			// test
+			assertTrue(fileSystem.exists(file), "Expected file [" + filename + "] to be present");
 
-		waitForActionToFinish();
-		// test
-		assertTrue(fileSystem.exists(file), "Expected file [" + filename + "] to be present");
-
-		String actual = fileSystem.readFile(file, null).asString();
-		// test
-		assertEquals(contents.trim(), actual.trim());
-
-		// Cleanup relatively created 'x/y/createFileAbsolutefile1.txt' directory and contents
-		Files.delete(file);
-		Files.delete(file.getParent());
-		Files.delete(file.getParent().getParent());
+			String actual = fileSystem.readFile(file, null).asString();
+			// test
+			assertEquals(contents.trim(), actual.trim());
+		} finally {
+			if (file != null) {
+				Files.deleteIfExists(file);
+			}
+			Files.deleteIfExists(absoluteRoot);
+			Files.deleteIfExists(absoluteRoot.getParent());
+			Files.deleteIfExists(relativeRootParent);
+		}
 	}
 
 	@Test
