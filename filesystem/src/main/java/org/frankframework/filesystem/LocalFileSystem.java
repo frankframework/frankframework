@@ -102,7 +102,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public Path toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
-		if (filename==null) {
+		if (filename == null) {
 			filename="";
 		}
 
@@ -110,23 +110,24 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			filename = folder + FILE_DELIMITER + filename;
 		}
 
-		if (StringUtils.isNotEmpty(getRoot())) {
-			Path result = Paths.get(filename);
-			if (result.isAbsolute()) {
-				return result;
-			}
+		Path result = Paths.get(filename);
 
+		if (StringUtils.isNotEmpty(getRoot()) && !result.isAbsolute()) {
 			// Filename will always contain the folder, if it's passed as parameter or within the filename.
 			// We need to make sure that the root is not prepended if it's already part of the filename.
 			// Use normalized Path-based comparison to avoid false positives (for example root x/y vs filename x/y2/file).
 			if (!result.normalize().startsWith(Paths.get(getRoot()).normalize())) {
-				filename = Paths.get(getRoot()).resolve(filename).toString();
+				return Paths.get(getRoot()).resolve(filename);
 			}
+
+			filename = result.toString();
 		}
+
 		if (StringUtils.isEmpty(filename)) {
 			throw new FileSystemException("no filesystem-root, file or folder specified");
 		}
-		return Paths.get(filename);
+
+		return result;
 	}
 
 	@NonNull

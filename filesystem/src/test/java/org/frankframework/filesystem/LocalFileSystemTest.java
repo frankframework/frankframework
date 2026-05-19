@@ -45,8 +45,6 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 
 	@Test
 	void testRelativeCreateRootFolder() throws Exception {
-		String filename = "createFileAbsolute" + FILE1;
-		String contents = "regeltje tekst";
 		Path currentWorkingDirectory = Paths.get("").toAbsolutePath().normalize();
 		Path testRootBase = folder.resolve("relative-root-" + UUID.randomUUID());
 		Path absoluteRoot = testRootBase.resolve("x").resolve("y");
@@ -59,6 +57,9 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 
 		Path file = null;
 		try {
+			String filename = "createFileAbsolute" + FILE1;
+			String contents = "regeltje tekst";
+
 			file = fileSystem.toFile(filename);
 			fileSystem.createFile(file, new ByteArrayInputStream(contents.getBytes()));
 
@@ -70,9 +71,11 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 			// test
 			assertEquals(contents.trim(), actual.trim());
 		} finally {
+			// Clean up relatively created 'x/y/createFileAbsolutefile1.txt' directory and contents
 			if (file != null) {
 				Files.deleteIfExists(file);
 			}
+
 			if (Files.exists(testRootBase)) {
 				FileUtils.deleteDirectory(testRootBase.toFile());
 			}
