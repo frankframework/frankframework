@@ -46,7 +46,7 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
         const viewId = views[index];
         const name = appConstants[`customViews.${viewId}.name`] as string;
         const url = appConstants[`customViews.${viewId}.url`] as string;
-        const target = appConstants[`customViews.${viewId}.target`] as string | undefined;
+        const target = appConstants[`customViews.${viewId}.target`] as string | null;
         if (name && url)
           this.customViews.push({
             view: viewId,
