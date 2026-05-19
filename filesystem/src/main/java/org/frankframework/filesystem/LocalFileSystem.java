@@ -117,9 +117,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			}
 
 			// Filename will always contain the folder, if it's passed as parameter or within the filename.
-			// We need to make sure that the root is not prepended if it's the same as the root specified in the filename
-			if (!filename.startsWith(getRoot())) {
-				filename = getRoot() + FILE_DELIMITER + filename;
+			// We need to make sure that the root is not prepended if it's already part of the filename.
+			// Use normalized Path-based comparison to avoid false positives (for example root x/y vs filename x/y2/file).
+			if (!result.normalize().startsWith(Paths.get(getRoot()).normalize())) {
+				filename = Paths.get(getRoot()).resolve(filename).toString();
 			}
 		}
 		if (StringUtils.isEmpty(filename)) {

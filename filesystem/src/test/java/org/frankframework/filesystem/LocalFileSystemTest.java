@@ -69,6 +69,23 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 	}
 
 	@Test
+	void testToFileDoesNotTreatSimilarRootPrefixAsRoot() throws Exception {
+		fileSystem.setRoot("x/y");
+		Path resolved = fileSystem.toFile("x/y2/file.txt");
+
+		assertEquals(Paths.get("x/y").resolve("x/y2/file.txt"), resolved);
+	}
+
+	@Test
+	void testToFilePrependsRootWhenNormalizedPathIsOutsideRoot() throws Exception {
+		fileSystem.setRoot("x/y");
+		Path resolved = fileSystem.toFile("x/y/../outside/file.txt");
+
+		assertTrue(resolved.normalize().startsWith(Paths.get("x/y")));
+		assertEquals(Paths.get("x/y").resolve("x/y/../outside/file.txt"), resolved);
+	}
+
+	@Test
 	void localFileSystemTestCreateNewFileAbsolute() throws Exception {
 		String filename = "createFileAbsolute" + FILE1;
 		String contents = "regeltje tekst";
