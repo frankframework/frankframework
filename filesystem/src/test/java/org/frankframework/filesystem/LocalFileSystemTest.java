@@ -15,7 +15,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Map;
+import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -46,8 +48,8 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 		String filename = "createFileAbsolute" + FILE1;
 		String contents = "regeltje tekst";
 		Path currentWorkingDirectory = Paths.get("").toAbsolutePath().normalize();
-		Path relativeRootParent = folder.resolve("relative-root-" + System.nanoTime());
-		Path absoluteRoot = relativeRootParent.resolve("x").resolve("y");
+		Path testRootBase = folder.resolve("relative-root-" + UUID.randomUUID());
+		Path absoluteRoot = testRootBase.resolve("x").resolve("y");
 		Path relativeRoot = currentWorkingDirectory.relativize(absoluteRoot);
 
 		fileSystem.setRoot(relativeRoot.toString());
@@ -71,9 +73,9 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 			if (file != null) {
 				Files.deleteIfExists(file);
 			}
-			Files.deleteIfExists(absoluteRoot);
-			Files.deleteIfExists(absoluteRoot.getParent());
-			Files.deleteIfExists(relativeRootParent);
+			if (Files.exists(testRootBase)) {
+				FileUtils.deleteDirectory(testRootBase.toFile());
+			}
 		}
 	}
 
