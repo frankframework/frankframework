@@ -105,15 +105,22 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		if (filename==null) {
 			filename="";
 		}
+
 		if (StringUtils.isNotEmpty(folder) && !(filename.contains(FILE_DELIMITER) || filename.contains("\\"))) {
 			filename = folder + FILE_DELIMITER + filename;
 		}
+
 		if (StringUtils.isNotEmpty(getRoot())) {
 			Path result = Paths.get(filename);
 			if (result.isAbsolute()) {
 				return result;
 			}
-			filename = getRoot()+ FILE_DELIMITER + filename;
+
+			// Filename will always contain the folder, if it's passed as parameter or within the filename.
+			// We need to make sure that the root is not prepended if it's the same as the root specified in the filename
+			if (!filename.startsWith(getRoot())) {
+				filename = getRoot() + FILE_DELIMITER + filename;
+			}
 		}
 		if (StringUtils.isEmpty(filename)) {
 			throw new FileSystemException("no filesystem-root, file or folder specified");
@@ -262,7 +269,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			throw new FolderAlreadyExistsException("Create folder for [" + folder + "] has failed. Directory already exists.");
 		}
 		try {
-			Files.createDirectories(toFile(folder));
+			Files.createDirectories(toFile(folder, null));
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot create folder ["+ folder +"]", e);
 		}

@@ -42,6 +42,33 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 	}
 
 	@Test
+	void testRelativeCreateRootFolder() throws Exception {
+		fileSystem.setRoot("x/y");
+		fileSystem.setCreateRootFolder(true);
+		fileSystem.configure();
+		fileSystem.open();
+
+		String filename = "createFileAbsolute" + FILE1;
+		String contents = "regeltje tekst";
+
+		Path file = fileSystem.toFile(filename);
+		fileSystem.createFile(file, new ByteArrayInputStream(contents.getBytes()));
+
+		waitForActionToFinish();
+		// test
+		assertTrue(fileSystem.exists(file), "Expected file [" + filename + "] to be present");
+
+		String actual = fileSystem.readFile(file, null).asString();
+		// test
+		assertEquals(contents.trim(), actual.trim());
+
+		// Cleanup relatively created 'x/y/createFileAbsolutefile1.txt' directory and contents
+		Files.delete(file);
+		Files.delete(file.getParent());
+		Files.delete(file.getParent().getParent());
+	}
+
+	@Test
 	void localFileSystemTestCreateNewFileAbsolute() throws Exception {
 		String filename = "createFileAbsolute" + FILE1;
 		String contents = "regeltje tekst";
