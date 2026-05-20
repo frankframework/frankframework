@@ -199,12 +199,12 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	@DatabaseTest
-	public void testRetrieveObjectWithADifferentColumnNotCompressed() throws Exception {
+	public void testRetrieveObjectWithADifferentColumnNotCompressed() {
 		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(false), "unknown compression method");
 	}
 
 	@DatabaseTest
-	public void testRetrieveObjectWithADifferentColumn() throws Exception {
+	public void testRetrieveObjectWithADifferentColumn() {
 		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(true), "invalid stream header");
 	}
 
@@ -272,5 +272,4 @@ public class JdbcTransactionalStorageTest {
 		assertEquals(message, result);
 		storage.getTxManager().commit(tx);
 	}
-
 }
