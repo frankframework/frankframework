@@ -1,10 +1,14 @@
 Frank!Framework Release Notes
 ===================================
 
-[Tags](https://github.com/frankframework/frankframework/releases)
-[JavaDocs](https://javadoc.frankframework.org/)
+Please note that this file is not actively maintained any more. Please visit https://insights.frankframework.org/ for our releases and their planning. Breaking changes
+which require manual changes in your configuration are now mentioned in [BREAKING.md](BREAKING.md)
 
-Upcoming (9.4)
+* [Tags](https://github.com/frankframework/frankframework/releases)
+* [JavaDocs](https://javadoc.frankframework.org/)
+* [Insights](https://insights.frankframework.org/)
+
+9.4 - December 31, 2025
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/release/9.3...HEAD)
 
