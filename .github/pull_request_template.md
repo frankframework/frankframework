@@ -39,11 +39,11 @@ Example: release/9.x, release/10.x
 ### Documentation
 <!--
 Keep user and developer docs in sync with the change.
-Update where applicable: FF!Reference, Javadoc and if applicable the docs on [docs.frankframework.org](https://docs.frankframework.org/)
+Update where applicable: FF! Reference, Javadoc and if applicable the docs on [docs.frankframework.org](https://docs.frankframework.org/)
 -->
-- [ ] FF!Reference updated (user-facing behaviour/config)
+- [ ] FF! Reference updated (user-facing behaviour/config)
 - [ ] Javadoc updated/generated (developer-facing APIs)
-- [ ] Frank!Docs updated (if applicable)
+- [ ] FF! Docs updated (if applicable)
 
 ### Tests
 <!--
