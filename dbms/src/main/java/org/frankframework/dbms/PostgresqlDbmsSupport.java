@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import lombok.SneakyThrows;
 
@@ -295,7 +296,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 					log.trace("retrieved query result [{}]", resultString);
 
 					log.trace("expected string has indexOf [{}]", () -> resultString.indexOf(target.toString()));
-					if (resultString.indexOf(target.toString()) > 0) {
+					if (Strings.CI.contains(resultString, target.toString())) {
 						return true;
 					}
 				}
