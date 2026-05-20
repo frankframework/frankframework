@@ -28,7 +28,6 @@ import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
-import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -68,16 +67,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	}
 
 	private static PipeLineResult createPipeLineResult(PipeLine pipeLine, String messageId, PipeLineSession pipeLineSession, ProcessingResult<PipeLineExit> result) {
-		PipeLineResult pipeLineResult = new PipeLineResult();
-		PipeLineExit plExit = result.forwardTarget;
-		ExitState state=plExit.getState();
-		pipeLineResult.setState(state);
-		pipeLineResult.setExitCode(plExit.getExitCode());
-		if (!plExit.isEmptyResult() || result.message.isEmpty()) { // If message is empty always store it so meta-data is preserved even when the exit wants an empty result
-			pipeLineResult.setResult(result.message);
-		} else {
-			pipeLineResult.setResult(Message.nullMessage());
-		}
+		PipeLineResult pipeLineResult = PipeLineResult.create(result.forwardTarget, result.message);
 		if (log.isDebugEnabled()){  // for performance reasons
 			StringBuilder skString = new StringBuilder();
 			for (Map.Entry<String, Object> entry: pipeLineSession.entrySet()) {
@@ -85,9 +75,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				Object value = entry.getValue();
 				skString.append("\n ").append(key).append("=[").append(value).append("]");
 			}
-			log.debug("Available session keys at finishing pipeline of adapter [{}]:{}", pipeLine.getAdapter().getName(), skString);
-			log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: ({}) [{}] with exit-state [{}]", pipeLine.getAdapter()
-					.getName(), messageId, result.message.getClass().getSimpleName(), result.message, state);
+			String adapterName = pipeLine.getAdapter().getName();
+			log.debug("Available session keys at finishing pipeline of adapter [{}]:{}", adapterName, skString);
+			log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: ({}) [{}] with exit-state [{}]", adapterName, messageId, result.message.getClass().getSimpleName(), result.message, result.forwardTarget.getState());
 		}
 		return pipeLineResult;
 	}

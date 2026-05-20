@@ -15,7 +15,8 @@
 */
 package org.frankframework.core;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -33,36 +34,64 @@ import org.frankframework.stream.Message;
  * <br/>
  * @author Johan Verrips
  */
+@NullMarked
 public class PipeLineResult {
 
-	private @Setter Message result;
+	private @Setter @Nullable Message result;
 	private @Setter ExitState state;
-	private @Getter Integer exitCode;
+	private @Getter @Nullable Integer exitCode;
 
-	public boolean isSuccessful() {
-		return getState()==ExitState.SUCCESS;
+	public PipeLineResult() {
+		return;
 	}
 
-	public @NonNull Message getResult() {
+	public PipeLineResult(Message result) {
+		this.result = result;
+		this.state = ExitState.SUCCESS;
+	}
+
+	public PipeLineResult(Message result, ExitState state) {
+		this.result = result;
+		this.state = state;
+	}
+
+	public static PipeLineResult create(PipeLineExit exit, Message result) {
+		PipeLineResult pipeLineResult = new PipeLineResult();
+		pipeLineResult.setState(exit.getState());
+		pipeLineResult.setExitCode(exit.getExitCode());
+		if (!exit.isEmptyResult()) {
+			pipeLineResult.setResult(result);
+		} else {
+			pipeLineResult.setResult(Message.nullMessage(result.getContext()));
+		}
+		pipeLineResult.setResult(result);
+		return pipeLineResult;
+	}
+
+	public boolean isSuccessful() {
+		return getState() == ExitState.SUCCESS;
+	}
+
+	public Message getResult() {
 		if (result == null) {
 			return Message.nullMessage();
 		}
 		return result;
 	}
 
-	public @NonNull ExitState getState() {
+	public ExitState getState() {
 		return state;
 	}
 
 	public void setExitCode(int exitCode) {
-		if(exitCode > 0) {
+		if (exitCode > 0) {
 			this.exitCode = exitCode;
 		}
 	}
 
 	@Override
-	public String toString(){
-		return "result=["+result+"] state=["+state+"]";
+	public String toString() {
+		return "result=[" + result + "] state=[" + state + "]";
 	}
 
 }

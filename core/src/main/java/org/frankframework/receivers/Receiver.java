@@ -69,6 +69,7 @@ import org.frankframework.core.HasSender;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.ICorrelatedSender.LinkMethod;
+import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IKnowsDeliveryCount;
 import org.frankframework.core.IListener;
@@ -93,8 +94,11 @@ import org.frankframework.core.ManagableLifecycle;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
+import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.RequestReplyListener;
 import org.frankframework.core.SenderException;
@@ -1312,7 +1316,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 						setPipelineCallerInMessageContext(getListener().getName(), compactedMessage);
 
-						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
+						Message validatedInputMessage = preProcessInput(compactedMessage, session);
+						pipeLineResult = adapter.processMessageWithExceptions(messageId, validatedInputMessage, session);
+						pipeLineResult = postProcessResult(pipeLineResult, session);
 
 						session.setExitState(pipeLineResult);
 						result = pipeLineResult.getResult();
@@ -1435,6 +1441,57 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
+	private @NonNull Message preProcessInput(@NonNull Message inputMessage, @NonNull PipeLineSession session) throws PipeRunException, ListenerException {
+		final IValidator validator = inputValidator;
+		final IWrapperPipe wrapper = inputWrapper;
+		if (validator == null && wrapper == null) {
+			return inputMessage;
+		}
+		Message message = inputMessage;
+		if (validator != null) {
+			PipeRunResult validationResult = validator.validate(message, session, null);
+			if (!validationResult.isSuccessful()) {
+				throw new ListenerException("Input validation failed");
+			}
+			message = validationResult.getResult();
+		}
+		if (wrapper != null) {
+			PipeRunResult wrapResult = wrapper.doPipe(message, session);
+			if (!wrapResult.isSuccessful()) {
+				throw new ListenerException("Input wrapping failed");
+			}
+			message = wrapResult.getResult();
+		}
+		return message;
+	}
+
+	private @NonNull PipeLineResult postProcessResult(@NonNull PipeLineResult pipeLineResult, @NonNull PipeLineSession session) throws PipeRunException {
+		final IWrapperPipe wrapper = outputWrapper;
+		final IValidator validator = outputValidator;
+		if (wrapper == null && validator == null) {
+			return pipeLineResult;
+		}
+		Message message = pipeLineResult.getResult();
+		PipeRunResult wrapResult;
+		if (wrapper != null) {
+			wrapResult = wrapper.doPipe(message, session);
+			if (!wrapResult.isSuccessful() || validator == null) {
+				return createPipeLineResult(wrapper, wrapResult);
+			}
+			message = wrapResult.getResult();
+		}
+		wrapResult = validator.validate(message, session, null);
+		return createPipeLineResult(validator, wrapResult);
+	}
+
+	private @NonNull PipeLineResult createPipeLineResult(@NonNull IPipe pipe, @NonNull PipeRunResult pipeRunResult) throws PipeRunException {
+		IForwardTarget forwardTarget = adapter.getPipeLine().resolveForward(pipe, pipeRunResult.getPipeForward());
+		if (!(forwardTarget instanceof PipeLineExit exit)) {
+			throw new IllegalStateException("Validator/Wrapper did not forward to exit");
+		}
+		return PipeLineResult.create(exit, pipeRunResult.getResult());
+	}
+
 	/**
 	 * Last-ditch option to mark the message processing as failure, in case processing fails only at the commit and
 	 * the commit is from a JMS transaction initiated by JMS client / Application Server.
@@ -1545,7 +1602,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return false;
 	}
 
-	private String extractLabel(Message message) {
+	private @Nullable String extractLabel(Message message) {
 		if (labelTp != null) {
 			try {
 				return labelTp.transformToString(message);
