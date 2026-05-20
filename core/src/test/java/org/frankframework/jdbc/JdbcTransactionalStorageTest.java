@@ -150,9 +150,7 @@ public class JdbcTransactionalStorageTest {
 		assertEquals(storageKey, ro.getId());
 		assertNotNull(o);
 		assertEquals(message, o);
-
 	}
-
 
 	private String insertARecord(boolean blobsCompressed, String message, char type) throws SQLException, IOException {
 		try (Connection connection = env.getConnection()) {
@@ -198,9 +196,8 @@ public class JdbcTransactionalStorageTest {
 
 	private String createMessage() {
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 5; i++) {
-			sb.append("message");
-		}
+		sb.repeat("message", 5);
+
 		return sb.toString();
 	}
 

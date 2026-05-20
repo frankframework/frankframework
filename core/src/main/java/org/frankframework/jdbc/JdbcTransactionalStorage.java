@@ -15,7 +15,6 @@
 */
 package org.frankframework.jdbc;
 
-import static org.frankframework.functional.FunctionalUtil.logValue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +26,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,7 +47,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.IbisTransaction;
@@ -62,7 +59,6 @@ import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.datasource.JdbcPoolUtil;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -96,7 +92,7 @@ import org.frankframework.util.TimeProvider;
  * a key based on the sent or received message. Messages with the same key are considered to
  * be the same.
  * <br/><br/>
- * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
+ * Storage structure is defined in the liquibase migration `/IAF_util/IAF_DatabaseChangelog.xml`. If these database objects do not exist,
  * the Frank!Framework will try to create them.
  * <br/><br/>
  * {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
@@ -118,7 +114,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	private @Getter boolean checkTable; 		// default set from appConstant jdbc.storage.checkTable
 	private @Getter boolean checkIndices;		// default set from appConstant jdbc.storage.checkIndices
-	private @Getter boolean createTable=false;
 
 	private String host;
 	private @Getter boolean blobsCompressed=true;
@@ -329,7 +324,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	/**
-	 * Creates a connection, checks if the table is existing and creates it when necessary
+	 * Creates a connection, checks if the necessary tables, indices and sequences exist.
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -367,17 +362,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			}
 		} catch (JdbcException e) {
 			throw new ConfigurationException("Cannot get the configured datasource [" + getDatasourceName() + "]", e);
-		}
-	}
-
-	@Override
-	public void start() {
-		try {
-			initialize(getDbmsSupport());
-		} catch (JdbcException e) {
-			throw new LifecycleException(e);
-		} catch (SQLException e) {
-			throw new LifecycleException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
 		}
 	}
 
@@ -448,77 +432,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		 * selectListQuery zou FIRST_ROWS(500) hint kunnen krijgen
 		 * we zouden de index hint via een custom property aan en uit kunnen zetten...
 		 */
-	}
-
-	/**
-	 *	Checks if table exists, and creates when necessary.
-	 */
-	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException {
-		try (Connection conn = getConnection()) {
-			boolean tableMustBeCreated;
-
-			if (isCheckTable()) {
-				try {
-					tableMustBeCreated = !getDbmsSupport().isTablePresent(conn, getPrefix()+getTableName());
-					if (!isCreateTable() && tableMustBeCreated) {
-						throw new LifecycleException("table ["+getPrefix()+getTableName()+"] does not exist");
-					}
-					log.info("table [{}{}] does {}exist", this::getPrefix, this::getTableName, logValue(tableMustBeCreated?"NOT ":""));
-				} catch (JdbcException e) {
-					log.warn("{}exception determining existence of table [{}{}] for transactional storage, trying to create anyway.{}", getLogPrefix(), getPrefix(), getTableName(), e.getMessage());
-					tableMustBeCreated=true;
-				}
-			} else {
-				log.info("did not check for existence of table [{}{}]", getPrefix(), getTableName());
-				tableMustBeCreated = false;
-			}
-
-			if (isCreateTable() && tableMustBeCreated) {
-				log.info("{}creating table [{}{}] for transactional storage", getLogPrefix(), getPrefix(), getTableName());
-				try (Statement stmt = conn.createStatement()) {
-					createStorage(conn, stmt, dbmsSupport);
-				}
-				conn.commit();
-			}
-		}
-	}
-
-	/**
-	 *	Acutaly creates storage. Can be overridden in descender classes
-	 */
-	protected void createStorage(Connection conn, Statement stmt, IDbmsSupport dbmsSupport) throws JdbcException {
-		String query=null;
-		try {
-			query="CREATE TABLE "+getPrefix()+getTableName()+" ("+
-						getKeyField()+" "+getKeyFieldType()+" CONSTRAINT " +getPrefix()+getTableName()+ "_pk PRIMARY KEY, "+
-						(StringUtils.isNotEmpty(getTypeField())?getTypeField()+" CHAR(1), ":"")+
-						(StringUtils.isNotEmpty(getSlotId())? getSlotIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
-						(StringUtils.isNotEmpty(getHostField())?getHostField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
-						getIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), "+
-						getCorrelationIdField()+" "+getTextFieldType()+"("+MAXCIDLEN+"), "+
-						getDateField()+" "+getDateFieldType()+", "+
-						getCommentField()+" "+getTextFieldType()+"("+MAXCOMMENTLEN+"), "+
-						getMessageField()+" "+getMessageFieldType()+", "+
-						getExpiryDateField()+" "+getDateFieldType()+
-						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+" "+getTextFieldType()+"("+MAXLABELLEN+"), ":"")+
-					")";
-
-			log.debug("{}creating table [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getTableName, logValue(query));
-			stmt.execute(query);
-			if (StringUtils.isNotEmpty(getIndexName())) {
-				query = "CREATE INDEX "+getPrefix()+getIndexName()+" ON "+getPrefix()+getTableName()+"("+(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+getDateField()+","+getExpiryDateField()+")";
-				log.debug("{}creating index [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getIndexName, logValue(query));
-				stmt.execute(query);
-			}
-			if (dbmsSupport.autoIncrementUsesSequenceObject()) {
-				query="CREATE SEQUENCE "+getPrefix()+getSequenceName()+" START WITH 1 INCREMENT BY 1";
-				log.debug("{}creating sequence for table [{}{}] using query [{}]", this::getLogPrefix, this::getPrefix, this::getTableName, logValue(query));
-				stmt.execute(query);
-			}
-			conn.commit();
-		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+" executing query ["+query+"]", e);
-		}
 	}
 
 	@NonNull
@@ -837,16 +750,6 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		checkTable = b;
 	}
 
-	/**
-	 * If set to <code>true</code>, the table is created if it does not exist
-	 * @ff.default false
-	 */
-	@Deprecated(forRemoval = true, since = "7.9.0")
-	@ConfigurationWarning("if you want to create and maintain database tables, please enable Liquibase")
-	public void setCreateTable(boolean b) {
-		createTable = b;
-	}
-
 	/** The type of the column message themselves are stored in */
 	public void setMessageFieldType(String string) {
 		messageFieldType = string;
@@ -906,5 +809,4 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	public void setOnlyStoreWhenMessageIdUnique(boolean onlyStoreWhenMessageIdUnique) {
 		this.onlyStoreWhenMessageIdUnique = onlyStoreWhenMessageIdUnique;
 	}
-
 }
