@@ -61,7 +61,10 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 			String contents = "regeltje tekst";
 
 			file = fileSystem.toFile(filename);
-			fileSystem.createFile(file, new ByteArrayInputStream(contents.getBytes()));
+
+			try (ByteArrayInputStream input = new ByteArrayInputStream(contents.getBytes())) {
+				fileSystem.createFile(file, input);
+			}
 
 			waitForActionToFinish();
 			// test
