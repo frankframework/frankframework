@@ -1314,12 +1314,16 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
 
-						setPipelineCallerInMessageContext(getListener().getName(), compactedMessage);
 
-						Message validatedInputMessage = preProcessInput(compactedMessage, session);
-						pipeLineResult = adapter.processMessageWithExceptions(messageId, validatedInputMessage, session);
-						pipeLineResult = postProcessResult(pipeLineResult, session);
-
+						PipeLineResult validatedInput = preProcessInput(compactedMessage, session);
+						if (validatedInput.isSuccessful()) {
+							Message validatedInputMessage = validatedInput.getResult();
+							setPipelineCallerInMessageContext(getListener().getName(), validatedInputMessage);
+							pipeLineResult = adapter.processMessageWithExceptions(messageId, validatedInputMessage, session);
+							pipeLineResult = postProcessResult(pipeLineResult, session);
+						} else {
+							pipeLineResult = validatedInput;
+						}
 						session.setExitState(pipeLineResult);
 						result = pipeLineResult.getResult();
 
@@ -1338,7 +1342,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						}
 
 						log.debug("{} received result: {}", logPrefix, statusMessage);
-						messageInError=itx.isRollbackOnly();
+						messageInError = itx.isRollbackOnly();
 					} finally {
 						log.debug("{} canceling TimeoutGuard, isInterrupted [{}]", () -> logPrefix, () -> Thread.currentThread().isInterrupted());
 						if (tg.cancel()) {
@@ -1346,7 +1350,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 							if (Message.isEmpty(result)) {
 								result = new Message("<timeout/>");
 							}
-							messageInError=true;
+							messageInError = true;
 						}
 					}
 					if (!messageInError && !isTransacted()) {
@@ -1358,8 +1362,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					}
 					error("Exception in message processing", t);
 					statusMessage = t.getMessage();
-					if (pipeLineResult==null) {
-						pipeLineResult=new PipeLineResult();
+					if (pipeLineResult == null) {
+						pipeLineResult = new PipeLineResult();
 						pipeLineResult.setExitCode(session.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 500)); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
 					}
 					messageInError = true;
@@ -1441,28 +1445,22 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
-	private @NonNull Message preProcessInput(@NonNull Message inputMessage, @NonNull PipeLineSession session) throws PipeRunException, ListenerException {
+	private @NonNull PipeLineResult preProcessInput(@NonNull Message inputMessage, @NonNull PipeLineSession session) throws PipeRunException, ListenerException {
 		final IValidator validator = inputValidator;
 		final IWrapperPipe wrapper = inputWrapper;
 		if (validator == null && wrapper == null) {
-			return inputMessage;
+			return new PipeLineResult(inputMessage);
 		}
 		Message message = inputMessage;
 		if (validator != null) {
 			PipeRunResult validationResult = validator.validate(message, session, null);
-			if (!validationResult.isSuccessful()) {
-				throw new ListenerException("Input validation failed");
+			if (!validationResult.isSuccessful() || wrapper == null) {
+				return createPipeLineResult(validator, validationResult);
 			}
 			message = validationResult.getResult();
 		}
-		if (wrapper != null) {
-			PipeRunResult wrapResult = wrapper.doPipe(message, session);
-			if (!wrapResult.isSuccessful()) {
-				throw new ListenerException("Input wrapping failed");
-			}
-			message = wrapResult.getResult();
-		}
-		return message;
+		PipeRunResult wrapResult = wrapper.doPipe(message, session);
+		return createPipeLineResult(wrapper, wrapResult);
 	}
 
 	private @NonNull PipeLineResult postProcessResult(@NonNull PipeLineResult pipeLineResult, @NonNull PipeLineSession session) throws PipeRunException {
@@ -1472,16 +1470,15 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			return pipeLineResult;
 		}
 		Message message = pipeLineResult.getResult();
-		PipeRunResult wrapResult;
 		if (wrapper != null) {
-			wrapResult = wrapper.doPipe(message, session);
+			PipeRunResult wrapResult = wrapper.doPipe(message, session);
 			if (!wrapResult.isSuccessful() || validator == null) {
 				return createPipeLineResult(wrapper, wrapResult);
 			}
 			message = wrapResult.getResult();
 		}
-		wrapResult = validator.validate(message, session, null);
-		return createPipeLineResult(validator, wrapResult);
+		PipeRunResult validationResult = validator.validate(message, session, null);
+		return createPipeLineResult(validator, validationResult);
 	}
 
 	private @NonNull PipeLineResult createPipeLineResult(@NonNull IPipe pipe, @NonNull PipeRunResult pipeRunResult) throws PipeRunException {
