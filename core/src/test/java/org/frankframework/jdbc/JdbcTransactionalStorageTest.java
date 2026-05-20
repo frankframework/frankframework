@@ -195,10 +195,7 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	private String createMessage() {
-		StringBuilder sb = new StringBuilder();
-		sb.repeat("message", 5);
-
-		return sb.toString();
+		return "message".repeat(5);
 	}
 
 	@DatabaseTest

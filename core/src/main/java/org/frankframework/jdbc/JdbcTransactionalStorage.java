@@ -92,8 +92,8 @@ import org.frankframework.util.TimeProvider;
  * a key based on the sent or received message. Messages with the same key are considered to
  * be the same.
  * <br/><br/>
- * Storage structure is defined in the liquibase migration `/IAF_util/IAF_DatabaseChangelog.xml`. If these database objects do not exist,
- * the Frank!Framework will try to create them.
+ * Storage structure is defined in the liquibase migration `/IAF_util/IAF_DatabaseChangelog.xml`. On startup, liquibase will try to create this structure
+ * if not present already.
  * <br/><br/>
  * {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
  * for the JdbcErrorStorage or JdbcMessageLog. Otherwise messages may get lost.}
