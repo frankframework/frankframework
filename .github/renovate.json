@@ -157,7 +157,6 @@
                 "JavaScript"
             ],
             "groupName": "npm-dependencies",
-            "separateMajorMinor": true,
             "minimumReleaseAge": "5 days"
         },
         {

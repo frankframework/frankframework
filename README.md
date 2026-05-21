@@ -34,7 +34,7 @@ You may [create containers](/docker/README.md) to run the framework using the be
 All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/frankframework/charts).
 
 ### JDBC and Database support
-The Frank!Framework is built using the features of JDBC4.2 and has built-in support for MS SQL Server, Oracle, Postgresql, MariaDB and MySQL. Every PR and Release is tested against these databases.
+The Frank!Framework is built using the features of JDBC4.2 and has built-in support for MS SQL Server, Oracle, PostgreSQL, MariaDB and MySQL. Every PR and Release is tested against these databases.
 Support for DB2 is provided on an as-is basis.
 
 ### JMS support
@@ -46,12 +46,12 @@ The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration 
 
 ## Releases
 All our releases can be found on Maven central. Individual builds can be found on our Nexus repository [here](https://nexus.frankframework.org).
-For more information about our releases (such as improvements, non-backwards compatibility changes and security fixes), see the release notes of your version [here](https://github.com/frankframework/frankframework/releases).
+For more information about our releases, please visit [Insights](https://insights.frankframework.org/). Breaking changes can be found in [BREAKING.md](BREAKING.md).
 
 ## Security
 It is important to remember that the security of your Frank!Application is the result of the overall security of the hosting stack; the Java runtime, Application Server, Frank!Framework and your configuration.
 
-It is our responsibility that there are no vulnerabilities in the Frank!Framework itself and all it's Java dependencies. In turn it is your responsibility to keep your Frank!Framework version up to date and ensure there are no vulnerabilities in your configuration.
+It is our responsibility that there are no vulnerabilities in the Frank!Framework itself and all it's Java dependencies. In turn, it is your responsibility to keep your Frank!Framework version up to date and ensure there are no vulnerabilities in your configuration.
 More information about reporting vulnerabilities, supported versions and how we deal with CVE's can be found in our [Security Policy](SECURITY.md).
 
 ## Feedback
@@ -59,8 +59,9 @@ For bug reports and feature requests, create a new issue at <https://github.com/
 For general questions feel free to post them on our [discussions forum](https://github.com/frankframework/frankframework/discussions) here on GitHub. 
 If you would like to report a vulnerability, or have security concerns regarding the Frank!Framework, please email security@frankframework.org and include the word "SECURITY" in the subject line.
 
-## Frank!Manual
-In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions). If you want to contribute to our manual, the sources can be found [here](https://github.com/frankframework/frank-manual).
+## Frank!Docs
+In need of help? You can find our docs portal at [docs.frankframework.org](https://docs.frankframework.org/).
+If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions). If you want to contribute to our manual, the sources can be found [here](https://github.com/frankframework/frank-manual).
 
 ## Contributing
 Eager to help us expand or enhance our framework? 
