@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 
 		if (StringUtils.isNotEmpty(getAddress())) {
-			if(getAddress().contains(":")) {
+			if (getAddress().contains(":")) {
 				throw new ConfigurationException("address cannot contain colon ( : ) character");
 			}
 
@@ -133,6 +133,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			log.debug("registering listener [{}] with JAX-WS CXF Dispatcher on SpringBus [{}]", this::getName, cxfBus::getId);
 			endpoint = new EndpointImpl(cxfBus, new MessageProvider(this, getMultipartXmlSessionKey()));
 			endpoint.publish("/"+getAddress()); // TODO: prepend with `local://` when used without application server
+
 			SOAPBinding binding = (SOAPBinding)endpoint.getBinding();
 			binding.setMTOMEnabled(isMtomEnabled());
 
@@ -265,8 +266,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	 * where mydomain.com and ibis4something refer to 'your ibis'.
 	 */
 	public void setAddress(String address) {
-		if(!address.isEmpty()) {
-			if(address.startsWith("/"))
+		if (!address.isEmpty()) {
+			if (address.startsWith("/"))
 				this.address = address.substring(1);
 			else
 				this.address = address;
