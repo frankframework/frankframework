@@ -279,7 +279,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
-		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator) {
+		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator && validator.isConfiguredForMixedValidation()) {
 			outputValidator = validator.getResponseValidator();
 			setOutputValidator(outputValidator);
 		}
@@ -454,7 +454,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * Find the destination of the forward, i.e. the {@link IForwardTarget object} (Pipe or PipeLineExit) where the forward points to.
 	 */
 	public IForwardTarget resolveForward(IPipe pipe, PipeForward forward) throws PipeRunException {
-		if (forward==null){
+		if (forward == null){
 			throw new PipeRunException(pipe, "Pipeline of [%s] got a null forward from pipe [%s].".formatted(adapter.getName(), pipe.getName()));
 		}
 		String path = forward.getPath();
@@ -465,8 +465,8 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		if (plExit != null ) {
 			return plExit;
 		}
-		IPipe nextPipe=getPipe(path);
-		if (nextPipe==null) {
+		IPipe nextPipe = getPipe(path);
+		if (nextPipe == null) {
 			throw new PipeRunException(pipe, "Pipeline of [%s] got an erroneous definition from pipe [%s]. Target to execute [%s] is not defined as a Pipe or an Exit.".formatted(adapter.getName(), pipe.getName(), path));
 		}
 		return nextPipe;
@@ -476,7 +476,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	public void start() {
 		log.info("starting pipeline");
 
-		if (cache!=null) {
+		if (cache != null) {
 			log.debug("starting cache");
 			cache.open();
 		}
@@ -486,7 +486,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		startPipe("OutputValidator",getOutputValidator());
 		startPipe("OutputWrapper",getOutputWrapper());
 
-		for (int i=0; i<pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			startPipe("Pipe", getPipe(i));
 		}
 
@@ -528,11 +528,11 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		stopPipe("OutputValidator", getOutputValidator());
 		stopPipe("OutputWrapper", getOutputWrapper());
 
-		for (int i=0; i<pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			stopPipe("Pipe", getPipe(i));
 		}
 
-		if (cache!=null) {
+		if (cache != null) {
 			log.debug("closing cache");
 			cache.close();
 		}
@@ -625,13 +625,13 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		if (pipeLineExits.containsKey(exit.getName())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getName()+"] already exists");
 		}
-		if (exit.getExitCode()>0) {
-			for(PipeLineExit item: pipeLineExits.values()) {
-				if (item.getExitCode()==exit.getExitCode()) {
-					ConfigurationWarnings.add(this, log, "exit ["+exit.getName()+"] has code ["+exit.getExitCode()+"] that is already defined. Only the first exit ["+item.getName()+"] with this code will be represented in OpenAPI schema when it is generated");
-					break;
-				}
-			}
+		if (exit.getExitCode() > 0) {
+			pipeLineExits.values().stream()
+					.filter(item -> item.getExitCode() == exit.getExitCode())
+					.findFirst()
+					.ifPresent(item ->
+							ConfigurationWarnings.add(this, log, "exit [" + exit.getName() + "] has code [" + exit.getExitCode() + "] that is already defined. Only the first exit [" + item.getName() + "] with this code will be represented in OpenAPI schema when it is generated")
+					);
 		}
 		pipeLineExits.put(exit.getName(), exit);
 	}
@@ -642,7 +642,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 */
 	// Here for the FrankDoc documentation
 	public void setGlobalForwards(PipeForwards forwards){
-		for(PipeForward forward: forwards.getForwards()) {
+		for (PipeForward forward : forwards.getForwards()) {
 			addForward(forward);
 		}
 	}

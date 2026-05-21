@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IJmsListener;
@@ -155,7 +156,7 @@ public class WsdlGenerator {
 			tns = appConstants.getProperty("wsdl.targetNamespace");
 		}
 		if (tns == null) {
-			if (inputValidator instanceof WsdlGeneratorExtension wsdlGeneratorExtension) {
+			if (inputValidator instanceof WsdlGeneratorExtension<?> wsdlGeneratorExtension) {
 				extensionContext = wsdlGeneratorExtension.buildExtensionContext(pipeLine);
 
 				fileName = extensionContext.getFilename();
@@ -304,7 +305,7 @@ public class WsdlGenerator {
 				httpActive = true;
 			} else if (listener instanceof IJmsListener) {
 				jmsActive = true;
-			} else if (listener instanceof JavaListener jl) {
+			} else if (listener instanceof JavaListener<?> jl) {
 				if (jl.isHttpWsdl()) httpActive = true;
 			}
 		}
@@ -664,7 +665,7 @@ public class WsdlGenerator {
 		}
 		if (jmsActive) {
 			for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
-				if (listener instanceof IJmsListener jmsListener) {
+				if (listener instanceof IJmsListener<?> jmsListener) {
 					jmsService(w, jmsListener, jmsPrefix);
 				}
 			}
@@ -685,7 +686,7 @@ public class WsdlGenerator {
 		w.writeEndElement();
 	}
 
-	protected void jmsService(XMLStreamWriter w, IJmsListener listener, String namePrefix) throws XMLStreamException {
+	protected void jmsService(XMLStreamWriter w, IJmsListener<?> listener, String namePrefix) throws XMLStreamException {
 		w.writeStartElement(WSDL_NAMESPACE, "service");
 		w.writeAttribute("name", "Service_" + WsdlGeneratorUtils.getNCName(getName())); {
 			if (extensionContext == null) {
@@ -733,7 +734,7 @@ public class WsdlGenerator {
 		return getRootElement(xsds, root, null);
 	}
 
-	protected QName getRootElement(Set<IXSD> xsds, String root, String namespace) {
+	protected @Nullable QName getRootElement(Set<IXSD> xsds, String root, String namespace) {
 		String firstRoot;
 		if (!root.trim().isEmpty()) {
 			String[] roots = root.trim().split(",", -1);
@@ -756,7 +757,7 @@ public class WsdlGenerator {
 		return null;
 	}
 
-	protected QName getHeaderElement(IXmlValidator xmlValidator, Set<IXSD> xsds) {
+	protected @Nullable QName getHeaderElement(IXmlValidator xmlValidator, Set<IXSD> xsds) {
 		if (xmlValidator instanceof SoapValidator validator) {
 			String root = validator.getSoapHeader();
 			String namespace = validator.getSoapHeaderNamespace();
@@ -771,7 +772,7 @@ public class WsdlGenerator {
 		return getBodyElement(xmlValidator, xsds, type, false);
 	}
 
-	protected QName getBodyElement(IXmlValidator xmlValidator, Set<IXSD> xsds, String type, boolean outputMode) {
+	protected @Nullable QName getBodyElement(IXmlValidator xmlValidator, Set<IXSD> xsds, String type, boolean outputMode) {
 		String root;
 //		if (xmlValidator instanceof SoapValidator) {
 //			if (outputMode) {

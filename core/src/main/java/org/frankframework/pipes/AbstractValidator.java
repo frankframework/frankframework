@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -139,12 +140,13 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 	}
 
 
-	protected boolean isConfiguredForMixedValidation() {
+	@Override
+	public boolean isConfiguredForMixedValidation() {
 		return StringUtils.isNotEmpty(responseRoot);
 	}
 
 	@Override
-	public IValidator getResponseValidator() {
+	public @Nullable IValidator getResponseValidator() {
 		if (isConfiguredForMixedValidation()) {
 			return new ResponseValidatorWrapper(this);
 		}

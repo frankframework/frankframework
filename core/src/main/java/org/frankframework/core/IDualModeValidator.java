@@ -15,7 +15,11 @@
 */
 package org.frankframework.core;
 
+import org.jspecify.annotations.Nullable;
+
 public interface IDualModeValidator extends IValidator {
 
-	IValidator getResponseValidator();
+	boolean isConfiguredForMixedValidation();
+
+	@Nullable IValidator getResponseValidator();
 }

@@ -102,7 +102,7 @@ public class SoapValidator extends Json2XmlValidator {
 	}
 
 	@Override
-	protected boolean isConfiguredForMixedValidation() {
+	public boolean isConfiguredForMixedValidation() {
 		return StringUtils.isNotEmpty(getOutputSoapBody());
 	}
 
