@@ -180,16 +180,16 @@ public class LadybugReportGenerator implements InitializingBean {
 		return throwable;
 	}
 
-	public Object getInputFromSessionKey(String correlationId, String sessionKey, Object sessionValue) {
-		return testTool.inputpoint(correlationId, null, "GetInputFromSessionKey " + sessionKey, sessionValue);
+	public Message getInputFromSessionKey(String correlationId, String sessionKey, Message sessionValue) {
+		return showInputValue(correlationId, "getInputFromSessionKey " + sessionKey, sessionValue);
 	}
 
-	public Object getInputFromFixedValue(String correlationId, Object fixedValue) {
-		return testTool.inputpoint(correlationId, null, "GetInputFromFixedValue", fixedValue);
+	public String getInputFromFixedValue(String correlationId, String fixedValue) {
+		return showInputValue(correlationId, "getInputFromFixedValue", fixedValue);
 	}
 
-	public Object getDefaultValue(String correlationId, Object replacementValue) {
-		return testTool.inputpoint(correlationId, null, "getDefaultValue", replacementValue);
+	public String getDefaultValue(String correlationId, String replacementValue) {
+		return showInputValue(correlationId, "getDefaultValue", replacementValue);
 	}
 
 	// TODO create tests here to hide values, and ideally with a message such as "(x characters more...)".
