@@ -32,22 +32,22 @@ Select issues in sidebar or use: Closes/Fixes/Resolves #123
 ### Backports
 <!--
 If this needs to land in supported release branches, open separate PRs and link them here.
-Example: release/8.x, release/9.x
+Example: release/9.x, release/10.x
 -->
 - [ ] Backport PRs created (if needed) and linked
 
 ### Documentation
 <!--
 Keep user and developer docs in sync with the change.
-Update where applicable: FF! Doc, FF! Manual, Javadoc.
+Update where applicable: FF! Reference, Javadoc and if applicable the docs on [docs.frankframework.org](https://docs.frankframework.org/)
 -->
-- [ ] FF! Doc updated (user-facing behavior/config)
-- [ ] FF! Manual updated (if applicable)
+- [ ] FF! Reference updated (user-facing behaviour/config)
 - [ ] Javadoc updated/generated (developer-facing APIs)
+- [ ] FF! Docs updated (if applicable)
 
 ### Tests
 <!--
-Changes should be covered so behavior is verified and regressions are prevented.
+Changes should be covered so behaviour is verified and regressions are prevented.
 Add or update both unit and end-to-end/integration tests as needed.
 -->
 - [ ] Unit tests added/updated
@@ -55,8 +55,8 @@ Add or update both unit and end-to-end/integration tests as needed.
 
 ### Breaking changes
 <!--
-If behavior or public APIs change in a non-backward-compatible way:
-- Document in the repository’s breaking-changes markdown (e.g., BREAKING_CHANGES.md or CHANGELOG.md)
+If behaviour or public APIs change in a non-backward-compatible way:
+- Document in the repository’s breaking-changes BREAKING.md 
 - Provide brief migration notes
 -->
 - [ ] Breaking change recorded in markdown file
