@@ -51,8 +51,10 @@ import org.frankframework.util.XmlEncodingUtils;
  * <li>If attribute <code>substituteVars</code> is {@code true}, then expressions <code>${...}</code> are substituted using
  * system properties, session variables and application properties. Please note that no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
+ * This pipe may convert non-xml characters but it's a text based replace. Find an replace characters should therefore match the input message directly.
  *
  * @ff.tip See {@link Parameter} to see how parameter values are determined.
+ * @ff.info Special characters such as {@literal \r} are interpreted by the XML Parser and do not propagate to the FrankElement. In order to use such special characters you could create a property and refer it in the attribute. (e.g. {@code find="${special-property-name}"} ).
  *
  * @author Gerrit van Brakel
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> is substituted by the parameter's value.
@@ -85,6 +87,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 				throw new ConfigurationException("cannot have a null replace-attribute");
 			}
 			log.debug("finds [{}] replaces with [{}]", getFind(), getReplace());
+
 			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
 				find = find != null ? find.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
 				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
@@ -171,14 +174,17 @@ public class ReplacerPipe extends FixedForwardPipe {
 		this.replace = replace;
 	}
 
-	/**
-	 * Sets the string the representation in find and replace of the line separator.
-	 */
 	public String getLineSeparatorSymbol() {
 		return lineSeparatorSymbol;
 	}
 
-	/** sets the string that will represent the line-separator in the {@link #setFind(String)} and {@link #setReplace(String)} strings. */
+	/**
+	 * Replaces the find and replace values to match the host system's lineSeparator.
+	 * On UNIX systems, it returns {@literal \n}; on Microsoft Windows systems it returns {@literal \r\n}.
+	 * <br/>
+	 * This may be needed when your {@link #setFind(String)} and {@link #setReplace(String)} strings must match the content exactly
+	 * and the input message's line-separator can differ. This attribute is not used for the input message.
+	 */
 	public void setLineSeparatorSymbol(String string) {
 		lineSeparatorSymbol = string;
 	}
@@ -214,7 +220,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * character that will replace each non-valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)
+	 * Character that will replace each non-valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark).
+	 * Note that the find/replace actions are done based on TEXT and not XML content.
 	 *
 	 * @ff.default empty string
 	 */
