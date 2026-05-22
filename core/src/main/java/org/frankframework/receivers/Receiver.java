@@ -123,7 +123,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.task.TimeoutGuard;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
 import org.frankframework.util.LogUtil;
@@ -136,7 +135,6 @@ import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
-import org.frankframework.util.XmlUtils;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -738,10 +736,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private void configureSpecialPipes() throws ConfigurationException {
 		if (inputWrapper != null) {
-			configureSpecialPipe(inputValidator, "InputWrapper");
+			configureSpecialPipe(inputWrapper, "InputWrapper");
 		}
 		if (outputWrapper != null) {
-			configureSpecialPipe(outputValidator, "OutputWrapper");
+			configureSpecialPipe(outputWrapper, "OutputWrapper");
 		}
 		if (inputValidator != null) {
 			configureSpecialPipe(inputValidator, "InputValidator");
@@ -758,7 +756,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 		pipe.addForward(pf);
 
-		PipeForward failureForward = pipe.findForward(PipeForward.FAILURE_FORWARD_NAME);
+		PipeForward failureForward = findFailureForward(pipe);
 		if (failureForward == null) {
 			failureForward = new PipeForward();
 			failureForward.setName(PipeForward.FAILURE_FORWARD_NAME);
@@ -776,6 +774,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 
 		pipe.configure();
+	}
+
+	private static @Nullable PipeForward findFailureForward(@NonNull IPipe pipe) {
+		return pipe.getRegisteredForwards().stream()
+				.filter(pf -> PipeForward.FAILURE_FORWARD_NAME.equals(pf.getName()))
+				.findFirst()
+				.orElse(null);
 	}
 
 	protected int calculateAdjustedMaxBackoffDelay(Integer configuredMaxBackoffDelay) {

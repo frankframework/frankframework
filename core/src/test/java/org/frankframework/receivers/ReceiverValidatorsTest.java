@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.IWrapperPipe;
 import org.frankframework.core.PipeForward;
@@ -116,7 +117,7 @@ class ReceiverValidatorsTest {
 
 		addValidators(receiver, false);
 
-		receiver.getInputValidator().addForward(new PipeForward("failure", pipeLine.getFirstPipe()));
+		receiver.getInputValidator().addForward(new PipeForward(PipeForward.FAILURE_FORWARD_NAME, pipeLine.getFirstPipe()));
 
 		// Act / Assert
 		ConfigurationException configurationException = assertThrows(ConfigurationException.class, receiver::configure);
@@ -133,11 +134,17 @@ class ReceiverValidatorsTest {
 		// Act / Assert
 		assertDoesNotThrow(receiver::configure);
 
-		IValidator inputValidator = receiver.getInputValidator();
-		PipeForward successForward = inputValidator.findForward(PipeForward.SUCCESS_FORWARD_NAME);
+		validateDefaultPipeForwards(receiver.getInputValidator());
+		validateDefaultPipeForwards(receiver.getOutputValidator());
+		validateDefaultPipeForwards(receiver.getInputWrapper());
+		validateDefaultPipeForwards(receiver.getOutputWrapper());
+	}
+
+	private static void validateDefaultPipeForwards(IPipe pipe) {
+		PipeForward successForward = pipe.findForward(PipeForward.SUCCESS_FORWARD_NAME);
 		assertNotNull(successForward);
 
-		PipeForward failureForward = inputValidator.findForward(PipeForward.FAILURE_FORWARD_NAME);
+		PipeForward failureForward = pipe.findForward(PipeForward.FAILURE_FORWARD_NAME);
 		assertNotNull(failureForward);
 		assertEquals("error", failureForward.getPath());
 	}
