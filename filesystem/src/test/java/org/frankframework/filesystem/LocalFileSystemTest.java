@@ -15,7 +15,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Map;
+import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -39,6 +41,65 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 	@Override
 	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new LocalFileSystemTestHelper(folder);
+	}
+
+	@Test
+	void testRelativeCreateRootFolder() throws Exception {
+		Path currentWorkingDirectory = Paths.get("").toAbsolutePath().normalize();
+		Path testRootBase = folder.resolve("relative-root-" + UUID.randomUUID());
+		Path absoluteRoot = testRootBase.resolve("x").resolve("y");
+		Path relativeRoot = currentWorkingDirectory.relativize(absoluteRoot);
+
+		fileSystem.setRoot(relativeRoot.toString());
+		fileSystem.setCreateRootFolder(true);
+		fileSystem.configure();
+		fileSystem.open();
+
+		Path file = null;
+		try {
+			String filename = "createFileAbsolute" + FILE1;
+			String contents = "regeltje tekst";
+
+			file = fileSystem.toFile(filename);
+
+			try (ByteArrayInputStream input = new ByteArrayInputStream(contents.getBytes())) {
+				fileSystem.createFile(file, input);
+			}
+
+			waitForActionToFinish();
+			// test
+			assertTrue(fileSystem.exists(file), "Expected file [" + filename + "] to be present");
+
+			String actual = fileSystem.readFile(file, null).asString();
+			// test
+			assertEquals(contents.trim(), actual.trim());
+		} finally {
+			// Clean up relatively created 'x/y/createFileAbsolutefile1.txt' directory and contents
+			if (file != null) {
+				Files.deleteIfExists(file);
+			}
+
+			if (Files.exists(testRootBase)) {
+				FileUtils.deleteDirectory(testRootBase.toFile());
+			}
+		}
+	}
+
+	@Test
+	void testToFileDoesNotTreatSimilarRootPrefixAsRoot() throws Exception {
+		fileSystem.setRoot("x/y");
+		Path resolved = fileSystem.toFile("x/y2/file.txt");
+
+		assertEquals(Paths.get("x/y").resolve("x/y2/file.txt"), resolved);
+	}
+
+	@Test
+	void testToFilePrependsRootWhenNormalizedPathIsOutsideRoot() throws Exception {
+		fileSystem.setRoot("x/y");
+		Path resolved = fileSystem.toFile("x/y/../outside/file.txt");
+
+		assertTrue(resolved.normalize().startsWith(Paths.get("x/y")));
+		assertEquals(Paths.get("x/y").resolve("x/y/../outside/file.txt"), resolved);
 	}
 
 	@Test
