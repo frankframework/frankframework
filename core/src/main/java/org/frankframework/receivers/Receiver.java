@@ -777,6 +777,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	private static @Nullable PipeForward findFailureForward(@NonNull IPipe pipe) {
+		// The method pipe.findForward(...) depends on pipe having a pipeline and having been configured already, but we're still in that process so we can't use it.
 		return pipe.getRegisteredForwards().stream()
 				.filter(pf -> PipeForward.FAILURE_FORWARD_NAME.equals(pf.getName()))
 				.findFirst()
