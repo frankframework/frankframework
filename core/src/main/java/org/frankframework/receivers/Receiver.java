@@ -569,7 +569,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		isConfigured = false;
 		try {
 			super.configure();
-			if(getName().contains("/")) {
+			if (getName().contains("/")) {
 				throw new ConfigurationException("It is not allowed to have '/' in receiver name ["+getName()+"]");
 			}
 
