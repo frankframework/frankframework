@@ -23,6 +23,7 @@ import org.frankframework.filesystem.ftp.FtpSession.FileType;
 import org.frankframework.filesystem.ftp.FtpSession.FtpType;
 import org.frankframework.filesystem.ftp.FtpSession.Prot;
 import org.frankframework.filesystem.ftp.FtpSession.TransportType;
+import org.frankframework.http.Keystore;
 
 public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 
@@ -98,8 +99,8 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 		getFileSystem().setKeystore(keystore);
 	}
 	@Override
-	default String getKeystore() {
-		return getFileSystem().getKeystore();
+	default String getKeystoreResource() {
+		return getFileSystem().getKeystoreResource();
 	}
 
 	@Override
@@ -256,5 +257,10 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	@ReferTo(FtpFileSystem.class)
 	default void setProt(Prot prot) {
 		getFileSystem().setProt(prot);
+	}
+
+	@Override
+	default void setKeystore(Keystore keystore) {
+		// Not implemented yet.
 	}
 }

@@ -147,24 +147,24 @@ public class AdapterStatus extends BusEndpointBase {
 	}
 
 	@Nullable
-	private Map<String, Object> addCertificateInfo(@NonNull HasKeystore s) {
-		String certificate = s.getKeystore();
+	private Map<String, Object> addCertificateInfo(@NonNull HasKeystore keystoreOwner) {
+		String certificate = keystoreOwner.getKeystoreResource();
 		if (certificate == null || StringUtils.isEmpty(certificate))
 			return null;
 
 		Map<String, Object> certElem = new HashMap<>(4);
 		certElem.put("name", certificate);
-		String certificateAuthAlias = s.getKeystoreAuthAlias();
+		String certificateAuthAlias = keystoreOwner.getKeystoreAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassLoaderUtils.getResourceURL(s, s.getKeystore());
+		URL certificateUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystoreResource());
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
 		} else {
 			certElem.put("url", certificateUrl.toString());
-			String certificatePassword = s.getKeystorePassword();
+			String certificatePassword = keystoreOwner.getKeystorePassword();
 			CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-			KeystoreType keystoreType = s.getKeystoreType();
+			KeystoreType keystoreType = keystoreOwner.getKeystoreType();
 			certElem.put("info", getCertificateInfo(certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain"));
 		}
 		return certElem;

@@ -1272,14 +1272,16 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Throwable { // keystore and the key pair have different password
-		String keystore = "/Signature/ks_multipassword.jks";
+		String keystoreResource = "/Signature/ks_multipassword.jks";
 
 		sender = getSender();
-		sender.setKeystore(keystore);
-		sender.setKeystorePassword("geheim");
-		sender.setKeystoreType(KeystoreType.JKS);
-		sender.setKeystoreAliasPassword("test");
+		Keystore keystore = new Keystore();
+		keystore.setKeystoreResource(keystoreResource);
+		keystore.setKeystorePassword("geheim");
+		keystore.setKeystoreType(KeystoreType.JKS);
+		keystore.setKeystoreAliasPassword("test");
 
+		sender.setKeystore(keystore);
 		sender.setMethodType(HttpMethod.GET);
 
 		assertDoesNotThrow(sender::configure);

@@ -74,6 +74,7 @@ import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.http.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.AbstractSenderWithParameters;
@@ -1035,8 +1036,14 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	public void setKeystore(String keystore) {
 		sessionBuilder.setKeystore(keystore);
 	}
+
 	@Override
-	public String getKeystore() {
+	public void setKeystore(Keystore keystore) {
+		// not implemented yet
+	}
+
+	@Override
+	public String getKeystoreResource() {
 		return sessionBuilder.getKeystore();
 	}
 

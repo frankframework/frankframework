@@ -17,36 +17,87 @@ package org.frankframework.encryption;
 
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
+import org.frankframework.doc.ReferTo;
+import org.frankframework.http.Keystore;
 
+/**
+ * marker interface with default behaviour to set values in the Keystore object. The goal is to only support 'setKeystore' in the future
+ * instead of all the ReferTo methods, but for now we want to support both ways of setting the keystore values.
+ */
 public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 
-	String getKeystore();
-	KeystoreType getKeystoreType();
-	String getKeystoreAuthAlias();
-	String getKeystorePassword();
-	String getKeystoreAlias();
-	String getKeystoreAliasAuthAlias();
-	String getKeystoreAliasPassword();
-	String getKeyManagerAlgorithm();
+	default Keystore createKeystore() {
+		return new Keystore();
+	}
 
-	/** Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used. */
-	void setKeystore(String keystore);
-	/** Type of keystore
-	 * @ff.default pkcs12
-	 */
-	void setKeystoreType(KeystoreType keystoreType);
-	/** Authentication alias used to obtain keystore password */
-	void setKeystoreAuthAlias(String keystoreAuthAlias);
-	/** Default password to access keystore */
-	void setKeystorePassword(String keystorePassword);
-	/** Key manager algorithm. Can be left empty to use the servers default algorithm */
-	void setKeyManagerAlgorithm(String keyManagerAlgorithm);
+	void setKeystore(Keystore keystore);
 
-	/** Alias to obtain specific certificate or key in keystore */
-	void setKeystoreAlias(String keystoreAlias);
-	/** Authentication alias to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
-	void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias);
-	/** Default password to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
-	void setKeystoreAliasPassword(String keystoreAliasPassword);
+	default Keystore getKeystore() {
+		return null;
+	};
 
+	@ReferTo(Keystore.class)
+	default String getKeystoreResource() {
+		return getKeystore().getKeystoreResource();
+	}
+
+	default KeystoreType getKeystoreType() {
+		return getKeystore().getKeystoreType();
+	}
+
+	default String getKeystoreAuthAlias() {
+		return getKeystore().getKeystoreAuthAlias();
+	}
+
+	default String getKeystorePassword() {
+		return getKeystore().getKeystorePassword();
+	}
+
+	default String getKeystoreAlias() {
+		return getKeystore().getKeystoreAlias();
+	}
+
+	default String getKeystoreAliasAuthAlias() {
+		return getKeystore().getKeystoreAliasAuthAlias();
+	}
+
+	default String getKeystoreAliasPassword() {
+		return getKeystore().getKeystoreAliasPassword();
+	}
+
+	default String getKeyManagerAlgorithm() {
+		return getKeystore().getKeyManagerAlgorithm();
+	}
+
+	default void setKeystore(String keystore) {
+		getKeystore().setKeystoreResource(keystore);
+	};
+
+	default void setKeystoreType(KeystoreType keystoreType) {
+		getKeystore().setKeystoreType(keystoreType);
+	};
+
+	default void setKeystoreAuthAlias(String keystoreAuthAlias) {
+		getKeystore().setKeystoreAuthAlias(keystoreAuthAlias);
+	};
+
+	default void setKeystorePassword(String keystorePassword) {
+		getKeystore().setKeystorePassword(keystorePassword);
+	};
+
+	default void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		getKeystore().setKeyManagerAlgorithm(keyManagerAlgorithm);
+	};
+
+	default void setKeystoreAlias(String keystoreAlias) {
+		getKeystore().setKeystoreAlias(keystoreAlias);
+	};
+
+	default void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
+		getKeystore().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+	};
+
+	default void setKeystoreAliasPassword(String keystoreAliasPassword) {
+		getKeystore().setKeystoreAliasPassword(keystoreAliasPassword);
+	};
 }

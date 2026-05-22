@@ -54,6 +54,7 @@ import org.frankframework.filesystem.MsalClientAdapter;
 import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.filesystem.exchange.MailMessage.EmailAddress;
+import org.frankframework.http.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -100,16 +101,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	private @Getter String replyAddressFields = IMailFileSystem.REPLY_ADDRESS_FIELDS_DEFAULT;
 
-	/* SSL */
-	private @Getter @Setter String keystore;
-	private @Getter @Setter String keystoreAuthAlias;
-	private @Getter @Setter String keystorePassword;
-	private @Getter @Setter KeystoreType keystoreType = KeystoreType.PKCS12;
-	private @Getter @Setter String keystoreAlias;
-	private @Getter @Setter String keystoreAliasAuthAlias;
-	private @Getter @Setter String keystoreAliasPassword;
-	private @Getter @Setter String keyManagerAlgorithm = null;
-
 	private @Getter @Setter String truststore = null;
 	private @Getter @Setter String truststoreAuthAlias;
 	private @Getter @Setter String truststorePassword = null;
@@ -127,6 +118,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private MsalClientAdapter msalClientAdapter;
 	private GraphClient client;
 	private MailFolder mailFolder;
+	private @Getter Keystore keystore = createKeystore();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -148,14 +140,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			msalClientAdapter.setProxyPassword(proxyCf.getPassword());
 		}
 
-		msalClientAdapter.setKeystore(getKeystore());
-		msalClientAdapter.setKeystoreType(getKeystoreType());
-		msalClientAdapter.setKeystoreAuthAlias(getKeystoreAuthAlias());
-		msalClientAdapter.setKeystorePassword(getKeystorePassword());
-		msalClientAdapter.setKeystoreAlias(getKeystoreAlias());
-		msalClientAdapter.setKeystoreAliasAuthAlias(getKeystoreAliasAuthAlias());
-		msalClientAdapter.setKeystoreAliasPassword(getKeystoreAliasPassword());
-		msalClientAdapter.setKeyManagerAlgorithm(getKeyManagerAlgorithm());
+		msalClientAdapter.setKeystore(getKeystoreResource());
 
 		msalClientAdapter.setTruststore(getTruststore());
 		msalClientAdapter.setTruststoreType(getTruststoreType());
@@ -708,5 +693,10 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	@Override
 	public Map<String, Object> getAdditionalAttachmentProperties(MailMessage a) throws FileSystemException {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public void setKeystore(Keystore keystore) {
+		// TODO not implemented yet
 	}
 }

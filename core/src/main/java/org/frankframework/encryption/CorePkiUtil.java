@@ -74,7 +74,7 @@ public class CorePkiUtil {
 
 			@Override
 			public String getTruststore() {
-				return keystoreOwner.getKeystore();
+				return keystoreOwner.getKeystoreResource();
 			}
 
 			@Override
@@ -155,7 +155,7 @@ public class CorePkiUtil {
 	}
 
 	public static KeyStore createKeyStore(HasKeystore keystoreOwner) throws EncryptionException {
-		URL truststoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+		URL truststoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystoreResource());
 		CredentialFactory truststoreCredentialFactory = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
 		try {
 			return CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
@@ -176,7 +176,7 @@ public class CorePkiUtil {
 
 	public static PrivateKey getPrivateKey(HasKeystore keystoreOwner) throws EncryptionException {
 		PrivateKey privateKey;
-		URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+		URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystoreResource());
 		try {
 			if (keystoreOwner.getKeystoreType() == KeystoreType.PEM) {
 				privateKey = CorePkiUtil.getPrivateKeyFromPem(keystoreUrl);
@@ -194,10 +194,10 @@ public class CorePkiUtil {
 				privateKey = (PrivateKey) keystore.getKey(keystoreOwner.getKeystoreAlias(), password.toCharArray());
 			}
 		} catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException | KeyStoreException | CertificateException | UnrecoverableKeyException e) {
-			throw new EncryptionException("cannot obtain Private Key in alias [" + keystoreOwner.getKeystoreAlias() + "] of keystore [" + keystoreOwner.getKeystore() + "]", e);
+			throw new EncryptionException("cannot obtain Private Key in alias [" + keystoreOwner.getKeystoreAlias() + "] of keystore [" + keystoreOwner.getKeystoreResource() + "]", e);
 		}
 		if (privateKey == null) {
-			throw new EncryptionException("no Signing Key found in alias [" + keystoreOwner.getKeystoreAlias() + "] of keystore [" + keystoreOwner.getKeystore() + "]");
+			throw new EncryptionException("no Signing Key found in alias [" + keystoreOwner.getKeystoreAlias() + "] of keystore [" + keystoreOwner.getKeystoreResource() + "]");
 		}
 		return privateKey;
 	}

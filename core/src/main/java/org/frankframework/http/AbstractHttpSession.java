@@ -161,6 +161,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	public static final String AUTHENTICATION_METHOD_KEY = "OauthAuthentication";
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter Keystore keystore = createKeystore();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter MetricsInitializer configurationMetrics;
@@ -278,16 +279,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String proxyPassword;
 	private @Getter String proxyRealm=null;
 	private @Getter boolean prefillProxyAuthCache;
-
-	/* SSL */
-	private @Getter String keystore;
-	private @Getter String keystoreAuthAlias;
-	private @Getter String keystorePassword;
-	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
-	private @Getter String keystoreAlias;
-	private @Getter String keystoreAliasAuthAlias;
-	private @Getter String keystoreAliasPassword;
-	private @Getter String keyManagerAlgorithm=null;
 
 	private @Getter String truststore=null;
 	private @Getter String truststoreAuthAlias;
@@ -617,7 +608,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				authCache.put(proxy, new BasicScheme());
 				defaultHttpClientContext.setAuthCache(authCache);
 			}
-
 		}
 
 		httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
@@ -719,7 +709,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				throw new TimeoutException("timeout of ["+hardTimeout+"] ms exceeded");
 			}
 		}
-
 	}
 
 	private synchronized HttpClientContext getOrCreateHttpClientContext(CloseableHttpClient client, PipeLineSession session) {
@@ -926,46 +915,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		return disableCookies;
 	}
 
-
-	/** resource URL to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
-	@Override
-	public void setKeystore(String string) {
-		keystore = string;
-	}
-
-	@Override
-	public void setKeystoreType(KeystoreType value) {
-		keystoreType = value;
-	}
-
-	@Override
-	public void setKeystoreAuthAlias(String string) {
-		keystoreAuthAlias = string;
-	}
-
-	@Override
-	public void setKeystorePassword(String string) {
-		keystorePassword = string;
-	}
-
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		this.keyManagerAlgorithm = keyManagerAlgorithm;
-	}
-
-	@Override
-	public void setKeystoreAlias(String string) {
-		keystoreAlias = string;
-	}
-	@Override
-	public void setKeystoreAliasAuthAlias(String string) {
-		keystoreAliasAuthAlias = string;
-	}
-	@Override
-	public void setKeystoreAliasPassword(String string) {
-		keystoreAliasPassword = string;
-	}
-
 	/** Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	@Override
 	public void setTruststore(String string) {
@@ -1076,5 +1025,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 */
 	public void setSupportedCipherSuites(String supportedCipherSuites) {
 		this.supportedCipherSuites = supportedCipherSuites;
+	}
+
+	@Override
+	public void setKeystore(Keystore keystore) {
+		this.keystore = keystore;
 	}
 }

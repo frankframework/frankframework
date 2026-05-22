@@ -48,6 +48,7 @@ import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSession;
+import org.frankframework.http.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.XmlUtils;
 
@@ -304,8 +305,13 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	public String getKeystore() {
-		return httpSession.getKeystore();
+	public void setKeystore(Keystore keystore) {
+		// not implemented yet
+	}
+
+	@Override
+	public String getKeystoreResource() {
+		return httpSession.getKeystoreResource();
 	}
 
 	@Override
@@ -464,6 +470,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		httpSession.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
+
 	@Override
 	public boolean isIgnoreCertificateExpiredException() {
 		return httpSession.isIgnoreCertificateExpiredException();
@@ -483,7 +490,6 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	public void setStaleTimeout(int timeout) {
 		httpSession.setStaleTimeout(timeout);
 	}
-
 
 	@ReferTo(AbstractHttpSession.class)
 	public void setProtocol(String protocol) {
