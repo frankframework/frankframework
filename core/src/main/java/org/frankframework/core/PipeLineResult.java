@@ -64,7 +64,6 @@ public class PipeLineResult {
 		} else {
 			pipeLineResult.setResult(Message.nullMessage(result.getContext()));
 		}
-		pipeLineResult.setResult(result);
 		return pipeLineResult;
 	}
 
