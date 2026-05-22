@@ -150,9 +150,7 @@ public class JdbcTransactionalStorageTest {
 		assertEquals(storageKey, ro.getId());
 		assertNotNull(o);
 		assertEquals(message, o);
-
 	}
-
 
 	private String insertARecord(boolean blobsCompressed, String message, char type) throws SQLException, IOException {
 		try (Connection connection = env.getConnection()) {
@@ -197,20 +195,16 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	private String createMessage() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 5; i++) {
-			sb.append("message");
-		}
-		return sb.toString();
+		return "message".repeat(5);
 	}
 
 	@DatabaseTest
-	public void testRetrieveObjectWithADifferentColumnNotCompressed() throws Exception {
+	public void testRetrieveObjectWithADifferentColumnNotCompressed() {
 		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(false), "unknown compression method");
 	}
 
 	@DatabaseTest
-	public void testRetrieveObjectWithADifferentColumn() throws Exception {
+	public void testRetrieveObjectWithADifferentColumn() {
 		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(true), "invalid stream header");
 	}
 
@@ -278,5 +272,4 @@ public class JdbcTransactionalStorageTest {
 		assertEquals(message, result);
 		storage.getTxManager().commit(tx);
 	}
-
 }
