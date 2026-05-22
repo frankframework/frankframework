@@ -128,7 +128,7 @@ class CorePipeLineProcessorTest {
 		error.setState(PipeLine.ExitState.ERROR);
 		error.setEmpty(expectEmptyResult);
 		error.setSkipValidation(skipWrappingValidation);
-		error.setSkipWrapping(expectEmptyResult);
+		error.setSkipWrapping(skipWrappingValidation);
 		pl.addPipeLineExit(error);
 
 		return pl;
@@ -212,8 +212,8 @@ class CorePipeLineProcessorTest {
 		"true, false, fail-validator-input, wrapping-success- pipeline outputWrapper[fail-validator-input]",
 		"false, false, fail-wrap-input, wrapping-success- pipeline outputWrapper[err2]",
 		"false, false, fail-validator-input, wrapping-success- pipeline outputWrapper[err1]",
-		"false, true, fail-wrap-input, wrapping-success- pipeline outputWrapper[err2]",
-		"false, true, fail-validator-input, wrapping-success- pipeline outputWrapper[err1]",
+		"false, true, fail-wrap-input, err2",
+		"false, true, fail-validator-input, err1",
 	})
 	void processPipeLineWithWrappersAndValidatorsFailureOnInput(boolean failDirectlyToExit, boolean skipWrappingValidation, String input, String expected) throws Exception {
 		// Arrange

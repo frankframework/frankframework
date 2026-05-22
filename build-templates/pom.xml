@@ -163,7 +163,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.6.2</version>
+					<version>3.6.3</version>
 					<dependencies>
 						<dependency>
 							<groupId>org.codehaus.mojo</groupId>
@@ -347,7 +347,7 @@
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
-					<version>3.4.0</version>
+					<version>3.5.1</version>
 					<configuration>
 						<java>
 							<removeUnusedImports />
