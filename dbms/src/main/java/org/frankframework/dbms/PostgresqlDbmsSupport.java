@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import lombok.SneakyThrows;
 
@@ -276,14 +277,26 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		String schema = schemaOwner != null ? schemaOwner : "public";
 		String query = "SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE indrelid=?::regclass";
 		StringBuilder target = new StringBuilder().append(" (").append(columns.get(0).toLowerCase());
+
 		for (int i = 1; i < columns.size(); i++) {
 			target.append(", ").append(columns.get(i).toLowerCase());
 		}
+
+		// Target looks like (type, slotid, messagedate
+		log.trace("trying to resolve index which contains [{}]", target);
+
 		try (PreparedStatement stmt = conn.prepareStatement(query)) {
 			stmt.setString(1, schema + "." + tableName.toLowerCase());
 			try (ResultSet rs = stmt.executeQuery()) {
 				while (rs.next()) {
-					if (rs.getString(1).indexOf(target.toString()) > 0) {
+					// resultString looks like: CREATE INDEX ix_ibisstore ON public.ibisstore USING btree (type, slotid, messagedate)
+					String resultString = rs.getString(1);
+
+					// Target looks like (type, slotid, messagedate
+					log.trace("retrieved query result [{}]", resultString);
+
+					log.trace("expected string has indexOf [{}]", () -> resultString.indexOf(target.toString()));
+					if (Strings.CI.contains(resultString, target.toString())) {
 						return true;
 					}
 				}
