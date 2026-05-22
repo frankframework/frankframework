@@ -267,7 +267,7 @@ public class ReceiverSubAdapterTest {
 
 		@NonNull
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 			runs.incrementAndGet();
 			int result = doFail ? fails.incrementAndGet() : succeeds.incrementAndGet();
 			return new PipeRunResult(doFail ? failureForward : successForward, result);

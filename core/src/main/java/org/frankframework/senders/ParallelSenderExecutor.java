@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public class ParallelSenderExecutor extends AbstractRequestReplyExecutor {
 	}
 
 	@Override
+	@SuppressWarnings("java:S1181")
 	public void run() {
 		try {
 			long startTime = System.currentTimeMillis();

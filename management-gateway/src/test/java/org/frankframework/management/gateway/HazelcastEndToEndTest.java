@@ -1,12 +1,18 @@
 package org.frankframework.management.gateway;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +40,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.util.SpringRootInitializer;
 
 @SpringJUnitConfig(classes = {SpringRootInitializer.class})
@@ -56,15 +63,28 @@ public class HazelcastEndToEndTest {
 			@RolesAllowed("IbisTester")
 			public void handleMessage(@NonNull Message<?> message) throws MessagingException {
 				assertTrue(BusMessageUtils.hasRole("IbisTester"));
-				String request = (String) message.getPayload();
-				if ("sync-string".equals(request)) {
-					Message<String> response = new GenericMessage<>("response-string", new MessageHeaders(null));
-					MessageChannel replyChannel = (MessageChannel) message.getHeaders().getReplyChannel();
-					replyChannel.send(response);
-				} else if (request.startsWith("load-req-")) {
-					Message<String> response = new GenericMessage<>(request.replace("-req-", "-resp-"), new MessageHeaders(null));
-					MessageChannel replyChannel = (MessageChannel) message.getHeaders().getReplyChannel();
-					replyChannel.send(response);
+
+				if (message.getPayload() instanceof String request) {
+					if ("sync-string".equals(request)) {
+						Message<String> response = new GenericMessage<>("response-string", new MessageHeaders(null));
+						MessageChannel replyChannel = (MessageChannel) message.getHeaders().getReplyChannel();
+						replyChannel.send(response);
+					} else if (request.startsWith("load-req-")) {
+						Message<String> response = new GenericMessage<>(request.replace("-req-", "-resp-"), new MessageHeaders(null));
+						MessageChannel replyChannel = (MessageChannel) message.getHeaders().getReplyChannel();
+						replyChannel.send(response);
+					}
+				} else if (message.getPayload() instanceof InputStream stream) {
+					try {
+						String request = new String(stream.readAllBytes());
+						if ("sync-string".equals(request)) {
+							InputStream response = new ByteArrayInputStream("response-string".getBytes(StandardCharsets.UTF_8));
+							MessageChannel replyChannel = (MessageChannel) message.getHeaders().getReplyChannel();
+							replyChannel.send(new BinaryMessage(response));
+						}
+					} catch (IOException e) {
+						fail(e);
+					}
 				}
 			}
 		});
@@ -147,4 +167,38 @@ public class HazelcastEndToEndTest {
 		assertEquals("async-string", capturedRequest.getPayload());
 	}
 
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	@Tag("slow")
+	public void testStreamingFrameworkMessage() throws IOException {
+		// Arrange
+		InputStream stream = new ByteArrayInputStream("sync-string".getBytes(StandardCharsets.UTF_8));
+		Message<InputStream> request = new BinaryMessage(stream);
+
+		// Act
+		Message<String> response = outboundGateway.sendSyncMessage(request);
+
+		// Assert
+		InputStream responseStream = assertInstanceOf(InputStream.class, response.getPayload());
+		String responseString = new String(responseStream.readAllBytes(), StandardCharsets.UTF_8);
+		assertEquals("response-string", responseString);
+	}
+
+	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	@Tag("slow")
+	public void testStreamingGenericMessage() throws IOException {
+		// Arrange
+		InputStream stream = new ByteArrayInputStream("sync-string".getBytes(StandardCharsets.UTF_8));
+		// Request should be automatically wrapped so its serializable.
+		Message<InputStream> request = new GenericMessage<>(stream, new MessageHeaders(null));
+
+		// Act
+		Message<String> response = outboundGateway.sendSyncMessage(request);
+
+		// Assert
+		InputStream responseStream = assertInstanceOf(InputStream.class, response.getPayload());
+		String responseString = new String(responseStream.readAllBytes(), StandardCharsets.UTF_8);
+		assertEquals("response-string", responseString);
+	}
 }

@@ -48,7 +48,7 @@ public class XmlIf extends IfPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		if (transformationNeeded()) {
 			return super.doPipe(message, session);
 		}

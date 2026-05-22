@@ -26,7 +26,7 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 		return new FixedForwardPipe() {
 			@NonNull
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) {
+			public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 				return null;
 			}
 		};

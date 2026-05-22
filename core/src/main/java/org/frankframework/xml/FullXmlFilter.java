@@ -17,6 +17,7 @@ package org.frankframework.xml;
 
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -24,6 +25,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.util.LogUtil;
@@ -32,6 +34,7 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Setter LexicalHandler lexicalHandler;
+	private @Getter Locator documentLocator;
 
 	public FullXmlFilter() {
 		super();
@@ -111,4 +114,9 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 		}
 	}
 
+	@Override
+	public final void setDocumentLocator(Locator locator) {
+		this.documentLocator = locator;
+		super.setDocumentLocator(locator);
+	}
 }

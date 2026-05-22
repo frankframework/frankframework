@@ -15,6 +15,8 @@
 */
 package org.frankframework.configuration.classloaders;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,7 @@ public class DirectoryClassLoaderTest extends ConfigurationClassLoaderTestBase<D
 	@Override
 	public DirectoryClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		URL file = this.getClass().getResource("/ClassLoader/DirectoryClassLoaderRoot");
+		assertNotNull(file);
 
 		DirectoryClassLoader cl = new DirectoryClassLoader(parent);
 		cl.setDirectory(file.getFile());

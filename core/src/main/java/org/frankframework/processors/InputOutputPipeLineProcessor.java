@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2025 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
 */
 package org.frankframework.processors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
@@ -31,15 +33,10 @@ public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	// We have tests to validate that the messageId, if already set in the LogContext, is technically overwritten, but not removed upon the try-with-resources closure.
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
-		// Reset the PipeLineSession and store the message and its id in the session
-		if (messageId == null) {
+	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+		if (StringUtils.isBlank(messageId)) {
 			// This should not be touched anymore
 			throw new PipeRunException(null, "Adapter ["+ pipeLine.getAdapter().getName()+"]: Unable to process message without messageID");
-		}
-
-		if (message == null) {
-			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getAdapter().getName()+"] received null message");
 		}
 
 		// Store message and messageId in the pipeLineSession

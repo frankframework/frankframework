@@ -132,7 +132,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
 		// message should always be available.
 		if (Message.isEmpty(input)) {
 			throw new IllegalArgumentException("message == null");

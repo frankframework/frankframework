@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import org.frankframework.core.HasSender;
 import org.frankframework.core.ICorrelatedPullingListener;
 import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.IPullingListener;
@@ -79,7 +78,7 @@ import org.frankframework.util.RunStateEnquiring;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class PullingJmsListener extends AbstractJmsListener implements IPullingListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
+public class PullingJmsListener extends AbstractJmsListener implements IPullingListener<Message>, ICorrelatedPullingListener<Message>, RunStateEnquiring {
 
 	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
 	private RunStateEnquirer runStateEnquirer=null;

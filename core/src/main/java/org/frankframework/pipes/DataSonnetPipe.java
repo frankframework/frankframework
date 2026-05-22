@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -151,7 +152,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = getParameters(message, session);
 
 		MapperBuilder builder = new MapperBuilder(resolvedStyleSheet)

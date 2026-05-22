@@ -280,7 +280,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
 		String streamId = getStreamId(input, session);
 		BufferedReader reader = getReader(streamId, input, session);
 		if (reader==null) {

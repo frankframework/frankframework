@@ -1,0 +1,10 @@
+<Envelope xmlns="http://www.w3.org/2003/05/soap-envelope">
+	<Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+		<wsa:MessageID>6B29FC40-CA47-1067-B31D-00DD010662DA</wsa:MessageID>
+		<!-- We can do this because the input is the output (of our SoapProviderStub), and the input ignores this field. -->
+		<wsa:RelatesTo>test123</wsa:RelatesTo>
+	</Header>
+	<Body>
+		<GetVehicleTypeDetailsREQ />
+	</Body>
+</Envelope>

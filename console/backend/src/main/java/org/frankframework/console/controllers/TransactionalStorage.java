@@ -47,7 +47,7 @@ import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 
 @RestController
@@ -102,7 +102,7 @@ public class TransactionalStorage {
 
 					builder.addHeader("messageId", decodedMessageId);
 					Message<?> message = frankApiService.sendSyncMessage(builder);
-					String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY);
+					String mimeType = BusMessageUtils.getHeader(message, AbstractMessage.MIMETYPE_KEY);
 
 					String filenameExtension = ".txt";
 					if (MediaType.APPLICATION_JSON_VALUE.equals(mimeType)) {

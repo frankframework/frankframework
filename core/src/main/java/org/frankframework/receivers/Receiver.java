@@ -68,6 +68,7 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ICorrelatedSender;
+import org.frankframework.core.ICorrelatedSender.LinkMethod;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IKnowsDeliveryCount;
 import org.frankframework.core.IListener;
@@ -912,7 +913,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			plr.setResult(result);
 			plr.setState(ExitState.REJECTED);
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(result);
+				String sendMsg = sendResultToSender(result, session);
 				if (sendMsg != null) {
 					log.warn("problem sending result: {}", sendMsg);
 				}
@@ -1325,8 +1326,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					}
 					throw wrapExceptionAsListenerException(t);
 				}
-				if (getSender()!=null) {
-					String sendMsg = sendResultToSender(result);
+				if (getSender() != null) {
+					String sendMsg = sendResultToSender(result, session);
 					if (sendMsg != null) {
 						statusMessage = sendMsg;
 					}
@@ -1909,9 +1910,18 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return currentRunState==someRunState;
 	}
 
-	private String sendResultToSender(Message result) {
+	private String sendResultToSender(Message result, PipeLineSession parentSession) {
 		String errorMessage = null;
 		try(PipeLineSession session = new PipeLineSession()) {
+			if (getSender().getLinkMethod() == LinkMethod.MESSAGEID) {
+				session.put(PipeLineSession.MESSAGE_ID_KEY, parentSession.getMessageId());
+				// Response should use the messageid
+				session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getMessageId());
+			} else {
+				session.put(PipeLineSession.MESSAGE_ID_KEY, parentSession.getMessageId());
+				session.put(PipeLineSession.CORRELATION_ID_KEY, parentSession.getCorrelationId());
+			}
+
 			log.debug("Receiver [{}] sending result to configured sender [{}]", this::getName, this::getSender);
 			getSender().sendMessageOrThrow(result, session); // sending correlated responses via a receiver embedded sender is not supported
 		} catch (Exception e) {
@@ -2024,9 +2034,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	/**
-	 * Sender to which the response (output of {@link PipeLine}) should be sent. Applies if the receiver
-	 * has an asynchronous listener.
-	 * N.B. Sending correlated responses via this sender is not supported.
+	 * Sender to which the response (output of {@link PipeLine}) should be sent. Applies <i>only</i> if the receiver
+	 * has an asynchronous listener. <br/>
+	 * If possible, please use the replyDestinationName attribute on the JmsListener instead.
 	 */
 	public void setSender(ICorrelatedSender sender) {
 		this.sender = sender;
@@ -2148,12 +2158,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	public void setProcessResultCacheSize(int processResultCacheSize) {
 		this.processResultCacheSize = processResultCacheSize;
-	}
-
-	@Deprecated(forRemoval = true, since = "7.9.0")
-	@ConfigurationWarning("attribute is no longer used. Please use attribute returnedSessionKeys of the JavaListener if the set of sessionsKeys that can be returned to callers session must be limited.")
-	public void setReturnedSessionKeys(String string) {
-		// no longer used
 	}
 
 	/** XPath expression to extract correlationId from message */

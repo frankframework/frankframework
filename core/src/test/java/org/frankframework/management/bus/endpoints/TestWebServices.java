@@ -33,7 +33,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.XmlValidator;
 import org.frankframework.receivers.Receiver;
@@ -216,7 +216,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("configuration", getConfiguration().getName());
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-without-includes.wsdl");
 		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
@@ -231,7 +231,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("useIncludes", true);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-with-includes.wsdl");
 		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
@@ -246,7 +246,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("indent", false);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/xml", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("application/xml", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 
 		String expectedWsdl = TestFileUtils.getTestFile("/Management/WebServices/wsdl-without-includes.wsdl");
 		MatchUtils.assertXmlEquals(expectedWsdl, convertPayloadAndApplyIgnores(response));
@@ -261,7 +261,7 @@ public class TestWebServices extends BusTestBase {
 		request.setHeader("zip", true);
 
 		Message<?> response = callSyncGateway(request);
-		assertEquals("application/octet-stream", BusMessageUtils.getHeader(response, MessageBase.MIMETYPE_KEY));
+		assertEquals("application/octet-stream", BusMessageUtils.getHeader(response, AbstractMessage.MIMETYPE_KEY));
 		InputStream payload = (InputStream) response.getPayload();
 
 		String wsdl = null;

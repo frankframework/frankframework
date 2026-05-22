@@ -3,11 +3,9 @@ package org.frankframework.compression;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -60,37 +58,6 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
 		assertEquals("zipwriterhandle", pipe.getCollectionName());
-	}
-
-	@Test
-	void testStreamMissingFilenameParameter() {
-		pipe.setBackwardsCompatibility(true);
-		pipe.setAction(Action.STREAM);
-		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
-	}
-
-	@Test
-	void testStreamEmptyFilenameParameter() throws Exception {
-		pipe.setBackwardsCompatibility(true);
-		pipe.setAction(Action.STREAM);
-		pipe.addParameter(new Parameter("filename", ""));
-		configureAndStartPipe();
-
-		assertThrows(PipeRunException.class, () -> pipe.doPipe(null, session));
-	}
-
-	@Test
-	void testStreamWithFilenameParameter() throws Exception {
-		createCollector();
-
-		pipe.setBackwardsCompatibility(true);
-		pipe.setAction(Action.STREAM);
-		pipe.addParameter(new Parameter("filename", "test.zip"));
-
-		configureAndStartPipe();
-
-		PipeRunResult pipeRunResult = pipe.doPipe(null, session);
-		assertTrue(pipeRunResult.getResult().asString().endsWith(".zip"));
 	}
 
 	@Test
@@ -262,12 +229,8 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	@Test
 	void testBackwardsCompatibility(@TempDir Path tmpDir) throws Exception {
 		// Arrange
-		Path zipFile = tmpDir.resolve("tmp-zip-archive.zip");
-		Files.createFile(zipFile);
-		String zipFileLocation = zipFile.toString();
 		pipe.setAction(Action.OPEN);
-		pipe.setBackwardsCompatibility(true);
-		doPipe(zipFileLocation);
+		doPipe("input-is-ignored"); // now passed along, bug ignored...
 		getCollectionFromSession(); // ensure its been created.
 
 		pipe.setAction(Action.WRITE);
@@ -284,13 +247,11 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		session.put("filename", filename1);
 		PipeRunResult prr = doPipe(fileContents1);
 		assertEquals("success", prr.getPipeForward().getName());
-		assertEquals(fileContents1, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		// Act2
 		session.put("filename", filename2);
 		prr = doPipe(fileContents2);
 		assertEquals("success", prr.getPipeForward().getName());
-		assertEquals(fileContents2, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		// Assert contents
 		Message result = getCollectionFromSession().build();
@@ -305,8 +266,6 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		}
 
 		// Assert file
-		assertEquals(zipFileLocation, result.getContext().get(MessageContext.METADATA_LOCATION));
-		assertTrue(Files.exists(zipFile));
-		Files.delete(zipFile);
+		assertEquals("application/zip", result.getContext().get(MessageContext.METADATA_MIMETYPE).toString());
 	}
 }

@@ -47,7 +47,6 @@
 				name="create a new zip collection with a specified name"
 				className="org.frankframework.compression.ZipWriterPipe"
 				action="open"
-				backwardsCompatibility="true"
 				>
 					<param name="filename" /> <!-- Get name from previous pipe -->
 				<forward name="success" path="Iterate over a zip file and add the content to a new zip archive"/>
@@ -67,11 +66,12 @@
 				name="ReCreateZip4"
 				className="org.frankframework.compression.ZipWriterPipe"
 				action="close"
-				backwardsCompatibility="true"
+				preserveInput="true"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
 
+			<!-- create a new zip -->
 			<pipe
 				name="SimpleZip"
 				className="org.frankframework.pipes.EchoPipe"
@@ -81,8 +81,9 @@
 				name="SimpleZip2"
 				className="org.frankframework.compression.ZipWriterPipe"
 				action="open"
-				backwardsCompatibility="true"
-			/>
+			>
+				<param name="filename" />
+			</pipe>
 			<pipe
 				name="SimpleZip3"
 				className="org.frankframework.compression.ZipWriterPipe"
@@ -103,6 +104,7 @@
 				<forward name="success" path="READY"/>
 			</pipe>
 
+			<!-- create a new zip -->
 			<pipe
 				name="SimpleZipX"
 				className="org.frankframework.pipes.EchoPipe"
@@ -112,8 +114,9 @@
 				name="SimpleZipX2"
 				className="org.frankframework.compression.ZipWriterPipe"
 				action="open"
-				backwardsCompatibility="true"
-			/>
+			>
+				<param name="filename" />
+			</pipe>
 			<pipe
 				name="SimpleZipX3"
 				className="org.frankframework.compression.ZipWriterPipe"
@@ -225,21 +228,12 @@
 				<exit name="READY" state="success"/>
 			</exits>
 
+			<!-- test zip in zip -->
 			<pipe
 				name="make entry"
 				className="org.frankframework.compression.ZipWriterPipe"
-				action="stream"
-				backwardsCompatibility="true"
-				>
-				<param name="filename" />
-				<forward name="success" path="start nested zip"/>
-			</pipe>
-			<pipe
-				name="start nested zip"
-				className="org.frankframework.compression.ZipWriterPipe"
 				action="open"
-				zipWriterHandle="zipwriter2"
-				backwardsCompatibility="true"
+				collectionName="zipwriter2"
 				>
 				<forward name="success" path="ZipRead"/>
 			</pipe>
@@ -250,13 +244,15 @@
 				streamingContents="false"
 				charset="ISO-8859-1"
 				contentsSessionKey="nestedZipData"
+				storeResultInSessionKey="iterationResult"
 				>
-				<sender className="org.frankframework.compression.ZipWriterSender"
-					collectionName="zipwriter2"
-					backwardsCompatibility="true"
-				>
-					<param name="contents" sessionKey="nestedZipData" />
-				</sender>
+				<SenderWrapperSender preserveInput="true">
+					<sender className="org.frankframework.compression.ZipWriterSender"
+						collectionName="zipwriter2"
+					>
+						<param name="contents" sessionKey="nestedZipData" />
+					</sender>
+				</SenderWrapperSender>
 				<forward name="success" path="close nested zip"/>
 			</pipe>
 			<pipe
@@ -264,10 +260,24 @@
 				className="org.frankframework.compression.ZipWriterPipe"
 				action="close"
 				collectionName="zipwriter2"
-				backwardsCompatibility="true"
 				>
-				<forward name="success" path="READY"/>
+				<forward name="success" path="Add to parent zip"/>
 			</pipe>
+
+			<!-- Add to parent zip -->
+			<pipe
+				name="Add to parent zip"
+				className="org.frankframework.compression.ZipWriterPipe"
+				>
+				<param name="filename" sessionKey="originalMessage" />
+				<forward name="success" path="return filename"/>
+			</pipe>
+
+			<pipe
+				name="return filename"
+				className="org.frankframework.pipes.EchoPipe"
+				getInputFromSessionKey="iterationResult"
+			/>
 
 		</pipeline>
 	</adapter>

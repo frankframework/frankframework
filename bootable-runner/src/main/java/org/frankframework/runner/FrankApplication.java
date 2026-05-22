@@ -68,7 +68,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -256,7 +256,7 @@ public class FrankApplication {
 
 			Message<Object> response = gateway.sendSyncMessage(builder.build(null));
 			// An integer is returned, but just in case it might be something else, convert it to a String.
-			return "200".equals(""+response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
+			return "200".equals(""+response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+AbstractMessage.STATUS_KEY));
 		} catch (Exception e) {
 			getApplicationLogger().warn("FrankApplication is not yet healthy!", e);
 			return false;

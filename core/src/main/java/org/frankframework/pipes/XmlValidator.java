@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -494,7 +494,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 			xsds.add(xsd);
 			return xsds;
 		}
-		return null;
+		return List.of();
 	}
 
 	protected void addRequestRootValidation(RootValidation path) {

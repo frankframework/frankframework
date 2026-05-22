@@ -17,3 +17,5 @@ bin
 **/META-INF/MANIFEST.MF
 .flattened-pom.xml
 .metadata
+
+.agentbridge

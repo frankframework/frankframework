@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 
 @WebAppConfiguration
 @ExtendWith(SpringExtension.class)
@@ -86,11 +86,11 @@ public abstract class FrankApiTestBase {
 				Map<String, Object> headers = new HashMap<>(in.getHeaders());
 				headers.put("state", "SUCCESS");
 				headers.put("meta-state", "SUCCESS");
-				headers.put(MessageBase.STATUS_KEY, status);
-				headers.put("meta-" + MessageBase.STATUS_KEY, status);
+				headers.put(AbstractMessage.STATUS_KEY, status);
+				headers.put("meta-" + AbstractMessage.STATUS_KEY, status);
 				if (mediaType != null) {
-					headers.put(MessageBase.MIMETYPE_KEY, mediaType);
-					headers.put("meta-" + MessageBase.MIMETYPE_KEY, mediaType);
+					headers.put(AbstractMessage.MIMETYPE_KEY, mediaType);
+					headers.put("meta-" + AbstractMessage.MIMETYPE_KEY, mediaType);
 				}
 
 				return new MessageHeaders(headers);

@@ -288,6 +288,7 @@
             </blacklist>
             <whitelist>
 <!--                 <class>org.frankframework.management.gateway.SerializableInputStream</class> -->
+                <class>org.frankframework.management.gateway.ImmutableMessage</class>
                 <class>org.springframework.messaging.support.GenericMessage</class>
                 <class>org.springframework.messaging.MessageHeaders</class>
                 <package>org.frankframework.management.gateway</package>

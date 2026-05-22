@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>com.github.mwiede</groupId>
 			<artifactId>jsch</artifactId>
-			<version>2.28.0</version>
+			<version>2.28.2</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.63.0</version>
+			<version>6.64.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.18.2</version>
+			<version>1.18.3</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-core-http-okhttp</artifactId>
-			<version>1.13.3</version>
+			<version>1.13.4</version>
 			<scope>test</scope>
 		</dependency>
 

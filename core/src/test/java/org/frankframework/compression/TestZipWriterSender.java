@@ -51,14 +51,6 @@ class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 	}
 
 	@Test
-	void testChangeCollectionName() throws Exception {
-		sender.addParameter(new Parameter("filename","fakeFilename"));
-		sender.setZipWriterHandle("test123");
-		sender.configure();
-		assertEquals("test123", sender.getCollectionName());
-	}
-
-	@Test
 	void testWrite() throws Exception {
 		sender.addParameter(new Parameter("filename","fakeFilename"));
 		sender.configure();

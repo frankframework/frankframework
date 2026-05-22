@@ -42,7 +42,7 @@ import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
@@ -102,7 +102,7 @@ public class TestPipeline {
 
 		builder.setPayload(inputMessage);
 		Message<?> response = frankApiService.sendSyncMessage(builder);
-		String state = BusMessageUtils.getHeader(response, MessageBase.STATE_KEY);
+		String state = BusMessageUtils.getHeader(response, AbstractMessage.STATE_KEY);
 		return testPipelineResponse(ResponseUtils.parseAsString(response), state, inputMessage);
 	}
 
@@ -129,7 +129,7 @@ public class TestPipeline {
 				Message<?> response = frankApiService.sendSyncMessage(builder);
 				result.append(name);
 				result.append(": ");
-				result.append(BusMessageUtils.getHeader(response, MessageBase.STATE_KEY));
+				result.append(BusMessageUtils.getHeader(response, AbstractMessage.STATE_KEY));
 				result.append("\n");
 			}
 		}

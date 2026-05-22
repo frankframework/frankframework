@@ -1,0 +1,25 @@
+<soap:Envelope
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
+	xsi:schemaLocation="http://www.w3.org/2003/05/soap-envelope
+	https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd
+	"
+	xmlns:eb="https://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd"
+>
+	<soap:Header>
+		<eb:MessageHeader eb:version="2.0" soap:mustUnderstand="1">
+			<eb:From>
+				<eb:PartyId eb:type="urn:osb:oin">00000000000000000000</eb:PartyId>
+			</eb:From>
+			<eb:To>
+				<eb:PartyId eb:type="urn:osb:oin">00000000000000000001</eb:PartyId>
+			</eb:To>
+		</eb:MessageHeader>
+		<eb:SyncReply eb:version="2.0"
+			soap:actor="http://schemas.xmlsoap.org/soap/actor/next"
+			soap:mustUnderstand="1" />
+	</soap:Header>
+	<soap:Body>
+		<WebServiceListerSenderREQ xmlns="urn:ws" />
+	</soap:Body>
+</soap:Envelope>

@@ -11,6 +11,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.stream.Message;
 
 public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 
@@ -149,7 +150,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	void nullInputOnElsePipeTest() throws Exception {
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, null, session);
+		PipeRunResult prr  = doPipe(pipe, Message.nullMessage(), session);
 		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
@@ -158,7 +159,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 		pipe.setElseForwardOnEmptyInput(false);
 		configureAndStartPipe();
 
-		PipeRunResult prr  = doPipe(pipe, null, session);
+		PipeRunResult prr  = doPipe(pipe, Message.nullMessage(), session);
 		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 }

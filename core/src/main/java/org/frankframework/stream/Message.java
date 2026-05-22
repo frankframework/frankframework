@@ -482,6 +482,12 @@ public class Message implements Serializable {
 	}
 
 	public synchronized String peek(int readLimit) throws IOException {
+		if (isEmpty()) {
+			return "";
+		}
+		if (request instanceof String string) {
+			return StringUtils.truncate(string, readLimit);
+		}
 		try (Reader r = asReader()) {
 			char[] buffer = new char[readLimit];
 			int len = r.read(buffer);

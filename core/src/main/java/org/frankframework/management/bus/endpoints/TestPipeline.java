@@ -49,7 +49,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.management.bus.message.EmptyMessage;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
@@ -89,7 +89,7 @@ public class TestPipeline extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
 	@RolesAllowed("IbisTester")
-	public MessageBase<?> runTestPipeline(Message<?> message) {
+	public AbstractMessage<?> runTestPipeline(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
@@ -114,7 +114,7 @@ public class TestPipeline extends BusEndpointBase {
 	}
 
 	// Does not support async requests because receiver requests are synchronous
-	private MessageBase<?> processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
+	private AbstractMessage<?> processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = MessageUtils.generateMessageId("testmessage");
 		try (PipeLineSession pls = new PipeLineSession()) {
 			// Make sure the pipeline session has a security handler
@@ -149,15 +149,15 @@ public class TestPipeline extends BusEndpointBase {
 		}
 	}
 
-	private MessageBase<?> convertPipelineResult(PipeLineResult plr) throws IOException {
-		final MessageBase<?> response;
+	private AbstractMessage<?> convertPipelineResult(PipeLineResult plr) throws IOException {
+		final AbstractMessage<?> response;
 		if (org.frankframework.stream.Message.isEmpty(plr.getResult())) {
 			response = EmptyMessage.noContent();
 		} else {
 			response = new BinaryMessage(plr.getResult().asInputStream());
 		}
 
-		response.setHeader(MessageBase.STATE_KEY, plr.getState().name());
+		response.setHeader(AbstractMessage.STATE_KEY, plr.getState().name());
 		return response;
 	}
 

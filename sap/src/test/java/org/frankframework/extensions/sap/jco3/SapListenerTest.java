@@ -34,6 +34,8 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.sap.SapException;
+import org.frankframework.extensions.sap.SapListener;
+import org.frankframework.extensions.sap.SapSystem;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;

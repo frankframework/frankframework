@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,11 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.sap.jco3;
+package org.frankframework.management.gateway;
 
-import org.frankframework.configuration.ConfigurationWarning;
+import java.util.Map;
 
-@Deprecated(forRemoval = true, since = "7.7.0")
-@ConfigurationWarning("Please do not specify jco version in package name")
-public class IdocSender extends IdocSenderImpl {
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.GenericMessage;
+
+public final class ImmutableMessage<T> extends GenericMessage<T> implements Message<T> {
+
+	public ImmutableMessage(T payload, Map<String, Object> headers) {
+		super(payload, headers);
+	}
+
+	@Override
+	public String toString() {
+		return "ImmutableMessage@" + Integer.toHexString(hashCode());
+	}
 }

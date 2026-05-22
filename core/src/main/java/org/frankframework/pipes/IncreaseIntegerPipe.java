@@ -58,7 +58,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 
 		Integer sessionKeyInteger = session.getInteger(sessionKey);
 		if (sessionKeyInteger == null) {

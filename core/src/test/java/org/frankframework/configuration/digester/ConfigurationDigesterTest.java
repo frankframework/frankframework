@@ -423,18 +423,16 @@ public class ConfigurationDigesterTest {
 		log.debug("testDigestConfigThatHasExceptions trace", e);
 
 		/*
-		 * org.frankframework.configuration.ConfigurationException: error loading configuration from file
-		 * [URLResource url [file:/C:/Data/Git/IAF2/core/target/test-classes/UnableToDigestConfiguration.xml]
-		 * systemId [classpath:UnableToDigestConfiguration.xml]
-		 * scope [ConfigurationContext [TestConfiguration], started on Sun Jun 29 11:00:59 CEST 2025]]
-		 * line [11] column [115]: (SAXException) unable to create bean for element [pipe]
+		 * org.frankframework.configuration.ConfigurationException: error loading configuration: (SAXParseException)
+		 * SystemId [classpath:UnableToDigestConfiguration.xml] line [11] column [115]: unable to create bean for element [pipe]
 		 * using DigesterRule [DigesterRule[beanClass=org.frankframework.pipes.SenderPipe,
 		 * factory=<null>,pattern=/pipe,registerMethod=addPipe,registerTextMethod=<null>]]:
+		 * (ClassNotFoundException) class [org.frankframework.pipes.DoesNotExit] not found in classloader [JunitTestClassLoaderWrapper@790132f7]:
 		 * (ClassNotFoundException) org.frankframework.pipes.DoesNotExit
 		*/
-		assertTrue(errorMessage.contains("error loading configuration from file"));
-		assertTrue(errorMessage.contains("systemId [classpath:UnableToDigestConfiguration.xml]"));
-		assertTrue(errorMessage.contains("scope [ConfigurationContext [TestConfiguration]"));
+		assertTrue(errorMessage.contains("error loading configuration"));
+		assertTrue(errorMessage.contains("SystemId [classpath:UnableToDigestConfiguration.xml]"));
+		assertTrue(errorMessage.contains("line [11] column [115]"));
 		assertTrue(errorMessage.contains("(ClassNotFoundException) org.frankframework.pipes.DoesNotExit"));
 	}
 

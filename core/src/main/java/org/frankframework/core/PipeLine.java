@@ -129,7 +129,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	private @Getter boolean storeOriginalMessageWithoutNamespaces = false;
 	private long messageSizeWarn = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
-	private @Getter String adapterToRunBeforeOnEmptyInput = null;
 
 	private @Getter IValidator inputValidator = null;
 	private @Getter IValidator outputValidator = null;
@@ -203,7 +202,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * Ideally it copies over the adapter name.
 	 */
 	@Override
-	public String getName() {
+	public @Nullable String getName() {
 		return null;
 	}
 
@@ -356,6 +355,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		}
 	}
 
+	@SuppressWarnings("java:S1181")
 	public void configure(IPipe pipe) throws ConfigurationException {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
 			pipe.setPipeLine(this); // Temporary here because of validators and wrappers
@@ -389,7 +389,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		log.debug("Pipe successfully configured");
 	}
 
-	public Optional<PipeLineExit> findExitByState(ExitState state) {
+	public Optional<@NonNull PipeLineExit> findExitByState(ExitState state) {
 		return pipeLineExits.values()
 				.stream()
 				.filter(pe -> pe.getState() == state)
@@ -500,15 +500,16 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	}
 
 	protected void startPipe(String type, IPipe pipe) {
-		if (pipe!=null) {
-			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-				log.debug("starting {}", type);
-				pipe.start();
-				log.debug("successfully started {}", type);
-			} catch (Exception t) {
-				this.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
-				throw t;
-			}
+		if (pipe == null) {
+			return;
+		}
+		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
+			log.debug("starting {}", type);
+			pipe.start();
+			log.debug("successfully started {}", type);
+		} catch (Exception t) {
+			this.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
+			throw t;
 		}
 	}
 
@@ -550,15 +551,16 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	}
 
 	protected void stopPipe(String type, IPipe pipe) {
-		if (pipe!=null) {
-			try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
-				log.debug("stopping {}", type);
-				pipe.stop();
-				log.debug("successfully stopped {}", type);
-			} catch (Exception t) {
-				this.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
-				throw t;
-			}
+		if (pipe == null) {
+			return;
+		}
+		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
+			log.debug("stopping {}", type);
+			pipe.stop();
+			log.debug("successfully stopped {}", type);
+		} catch (Exception t) {
+			this.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
+			throw t;
 		}
 	}
 
@@ -569,7 +571,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * @see #setFirstPipe
 	 */
 	@Override
-	public String toString(){
+	public @NonNull String toString(){
 		StringBuilder result = new StringBuilder(super.toString());
 
 		additionalToString(result);
@@ -732,13 +734,6 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	@ConfigurationWarning("Please use an IfPipe to retrieve a new/different response")
 	public void setTransformNullMessage(String s) {
 		transformNullMessage = new Message(s);
-	}
-
-	/** When specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
-	@Deprecated(forRemoval = true, since = "7.9")
-	@ConfigurationWarning("Please use an IfPipe and call a sub-adapter to retrieve a new/different response")
-	public void setAdapterToRunBeforeOnEmptyInput(String s) {
-		adapterToRunBeforeOnEmptyInput = s;
 	}
 
 	/**

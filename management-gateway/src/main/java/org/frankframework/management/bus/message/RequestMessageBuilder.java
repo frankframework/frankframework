@@ -50,7 +50,7 @@ public class RequestMessageBuilder {
 	private final @Getter @NonNull BusTopic topic;
 	private final @Getter @NonNull BusAction action;
 
-	private MessageBase<?> payload = null;
+	private AbstractMessage<?> payload = null;
 
 	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 

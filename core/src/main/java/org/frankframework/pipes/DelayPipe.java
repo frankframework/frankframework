@@ -36,11 +36,12 @@ public class DelayPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe (@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		try {
 			log.info("starts waiting for {} ms.", getDelayTime());
 			Thread.sleep(getDelayTime());
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new PipeRunException(this, "delay interrupted", e);
 		}
 		log.info("ends waiting for {} ms.", getDelayTime());

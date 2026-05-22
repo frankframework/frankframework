@@ -44,4 +44,9 @@ public class DummySender implements ICorrelatedSender {
 	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(message);
 	}
+
+	@Override
+	public LinkMethod getLinkMethod() {
+		return LinkMethod.MESSAGEID;
+	}
 }

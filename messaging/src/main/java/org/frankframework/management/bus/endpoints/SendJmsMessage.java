@@ -54,7 +54,6 @@ public class SendJmsMessage extends BusEndpointBase {
 		}
 		boolean lookupDestination = BusMessageUtils.getBooleanHeader(message, "lookupDestination", false);
 		boolean expectsReply = message.getHeaders().containsKey("replyChannel");
-		boolean persistent = message.getHeaders().containsKey("persistent");
 		JMSFacade.MessageClass messageClass = BusMessageUtils.getEnumHeader(message, "messageClass", JMSFacade.MessageClass.class, JMSFacade.MessageClass.AUTO);
 		String replyTo = BusMessageUtils.getHeader(message, "replyTo", null);
 		String messageProperty = BusMessageUtils.getHeader(message, "messageProperty", null);
@@ -63,7 +62,7 @@ public class SendJmsMessage extends BusEndpointBase {
 			throw new BusException("a DestinationType must be provided");
 		}
 
-		JmsSender qms = createJmsSender(connectionFactory, destination, persistent, type, replyTo, expectsReply, lookupDestination, messageClass);
+		JmsSender qms = createJmsSender(connectionFactory, destination, type, replyTo, expectsReply, lookupDestination, messageClass);
 		if(StringUtils.isNotEmpty(messageProperty)) {
 			qms.addParameter(getMessagePropertyParameter(messageProperty));
 		}
@@ -83,7 +82,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		return p;
 	}
 
-	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, JmsDestinationType type, String replyTo, boolean synchronous, boolean lookupDestination, JMSFacade.MessageClass messageClass) {
+	private JmsSender createJmsSender(String connectionFactory, String destination, JmsDestinationType type, String replyTo, boolean synchronous, boolean lookupDestination, JMSFacade.MessageClass messageClass) {
 		JmsSender qms = createBean(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
 		if(type == JmsDestinationType.QUEUE) {
@@ -93,7 +92,6 @@ public class SendJmsMessage extends BusEndpointBase {
 		}
 		qms.setDestinationName(destination);
 		qms.setDestinationType(type);
-		qms.setPersistent(persistent);
 		if (StringUtils.isNotEmpty(replyTo)) {
 			qms.setReplyToName(replyTo);
 		}

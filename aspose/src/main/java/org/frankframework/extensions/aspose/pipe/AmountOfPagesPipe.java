@@ -44,7 +44,7 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
 		int result = 0;
 
 		try (InputStream binaryInputStream = input.asInputStream(charset)){

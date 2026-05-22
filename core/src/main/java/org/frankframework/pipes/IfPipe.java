@@ -228,7 +228,7 @@ public class IfPipe extends AbstractPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		SupportedMediaType mediaType = getSupportedMediaType(message);
 
 		// Determine the media type and if the correct *pathExpression was provided

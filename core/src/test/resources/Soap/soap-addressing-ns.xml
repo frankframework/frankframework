@@ -1,0 +1,16 @@
+<Envelope xmlns="http://www.w3.org/2003/05/soap-envelope"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3.org/2005/08/addressing https://www.w3.org/2006/03/addressing/ws-addr.xsd"
+	xmlns:wsa="http://www.w3.org/2005/08/addressing">
+	<Header>
+		<wsa:MessageID>6B29FC40-CA47-1067-B31D-00DD010662DA</wsa:MessageID>
+		<wsa:ReplyTo>
+			<wsa:Address>http://example.com/business/client</wsa:Address>
+		</wsa:ReplyTo>
+		<wsa:To>http://example.com/fabrikam/Purchasing</wsa:To>
+		<wsa:Action>http://example.com/fabrikam/SubmitPO</wsa:Action>
+	</Header>
+	<Body>
+		<GetVehicleTypeDetailsREQ />
+	</Body>
+</Envelope>

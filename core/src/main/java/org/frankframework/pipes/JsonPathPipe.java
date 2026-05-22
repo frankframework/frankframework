@@ -102,7 +102,7 @@ public class JsonPathPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		try {
 			Message result = JsonUtil.evaluateJsonPath(jsonPath, message);
 			return new PipeRunResult(getSuccessForward(), result);

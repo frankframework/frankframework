@@ -9,7 +9,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
 import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.util.JacksonUtils;
 
 /**
@@ -40,8 +40,8 @@ public class SpringUnitTestLocalGateway implements OutboundGateway {
 				Map<String, Object> headers = new HashMap<>(in.getHeaders());
 				headers.put("state", "SUCCESS");
 				headers.put("meta-state", "SUCCESS");
-				headers.put(MessageBase.MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
-				headers.put("meta-" + MessageBase.MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
+				headers.put(AbstractMessage.MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
+				headers.put("meta-" + AbstractMessage.MIMETYPE_KEY, MediaType.APPLICATION_JSON_VALUE);
 
 				return new MessageHeaders(headers);
 			}

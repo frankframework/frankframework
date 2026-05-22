@@ -1,0 +1,14 @@
+<bindings xmlns="http://java.sun.com/xml/ns/jaxb"
+xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.0">
+	<bindings schemaLocation="cpp-cpa-2_0.xsd" node="/xs:schema">
+		<bindings node="//xs:attributeGroup[@name='xlink.grp']/xs:attribute[@ref='xlink:type']">
+		  <property name="XLinkType"/>
+		</bindings>
+		<bindings node="//xs:attributeGroup[@name='xlink.grp']/xs:attribute[@ref='xlink:href']">
+		  <property name="XLinkHRef"/>
+		</bindings>
+		<!--bindings node="//xs:element[@name='PartyRef']/xs:complexType/xs:attribute[@name='type']">
+		  <property name="PartyRefType"/>
+		</bindings-->
+	</bindings>
+</bindings>

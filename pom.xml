@@ -68,12 +68,14 @@
 	<properties>
 		<revision>10.2.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- NB: We need to stay on target JDK21 as long as the JBoss / WildFly images we build for our Larva tests do not support JDK25 -->
 		<maven.compiler.target>21</maven.compiler.target>
+		<!-- Need this property for the Jenkins build system to determine correct build JDK version, which needs to be JDK25 for Frank!Doc (and JDK25 changes in JavaDoc) -->
 		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<lombok.version>1.18.46</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
-		<log4j2.version>2.25.4</log4j2.version>
+		<log4j2.version>2.26.0</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -81,17 +83,17 @@
 		<junit.excludedTags />
 		<junit.includedTags />
 
-		<jackson.version>2.21.2</jackson.version>
-		<cxf.version>4.2.0</cxf.version>
+		<jackson.version>2.21.3</jackson.version>
+		<cxf.version>4.2.1</cxf.version>
 		<spring.version>7.0.7</spring.version>
 		<spring-security.version>7.0.5</spring-security.version>
 		<spring-integration.version>7.0.4</spring-integration.version>
-		<spring.boot.version>4.0.5</spring.boot.version>
-		<tomcat.version>11.0.21</tomcat.version>
+		<spring.boot.version>4.0.6</spring.boot.version>
+		<tomcat.version>11.0.22</tomcat.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<tika.version>3.3.0</tika.version>
 
-		<narayana.version>7.3.3.Final</narayana.version>
+		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
 		<micrometer.version>1.16.5</micrometer.version>
 		<argLine />
@@ -99,19 +101,19 @@
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 
 		<!-- There is in error in the latest frankdoc version, which causes the build to fail. Until that is fixed, we need to use a specific version -->
-		<frankdoc.version>4.4.0-20260426.104314-5</frankdoc.version>
+		<frankdoc.version>4.4.1-SNAPSHOT</frankdoc.version>
 		<javadoc-plugin.version>3.12.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.4.240</h2.driver.version>
 		<db2.driver.version>12.1.4.0</db2.driver.version>
-		<oracle.driver.version>23.26.1.0.0</oracle.driver.version>
+		<oracle.driver.version>23.26.2.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>13.4.0.jre11</mssql.driver.version>
-		<mysql.driver.version>9.6.0</mysql.driver.version>
+		<mysql.driver.version>9.7.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.8</mariadb.driver.version>
-		<postgresql.driver.version>42.7.10</postgresql.driver.version>
-		<mongodb.driver.version>5.6.5</mongodb.driver.version>
+		<postgresql.driver.version>42.7.11</postgresql.driver.version>
+		<mongodb.driver.version>5.7.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.2.5</activemq.driver.version>
@@ -159,7 +161,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.12.Final</version>
+				<version>4.2.13.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -458,7 +460,7 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>2.0.17</version>
+				<version>2.0.18</version>
 			</dependency>
 
 			<!-- the bcpg depends on the other two modules, however to ensure we're using the latest version, explicitly define them here, dependabot will take care of the rest -->
@@ -486,7 +488,7 @@
 			<dependency>
 				<groupId>org.glassfish.jaxb</groupId>
 				<artifactId>jaxb-runtime</artifactId>
-				<version>4.0.7</version>
+				<version>4.0.8</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -779,8 +781,6 @@
 					<version>3.15.0</version>
 					<configuration>
 						<release>${maven.compiler.target}</release>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
 						<compilerArgs>
 							<arg>-parameters</arg>
 							<!-- Flags required for ErrorProne -->
@@ -933,7 +933,7 @@
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
-					<version>3.4.0</version>
+					<version>3.5.1</version>
 					<configuration>
 						<java>
 							<removeUnusedImports />
@@ -1145,7 +1145,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>13.4.0</version>
+							<version>13.4.2</version>
 						</dependency>
 					</dependencies>
 					<executions>
@@ -1286,7 +1286,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.6.2</version>
+					<version>3.6.3</version>
 					<executions>
 						<execution>
 							<id>enforce-lib-ban</id>
@@ -1692,14 +1692,24 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<repositories>
+				<repository>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+					<id>frankdoc</id>
+					<url>https://nexus.frankframework.org/repository/snapshots</url>
+				</repository>
+			</repositories>
 			<pluginRepositories>
 				<pluginRepository>
 					<snapshots>
 						<enabled>true</enabled>
 						<updatePolicy>always</updatePolicy>
 					</snapshots>
-					<id>frankframework</id>
-					<url>https://nexus.frankframework.org/content/groups/public</url>
+					<id>frankdoc</id>
+					<url>https://nexus.frankframework.org/repository/snapshots</url>
 				</pluginRepository>
 			</pluginRepositories>
 			<build>
@@ -1739,6 +1749,8 @@
 								<additionalOption>org.frankframework.configuration.Configuration</additionalOption>
 								<additionalOption>-frankFrameworkVersion</additionalOption>
 								<additionalOption>${project.version}</additionalOption>
+								<additionalOption>-skippableContainerElements</additionalOption>
+								<additionalOption>Exits,Forwards,Module,Root,GlobalForwards,Global-forwards,Scheduler,PipelinePart</additionalOption>
 							</additionalOptions>
 							<show>private</show>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>

@@ -15,11 +15,9 @@
 				</pipe>
 				<!-- Test needs a pipe with deprecated property -->
 				<pipe name="DeprecatedPipe2InAdapter1"
-					  className="org.frankframework.compression.ZipWriterPipe"
-					  zipWriterHandle="x"
-				>
-					<param name="filename" value="x"/>
-				</pipe>
+					  className="org.frankframework.pipes.Base64Pipe"
+					  charset="utf-8"
+				/>
 			</pipeline>
 		</adapter>
 		<adapter name="Adapter2">
@@ -37,11 +35,9 @@
 				</pipe>
 				<!-- Test needs a pipe with deprecated property -->
 				<pipe name="DeprecatedPipe2InAdapter2"
-					  className="org.frankframework.compression.ZipWriterPipe"
-					  zipWriterHandle="x"
-				>
-					<param name="filename" value="x"/>
-				</pipe>
+					  className="org.frankframework.pipes.Base64Pipe"
+					  charset="utf-8"
+				/>
 			</pipeline>
 		</adapter>
 	</module>
@@ -58,11 +54,10 @@
 				<ChecksumPipe name="DeprecatedPipe1InAdapter3">
 					<Forward name="success" path="EXIT" />
 				</ChecksumPipe>
-				<ZipWriterPipe name="DeprecatedPipe2InAdapter3"
-							   zipWriterHandle="x"
+				<Base64Pipe name="DeprecatedPipe2InAdapter3"
+							   charset="utf-8"
 				>
-					<param name="filename" value="x"/>
-				</ZipWriterPipe>
+				</Base64Pipe>
 			</Pipeline>
 		</Adapter>
 		<Adapter name="Adapter4">
@@ -77,11 +72,10 @@
 				<ChecksumPipe name="DeprecatedPipe1InAdapter4">
 					<Forward name="success" path="EXIT" />
 				</ChecksumPipe>
-				<ZipWriterPipe name="DeprecatedPipe2InAdapter4"
-							   zipWriterHandle="x"
+				<Base64Pipe name="DeprecatedPipe2InAdapter4"
+							   charset="utf-8"
 				>
-					<param name="filename" value="x"/>
-				</ZipWriterPipe>
+				</Base64Pipe>
 			</Pipeline>
 		</Adapter>
 	</root>

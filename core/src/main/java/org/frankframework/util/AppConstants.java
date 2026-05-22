@@ -115,7 +115,7 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	public static synchronized void removeInstance(final ClassLoader cl) {
-		if(cl == null) {
+		if (cl == null) {
 			throw new IllegalStateException("calling AppConstants.removeInstance without ClassLoader");
 		}
 		int key = System.identityHashCode(cl);

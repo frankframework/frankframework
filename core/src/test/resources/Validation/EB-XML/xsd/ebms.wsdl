@@ -1,0 +1,549 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://www.ebms.com/ebms/v2" xmlns:tns="http://www.ebms.com/ebms/v2" xmlns:ns1="http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd" xmlns:ns2="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<types>
+		<xsd:schema>
+			<xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+		</xsd:schema>
+		<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xsd:element name="root" nillable="true" type="xs:anyType" />
+			<xsd:attribute name="href" type="xs:anyURI" />
+			<xsd:attribute name="role" type="xs:anyURI" />
+			<xsd:attribute name="type" type="xs:string" />
+		</xsd:schema>
+		<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.w3.org/2000/09/xmldsig#" xmlns:tns="http://www.w3.org/2000/09/xmldsig#" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xsd:element name="CanonicalizationMethod" nillable="true" type="tns:CanonicalizationMethodType" />
+			<xsd:element name="DSAKeyValue" nillable="true" type="tns:DSAKeyValueType" />
+			<xsd:element name="DigestMethod" nillable="true" type="tns:DigestMethodType" />
+			<xsd:element name="DigestValue" nillable="true" type="xsd:base64Binary" />
+			<xsd:element name="KeyInfo" nillable="true" type="tns:KeyInfoType" />
+			<xsd:element name="KeyName" nillable="true" type="xsd:string" />
+			<xsd:element name="KeyValue" nillable="true" type="tns:KeyValueType" />
+			<xsd:element name="Manifest" nillable="true" type="tns:ManifestType" />
+			<xsd:element name="MgmtData" nillable="true" type="xsd:string" />
+			<xsd:element name="Object" nillable="true" type="tns:ObjectType" />
+			<xsd:element name="PGPData" nillable="true" type="tns:PGPDataType" />
+			<xsd:element name="RSAKeyValue" nillable="true" type="tns:RSAKeyValueType" />
+			<xsd:element name="Reference" nillable="true" type="tns:ReferenceType" />
+			<xsd:element name="RetrievalMethod" nillable="true" type="tns:RetrievalMethodType" />
+			<xsd:element name="SPKIData" nillable="true" type="tns:SPKIDataType" />
+			<xsd:element name="Signature" nillable="true" type="tns:SignatureType" />
+			<xsd:element name="SignatureMethod" nillable="true" type="tns:SignatureMethodType" />
+			<xsd:element name="SignatureProperties" nillable="true" type="tns:SignaturePropertiesType" />
+			<xsd:element name="SignatureProperty" nillable="true" type="tns:SignaturePropertyType" />
+			<xsd:element name="SignatureValue" nillable="true" type="tns:SignatureValueType" />
+			<xsd:element name="SignedInfo" nillable="true" type="tns:SignedInfoType" />
+			<xsd:element name="Transform" nillable="true" type="tns:TransformType" />
+			<xsd:element name="Transforms" nillable="true" type="tns:TransformsType" />
+			<xsd:element name="X509Data" nillable="true" type="tns:X509DataType" />
+			<xsd:complexType name="ReferenceType">
+				<xsd:sequence>
+					<xsd:element minOccurs="0" name="Transforms" type="tns:TransformsType" />
+					<xsd:element name="DigestMethod" type="tns:DigestMethodType" />
+					<xsd:element name="DigestValue" type="xsd:base64Binary" />
+				</xsd:sequence>
+				<xsd:attribute name="Id" type="xsd:ID" />
+				<xsd:attribute name="URI" type="xsd:anyURI" />
+				<xsd:attribute name="Type" type="xsd:anyURI" />
+			</xsd:complexType>
+			<xsd:complexType name="TransformsType">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" name="Transform" type="tns:TransformType" />
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType mixed="true" name="TransformType">
+				<xsd:sequence>
+					<xsd:choice maxOccurs="unbounded" minOccurs="0">
+						<xsd:element name="XPath" type="xsd:string" />
+						<xsd:any namespace="##other" processContents="lax" />
+					</xsd:choice>
+				</xsd:sequence>
+				<xsd:attribute name="Algorithm" type="xsd:anyURI" use="required" />
+			</xsd:complexType>
+			<xsd:complexType mixed="true" name="ObjectType">
+				<xsd:sequence>
+					<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+				</xsd:sequence>
+				<xsd:attribute name="Id" type="xsd:ID" />
+				<xsd:attribute name="MimeType" type="xsd:string" />
+				<xsd:attribute name="Encoding" type="xsd:anyURI" />
+			</xsd:complexType>
+			<xsd:complexType name="DSAKeyValueType">
+				<xsd:sequence>
+					<xsd:element minOccurs="0" name="P" type="xsd:base64Binary" />
+					<xsd:element minOccurs="0" name="Q" type="xsd:base64Binary" />
+					<xsd:element minOccurs="0" name="G" type="xsd:base64Binary" />
+					<xsd:element name="Y" type="xsd:base64Binary" />
+					<xsd:element minOccurs="0" name="J" type="xsd:base64Binary" />
+					<xsd:element minOccurs="0" name="Seed" type="xsd:base64Binary" />
+					<xsd:element minOccurs="0" name="PgenCounter" type="xsd:base64Binary" />
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="SignedInfoType">
+				<xsd:sequence>
+					<xsd:element name="CanonicalizationMethod" type="tns:CanonicalizationMethodType" />
+					<xsd:element name="SignatureMethod" type="tns:SignatureMethodType" />
+					<xsd:element maxOccurs="unbounded" name="Reference" type="tns:ReferenceType" />
+				</xsd:sequence>
+				<xsd:attribute name="Id" type="xsd:ID" />
+			</xsd:complexType>
+			<xsd:complexType mixed="true" name="CanonicalizationMethodType">
+				<xsd:sequence>
+					<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+				</xsd:sequence>
+				<xsd:attribute name="Algorithm" type="xsd:anyURI" use="required" />
+			</xsd:complexType>
+			<xsd:complexType mixed="true" name="SignatureMethodType">
+				<xsd:sequence>
+					<xsd:choice maxOccurs="unbounded" minOccurs="0">
+						<xsd:element name="HMACOutputLength" type="xsd:integer" />
+						<xsd:any namespace="##other" processContents="lax" />
+					</xsd:choice>
+				</xsd:sequence>
+				<xsd:attribute name="Algorithm" type="xsd:anyURI" use="required" />
+			</xsd:complexType>
+			<xsd:complexType name="PGPDataType">
+				<xsd:sequence>
+					<xsd:choice maxOccurs="unbounded" minOccurs="0">
+						<xsd:element name="PGPKeyID" type="xsd:base64Binary" />
+						<xsd:element name="PGPKeyPacket" type="xsd:base64Binary" />
+						<xsd:any namespace="##other" processContents="lax" />
+					</xsd:choice>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="SignaturePropertiesType">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" name="SignatureProperty" type="tns:SignaturePropertyType" />
+				</xsd:sequence>
+				<xsd:attribute name="Id" type="xsd:ID" />
+			</xsd:complexType>
+			<xsd:complexType mixed="true" name="SignaturePropertyType">
+				<xsd:sequence>
+					<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+				</xsd:sequence>
+				<xsd:attribute name="Target" type="xsd:anyURI" use="required" />
+				<xsd:attribute name="Id" type="xsd:ID" />
+			</xsd:complexType>
+			<xsd:complexType name="ManifestType">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" name="Reference" type="tns:ReferenceType" />
+				</xsd:sequence>
+				<xsd:attribute name="Id" type="xsd:ID" />
+			</xsd:complexType>
+			<xsd:complexType mixed="true" name="KeyValueType">
+				<xsd:sequence>
+					<xsd:choice maxOccurs="unbounded" minOccurs="0">
+						<xsd:element ref="tns:DSAKeyValue" />
+						<xsd:element ref="tns:RSAKeyValue" />
+						<xsd:any namespace="##other" processContents="lax" />
+					</xsd:choice>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="SignatureValueType">
+				<xsd:simpleContent>
+					<xsd:extension base="xsd:base64Binary">
+						<xsd:attribute name="Id" type="xsd:ID" />
+					</xsd:extension>
+				</xsd:simpleContent>
+			</xsd:complexType>
+			<xsd:complexType name="SignatureType">
+				<xsd:sequence>
+					<xsd:element name="SignedInfo" type="tns:SignedInfoType" />
+					<xsd:element name="SignatureValue" type="tns:SignatureValueType" />
+					<xsd:element minOccurs="0" name="KeyInfo" type="tns:KeyInfoType" />
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="Object" type="tns:ObjectType" />
+				</xsd:sequence>
+				<xsd:attribute name="Id" type="xsd:ID" />
+			</xsd:complexType>
+			<xsd:complexType mixed="true" name="KeyInfoType">
+				<xsd:sequence>
+					<xsd:choice maxOccurs="unbounded" minOccurs="0">
+						<xsd:element ref="tns:SPKIData" />
+						<xsd:element ref="tns:MgmtData" />
+						<xsd:element ref="tns:KeyValue" />
+						<xsd:element ref="tns:PGPData" />
+						<xsd:element ref="tns:RetrievalMethod" />
+						<xsd:element ref="tns:KeyName" />
+						<xsd:element ref="tns:X509Data" />
+						<xsd:any namespace="##other" processContents="lax" />
+					</xsd:choice>
+				</xsd:sequence>
+				<xsd:attribute name="Id" type="xsd:ID" />
+			</xsd:complexType>
+			<xsd:complexType name="SPKIDataType">
+				<xsd:sequence>
+					<xsd:choice maxOccurs="unbounded" minOccurs="0">
+						<xsd:element name="SPKISexp" type="xsd:base64Binary" />
+						<xsd:any namespace="##other" processContents="lax" />
+					</xsd:choice>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="X509DataType">
+				<xsd:sequence>
+					<xsd:choice maxOccurs="unbounded" minOccurs="0">
+						<xsd:element name="X509IssuerSerial" type="tns:X509IssuerSerialType" />
+						<xsd:element name="X509Certificate" type="xsd:base64Binary" />
+						<xsd:element name="X509SubjectName" type="xsd:string" />
+						<xsd:element name="X509SKI" type="xsd:base64Binary" />
+						<xsd:element name="X509CRL" type="xsd:base64Binary" />
+						<xsd:any namespace="##other" processContents="lax" />
+					</xsd:choice>
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="X509IssuerSerialType">
+				<xsd:sequence>
+					<xsd:element name="X509IssuerName" type="xsd:string" />
+					<xsd:element name="X509SerialNumber" type="xsd:integer" />
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="RSAKeyValueType">
+				<xsd:sequence>
+					<xsd:element name="Modulus" type="xsd:base64Binary" />
+					<xsd:element name="Exponent" type="xsd:base64Binary" />
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType mixed="true" name="DigestMethodType">
+				<xsd:sequence>
+					<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+				</xsd:sequence>
+				<xsd:attribute name="Algorithm" type="xsd:anyURI" use="required" />
+			</xsd:complexType>
+			<xsd:complexType name="RetrievalMethodType">
+				<xsd:sequence>
+					<xsd:element minOccurs="0" name="Transforms" type="tns:TransformsType" />
+				</xsd:sequence>
+				<xsd:attribute name="URI" type="xsd:anyURI" />
+				<xsd:attribute name="Type" type="xsd:anyURI" />
+			</xsd:complexType>
+		</xsd:schema>
+		<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://www.ez.nl/ezpoort/v1" xmlns="http://www.ez.nl/ezpoort/v1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xsd:element name="Attachment" nillable="true" type="xsd:base64Binary" />
+		</xsd:schema>
+		<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd" xmlns:ns1="http://www.w3.org/2000/09/xmldsig#" xmlns:ns2="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns3="http://www.w3.org/1999/xlink" xmlns:tns="http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+			<xsd:import namespace="http://www.w3.org/2000/09/xmldsig#" />
+			<xsd:import namespace="http://schemas.xmlsoap.org/soap/envelope/" />
+			<xsd:import namespace="http://www.w3.org/1999/xlink" />
+			<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+			<xsd:element name="AckRequested">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="ns2:actor" />
+					<xsd:attribute ref="tns:signed" use="required" />
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+					<xsd:attribute ref="ns2:mustUnderstand" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Acknowledgment">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="Timestamp" type="xsd:dateTime" />
+						<xsd:element name="RefToMessageId" type="xsd:string" />
+						<xsd:element minOccurs="0" ref="tns:From" />
+						<xsd:element maxOccurs="unbounded" minOccurs="0" ref="ns1:Reference" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="ns2:actor" />
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+					<xsd:attribute ref="ns2:mustUnderstand" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Action" nillable="true" type="xsd:string" />
+			<xsd:element name="CPAId" nillable="true" type="xsd:string" />
+			<xsd:element name="ConversationId" nillable="true" type="xsd:string" />
+			<xsd:element name="Description">
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="xsd:string">
+							<xsd:attribute ref="xml:lang" use="required" />
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="DuplicateElimination" nillable="true" type="xsd:anyType" />
+			<xsd:element name="Error">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element minOccurs="0" ref="tns:Description" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:codeContext" />
+					<xsd:attribute ref="tns:errorCode" use="required" />
+					<xsd:attribute ref="tns:severity" use="required" />
+					<xsd:attribute ref="tns:location" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ErrorList">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" ref="tns:Error" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="tns:highestSeverity" use="required" />
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+					<xsd:attribute ref="ns2:mustUnderstand" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="From">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" ref="tns:PartyId" />
+						<xsd:element minOccurs="0" name="Role" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Manifest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" ref="tns:Reference" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="MessageData">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="MessageId" type="xsd:string" />
+						<xsd:element name="Timestamp" type="xsd:dateTime" />
+						<xsd:element minOccurs="0" name="RefToMessageId" type="xsd:string" />
+						<xsd:element minOccurs="0" name="TimeToLive" type="xsd:dateTime" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="MessageHeader">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element ref="tns:From" />
+						<xsd:element ref="tns:To" />
+						<xsd:element name="CPAId" type="xsd:string" />
+						<xsd:element name="ConversationId" type="xsd:string" />
+						<xsd:element ref="tns:Service" />
+						<xsd:element name="Action" type="xsd:string" />
+						<xsd:element ref="tns:MessageData" />
+						<xsd:element minOccurs="0" name="DuplicateElimination" type="xsd:anyType" />
+						<xsd:element maxOccurs="unbounded" minOccurs="0" ref="tns:Description" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+					<xsd:attribute ref="ns2:mustUnderstand" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="MessageId" nillable="true" type="xsd:string" />
+			<xsd:element name="MessageOrder">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="SequenceNumber" type="tns:sequenceNumber.type" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+					<xsd:attribute ref="ns2:mustUnderstand" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="PartyId">
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="xsd:string">
+							<xsd:attribute ref="tns:type" />
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="RefToMessageId" nillable="true" type="xsd:string" />
+			<xsd:element name="Reference">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" minOccurs="0" ref="tns:Schema" />
+						<xsd:element maxOccurs="unbounded" minOccurs="0" ref="tns:Description" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="ns3:type" />
+					<xsd:attribute ref="ns3:href" use="required" />
+					<xsd:attribute ref="ns3:role" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Schema">
+				<xsd:complexType>
+					<xsd:sequence />
+					<xsd:attribute ref="tns:location" use="required" />
+					<xsd:attribute ref="tns:version" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SequenceNumber" nillable="true" type="tns:sequenceNumber.type" />
+			<xsd:element name="Service">
+				<xsd:complexType>
+					<xsd:simpleContent>
+						<xsd:extension base="xsd:string">
+							<xsd:attribute ref="tns:type" />
+						</xsd:extension>
+					</xsd:simpleContent>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="StatusRequest">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="RefToMessageId" type="xsd:string" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="StatusResponse">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="RefToMessageId" type="xsd:string" />
+						<xsd:element minOccurs="0" name="Timestamp" type="xsd:dateTime" />
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="tns:messageStatus" use="required" />
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SyncReply">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax" />
+					</xsd:sequence>
+					<xsd:attribute ref="ns2:actor" use="required" />
+					<xsd:attribute ref="tns:id" />
+					<xsd:attribute ref="tns:version" use="required" />
+					<xsd:attribute ref="ns2:mustUnderstand" use="required" />
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="TimeToLive" nillable="true" type="xsd:anySimpleType" />
+			<xsd:element name="Timestamp" nillable="true" type="xsd:anySimpleType" />
+			<xsd:element name="To">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element maxOccurs="unbounded" ref="tns:PartyId" />
+						<xsd:element minOccurs="0" name="Role" type="xsd:string" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:complexType name="sequenceNumber.type">
+				<xsd:simpleContent>
+					<xsd:extension base="xsd:integer">
+						<xsd:attribute ref="tns:status" />
+					</xsd:extension>
+				</xsd:simpleContent>
+			</xsd:complexType>
+			<xsd:simpleType name="status.type">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="Reset" />
+					<xsd:enumeration value="Continue" />
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="severity.type">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="Warning" />
+					<xsd:enumeration value="Error" />
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:simpleType name="messageStatus.type">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="UnAuthorized" />
+					<xsd:enumeration value="NotRecognized" />
+					<xsd:enumeration value="Received" />
+					<xsd:enumeration value="Processed" />
+					<xsd:enumeration value="Forwarded" />
+				</xsd:restriction>
+			</xsd:simpleType>
+			<xsd:attribute name="codeContext" type="xsd:anyURI" />
+			<xsd:attribute name="errorCode" type="xsd:string" />
+			<xsd:attribute name="highestSeverity" type="tns:severity.type" />
+			<xsd:attribute name="id" type="xsd:ID" />
+			<xsd:attribute name="location" type="xsd:string" />
+			<xsd:attribute name="messageStatus" type="tns:messageStatus.type" />
+			<xsd:attribute name="severity" type="tns:severity.type" />
+			<xsd:attribute name="signed" type="xsd:boolean" />
+			<xsd:attribute name="status" type="tns:status.type" />
+			<xsd:attribute name="type" type="xsd:string" />
+			<xsd:attribute name="version" type="xsd:string" />
+		</xsd:schema>
+	</types>
+
+	<message name="EbMSMSHRequest">
+		<part name="MessageHeader" element="ns1:MessageHeader" />
+	</message>
+	<message name="EbMSRequest">
+		<part name="MessageHeader" element="ns1:MessageHeader" />
+		<part name="Manifest" element="ns1:Manifest" />
+	</message>
+	<message name="EbMSResponse">
+		<part name="MessageHeader" element="ns1:MessageHeader" />
+	</message>
+
+	<portType name="EbMS">
+		<operation name="EbMSMSHRequestSync">
+			<input message="tns:EbMSMSHRequest"/>
+			<output message="tns:EbMSResponse"/>
+		</operation>
+		<operation name="EbMSRequestSync">
+			<input message="tns:EbMSRequest"/>
+			<output message="tns:EbMSResponse"/>
+		</operation>
+		<operation name="EbMSMSHRequest">
+			<input message="tns:EbMSMSHRequest"/>
+		</operation>
+		<operation name="EbMSRequest">
+			<input message="tns:EbMSRequest"/>
+		</operation>
+		<operation name="EbMSResponse">
+			<input message="tns:EbMSResponse"/>
+		</operation>
+	</portType>
+
+	<binding name="EbMS" type="tns:EbMS">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+		<operation name="EbMSMSHRequestSync">
+			<soap:operation soapAction="ebXML" style="document"/>
+			<input>
+				<soap:header part="MessageHeader" message="tns:EbMSMSHRequest" use="literal"/>
+			</input>
+			<output><soap:header part="MessageHeader" message="tns:EbMSResponse" use="literal"/></output>
+		</operation>
+		<operation name="EbMSRequestSync">
+			<soap:operation soapAction="ebXML" style="document"/>
+			<input>
+				<soap:header part="MessageHeader" message="tns:EbMSRequest" use="literal"/>
+				<soap:body parts="Manifest" use="literal" />
+			</input>
+			<output><soap:header part="MessageHeader" message="tns:EbMSResponse" use="literal"/></output>
+		</operation>
+		<operation name="EbMSMSHRequest">
+			<soap:operation soapAction="ebXML" style="document"/>
+			<input>
+				<soap:header part="MessageHeader" message="tns:EbMSMSHRequest" use="literal"/>
+			</input>
+		</operation>
+		<operation name="EbMSRequest">
+			<soap:operation soapAction="ebXML" style="document"/>
+			<input>
+				<soap:header part="MessageHeader" message="tns:EbMSRequest" use="literal"/>
+				<soap:body parts="Manifest" use="literal" />
+			</input>
+		</operation>
+		<operation name="EbMSResponse">
+			<soap:operation soapAction="ebXML" style="document"/>
+			<input><soap:header part="MessageHeader" message="tns:EbMSResponse" use="literal"/></input>
+		</operation>
+	</binding>
+
+	<service name="EbMSService">
+		<port binding="tns:EbMS" name="EbMS">
+			<soap:address location="http://localhost:8080/ebms" />
+		</port>
+	</service>
+
+</definitions>

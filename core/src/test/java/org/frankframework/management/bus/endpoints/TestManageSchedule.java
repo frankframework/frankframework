@@ -21,7 +21,7 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
@@ -95,7 +95,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, AbstractMessage.STATUS_KEY, 0));
 		assertEquals("no-content", result);
 	}
 
@@ -117,7 +117,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, AbstractMessage.STATUS_KEY, 0));
 		assertEquals("no-content", result);
 	}
 
@@ -128,7 +128,7 @@ public class TestManageSchedule extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertEquals(202, BusMessageUtils.getIntHeader(response, MessageBase.STATUS_KEY, 0));
+		assertEquals(202, BusMessageUtils.getIntHeader(response, AbstractMessage.STATUS_KEY, 0));
 		assertEquals("no-content", result);
 	}
 }

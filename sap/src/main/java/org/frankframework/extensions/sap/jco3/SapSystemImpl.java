@@ -32,7 +32,6 @@ import com.sap.conn.jco.JCoRepository;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.extensions.sap.ISapSystem;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.util.AppConstants;
@@ -409,12 +408,5 @@ public abstract class SapSystemImpl extends SapSystemListItem implements ISapSys
 	@Override
 	public void setSncSSO2(String sncSSO2) {
 		this.sncSSO2 = sncSSO2;
-	}
-
-	@Override
-	@Deprecated(forRemoval = true, since = "7.8.0")
-	@ConfigurationWarning("setServiceOffset not used in JCo3")
-	public void setServiceOffset(int i) {
-		log.warn("setServiceOffset not used in JCo3");
 	}
 }

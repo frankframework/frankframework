@@ -87,7 +87,7 @@ public class LarvaPipe extends FixedForwardPipe implements ConfigurationAware {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
 		LarvaTool larvaTool = LarvaTool.createInstance(configuration);
 		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();

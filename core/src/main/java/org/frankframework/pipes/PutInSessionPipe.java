@@ -52,7 +52,7 @@ public class PutInSessionPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		if (StringUtils.isNotEmpty(getSessionKey())) {
 			Message v;
 			if (getValue() == null) {

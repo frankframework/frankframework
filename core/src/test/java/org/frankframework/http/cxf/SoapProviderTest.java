@@ -45,6 +45,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -55,6 +57,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 
@@ -547,5 +550,58 @@ public class SoapProviderTest {
 	@Test
 	public void nullAction() {
 		assertNull(SOAPProvider.findAction("application/soap+xml;charset=UTF-8;action"));
+	}
+
+	/**
+	 * Since we have plenty of tests that verify request / responses,
+	 * we just focus on the messageId here.
+	 */
+	@ParameterizedTest
+	@ValueSource(strings = {"soap-addressing.xml", "soap-addressing-ns.xml", "soap-addressing-minimal.xml", "soap-addressing-ns-on-header.xml"})
+	public void soapAddressing(String input) throws Throwable {
+		SOAPMessage request = createMessage(input);
+		SOAPMessage response = SOAPProvider.invoke(request);
+
+		assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", SOAPProvider.getSession().getMessageId());
+
+		NodeList nodes = response.getSOAPHeader().getElementsByTagNameNS("https://www.w3.org/2006/03/addressing/ws-addr.xsd", "RelatesTo");
+		if (nodes.getLength() > 0 && nodes.item(0).getNodeType() == Node.ELEMENT_NODE) {
+			String relatesTo = nodes.item(0).getTextContent();
+			assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", relatesTo);
+		} else {
+			fail("no message id found in response: " + XmlUtils.nodeToString(response.getSOAPPart()));
+		}
+	}
+
+	@Test
+	public void soapAddresNoMid() throws Throwable {
+		SOAPMessage request = createMessage("soap-addressing-ns-but-no-mid.xml");
+		SOAPMessage response = SOAPProvider.invoke(request);
+
+		String mid = SOAPProvider.getSession().getMessageId();
+		assertNotNull(mid);
+		assertTrue(mid.startsWith(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX));
+
+		NodeList nodes = response.getSOAPHeader().getElementsByTagNameNS("https://www.w3.org/2006/03/addressing/ws-addr.xsd", "RelatesTo");
+		assertEquals(0, nodes.getLength());
+	}
+
+	@Test
+	/**
+	 * We want to ensure that when somebody has manually set a relatesTo (although I cannot imaging why) we don't overwrite it.
+	 */
+	public void soapWithManualRelatesTo() throws Throwable {
+		SOAPMessage request = createMessage("soap-addressing-with-relatesto.xml");
+		SOAPMessage response = SOAPProvider.invoke(request);
+
+		assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", SOAPProvider.getSession().getMessageId());
+
+		NodeList nodes = response.getSOAPHeader().getElementsByTagNameNS("*", "RelatesTo");
+		if (nodes.getLength() > 0 && nodes.item(0).getNodeType() == Node.ELEMENT_NODE) {
+			String relatesTo = nodes.item(0).getTextContent();
+			assertEquals("test123", relatesTo);
+		} else {
+			fail("no message id found in response: " + XmlUtils.nodeToString(response.getSOAPPart()));
+		}
 	}
 }

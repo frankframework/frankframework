@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import java.io.InputStream;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
-public class BinaryMessage extends MessageBase<InputStream> {
+import org.frankframework.management.gateway.SerializableInputStream;
+
+public class BinaryMessage extends AbstractMessage<InputStream> {
 
 	public BinaryMessage(byte[] payload) {
 		this(new ByteArrayInputStream(payload));
@@ -36,6 +38,6 @@ public class BinaryMessage extends MessageBase<InputStream> {
 	}
 
 	public BinaryMessage(InputStream payload, MimeType defaultMimeType) {
-		super(payload, defaultMimeType);
+		super(new SerializableInputStream(payload), defaultMimeType);
 	}
 }

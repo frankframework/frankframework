@@ -154,9 +154,11 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			serverIsRabbitMQ = "RabbitMQ".equals(connection.properties().get("product"));
 
 			if (serverIsRabbitMQ) {
-				// The "/" should be legal in RabbitMQ queue names, but there are errors when I use it. Perhaps because queues are not pre-created? Dunno.
-				// For now, giving a warning on it.
-				if (Strings.CS.contains(address, "/") || Strings.CS.contains(replyAddress, "/")) {
+				// RabbitMQ 4.x AMQP 1.0 v2 addresses (/queues/<name>, /exchanges/<name>) require a slash prefix and are valid.
+				// Only warn for addresses that contain slashes but do not follow the v2 pattern.
+				boolean addressIsV1 = Strings.CS.contains(address, "/") && !address.startsWith("/queues/") && !address.startsWith("/exchanges/");
+				boolean replyIsV1 = replyAddress != null && Strings.CS.contains(replyAddress, "/") && !replyAddress.startsWith("/queues/") && !replyAddress.startsWith("/exchanges/");
+				if (addressIsV1 || replyIsV1) {
 					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + address + "]; reply queue: [" + replyAddress + "])");
 				}
 

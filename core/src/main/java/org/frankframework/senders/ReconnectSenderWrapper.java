@@ -25,6 +25,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.FrankDocGroup;
+import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
@@ -44,6 +46,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Niels Meijer
  */
+@FrankDocGroup(FrankDocGroupValue.WRAPPER)
 public class ReconnectSenderWrapper extends AbstractSenderWrapper {
 
 	/** specification of sender to send messages with */

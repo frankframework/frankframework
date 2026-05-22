@@ -85,7 +85,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
 		if (Message.isEmpty(input)) {
 			throw new PipeRunException(this, "got null input");
 		}

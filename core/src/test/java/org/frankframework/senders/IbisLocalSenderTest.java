@@ -627,7 +627,7 @@ class IbisLocalSenderTest {
 
 		@NonNull
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 			try {
 				log.info("{}: start reading virtual stream", Thread.currentThread().getName());
 				recordedMessageId = session.getMessageId();

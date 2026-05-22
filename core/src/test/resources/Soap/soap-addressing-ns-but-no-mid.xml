@@ -1,0 +1,8 @@
+<Envelope xmlns="http://www.w3.org/2003/05/soap-envelope">
+	<Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+		<wsa:MessageID />
+	</Header>
+	<Body>
+		<GetVehicleTypeDetailsREQ />
+	</Body>
+</Envelope>

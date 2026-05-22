@@ -101,7 +101,7 @@ public class JsonPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 
 		if (Message.isEmpty(message)) {
 			throw new PipeRunException(this, "got "+(Message.isNull(message)?"null":"empty")+" input");

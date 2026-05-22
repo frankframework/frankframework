@@ -272,6 +272,27 @@ public class StringUtil {
 	}
 
 	/**
+	 * Split a string with default delimiter {@literal ,}, keeping any empty values.
+	 * <p>
+	 *     Examples:
+	 * </p>
+	 * <table>
+	 *     <tr><th>Input</th><th>Output</th></tr>
+	 *     <tr><td>{@literal "A, B"}</td><td>{@literal ["A", "B"]}</td></tr>
+	 *     <tr><td>{@literal "A,"}</td><td>{@literal ["A", ""]}</td></tr>
+	 *     <tr><td>{@literal "A, , B"}</td><td>{@literal ["A", "", "B"]}</td></tr>
+	 *     <tr><td>{@literal ""}</td><td>{@literal [""]}</td></tr>
+	 *     <tr><td>{@literal NULL}</td><td>{@literal []}</td></tr>
+	 * </table>
+	 * @param input String with values separated by {@literal ,}, trimmed of surrounding spaces. May be {@literal NULL}.
+	 * @return List of values, empty list if the input was empty.
+	 */
+	public static List<String> splitKeepEmpty(@Nullable String input) {
+		if (input == null) return List.of();
+		return List.of(DEFAULT_SPLIT_PATTERN.split(input.trim(), -1));
+	}
+
+	/**
 	 * Splits a string into a list of substrings using default delimiter {@value DEFAULT_STRING_SPLIT_DELIMITER}.
 	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
 	 *

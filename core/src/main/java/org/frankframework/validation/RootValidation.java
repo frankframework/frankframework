@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 */
 package org.frankframework.validation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -39,24 +39,20 @@ public class RootValidation {
 	}
 
 	public void check(HasApplicationContext source, Set<IXSD> xsds) {
-		boolean found = false;
-		String validElements = rootValidation.get(rootValidation.size() - 1);
-		List<String> validElementsAsList = StringUtil.split(validElements);
-		for (String validElement : validElementsAsList) {
-			if (StringUtils.isNotEmpty(validElement)) {
-				List<String> allRootTags = new ArrayList<>();
-				for (IXSD xsd : xsds) {
-					for (String rootTag : xsd.getRootTags()) {
-						allRootTags.add(rootTag);
-						if (validElement.equals(rootTag)) {
-							found = true;
-						}
-					}
-				}
-				if (!found) {
-					ConfigurationWarnings.add(source, log, "Element ["+validElement+"] not in list of available root elements "+allRootTags);
-				}
-			}
+		String validElements = rootValidation.getLast();
+		if (StringUtils.isEmpty(validElements)) {
+			return;
+		}
+		Set<String> allRootTags = xsds.stream()
+				.map(IXSD::getRootTags)
+				.flatMap(List::stream)
+				.collect(Collectors.toSet());
+
+		List<String> allValidElements = StringUtil.split(validElements);
+		boolean found = allValidElements.removeAll(allRootTags);
+		if (!found) {
+			allValidElements
+					.forEach(element -> ConfigurationWarnings.add(source, log, "Element [" + element + "] not in list of available root elements " + allRootTags));
 		}
 	}
 

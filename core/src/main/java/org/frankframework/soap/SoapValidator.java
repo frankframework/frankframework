@@ -80,11 +80,15 @@ public class SoapValidator extends Json2XmlValidator {
 			if (StringUtils.isNotEmpty(outputSoapBody)) {
 				addResponseRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, outputSoapBody));
 			}
-			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader));
+			if (StringUtils.isNotEmpty(soapHeader)) {
+				addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader));
+			}
 
 			List<String> soapRootNamespaces = new ArrayList<>(soapVersion.getNamespaces());
 			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, soapBody), soapRootNamespaces);
-			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader), soapRootNamespaces);
+			if (StringUtils.isNotEmpty(soapHeader)) {
+				addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader), soapRootNamespaces);
+			}
 		}
 		super.configure();
 	}
@@ -149,7 +153,16 @@ public class SoapValidator extends Json2XmlValidator {
 		this.outputSoapBody = outputSoapBody;
 	}
 
-	/** Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,) */
+	/**
+	 *  Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed). This is a restriction that is enforced on top of the XSD validations.
+	 *
+	 *  <p>
+	 *  When not set, any header is allowed that is accepted by the XSD, including no header. To allow a specific set of headers but have them be optional, specify an empty element in the list, like this: {@literal "MessageHeader,"}.
+	 *  </p>
+	 *  <p>
+	 *  The wsdl generator will only use the first element specified.
+	 *  </p>
+	 */
 	public void setSoapHeader(String soapHeader) {
 		this.soapHeader = soapHeader;
 	}

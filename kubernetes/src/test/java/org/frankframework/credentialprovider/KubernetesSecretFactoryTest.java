@@ -42,7 +42,7 @@ class KubernetesSecretFactoryTest {
 
 	@BeforeAll
 	@SuppressWarnings("unchecked")
-	public static void setUp() {
+	static void setUp() {
 		Secret secret1 = createSecret("alias1", "testUsername1", "testPassword1");
 		Secret secret2 = createSecret("alias2", "testUsername2", "testPassword2");
 		Secret secret3 = createSecret(null, "noAliasUsername", "noAliasPassword");
@@ -53,8 +53,9 @@ class KubernetesSecretFactoryTest {
 		when(client.secrets()).thenReturn(mock(MixedOperation.class));
 		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE)).thenReturn(mock(NonNamespaceOperation.class));
 		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list()).thenReturn(mock(SecretList.class));
-		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list().getItems()).thenReturn(List.of(secret1, secret2, secret3,
-				secret4, secret5));
+		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list().getItems()).thenReturn(List.of(
+				secret1, secret2, secret3, secret4, secret5
+		));
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
 		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
@@ -63,7 +64,7 @@ class KubernetesSecretFactoryTest {
 	}
 
 	@AfterAll
-	public static void tearDown() {
+	static void tearDown() {
 		credentialFactory.close();
 	}
 
@@ -154,10 +155,7 @@ class KubernetesSecretFactoryTest {
 		rootLogger.addHandler(handler);
 
 		CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
-
-		// Call getSecret to trigger logging, expect an exception
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
-
 		assertTrue(handler.contains("must start and end with an alphanumeric"));
 
 		rootLogger.removeHandler(handler);

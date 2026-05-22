@@ -61,7 +61,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 * Implementations must either consume the message, or pass it on to the next Pipe in the PipeRunResult.
 	 */
 	@NonNull
-	PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException;
+	PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException;
 
 	/**
 	 * Indicates the maximum number of threads that may call {@link #doPipe(Message, PipeLineSession) doPipe()} simultaneously.

@@ -249,6 +249,29 @@ class StringUtilTest {
 		assertIterableEquals(expected, result, () -> "With input [" + escapeUnprintable(input) + "] and custom delimiters [" + escapeUnprintable(delimiters) + "] expected result [" + String.join("|", expected) + "] but instead got [" + String.join("|", result) + "]");
 	}
 
+	public static Stream<Arguments> testSplitStringKeepEmpty() {
+		return Stream.of(
+				arguments("A, B", List.of("A", "B")),
+				arguments("A,", List.of("A", "")),
+				arguments("A, , B", List.of("A", "", "B")),
+				arguments("", List.of("")),
+				arguments(null, List.of())
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void testSplitStringKeepEmpty(String input, Iterable<String> expected) {
+		// Act
+		List<String> result = StringUtil.splitKeepEmpty(input);
+
+		LOG.debug("input: [{}]", () -> escapeUnprintable(input));
+		LOG.debug("result [{}]", () -> String.join("|", result));
+
+		// Assert
+		assertIterableEquals(expected, result);
+	}
+
 	static String escapeUnprintable(String input) {
 		if (input == null) {
 			return "null";

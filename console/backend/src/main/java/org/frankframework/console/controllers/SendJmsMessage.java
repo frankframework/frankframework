@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,7 +66,6 @@ public class SendJmsMessage {
 		String destinationName = RequestUtils.resolveRequiredProperty("destination", model.destination(), null);
 		String destinationType = RequestUtils.resolveRequiredProperty("type", model.type(), null);
 		String replyTo = RequestUtils.resolveRequiredProperty("replyTo", model.replyTo(), "");
-		boolean persistent = RequestUtils.resolveRequiredProperty("persistent", model.persistent(), false);
 		boolean synchronous = RequestUtils.resolveRequiredProperty("synchronous", model.synchronous(), false);
 		boolean lookupDestination = RequestUtils.resolveRequiredProperty("lookupDestination", model.lookupDestination(), false);
 		String messageProperty = RequestUtils.resolveRequiredProperty("property", model.property(), "");
@@ -76,7 +75,6 @@ public class SendJmsMessage {
 		builder.addHeader("destination", destinationName);
 		builder.addHeader("type", destinationType);
 		builder.addHeader("replyTo", replyTo);
-		builder.addHeader("persistent", persistent);
 		builder.addHeader("synchronous", synchronous);
 		builder.addHeader("lookupDestination", lookupDestination);
 		builder.addHeader("messageProperty", messageProperty);
@@ -144,7 +142,6 @@ public class SendJmsMessage {
 	}
 
 	public record JmsMessageModel(
-			Boolean persistent,
 			Boolean synchronous,
 			Boolean lookupDestination,
 			String destination,

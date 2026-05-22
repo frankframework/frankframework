@@ -163,7 +163,8 @@
 				forceMessageIdAsCorrelationId="false" messageSelector="SOURCE='${hostname}_I4TIAF1g'">
 			</listener>
 			<sender className="org.frankframework.jms.JmsSender"
-				destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
+				destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf"
+				linkMethod="CORRELATIONID">
 				<param name="SOURCE" value="${hostname}_I4TIAF1g" />
 			</sender>
 		</receiver>
@@ -191,7 +192,7 @@
 			</exits>
 
 			<CompareStringPipe name="compareIdAndCid" >
-				<param name="operand1" sessionKey="id"/>
+				<param name="operand1" sessionKey="mid"/>
 				<param name="operand2" sessionKey="cid"/>
 				<forward name="equals" path="IdAndCidSame" />
 				<forward name="lessthan" path="IdAndCidDifferent" />
@@ -211,7 +212,7 @@
 			<pipe name="displayKeys" className="org.frankframework.pipes.ReplacerPipe"
 				getInputFromFixedValue="branch [?{BRANCH}] Original Id [?{MID}] cid [?{CID}] id=cid [?{SAME}]">
 				<param name="BRANCH" sessionKey="incomingMessage" xpathExpression="*/@branch" />
-				<param name="MID" sessionKey="id" />
+				<param name="MID" sessionKey="mid" />
 				<param name="CID" sessionKey="cid" />
 				<param name="SAME" sessionKey="IdAndCidSame" />
 				<forward name="success" path="EXIT" />

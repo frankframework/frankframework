@@ -1,11 +1,12 @@
 package org.frankframework.soap;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
@@ -17,15 +18,18 @@ import org.frankframework.validation.ValidatorTestBase;
 
 class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 
-	public String SCHEMALOCATION_SET_GPBDB = ValidatorTestBase.SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
-			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_GPBDB+" "+
-			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_RESPONSE+" "+
+	public static final String SCHEMALOCATION_SET_GPBDB = ValidatorTestBase.SCHEMA_LOCATION_GPBDB_MESSAGE + " " +
+			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_GPBDB + " " +
+			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_RESPONSE + " " +
 			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_REQUEST;
-	public String INPUT_FILE_GPBDB_VALID_SOAP					=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/valid_soap.xml";
-	public String INPUT_FILE_GPBDB_VALID_SOAP_1_2				=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/valid_soap_1.2.xml";
-	public String INPUT_FILE_GPBDB_INVALID_SOAP					=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap.xml";
-	public String INPUT_FILE_GPBDB_INVALID_SOAP_BODY			=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/invalid_soap_body.xml";
-	public String INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY	=ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/Soap/unknown_namespace_soap_body.xml";
+	public static final String INPUT_FILE_GPBDB_VALID_SOAP					= ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/valid_soap.xml";
+	public static final String INPUT_FILE_GPBDB_VALID_SOAP_1_2				= ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/valid_soap_1.2.xml";
+	public static final String INPUT_FILE_GPBDB_INVALID_SOAP				= ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/invalid_soap.xml";
+	public static final String INPUT_FILE_GPBDB_INVALID_SOAP_BODY			= ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/invalid_soap_body.xml";
+	public static final String INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY	= ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/Soap/unknown_namespace_soap_body.xml";
+
+	public static final String INPUT_FILE_VALID_SOAP_MUST_UNDERSTAND		= ValidatorTestBase.BASE_DIR_VALIDATION + "/EB-XML/Soap/valid-soap-with-must-understand-attrib.xml";
+	public static final String SCHEMALOCATION_WITH_SOAP_MUST_UNDERSTAND		= "SOAP Validation/EB-XML/xsd/msg-header-2_0.xsd";
 
 	@Override
 	public SoapValidator createPipe() {
@@ -47,7 +51,42 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	void validate12Explicitversion() throws Exception {
+	void validateWithMustUnderstandAttribMultipleHeaders() throws Exception {
+		pipe.setAddNamespaceToSchema(true);
+		pipe.setThrowException(true);
+		pipe.setSchemaLocation(SCHEMALOCATION_WITH_SOAP_MUST_UNDERSTAND);
+		pipe.setSoapBody("Request");
+		pipe.setSoapVersion(SoapVersion.AUTO);
+		pipe.setIgnoreUnknownNamespaces(true);
+		pipe.configure();
+		pipe.start();
+		Message input = MessageTestUtils.getMessage(INPUT_FILE_VALID_SOAP_MUST_UNDERSTAND);
+		String expected = TestFileUtils.getTestFile(INPUT_FILE_VALID_SOAP_MUST_UNDERSTAND);
+		PipeRunResult prr = doPipe(input);
+		MatchUtils.assertXmlEquals(expected, prr.getResult().asString());
+	}
+
+	@Test
+	void validateMultipleHeadersAndHeadersSet() throws Exception {
+		pipe.setAddNamespaceToSchema(true);
+		// When setting this attribute to an array of allowed headers, only one of these headers is allowed in addition to restrictions in the XSD.
+		pipe.setSoapHeader("MessageHeader, SyncReply, To, Action");
+		pipe.setThrowException(true);
+		pipe.setSchemaLocation(SCHEMALOCATION_WITH_SOAP_MUST_UNDERSTAND);
+		pipe.setSoapBody("Request");
+		pipe.setSoapVersion(SoapVersion.AUTO);
+		pipe.setIgnoreUnknownNamespaces(true);
+		pipe.configure();
+		pipe.start();
+
+		Message input = MessageTestUtils.getMessage(INPUT_FILE_VALID_SOAP_MUST_UNDERSTAND);
+
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(input));
+		assertThat(e.getMessage(), containsString("MessageHeader, SyncReply, To, Action"));
+	}
+
+	@Test
+	void validate12ExplicitVersion() throws Exception {
 		configureSoapValidator(true, SoapVersion.SOAP12);
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapBody("Request");
@@ -68,8 +107,7 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
-		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP;
-		Message input = MessageTestUtils.getMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(INPUT_FILE_GPBDB_INVALID_SOAP);
 
 		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
@@ -82,8 +120,7 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
-		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP_BODY;
-		Message input = MessageTestUtils.getMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(INPUT_FILE_GPBDB_INVALID_SOAP_BODY);
 
 		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
@@ -96,8 +133,7 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.setSoapBody("Request");
 		pipe.configure();
 		pipe.start();
-		String inputFile = INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY;
-		Message input = MessageTestUtils.getMessage(inputFile);
+		Message input = MessageTestUtils.getMessage(INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY);
 
 		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
@@ -145,7 +181,7 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	void issue4183CharsetProblemInXSD() throws Exception {
+	void issue4183CharsetProblemInXSD() {
 		configureSoapValidator(false);
 		pipe.setSchemaLocation("urn:namespacer Validation/CharsetProblem/non-utf8.xsd");
 
@@ -153,11 +189,11 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		assertDoesNotThrow(pipe::start);
 	}
 
-	private void configureSoapValidator() throws ConfigurationException {
+	private void configureSoapValidator() {
 		configureSoapValidator(false);
 	}
 
-	private void configureSoapValidator(boolean addNamespaceToSchema) throws ConfigurationException {
+	private void configureSoapValidator(boolean addNamespaceToSchema) {
 		configureSoapValidator(addNamespaceToSchema, null);
 	}
 

@@ -49,16 +49,14 @@ import org.frankframework.util.LogUtil;
 
 /**
  * Provides functions for JDBC connections.
- *
+ * <br />
  * N.B. Note on using XA transactions:
  * If transactions are used, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
  * <pre>
-   The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
-	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
-   </pre>
- *
- *
+ *  The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
+ *	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
+ * </pre>
  *
  * @author  Gerrit van Brakel
  * @since 	4.1

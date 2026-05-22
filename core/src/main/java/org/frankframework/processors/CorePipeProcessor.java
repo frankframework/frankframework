@@ -32,12 +32,12 @@ import org.frankframework.stream.Message;
 public class CorePipeProcessor implements PipeProcessor {
 
 	@Override
-	public @NonNull PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @Nullable Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+	public @NonNull PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		return pipe.doPipe(message, pipeLineSession);
 	}
 
 	@Override
-	public @NonNull PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @Nullable Message message, @NonNull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	public @NonNull PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @Nullable String messageRoot) throws PipeRunException {
 		return validator.validate(message, pipeLineSession, messageRoot);
 	}
 }
