@@ -98,8 +98,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertTrue(_fileExists(filename), "Expected file [" + filename + "] to be present");
 	}
 
-
-
 	@Test
 	public void basicFileSystemTestDelete() throws Exception {
 		String filename = "tobeDeleted" + FILE1;
