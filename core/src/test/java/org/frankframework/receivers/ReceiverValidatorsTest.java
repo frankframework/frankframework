@@ -1,16 +1,21 @@
 package org.frankframework.receivers;
 
+import static org.frankframework.testutil.mock.WaitUtils.waitWhileInState;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.IListener;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.IWrapperPipe;
@@ -19,24 +24,30 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.stream.Message;
 import org.frankframework.testdummies.TestDummyValidator;
 import org.frankframework.testdummies.TestDummyWrapper;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
 class ReceiverValidatorsTest {
 
 	private TestConfiguration configuration;
 	private Adapter adapter;
-	private Receiver<?> receiver;
+	private Receiver<String> receiver;
+	private JavaListener<String> listener;
 	private PipeLineSession session;
 
 	@BeforeEach
 	void setUp() {
 		configuration = TransactionManagerType.DATASOURCE.create(false);
 		adapter = createAdapter(configuration);
+		listener = createListener();
+		receiver = createReceiver(adapter, listener);
+
 		session = new PipeLineSession();
 	}
 
@@ -52,13 +63,18 @@ class ReceiverValidatorsTest {
 		return adapter;
 	}
 
-	private static Receiver<?> createReceiver(Adapter adapter) {
+	private static Receiver<String> createReceiver(Adapter adapter, IListener<String> listener) {
 		Receiver<String> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TEST");
-		JavaListener<String> listener = new JavaListener<>();
 		receiver.setListener(listener);
-		
+		adapter.addReceiver(receiver);
 		return receiver;
+	}
+
+	private static @NonNull JavaListener<String> createListener() {
+		JavaListener<String> listener = new JavaListener<>();
+		listener.setName("TEST");
+		return listener;
 	}
 
 	private static void addValidators(Receiver<?> receiver, boolean addFailureForwards) throws ConfigurationException {
@@ -93,6 +109,7 @@ class ReceiverValidatorsTest {
 		PipeLineExit success = new PipeLineExit();
 		success.setName("success");
 		success.setState(PipeLine.ExitState.SUCCESS);
+		success.setCode(200);
 		success.setEmpty(expectEmptyResult);
 		success.setSkipValidation(skipWrappingValidation);
 		success.setSkipWrapping(skipWrappingValidation);
@@ -101,6 +118,7 @@ class ReceiverValidatorsTest {
 		PipeLineExit error = new PipeLineExit();
 		error.setName("error");
 		error.setState(PipeLine.ExitState.ERROR);
+		error.setCode(400);
 		error.setEmpty(expectEmptyResult);
 		error.setSkipValidation(skipWrappingValidation);
 		error.setSkipWrapping(skipWrappingValidation);
@@ -109,10 +127,17 @@ class ReceiverValidatorsTest {
 		return pl;
 	}
 
+	private static void startConfiguration(TestConfiguration configuration, Adapter adapter) {
+		assertDoesNotThrow(configuration::configure);
+		assertDoesNotThrow(configuration::start);
+
+		waitWhileInState(adapter, RunState.STOPPED);
+		waitWhileInState(adapter, RunState.STARTING);
+	}
+
 	@Test
 	void testDoNotForwardToPipe() throws ConfigurationException {
 		// Arrange
-		receiver = createReceiver(adapter);
 		PipeLine pipeLine = createPipeLine(adapter, false, false);
 
 		addValidators(receiver, false);
@@ -127,8 +152,8 @@ class ReceiverValidatorsTest {
 	@Test
 	void testAutoAddDefaultErrorForward() throws ConfigurationException {
 		// Arrange
-		receiver = createReceiver(adapter);
-		PipeLine pipeLine = createPipeLine(adapter, false, false);
+		receiver = createReceiver(adapter, createListener());
+		createPipeLine(adapter, false, false);
 		addValidators(receiver, false);
 
 		// Act / Assert
@@ -147,5 +172,72 @@ class ReceiverValidatorsTest {
 		PipeForward failureForward = pipe.findForward(PipeForward.FAILURE_FORWARD_NAME);
 		assertNotNull(failureForward);
 		assertEquals("error", failureForward.getPath());
+	}
+
+	@Test
+	void testReceiverNoWrappersOrValidators() throws Exception {
+		// Arrange
+		createPipeLine(adapter, false, false);
+
+		startConfiguration(configuration, adapter);
+
+		Message inputMessage = new Message("input");
+		MessageWrapper<String> messageWrapper = new MessageWrapper<>(inputMessage, "my-mid", "my-cid");
+
+		// Act
+		Message result = assertDoesNotThrow(() -> receiver.processRequest(listener, messageWrapper, session));
+
+		// Assert
+		assertNotNull(result);
+		assertEquals("input", result.asString());
+		assertEquals("SUCCESS", session.getString(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
+		assertEquals(200, session.getInteger(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+	}
+
+	@Test
+	void testReceiverWrappersOrValidatorsSuccess() throws Exception {
+		// Arrange
+		createPipeLine(adapter, false, false);
+		addValidators(receiver, false);
+		startConfiguration(configuration, adapter);
+
+		Message inputMessage = new Message("input");
+		MessageWrapper<String> messageWrapper = new MessageWrapper<>(inputMessage, "my-mid", "my-cid");
+
+		// Act
+		Message result = assertDoesNotThrow(() -> receiver.processRequest(listener, messageWrapper, session));
+
+		// Assert
+		assertNotNull(result);
+		assertEquals("wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[input]]", result.asString());
+		assertEquals("SUCCESS", session.getString(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
+		assertEquals(200, session.getInteger(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"fail-validator-input, fail-validator-input",
+			"fail-wrap-input, wrapping-failedReceiver TEST - InputWrapper[fail-wrap-input]",
+			"fail-wrap-output, wrapping-failedReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]]",
+			"fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
+	})
+	void testReceiverWithWrappersAndValidatorsFailures(String input, String expectedMessage) throws Exception {
+		// Arrange
+		createPipeLine(adapter, false, false);
+		addValidators(receiver, false);
+		startConfiguration(configuration, adapter);
+
+		Message inputMessage = new Message(input);
+		MessageWrapper<String> messageWrapper = new MessageWrapper<>(inputMessage, "my-mid", "my-cid");
+
+		// Act
+		Message result = assertDoesNotThrow(() -> receiver.processRequest(listener, messageWrapper, session));
+
+		// Assert
+		assertNotNull(result);
+		assertEquals(expectedMessage, result.asString());
+		assertEquals("ERROR", session.getString(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
+		assertEquals(400, session.getInteger(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+
 	}
 }

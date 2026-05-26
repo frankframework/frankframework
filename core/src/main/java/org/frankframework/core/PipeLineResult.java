@@ -42,7 +42,7 @@ public class PipeLineResult {
 	private @Getter @Nullable Integer exitCode;
 
 	public PipeLineResult() {
-		return;
+		this.state = ExitState.SUCCESS;
 	}
 
 	public PipeLineResult(Message result) {
@@ -50,9 +50,10 @@ public class PipeLineResult {
 		this.state = ExitState.SUCCESS;
 	}
 
-	public PipeLineResult(Message result, ExitState state) {
+	public PipeLineResult(Message result, ExitState state, @Nullable Integer exitCode) {
 		this.result = result;
 		this.state = state;
+		this.exitCode = exitCode;
 	}
 
 	public static PipeLineResult create(PipeLineExit exit, Message result) {
