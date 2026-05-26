@@ -1,10 +1,6 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
-    <app-configuration-tab-list
-      [configurations]="configurations()"
-      [showAll]="true"
-      (selectedTabChange)="changeConfiguration($event)"
-    />
+    <app-configuration-tab-list [configurations]="configurations()" (selectedTabChange)="changeConfiguration($event)" />
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title summary">
@@ -36,7 +32,7 @@
           <div class="clearfix"></div>
         </div>
         <div class="summary editor">
-          <app-monaco-editor #editor [options]="{ readOnly: true }" data-cy="configurations__editor" />
+          <app-monaco-editor #editor data-cy="configurations__editor" [options]="{ readOnly: true }" />
         </div>
       </div>
     </div>

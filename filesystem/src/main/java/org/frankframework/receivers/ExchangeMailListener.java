@@ -32,10 +32,10 @@ import org.frankframework.util.SpringUtils;
 /**
  * Implementation of a {@link AbstractFileSystemSender} that enables to manipulate messages in an Exchange folder.
  * Uses the MS Graph API to manage a mailbox.
- * 
- * Compared to older versions of the Frank!Framework the {@code DELETE} action was a soft delete. Now it's a hard delete and 
+ *
+ * Compared to older versions of the Frank!Framework the {@code DELETE} action was a soft delete. Now it's a hard delete and
  * thus no longer moves the mail item to the {@code Archive} or {@code Deleted items}.
- * 
+ *
  * @see <a href="https://learn.microsoft.com/en-us/graph/api/message-delete?view=graph-rest-1.0&tabs=http">MS Graph API</a>
  */
 @Category(Category.Type.ADVANCED)
