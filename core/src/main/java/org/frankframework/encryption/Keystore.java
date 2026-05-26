@@ -13,11 +13,9 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  */
-package org.frankframework.http;
+package org.frankframework.encryption;
 
 import lombok.Data;
-
-import org.frankframework.encryption.KeystoreType;
 
 /**
  * Container for Keystore data
@@ -51,5 +49,5 @@ public class Keystore {
 	private String keystoreAliasPassword;
 
 	/** Key manager algorithm. Can be left empty to use the servers default algorithm */
-	private String keyManagerAlgorithm = null;
+	private String keyManagerAlgorithm;
 }

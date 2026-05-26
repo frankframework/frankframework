@@ -43,7 +43,7 @@ import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
-import org.frankframework.http.Keystore;
+import org.frankframework.encryption.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;

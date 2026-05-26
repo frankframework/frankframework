@@ -42,7 +42,7 @@ import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.http.Keystore;
+import org.frankframework.encryption.Keystore;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 

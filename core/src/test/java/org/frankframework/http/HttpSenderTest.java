@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.encryption.Keystore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.parameters.Parameter;

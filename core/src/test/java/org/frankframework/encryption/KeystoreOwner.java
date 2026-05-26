@@ -5,8 +5,6 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.http.Keystore;
-
 public class KeystoreOwner implements HasKeystore {
 
 	private @Getter Keystore keystore = createKeystore();

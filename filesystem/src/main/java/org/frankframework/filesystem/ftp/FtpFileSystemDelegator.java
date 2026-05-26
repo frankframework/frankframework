@@ -23,7 +23,7 @@ import org.frankframework.filesystem.ftp.FtpSession.FileType;
 import org.frankframework.filesystem.ftp.FtpSession.FtpType;
 import org.frankframework.filesystem.ftp.FtpSession.Prot;
 import org.frankframework.filesystem.ftp.FtpSession.TransportType;
-import org.frankframework.http.Keystore;
+import org.frankframework.encryption.Keystore;
 
 public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 

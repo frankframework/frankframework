@@ -48,7 +48,7 @@ import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSession;
-import org.frankframework.http.Keystore;
+import org.frankframework.encryption.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.XmlUtils;
 

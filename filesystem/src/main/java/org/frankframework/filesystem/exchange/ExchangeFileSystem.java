@@ -54,7 +54,7 @@ import org.frankframework.filesystem.MsalClientAdapter;
 import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.filesystem.exchange.MailMessage.EmailAddress;
-import org.frankframework.http.Keystore;
+import org.frankframework.encryption.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;

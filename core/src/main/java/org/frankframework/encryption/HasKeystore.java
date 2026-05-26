@@ -18,7 +18,6 @@ package org.frankframework.encryption;
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.http.Keystore;
 
 /**
  * marker interface with default behaviour to set values in the Keystore object. The goal is to only support 'setKeystore' in the future
