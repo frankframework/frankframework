@@ -4,18 +4,25 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.frankframework.core.IDualModeValidator;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.pipes.AbstractValidator;
 import org.frankframework.stream.Message;
 
-public class TestDummyValidator extends AbstractValidator {
+public class TestDummyValidator extends AbstractValidator implements IDualModeValidator {
 
 	private final String[] failOnValue;
+	private final boolean dualModeValidator;
+
+	public TestDummyValidator(boolean dualModeValidator, String... failOnValue) {
+		this.dualModeValidator = dualModeValidator;
+		this.failOnValue = failOnValue;
+	}
 
 	public TestDummyValidator(String... failOnValue) {
-		this.failOnValue = failOnValue;
+		this(false, failOnValue);
 	}
 
 	@Override
@@ -31,5 +38,10 @@ public class TestDummyValidator extends AbstractValidator {
 		} catch (IOException e) {
 			throw new PipeRunException(this, "Failure to get data from message", e);
 		}
+	}
+
+	@Override
+	public boolean isConfiguredForMixedValidation() {
+		return dualModeValidator;
 	}
 }

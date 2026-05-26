@@ -17,8 +17,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IPipe;
-import org.frankframework.core.IValidator;
-import org.frankframework.core.IWrapperPipe;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
@@ -77,11 +75,16 @@ class ReceiverValidatorsTest {
 		return listener;
 	}
 
-	private static void addValidators(Receiver<?> receiver, boolean addFailureForwards) throws ConfigurationException {
-		IValidator inputValidator = new TestDummyValidator("fail-validator-input");
-		IWrapperPipe inputWrapper = new TestDummyWrapper("fail-wrap-input");
-		IWrapperPipe outputWrapper = new TestDummyWrapper("fail-wrap-output");
-		IValidator outputValidator = new TestDummyValidator("fail-validator-output");
+	private static void addValidators(Receiver<?> receiver, boolean addFailureForwards, boolean dualModeValidation) {
+		TestDummyValidator inputValidator;
+		if (dualModeValidation) {
+			inputValidator = new TestDummyValidator(true, "fail-validator-input", "InputWrapper[fail-validator-output]");
+		} else {
+			inputValidator = new TestDummyValidator("fail-validator-input");
+		}
+		TestDummyWrapper inputWrapper = new TestDummyWrapper("fail-wrap-input");
+		TestDummyWrapper outputWrapper = new TestDummyWrapper("fail-wrap-output");
+		TestDummyValidator outputValidator = new TestDummyValidator("fail-validator-output");
 
 		if (addFailureForwards) {
 			inputValidator.addForward(new PipeForward("failure", "error"));
@@ -93,8 +96,9 @@ class ReceiverValidatorsTest {
 		receiver.setInputWrapper(inputWrapper);
 		receiver.setOutputWrapper(outputWrapper);
 		receiver.setInputValidator(inputValidator);
-		receiver.setOutputValidator(outputValidator);
-
+		if (!dualModeValidation) {
+			receiver.setOutputValidator(outputValidator);
+		}
 	}
 
 	private static PipeLine createPipeLine(Adapter adapter, boolean expectEmptyResult, boolean skipWrappingValidation) throws ConfigurationException {
@@ -140,7 +144,7 @@ class ReceiverValidatorsTest {
 		// Arrange
 		PipeLine pipeLine = createPipeLine(adapter, false, false);
 
-		addValidators(receiver, false);
+		addValidators(receiver, false, false);
 
 		receiver.getInputValidator().addForward(new PipeForward(PipeForward.FAILURE_FORWARD_NAME, pipeLine.getFirstPipe()));
 
@@ -154,7 +158,7 @@ class ReceiverValidatorsTest {
 		// Arrange
 		receiver = createReceiver(adapter, createListener());
 		createPipeLine(adapter, false, false);
-		addValidators(receiver, false);
+		addValidators(receiver, false, false);
 
 		// Act / Assert
 		assertDoesNotThrow(receiver::configure);
@@ -198,7 +202,7 @@ class ReceiverValidatorsTest {
 	void testReceiverWrappersOrValidatorsSuccess() throws Exception {
 		// Arrange
 		createPipeLine(adapter, false, false);
-		addValidators(receiver, false);
+		addValidators(receiver, true, false);
 		startConfiguration(configuration, adapter);
 
 		Message inputMessage = new Message("input");
@@ -216,15 +220,17 @@ class ReceiverValidatorsTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"fail-validator-input, fail-validator-input",
-			"fail-wrap-input, wrapping-failedReceiver TEST - InputWrapper[fail-wrap-input]",
-			"fail-wrap-output, wrapping-failedReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]]",
-			"fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
+			"false, fail-validator-input, fail-validator-input",
+			"true, fail-validator-input, fail-validator-input",
+			"false, fail-wrap-input, wrapping-failedReceiver TEST - InputWrapper[fail-wrap-input]",
+			"false, fail-wrap-output, wrapping-failedReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]]",
+			"false, fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
+			"true, fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
 	})
-	void testReceiverWithWrappersAndValidatorsFailures(String input, String expectedMessage) throws Exception {
+	void testReceiverWithWrappersAndValidatorsFailures(boolean dualModeValidator, String input, String expectedMessage) throws Exception {
 		// Arrange
 		createPipeLine(adapter, false, false);
-		addValidators(receiver, false);
+		addValidators(receiver, true, dualModeValidator);
 		startConfiguration(configuration, adapter);
 
 		Message inputMessage = new Message(input);
@@ -238,6 +244,5 @@ class ReceiverValidatorsTest {
 		assertEquals(expectedMessage, result.asString());
 		assertEquals("ERROR", session.getString(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
 		assertEquals(400, session.getInteger(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
-
 	}
 }

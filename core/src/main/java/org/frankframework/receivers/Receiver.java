@@ -69,6 +69,7 @@ import org.frankframework.core.HasSender;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.ICorrelatedSender.LinkMethod;
+import org.frankframework.core.IDualModeValidator;
 import org.frankframework.core.IForwardTarget;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IKnowsDeliveryCount;
@@ -333,10 +334,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private final List<DistributionSummary> processStatistics = new ArrayList<>();
 
-	private @Getter IValidator inputValidator = null;
-	private @Getter IValidator outputValidator = null;
-	private @Getter IWrapperPipe inputWrapper = null;
-	private @Getter IWrapperPipe outputWrapper = null;
+	private @Getter IValidator inputValidator;
+	private @Getter IValidator outputValidator;
+	private @Getter IWrapperPipe inputWrapper;
+	private @Getter IWrapperPipe outputWrapper;
 
 	// The adapter that handles the messages and initiates this listener
 	private @Getter Adapter adapter;
@@ -745,6 +746,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 		if (inputValidator != null) {
 			configureSpecialPipe(inputValidator, "InputValidator");
+			if (outputValidator == null && inputValidator instanceof IDualModeValidator dualModeValidator && dualModeValidator.isConfiguredForMixedValidation()) {
+				outputValidator = dualModeValidator.getResponseValidator();
+			}
 		}
 		if (outputValidator != null) {
 			configureSpecialPipe(outputValidator, "OutputValidator");
@@ -2434,22 +2438,34 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		this.maxBackoffDelay = maxBackoffDelaySeconds;
 	}
 
-	/** Request validator, or combined validator for request and response */
+	/**
+	 * Request validator, or combined validator for request and response. Must specify a pipeline exit to take when validation fails,
+	 * or will otherwise go to exit named {@literal "error"}.
+	 */
 	public void setInputValidator(IValidator inputValidator) {
 		this.inputValidator = inputValidator;
 	}
 
-	/** Optional pipe to validate the response. Can be specified if the response cannot be validated by the request validator */
+	/**
+	 * Optional pipe to validate the response. Can be specified if the response cannot be validated by the request validator. Must specify a pipeline exit to take when validation fails,
+	 * or will otherwise go to exit named {@literal "error"}.
+	 */
 	public void setOutputValidator(IValidator outputValidator) {
 		this.outputValidator = outputValidator;
 	}
 
-	/** Optional pipe to extract the request message from its envelope */
+	/**
+	 * Optional pipe to extract the request message from its envelope. Must specify a pipeline exit to take when validation fails,
+	 * or will otherwise go to exit named {@literal "error"}.
+	 */
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
 		this.inputWrapper = inputWrapper;
 	}
 
-	/** Optional pipe to wrap the response message in an envelope */
+	/**
+	 * Optional pipe to wrap the response message in an envelope. Must specify a pipeline exit to take when validation fails,
+	 * or will otherwise go to exit named {@literal "error"}.
+	 */
 	public void setOutputWrapper(IWrapperPipe outputWrapper) {
 		this.outputWrapper = outputWrapper;
 	}

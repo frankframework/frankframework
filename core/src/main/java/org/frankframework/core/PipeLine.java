@@ -611,6 +611,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	}
 
 	/** PipeLine exits. If no exits are specified, a default one is created with name={@value #DEFAULT_SUCCESS_EXIT_NAME} and state={@value PipeLine.ExitState#SUCCESS_EXIT_STATE} */
+	@SuppressWarnings("java:S1874")
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
 			addPipeLineExit(exit);
@@ -641,6 +642,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>exception</code> forward to every pipe in the pipeline.
 	 */
 	// Here for the FrankDoc documentation
+	@SuppressWarnings("java:S1874")
 	public void setGlobalForwards(PipeForwards forwards){
 		for (PipeForward forward : forwards.getForwards()) {
 			addForward(forward);
