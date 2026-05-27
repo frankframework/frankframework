@@ -264,9 +264,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		CLOSE
 	}
 
-	private @Getter OnError onError = OnError.CONTINUE;
+	private @Getter @NonNull OnError onError = OnError.CONTINUE;
 
-	private @Getter String name;
+	private @Getter @Nullable String name;
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private @Getter int numThreads = 1;
@@ -280,9 +280,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private @Getter boolean checkForDuplicates=false;
 	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID }
 
-	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
-	private @Getter Integer maxRetries = null;
-	private Integer maxBackoffDelay = null;
+	private @Getter @NonNull CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
+	private @Getter @Nullable Integer maxRetries = null;
+	private @Nullable Integer maxBackoffDelay = null;
 	private @Getter int processResultCacheSize = 100;
 
 	/**
@@ -292,26 +292,26 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	private @Getter boolean supportProgrammaticRetry=false;
 
-	private @Getter String correlationIDXPath;
-	private @Getter String correlationIDNamespaceDefs;
-	private @Getter String correlationIDStyleSheet;
+	private @Getter @Nullable String correlationIDXPath;
+	private @Getter @Nullable String correlationIDNamespaceDefs;
+	private @Getter @Nullable String correlationIDStyleSheet;
 
-	private @Getter String labelXPath;
-	private @Getter String labelNamespaceDefs;
-	private @Getter String labelStyleSheet;
+	private @Getter @Nullable String labelXPath;
+	private @Getter @Nullable String labelNamespaceDefs;
+	private @Getter @Nullable String labelStyleSheet;
 
-	private @Getter String chompCharSize = null;
-	private @Getter String elementToMove = null;
-	private @Getter String elementToMoveSessionKey = null;
-	private @Getter String elementToMoveChain = null;
+	private @Getter @Nullable String chompCharSize = null;
+	private @Getter @Nullable String elementToMove = null;
+	private @Getter @Nullable String elementToMoveSessionKey = null;
+	private @Getter @Nullable String elementToMoveChain = null;
 	private @Getter boolean removeCompactMsgNamespaces = true;
 
-	private @Getter String hideRegex = null;
-	private Pattern hideRegexPattern = null;
-	private @Getter HideMethod hideMethod = HideMethod.ALL;
-	private @Getter String hiddenInputSessionKeys=null;
+	private @Getter @Nullable String hideRegex = null;
+	private @Nullable Pattern hideRegexPattern = null;
+	private @Getter @NonNull HideMethod hideMethod = HideMethod.ALL;
+	private @Getter @Nullable String hiddenInputSessionKeys=null;
 
-	private final AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
+	private final @NonNull AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
@@ -320,10 +320,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private boolean suspensionMessagePending=false;
 	private @Getter boolean isConfigured = false;
 
-	protected final RunStateManager runState = new RunStateManager();
-	private PullingListenerContainer<M> listenerContainer;
+	protected final @NonNull RunStateManager runState = new RunStateManager();
+	private @Nullable PullingListenerContainer<M> listenerContainer;
 
-	private final AtomicInteger threadsProcessing = new AtomicInteger();
+	private final @NonNull AtomicInteger threadsProcessing = new AtomicInteger();
 
 	private long lastMessageDate = 0;
 
@@ -334,10 +334,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private final List<DistributionSummary> processStatistics = new ArrayList<>();
 
-	private @Getter IValidator inputValidator;
-	private @Getter IValidator outputValidator;
-	private @Getter IWrapperPipe inputWrapper;
-	private @Getter IWrapperPipe outputWrapper;
+	private @Getter @Nullable IValidator inputValidator;
+	private @Getter @Nullable IValidator outputValidator;
+	private @Getter @Nullable IWrapperPipe inputWrapper;
+	private @Getter @Nullable IWrapperPipe outputWrapper;
 
 	// The adapter that handles the messages and initiates this listener
 	private @Getter Adapter adapter;
@@ -345,13 +345,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private @Getter IListener<M> listener;
 
 	// See configure() for explanation on this field
-	private @Getter ITransactionalStorage<Serializable> messageLog = null;
-	private @Getter ITransactionalStorage<Serializable> errorStorage = null;
-	private @Getter ICorrelatedSender sender = null; // reply-sender
-	private final Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new EnumMap<>(ProcessState.class);
+	private @Getter @Nullable ITransactionalStorage<Serializable> messageLog = null;
+	private @Getter @Nullable ITransactionalStorage<Serializable> errorStorage = null;
+	private @Getter @Nullable ICorrelatedSender sender = null; // reply-sender
+	private final @NonNull Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new EnumMap<>(ProcessState.class);
 
-	private TransformerPool correlationIDTp=null;
-	private TransformerPool labelTp=null;
+	private @Nullable TransformerPool correlationIDTp=null;
+	private @Nullable TransformerPool labelTp=null;
 
 	private @Setter MetricsInitializer configurationMetrics;
 
