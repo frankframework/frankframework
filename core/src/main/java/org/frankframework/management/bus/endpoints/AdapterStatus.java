@@ -148,7 +148,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 	@Nullable
 	private Map<String, Object> addCertificateInfo(@NonNull HasKeystore keystoreOwner) {
-		String certificate = keystoreOwner.getKeystoreResource();
+		String certificate = keystoreOwner.getKeystore();
 		if (certificate == null || StringUtils.isEmpty(certificate))
 			return null;
 
@@ -156,7 +156,7 @@ public class AdapterStatus extends BusEndpointBase {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = keystoreOwner.getKeystoreAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystoreResource());
+		URL certificateUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");

@@ -40,9 +40,9 @@ import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.encryption.Keystore;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 
@@ -56,7 +56,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private @Getter Keystore keystore = createKeystore();
+	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
 
 	private @Getter FtpType ftpType = FtpType.FTP;
 
@@ -386,7 +386,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	}
 
 	@Override
-	public void setKeystore(Keystore keystore) {
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		// not implemented yet
 	}
 }

@@ -298,7 +298,7 @@ public class SecurityItems extends BusEndpointBase {
 			return hasKeyOrTrustStore(hasSender.getSender());
 		}
 
-		if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystoreResource())) {
+		if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 			return true;
 		}
 
@@ -312,7 +312,7 @@ public class SecurityItems extends BusEndpointBase {
 
 	private KeyStore extractKeyStore(FrankElement bean) {
 		try {
-			if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystoreResource())) {
+			if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 				return CorePkiUtil.createKeyStore(keystoreOwner);
 			}
 			if (bean instanceof HasTruststore truststoreOwner && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {

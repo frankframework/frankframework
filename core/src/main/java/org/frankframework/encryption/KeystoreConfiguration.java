@@ -21,7 +21,7 @@ import lombok.Data;
  * Container for Keystore data
  */
 @Data
-public class Keystore {
+public class KeystoreConfiguration {
 	/**
 	 * Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.
 	 * */

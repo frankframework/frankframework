@@ -43,7 +43,7 @@ import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
-import org.frankframework.encryption.Keystore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -65,14 +65,14 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	private @Getter String provider;
 	private @Getter boolean signatureBase64 = true;
 
-	private @Getter Keystore keystore = createKeystore();
+	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
 
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private PipeForward failureForward; // forward used when verification fails
 
 	@Override
-	public void setKeystore(Keystore keystore) {
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		// not implemented yet
 	}
 
@@ -89,7 +89,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (StringUtils.isEmpty(getAlgorithm())) {
 			setAlgorithm(ALGORITHM_DEFAULT);
 		}
-		if (StringUtils.isEmpty(this.getKeystoreResource())) {
+		if (StringUtils.isEmpty(this.getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
 

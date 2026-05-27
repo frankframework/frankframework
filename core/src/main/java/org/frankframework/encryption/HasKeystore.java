@@ -17,7 +17,6 @@ package org.frankframework.encryption;
 
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
-import org.frankframework.doc.ReferTo;
 
 /**
  * marker interface with default behaviour to set values in the Keystore object. The goal is to only support 'setKeystore' in the future
@@ -25,78 +24,75 @@ import org.frankframework.doc.ReferTo;
  */
 public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 
-	default Keystore createKeystore() {
-		return new Keystore();
+	default KeystoreConfiguration createKeystoreConfiguration() {
+		return new KeystoreConfiguration();
 	}
 
-	void setKeystore(Keystore keystore);
+	void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration);
 
-	default Keystore getKeystore() {
-		return null;
-	};
+	KeystoreConfiguration getKeystoreConfiguration();
 
-	@ReferTo(Keystore.class)
-	default String getKeystoreResource() {
-		return getKeystore().getKeystoreResource();
+	default String getKeystore() {
+		return getKeystoreConfiguration().getKeystoreResource();
 	}
 
 	default KeystoreType getKeystoreType() {
-		return getKeystore().getKeystoreType();
+		return getKeystoreConfiguration().getKeystoreType();
 	}
 
 	default String getKeystoreAuthAlias() {
-		return getKeystore().getKeystoreAuthAlias();
+		return getKeystoreConfiguration().getKeystoreAuthAlias();
 	}
 
 	default String getKeystorePassword() {
-		return getKeystore().getKeystorePassword();
+		return getKeystoreConfiguration().getKeystorePassword();
 	}
 
 	default String getKeystoreAlias() {
-		return getKeystore().getKeystoreAlias();
+		return getKeystoreConfiguration().getKeystoreAlias();
 	}
 
 	default String getKeystoreAliasAuthAlias() {
-		return getKeystore().getKeystoreAliasAuthAlias();
+		return getKeystoreConfiguration().getKeystoreAliasAuthAlias();
 	}
 
 	default String getKeystoreAliasPassword() {
-		return getKeystore().getKeystoreAliasPassword();
+		return getKeystoreConfiguration().getKeystoreAliasPassword();
 	}
 
 	default String getKeyManagerAlgorithm() {
-		return getKeystore().getKeyManagerAlgorithm();
+		return getKeystoreConfiguration().getKeyManagerAlgorithm();
 	}
 
 	default void setKeystore(String keystore) {
-		getKeystore().setKeystoreResource(keystore);
+		getKeystoreConfiguration().setKeystoreResource(keystore);
 	};
 
 	default void setKeystoreType(KeystoreType keystoreType) {
-		getKeystore().setKeystoreType(keystoreType);
+		getKeystoreConfiguration().setKeystoreType(keystoreType);
 	};
 
 	default void setKeystoreAuthAlias(String keystoreAuthAlias) {
-		getKeystore().setKeystoreAuthAlias(keystoreAuthAlias);
+		getKeystoreConfiguration().setKeystoreAuthAlias(keystoreAuthAlias);
 	};
 
 	default void setKeystorePassword(String keystorePassword) {
-		getKeystore().setKeystorePassword(keystorePassword);
+		getKeystoreConfiguration().setKeystorePassword(keystorePassword);
 	};
 
 	default void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		getKeystore().setKeyManagerAlgorithm(keyManagerAlgorithm);
+		getKeystoreConfiguration().setKeyManagerAlgorithm(keyManagerAlgorithm);
 	};
 
 	default void setKeystoreAlias(String keystoreAlias) {
-		getKeystore().setKeystoreAlias(keystoreAlias);
+		getKeystoreConfiguration().setKeystoreAlias(keystoreAlias);
 	};
 
 	default void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
-		getKeystore().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+		getKeystoreConfiguration().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	};
 
 	default void setKeystoreAliasPassword(String keystoreAliasPassword) {
-		getKeystore().setKeystoreAliasPassword(keystoreAliasPassword);
+		getKeystoreConfiguration().setKeystoreAliasPassword(keystoreAliasPassword);
 	};
 }

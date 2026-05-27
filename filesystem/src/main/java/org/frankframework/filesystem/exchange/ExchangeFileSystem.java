@@ -41,6 +41,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.AbstractFileSystem;
 import org.frankframework.filesystem.FileAlreadyExistsException;
@@ -54,7 +55,6 @@ import org.frankframework.filesystem.MsalClientAdapter;
 import org.frankframework.filesystem.MsalClientAdapter.GraphClient;
 import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.filesystem.exchange.MailMessage.EmailAddress;
-import org.frankframework.encryption.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -118,7 +118,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private MsalClientAdapter msalClientAdapter;
 	private GraphClient client;
 	private MailFolder mailFolder;
-	private @Getter Keystore keystore = createKeystore();
+	private @Getter KeystoreConfiguration keystoreConfiguration	= createKeystoreConfiguration();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -140,7 +140,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			msalClientAdapter.setProxyPassword(proxyCf.getPassword());
 		}
 
-		msalClientAdapter.setKeystore(getKeystoreResource());
+		msalClientAdapter.setKeystoreConfiguration(this.getKeystoreConfiguration());
 
 		msalClientAdapter.setTruststore(getTruststore());
 		msalClientAdapter.setTruststoreType(getTruststoreType());
@@ -696,7 +696,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public void setKeystore(Keystore keystore) {
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		// TODO not implemented yet
 	}
 }

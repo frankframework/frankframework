@@ -68,12 +68,12 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.AbstractHttpSession;
-import org.frankframework.encryption.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.AbstractSenderWithParameters;
@@ -1014,12 +1014,18 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	}
 
 	@Override
-	public void setKeystore(Keystore keystore) {
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		// not implemented yet
 	}
 
 	@Override
-	public String getKeystoreResource() {
+	public KeystoreConfiguration getKeystoreConfiguration() {
+		// not implemented yet
+		return null;
+	}
+
+	@Override
+	public String getKeystore() {
 		return sessionBuilder.getKeystore();
 	}
 

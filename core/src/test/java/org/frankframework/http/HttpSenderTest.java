@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.encryption.Keystore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.parameters.Parameter;
@@ -1276,13 +1276,13 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		String keystoreResource = "/Signature/ks_multipassword.jks";
 
 		sender = getSender();
-		Keystore keystore = new Keystore();
-		keystore.setKeystoreResource(keystoreResource);
-		keystore.setKeystorePassword("geheim");
-		keystore.setKeystoreType(KeystoreType.JKS);
-		keystore.setKeystoreAliasPassword("test");
+		KeystoreConfiguration keystoreConfiguration = new KeystoreConfiguration();
+		keystoreConfiguration.setKeystoreResource(keystoreResource);
+		keystoreConfiguration.setKeystorePassword("geheim");
+		keystoreConfiguration.setKeystoreType(KeystoreType.JKS);
+		keystoreConfiguration.setKeystoreAliasPassword("test");
 
-		sender.setKeystore(keystore);
+		sender.setKeystoreConfiguration(keystoreConfiguration);
 		sender.setMethodType(HttpMethod.GET);
 
 		assertDoesNotThrow(sender::configure);

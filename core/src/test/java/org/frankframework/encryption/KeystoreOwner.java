@@ -7,18 +7,17 @@ import lombok.Setter;
 
 public class KeystoreOwner implements HasKeystore {
 
-	private @Getter Keystore keystore = createKeystore();
-
+	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
 	private final @Getter ClassLoader configurationClassLoader = getClass().getClassLoader();
-	private @Getter @Setter String name=null;
+	private @Getter @Setter String name = null;
 	private @Getter @Setter ApplicationContext applicationContext = null;
 
 	public KeystoreOwner(String keystore) {
-		this.keystore.setKeystoreResource(keystore);
+		this.keystoreConfiguration.setKeystoreResource(keystore);
 	}
 
 	@Override
-	public void setKeystore(Keystore keystore) {
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		// not implemented yet
 	}
 }

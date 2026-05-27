@@ -45,10 +45,10 @@ import org.frankframework.core.SenderException;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSession;
-import org.frankframework.encryption.Keystore;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.util.XmlUtils;
 
@@ -305,13 +305,18 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	public void setKeystore(Keystore keystore) {
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		// not implemented yet
 	}
 
 	@Override
-	public String getKeystoreResource() {
-		return httpSession.getKeystoreResource();
+	public KeystoreConfiguration getKeystoreConfiguration() {
+		// not implemented yet
+		return null;
+	}
+
+	public String getKeystore() {
+		return httpSession.getKeystore();
 	}
 
 	@Override

@@ -57,10 +57,10 @@ public class AuthSSLContextFactory {
 	protected SSLContext sslContext = null;
 
 	public static void verifyKeystoreConfiguration(HasKeystore keystoreOwner, HasTruststore truststoreOwner) throws ConfigurationException {
-		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystoreResource())) {
-			URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystoreResource());
+		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
+			URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 			if (keystoreUrl == null) {
-				throw new ConfigurationException("cannot find URL for keystore resource [" + keystoreOwner.getKeystoreResource() + "]");
+				throw new ConfigurationException("cannot find URL for keystore resource [" + keystoreOwner.getKeystore() + "]");
 			}
 			log.debug("resolved keystore-URL to [{}]", keystoreUrl);
 
@@ -103,8 +103,8 @@ public class AuthSSLContextFactory {
 		URL truststoreUrl = null;
 		SSLContext sslcontext;
 
-		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystoreResource())) {
-			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystoreResource());
+		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
+			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		}
 		if (truststoreOwner != null && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
 			truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
@@ -171,8 +171,8 @@ public class AuthSSLContextFactory {
 	public SSLSocketFactory getSSLSocketFactory() throws GeneralSecurityException, IOException {
 		URL keystoreUrl = null;
 		URL truststoreUrl = null;
-		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystoreResource())) {
-			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystoreResource());
+		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
+			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		}
 		if (truststoreOwner != null && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
 			truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
