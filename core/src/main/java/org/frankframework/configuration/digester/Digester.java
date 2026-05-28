@@ -51,7 +51,7 @@ import org.frankframework.xml.FullXmlFilter;
  * When a rule is matched, the appropriate factory is used to create a bean.
  * If the newly created bean is an {@link ApplicationContext}, it is pushed on the context stack and used for the creation of child elements.
  * <p>
- * 
+ *
  * @author Niels Meijer
  */
 @Log4j2
@@ -177,7 +177,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	 * Once created it uses the {@link ValidateAttributeRule} to call all setters and populate the bean properties.
 	 * <p>
 	 * The newly created bean is not yet added to the parent, see {@link #endElement(String, String, String)}.
-	 * 
+	 *
 	 * @throws SAXParseException which contains the document-location, thrown when the bean cannot be created or populated.
 	 */
 	private void createBeanThroughFactory(DigesterRule rule, String localName, Attributes atts) throws SAXParseException {
@@ -203,7 +203,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 
 	/**
 	 * Verify if the target bean has a rule assigned to it, and if so register it with it's parent.
-	 * 
+	 *
 	 * @throws SAXParseException which contains the document-location, thrown when the bean cannot be set/registered on the parent.
 	 */
 	private void registerDigestedBeanOnParent(BeanRuleWrapper beanWrapper) throws SAXParseException {

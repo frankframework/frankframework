@@ -97,7 +97,7 @@
 		<spring.boot.version>4.0.6</spring.boot.version>
 		<tomcat.version>11.0.22</tomcat.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
-		<tika.version>3.3.0</tika.version>
+		<tika.version>3.3.1</tika.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
@@ -167,7 +167,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.13.Final</version>
+				<version>4.2.14.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -257,7 +257,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.34.1</version>
+				<version>4.35.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -1131,7 +1131,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.21.0</version>
+					<version>3.22.0</version>
 					<configuration>
 						<generateProjectInfo>false</generateProjectInfo>
 					</configuration>
