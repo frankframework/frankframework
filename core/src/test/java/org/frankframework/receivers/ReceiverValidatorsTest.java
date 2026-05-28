@@ -23,6 +23,7 @@ import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.testdummies.TestDummyErrorMessageFormatter;
 import org.frankframework.testdummies.TestDummyValidator;
 import org.frankframework.testdummies.TestDummyWrapper;
 import org.frankframework.testutil.TestConfiguration;
@@ -57,6 +58,7 @@ class ReceiverValidatorsTest {
 	private static Adapter createAdapter(TestConfiguration configuration) {
 		Adapter adapter = configuration.createBean();
 		adapter.setName("TEST");
+		adapter.setErrorMessageFormatter(new TestDummyErrorMessageFormatter());
 		configuration.addAdapter(adapter);
 		return adapter;
 	}
@@ -220,12 +222,12 @@ class ReceiverValidatorsTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"false, fail-validator-input, fail-validator-input",
-			"true, fail-validator-input, fail-validator-input",
-			"false, fail-wrap-input, wrapping-failedReceiver TEST - InputWrapper[fail-wrap-input]",
-			"false, fail-wrap-output, wrapping-failedReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]]",
-			"false, fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
-			"true, fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
+			"false, fail-validator-input, 'Error in [Receiver TEST - InputValidator]: Forward to: name=failure, path=error [fail-validator-input]'",
+			"true, fail-validator-input, 'Error in [Receiver TEST - InputValidator]: Forward to: name=failure, path=error [fail-validator-input]'",
+			"false, fail-wrap-input, 'Error in [Receiver TEST - InputWrapper]: Forward to: name=failure, path=error [wrapping-failedReceiver TEST - InputWrapper[fail-wrap-input]]'",
+			"false, fail-wrap-output, 'Error in [Receiver TEST - OutputWrapper]: Forward to: name=failure, path=error [wrapping-failedReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]]]'",
+			"false, fail-validator-output, 'Error in [Receiver TEST - OutputValidator]: Forward to: name=failure, path=error [wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]'",
+			"true, fail-validator-output, 'Error in [Receiver TEST - OutputValidator]: Forward to: name=failure, path=error [wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]'",
 	})
 	void testReceiverWithWrappersAndValidatorsFailures(boolean dualModeValidator, String input, String expectedMessage) throws Exception {
 		// Arrange
