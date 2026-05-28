@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -56,6 +57,7 @@ import org.xml.sax.SAXException;
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -338,6 +340,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private @Getter @Nullable IValidator outputValidator;
 	private @Getter @Nullable IWrapperPipe inputWrapper;
 	private @Getter @Nullable IWrapperPipe outputWrapper;
+	private Map<String, IPipe> validatorsAndWrappers;
 
 	// The adapter that handles the messages and initiates this listener
 	private @Getter Adapter adapter;
@@ -457,10 +460,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * if IPullingListener -> PullingListenerContainer has to call closeAllResources();
 	 */
 	protected void tellResourcesToStop() {
-		stopPipe("InputWrapper", getInputWrapper());
-		stopPipe("InputValidator", getInputValidator());
-		stopPipe("OutputValidator", getOutputValidator());
-		stopPipe("OutputWrapper", getOutputWrapper());
+		validatorsAndWrappers.forEach(this::stopPipe);
 		if (getListener() instanceof IPushingListener) {
 			closeAllResources();
 		}
@@ -469,10 +469,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		// and receiver.closeAllResources()
 	}
 
-	private void stopPipe(String type, IPipe pipe) {
-		if (pipe == null) {
-			return;
-		}
+	private void stopPipe(@NonNull String type, @NonNull IPipe pipe) {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
 			log.debug("stopping {}", type);
 			pipe.stop();
@@ -578,16 +575,14 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			numRetried = configurationMetrics.createCounter(this, FrankMeterType.RECEIVER_RETRIED);
 			numRejected = configurationMetrics.createCounter(this, FrankMeterType.RECEIVER_REJECTED);
 
-			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
-			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
-			registerEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-			registerEvent(RCV_SHUTDOWN_MONITOR_EVENT);
-			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
-			registerEvent(RCV_RESUMED_MONITOR_EVENT);
-			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
+			List.of(
+					RCV_CONFIGURED_MONITOR_EVENT, RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT, RCV_STARTED_RUNNING_MONITOR_EVENT,
+					RCV_SHUTDOWN_MONITOR_EVENT, RCV_SUSPENDED_MONITOR_EVENT, RCV_RESUMED_MONITOR_EVENT, RCV_THREAD_EXIT_MONITOR_EVENT
+			).forEach(this::registerEvent);
+
 			txNewWithTimeout = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
 
-			configureSpecialPipes();
+			this.validatorsAndWrappers = configureSpecialPipes();
 
 			// Do propagate-name AFTER changing the errorStorage!
 			propagateName();
@@ -737,25 +732,30 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
-	private void configureSpecialPipes() throws ConfigurationException {
+	private Map<String, IPipe> configureSpecialPipes() {
+		Map<String, IPipe> specialPipes = new HashMap<>();
 		if (inputWrapper != null) {
-			configureSpecialPipe(inputWrapper, "InputWrapper");
+			specialPipes.put("InputWrapper", inputWrapper);
 		}
 		if (outputWrapper != null) {
-			configureSpecialPipe(outputWrapper, "OutputWrapper");
+			specialPipes.put("OutputWrapper", outputWrapper);
 		}
 		if (inputValidator != null) {
-			configureSpecialPipe(inputValidator, "InputValidator");
+			specialPipes.put("InputValidator", inputValidator);
 			if (outputValidator == null && inputValidator instanceof IDualModeValidator dualModeValidator && dualModeValidator.isConfiguredForMixedValidation()) {
 				outputValidator = dualModeValidator.getResponseValidator();
 			}
 		}
 		if (outputValidator != null) {
-			configureSpecialPipe(outputValidator, "OutputValidator");
+			specialPipes.put("OutputValidator", outputValidator);
 		}
+
+		specialPipes.forEach(this::configureSpecialPipe);
+		return specialPipes;
 	}
 
-	private void configureSpecialPipe(@NonNull IPipe pipe, @NonNull String type) throws ConfigurationException {
+	@SneakyThrows // SneakyThrows so that we can call throwing method in the map.forEach
+	private void configureSpecialPipe(@NonNull String type, @NonNull IPipe pipe) {
 		pipe.setName("Receiver " + getName() + " - " + type);
 
 		PipeForward pf = new PipeForward();
@@ -772,7 +772,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					throw new ConfigurationException(pipe.getName() + " can only forward errors directly to a Pipeline Exit");
 				}
 			} catch (PipeRunException e) {
-				throw new ConfigurationException("Cannot resolve failure forward on [" + pipe.getName() + "]", e);
+				throw new ConfigurationException("Cannot resolve failure forward [" + failureForward + "] on " + type + " [" + pipe.getName() + "]", e);
 			}
 		}
 
@@ -865,10 +865,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				if (getMessageLog()!=null) {
 					getMessageLog().start();
 				}
-				startSpecialPipe("InputWrapper",getInputWrapper());
-				startSpecialPipe("InputValidator",getInputValidator());
-				startSpecialPipe("OutputValidator",getOutputValidator());
-				startSpecialPipe("OutputWrapper",getOutputWrapper());
+				validatorsAndWrappers.forEach(this::startSpecialPipe);
 			} catch (Exception e) {
 				throw new LifecycleException(e);
 			}
@@ -885,10 +882,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 	}
 
-	private void startSpecialPipe(String type, IPipe pipe) {
-		if (pipe == null) {
-			return;
-		}
+	private void startSpecialPipe(@NonNull String type, @NonNull IPipe pipe) {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put(type, pipe.getName())) {
 			log.debug("starting {}", type);
 			pipe.start();

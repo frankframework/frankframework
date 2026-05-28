@@ -13,23 +13,23 @@ import org.frankframework.stream.Message;
 
 public class TestDummyValidator extends AbstractValidator implements IDualModeValidator {
 
-	private final String[] failOnValue;
+	private final String[] failOnValues;
 	private final boolean dualModeValidator;
 
-	public TestDummyValidator(boolean dualModeValidator, String... failOnValue) {
+	public TestDummyValidator(boolean dualModeValidator, String... failOnValues) {
 		this.dualModeValidator = dualModeValidator;
-		this.failOnValue = failOnValue;
+		this.failOnValues = failOnValues;
 	}
 
-	public TestDummyValidator(String... failOnValue) {
-		this(false, failOnValue);
+	public TestDummyValidator(String... failOnValues) {
+		this(false, failOnValues);
 	}
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
 			String data = messageToValidate.asString();
-			for (String value : failOnValue) {
+			for (String value : failOnValues) {
 				if (StringUtils.isNoneEmpty(data, value) && data.contains(value)) {
 					return findForward("failure");
 				}

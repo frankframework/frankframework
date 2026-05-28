@@ -17,7 +17,9 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -153,10 +155,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	private String returnString; // contains contents of stubUrl
 	private TransformerPool retryTp=null;
 
-	private @Getter @Nullable IValidator inputValidator = null;
-	private @Getter @Nullable IValidator outputValidator = null;
-	private @Getter @Nullable IWrapperPipe inputWrapper = null;
-	private @Getter @Nullable IWrapperPipe outputWrapper = null;
+	private @Getter @Nullable IValidator inputValidator;
+	private @Getter @Nullable IValidator outputValidator;
+	private @Getter @Nullable IWrapperPipe inputWrapper;
+	private @Getter @Nullable IWrapperPipe outputWrapper;
+	private final List<IPipe> validatorsAndWrappers = new ArrayList<>();
 
 	private boolean timeoutPending = false;
 
@@ -270,34 +273,36 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
-		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator) {
+		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator && validator.isConfiguredForMixedValidation()) {
 			outputValidator = validator.getResponseValidator();
 			setOutputValidator(outputValidator);
 		}
 		if (inputValidator != null) {
-			configureElement(inputValidator);
+			validatorsAndWrappers.add(inputValidator);
 		}
 		if (outputValidator != null) {
-			configureElement(outputValidator);
+			validatorsAndWrappers.add(outputValidator);
 		}
 		IWrapperPipe inputWrapper = getInputWrapper();
 		if (inputWrapper instanceof DestinationValidator destinationValidator) {
 			destinationValidator.validateSenderDestination(getSender());
 		}
 		if (inputWrapper != null) {
-			configureElement(inputWrapper);
+			validatorsAndWrappers.add(inputWrapper);
 		}
 		IWrapperPipe outputWrapper = getOutputWrapper();
 		if (outputWrapper != null) {
-			configureElement(outputWrapper);
+			validatorsAndWrappers.add(outputWrapper);
 		}
+		validatorsAndWrappers.forEach(this::configureElement);
 
 		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
 		registerEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
-	private void configureElement(@NonNull final IPipe pipe) throws ConfigurationException {
+	@SneakyThrows
+	private void configureElement(@NonNull final IPipe pipe) {
 		PipeForward pf = new PipeForward();
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 		pipe.addForward(pf);
@@ -732,18 +737,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 			getSender().start();
 		}
 
-		if (getInputValidator() != null) {
-			getInputValidator().start();
-		}
-		if (getOutputValidator() != null) {
-			getOutputValidator().start();
-		}
-		if (getInputWrapper() != null) {
-			getInputWrapper().start();
-		}
-		if (getOutputWrapper() != null) {
-			getOutputWrapper().start();
-		}
+		validatorsAndWrappers.forEach(IPipe::start);
 
 		ITransactionalStorage<?> messageLog = getMessageLog();
 		if (messageLog != null) {
@@ -761,18 +755,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 			}
 		}
 
-		if (getInputValidator() != null) {
-			getInputValidator().stop();
-		}
-		if (getOutputValidator() != null) {
-			getOutputValidator().stop();
-		}
-		if (getInputWrapper() != null) {
-			getInputWrapper().stop();
-		}
-		if (getOutputWrapper() != null) {
-			getOutputWrapper().stop();
-		}
+		validatorsAndWrappers.forEach(IPipe::stop);
 
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog!=null) {
@@ -821,13 +804,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 
 	/** specification of Pipe to validate request messages, or request and response message if configured as mixed mode validator */
 	public void setInputValidator(IValidator inputValidator) {
-		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
+		if (inputValidator != null) {
+			inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
+		}
 		this.inputValidator = inputValidator;
 	}
 
 	/** specification of Pipe to validate response messages */
 	public void setOutputValidator(IValidator outputValidator) {
-		if (outputValidator!=null) {
+		if (outputValidator != null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
 		}
 		this.outputValidator = outputValidator;
@@ -835,13 +820,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 
 	/** specification of Pipe to wrap or unwrap request messages */
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
-		inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
+		if (inputWrapper != null) {
+			inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
+		}
 		this.inputWrapper = inputWrapper;
 	}
 
 	/** specification of Pipe to wrap or unwrap response messages */
 	public void setOutputWrapper(IWrapperPipe outputWrapper) {
-		outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
+		if (outputWrapper != null) {
+			outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
+		}
 		this.outputWrapper = outputWrapper;
 	}
 
