@@ -1,0 +1,50 @@
+<Module>
+	<Adapter name="InputOutputWrapperOnReceiver"
+		description="Test the functioning of the InputWrapper and OutputWrapper configured on a Receiver">
+		<SoapErrorMessageFormatter />
+		<Receiver>
+			<JavaListener
+				serviceName="ibis4test-InputOutputWrapperOnReceiver" onException="FORMAT_AND_RETURN" />
+			<InputValidator className="org.frankframework.pipes.XmlValidator"
+				schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
+				root="Request">
+				<Forward name="failure" path="400" />
+				<Forward name="parserError" path="400" />
+			</InputValidator>
+			<OutputValidator className="org.frankframework.pipes.XmlValidator"
+				schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
+				root="Response">
+				<Forward name="failure" path="500" />
+				<Forward name="parserError" path="500" />
+			</OutputValidator>
+			<InputWrapper
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
+				direction="unwrap">
+			</InputWrapper>
+			<OutputWrapper
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe">
+				<Param name="errorCode" sessionKey="errorCode" />
+				<Param name="errorDetailCode" sessionKey="errorDetailCode" />
+				<Param name="errorDetailText" sessionKey="errorDetailText" />
+				<Param name="destination" value="ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response" />
+			</OutputWrapper>
+		</Receiver>
+		<Pipeline firstPipe="switchAction">
+			<Exits>
+				<Exit name="EXIT" state="success" />
+				<Exit name="400" state="error" code="400" />
+				<Exit name="500" state="error" code="500" />
+			</Exits>
+			<SwitchPipe name="switchAction" xpathExpression="Request/@action"/>
+			<FixedResultPipe name="validResponse" filename="InputOutputWrapper/validResponse.xml">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+			<FixedResultPipe name="invalidResponse" filename="InputOutputWrapper/invalidResponse.xml">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+			<FixedResultPipe name="notWellFormedResponse" filename="InputOutputWrapper/notWellFormedResponse.txt">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+		</Pipeline>
+	</Adapter>
+</Module>
