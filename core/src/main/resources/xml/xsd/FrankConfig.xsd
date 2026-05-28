@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.1.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.0-SNAPSHOT">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -331,6 +331,10 @@ All message-processing transactions are committed, unless one or more of the fol
       <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="ErrorStorageElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="MessageLogElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="InputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="OutputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="InputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="OutputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -508,123 +512,6 @@ This is so that errors coming from external systems so not overload those extern
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Receiver" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="receiver" use="prohibited" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:complexType>
-  <xs:complexType name="PipelineType">
-    <xs:annotation>
-      <xs:documentation>Required in each Adapter to transform incoming messages. A pipeline
-is a sequence of pipes. A
-pipeline also defines its allowed end states using the &lt;code&gt;&amp;lt;Exits&amp;gt;&lt;/code&gt;
-tag.
-&lt;br/&gt;&lt;br/&gt;
-The pipes in a PipeLine may not be executed in sequential order, see PipeForward.
-&lt;br/&gt;&lt;br/&gt;
-A pipeline gathers statistics about the messages it processes.
-&lt;br/&gt;&lt;br/&gt;
-In the AppConstants there may be a property named &lt;code&gt;log.logIntermediaryResults&lt;/code&gt; (true/false)
-which indicates whether the intermediary results (between calling pipes) have to be logged.
-&lt;br/&gt;&lt;br/&gt;
-&lt;b&gt;Transaction control&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
-THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'
-
-If transacted is set to &lt;code&gt;true&lt;/code&gt;, messages will be processed
-under transaction control. Processing by XA-compliant pipes (i.e. Pipes that implement the
-IXAEnabled-interface, set their transacted-attribute to &lt;code&gt;true&lt;/code&gt; and use XA-compliant
-resources) will then either be committed or rolled back in one transaction.
-
-If transacted is set to &lt;code&gt;true&lt;/code&gt;, either an existing transaction
-(started by a transactional receiver) is joined, or new one is created (if the message processing request
-is not initiated by a receiver under transaction control.
-Messages are only committed or rolled back by the Pipeline if it started the transaction itself. If
-the pipeline joined an existing transaction, the commit or rollback is left to the object that started
-the transaction, i.e. the receiver. In the latter case the pipeline can indicate to the receiver that the
-transaction should be rolled back (by calling UserTransaction.setRollBackOnly()).
-
-The choice whether to either commit (by Pipeline or Receiver) or rollback (by Pipeline or Receiver)
-is made as follows:
-
-If the processing of the message concluded without exceptions and the status of the transaction is
-STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be rolled back,
-or marked for roll back by the calling party.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
-      <xs:group ref="InputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:group ref="OutputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:group ref="InputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:group ref="OutputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:element name="Exits" minOccurs="0" maxOccurs="1" type="ExitsType" />
-      <xs:element name="GlobalForwards" minOccurs="0" maxOccurs="1" type="GlobalForwardsType" />
-      <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
-      <xs:group ref="CacheElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:group ref="PipeElementGroup" minOccurs="1" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="firstPipe" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the first pipe to execute when a message is to be processed. Default: first pipe of the pipeline</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="maxThreads" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Maximum number of threads that may execute this Pipeline simultaneously, use 0 to disable limit Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="storeOriginalMessageWithoutNamespaces" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="messageSizeWarn" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If messageSizeWarn&gt;=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes &lt;code&gt;KB&lt;/code&gt;, &lt;code&gt;MB&lt;/code&gt; or &lt;code&gt;GB&lt;/code&gt; Default: application default (30MB)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="transformNullMessage" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when specified and &lt;code&gt;null&lt;/code&gt; is received as a message the message is changed to the specified value</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="expectsSessionKeys" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The pipeline of this adapter expects to use the following session keys to be set on call. This
-is for adapters that are called as sub-adapters from other adapters. This serves both for documentation,
-so callers can see what session keys to set on call, and for verification that those session keys are present.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="transactionTimeout" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Set transactionTimeout in seconds. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="transactionAttribute">
-      <xs:annotation>
-        <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.
-The pipeline uses this to start a new transaction or suspend the current one when required.
-For developers: it is equal to &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;.
-Possible values for transactionAttribute:
-&lt;table border="1"&gt;
-    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
- 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
-  &lt;/table&gt; Default: Supports</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeLine" use="prohibited" />
-    <xs:attribute ref="active" />
-    <xs:attribute name="elementRole" type="xs:string" fixed="pipeline" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="ForwardType">
@@ -806,6 +693,118 @@ Possible values for transactionAttribute:
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.util.Locker" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="locker" use="prohibited" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:complexType name="PipelineType">
+    <xs:annotation>
+      <xs:documentation>Required in each Adapter to transform incoming messages. A pipeline
+is a sequence of pipes. A
+pipeline also defines its allowed end states using the &lt;code&gt;&amp;lt;Exits&amp;gt;&lt;/code&gt;
+tag.
+&lt;br/&gt;&lt;br/&gt;
+The pipes in a PipeLine may not be executed in sequential order, see PipeForward.
+&lt;br/&gt;&lt;br/&gt;
+A pipeline gathers statistics about the messages it processes.
+&lt;br/&gt;&lt;br/&gt;
+In the AppConstants there may be a property named &lt;code&gt;log.logIntermediaryResults&lt;/code&gt; (true/false)
+which indicates whether the intermediary results (between calling pipes) have to be logged.
+&lt;br/&gt;&lt;br/&gt;
+&lt;b&gt;Transaction control&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
+THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'
+
+If transacted is set to &lt;code&gt;true&lt;/code&gt;, messages will be processed
+under transaction control. Processing by XA-compliant pipes (i.e. Pipes that implement the
+IXAEnabled-interface, set their transacted-attribute to &lt;code&gt;true&lt;/code&gt; and use XA-compliant
+resources) will then either be committed or rolled back in one transaction.
+
+If transacted is set to &lt;code&gt;true&lt;/code&gt;, either an existing transaction
+(started by a transactional receiver) is joined, or new one is created (if the message processing request
+is not initiated by a receiver under transaction control.
+Messages are only committed or rolled back by the Pipeline if it started the transaction itself. If
+the pipeline joined an existing transaction, the commit or rollback is left to the object that started
+the transaction, i.e. the receiver. In the latter case the pipeline can indicate to the receiver that the
+transaction should be rolled back (by calling UserTransaction.setRollBackOnly()).
+
+The choice whether to either commit (by Pipeline or Receiver) or rollback (by Pipeline or Receiver)
+is made as follows:
+
+If the processing of the message concluded without exceptions and the status of the transaction is
+STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be rolled back,
+or marked for roll back by the calling party.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+      <xs:group ref="InputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="OutputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="InputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="OutputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Exits" minOccurs="0" maxOccurs="1" type="ExitsType" />
+      <xs:element name="GlobalForwards" minOccurs="0" maxOccurs="1" type="GlobalForwardsType" />
+      <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
+      <xs:group ref="CacheElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="PipeElementGroup" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="firstPipe" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the first pipe to execute when a message is to be processed. Default: first pipe of the pipeline</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxThreads" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Maximum number of threads that may execute this Pipeline simultaneously, use 0 to disable limit Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storeOriginalMessageWithoutNamespaces" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageSizeWarn" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If messageSizeWarn&gt;=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes &lt;code&gt;KB&lt;/code&gt;, &lt;code&gt;MB&lt;/code&gt; or &lt;code&gt;GB&lt;/code&gt; Default: application default (30MB)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="expectsSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The pipeline of this adapter expects to use the following session keys to be set on call. This
+is for adapters that are called as sub-adapters from other adapters. This serves both for documentation,
+so callers can see what session keys to set on call, and for verification that those session keys are present.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="transactionTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Set transactionTimeout in seconds. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="transactionAttribute">
+      <xs:annotation>
+        <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.
+The pipeline uses this to start a new transaction or suspend the current one when required.
+For developers: it is equal to &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;.
+Possible values for transactionAttribute:
+&lt;table border="1"&gt;
+    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+ 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
+  &lt;/table&gt; Default: Supports</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeLine" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="pipeline" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="ExitsType">
@@ -1590,6 +1589,7 @@ If not specified, the default is INPUT.</xs:documentation>
     <xs:attribute name="xpathResult">
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
+&lt;p&gt;
 If xpathResult is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 This results in an xml-string including the XML tags, if you want the contents of the element (as scalar value), use TEXT.
 &lt;/p&gt;
@@ -1736,13 +1736,13 @@ to avoid potential duplicate filename errors. Prior to release 9.0, it is recomm
 
 A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -1768,7 +1768,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -1809,7 +1809,11 @@ This class sends messages with JMS.</xs:documentation>
       </xs:element>
       <xs:element name="ExchangeMailListener">
         <xs:annotation>
-          <xs:documentation>Microsoft Exchange Implementation of a mailbox based filesystem.</xs:documentation>
+          <xs:documentation>Implementation of a AbstractFileSystemSender that enables to manipulate messages in an Exchange folder.
+Uses the MS Graph API to manage a mailbox.
+
+Compared to older versions of the Frank!Framework the &lt;code&gt;DELETE&lt;/code&gt; action was a soft delete. Now it's a hard delete and 
+thus no longer moves the mail item to the &lt;code&gt;Archive&lt;/code&gt; or &lt;code&gt;Deleted items&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1876,13 +1880,13 @@ ESB (Enterprise Service Bus) extension of JmsListener.
 
 A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -1908,7 +1912,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -1962,18 +1966,17 @@ This class sends messages with JMS.</xs:documentation>
 JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.
 &lt;p&gt;
 To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
-The JavaListener listens to Java method calls. You can issue Java method calls using a IbisJavaSender (external call)
+The JavaListener listens to Java method calls. You can issue Java method calls using a org.frankframework.senders.IbisJavaSender (external call)
 or IbisLocalSender (internal call).
 &lt;/p&gt;
 &lt;p&gt;
-    Calling the JavaListener via the IbisJavaSender forces all request messages to be passed as strings without
+    Calling the JavaListener via the org.frankframework.senders.IbisJavaSender forces all request messages to be passed as strings without
     metadata.
 &lt;/p&gt;
 &lt;p&gt;
     When calling the JavaListener via the IbisLocalSender all messages are passed in their native format,
     retaining all their metadata.
-&lt;/p&gt;
-&lt;p&gt;</xs:documentation>
+&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -2011,13 +2014,13 @@ or IbisLocalSender (internal call).
         <xs:annotation>
           <xs:documentation>A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -2043,7 +2046,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -2191,7 +2194,8 @@ flag can be used to set the disk storage location.</xs:documentation>
  specified in the message, the JmsListener sends the result of the processing
  in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  specified Sender, that in turn sends the message to
- whatever it is configured to.&lt;/p&gt;
+ whatever it is configured to.
+
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
@@ -2216,7 +2220,7 @@ This class sends messages with JMS.</xs:documentation>
           <xs:documentation>JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -2291,11 +2295,12 @@ to avoid potential duplicate filename errors. Prior to release 9.0, it is recomm
       </xs:element>
       <xs:element name="SapListener">
         <xs:annotation>
-          <xs:documentation>Implementation of a IPushingListener,
+          <xs:documentation>Implementation of a org.frankframework.core.IPushingListener,
 that enables a Receiver to receive messages from SAP-systems.
-
+&lt;p&gt;
 In SAP, the function to be called is an RFC-function to the destination that is registered using &lt;code&gt;progid&lt;/code&gt;.
-&lt;/b&gt;
+&lt;/p&gt;
+&lt;p&gt;
 N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
 If no replyFieldIndex or replyFieldName is specified, output is converted from xml.
 &lt;/p&gt;</xs:documentation>
@@ -2329,30 +2334,17 @@ to avoid potential duplicate filename errors. Prior to release 9.0, it is recomm
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="SimpleJdbcListener">
-        <xs:annotation>
-          <xs:documentation>Database Listener that returns a count of messages available, but does not perform any locking or
-other management of processing messages in parallel.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SimpleJdbcListenerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="TibcoLogJmsListener">
         <xs:annotation>
           <xs:documentation>A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -2378,7 +2370,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -2644,18 +2636,13 @@ fields may not be one of the #RESERVED_NAMES. Default: name of the first form-pa
     </xs:attribute>
     <xs:attribute name="allowedParameters" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Whitelist of request parameters (Query and POST Parameters) that are allowed to be
-copied into the session.
+        <xs:documentation>Whitelist of request parameters (Query and POST Parameters) that are allowed to be copied into the session.
 &lt;br/&gt;
 Entered as a comma-separated value.
 &lt;br/&gt;
-If the list contains any names that are in #RESERVED_NAMES, these will be removed from the list.
-&lt;br/&gt;
-If left empty, then all HTTP parameters are copied into the session, which can pose
+&lt;strong&gt;If left empty, then all HTTP parameters are copied into the session, which can pose
 a security risk and is therefore discouraged. The risk is that parameters could be sent,
-that overwrite system session variables.
-&lt;br/&gt;
-This only works as a backwards-compatibility feature and can be switched off setting #setAllowAllParams(boolean) to &lt;code&gt;false&lt;/code&gt;.</xs:documentation>
+that overwrite system session variables.&lt;/strong&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowAllParams" type="frankBoolean">
@@ -2665,12 +2652,10 @@ default all parameters are allowed until removal of this flag.
 Copying all POST and query parameters to the session is considered a security risk,
 so this should not be left enabled.
 &lt;br/&gt;
-Even so, names listed in #RESERVED_NAMES will never be copied from the HTTP parameters to the session.
+&lt;strong&gt;When setting #setAllowedParameters(String), this value is ignored. This value is only
+used when the allowed parameter list has not been set, or set empty.&lt;/strong&gt;
 &lt;br/&gt;
-When setting #setAllowedParameters(String), this value is ignored. This value is only
-used when the allowed parameter list has not been set, or set empty.
-&lt;br/&gt;
-For backwards compatibility, this is &lt;code&gt;true&lt;/code&gt; by default. Default: true</xs:documentation>
+&lt;strong&gt;For backwards compatibility, this is &lt;code&gt;true&lt;/code&gt; by default.&lt;/strong&gt; Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredIssuer" type="xs:string">
@@ -3357,6 +3342,27 @@ If the attribute tenantId is not empty, the username and password are treated as
   </xs:attributeGroup>
   <xs:attributeGroup name="ExchangeMailListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExchangeMailListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
+&lt;/ul&gt; Default: EMAIL</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FrankListenerType">
@@ -3651,27 +3657,6 @@ If the alias refers to a password without a username, the password is treated as
   <xs:attributeGroup name="ImapListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ImapListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
-    <xs:attribute name="messageType">
-      <xs:annotation>
-        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
-&lt;/ul&gt; Default: EMAIL</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JavaListenerType">
     <xs:group ref="JavaListenerDeclaredChildGroup" />
@@ -4357,23 +4342,6 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     <xs:attributeGroup ref="SftpFileSystemListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="SimpleJdbcListenerType">
-    <xs:group ref="JdbcFacadeDeclaredChildGroup" />
-    <xs:attributeGroup ref="SimpleJdbcListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.SimpleJdbcListener" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="SimpleJdbcListenerDeclaredAttributeGroup">
-    <xs:attribute name="selectQuery" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>count query that returns the number of available records. when there are available records the pipeline is activated</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trace" type="frankBoolean" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="SimpleJdbcListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="SimpleJdbcListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="TibcoLogJmsListenerType">
     <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
     <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
@@ -4764,8 +4732,8 @@ always appears in combination with a sender or listener. This sender or listener
 a key based on the sent or received message. Messages with the same key are considered to
 be the same.
 &lt;br/&gt;&lt;br/&gt;
-Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
-the Frank!Framework will try to create them.
+Storage structure is defined in the liquibase migration `/IAF_util/IAF_DatabaseChangelog.xml`. On startup, liquibase will try to create this structure
+if not present already.
 &lt;br/&gt;&lt;br/&gt;
 {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
 for the JdbcErrorStorage or JdbcMessageLog. Otherwise messages may get lost.}
@@ -5114,8 +5082,8 @@ always appears in combination with a sender or listener. This sender or listener
 a key based on the sent or received message. Messages with the same key are considered to
 be the same.
 &lt;br/&gt;&lt;br/&gt;
-Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
-the Frank!Framework will try to create them.
+Storage structure is defined in the liquibase migration `/IAF_util/IAF_DatabaseChangelog.xml`. On startup, liquibase will try to create this structure
+if not present already.
 &lt;br/&gt;&lt;br/&gt;
 {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
 for the JdbcErrorStorage or JdbcMessageLog. Otherwise messages may get lost.}
@@ -5173,277 +5141,6 @@ This class sends messages with JMS.</xs:documentation>
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:group name="ErrorMessageFormatterElementGroup">
-    <xs:choice>
-      <xs:group ref="ErrorMessageFormatterElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="ErrorMessageFormatterElementGroupBase">
-    <xs:choice>
-      <xs:element name="DataSonnetErrorMessageFormatter">
-        <xs:annotation>
-          <xs:documentation>Applies a DataSonnet &lt;code&gt;.jsonnet&lt;/code&gt; JSON transformation file to the standard JSON error message generated by the ErrorMessageFormatter.
-
-&lt;p&gt;
-    If the transformation does not succeed, this 'standard' error message is returned in JSON format and an exception is logged.
-&lt;/p&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="DataSonnetErrorMessageFormatterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="ErrorMessageFormatter">
-        <xs:annotation>
-          <xs:documentation>This is the default IErrorMessageFormatter implementation that is used when no specific &lt;code&gt;ErrorMessageFormatter&lt;/code&gt; has
-been configured. It wraps an error in an XML or JSON string. XML is the default.
-
-&lt;p&gt;
-   
-&lt;/p&gt;
-&lt;p&gt;
-    If the exception is a PipeRunException that has parameters set on it, then these parameters
-    are added to a &lt;code&gt;params&lt;/code&gt; element in the error message. These parameters can be set from an
-    org.frankframework.pipes.ExceptionPipe.
-&lt;/p&gt;
-&lt;p&gt;
-    If you need more control over the layout of the error message, then configure your org.frankframework.core.Adapter or
-    org.frankframework.configuration.Configuration with an &lt;code&gt;ErrorMessageFormatter&lt;/code&gt; implementation
-    that can reformat the error message to the desired layout: the XslErrorMessageFormatter for XML error formats or the
-    DataSonnetErrorMessageFormatter for JSON error messages.
-&lt;/p&gt;
-&lt;p&gt;
-Sample xml:
-&lt;pre&gt;&lt;code&gt;&amp;lt;errorMessage&amp;gt;
-   &amp;lt;message timestamp=&amp;quot;Mon Oct 13 12:01:57 CEST 2003&amp;quot;
-            originator=&amp;quot;NN IOS AdapterFramework(set from 'application.name' and 'application.version')&amp;quot;
-            message=&amp;quot;message describing the error that occurred&amp;quot;&amp;gt;
-   &amp;lt;location class=&amp;quot;org.frankframework.pipes.SwitchPipe&amp;quot; name=&amp;quot;ServiceSwitch&amp;quot;/&amp;gt;
-   &amp;lt;details&amp;gt;Exception and stacktrace&amp;lt;/details&amp;gt;
-   &amp;lt;params&amp;gt;
-     &amp;lt;param name=&amp;quot;sampleParam&amp;quot;&amp;gt;paramValue&amp;lt;/param&amp;gt;
-     &amp;lt;param name=&amp;quot;errorCode&amp;quot;&amp;gt;535&amp;lt;/param&amp;gt;
-   &amp;lt;/params&amp;gt;
-   &amp;lt;originalMessage messageId=&amp;quot;...&amp;quot; receivedTime=&amp;quot;Mon Oct 27 12:10:18 CET 2003&amp;quot; &amp;gt;
-       &amp;lt;![CDATA[contents of message for which the error occurred]]&amp;gt;
-   &amp;lt;/originalMessage&amp;gt;
-&amp;lt;/errorMessage&amp;gt;&lt;/code&gt;&lt;/pre&gt;
-&lt;/p&gt;
-&lt;p&gt;
-    Sample JSON:
-    &lt;pre&gt;&lt;code&gt;{
-    &amp;quot;errorMessage&amp;quot;: {
-        &amp;quot;timestamp&amp;quot;: &amp;quot;Mon Oct 13 12:01:57 CEST 2003&amp;quot;,
-        &amp;quot;originator&amp;quot;: &amp;quot;IAF 9.2&amp;quot;,
-        &amp;quot;message&amp;quot;: &amp;quot;Message describing error and location&amp;quot;,
-        &amp;quot;location&amp;quot;: {
-            &amp;quot;class&amp;quot;: &amp;quot;org.frankframework.pipes.SwitchPipe&amp;quot;,
-            &amp;quot;name&amp;quot;: &amp;quot;ServiceSwitch&amp;quot;
-        },
-        &amp;quot;details&amp;quot;: &amp;quot;Exception and stacktrace&amp;quot;,
-        &amp;quot;params&amp;quot;: {
-            &amp;quot;sampleParam&amp;quot;: &amp;quot;paramValue&amp;quot;,
-            &amp;quot;errorCode&amp;quot;: 535
-        },
-        &amp;quot;originalMessage&amp;quot;: {
-            &amp;quot;messageId&amp;quot;: &amp;quot;...&amp;quot;,
-            &amp;quot;receivedTime&amp;quot;: &amp;quot;Mon Oct 27 12:10:18 CET 2003&amp;quot;,
-            &amp;quot;message&amp;quot;: &amp;quot;contents of message for which the error occurred&amp;quot;
-        }
-    }
-}&lt;/code&gt;&lt;/pre&gt;
-&lt;/p&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ErrorMessageFormatterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
-              <xs:anyAttribute processContents="skip" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="FixedErrorMessageFormatter">
-        <xs:annotation>
-          <xs:documentation>ErrorMessageFormatter that returns a fixed message with replacements.
-
-&lt;p&gt;
-    The fixed message is loaded from a file or a string configured on the formatter. If neither
-    is set, then the default ErrorMessageFormatter is used to create the error message.
-&lt;/p&gt;
-&lt;p&gt;
-    Fixed strings in the generated error message can be replaced using &lt;code&gt;replaceFrom&lt;/code&gt; / &lt;code&gt;replaceTo&lt;/code&gt;. As
-    last step, an optional XSLT stylesheet transformation is applied.
-&lt;/p&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="FixedErrorMessageFormatterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="SoapErrorMessageFormatter">
-        <xs:annotation>
-          <xs:documentation>ErrorMessageFormatter that returns a standard SOAP fault message.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SoapErrorMessageFormatterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="XslErrorMessageFormatter">
-        <xs:annotation>
-          <xs:documentation>Applies an XSLT stylesheet to the standard error message generated by the ErrorMessageFormatter.
-
-&lt;p&gt;
-If the transformation does not succeed, this 'standard' error message is returned and an exception is logged.
-&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;use &lt;code&gt;xpathExpression="/errorMessage/@message"&lt;/code&gt; for a single compact string as errormessage.&lt;/p&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="XslErrorMessageFormatterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:complexType name="DataSonnetErrorMessageFormatterType">
-    <xs:group ref="DataSonnetErrorMessageFormatterDeclaredChildGroup" />
-    <xs:attributeGroup ref="DataSonnetErrorMessageFormatterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.DataSonnetErrorMessageFormatter" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="DataSonnetErrorMessageFormatterDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="DataSonnetErrorMessageFormatterDeclaredAttributeGroup">
-    <xs:attribute name="styleSheetName" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>Set a DataSonnet stylesheet to transform the default JSON error message to a custom format.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="outputFileFormat">
-      <xs:annotation>
-        <xs:documentation>Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format. Default: JSON</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="imports" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>List of stylesheets / DataSonnet files imported by the stylesheet to be executed. Stylesheets are only evaluated as JSonnet files if the filename has the extension &lt;pre&gt;.ds&lt;/pre&gt; or &lt;pre&gt;.libsonnet&lt;/pre&gt;.
-
-&lt;p&gt;
-    The list of stylesheets is expected to be a comma-separated list of files, which are loaded from the configuration.
-    Import statements in DataSonnet cannot be used unless each file to be imported is listed here in the &lt;code&gt;imports&lt;/code&gt; attribute.
-&lt;/p&gt;
-&lt;p&gt;
-    Imported files may not be able to use DataSonnet functions from DataSonnet's own libraries, normally available as &lt;code&gt;ds.map()&lt;/code&gt; and the like. The
-    cause for this is not yet known.
-&lt;/p&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="DataSonnetErrorMessageFormatterCumulativeAttributeGroup">
-    <xs:attributeGroup ref="DataSonnetErrorMessageFormatterDeclaredAttributeGroup" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="ErrorMessageFormatterType">
-    <xs:attributeGroup ref="ErrorMessageFormatterDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.ErrorMessageFormatter" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="ErrorMessageFormatterDeclaredAttributeGroup">
-    <xs:attribute name="messageFormat">
-      <xs:annotation>
-        <xs:documentation>Format the error message as XML or as JSON. Default: XML</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="FixedErrorMessageFormatterType">
-    <xs:attributeGroup ref="FixedErrorMessageFormatterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.FixedErrorMessageFormatter" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="FixedErrorMessageFormatterDeclaredAttributeGroup">
-    <xs:attribute name="returnString" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>returned message</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="filename" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the file containing the result message</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="replaceFrom" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The string to replace</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="replaceTo" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>What to replace the &lt;code&gt;replaceFrom&lt;/code&gt; with.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="styleSheetName" type="xs:string" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="FixedErrorMessageFormatterCumulativeAttributeGroup">
-    <xs:attributeGroup ref="FixedErrorMessageFormatterDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="ErrorMessageFormatterDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="SoapErrorMessageFormatterType">
-    <xs:attributeGroup ref="SoapErrorMessageFormatterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="SoapErrorMessageFormatterDeclaredAttributeGroup" />
-  <xs:attributeGroup name="SoapErrorMessageFormatterCumulativeAttributeGroup">
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="XslErrorMessageFormatterType">
-    <xs:group ref="XslErrorMessageFormatterDeclaredChildGroup" />
-    <xs:attributeGroup ref="XslErrorMessageFormatterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.XslErrorMessageFormatter" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="XslErrorMessageFormatterDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="XslErrorMessageFormatterDeclaredAttributeGroup">
-    <xs:attribute name="styleSheetName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>URL to the stylesheet used to transform the output of the standard ErrorMessageFormatter</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xpathExpression" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>xPathExpression to use for transformation</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="XslErrorMessageFormatterCumulativeAttributeGroup">
-    <xs:attributeGroup ref="XslErrorMessageFormatterDeclaredAttributeGroup" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
   <xs:group name="InputValidatorElementGroup">
     <xs:choice>
       <xs:element name="InputValidator">
@@ -6096,7 +5793,8 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     </xs:attribute>
     <xs:attribute name="cmhVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/b&gt; Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
+        <xs:documentation>&lt;p&gt;Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/p&gt;
+Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6178,13 +5876,14 @@ OpenAPI specification.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="reasonSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set: creates a sessionKey to store any errors when validating the json output Default: failureReason</xs:documentation>
+        <xs:documentation>Stores the validation errors, if any, in the sessionKey with this value. Defaults to 'failureReason' Default: failureReason</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useAsOutputValidator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Mark this Validator as configured for mixed validation, meaning it will be used for both request and response validation. Depending solely on the
-responseRoot being set is not sufficient, since in case of OpenApiValidator, the resposeRoot is not used, but it is still a mixed validator. Default: false</xs:documentation>
+        <xs:documentation>Set this validator to be used as an output validator. Please note that 'mixed' validation doesn't work well, and you need to define
+both an input and an output validator instance of this type with this value set to true for the output validator and false (default) for the input
+validator if you want to validate both input and output. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7272,6 +6971,277 @@ value specified by ${fxf.retention}).</xs:documentation>
       </xs:element>
     </xs:choice>
   </xs:group>
+  <xs:group name="ErrorMessageFormatterElementGroup">
+    <xs:choice>
+      <xs:group ref="ErrorMessageFormatterElementGroupBase" />
+    </xs:choice>
+  </xs:group>
+  <xs:group name="ErrorMessageFormatterElementGroupBase">
+    <xs:choice>
+      <xs:element name="DataSonnetErrorMessageFormatter">
+        <xs:annotation>
+          <xs:documentation>Applies a DataSonnet &lt;code&gt;.jsonnet&lt;/code&gt; JSON transformation file to the standard JSON error message generated by the ErrorMessageFormatter.
+
+&lt;p&gt;
+    If the transformation does not succeed, this 'standard' error message is returned in JSON format and an exception is logged.
+&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DataSonnetErrorMessageFormatterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ErrorMessageFormatter">
+        <xs:annotation>
+          <xs:documentation>This is the default IErrorMessageFormatter implementation that is used when no specific &lt;code&gt;ErrorMessageFormatter&lt;/code&gt; has
+been configured. It wraps an error in an XML or JSON string. XML is the default.
+
+&lt;p&gt;
+   
+&lt;/p&gt;
+&lt;p&gt;
+    If the exception is a PipeRunException that has parameters set on it, then these parameters
+    are added to a &lt;code&gt;params&lt;/code&gt; element in the error message. These parameters can be set from an
+    org.frankframework.pipes.ExceptionPipe.
+&lt;/p&gt;
+&lt;p&gt;
+    If you need more control over the layout of the error message, then configure your org.frankframework.core.Adapter or
+    org.frankframework.configuration.Configuration with an &lt;code&gt;ErrorMessageFormatter&lt;/code&gt; implementation
+    that can reformat the error message to the desired layout: the XslErrorMessageFormatter for XML error formats or the
+    DataSonnetErrorMessageFormatter for JSON error messages.
+&lt;/p&gt;
+&lt;p&gt;
+Sample xml:
+&lt;pre&gt;&lt;code&gt;&amp;lt;errorMessage&amp;gt;
+   &amp;lt;message timestamp=&amp;quot;Mon Oct 13 12:01:57 CEST 2003&amp;quot;
+            originator=&amp;quot;NN IOS AdapterFramework(set from 'application.name' and 'application.version')&amp;quot;
+            message=&amp;quot;message describing the error that occurred&amp;quot;&amp;gt;
+   &amp;lt;location class=&amp;quot;org.frankframework.pipes.SwitchPipe&amp;quot; name=&amp;quot;ServiceSwitch&amp;quot;/&amp;gt;
+   &amp;lt;details&amp;gt;Exception and stacktrace&amp;lt;/details&amp;gt;
+   &amp;lt;params&amp;gt;
+     &amp;lt;param name=&amp;quot;sampleParam&amp;quot;&amp;gt;paramValue&amp;lt;/param&amp;gt;
+     &amp;lt;param name=&amp;quot;errorCode&amp;quot;&amp;gt;535&amp;lt;/param&amp;gt;
+   &amp;lt;/params&amp;gt;
+   &amp;lt;originalMessage messageId=&amp;quot;...&amp;quot; receivedTime=&amp;quot;Mon Oct 27 12:10:18 CET 2003&amp;quot; &amp;gt;
+       &amp;lt;![CDATA[contents of message for which the error occurred]]&amp;gt;
+   &amp;lt;/originalMessage&amp;gt;
+&amp;lt;/errorMessage&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/p&gt;
+&lt;p&gt;
+    Sample JSON:
+    &lt;pre&gt;&lt;code&gt;{
+    &amp;quot;errorMessage&amp;quot;: {
+        &amp;quot;timestamp&amp;quot;: &amp;quot;Mon Oct 13 12:01:57 CEST 2003&amp;quot;,
+        &amp;quot;originator&amp;quot;: &amp;quot;IAF 9.2&amp;quot;,
+        &amp;quot;message&amp;quot;: &amp;quot;Message describing error and location&amp;quot;,
+        &amp;quot;location&amp;quot;: {
+            &amp;quot;class&amp;quot;: &amp;quot;org.frankframework.pipes.SwitchPipe&amp;quot;,
+            &amp;quot;name&amp;quot;: &amp;quot;ServiceSwitch&amp;quot;
+        },
+        &amp;quot;details&amp;quot;: &amp;quot;Exception and stacktrace&amp;quot;,
+        &amp;quot;params&amp;quot;: {
+            &amp;quot;sampleParam&amp;quot;: &amp;quot;paramValue&amp;quot;,
+            &amp;quot;errorCode&amp;quot;: 535
+        },
+        &amp;quot;originalMessage&amp;quot;: {
+            &amp;quot;messageId&amp;quot;: &amp;quot;...&amp;quot;,
+            &amp;quot;receivedTime&amp;quot;: &amp;quot;Mon Oct 27 12:10:18 CET 2003&amp;quot;,
+            &amp;quot;message&amp;quot;: &amp;quot;contents of message for which the error occurred&amp;quot;
+        }
+    }
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="ErrorMessageFormatterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
+              <xs:anyAttribute processContents="skip" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="FixedErrorMessageFormatter">
+        <xs:annotation>
+          <xs:documentation>ErrorMessageFormatter that returns a fixed message with replacements.
+
+&lt;p&gt;
+    The fixed message is loaded from a file or a string configured on the formatter. If neither
+    is set, then the default ErrorMessageFormatter is used to create the error message.
+&lt;/p&gt;
+&lt;p&gt;
+    Fixed strings in the generated error message can be replaced using &lt;code&gt;replaceFrom&lt;/code&gt; / &lt;code&gt;replaceTo&lt;/code&gt;. As
+    last step, an optional XSLT stylesheet transformation is applied.
+&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="FixedErrorMessageFormatterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SoapErrorMessageFormatter">
+        <xs:annotation>
+          <xs:documentation>ErrorMessageFormatter that returns a standard SOAP fault message.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SoapErrorMessageFormatterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="XslErrorMessageFormatter">
+        <xs:annotation>
+          <xs:documentation>Applies an XSLT stylesheet to the standard error message generated by the ErrorMessageFormatter.
+
+&lt;p&gt;
+If the transformation does not succeed, this 'standard' error message is returned and an exception is logged.
+&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;use &lt;code&gt;xpathExpression="/errorMessage/@message"&lt;/code&gt; for a single compact string as errormessage.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="XslErrorMessageFormatterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:group>
+  <xs:complexType name="DataSonnetErrorMessageFormatterType">
+    <xs:group ref="DataSonnetErrorMessageFormatterDeclaredChildGroup" />
+    <xs:attributeGroup ref="DataSonnetErrorMessageFormatterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.DataSonnetErrorMessageFormatter" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="DataSonnetErrorMessageFormatterDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="DataSonnetErrorMessageFormatterDeclaredAttributeGroup">
+    <xs:attribute name="styleSheetName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Set a DataSonnet stylesheet to transform the default JSON error message to a custom format.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputFileFormat">
+      <xs:annotation>
+        <xs:documentation>Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format. Default: JSON</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="imports" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>List of stylesheets / DataSonnet files imported by the stylesheet to be executed. Stylesheets are only evaluated as JSonnet files if the filename has the extension &lt;pre&gt;.ds&lt;/pre&gt; or &lt;pre&gt;.libsonnet&lt;/pre&gt;.
+
+&lt;p&gt;
+    The list of stylesheets is expected to be a comma-separated list of files, which are loaded from the configuration.
+    Import statements in DataSonnet cannot be used unless each file to be imported is listed here in the &lt;code&gt;imports&lt;/code&gt; attribute.
+&lt;/p&gt;
+&lt;p&gt;
+    Imported files may not be able to use DataSonnet functions from DataSonnet's own libraries, normally available as &lt;code&gt;ds.map()&lt;/code&gt; and the like. The
+    cause for this is not yet known.
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="DataSonnetErrorMessageFormatterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="DataSonnetErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="ErrorMessageFormatterType">
+    <xs:attributeGroup ref="ErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.ErrorMessageFormatter" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="ErrorMessageFormatterDeclaredAttributeGroup">
+    <xs:attribute name="messageFormat">
+      <xs:annotation>
+        <xs:documentation>Format the error message as XML or as JSON. Default: XML</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="FixedErrorMessageFormatterType">
+    <xs:attributeGroup ref="FixedErrorMessageFormatterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.FixedErrorMessageFormatter" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="FixedErrorMessageFormatterDeclaredAttributeGroup">
+    <xs:attribute name="returnString" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>returned message</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="filename" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>name of the file containing the result message</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="replaceFrom" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The string to replace</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="replaceTo" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>What to replace the &lt;code&gt;replaceFrom&lt;/code&gt; with.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="styleSheetName" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="FixedErrorMessageFormatterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="FixedErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="ErrorMessageFormatterDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="SoapErrorMessageFormatterType">
+    <xs:attributeGroup ref="SoapErrorMessageFormatterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="SoapErrorMessageFormatterDeclaredAttributeGroup" />
+  <xs:attributeGroup name="SoapErrorMessageFormatterCumulativeAttributeGroup">
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="XslErrorMessageFormatterType">
+    <xs:group ref="XslErrorMessageFormatterDeclaredChildGroup" />
+    <xs:attributeGroup ref="XslErrorMessageFormatterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.XslErrorMessageFormatter" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="XslErrorMessageFormatterDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="XslErrorMessageFormatterDeclaredAttributeGroup">
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>URL to the stylesheet used to transform the output of the standard ErrorMessageFormatter</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xpathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>xPathExpression to use for transformation</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="XslErrorMessageFormatterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="XslErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:group name="CacheElementGroup">
     <xs:choice>
       <xs:element name="Cache">
@@ -7279,6 +7249,7 @@ value specified by ${fxf.retention}).</xs:documentation>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+              <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -7367,6 +7338,7 @@ N.B. the default values shown can be overridden using properties in appConstants
   <xs:group name="AbstractCacheAdapterDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractCacheAdapterDeclaredAttributeGroup">
@@ -7375,62 +7347,9 @@ N.B. the default values shown can be overridden using properties in appConstants
         <xs:documentation>Name of the cache, will be lowercased Default: &lt;code&gt;&amp;lt;ownerName&amp;gt;&lt;/code&gt;_cache</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="keyXPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>xpath expression to extract cache key from request message</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyXPathOutputType">
-      <xs:annotation>
-        <xs:documentation>output type of xpath expression to extract cache key from request message Default: text</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keyNamespaceDefs" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>namespace defintions for keyxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyStyleSheet" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>stylesheet to extract cache key from request message. Use in combination with cacheEmptyKeys to inhibit caching for certain groups of request messages</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyInputSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key to use as input for transformation of request message to key by keyxpath or keystylesheet</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="cacheEmptyKeys" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>controls whether empty keys are used for caching. when set true, cache entries with empty keys can exist. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="valueXPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>xpath expression to extract value to be cached key from response message. Use in combination with cacheEmptyValues to inhibit caching for certain groups of response messages</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="valueXPathOutputType">
-      <xs:simpleType>
-        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="valueNamespaceDefs" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>namespace defintions for valuexpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="valueStyleSheet" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>stylesheet to extract value to be cached from response message</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="valueInputSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key to use as input for transformation of response message to cached value by valuexpath or valuestylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="cacheEmptyValues" type="frankBoolean">
@@ -7521,7 +7440,8 @@ N.B. the default values shown can be overridden using properties in appConstants
  specified in the message, the JmsListener sends the result of the processing
  in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  specified Sender, that in turn sends the message to
- whatever it is configured to.&lt;/p&gt;
+ whatever it is configured to.
+
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
@@ -7906,14 +7826,16 @@ When &lt;code&gt;action=update&lt;/code&gt; the input (xml string) indicates doc
       </xs:element>
       <xs:element name="CompositeSender">
         <xs:annotation>
-          <xs:documentation>Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+          <xs:documentation>Pipe that allows you to call a Frank!Framework Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
 As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
 For example:
 
-&lt;pre&gt;&lt;code&gt;&amp;lt;CompositePipe name=&amp;quot;name-of-the-pipe&amp;quot; plugin=&amp;quot;name-of-the-plugin&amp;quot;&amp;gt;
-    &amp;lt;Param name=&amp;quot;inject-me&amp;quot; value=&amp;quot;im a value&amp;quot; /&amp;gt;
-    &amp;lt;Param name=&amp;quot;inject-me-too&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; /&amp;gt;
-&amp;lt;/CompositePipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;A plugin may have multiple entrypoints (or ref's), each one can be called independently.&lt;/p&gt;</xs:documentation>
+&lt;pre&gt;&lt;code&gt;&amp;lt;ForEachChildElementPipe name=&amp;quot;callPluginAsSender&amp;quot; ...&amp;gt;
+    &amp;lt;CompositeSender name=&amp;quot;plugin&amp;quot; plugin=&amp;quot;demo-plugin&amp;quot; ref=&amp;quot;demo-test-part.xml&amp;quot;&amp;gt;
+        &amp;lt;Param name=&amp;quot;inject-me&amp;quot; value=&amp;quot;im a value&amp;quot; /&amp;gt;
+        &amp;lt;Param name=&amp;quot;inject-me-too&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; /&amp;gt;
+    &amp;lt;/CompositeSender&amp;gt;
+&amp;lt;/ForEachChildElementPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;A plugin may have multiple entrypoints (or ref's), each one can be called independently.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -7981,7 +7903,11 @@ This class sends messages with JMS.</xs:documentation>
       </xs:element>
       <xs:element name="ExchangeFileSystemSender">
         <xs:annotation>
-          <xs:documentation>Implementation of a AbstractFileSystemSender that enables to manipulate messages in an Exchange folder.</xs:documentation>
+          <xs:documentation>Implementation of a AbstractFileSystemSender that enables to manipulate messages in an Exchange folder.
+Uses the MS Graph API to manage a mailbox.
+
+Compared to older versions of the Frank!Framework the &lt;code&gt;DELETE&lt;/code&gt; action was a soft delete. Now it's a hard delete and 
+thus no longer moves the mail item to the &lt;code&gt;Archive&lt;/code&gt; or &lt;code&gt;Deleted items&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8311,6 +8237,7 @@ This class sends messages with JMS.</xs:documentation>
 An IbisJavaSender makes a call to a Receiver with a JavaListener
 or any other application in the same JVM that has registered a &lt;code&gt;RequestProcessor&lt;/code&gt; with the IbisServiceDispatcher.
 &lt;/p&gt;
+&lt;p&gt;
 The IbisJavaSender is now considered to be legacy. The new way to call another adapter or java application from your own
 adapter is by using the FrankSender.
 &lt;/p&gt;
@@ -8810,7 +8737,7 @@ represents the nonce and the password the access token.&lt;/p&gt;</xs:documentat
         <xs:annotation>
           <xs:documentation>Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
 This prevents (long) open connections inside Senders and possible connection failures.
-
+&lt;p&gt;
 &lt;b&gt;Example:&lt;/b&gt;
 &lt;pre&gt;&lt;code&gt;&amp;lt;SenderPipe&amp;gt;
     &amp;lt;ReconnectSenderWrapper&amp;gt;
@@ -11152,8 +11079,9 @@ If the alias refers to a password without a username, the password is treated as
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -11234,8 +11162,9 @@ If left empty, the xpathExpression will match any namespace</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -12810,13 +12739,9 @@ Alternatively, warnings can be switched off using suppression properties Suppres
   </xs:attributeGroup>
   <xs:complexType name="ZipWriterSenderType">
     <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
-    <xs:attributeGroup ref="ZipWriterSenderCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractCollectorSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.compression.ZipWriterSender" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="ZipWriterSenderDeclaredAttributeGroup" />
-  <xs:attributeGroup name="ZipWriterSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="AbstractCollectorSenderCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:attributeGroup name="AbstractCollectorSenderDeclaredAttributeGroup">
     <xs:attribute name="collectionName" type="xs:string">
       <xs:annotation>
@@ -13002,7 +12927,8 @@ The outputFields description can contain the following functions:
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
@@ -13570,7 +13496,7 @@ This pipe can be used in combination with IncreaseIntegerPipe to construct loops
       </xs:element>
       <xs:element name="CompositePipe">
         <xs:annotation>
-          <xs:documentation>Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+          <xs:documentation>Pipe that allows you to call a Frank!Framework Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
 As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
 For example:
 
@@ -15179,7 +15105,7 @@ Each line will be handled by this recordHandler and resultHandler.</xs:documenta
       <xs:element name="SwitchPipe">
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on either the content of the input message, by means
-of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.</xs:documentation>
+of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;When using a jPath, the pipe input message will be set to the JSON object called &lt;code&gt;$&lt;/code&gt;, so if you wish to switch on field 'key' in: &lt;code&gt;{ key:'forwardname'}&lt;/code&gt; use &lt;code&gt;$.key&lt;/code&gt;.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15832,8 +15758,9 @@ exceeds the timeout, or in other situations no reply message is received.</xs:do
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
-&lt;/p&gt;
-This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
+&lt;p&gt;
+This field controls how to iterate over the input and does not determine the pipe's output.
+&lt;/p&gt; Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -15989,8 +15916,9 @@ A sequence of lines with the same key is put in one block and send to the sender
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
-&lt;/p&gt;
-This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
+&lt;p&gt;
+This field controls how to iterate over the input and does not determine the pipe's output.
+&lt;/p&gt; Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -16075,16 +16003,6 @@ Defaults to &lt;code&gt;Configuration.xml&lt;/code&gt; but can be any XML file. 
     <xs:attribute name="compress" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the pipe compresses; otherwise, it decompresses. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="messageIsContent" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>A flag that indicates whether the message is the content or the path to a file with the contents. For multiple files, use ';' as a delimiter. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="resultIsContent" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>A flag that indicates whether the result must be written to the message or to a file (filename = message). Default: true when outputDirectory is not set.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="fileFormat">
@@ -16557,11 +16475,6 @@ Be aware that memory consumption appears to increase with file size when this at
         <xs:union memberTypes="AlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Character set to use for converting the secret from String to bytes. Default: UTF-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="hashEncoding">
       <xs:annotation>
         <xs:documentation>Method to use for converting the hash from bytes to String. Default: Base64</xs:documentation>
@@ -16802,8 +16715,9 @@ When direction is XML2JSON, can not be used. Default: root</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -16883,8 +16797,9 @@ If left empty, the xpathExpression will match any namespace</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -20586,6 +20501,15 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
       <xs:enumeration value="JCEKS" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="MessageTypeAttributeValuesType_2">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="EMAIL" />
+      <xs:enumeration value="CONTENTS" />
+      <xs:enumeration value="MIME" />
+      <xs:enumeration value="NAME" />
+      <xs:enumeration value="PATH" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="FtpTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="FTP" />
@@ -20629,15 +20553,6 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
           <xs:documentation>Private</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="MessageTypeAttributeValuesType_2">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="EMAIL" />
-      <xs:enumeration value="CONTENTS" />
-      <xs:enumeration value="MIME" />
-      <xs:enumeration value="NAME" />
-      <xs:enumeration value="PATH" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MessageFieldTypeAttributeValuesType">
@@ -20701,30 +20616,21 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
       <xs:enumeration value="DESC" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="OnErrorAttributeValuesType">
+  <xs:simpleType name="LockTypeAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="CONTINUE">
-        <xs:annotation>
-          <xs:documentation>Don't stop the receiver when an error occurs.</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="RECOVER">
-        <xs:annotation>
-          <xs:documentation>If an error occurs (e.g. connection is lost) the receiver will be stopped and marked as ERROR
-Once every &lt;code&gt;recover.adapters.interval&lt;/code&gt; it attempts to (re-) start the receiver.</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="CLOSE">
-        <xs:annotation>
-          <xs:documentation>Stop the receiver when an error occurs.</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
+      <xs:enumeration value="T" />
+      <xs:enumeration value="P" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="CheckForDuplicatesMethodAttributeValuesType">
+  <xs:simpleType name="TimeUnitAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="MESSAGEID" />
-      <xs:enumeration value="CORRELATIONID" />
+      <xs:enumeration value="SECONDS" />
+      <xs:enumeration value="MINUTES" />
+      <xs:enumeration value="HOURS" />
+      <xs:enumeration value="DAYS" />
+      <xs:enumeration value="WEEKS" />
+      <xs:enumeration value="MONTHS" />
+      <xs:enumeration value="YEARS" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="TransactionAttributeAttributeValuesType">
@@ -20759,32 +20665,6 @@ Once every &lt;code&gt;recover.adapters.interval&lt;/code&gt; it attempts to (re
           <xs:documentation>Do not support a current transaction; throw an exception if a current transaction exists.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="DataSonnetOutputTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="JSON" />
-      <xs:enumeration value="CSV" />
-      <xs:enumeration value="XML" />
-      <xs:enumeration value="YAML" />
-      <xs:enumeration value="TXT" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="LockTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="T" />
-      <xs:enumeration value="P" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="TimeUnitAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="SECONDS" />
-      <xs:enumeration value="MINUTES" />
-      <xs:enumeration value="HOURS" />
-      <xs:enumeration value="DAYS" />
-      <xs:enumeration value="WEEKS" />
-      <xs:enumeration value="MONTHS" />
-      <xs:enumeration value="YEARS" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="SoapVersionAttributeValuesType">
@@ -20838,6 +20718,41 @@ Once every &lt;code&gt;recover.adapters.interval&lt;/code&gt; it attempts to (re
     <xs:restriction base="xs:string">
       <xs:enumeration value="WRAP" />
       <xs:enumeration value="UNWRAP" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="OnErrorAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CONTINUE">
+        <xs:annotation>
+          <xs:documentation>Don't stop the receiver when an error occurs.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="RECOVER">
+        <xs:annotation>
+          <xs:documentation>If an error occurs (e.g. connection is lost) the receiver will be stopped and marked as ERROR
+Once every &lt;code&gt;recover.adapters.interval&lt;/code&gt; it attempts to (re-) start the receiver.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="CLOSE">
+        <xs:annotation>
+          <xs:documentation>Stop the receiver when an error occurs.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CheckForDuplicatesMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MESSAGEID" />
+      <xs:enumeration value="CORRELATIONID" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DataSonnetOutputTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="JSON" />
+      <xs:enumeration value="CSV" />
+      <xs:enumeration value="XML" />
+      <xs:enumeration value="YAML" />
+      <xs:enumeration value="TXT" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ExitStateAttributeValuesType">
@@ -21940,37 +21855,6 @@ See MessageStoreSender for type &lt;code&gt;M&lt;/code&gt;. Default: &lt;code&gt
       <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the full message is stored with the log. Can be set to &lt;code&gt;false&lt;/code&gt; to reduce table size, by avoiding to store the full message Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="transactionTimeout" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Set transactionTimeout in seconds. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="transactionAttribute">
-    <xs:annotation>
-      <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.
-The pipeline uses this to start a new transaction or suspend the current one when required.
-For developers: it is equal to &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;.
-Possible values for transactionAttribute:
-&lt;table border="1"&gt;
-    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
- 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
-    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
-											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
-  &lt;/table&gt; Default: Supports</xs:documentation>
-    </xs:annotation>
-    <xs:simpleType>
-      <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef" />
-    </xs:simpleType>
-  </xs:attribute>
   <xs:attribute name="getInputFromSessionKey" type="xs:string">
     <xs:annotation>
       <xs:documentation>If set, input is taken from this session key, instead of regular input. If the session-key does not exist or is empty, then the input will
@@ -22103,6 +21987,37 @@ with &lt;code&gt;mode = 0&lt;/code&gt; for how regular expressions are matched a
       <xs:documentation>Value of session variable 'unlessSessionKey' to check if the action must be executed. The pipe is not executed if the session variable has the specified value.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="transactionTimeout" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Set transactionTimeout in seconds. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="transactionAttribute">
+    <xs:annotation>
+      <xs:documentation>The &lt;code&gt;transactionAttribute&lt;/code&gt; declares transactional behavior of execution. It applies both to database transactions and XA transactions.
+The pipeline uses this to start a new transaction or suspend the current one when required.
+For developers: it is equal to &lt;a href="https://docs.oracle.com/javaee/7/tutorial/transactions003.htm"&gt;EJB transaction attribute&lt;/a&gt;.
+Possible values for transactionAttribute:
+&lt;table border="1"&gt;
+    &lt;tr&gt;&lt;th&gt;transactionAttribute&lt;/th&gt;&lt;th&gt;callers Transaction&lt;/th&gt;&lt;th&gt;Pipeline excecuted in Transaction&lt;/th&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Required&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;RequiresNew&lt;/td&gt; &lt;td&gt;none&lt;/td&gt;&lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T2&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Mandatory&lt;/td&gt;   &lt;td&gt;none&lt;/td&gt;&lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;NotSupported&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Supports&lt;/td&gt;    &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+ 										      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;T1&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td colspan="1" rowspan="2"&gt;Never&lt;/td&gt;       &lt;td&gt;none&lt;/td&gt;&lt;td&gt;none&lt;/td&gt;&lt;/tr&gt;
+											      &lt;tr&gt;&lt;td&gt;T1&lt;/td&gt;  &lt;td&gt;error&lt;/td&gt;&lt;/tr&gt;
+  &lt;/table&gt; Default: Supports</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:union memberTypes="TransactionAttributeAttributeValuesType variableRef" />
+    </xs:simpleType>
+  </xs:attribute>
   <xs:attribute name="outputSoapBody" type="xs:string">
     <xs:annotation>
       <xs:documentation>Identical to the &lt;code&gt;soapBody&lt;/code&gt; attribute except that it's used for the output message instead of the input message.</xs:documentation>
@@ -22110,7 +22025,14 @@ with &lt;code&gt;mode = 0&lt;/code&gt; for how regular expressions are matched a
   </xs:attribute>
   <xs:attribute name="soapHeader" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)</xs:documentation>
+      <xs:documentation>Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed). This is a restriction that is enforced on top of the XSD validations.
+
+ &lt;p&gt;
+ When not set, any header is allowed that is accepted by the XSD, including no header. To allow a specific set of headers but have them be optional, specify an empty element in the list, like this: &lt;pre&gt;&amp;quot;MessageHeader,&amp;quot;&lt;/pre&gt;.
+ &lt;/p&gt;
+ &lt;p&gt;
+ The wsdl generator will only use the first element specified.
+ &lt;/p&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="soapHeaderNamespace" type="xs:string">
