@@ -30,7 +30,7 @@ public class TestDummyValidator extends AbstractValidator implements IDualModeVa
 		try {
 			String data = messageToValidate.asString();
 			for (String value : failOnValue) {
-				if (StringUtils.isNotEmpty(data) && StringUtils.isNotEmpty(value) && data.contains(value)) {
+				if (StringUtils.isNoneEmpty(data, value) && data.contains(value)) {
 					return findForward("failure");
 				}
 			}
