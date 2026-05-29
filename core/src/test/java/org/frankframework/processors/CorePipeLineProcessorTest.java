@@ -169,7 +169,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message("<ns1:input xmlns:ns1=\"xyx\"/>"), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message("<ns1:input xmlns:ns1=\"xyx\"/>"), session, "p1");
 
 		// Assert
 		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
@@ -194,7 +194,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message("<ns1:input/>"), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message("<ns1:input/>"), session, "p1");
 
 		// Assert
 		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
@@ -227,7 +227,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
 		assertFalse(pipeLineResult.isSuccessful(), "Expected failure pipeline result");
@@ -262,7 +262,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
 		assertEquals(skipWrappingValidation, pipeLineResult.isSuccessful(), "Expected " + (skipWrappingValidation ? "success" : "failure") + " pipeline result");
@@ -292,7 +292,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
 		assertFalse(pipeLineResult.isSuccessful(), "Expected failure pipeline result");
@@ -324,7 +324,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
 		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");

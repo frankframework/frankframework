@@ -758,14 +758,15 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @param pipeLineSession {@link PipeLineSession} session in which message is to be processed
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
-	public PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, PipeLineSession pipeLineSession) {
+	@SuppressWarnings("java:S1181")
+	public PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
 			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
 		) {
 			PipeLineResult result = new PipeLineResult();
 			boolean success = false;
 			try {
-				result = processMessageWithExceptions(messageId, message, pipeLineSession);
+				result = processMessageWithExceptions(null, messageId, message, pipeLineSession);
 				success = true;
 			} catch (Throwable t) {
 				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
@@ -812,7 +813,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @return {@link PipeLineResult} with result from processing the message in the {@link PipeLine}.
 	 * @throws ListenerException If there was an exception, throws a {@link ListenerException}.
 	 */
-	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
+	public PipeLineResult processMessageWithExceptions(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never know....
@@ -837,7 +838,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
 				message = new Message("");
 			}
-			result = pipeline.process(messageId, message, pipeLineSession);
+			result = pipeline.process(receiver, messageId, message, pipeLineSession);
 			return result;
 		} catch (Throwable t) {
 			ListenerException e = new ListenerException(t);

@@ -237,7 +237,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 			pipe.addParameter(ParameterBuilder.create("variable", "value"));
 			configureAndStartPipe();
 
-			Message result = pipeline.process("123-456", message, session).getResult();
+			Message result = pipeline.process(null, "123-456", message, session).getResult();
 			assertEquals("replacedPropertyValue", result.asString());
 		} finally {
 			session.remove("prefix.value.suffix");

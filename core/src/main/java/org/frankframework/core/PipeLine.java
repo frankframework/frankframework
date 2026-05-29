@@ -56,6 +56,7 @@ import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
@@ -436,14 +437,14 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeLineResult process(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
 		}
 		if (!expectsSessionKeysSet.isEmpty()) {
 			verifyExpectedSessionKeysPresent(pipeLineSession);
 		}
-		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
+		return pipeLineProcessor.processPipeLine(receiver, this, messageId, message, pipeLineSession, firstPipe);
 	}
 
 	private void verifyExpectedSessionKeysPresent(PipeLineSession session) throws PipeRunException {

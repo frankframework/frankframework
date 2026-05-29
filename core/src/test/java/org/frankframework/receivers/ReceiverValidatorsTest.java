@@ -4,7 +4,6 @@ import static org.frankframework.testutil.mock.WaitUtils.waitWhileInState;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
@@ -141,36 +140,6 @@ class ReceiverValidatorsTest {
 		waitWhileInState(adapter, RunState.STARTING);
 	}
 
-	@Test
-	void testDoNotForwardToPipe() throws ConfigurationException {
-		// Arrange
-		PipeLine pipeLine = createPipeLine(adapter, false, false);
-
-		addValidators(receiver, false, false);
-
-		receiver.getInputValidator().addForward(new PipeForward(PipeForward.FAILURE_FORWARD_NAME, pipeLine.getFirstPipe()));
-
-		// Act / Assert
-		ConfigurationException configurationException = assertThrows(ConfigurationException.class, receiver::configure);
-		assertEquals("Receiver TEST - InputValidator can only forward errors directly to a Pipeline Exit", configurationException.getMessage());
-	}
-
-	@Test
-	void testAutoAddDefaultErrorForward() throws ConfigurationException {
-		// Arrange
-		receiver = createReceiver(adapter, createListener());
-		createPipeLine(adapter, false, false);
-		addValidators(receiver, false, false);
-
-		// Act / Assert
-		assertDoesNotThrow(receiver::configure);
-
-		validateDefaultPipeForwards(receiver.getInputValidator());
-		validateDefaultPipeForwards(receiver.getOutputValidator());
-		validateDefaultPipeForwards(receiver.getInputWrapper());
-		validateDefaultPipeForwards(receiver.getOutputWrapper());
-	}
-
 	private static void validateDefaultPipeForwards(IPipe pipe) {
 		PipeForward successForward = pipe.findForward(PipeForward.SUCCESS_FORWARD_NAME);
 		assertNotNull(successForward);
@@ -222,12 +191,12 @@ class ReceiverValidatorsTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"false, fail-validator-input, 'wrapping-successReceiver TEST - OutputWrapper[Error in [Receiver TEST - InputValidator]: Failed in validation of input [fail-validator-input]]'",
-			"true, fail-validator-input, 'Error in [Receiver TEST - OutputValidator]: Failed in validation of output [wrapping-successReceiver TEST - OutputWrapper[Error in [Receiver TEST - InputValidator]: Failed in validation of input [fail-validator-input]]]'",
-			"false, fail-wrap-input, 'wrapping-successReceiver TEST - OutputWrapper[Error in [Receiver TEST - InputWrapper]: Failed in wrapping of input [wrapping-failedReceiver TEST - InputWrapper[fail-wrap-input]]]'",
-			"false, fail-wrap-output, 'Error in [Receiver TEST - OutputWrapper]: Failed in wrapping of output [wrapping-failedReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]]]'",
-			"false, fail-validator-output, 'Error in [Receiver TEST - OutputValidator]: Failed in validation of output [wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]'",
-			"true, fail-validator-output, 'Error in [Receiver TEST - OutputValidator]: Failed in validation of output [wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]'",
+			"false, fail-validator-input, wrapping-successReceiver TEST - OutputWrapper[fail-validator-input]",
+			"true,  fail-validator-input, wrapping-successReceiver TEST - OutputWrapper[fail-validator-input]",
+			"false, fail-wrap-input, wrapping-successReceiver TEST - OutputWrapper[fail-wrap-input]",
+			"false, fail-wrap-output, wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]",
+			"false, fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
+			"true,  fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
 	})
 	void testReceiverWithWrappersAndValidatorsFailures(boolean dualModeValidator, String input, String expectedMessage) throws Exception {
 		// Arrange

@@ -45,17 +45,6 @@ public class PipeLineResult {
 		this.state = ExitState.SUCCESS;
 	}
 
-	public PipeLineResult(Message result) {
-		this.result = result;
-		this.state = ExitState.SUCCESS;
-	}
-
-	public PipeLineResult(Message result, ExitState state, @Nullable Integer exitCode) {
-		this.result = result;
-		this.state = state;
-		this.exitCode = exitCode;
-	}
-
 	public static PipeLineResult create(PipeLineExit exit, Message result) {
 		PipeLineResult pipeLineResult = new PipeLineResult();
 		pipeLineResult.setState(exit.getState());

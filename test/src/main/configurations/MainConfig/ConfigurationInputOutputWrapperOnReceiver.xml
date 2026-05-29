@@ -7,14 +7,14 @@
 			<InputValidator className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
 				root="Request">
-				<Forward name="failure" path="400" />
-				<Forward name="parserError" path="400" />
+				<Forward name="failure" path="InputValidateFailure" />
+				<Forward name="parserError" path="InputValidateError" />
 			</InputValidator>
 			<OutputValidator className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
 				root="Response">
-				<Forward name="failure" path="500" />
-				<Forward name="parserError" path="500" />
+				<Forward name="failure" path="InternalXsdFailure" />
+				<Forward name="parserError" path="InternalXsdError" />
 			</OutputValidator>
 			<InputWrapper
 				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
@@ -22,8 +22,8 @@
 			</InputWrapper>
 			<OutputWrapper
 				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe">
-				<Param name="errorCode" value="INVALID_XML" />
-				<Param name="errorDetailCode" sessionKey="failureReason" />
+				<Param name="errorCode" sessionKey="errorCode" />
+				<Param name="errorDetailCode" sessionKey="errorDetailCode" />
 				<Param name="errorDetailText" sessionKey="errorDetailText" />
 				<Param name="destination" value="ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response" />
 			</OutputWrapper>
@@ -43,6 +43,45 @@
 				<Forward name="success" path="EXIT" />
 			</FixedResultPipe>
 			<FixedResultPipe name="notWellFormedResponse" filename="InputOutputWrapper/notWellFormedResponse.txt">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+
+			<!-- ERRORS -->
+			<PutInSessionPipe name="InputValidateError">
+				<Param name="errorCode" value="NOT_WELL_FORMED_XML"/>
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="InputValidateFailure">
+				<Param name="errorCode" value="INVALID_XML" />
+				<Param name="errorDetailCode" sessionKey="failureReason" />
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="InternalXsdError">
+				<Param name="errorCode" value="INTERNAL_XSD_ERROR:NOT_WELL_FORMED_XML"/>
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="InternalXsdFailure">
+				<Param name="errorCode" value="INTERNAL_XSD_ERROR" />
+				<Param name="errorDetailCode" sessionKey="failureReason" />
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="SendXsdError">
+				<Param name="errorCode" value="SEND_XSD_ERROR:NOT_WELL_FORMED_XML"/>
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="SendXsdFailure">
+				<Param name="errorCode" value="SEND_XSD_ERROR" />
+				<Param name="errorDetailCode" sessionKey="failureReason" />
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<FixedResultPipe name="ErrorExit"
+				filename="InputOutputWrapper/emptyErrorResponse.xml">
 				<Forward name="success" path="EXIT" />
 			</FixedResultPipe>
 		</Pipeline>

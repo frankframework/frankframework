@@ -103,7 +103,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
-	 * Provides advice for {@link PipeLineProcessor#processPipeLine(PipeLine, String, Message, PipeLineSession, String)}
+	 * Provides advice for {@link PipeLineProcessor#processPipeLine(org.frankframework.receivers.Receiver, PipeLine, String, Message, PipeLineSession, String)}
 	 */
 	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
