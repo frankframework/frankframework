@@ -94,7 +94,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@Override
-	@ReferTo(FtpFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	default void setKeystore(String keystore) {
 		getFileSystem().setKeystore(keystore);
 	}
@@ -104,7 +104,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@Override
-	@ReferTo(FtpFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	default void setKeystoreType(KeystoreType keystoreType) {
 		getFileSystem().setKeystoreType(keystoreType);
 	}
@@ -114,7 +114,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@Override
-	@ReferTo(FtpFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	default void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		getFileSystem().setKeystoreAuthAlias(keystoreAuthAlias);
 	}
@@ -124,7 +124,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@Override
-	@ReferTo(FtpFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	default void setKeystorePassword(String keystorePassword) {
 		getFileSystem().setKeystorePassword(keystorePassword);
 	}
@@ -134,7 +134,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@Override
-	@ReferTo(FtpFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	default void setKeystoreAlias(String keystoreAlias) {
 		getFileSystem().setKeystoreAlias(keystoreAlias);
 	}
@@ -144,7 +144,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@Override
-	@ReferTo(FtpFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	default void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		getFileSystem().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
@@ -154,7 +154,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@Override
-	@ReferTo(FtpFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	default void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		getFileSystem().setKeystoreAliasPassword(keystoreAliasPassword);
 	}
@@ -164,7 +164,7 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	}
 
 	@Override
-	@ReferTo(FtpFileSystem.class)
+	@ReferTo(HasKeystore.class)
 	default void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		getFileSystem().setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}

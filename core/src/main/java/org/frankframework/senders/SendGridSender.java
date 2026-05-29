@@ -299,7 +299,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystore(String keystore) {
 		httpSession.setKeystore(keystore);
 	}
@@ -320,7 +320,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
 		httpSession.setKeystoreType(keystoreType);
 	}
@@ -331,7 +331,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		httpSession.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
@@ -342,7 +342,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystorePassword(String keystorePassword) {
 		httpSession.setKeystorePassword(keystorePassword);
 	}
@@ -353,7 +353,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAlias(String keystoreAlias) {
 		httpSession.setKeystoreAlias(keystoreAlias);
 	}
@@ -364,7 +364,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		httpSession.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
@@ -375,7 +375,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		httpSession.setKeystoreAliasPassword(keystoreAliasPassword);
 	}
@@ -386,7 +386,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		httpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
