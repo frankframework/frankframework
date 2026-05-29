@@ -51,7 +51,7 @@ import org.frankframework.util.XmlEncodingUtils;
  * <li>If attribute <code>substituteVars</code> is {@code true}, then expressions <code>${...}</code> are substituted using
  * system properties, session variables and application properties. Please note that no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
- * This pipe may convert non-xml characters but it's a text based replace. Find an replace characters should therefore match the input message directly.
+ * This pipe may convert non-xml characters, but it's a text based replace. Find and replace characters should therefore match the input message directly.
  *
  * @ff.tip See {@link Parameter} to see how parameter values are determined.
  * @ff.info Special characters such as {@literal \r} are interpreted by the XML Parser and do not propagate to the FrankElement. In order to use such special characters you could create a property and refer it in the attribute. (e.g. {@code find="${special-property-name}"} ).
@@ -179,7 +179,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Replaces the find and replace values to match the host system's lineSeparator.
+	 * Replaces occurences of the given lineSeperatorSymbol with the host system's lineSeparator in the find and replace values.
 	 * On UNIX systems, it returns {@literal \n}; on Microsoft Windows systems it returns {@literal \r\n}.
 	 * <br/>
 	 * This may be needed when your {@link #setFind(String)} and {@link #setReplace(String)} strings must match the content exactly
