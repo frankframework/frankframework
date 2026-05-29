@@ -66,33 +66,33 @@ public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 
 	default void setKeystore(String keystore) {
 		getKeystoreConfiguration().setKeystoreResource(keystore);
-	};
+	}
 
 	default void setKeystoreType(KeystoreType keystoreType) {
 		getKeystoreConfiguration().setKeystoreType(keystoreType);
-	};
+	}
 
 	default void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		getKeystoreConfiguration().setKeystoreAuthAlias(keystoreAuthAlias);
-	};
+	}
 
 	default void setKeystorePassword(String keystorePassword) {
 		getKeystoreConfiguration().setKeystorePassword(keystorePassword);
-	};
+	}
 
 	default void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		getKeystoreConfiguration().setKeyManagerAlgorithm(keyManagerAlgorithm);
-	};
+	}
 
 	default void setKeystoreAlias(String keystoreAlias) {
 		getKeystoreConfiguration().setKeystoreAlias(keystoreAlias);
-	};
+	}
 
 	default void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		getKeystoreConfiguration().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
-	};
+	}
 
 	default void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		getKeystoreConfiguration().setKeystoreAliasPassword(keystoreAliasPassword);
-	};
+	}
 }
