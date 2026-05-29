@@ -222,12 +222,12 @@ class ReceiverValidatorsTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"false, fail-validator-input, 'Error in [Receiver TEST - InputValidator]: Forward to: name=failure, path=error [fail-validator-input]'",
-			"true, fail-validator-input, 'Error in [Receiver TEST - InputValidator]: Forward to: name=failure, path=error [fail-validator-input]'",
-			"false, fail-wrap-input, 'Error in [Receiver TEST - InputWrapper]: Forward to: name=failure, path=error [wrapping-failedReceiver TEST - InputWrapper[fail-wrap-input]]'",
-			"false, fail-wrap-output, 'Error in [Receiver TEST - OutputWrapper]: Forward to: name=failure, path=error [wrapping-failedReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]]]'",
-			"false, fail-validator-output, 'Error in [Receiver TEST - OutputValidator]: Forward to: name=failure, path=error [wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]'",
-			"true, fail-validator-output, 'Error in [Receiver TEST - OutputValidator]: Forward to: name=failure, path=error [wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]'",
+			"false, fail-validator-input, 'wrapping-successReceiver TEST - OutputWrapper[Error in [Receiver TEST - InputValidator]: Failed in validation of input [fail-validator-input]]'",
+			"true, fail-validator-input, 'Error in [Receiver TEST - OutputValidator]: Failed in validation of output [wrapping-successReceiver TEST - OutputWrapper[Error in [Receiver TEST - InputValidator]: Failed in validation of input [fail-validator-input]]]'",
+			"false, fail-wrap-input, 'wrapping-successReceiver TEST - OutputWrapper[Error in [Receiver TEST - InputWrapper]: Failed in wrapping of input [wrapping-failedReceiver TEST - InputWrapper[fail-wrap-input]]]'",
+			"false, fail-wrap-output, 'Error in [Receiver TEST - OutputWrapper]: Failed in wrapping of output [wrapping-failedReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]]]'",
+			"false, fail-validator-output, 'Error in [Receiver TEST - OutputValidator]: Failed in validation of output [wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]'",
+			"true, fail-validator-output, 'Error in [Receiver TEST - OutputValidator]: Failed in validation of output [wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]'",
 	})
 	void testReceiverWithWrappersAndValidatorsFailures(boolean dualModeValidator, String input, String expectedMessage) throws Exception {
 		// Arrange
