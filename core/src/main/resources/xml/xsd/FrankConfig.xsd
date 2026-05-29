@@ -1812,7 +1812,7 @@ This class sends messages with JMS.</xs:documentation>
           <xs:documentation>Implementation of a AbstractFileSystemSender that enables to manipulate messages in an Exchange folder.
 Uses the MS Graph API to manage a mailbox.
 
-Compared to older versions of the Frank!Framework the &lt;code&gt;DELETE&lt;/code&gt; action was a soft delete. Now it's a hard delete and 
+Compared to older versions of the Frank!Framework the &lt;code&gt;DELETE&lt;/code&gt; action was a soft delete. Now it's a hard delete and
 thus no longer moves the mail item to the &lt;code&gt;Archive&lt;/code&gt; or &lt;code&gt;Deleted items&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -7906,7 +7906,7 @@ This class sends messages with JMS.</xs:documentation>
           <xs:documentation>Implementation of a AbstractFileSystemSender that enables to manipulate messages in an Exchange folder.
 Uses the MS Graph API to manage a mailbox.
 
-Compared to older versions of the Frank!Framework the &lt;code&gt;DELETE&lt;/code&gt; action was a soft delete. Now it's a hard delete and 
+Compared to older versions of the Frank!Framework the &lt;code&gt;DELETE&lt;/code&gt; action was a soft delete. Now it's a hard delete and
 thus no longer moves the mail item to the &lt;code&gt;Archive&lt;/code&gt; or &lt;code&gt;Deleted items&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
