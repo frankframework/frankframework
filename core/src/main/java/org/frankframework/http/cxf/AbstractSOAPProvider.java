@@ -80,7 +80,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 	private static final String WS_ADDR_NS = "https://www.w3.org/2006/03/addressing/ws-addr.xsd";
 
 	private String attachmentXmlSessionKey = null;
-	private Map<String, MessageFactory> factory = new HashMap<>();
+	private final Map<String, MessageFactory> factory = new HashMap<>();
 
 	public static final String SOAP_PROTOCOL_KEY = "soapProtocol";
 
@@ -89,7 +89,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 	protected boolean multipartBackwardsCompatibilityMode = AppConstants.getInstance().getBoolean("WebServiceListener.backwardsCompatibleMultipartNotation", false);
 
 	// WebServiceProviders must have a default public constructor
-	public AbstractSOAPProvider() {
+	protected AbstractSOAPProvider() {
 		log.debug("initiating SOAP Service Provider");
 	}
 
@@ -253,7 +253,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 			handleIncomingAttachmentsLegacy(request.getAttachments(), pipelineSession);
 		} else {
 			MultipartMessages parts = MultipartUtils.parseMultipart(request.getAttachments());
-			parts.messages().forEach(pipelineSession::put);
+			pipelineSession.putAll(parts.messages());
 			pipelineSession.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, parts.multipartXml());
 		}
 
