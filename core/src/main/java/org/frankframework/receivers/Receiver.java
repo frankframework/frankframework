@@ -1366,10 +1366,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 							Message validatedInputMessage = validatedInput.getResult();
 							setPipelineCallerInMessageContext(getListener().getName(), validatedInputMessage);
 							pipeLineResult = adapter.processMessageWithExceptions(messageId, validatedInputMessage, session);
-							pipeLineResult = postProcessResult(pipeLineResult, session);
 						} else {
 							pipeLineResult = validatedInput;
 						}
+						pipeLineResult = postProcessResult(pipeLineResult, session);
 						session.setExitState(pipeLineResult);
 						result = pipeLineResult.getResult();
 
@@ -1501,12 +1501,12 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (validator != null) {
 			PipeRunResult validationResult = validator.validate(message, session, null);
 			if (!validationResult.isSuccessful() || wrapper == null) {
-				return createPipeLineResult(validator, validationResult, null, session);
+				return createPipeLineResult(validator, validationResult, null, session, "validation", "input");
 			}
 			message = validationResult.getResult();
 		}
 		PipeRunResult wrapResult = wrapper.doPipe(message, session);
-		return createPipeLineResult(wrapper, wrapResult, null, session);
+		return createPipeLineResult(wrapper, wrapResult, null, session, "wrapping", "input");
 	}
 
 	private @NonNull PipeLineResult postProcessResult(@NonNull PipeLineResult pipeLineResult, @NonNull PipeLineSession session) throws PipeRunException {
@@ -1519,15 +1519,15 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (wrapper != null) {
 			PipeRunResult wrapResult = wrapper.doPipe(message, session);
 			if (!wrapResult.isSuccessful() || validator == null) {
-				return createPipeLineResult(wrapper, wrapResult, pipeLineResult, session);
+				return createPipeLineResult(wrapper, wrapResult, pipeLineResult, session, "wrapping", "output");
 			}
 			message = wrapResult.getResult();
 		}
 		PipeRunResult validationResult = validator.validate(message, session, null);
-		return createPipeLineResult(validator, validationResult, pipeLineResult, session);
+		return createPipeLineResult(validator, validationResult, pipeLineResult, session, "validation", "output");
 	}
 
-	private @NonNull PipeLineResult createPipeLineResult(@NonNull IPipe pipe, @NonNull PipeRunResult pipeRunResult, @Nullable PipeLineResult originalPipeLineResult, @NonNull PipeLineSession session) throws PipeRunException {
+	private @NonNull PipeLineResult createPipeLineResult(@NonNull IPipe pipe, @NonNull PipeRunResult pipeRunResult, @Nullable PipeLineResult originalPipeLineResult, @NonNull PipeLineSession session, @NonNull String type, @NonNull String direction) throws PipeRunException {
 		if (pipeRunResult.isSuccessful()) {
 			if (originalPipeLineResult == null) {
 				return new PipeLineResult(pipeRunResult.getResult());
@@ -1540,7 +1540,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (!(forwardTarget instanceof PipeLineExit exit)) {
 			throw new IllegalStateException("Validator/Wrapper did not forward to exit");
 		}
-		Message errorMessage = getAdapter().formatErrorMessage("Forward to: name=" + forward.getName() + ", path=" + forward.getPath(), null, pipeRunResult.getResult(), session, pipe);
+		String errorText;
+		if (session.containsKey("failureReason")) {
+			errorText = session.getString("failureReason");
+		} else {
+			errorText = "Failed in %s of %s".formatted(type, direction);
+		}
+		Message errorMessage = getAdapter().formatErrorMessage(errorText, null, pipeRunResult.getResult(), session, pipe);
 		return PipeLineResult.create(exit, errorMessage);
 	}
 

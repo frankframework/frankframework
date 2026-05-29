@@ -271,6 +271,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 			retryTp = TransformerPool.configureTransformer(this, getRetryNamespaceDefs(), getRetryXPath(), null, OutputType.TEXT,false,null);
 		}
 
+		configureSpecialPipes();
+
+		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
+		registerEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
+		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
+	}
+
+	private void configureSpecialPipes() throws ConfigurationException {
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
 		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator && validator.isConfiguredForMixedValidation()) {
@@ -295,10 +303,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 			validatorsAndWrappers.add(outputWrapper);
 		}
 		validatorsAndWrappers.forEach(this::configureElement);
-
-		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
-		registerEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
-		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
 	@SneakyThrows
@@ -312,7 +316,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	// configure wrappers/validators
 	private void configure(IPipe pipe) throws ConfigurationException {
 		if(getPipeLine() == null) {
-			throw new ConfigurationException("unable to configure "+ ClassUtils.nameOf(pipe));
+			throw new ConfigurationException("No pipeline, unable to configure "+ ClassUtils.nameOf(pipe));
 		}
 
 		getPipeLine().configure(pipe);

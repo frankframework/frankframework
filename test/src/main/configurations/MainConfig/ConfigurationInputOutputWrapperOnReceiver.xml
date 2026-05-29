@@ -1,9 +1,8 @@
-<Module>
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
 	<Adapter name="InputOutputWrapperOnReceiver"
 		description="Test the functioning of the InputWrapper and OutputWrapper configured on a Receiver">
-		<SoapErrorMessageFormatter />
 		<Receiver>
-			<JavaListener
+			<JavaListener name="ibis4test-InputOutputWrapperOnReceiver"
 				serviceName="ibis4test-InputOutputWrapperOnReceiver" onException="FORMAT_AND_RETURN" />
 			<InputValidator className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
@@ -23,17 +22,18 @@
 			</InputWrapper>
 			<OutputWrapper
 				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe">
-				<Param name="errorCode" sessionKey="errorCode" />
-				<Param name="errorDetailCode" sessionKey="errorDetailCode" />
+				<Param name="errorCode" value="INVALID_XML" />
+				<Param name="errorDetailCode" sessionKey="failureReason" />
 				<Param name="errorDetailText" sessionKey="errorDetailText" />
 				<Param name="destination" value="ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response" />
 			</OutputWrapper>
 		</Receiver>
+		<SoapErrorMessageFormatter />
 		<Pipeline firstPipe="switchAction">
 			<Exits>
-				<Exit name="EXIT" state="success" />
-				<Exit name="400" state="error" code="400" />
-				<Exit name="500" state="error" code="500" />
+				<Exit name="EXIT" state="SUCCESS" />
+				<Exit name="400" state="ERROR" code="400" />
+				<Exit name="500" state="ERROR" code="500" />
 			</Exits>
 			<SwitchPipe name="switchAction" xpathExpression="Request/@action"/>
 			<FixedResultPipe name="validResponse" filename="InputOutputWrapper/validResponse.xml">
