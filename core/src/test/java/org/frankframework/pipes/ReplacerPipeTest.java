@@ -244,4 +244,14 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 			System.clearProperty("prefix.value.suffix");
 		}
 	}
+
+	@Test
+	public void testConvertingLineEndings() throws Exception {
+		pipe.setFind("\n");
+		pipe.setReplace("");
+		configureAndStartPipe();
+
+		PipeRunResult res = doPipe(pipe, "tralallaal\rlasdlfkakljsdf\nkasdfjasdf\r\niets", session);
+		assertEquals("tralallaal\rlasdlfkakljsdfkasdfjasdf\riets", res.getResult().asString());
+	}
 }

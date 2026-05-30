@@ -19,8 +19,8 @@
 		<aspose.email.version>26.4</aspose.email.version>
 		<aspose.imaging.version>26.5</aspose.imaging.version>
 		<aspose.pdf.version>26.4</aspose.pdf.version>
-		<aspose.slides.version>26.4</aspose.slides.version>
-		<aspose.words.version>26.4</aspose.words.version>
+		<aspose.slides.version>26.5</aspose.slides.version>
+		<aspose.words.version>26.5</aspose.words.version>
 	</properties>
 
 	<dependencies>
