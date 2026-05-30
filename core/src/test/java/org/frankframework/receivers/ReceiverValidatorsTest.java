@@ -75,7 +75,7 @@ class ReceiverValidatorsTest {
 		return listener;
 	}
 
-	private static void addValidators(Receiver<?> receiver, boolean addFailureForwards, boolean dualModeValidation) {
+	private static void addValidators(Receiver<?> receiver, boolean dualModeValidation) {
 		TestDummyValidator inputValidator;
 		if (dualModeValidation) {
 			inputValidator = new TestDummyValidator(true, "fail-validator-input", "InputWrapper[fail-validator-output]");
@@ -86,12 +86,10 @@ class ReceiverValidatorsTest {
 		TestDummyWrapper outputWrapper = new TestDummyWrapper("fail-wrap-output");
 		TestDummyValidator outputValidator = new TestDummyValidator("fail-validator-output");
 
-		if (addFailureForwards) {
-			inputValidator.addForward(new PipeForward("failure", "error"));
-			inputWrapper.addForward(new PipeForward("failure", "error"));
-			outputWrapper.addForward(new PipeForward("failure", "error"));
-			outputValidator.addForward(new PipeForward("failure", "error"));
-		}
+		inputValidator.addForward(new PipeForward("failure", "error"));
+		inputWrapper.addForward(new PipeForward("failure", "error"));
+		outputWrapper.addForward(new PipeForward("failure", "error"));
+		outputValidator.addForward(new PipeForward("failure", "error"));
 
 		receiver.setInputWrapper(inputWrapper);
 		receiver.setOutputWrapper(outputWrapper);
@@ -101,7 +99,8 @@ class ReceiverValidatorsTest {
 		}
 	}
 
-	private static PipeLine createPipeLine(Adapter adapter, boolean expectEmptyResult, boolean skipWrappingValidation) throws ConfigurationException {
+	@SuppressWarnings({ "deprecation", "java:S1874" })
+	private static void createPipeLine(Adapter adapter) throws ConfigurationException {
 		PipeLine pl = SpringUtils.createBean(adapter);
 		adapter.setPipeLine(pl);
 
@@ -114,21 +113,20 @@ class ReceiverValidatorsTest {
 		success.setName("success");
 		success.setState(PipeLine.ExitState.SUCCESS);
 		success.setCode(200);
-		success.setEmpty(expectEmptyResult);
-		success.setSkipValidation(skipWrappingValidation);
-		success.setSkipWrapping(skipWrappingValidation);
+		success.setEmpty(false);
+		success.setSkipValidation(false);
+		success.setSkipWrapping(false);
 		pl.addPipeLineExit(success);
 
 		PipeLineExit error = new PipeLineExit();
 		error.setName("error");
 		error.setState(PipeLine.ExitState.ERROR);
 		error.setCode(400);
-		error.setEmpty(expectEmptyResult);
-		error.setSkipValidation(skipWrappingValidation);
-		error.setSkipWrapping(skipWrappingValidation);
+		error.setEmpty(false);
+		error.setSkipValidation(false);
+		error.setSkipWrapping(false);
 		pl.addPipeLineExit(error);
 
-		return pl;
 	}
 
 	private static void startConfiguration(TestConfiguration configuration, Adapter adapter) {
@@ -142,7 +140,7 @@ class ReceiverValidatorsTest {
 	@Test
 	void testReceiverNoWrappersOrValidators() throws Exception {
 		// Arrange
-		createPipeLine(adapter, false, false);
+		createPipeLine(adapter);
 
 		startConfiguration(configuration, adapter);
 
@@ -162,8 +160,8 @@ class ReceiverValidatorsTest {
 	@Test
 	void testReceiverWrappersOrValidatorsSuccess() throws Exception {
 		// Arrange
-		createPipeLine(adapter, false, false);
-		addValidators(receiver, true, false);
+		createPipeLine(adapter);
+		addValidators(receiver, false);
 		startConfiguration(configuration, adapter);
 
 		Message inputMessage = new Message("input");
@@ -190,8 +188,8 @@ class ReceiverValidatorsTest {
 	})
 	void testReceiverWithWrappersAndValidatorsFailures(boolean dualModeValidator, String input, String expectedMessage) throws Exception {
 		// Arrange
-		createPipeLine(adapter, false, false);
-		addValidators(receiver, true, dualModeValidator);
+		createPipeLine(adapter);
+		addValidators(receiver, dualModeValidator);
 		startConfiguration(configuration, adapter);
 
 		Message inputMessage = new Message(input);
