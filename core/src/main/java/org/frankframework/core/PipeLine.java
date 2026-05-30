@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -305,7 +306,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		}
 	}
 
-	private @Nullable ConfigurationException configureSpecialPipes(ConfigurationException configurationException) throws ConfigurationException {
+	private @Nullable ConfigurationException configureSpecialPipes(@Nullable ConfigurationException configurationException) throws ConfigurationException {
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
 		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator && validator.isConfiguredForMixedValidation()) {
@@ -331,14 +332,17 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			}
 			validatorsAndWrappers.put("OutputWrapper", outputWrapper);
 		}
-		configurationException = validatorsAndWrappers.entrySet().stream()
-				.reduce(configurationException, (ce, entry) -> configureSpecialPipe(entry.getValue(), entry.getKey(), ce), (ce1, ce2) -> ce2);
-		return configurationException;
+		ConfigurationException pipesCE = validatorsAndWrappers.entrySet().stream()
+				.map(entry -> configureSpecialPipe(entry.getKey(), entry.getValue()))
+				.filter(Objects::nonNull)
+				.reduce(PipeLine::suppressException)
+				.orElse(null);
+		return pipesCE == null ? configurationException : suppressException(configurationException, pipesCE);
 	}
 
 	@Nullable
-	private ConfigurationException configureSpecialPipe(@NonNull final IPipe pipe, @NonNull final String name, @Nullable final ConfigurationException configurationException) {
-		log.debug("configuring {}", name);
+	private ConfigurationException configureSpecialPipe(@NonNull final String type, @NonNull final IPipe pipe) {
+		log.debug("configuring {}", type);
 
 		try {
 			PipeForward pf = new PipeForward();
@@ -346,9 +350,9 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			pipe.addForward(pf);
 			configure(pipe);
 		} catch (ConfigurationException e) {
-			return suppressException(configurationException, e);
+			return e;
 		}
-		return configurationException;
+		return null;
 	}
 
 	@NonNull

@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
-import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
@@ -138,15 +137,6 @@ class ReceiverValidatorsTest {
 
 		waitWhileInState(adapter, RunState.STOPPED);
 		waitWhileInState(adapter, RunState.STARTING);
-	}
-
-	private static void validateDefaultPipeForwards(IPipe pipe) {
-		PipeForward successForward = pipe.findForward(PipeForward.SUCCESS_FORWARD_NAME);
-		assertNotNull(successForward);
-
-		PipeForward failureForward = pipe.findForward(PipeForward.FAILURE_FORWARD_NAME);
-		assertNotNull(failureForward);
-		assertEquals("error", failureForward.getPath());
 	}
 
 	@Test
