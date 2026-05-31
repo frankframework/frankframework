@@ -9,7 +9,7 @@ overrides:
   dompurify@<3.4.0: '>=3.4.5'
   serialize-javascript@<7.0.5: ~7.0.5
   uuid@<14.0.0: '>=14.0.0'
-  ws@<8.20.1: ~8.20.1
+  ws@<8.20.1: ~8.21.0
 
 importers:
 
@@ -82,8 +82,8 @@ importers:
         specifier: ^4.6.2
         version: 4.6.2
       markdown-it:
-        specifier: ^14.1.1
-        version: 14.1.1
+        specifier: ^14.2.0
+        version: 14.2.0
       monaco-editor:
         specifier: 0.55.1
         version: 0.55.1
@@ -100,8 +100,8 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       sweetalert2:
-        specifier: ^11.26.24
-        version: 11.26.24
+        specifier: ^11.26.25
+        version: 11.26.25
       tinycon:
         specifier: 0.6.8
         version: 0.6.8
@@ -109,8 +109,8 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
       ws:
-        specifier: ^8.20.1
-        version: 8.20.1
+        specifier: ^8.21.0
+        version: 8.21.0
       zone.js:
         specifier: 0.16.2
         version: 0.16.2
@@ -216,13 +216,13 @@ importers:
         version: 15.15.0
       cypress-multi-reporters:
         specifier: ^2.0.5
-        version: 2.0.5(mocha@11.7.5)
+        version: 2.0.5(mocha@11.7.6)
       mocha:
-        specifier: ^11.7.5
-        version: 11.7.5
+        specifier: ^11.7.6
+        version: 11.7.6
       mochawesome:
         specifier: ^7.1.4
-        version: 7.1.4(mocha@11.7.5)
+        version: 7.1.4(mocha@11.7.6)
       typescript:
         specifier: ~5.9.3
         version: 5.9.3
@@ -3071,8 +3071,8 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  linkify-it@5.0.0:
-    resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
+  linkify-it@5.0.1:
+    resolution: {integrity: sha512-wVoTjP4Q6R0NW5hiZkVJaFZPWgtXfoGF+6LucL3/FtiNjmcHhYjEr5f1Kqjirc1nBW07J/ZuRFumqr2oqccEWg==}
 
   listr2@9.0.5:
     resolution: {integrity: sha512-ME4Fb83LgEgwNw96RKNvKV4VTLuXfoKudAmm2lP8Kk87KaMK0/Xrx/aAkMWmT8mDb+3MlFDspfbCs7adjRxA2g==}
@@ -3148,8 +3148,8 @@ packages:
     resolution: {integrity: sha512-uCbIa8jWWmQZt4dSnEStkVC6gdakiinAm4PiGsywIkguF0eWMdcjDz0ECYhUolFU3pFLOev9VNPCEygydXnddg==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  markdown-it@14.1.1:
-    resolution: {integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==}
+  markdown-it@14.2.0:
+    resolution: {integrity: sha512-1TGiQiJVRQ3NPmZH6sx5Cfnmg6GQm9jvC1ch4TK511NjSJvjzKLzn5pPfZRNZkRPZP0HqCioSndqH8v2nRaWVQ==}
     hasBin: true
 
   marked@14.0.0:
@@ -3258,8 +3258,8 @@ packages:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
     hasBin: true
 
-  mocha@11.7.5:
-    resolution: {integrity: sha512-mTT6RgopEYABzXWFx+GcJ+ZQ32kp4fMf0xvpZIIfSq9Z8lC/++MtcCnQ9t5FP2veYEP95FIYSvW+U9fV4xrlig==}
+  mocha@11.7.6:
+    resolution: {integrity: sha512-nS9xOGbw2I3cjCpxwZAEJ9xK9lmJ08vEkQvLtz4du9ZrF9UrjRpeJGiIgl2Z+Qs++pmB4ecDe48Fwsh+j+j7xA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
 
@@ -3909,8 +3909,8 @@ packages:
     resolution: {integrity: sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==}
     engines: {node: '>=10'}
 
-  sweetalert2@11.26.24:
-    resolution: {integrity: sha512-SLgukW4wicewpW5VOukSXY5Z6DL/z7HCOK2ODSjmQPiSphCN8gJAmh9npoceXOtBRNoDN0xIz+zHYthtfiHmjg==}
+  sweetalert2@11.26.25:
+    resolution: {integrity: sha512-+hunCOJdJ6FLj04T9YSLvvZXRjsvIkTeTKP2e4VF8CaBias961BTnWiSFAy7F/CM5eq3QK2Rraoc5Gzftslvkg==}
 
   synckit@0.11.12:
     resolution: {integrity: sha512-Bh7QjT8/SuKUIfObSXNHNSK6WHo6J1tHCqJsuaFDP7gP0fkzSfTxI8y85JrppZ0h8l0maIgc2tfuZQ6/t3GtnQ==}
@@ -4188,8 +4188,8 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
-  ws@8.20.1:
-    resolution: {integrity: sha512-It4dO0K5v//JtTXuPkfEOaI3uUN87iYPnqo/ZzqCoG3g8uhA66QUMs/SrM0YK7/NAu+r4LMh/9dq2A7k+rHs+w==}
+  ws@8.21.0:
+    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -6197,11 +6197,11 @@ snapshots:
 
   custom-event@1.0.1: {}
 
-  cypress-multi-reporters@2.0.5(mocha@11.7.5):
+  cypress-multi-reporters@2.0.5(mocha@11.7.6):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       lodash: 4.18.1
-      mocha: 11.7.5
+      mocha: 11.7.6
       semver: 7.8.0
     transitivePeerDependencies:
       - supports-color
@@ -6367,7 +6367,7 @@ snapshots:
       cors: 2.8.6
       debug: 4.4.3(supports-color@8.1.1)
       engine.io-parser: 5.2.3
-      ws: 8.20.1
+      ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -7195,7 +7195,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  linkify-it@5.0.0:
+  linkify-it@5.0.1:
     dependencies:
       uc.micro: 2.1.0
 
@@ -7309,11 +7309,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  markdown-it@14.1.1:
+  markdown-it@14.2.0:
     dependencies:
       argparse: 2.0.1
       entities: 4.5.0
-      linkify-it: 5.0.0
+      linkify-it: 5.0.1
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
@@ -7402,7 +7402,7 @@ snapshots:
     dependencies:
       minimist: 1.2.8
 
-  mocha@11.7.5:
+  mocha@11.7.6:
     dependencies:
       browser-stdout: 1.3.1
       chokidar: 4.0.3
@@ -7440,7 +7440,7 @@ snapshots:
       tcomb-validation: 3.4.1
       yargs: 17.7.2
 
-  mochawesome@7.1.4(mocha@11.7.5):
+  mochawesome@7.1.4(mocha@11.7.6):
     dependencies:
       chalk: 4.1.2
       diff: 5.2.2
@@ -7449,7 +7449,7 @@ snapshots:
       lodash.isfunction: 3.0.9
       lodash.isobject: 3.0.2
       lodash.isstring: 4.0.1
-      mocha: 11.7.5
+      mocha: 11.7.6
       mochawesome-report-generator: 6.3.2
       strip-ansi: 6.0.1
       uuid: 14.0.0
@@ -8049,7 +8049,7 @@ snapshots:
   socket.io-adapter@2.5.6:
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
-      ws: 8.20.1
+      ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -8196,7 +8196,7 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
-  sweetalert2@11.26.24: {}
+  sweetalert2@11.26.25: {}
 
   synckit@0.11.12:
     dependencies:
@@ -8424,7 +8424,7 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  ws@8.20.1: {}
+  ws@8.21.0: {}
 
   y18n@5.0.8: {}
 
