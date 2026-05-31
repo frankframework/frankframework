@@ -11,7 +11,7 @@
   "devDependencies": {
     "cypress": "^15.15.0",
     "cypress-multi-reporters": "^2.0.5",
-    "mocha": "^11.7.5",
+    "mocha": "^11.7.6",
     "mochawesome": "^7.1.4",
     "typescript": "~5.9.3"
   },
