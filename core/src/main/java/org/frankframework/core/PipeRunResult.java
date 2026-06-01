@@ -42,14 +42,10 @@ import org.frankframework.stream.Message;
  */
 public class PipeRunResult {
 
-	private final @Getter @NonNull PipeForward pipeForward;
+	private final @Getter @Nullable PipeForward pipeForward;
 	private @Nullable Message result;
 
 	public PipeRunResult(@Nullable PipeForward forward, @Nullable Message result) {
-		// Some methods calling the constructor can have NULL returns in invalid configurations, so rather than putting a @NonNull annotation on the constructors, add the null argument check.
-		if (forward == null) {
-			throw new IllegalArgumentException("forward cannot be null");
-		}
 		this.pipeForward = forward;
 		this.result = result;
 	}

@@ -33,7 +33,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 		super.setUp();
 		pipe = createPipe();
 		SpringUtils.autowireByType(adapter, pipe);
-		pipe.addForward(new PipeForward("success", "READY"));
+		pipe.addForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "READY"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
 		pipeline.addPipe(pipe);
 	}

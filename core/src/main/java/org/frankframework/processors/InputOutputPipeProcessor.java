@@ -63,7 +63,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	 *
 	 * @param pipeLine The PipeLine to which the pipe belongs.
 	 * @param pipe The pipe to be processed.
-	 * @param message The message to be processed.
+	 * @param inputMessage The message to be processed.
 	 * @param pipeLineSession The session of the pipeline execution.
 	 * @param chain The chain of functions to be executed.
 	 * @return The result of processing the pipe.

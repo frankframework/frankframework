@@ -47,9 +47,10 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		return collection;
 	}
 
-	private void createCollector() throws PipeRunException {
+	private void createCollector() throws PipeRunException, ConfigurationException {
 		pipe.setAction(Action.OPEN);
-		pipe.doPipe(null, session);
+		pipe.configure();
+		pipe.doPipe(Message.nullMessage(), session);
 		getCollectionFromSession(); // ensure its been created.
 	}
 
@@ -230,6 +231,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	void testBackwardsCompatibility(@TempDir Path tmpDir) throws Exception {
 		// Arrange
 		pipe.setAction(Action.OPEN);
+		pipe.configure();
 		doPipe("input-is-ignored"); // now passed along, bug ignored...
 		getCollectionFromSession(); // ensure its been created.
 
