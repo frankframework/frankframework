@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { MessageField, MessageStore, Note, StorageService } from '../storage.service';
+import { Message, MessageField, MessageStore, Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -9,6 +9,7 @@ import {
   DataTableColumn,
   DatatableComponent,
   DataTableDataSource,
+  DataTableServerResponseInfo,
 } from '../../../components/datatable/datatable.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
 import { KeyValuePipe, NgClass } from '@angular/common';
@@ -41,6 +42,45 @@ type FieldSearchInfo = {
 type SearchColumn = MessageField & FieldSearchInfo;
 
 type MessageData = MessageStore['messages'][number];
+
+const TEST_API_RESPONSE: DataTableServerResponseInfo<Message> = {
+  data: [
+    {
+      id: '8',
+      originalId: 'fallback-message-id-0a0032d6--7568074c_19e73c3cda7_-536d',
+      correlationId: 'Test Tool correlation id(4)',
+      host: 'mldev-1337qt',
+      insertDate: 1_780_061_273_850,
+      comment:
+        "Pipe [error] <?xml version='1.0' encoding='UTF-8'?>\n<Envelope>\n\t<Header>\n\t\t<MessageID>1</MessageID>\n\t</Header>\n</Envelope>\n",
+      position: 1,
+    },
+    {
+      id: '9',
+      originalId: 'example2',
+      correlationId: 'Test Tool correlation id(4)',
+      host: 'mldev-1337qt',
+      insertDate: 1_780_061_274_000,
+      comment:
+        "Pipe [error] <?xml version='1.0' encoding='UTF-8'?>\n<Envelope>\n\t<Header>\n\t\t<MessageID>1</MessageID>\n\t</Header>\n</Envelope>\n",
+      position: 2,
+    },
+    {
+      id: '10',
+      originalId: 'example3',
+      correlationId: 'Test Tool correlation id(4)',
+      host: 'mldev-1337qt',
+      insertDate: 1_780_061_300_000,
+      comment:
+        "Pipe [error] <?xml version='1.0' encoding='UTF-8'?>\n<Envelope>\n\t<Header>\n\t\t<MessageID>1</MessageID>\n\t</Header>\n</Envelope>\n",
+      position: 3,
+    },
+  ],
+  totalEntries: 3,
+  filteredEntries: 3,
+  offset: 0,
+  size: 3,
+};
 
 @Component({
   selector: 'app-storage-list',
@@ -147,7 +187,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.displayedColumns = [
         ...this.initialDisplayedColumns,
         ...response.fields.map<DataTableColumn<MessageData>>((field) => ({
-          name: field.fieldName ?? field.property,
+          name: /*field.fieldName ?? */ field.property as string,
           property: field.property,
           displayName: field.displayName,
           className: field.type === 'date' ? 'date' : undefined,
@@ -173,13 +213,14 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
           this.storageService.getStorageList(queryParameters).subscribe({
             next: (response) => {
               this.targetStates = response.targetStates ?? {};
-              resolve({
+              /*resolve({
                 data: response.messages,
                 totalEntries: response.totalMessages,
                 filteredEntries: response.recordsFiltered,
                 offset: response.skipMessages,
                 size: response.messages.length,
-              });
+              });*/
+              resolve(TEST_API_RESPONSE);
               this.searching = false;
               this.clearSearchLadda = false;
               for (const message of response.messages) {
