@@ -315,6 +315,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 		return null;
 	}
 
+	@Override
 	public String getKeystore() {
 		return httpSession.getKeystore();
 	}

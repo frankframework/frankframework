@@ -268,5 +268,5 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	default KeystoreConfiguration getKeystoreConfiguration() {
 		// Not implemented yet.
 		return null;
-	};
+	}
 }
