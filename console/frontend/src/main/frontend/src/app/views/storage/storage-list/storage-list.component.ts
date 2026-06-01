@@ -213,14 +213,13 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
           this.storageService.getStorageList(queryParameters).subscribe({
             next: (response) => {
               this.targetStates = response.targetStates ?? {};
-              /*resolve({
+              resolve({
                 data: response.messages,
                 totalEntries: response.totalMessages,
                 filteredEntries: response.recordsFiltered,
                 offset: response.skipMessages,
                 size: response.messages.length,
-              });*/
-              resolve(TEST_API_RESPONSE);
+              });
               this.searching = false;
               this.clearSearchLadda = false;
               for (const message of response.messages) {
