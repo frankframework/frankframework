@@ -697,6 +697,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
-		// TODO not implemented yet
+		this.keystoreConfiguration = keystoreConfiguration;
 	}
 }

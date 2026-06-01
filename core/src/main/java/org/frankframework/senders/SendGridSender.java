@@ -306,13 +306,12 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 
 	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
-		// not implemented yet
+		this.httpSession.setKeystoreConfiguration(keystoreConfiguration);
 	}
 
 	@Override
 	public KeystoreConfiguration getKeystoreConfiguration() {
-		// not implemented yet
-		return null;
+		return httpSession.getKeystoreConfiguration();
 	}
 
 	@Override

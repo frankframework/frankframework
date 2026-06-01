@@ -31,8 +31,8 @@ import lombok.NoArgsConstructor;
 
 import org.frankframework.console.ApiException;
 import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.AbstractMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.util.StreamUtil;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)

@@ -387,6 +387,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
-		// not implemented yet
+		this.keystoreConfiguration = keystoreConfiguration;
 	}
 }

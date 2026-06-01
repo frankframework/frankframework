@@ -18,6 +18,6 @@ public class KeystoreOwner implements HasKeystore {
 
 	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
-		// not implemented yet
+		this.keystoreConfiguration = keystoreConfiguration;
 	}
 }

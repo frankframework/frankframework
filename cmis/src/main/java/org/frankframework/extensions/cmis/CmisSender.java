@@ -233,7 +233,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 
 	private CloseableCmisSession globalSession;
 
-	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
+	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this, createKeystoreConfiguration());
 
 	private @Getter String fileSessionKey;
 
@@ -1010,88 +1010,18 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 
 	@Override
 	public void setKeystore(String keystore) {
-		sessionBuilder.setKeystore(keystore);
+		sessionBuilder.getKeystoreConfiguration().setKeystoreResource(keystore);
 	}
 
 	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
-		// not implemented yet
+		sessionBuilder.setKeystoreConfiguration(keystoreConfiguration);
 	}
 
 	@Override
 	public KeystoreConfiguration getKeystoreConfiguration() {
-		// not implemented yet
-		return null;
+		return sessionBuilder.getKeystoreConfiguration();
 	}
-
-	@Override
-	public String getKeystore() {
-		return sessionBuilder.getKeystore();
-	}
-
-	@Override
-	public void setKeystoreType(KeystoreType keystoreType) {
-		sessionBuilder.setKeystoreType(keystoreType);
-	}
-	@Override
-	public KeystoreType getKeystoreType() {
-		return sessionBuilder.getKeystoreType();
-	}
-
-	@Override
-	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
-		sessionBuilder.setKeystoreAuthAlias(keystoreAuthAlias);
-	}
-	@Override
-	public String getKeystoreAuthAlias() {
-		return sessionBuilder.getKeystoreAuthAlias();
-	}
-
-	@Override
-	public void setKeystorePassword(String keystorePassword) {
-		sessionBuilder.setKeystorePassword(keystorePassword);
-	}
-	@Override
-	public String getKeystorePassword() {
-		return sessionBuilder.getKeystorePassword();
-	}
-
-	@Override
-	public void setKeystoreAlias(String keystoreAlias) {
-		sessionBuilder.setKeystoreAlias(keystoreAlias);
-	}
-	@Override
-	public String getKeystoreAlias() {
-		return sessionBuilder.getKeystoreAlias();
-	}
-
-	@Override
-	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
-		sessionBuilder.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
-	}
-	@Override
-	public String getKeystoreAliasAuthAlias() {
-		return sessionBuilder.getKeystoreAliasAuthAlias();
-	}
-
-	@Override
-	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
-		sessionBuilder.setKeystoreAliasPassword(keystoreAliasPassword);
-	}
-	@Override
-	public String getKeystoreAliasPassword() {
-		return sessionBuilder.getKeystoreAliasPassword();
-	}
-
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		sessionBuilder.setKeyManagerAlgorithm(keyManagerAlgorithm);
-	}
-	@Override
-	public String getKeyManagerAlgorithm() {
-		return sessionBuilder.getKeyManagerAlgorithm();
-	}
-
 
 	@Override
 	public void setTruststore(String truststore) {

@@ -56,9 +56,8 @@ import org.frankframework.stream.Message;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
-	public static final String PARAMETER_SIGNATURE="signature";
-	public static final String ALGORITHM_DEFAULT = "SHA256withRSA";
-
+	private static final String PARAMETER_SIGNATURE="signature";
+	private static final String ALGORITHM_DEFAULT = "SHA256withRSA";
 
 	private @Getter Action action = Action.SIGN;
 	private @Getter String algorithm;
@@ -73,7 +72,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
 	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
-		// not implemented yet
+		this.keystoreConfiguration = keystoreConfiguration;
 	}
 
 	public enum Action {
