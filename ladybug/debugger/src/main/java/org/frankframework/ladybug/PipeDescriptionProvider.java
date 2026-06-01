@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
 import org.frankframework.components.FrankPlugin;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.digester.ConfigurationDigester;
-import org.frankframework.core.HasName;
+import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.util.ClassLoaderUtils;
@@ -88,7 +88,7 @@ public class PipeDescriptionProvider {
 	 * Get a PipeDescription object for the specified pipe. The returned object
 	 * is cached.
 	 */
-	public PipeDescription getPipeDescription(PipeLine pipeLine, HasName pipe) {
+	public PipeDescription getPipeDescription(PipeLine pipeLine, IPipe pipe) {
 		PipeInfo pipeInfo = getInfo(pipeLine, pipe.getName());
 		String checkpointName = pipeInfo.checkpointName;
 		String xpathExpression = pipeInfo.getXPath(pipeLine);
