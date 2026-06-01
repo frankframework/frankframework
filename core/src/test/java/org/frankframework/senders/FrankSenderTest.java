@@ -36,6 +36,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
@@ -526,7 +527,7 @@ class FrankSenderTest {
 			@Override
 			public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 				semaphore.release();
-				return new PipeRunResult();
+				return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD_NAME), message);
 			}
 		};
 		pipe.setName("test-pipe");

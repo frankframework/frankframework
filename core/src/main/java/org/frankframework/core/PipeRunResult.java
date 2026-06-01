@@ -17,9 +17,9 @@ package org.frankframework.core;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.stream.Message;
@@ -42,24 +42,23 @@ import org.frankframework.stream.Message;
  */
 public class PipeRunResult {
 
-	private @Getter @Setter PipeForward pipeForward;
-	private Message result;
+	private final @Getter @NonNull PipeForward pipeForward;
+	private @Nullable Message result;
 
-	public PipeRunResult() {
-		super();
-	}
-
-	public PipeRunResult(PipeForward forward, Message result) {
+	public PipeRunResult(@Nullable PipeForward forward, @Nullable Message result) {
+		// Some methods calling the constructor can have NULL returns in invalid configurations, so rather than putting a @NonNull annotation on the constructors, add the null argument check.
+		if (forward == null) {
+			throw new IllegalArgumentException("forward cannot be null");
+		}
 		this.pipeForward = forward;
 		this.result = result;
 	}
 
-	public PipeRunResult(PipeForward forward, Object result) {
-		this.pipeForward = forward;
-		setResult(result);
+	public PipeRunResult(@Nullable PipeForward forward, @Nullable Object result) {
+		this(forward, Message.asMessage(result));
 	}
 
-	public void setResult(Object result) {
+	public final void setResult(@Nullable Object result) {
 		if (result instanceof Message message) {
 			this.result = message;
 		} else {
@@ -67,7 +66,7 @@ public class PipeRunResult {
 		}
 	}
 
-	public void setResult(Message result) {
+	public void setResult(@Nullable Message result) {
 		this.result = result;
 	}
 
@@ -80,7 +79,7 @@ public class PipeRunResult {
 	}
 
 	@Override
-	public String toString() {
+	public @NonNull String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
