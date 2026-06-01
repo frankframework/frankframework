@@ -13,20 +13,21 @@ import { toObservable } from '@angular/core/rxjs-interop';
   styleUrl: './tab-list.component.scss',
 })
 export class ConfigurationTabListComponent extends TabListComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() queryParamName = 'name';
-  @Input() showAll = false;
-  @Input() filterIAF_Util = false;
+  @Input() public queryParamName = 'name';
 
+  private subscriptions: Subscription | null = null;
+  private configurationsList: string[] = [];
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly router: Router = inject(Router);
   private readonly appService: AppService = inject(AppService);
-  private adapters$ = toObservable(this.appService.adapters);
-  private subscriptions: Subscription | null = null;
-  private configurationsList: string[] = [];
+  private readonly adapters$ = toObservable(this.appService.adapters);
 
   @Input({ required: true })
   set configurations(configurations: Configuration[]) {
-    const tabs = configurations.map((configuration) => configuration.name);
+    const hideConfigurations = this.getHiddenConfigurationsList();
+    const tabs = configurations
+      .map((configuration) => configuration.name)
+      .filter((configuration) => !hideConfigurations.has(configuration));
     this.tabs = tabs;
     this.configurationsList = tabs;
   }
@@ -85,13 +86,12 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   }
 
   private processTabList(adapters: Record<string, Adapter>): void {
-    if (!this.showAll) {
-      const configurationLengths = this.calculateConfigurationLengths(adapters);
-      this.tabs = this.configurationsList.filter((configuration) => {
-        if (configuration === 'IAF_Util' && this.filterIAF_Util) return false;
-        return configurationLengths[configuration] > 0;
-      });
-    }
+    const hideConfigurations = this.getHiddenConfigurationsList();
+    const configurationLengths = this.calculateConfigurationLengths(adapters);
+    this.tabs = this.configurationsList.filter((configuration) => {
+      if (hideConfigurations.has(configuration)) return false;
+      return configurationLengths[configuration] > 0;
+    });
   }
 
   private calculateConfigurationLengths(adapters: Record<string, Adapter>): Record<string, number> {
@@ -102,5 +102,13 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
       configurationLengths[configuration]++;
     }
     return configurationLengths;
+  }
+
+  private getHiddenConfigurationsList(): Set<string> {
+    const appConstants = this.appService.appConstants();
+    const hideConfigurationsString = appConstants['application.console.status.hide'] ?? null;
+    if (hideConfigurationsString)
+      return new Set(hideConfigurationsString.split(',').map((configuration) => configuration.trim()));
+    return new Set();
   }
 }

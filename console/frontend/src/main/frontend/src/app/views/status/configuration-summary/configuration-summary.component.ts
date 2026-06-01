@@ -1,4 +1,4 @@
-import { Component, inject, Input, Signal } from '@angular/core';
+import { Component, inject, Input, OnChanges, Signal } from '@angular/core';
 import { AppService, MessageSummary, Summary } from '../../../app.service';
 import { NgClass } from '@angular/common';
 import { FlowComponent } from '../flow/flow.component';
@@ -12,7 +12,7 @@ import { faCheckSquare as faCheckSquareO, faStopCircle as faStopCircleO } from '
   styleUrl: './configuration-summary.component.scss',
   imports: [NgClass, FlowComponent, FaIconComponent],
 })
-export class ConfigurationSummaryComponent {
+export class ConfigurationSummaryComponent implements OnChanges {
   @Input({ required: true }) isConfigStubbed: Record<string, boolean> = {};
   @Input({ required: true }) isConfigReloading: Record<string, boolean> = {};
   @Input({ required: true }) isConfigAutoReloadable: Record<string, boolean> = {};
@@ -20,9 +20,10 @@ export class ConfigurationSummaryComponent {
   @Input({ required: true }) configurationFlowDiagram: string | null = null;
   @Input({ required: true }) reloading = false;
 
-  protected adapterSummarySignal: Signal<Summary>;
-  protected receiverSummarySignal: Signal<Summary>;
-  protected messageSummarySignal: Signal<MessageSummary>;
+  protected title = 'Configuration';
+  protected readonly adapterSummarySignal: Signal<Summary>;
+  protected readonly receiverSummarySignal: Signal<Summary>;
+  protected readonly messageSummarySignal: Signal<MessageSummary>;
   protected readonly faCheckSquare = faCheckSquare;
   protected readonly faCheckSquareO = faCheckSquareO;
   protected readonly faStopCircle = faStopCircle;
@@ -35,5 +36,9 @@ export class ConfigurationSummaryComponent {
     this.adapterSummarySignal = this.appService.adapterSummary;
     this.receiverSummarySignal = this.appService.receiverSummary;
     this.messageSummarySignal = this.appService.messageSummary;
+  }
+
+  ngOnChanges(): void {
+    this.title = this.selectedConfiguration === 'All' ? 'Application' : 'Configuration';
   }
 }

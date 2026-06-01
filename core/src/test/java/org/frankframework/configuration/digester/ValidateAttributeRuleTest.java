@@ -28,6 +28,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
@@ -156,6 +158,20 @@ public class ValidateAttributeRuleTest {
 		assertEquals("", bean.getTestString(), "empty string value should be empty string");
 		assertEquals(1234, bean.getTestInteger(), "empty int value should be ignored"); // May trigger cannot be converted to int exception
 		assertFalse(bean.isTestBoolean(), "empty bool value should be ignored"); // may trigger a default warning exception
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: " + configWarnings.getWarnings());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"\r", "\n", "\r\n\t"})
+	public void testSpecialCharactersInAttribute(String attrValue) throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("testString", attrValue);
+
+		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
+
+		assertEquals(attrValue, bean.getTestString());
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: " + configWarnings.getWarnings());

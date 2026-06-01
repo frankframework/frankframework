@@ -32,8 +32,8 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
-import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.management.bus.message.AbstractMessage;
+import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.FileUtils;
 

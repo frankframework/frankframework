@@ -1,7 +1,7 @@
 <div class="ibox float-e-margins m-n">
   <div class="ibox-title summary">
     <h4 class="col-md-9">
-      Configuration Summary
+      {{ title }} Summary
       @if (isConfigStubbed[selectedConfiguration]) {
         <span class="label label-warning">STUBBED</span>
       }
@@ -12,7 +12,7 @@
         <span class="label label-warning">RELOADING</span>
       }
     </h4>
-    <h4 class="hidden-sm col-md-3">Configuration Flow</h4>
+    <h4 class="hidden-sm col-md-3">{{ title }} Flow</h4>
   </div>
   <div class="ibox-content">
     <div class="row">
