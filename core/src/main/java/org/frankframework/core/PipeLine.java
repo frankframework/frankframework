@@ -492,10 +492,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		}
 
 		validatorsAndWrappers.forEach(this::startPipe);
-
-		for (int i = 0; i < pipes.size(); i++) {
-			startPipe("Pipe", getPipe(i));
-		}
+		pipes.forEach(pipe -> startPipe("Pipe", pipe));
 
 		super.start();
 		log.info("successfully started pipeline");
@@ -528,10 +525,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		super.stop();
 
 		validatorsAndWrappers.forEach(this::stopPipe);
-
-		for (int i = 0; i < pipes.size(); i++) {
-			stopPipe("Pipe", getPipe(i));
-		}
+		pipes.forEach(pipe -> stopPipe("Pipe", pipe));
 
 		if (cache != null) {
 			log.debug("closing cache");
@@ -580,7 +574,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	protected void additionalToString(StringBuilder result) {
 		result.append("[startPipe=").append(firstPipe).append("]");
 		result.append("[transactionAttribute=").append(getTransactionAttribute()).append("]");
-		for (int i=0; i<pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			result.append("pipe").append(i).append("=[").append(getPipe(i).getName()).append("]");
 		}
 		for (PipeLineExit pe : pipeLineExits.values()) {
