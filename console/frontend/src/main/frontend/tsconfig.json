@@ -18,7 +18,7 @@
     "experimentalDecorators": true,
     "moduleResolution": "bundler",
     "importHelpers": true,
-    "target": "ES2022",
+    "target": "ES2023",
     "module": "ES2022",
     "useDefineForClassFields": false,
     "lib": [

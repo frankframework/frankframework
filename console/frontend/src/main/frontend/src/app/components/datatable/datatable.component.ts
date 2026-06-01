@@ -109,6 +109,14 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   }
 
   protected onColumnSort(event: SortEvent): void {
+    if (this.datasource.options.serverSide) {
+      this.datasource.updateTable((renderedData) => {
+        if (event.direction === 'NONE') return null;
+        return basicAnyValueTableSort(renderedData, this.sortableHeaders, event);
+      });
+      return;
+    }
+
     if (this.originalData === null) this.originalData = this.datasource.data;
     this.datasource.data = basicAnyValueTableSort(this.originalData, this.sortableHeaders, event);
   }
@@ -133,7 +141,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
     totalEntries: 0,
   });
   private _entriesInfo$ = this._entriesInfo.asObservable();
-  private filteredData: T[] = [];
+  private _filteredData: T[] = [];
   private _currentPage = 1;
   private _totalPages = 0;
   private serverRequestFn?: (value: DataTableServerRequestInfo) => PromiseLike<DataTableServerResponseInfo<T>>;
@@ -197,7 +205,14 @@ export class DataTableDataSource<T> extends DataSource<T> {
     this.updateRenderedData(this.data);
   }
 
-  updateTable(): void {
+  updateTable(clientSortFunction?: (renderedData: T[]) => T[] | null): void {
+    if (clientSortFunction) {
+      const sortedRenderedData = clientSortFunction(this._renderData.value);
+      if (sortedRenderedData) {
+        this._renderData.next(sortedRenderedData);
+        return;
+      }
+    }
     this.updateRenderedData(this.data);
   }
 
@@ -248,18 +263,18 @@ export class DataTableDataSource<T> extends DataSource<T> {
     this._renderData.next(paginatedData);
     this._entriesInfo.next({
       minPageEntry: (this.currentPage - 1) * this.options.size + 1,
-      maxPageEntry: Math.min(this.currentPage * this.options.size, this.filteredData.length),
-      totalFilteredEntries: this.filteredData.length,
+      maxPageEntry: Math.min(this.currentPage * this.options.size, this._filteredData.length),
+      totalFilteredEntries: this._filteredData.length,
       totalEntries: this.data.length,
     });
     return paginatedData;
   }
 
   private filterData(data: T[]): T[] {
-    this.filteredData = this.filter === '' ? data : data.filter((row) => this.filterPredicate(row, this.filter));
-    this._totalPages = Math.ceil(this.filteredData.length / this.options.size);
-    this._renderData.next(this.filteredData);
-    return this.filteredData;
+    this._filteredData = this.filter === '' ? data : data.filter((row) => this.filterPredicate(row, this.filter));
+    this._totalPages = Math.ceil(this._filteredData.length / this.options.size);
+    this._renderData.next(this._filteredData);
+    return this._filteredData;
   }
 
   // from https://github.com/angular/components/blob/main/src/material/table/table-data-source.ts#L231
