@@ -269,7 +269,7 @@ public class LadybugReportGenerator implements InitializingBean {
 	 * Return the sanitized ClassName for the given object.
 	 * Usually simply the class of the given instance, but the original class in case of a CGLIB-generated subclass.
 	 */
-	private static String classNameOf(Object object) {
+	private static @NonNull String classNameOf(@NonNull Object object) {
 		return ClassUtils.getUserClass(object).getName();
 	}
 }

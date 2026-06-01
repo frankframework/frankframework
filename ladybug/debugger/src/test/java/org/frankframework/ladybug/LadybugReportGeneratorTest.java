@@ -19,7 +19,7 @@ public class LadybugReportGeneratorTest {
 	private static final String CID = "abc-123";
 
 	@Test
-	void getInputFromFixedValue() throws IOException {
+	void getInputFromFixedValue() {
 		LadybugReportGenerator generator = new LadybugReportGenerator();
 		TestTool testtool = mock(TestTool.class);
 
@@ -62,7 +62,7 @@ public class LadybugReportGeneratorTest {
 	}
 
 	@Test
-	void getDefaultValue() throws IOException {
+	void getDefaultValue() {
 		LadybugReportGenerator generator = new LadybugReportGenerator();
 		TestTool testtool = mock(TestTool.class);
 
