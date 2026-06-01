@@ -20,12 +20,14 @@ import java.util.Objects;
 
 import org.jspecify.annotations.NonNull;
 
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
+import org.frankframework.doc.Protected;
 import org.frankframework.stream.Message;
 
 /**
@@ -115,5 +117,17 @@ public class IsXmlPipe extends AbstractPipe {
 	 */
 	public void setElseForwardOnEmptyInput(boolean b) {
 		elseForwardOnEmptyInput = b;
+	}
+
+	@Override
+	public boolean isPreserveInput() {
+		return true;
+	}
+
+	@Protected
+	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
+	@Override
+	public void setPreserveInput(boolean preserveInput) {
+		// Ignore
 	}
 }

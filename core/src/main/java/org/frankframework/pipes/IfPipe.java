@@ -37,6 +37,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
+import org.frankframework.doc.Protected;
 import org.frankframework.json.JsonException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.ParameterList;
@@ -414,5 +415,17 @@ public class IfPipe extends AbstractPipe {
 	 */
 	public void setDefaultMediaType(SupportedMediaType defaultMediaType) {
 		this.defaultMediaType = defaultMediaType;
+	}
+
+	@Override
+	public boolean isPreserveInput() {
+		return true;
+	}
+
+	@Protected
+	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
+	@Override
+	public void setPreserveInput(boolean preserveInput) {
+		// Ignore
 	}
 }

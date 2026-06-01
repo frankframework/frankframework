@@ -17,10 +17,12 @@ package org.frankframework.pipes;
 
 import org.jspecify.annotations.NonNull;
 
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Protected;
 import org.frankframework.stream.Message;
 
 /**
@@ -45,7 +47,7 @@ public class DelayPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "delay interrupted", e);
 		}
 		log.info("ends waiting for {} ms.", getDelayTime());
-		return new PipeRunResult(getSuccessForward(),message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 
@@ -60,5 +62,15 @@ public class DelayPipe extends FixedForwardPipe {
 		return delayTime;
 	}
 
+	@Override
+	public boolean isPreserveInput() {
+		return true;
+	}
 
+	@Protected
+	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
+	@Override
+	public void setPreserveInput(boolean preserveInput) {
+		// Ignore
+	}
 }
