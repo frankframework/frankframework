@@ -119,8 +119,9 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
         pipe.setDefaultUserid(defaultId);
 
         try {
+			pipe.configure();
 			return doPipe(pipe, input, session).getResult().asString();
-		} catch (IOException e) {
+		} catch (IOException | ConfigurationException e) {
 			throw new PipeRunException(pipe, "cannot convert results", e);
 		}
     }
