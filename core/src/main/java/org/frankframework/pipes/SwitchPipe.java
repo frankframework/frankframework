@@ -36,7 +36,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
-import org.frankframework.doc.Protected;
 import org.frankframework.json.JsonException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.ParameterList;
@@ -51,6 +50,7 @@ import org.frankframework.util.XmlUtils;
 /**
  * Selects an exitState, based on either the content of the input message, by means
  * of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.
+ * This pipes returns it's input.
  *
  * @ff.tip When using a jPath, the pipe input message will be set to the JSON object called {@code $}, so if you wish to switch on field 'key' in: {@code { key:'forwardname'}} use {@code $.key}.
  *
@@ -292,17 +292,5 @@ public class SwitchPipe extends AbstractPipe {
 	 */
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
-	}
-
-	@Override
-	public boolean isPreserveInput() {
-		return true;
-	}
-
-	@Protected
-	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
-	@Override
-	public void setPreserveInput(boolean preserveInput) {
-		// Ignore
 	}
 }

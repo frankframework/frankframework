@@ -42,15 +42,11 @@ public class EchoPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	@Override
-	public boolean isPreserveInput() {
-		return true;
-	}
-
 	@Protected
-	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
+	@Deprecated
+	@ConfigurationWarning("This property has no effect on this pipe, because the pipe has no side-effects and always returns the input message.")
 	@Override
 	public void setPreserveInput(boolean preserveInput) {
-		// Ignore
+		super.setPreserveInput(preserveInput);
 	}
 }

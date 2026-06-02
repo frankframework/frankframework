@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -151,6 +150,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 	@MethodSource("messageSource")
 	@ParameterizedTest
+	@SuppressWarnings("removal")
 	void testWithCustomThenForward(Message message) throws Exception {
 		String forwardName = "someText";
 		pipe.setThenForwardName(forwardName);
@@ -163,6 +163,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 	@MethodSource("messageSource")
 	@ParameterizedTest
+	@SuppressWarnings("removal")
 	void testWithCustomElseForward(Message message) throws Exception {
 		String forwardName = "someText";
 		pipe.setElseForwardName(forwardName);
@@ -401,17 +402,6 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 		// Assert
 		assertEquals("then", result.getPipeForward().getName());
-	}
-
-	@Test
-	void testPreserveInputIsAlwaysTrue() {
-		// True by default
-		assertTrue(pipe.isPreserveInput());
-
-		pipe.setPreserveInput(false);
-
-		// Cannot be set to false
-		assertTrue(pipe.isPreserveInput());
 	}
 
 	private static Message getJsonMessage() {

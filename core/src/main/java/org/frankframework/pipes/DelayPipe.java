@@ -26,7 +26,7 @@ import org.frankframework.doc.Protected;
 import org.frankframework.stream.Message;
 
 /**
- * Pipe that sleeps for a specified time, which defaults to 5000 msecs.
+ * Pipe that sleeps for a specified time, which defaults to 5000 msecs. The pipe echos back its input message.
  * It is useful for testing purposes.
  *
  * @author L180564 - Johan Verrips
@@ -62,13 +62,8 @@ public class DelayPipe extends FixedForwardPipe {
 		return delayTime;
 	}
 
-	@Override
-	public boolean isPreserveInput() {
-		return true;
-	}
-
 	@Protected
-	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
+	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the input message")
 	@Override
 	public void setPreserveInput(boolean preserveInput) {
 		// Ignore

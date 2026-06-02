@@ -20,20 +20,18 @@ import java.util.Objects;
 
 import org.jspecify.annotations.NonNull;
 
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
-import org.frankframework.doc.Protected;
 import org.frankframework.stream.Message;
 
 /**
  * Selects an exitState, based on whether the input is an XML string.
  * The input is an XML string if it, after removing leading white-space characters, starts with '&lt;'.
- *
+ * The input message is also the output message.
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3
@@ -117,17 +115,5 @@ public class IsXmlPipe extends AbstractPipe {
 	 */
 	public void setElseForwardOnEmptyInput(boolean b) {
 		elseForwardOnEmptyInput = b;
-	}
-
-	@Override
-	public boolean isPreserveInput() {
-		return true;
-	}
-
-	@Protected
-	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
-	@Override
-	public void setPreserveInput(boolean preserveInput) {
-		// Ignore
 	}
 }

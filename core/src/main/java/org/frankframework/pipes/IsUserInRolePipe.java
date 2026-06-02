@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -31,13 +30,13 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
-import org.frankframework.doc.Protected;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
 
 /**
  * Pipe that checks if the calling user has a specified role.
  * Uses the PipeLineSessions methods.
+ * The input message is also the output message.
  * <p>
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as the role.
@@ -118,17 +117,5 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 	/** The J2EE role(s) to check. If the user is in multiple roles, the first specified role will be matched. */
 	public void setRole(String string) {
 		role = string;
-	}
-
-	@Override
-	public boolean isPreserveInput() {
-		return true;
-	}
-
-	@Protected
-	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
-	@Override
-	public void setPreserveInput(boolean preserveInput) {
-		// Ignore
 	}
 }

@@ -21,13 +21,11 @@ import org.jspecify.annotations.NonNull;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
-import org.frankframework.doc.Protected;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -36,6 +34,7 @@ import org.frankframework.stream.Message;
 /**
  * Puts the input or the <code>{@link #setValue(String) value}</code> in the PipeLineSession, under the key specified by
  * <code>{@link #setSessionKey(String) sessionKey}</code>. Additionally, stores parameter values in the PipeLineSession.
+ * This pipe returns its input as the output.
  *
  * @author Johan Verrips
  * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name
@@ -92,17 +91,5 @@ public class PutInSessionPipe extends FixedForwardPipe {
 	/** Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored */
 	public void setValue(String value) {
 		this.value = value;
-	}
-
-	@Override
-	public boolean isPreserveInput() {
-		return true;
-	}
-
-	@Protected
-	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
-	@Override
-	public void setPreserveInput(boolean preserveInput) {
-		// Ignore
 	}
 }

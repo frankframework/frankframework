@@ -37,7 +37,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
-import org.frankframework.doc.Protected;
 import org.frankframework.json.JsonException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.ParameterList;
@@ -47,7 +46,7 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
 /**
- * <p>Selects a forward based on an expression. The expression type is coupled to the mediaType:</p>
+ * <p>Selects a forward based on an expression, and passes the input message on to that forward. The expression type is coupled to the mediaType:</p>
  * <ul>
  *     <li>XML (application/xml) uses Xpath.</li>
  *     <li>JSON (application/json) uses jsonPath.</li>
@@ -127,7 +126,7 @@ import org.frankframework.util.XmlUtils;
  * <p>Without an expression, the default behaviour is to assume the input is a string. The code will try to match the string to an optional regular expression
  * or tries to match the string value to the optional expressionValue.</p>
  *
- * @ff.note Some behaviour has been slightly modified compared to XmlIf!
+ * @ff.note Some behaviour has been slightly modified compared to {@link XmlIf}!
  *
  * @see <a href="https://github.com/json-path/JsonPath">JsonPath / Jayway implementation including examples</a>
  * @see <a href="https://jsonpath.fly.dev/">JsonPath online evaluator</a>
@@ -415,17 +414,5 @@ public class IfPipe extends AbstractPipe {
 	 */
 	public void setDefaultMediaType(SupportedMediaType defaultMediaType) {
 		this.defaultMediaType = defaultMediaType;
-	}
-
-	@Override
-	public boolean isPreserveInput() {
-		return true;
-	}
-
-	@Protected
-	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the original input message")
-	@Override
-	public void setPreserveInput(boolean preserveInput) {
-		// Ignore
 	}
 }
