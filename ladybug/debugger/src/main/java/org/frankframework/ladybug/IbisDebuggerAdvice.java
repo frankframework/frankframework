@@ -479,7 +479,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	private Message debugGetInputFrom(PipeLineSession pipeLineSession, String correlationId, Message input, String inputFromSessionKey, String inputFromFixedValue, String defaultValue) {
 		Message result;
 		if (StringUtils.isNotEmpty(inputFromFixedValue)) {
-			result =  Message.asMessage(reportGenerator.getInputFromFixedValue(correlationId, inputFromFixedValue));
+			result = new Message(reportGenerator.getInputFromFixedValue(correlationId, inputFromFixedValue));
 		} else if (StringUtils.isNotEmpty(inputFromSessionKey)) {
 			result = (Message)reportGenerator.getInputFromSessionKey(correlationId, inputFromSessionKey, Message.asMessage(pipeLineSession.get(inputFromSessionKey)));
 		} else {
@@ -487,7 +487,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 
 		if (StringUtils.isNotEmpty(defaultValue) && Message.isEmpty(result)) {
-			return Message.asMessage(reportGenerator.getDefaultValue(correlationId, defaultValue));
+			return new Message(reportGenerator.getDefaultValue(correlationId, defaultValue));
 		}
 		return result;
 	}

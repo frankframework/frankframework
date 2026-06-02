@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -62,7 +63,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	 *
 	 * @param pipeLine The PipeLine to which the pipe belongs.
 	 * @param pipe The pipe to be processed.
-	 * @param message The message to be processed.
+	 * @param inputMessage The message to be processed.
 	 * @param pipeLineSession The session of the pipeline execution.
 	 * @param chain The chain of functions to be executed.
 	 * @return The result of processing the pipe.
@@ -73,7 +74,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	@NonNull
 	@Override
 	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull final Message inputMessage, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
-		Message originalMessage = inputMessage;
 
 		// Get the input message for the pipe to be processed, does not return null.
 		Message message = getInputFrom(pipe, inputMessage, pipeLineSession);
@@ -90,7 +90,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 				throw new PipeRunException(pipe, "Pipe [%s] has no success forward".formatted(pipe.getName()));
 			}
 			log.info("skipped pipe processing for adapter [{}] pipe [{}], next pipe: [{}]", pipeLine::getAdapter, pipe::getName, successForward::getName);
-			return new PipeRunResult(successForward, originalMessage);
+			return new PipeRunResult(successForward, inputMessage);
 		}
 
 		// Do the actual pipe processing.
@@ -98,7 +98,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 		// Post processing.
 		try {
-			return postProcessPipeResult(pipe, pipeLineSession, pipeRunResult, originalMessage);
+			return postProcessPipeResult(pipe, pipeLineSession, pipeRunResult, inputMessage);
 		} finally {
 			if (pipe.isWriteToSecLog()) {
 				SEC_LOG.info("adapter [{}] pipe [{}]{}", pipeLine::getAdapter, pipe::getName, () -> computeSessionKeys(pipeLineSession, pipe));
@@ -106,7 +106,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		}
 	}
 
-	private String computeSessionKeys(PipeLineSession pipeLineSession, IPipe pipe) {
+	private @NonNull String computeSessionKeys(@NonNull PipeLineSession pipeLineSession, @NonNull IPipe pipe) {
 		if (pipe.getSecLogSessionKeys() == null) {
 			return "";
 		}
@@ -114,19 +114,25 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 				Collectors.joining(",")) + "]";
 	}
 
-	private PipeRunResult postProcessPipeResult(IPipe pipe, PipeLineSession pipeLineSession, PipeRunResult pipeRunResult, Message originalMessage) throws PipeRunException {
-		if (pipe.isRestoreMovedElements()) {
-			processRestoreMovedElements(pipe, pipeLineSession, pipeRunResult);
-		}
-
-		if (pipe.getChompCharSize() != null || pipe.getElementToMove() != null || pipe.getElementToMoveChain() != null) {
-			processMessageCompaction(pipe, pipeLineSession, pipeRunResult);
-		}
-
-		if (StringUtils.isNotEmpty(pipe.getStoreResultInSessionKey())) {
-			log.debug("storing result in session under key [{}]", pipe::getStoreResultInSessionKey);
+	private @NonNull PipeRunResult postProcessPipeResult(@NonNull IPipe pipe, @NonNull PipeLineSession pipeLineSession, @NonNull PipeRunResult pipeRunResult, @NonNull Message originalMessage) throws PipeRunException {
+		if (!pipe.isPreserveInput() || StringUtils.isNotEmpty(pipe.getStoreResultInSessionKey())) {
+			// Avoid doing all sorts of work for a pipe that doesn't need it, because it preserves the input and doesn't store result in session.
 			Message result = pipeRunResult.getResult();
-			pipeLineSession.put(pipe.getStoreResultInSessionKey(), result);
+			if (pipe.isRestoreMovedElements()) {
+				result = processRestoreMovedElements(pipe, pipeLineSession, result);
+			}
+
+			if (pipe.getChompCharSize() != null || pipe.getElementToMove() != null || pipe.getElementToMoveChain() != null) {
+				result = processMessageCompaction(pipe, pipeLineSession, result);
+			}
+
+			if (StringUtils.isNotEmpty(pipe.getStoreResultInSessionKey())) {
+				log.debug("storing result in session under key [{}]", pipe::getStoreResultInSessionKey);
+				pipeLineSession.put(pipe.getStoreResultInSessionKey(), result);
+			}
+			if (!pipe.isPreserveInput()) {
+				pipeRunResult.setResult(result);
+			}
 		}
 		if (pipe.isPreserveInput()) {
 			pipeRunResult.setResult(originalMessage);
@@ -163,10 +169,9 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		return message;
 	}
 
-	private void processMessageCompaction(IPipe pipe, PipeLineSession pipeLineSession, PipeRunResult pipeRunResult) throws PipeRunException {
-		Message result = pipeRunResult.getResult();
+	private @NonNull Message processMessageCompaction(@NonNull IPipe pipe, @NonNull PipeLineSession pipeLineSession, @NonNull Message result) throws PipeRunException {
 		if (Message.isEmpty(result)) {
-			return;
+			return result;
 		}
 		log.debug("compacting result message");
 		InputSource inputSource = getInputSourceFromResult(result, pipe);
@@ -187,17 +192,17 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 			// restore MessageContext#CONTEXT_PREVIOUS_PIPE
 			compactedResult.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
-			pipeRunResult.setResult(compactedResult);
+			return compactedResult;
 		} catch (IOException | SAXException e) {
 			log.warn("could not compact received message", e);
+			return result;
 		}
 	}
 
-	private void processRestoreMovedElements(IPipe pipe, PipeLineSession pipeLineSession, PipeRunResult pipeRunResult) throws PipeRunException {
+	private @NonNull Message processRestoreMovedElements(@NonNull IPipe pipe, @NonNull PipeLineSession pipeLineSession, @NonNull Message result) throws PipeRunException {
 		log.debug("restoring from compacted result");
-		Message result = pipeRunResult.getResult();
 		if (Message.isEmpty(result)) {
-			return;
+			return result;
 		}
 
 		InputSource inputSource = getInputSourceFromResult(result, pipe);
@@ -214,13 +219,13 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 			// restore MessageContext#CONTEXT_PREVIOUS_PIPE
 			restoredResult.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
-			pipeRunResult.setResult(restoredResult);
+			return restoredResult;
 		} catch (SAXException | IOException e) {
 			throw new PipeRunException(pipe, "could not restore moved elements", e);
 		}
 	}
 
-	private static InputSource getInputSourceFromResult(Message result, IPipe pipe) throws PipeRunException {
+	private static @Nullable InputSource getInputSourceFromResult(@NonNull Message result, @NonNull IPipe pipe) throws PipeRunException {
 		try {
 			return result.asInputSource();
 		} catch (IOException e) {

@@ -24,6 +24,8 @@ import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.filter.CheckpointMatcher;
 
 public abstract class AbstractBox implements CheckpointMatcher {
+
+	@Override
 	public boolean match(Report report, Checkpoint checkpoint) {
 		if (checkpoint.getType() == CheckpointType.INPUTPOINT.toInt()
 				|| checkpoint.getType() == CheckpointType.OUTPUTPOINT.toInt()

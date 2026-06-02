@@ -22,6 +22,7 @@ public class RemoveFromSessionPipeTest extends PipeTestBase<RemoveFromSessionPip
 	@Test
 	public void testEmptySessionKeyNonEmptyInput() throws Exception {
 		pipe.setSessionKey(null);
+		pipe.configure();
 		session.put("a", "123");
 		PipeRunResult res = doPipe(pipe, "a", session);
 		assertEquals("123", res.getResult().asString());
@@ -30,6 +31,7 @@ public class RemoveFromSessionPipeTest extends PipeTestBase<RemoveFromSessionPip
 	@Test
 	public void testNonEmptySessionKeyNonEmptyInput() throws Exception {
 		pipe.setSessionKey("a");
+		pipe.configure();
 		session.put("a", "123");
 		PipeRunResult res = doPipe(pipe, "a", session);
 		assertEquals("123", res.getResult().asString());
@@ -38,6 +40,7 @@ public class RemoveFromSessionPipeTest extends PipeTestBase<RemoveFromSessionPip
 	@Test
 	public void testNonEmptySessionKeyEmptyInput() throws Exception {
 		pipe.setSessionKey("a");
+		pipe.configure();
 		session.put("a", "123");
 		PipeRunResult res = pipe.doPipe(Message.nullMessage(), session);
 		assertEquals("123", res.getResult().asString());
@@ -46,9 +49,9 @@ public class RemoveFromSessionPipeTest extends PipeTestBase<RemoveFromSessionPip
 	@Test
 	public void testFailAsKeyIsWrong() throws Exception {
 		pipe.setSessionKey("ab");
+		pipe.configure();
 		session.put("a", "123");
 		PipeRunResult res = doPipe(pipe, "ab", session);
 		assertEquals("[null]", res.getResult().asString());
 	}
-
 }
