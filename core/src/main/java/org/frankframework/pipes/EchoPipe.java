@@ -44,7 +44,7 @@ public class EchoPipe extends FixedForwardPipe {
 
 	@Protected
 	@Deprecated
-	@ConfigurationWarning("This property has no effect on this pipe, because the pipe has no side-effects and always returns the input message.")
+	@ConfigurationWarning("This property is not needed on this pipe, because the pipe has no side-effects and always returns the input message.")
 	@Override
 	public void setPreserveInput(boolean preserveInput) {
 		super.setPreserveInput(preserveInput);

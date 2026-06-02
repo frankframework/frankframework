@@ -63,9 +63,10 @@ public class DelayPipe extends FixedForwardPipe {
 	}
 
 	@Protected
-	@ConfigurationWarning("This property has no effect on this type of pipe, because it always returns the input message")
+	@ConfigurationWarning("This property is not needed on this pipe, because the pipe always returns the input message")
+	@Deprecated
 	@Override
 	public void setPreserveInput(boolean preserveInput) {
-		// Ignore
+		super.setPreserveInput(preserveInput);
 	}
 }
