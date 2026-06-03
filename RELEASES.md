@@ -55,6 +55,7 @@ The intended use is that you provide your own drivers by mounting them into the 
 [Commits](https://github.com/frankframework/frankframework/compare/v8.1.0...v8.2.0)
 
 Moved to Spring 6 and Spring Boot 3. Requires Jakarta package names.
+CSRF token validation was added to the console API endpoints. This works with all modern browsers. If needed, CSRF token validation can be disabled.
 Requires JDK 17 or later, tested on JDK 17 and 21.
 Changed default log level from DEBUG to INFO, for environments that are not configured with `dtap.stage` at value: `ACC` or `PRD`. These are by default on WARN level.
 
