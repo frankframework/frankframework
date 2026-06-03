@@ -97,7 +97,7 @@
 			<xsl:attribute name="targetID" select="$targetID"/>
 			<xsl:call-template name="defaultCopyActions"/>
 			<xsl:element name="forward">
-				<xsl:attribute name="name" select="'&lt;text&gt;success&lt;/text&gt;'"/>
+				<xsl:attribute name="name" select="'success'"/>
 				<xsl:attribute name="path" select="$targetID"/>
 				<xsl:attribute name="targetID" select="$targetID"/>
 				<xsl:attribute name="errorHandling" select="'false'"/>
