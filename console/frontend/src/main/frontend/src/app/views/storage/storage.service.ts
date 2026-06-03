@@ -67,13 +67,12 @@ export class StorageService {
   public selectedMessages: Record<string, boolean> = {};
   public tableUpdateTrigger$: Observable<void>;
 
+  private baseUrl = '';
+  private tableUpdateTriggerSubject = new Subject<void>();
   private readonly base64Service: Base64Service = inject(Base64Service);
   private readonly http: HttpClient = inject(HttpClient);
   private readonly appService: AppService = inject(AppService);
   private readonly Misc: MiscService = inject(MiscService);
-
-  private baseUrl = '';
-  private tableUpdateTriggerSubject = new Subject<void>();
 
   constructor() {
     this.tableUpdateTrigger$ = this.tableUpdateTriggerSubject.asObservable();
