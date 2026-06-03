@@ -6,12 +6,17 @@ Frank!Framework Release Notes
 
 Upcoming (9.4)
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/release/9.3...HEAD)
+[Commits](https://github.com/frankframework/frankframework/compare/release/9.3...release/9.4)
 
 - When an exception occurs during pipeline execution, and the pipe does not have an 'exception' forward defined, and there's a Global-Forward named 'exception', this 'exception' Global Forward will be used (just like the behaviour of 7.7 and older). In addition, if there is a pipe in the pipeline named 'exception', and there is no 'exception forward' on the pipe and no Global-Forward named 'exception', then exceptions in pipes will be send to the pipe named 'exception'. This pipe name 'exception' should not be of the type 'ExceptionPipe'.
  This could potentially change the exception handling in your pipelines, so check if there are pipes with the exact name 'exception' and verify that there are no undesired changes in behaviour.
-- Only the H2 database driver is provided in the Docker image. This means that drivers for other databases (e.g. PostgreSQL, Oracle, MSSQL, MySQL/MariaDB) are not provided anymore and should be provided by the user when using those databases. There are no JMS drivers provided anymore either.\
+- Only the H2 database driver is provided in the Docker image. This means that drivers for other databases (e.g. PostgreSQL, Oracle, MSSQL, MySQL/MariaDB) are not provided any more and should be provided by the user when using those databases. There are no JMS drivers provided any more either.\
 The intended use is that you provide your own drivers by mounting them into the Docker container in the folder `/opt/frank/drivers/`. The Frank!Framework will automatically load any `.jar` files found in this folder during startup.
+
+9.2.0 - July 9, 2025
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/release/9.1...release/9.2)
+- `JdbcTableMessageBrowser` now will only show the configured columns in your configuration. This means that previously all columns were shown, but now you'll only see the columns specified in the configuration. 
 
 9.1.0 - April 10, 2025
 --------------
@@ -46,6 +51,7 @@ The intended use is that you provide your own drivers by mounting them into the 
 [Commits](https://github.com/frankframework/frankframework/compare/v8.1.0...v8.2.0)
 
 Moved to Spring 6 and Spring Boot 3. Requires Jakarta package names.
+CSRF token validation was added to the console API endpoints. This works with all modern browsers. If needed, CSRF token validation can be disabled.
 Requires JDK 17 or later, tested on JDK 17 and 21.
 Changed default log level from DEBUG to INFO, for environments that are not configured with `dtap.stage` at value: `ACC` or `PRD`. These are by default on WARN level.
 
