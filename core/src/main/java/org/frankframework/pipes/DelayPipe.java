@@ -62,9 +62,12 @@ public class DelayPipe extends FixedForwardPipe {
 		return delayTime;
 	}
 
+	/**
+	 * @deprecated There is no need setting this property on this pipe as it will always return its actual input and does not need to have the original input restored.
+	 */
 	@Protected
 	@ConfigurationWarning("This property is not needed on this pipe, because the pipe always returns the input message")
-	@Deprecated
+	@Deprecated(since = "10.2")
 	@Override
 	public void setPreserveInput(boolean preserveInput) {
 		super.setPreserveInput(preserveInput);

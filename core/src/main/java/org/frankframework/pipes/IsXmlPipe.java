@@ -116,4 +116,17 @@ public class IsXmlPipe extends AbstractPipe {
 	public void setElseForwardOnEmptyInput(boolean b) {
 		elseForwardOnEmptyInput = b;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>
+	 *     Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+	 *     {@link org.frankframework.core.IPipe#setGetInputFromSessionKey(String)}.
+	 * </p>
+	 */
+	@Override
+	public void setPreserveInput(boolean preserveInput) {
+		super.setPreserveInput(preserveInput);
+	}
 }

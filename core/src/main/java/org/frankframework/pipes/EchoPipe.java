@@ -42,8 +42,11 @@ public class EchoPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
+	/**
+	 * @deprecated There is no need setting this property on this pipe as it will always return its actual input and does not need to have the original input restored.
+	 */
 	@Protected
-	@Deprecated
+	@Deprecated(since = "10.2")
 	@ConfigurationWarning("This property is not needed on this pipe, because the pipe has no side-effects and always returns the input message.")
 	@Override
 	public void setPreserveInput(boolean preserveInput) {

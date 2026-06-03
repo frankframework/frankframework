@@ -21,11 +21,13 @@ import org.jspecify.annotations.NonNull;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Protected;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -91,5 +93,16 @@ public class PutInSessionPipe extends FixedForwardPipe {
 	/** Value to store in the <code>pipeLineSession</code>. If not set, the input of the pipe is stored */
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	/**
+	 * @deprecated There is no need setting this property on this pipe as it will always return its actual input and does not need to have the original input restored.
+	 */
+	@Protected
+	@ConfigurationWarning("This property is not needed on this pipe, because the pipe always returns the input message")
+	@Deprecated(since = "10.2")
+	@Override
+	public void setPreserveInput(boolean preserveInput) {
+		super.setPreserveInput(preserveInput);
 	}
 }
