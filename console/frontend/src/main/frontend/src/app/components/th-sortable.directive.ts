@@ -24,7 +24,7 @@ export function basicTableSort<T extends Record<string, string | number>>(
 
   if (direction == 'NONE' || column == '') return array;
 
-  return [...array].sort((a, b) => {
+  return array.toSorted((a, b) => {
     const order = compare(a[column], b[column]);
     return direction === 'ASC' ? order : -order;
   });
@@ -40,7 +40,7 @@ export function basicAnyValueTableSort<T>(
 
   if (direction == 'NONE' || column == '') return array;
 
-  return [...array].sort((a, b) => {
+  return array.toSorted((a, b) => {
     const order = anyCompare(a[column as keyof T], b[column as keyof T]);
     return direction === 'ASC' ? order : -order;
   });
@@ -65,9 +65,7 @@ export class ThSortableDirective {
 
   updateIcon(direction: SortDirection): void {
     const icon = this.THElement.querySelector('span.sort-icon');
-    if (icon) {
-      icon.remove();
-    }
+    icon?.remove();
     if (direction === 'NONE') return;
     const iconElement = document.createElement('span');
     iconElement.classList.add('sort-icon');
