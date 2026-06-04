@@ -22,12 +22,12 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
-import org.frankframework.doc.Protected;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -51,6 +51,9 @@ public class PutInSessionPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
 		super.configure();
+		if (isPreserveInput() && (getDefaultValue() != null || getGetInputFromFixedValue() != null || getGetInputFromSessionKey() != null)) {
+			ConfigurationWarnings.add(this, "Instead of replacing input and using [preserveInput] on this pipe, it is recommended to use a Param to set the session key");
+		}
 	}
 
 	@NonNull
@@ -98,7 +101,6 @@ public class PutInSessionPipe extends FixedForwardPipe {
 	/**
 	 * @deprecated There is no need setting this property on this pipe as it will always return its actual input and does not need to have the original input restored.
 	 */
-	@Protected
 	@ConfigurationWarning("This property is not needed on this pipe, because the pipe always returns the input message")
 	@Deprecated(since = "10.2")
 	@Override

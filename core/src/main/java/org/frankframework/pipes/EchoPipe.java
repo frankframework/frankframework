@@ -17,13 +17,14 @@ package org.frankframework.pipes;
 
 import org.jspecify.annotations.NonNull;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
-import org.frankframework.doc.Protected;
 import org.frankframework.stream.Message;
 
 /**
@@ -36,6 +37,14 @@ import org.frankframework.stream.Message;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class EchoPipe extends FixedForwardPipe {
 
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (isPreserveInput()) {
+			ConfigurationWarnings.add(this, "Using [preserveInput] on this pipe is likely a configuration mistake as this pipe returns its input without using it");
+		}
+	}
+
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
@@ -45,7 +54,6 @@ public class EchoPipe extends FixedForwardPipe {
 	/**
 	 * @deprecated There is no need setting this property on this pipe as it will always return its actual input and does not need to have the original input restored.
 	 */
-	@Protected
 	@Deprecated(since = "10.2")
 	@ConfigurationWarning("This property is not needed on this pipe, because the pipe has no side-effects and always returns the input message.")
 	@Override
