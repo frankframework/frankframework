@@ -9,7 +9,7 @@
 
 			<SenderPipe name="HelloUniverseSender" className="org.frankframework.pipes.SenderPipe">
 				<HttpSender urlParam="https://www.example.com" methodType="GET">
-					<keystoreConfiguration keystoreResource="testKeystore" />
+					<keystore keystoreResource="testKeystore" />
 					<param name="url_param" xpathExpression="*/@uri" />
 					<param name="Message-Id" pattern="{uuid}" />
 					<param name="Correlation-Id" pattern="{uuid}" />

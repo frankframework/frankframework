@@ -17,6 +17,7 @@ package org.frankframework.encryption;
 
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
+import org.frankframework.doc.ReferTo;
 
 /**
  * marker interface with default behaviour to set values in the Keystore object. The goal is to only support 'setKeystore' in the future
@@ -24,10 +25,17 @@ import org.frankframework.core.IScopeProvider;
  */
 public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 
+	/**
+	 * Creates a new, empty {@link KeystoreConfiguration} instance
+	 * @return
+	 */
 	default KeystoreConfiguration createKeystoreConfiguration() {
 		return new KeystoreConfiguration();
 	}
 
+	/**
+	 * Set the {@link KeystoreConfiguration} object
+	 */
 	void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration);
 
 	KeystoreConfiguration getKeystoreConfiguration();
@@ -64,34 +72,45 @@ public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 		return getKeystoreConfiguration().getKeyManagerAlgorithm();
 	}
 
+	/**
+	 * Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.
+	 * @see KeystoreConfiguration#setKeystoreResource(String)
+	 */
 	default void setKeystore(String keystore) {
 		getKeystoreConfiguration().setKeystoreResource(keystore);
 	}
 
+	@ReferTo(KeystoreConfiguration.class)
 	default void setKeystoreType(KeystoreType keystoreType) {
 		getKeystoreConfiguration().setKeystoreType(keystoreType);
 	}
 
+	@ReferTo(KeystoreConfiguration.class)
 	default void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		getKeystoreConfiguration().setKeystoreAuthAlias(keystoreAuthAlias);
 	}
 
+	@ReferTo(KeystoreConfiguration.class)
 	default void setKeystorePassword(String keystorePassword) {
 		getKeystoreConfiguration().setKeystorePassword(keystorePassword);
 	}
 
+	@ReferTo(KeystoreConfiguration.class)
 	default void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		getKeystoreConfiguration().setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
 
+	@ReferTo(KeystoreConfiguration.class)
 	default void setKeystoreAlias(String keystoreAlias) {
 		getKeystoreConfiguration().setKeystoreAlias(keystoreAlias);
 	}
 
+	@ReferTo(KeystoreConfiguration.class)
 	default void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		getKeystoreConfiguration().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
 
+	@ReferTo(KeystoreConfiguration.class)
 	default void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		getKeystoreConfiguration().setKeystoreAliasPassword(keystoreAliasPassword);
 	}

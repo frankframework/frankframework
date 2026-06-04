@@ -52,7 +52,7 @@
 	<rule pattern="*/locker" registerMethod="setLocker" beanClass="org.frankframework.util.Locker"/>
 	<rule pattern="*/param" factory="org.frankframework.configuration.digester.ParameterFactory" registerMethod="addParameter"/>
 	<rule pattern="*/directoryCleaner" registerMethod="addDirectoryCleaner" beanClass="org.frankframework.util.DirectoryCleaner"/>
-	<rule pattern="*/keystoreConfiguration" registerMethod="setKeystoreConfiguration" beanClass="org.frankframework.encryption.KeystoreConfiguration"/>
+	<rule pattern="*/keystore" registerMethod="setKeystoreConfiguration" beanClass="org.frankframework.encryption.KeystoreConfiguration"/>
 
 	<!-- batch related rules -->
 	<rule pattern="*/readerFactory" registerMethod="setReaderFactory"/>

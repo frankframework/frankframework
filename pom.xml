@@ -46,13 +46,19 @@
 		</developer>
 		<developer>
 			<name>Ali Sihab Akcan</name>
-			<email>ali@frankframework.org</email>
+			<email>ali@ibissource.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Jaco de Groot</name>
-			<email>jaco@frankframework.org</email>
+			<email>jaco@ibissource.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Gerrit van Brakel</name>
+			<email>gerrit@ibissource.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>

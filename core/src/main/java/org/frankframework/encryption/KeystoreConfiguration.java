@@ -24,7 +24,7 @@ import lombok.Data;
 public class KeystoreConfiguration {
 	/**
 	 * Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.
-	 * */
+	 */
 	private String keystoreResource;
 
 	/** Authentication alias used to obtain keystore password */
