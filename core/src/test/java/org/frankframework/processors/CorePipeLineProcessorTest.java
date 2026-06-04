@@ -241,8 +241,8 @@ class CorePipeLineProcessorTest {
 	@ParameterizedTest
 	@CsvSource({
 		"true, false, false, fail-wrap-output, wrapping-success- pipeline inputWrapper[fail-wrap-output]",
-		"true, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]",
-		"true, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]",
+		"true, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]]",
+		"true, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]]",
 		"false, false, false, fail-wrap-output, wrapping-success- pipeline outputWrapper[err3]",
 		"false, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
 		"false, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",

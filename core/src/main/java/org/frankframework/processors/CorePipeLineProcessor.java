@@ -212,24 +212,19 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 		}
 
-		if (forwardTarget instanceof PipeLineExit pipeLineExit) {
-			// If forwarding to an exit, return results as they now are
-			return new ProcessingResult<>(pipeLineExit, message, outputError);
-		} else {
-			// Forwarding to a pipe that handles output-validation errors
-			ProcessingResult<PipeLineExit> errorHandlerResult = runToExit(pipeLine, forwardTarget, message, pipeLineSession, outputError);
-			if (outputValidationFailedPreviously) {
-				// If output validation had already failed previously, and we fail again, do not again try to apply post-processing, use current result
-				return errorHandlerResult;
-			}
-			// Recursive call to do post-processing of the output from error-handling pipe
-			return runOutputValidation(pipeLine, pipeLineSession, errorHandlerResult, true, outputWrapper, outputValidator);
+		// Forwarding to a pipe that handles output-validation errors
+		ProcessingResult<PipeLineExit> errorHandlerResult = runToExit(pipeLine, forwardTarget, message, pipeLineSession, outputError);
+		if (!outputError || outputValidationFailedPreviously) {
+			// If output validation had already failed previously, and we fail again, do not again try to apply post-processing, use current result
+			return errorHandlerResult;
 		}
+		// Recursive call to do post-processing of the output from error-handling pipe
+		return runOutputValidation(pipeLine, pipeLineSession, errorHandlerResult, true, outputWrapper, outputValidator);
 	}
 
 	private ProcessingResult<PipeLineExit> runToExit(PipeLine pipeLine, IForwardTarget startAtTarget, Message input, PipeLineSession pipeLineSession, boolean processInError) throws PipeRunException {
 		if (startAtTarget instanceof PipeLineExit pipeLineExit) {
-			return new  ProcessingResult<>(pipeLineExit, input, processInError);
+			return new ProcessingResult<>(pipeLineExit, input, processInError);
 		}
 		Message message = input;
 		IForwardTarget forwardTarget = startAtTarget;
