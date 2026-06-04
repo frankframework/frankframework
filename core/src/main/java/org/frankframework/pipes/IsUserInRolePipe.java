@@ -128,6 +128,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 	 * </p>
 	 */
 	@Override
+	@SuppressWarnings("java:S1185") // Sonar warning not relevant b/c we want to add extra JavaDoc
 	public void setPreserveInput(boolean preserveInput) {
 		super.setPreserveInput(preserveInput);
 	}
