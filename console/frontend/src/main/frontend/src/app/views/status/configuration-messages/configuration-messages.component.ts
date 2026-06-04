@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ConfigurationMessage, MessageLog } from '../../../app.service';
 import { NgClass } from '@angular/common';
 import { ToDateDirective } from '../../../components/to-date.directive';
@@ -11,12 +11,25 @@ import { faChevronDown, faChevronUp, faInfo, faTimes, faWarning } from '@fortawe
   templateUrl: './configuration-messages.component.html',
   styleUrl: './configuration-messages.component.scss',
 })
-export class ConfigurationMessagesComponent {
+export class ConfigurationMessagesComponent implements OnChanges {
   @Input({ required: true }) messageLog: Record<string, MessageLog> = {};
   @Input({ required: true }) selectedConfiguration = '';
+  protected title = 'Configuration';
   protected msgBoxExpanded = false;
   protected readonly faChevronUp = faChevronUp;
   protected readonly faChevronDown = faChevronDown;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedConfiguration']) {
+      if (this.selectedConfiguration === 'All') {
+        this.msgBoxExpanded = false;
+        this.title = 'Application';
+      } else {
+        this.msgBoxExpanded = true;
+        this.title = 'Configuration';
+      }
+    }
+  }
 
   protected getMessageLog(selectedConfiguration: string): ConfigurationMessage[] {
     return this.messageLog[selectedConfiguration]?.messages ?? [];

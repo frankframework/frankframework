@@ -83,7 +83,7 @@
 		<junit.excludedTags />
 		<junit.includedTags />
 
-		<jackson.version>2.21.3</jackson.version>
+		<jackson.version>2.21.4</jackson.version>
 		<cxf.version>4.2.1</cxf.version>
 		<spring.version>7.0.7</spring.version>
 		<spring-security.version>7.0.5</spring-security.version>
@@ -91,7 +91,7 @@
 		<spring.boot.version>4.0.6</spring.boot.version>
 		<tomcat.version>11.0.22</tomcat.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
-		<tika.version>3.3.0</tika.version>
+		<tika.version>3.3.1</tika.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
@@ -113,20 +113,20 @@
 		<mysql.driver.version>9.7.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.8</mariadb.driver.version>
 		<postgresql.driver.version>42.7.11</postgresql.driver.version>
-		<mongodb.driver.version>5.7.0</mongodb.driver.version>
+		<mongodb.driver.version>5.8.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>6.2.5</activemq.driver.version>
+		<activemq.driver.version>6.2.6</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
-		<rabbitmq.driver.version>5.30.0</rabbitmq.driver.version>
+		<rabbitmq.driver.version>5.31.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.6.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.39.2</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.23.0</mockito.version>
-		<junit.version>6.0.3</junit.version>
+		<junit.version>6.1.0</junit.version>
 	</properties>
 
 	<dependencyManagement>
@@ -161,7 +161,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.13.Final</version>
+				<version>4.2.14.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -251,7 +251,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.34.1</version>
+				<version>4.35.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -488,7 +488,7 @@
 			<dependency>
 				<groupId>org.glassfish.jaxb</groupId>
 				<artifactId>jaxb-runtime</artifactId>
-				<version>4.0.8</version>
+				<version>4.0.9</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -842,7 +842,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.5.5</version>
+					<version>3.5.6</version>
 					<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
@@ -933,7 +933,7 @@
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
-					<version>3.5.1</version>
+					<version>3.6.0</version>
 					<configuration>
 						<java>
 							<removeUnusedImports />
@@ -1125,7 +1125,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.21.0</version>
+					<version>3.22.0</version>
 					<configuration>
 						<generateProjectInfo>false</generateProjectInfo>
 					</configuration>

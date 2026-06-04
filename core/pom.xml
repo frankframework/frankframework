@@ -328,7 +328,7 @@
 		<dependency>
 			<groupId>io.swagger.parser.v3</groupId>
 			<artifactId>swagger-parser-v3</artifactId>
-			<version>2.1.42</version>
+			<version>2.1.43</version>
 			<exclusions>
 				<exclusion>
 					<groupId>io.swagger.core.v3</groupId>
@@ -429,7 +429,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>11.37.1</version>
+			<version>11.37.2</version>
 		</dependency>
 
 		<dependency>
@@ -570,7 +570,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>7.1.1</version>
+			<version>7.2.0</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>
