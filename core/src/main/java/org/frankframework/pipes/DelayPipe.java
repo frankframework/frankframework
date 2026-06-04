@@ -26,7 +26,7 @@ import org.frankframework.doc.Protected;
 import org.frankframework.stream.Message;
 
 /**
- * Pipe that sleeps for a specified time, which defaults to 5000 msecs. The pipe echos back its input message.
+ * Pipe that sleeps for a specified time, which defaults to 5000 msecs. The pipe echoes back its input message.
  * It is useful for testing purposes.
  *
  * @author L180564 - Johan Verrips
