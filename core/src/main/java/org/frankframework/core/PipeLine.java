@@ -463,16 +463,16 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	/**
 	 * Find the destination of the forward, i.e. the {@link IForwardTarget object} (Pipe or PipeLineExit) where the forward points to.
 	 */
-	public IForwardTarget resolveForward(IPipe pipe, PipeForward forward) throws PipeRunException {
-		if (forward == null){
+	public IForwardTarget resolveForward(@NonNull IPipe pipe, @Nullable PipeForward forward) throws PipeRunException {
+		if (forward == null) {
 			throw new PipeRunException(pipe, "Pipeline of [%s] got a null forward from pipe [%s].".formatted(adapter.getName(), pipe.getName()));
 		}
 		String path = forward.getPath();
-		if (StringUtils.isEmpty(path)){
+		if (StringUtils.isEmpty(path)) {
 			throw new PipeRunException(pipe, "Pipeline of [%s] got a forward [%s] with a path that equals null or has a zero-length value from pipe [%s]. Check the configuration, probably forwards are not defined for this pipe.".formatted(adapter.getName(), forward.getName(), pipe.getName()));
 		}
 		PipeLineExit plExit = pipeLineExits.get(path);
-		if (plExit != null ) {
+		if (plExit != null) {
 			return plExit;
 		}
 		IPipe nextPipe = getPipe(path);

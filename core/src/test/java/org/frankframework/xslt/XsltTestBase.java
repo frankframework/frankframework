@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import java.util.Properties;
 
 import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -46,14 +45,6 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	protected abstract void setOutputType(OutputType outputType);
 
 	protected abstract void setHandleLexicalEvents(boolean handleLexicalEvents);
-
-
-	@BeforeEach
-	@Override
-	public void setUp() throws Exception {
-		session = new PipeLineSession();
-		super.setUp();
-	}
 
 	protected void assertResultsAreCorrect(String expected, String actual, PipeLineSession session) {
 		assertEquals(expected, actual);

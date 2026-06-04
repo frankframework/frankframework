@@ -28,6 +28,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
@@ -469,27 +470,27 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	@Override
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		StopReason stopReason;
 		MessageBuilder messageBuilder = new MessageBuilder();
-		try {
-			try (Writer resultWriter = messageBuilder.asWriter()) {
-				ItemCallback callback = createItemCallBack(session, sender, resultWriter);
-				stopReason = iterateOverInput(input,session,threadContext, callback);
-			}
-
-			PipeRunResult prr = new PipeRunResult(getSuccessForward(), messageBuilder.build());
-			if(stopReason != null) {
-				PipeForward forward = findForward(stopReason.getForwardName());
-				if(forward != null) {
-					prr.setPipeForward(forward);
-				}
-			}
-			return prr;
+		StopReason stopReason;
+		try (Writer resultWriter = messageBuilder.asWriter()) {
+			ItemCallback callback = createItemCallBack(session, sender, resultWriter);
+			stopReason = iterateOverInput(input,session,threadContext, callback);
 		} catch (SenderException | TimeoutException | IOException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new SenderException("Exception on transforming input", e);
 		}
+		return new PipeRunResult(findForward(stopReason), messageBuilder.build());
+	}
+
+	private @NonNull PipeForward findForward(IteratingPipe. @Nullable StopReason stopReason) {
+		if(stopReason != null) {
+			PipeForward forward = findForward(stopReason.getForwardName());
+			if (forward != null) {
+				return forward;
+			}
+		}
+		return getSuccessForward();
 	}
 
 	protected I getItem(IDataIterator<I> it) throws SenderException {
