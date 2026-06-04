@@ -180,11 +180,11 @@ class ReceiverValidatorsTest {
 	@ParameterizedTest
 	@CsvSource({
 			"false, fail-validator-input, wrapping-successReceiver TEST - OutputWrapper[fail-validator-input]",
-			"true,  fail-validator-input, wrapping-successReceiver TEST - OutputWrapper[fail-validator-input]",
+			"true,  fail-validator-input, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - OutputWrapper[fail-validator-input]]",
 			"false, fail-wrap-input, wrapping-successReceiver TEST - OutputWrapper[fail-wrap-input]",
 			"false, fail-wrap-output, wrapping-successReceiver TEST - InputWrapper[fail-wrap-output]",
-			"false, fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
-			"true,  fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]",
+			"false, fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]",
+			"true,  fail-validator-output, wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - OutputWrapper[wrapping-successReceiver TEST - InputWrapper[fail-validator-output]]]",
 	})
 	void testReceiverWithWrappersAndValidatorsFailures(boolean dualModeValidator, String input, String expectedMessage) throws Exception {
 		// Arrange
