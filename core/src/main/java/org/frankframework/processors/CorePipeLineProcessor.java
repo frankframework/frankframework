@@ -204,8 +204,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				} else {
 					log.warn("validation of error message by validator [{}] failed, returning result anyhow", outputValidator::getName); // to avoid endless looping
 					message = validationResult.getResult();
-					// If output validation had already failed previously, and we fail again, do not again try to apply post-processing, use previous exit
-					return new ProcessingResult<>(plExit, message, true);
 				}
 			} else {
 				log.debug("validation succeeded");
@@ -219,6 +217,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		} else {
 			// Forwarding to a pipe that handles output-validation errors
 			ProcessingResult<PipeLineExit> errorHandlerResult = runToExit(pipeLine, forwardTarget, message, pipeLineSession);
+			if (outputValidationFailedPreviously) {
+				// If output validation had already failed previously, and we fail again, do not again try to apply post-processing, use current result
+				return errorHandlerResult;
+			}
 			// Recursive call to do post-processing of the output from error-handling pipe
 			return runOutputValidation(pipeLine, pipeLineSession, errorHandlerResult, true, outputWrapper, outputValidator);
 		}
