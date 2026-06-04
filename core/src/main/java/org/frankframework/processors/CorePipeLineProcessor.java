@@ -62,7 +62,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			storeOriginalMessageWithoutNamespaces(preProcessingResult, pipeLineSession);
 		}
 
-		ProcessingResult<PipeLineExit> result = runToExit(pipeLine, preProcessingResult.forwardTarget, preProcessingResult.message, pipeLineSession);
+		ProcessingResult<PipeLineExit> result = runToExit(pipeLine, preProcessingResult.forwardTarget, preProcessingResult.message, pipeLineSession, false);
 
 		ProcessingResult<PipeLineExit> postProcessingResult = postProcessOutput(receiver, pipeLine, result, pipeLineSession);
 		return createPipeLineResult(pipeLine, messageId, pipeLineSession, postProcessingResult);
@@ -171,7 +171,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	private ProcessingResult<PipeLineExit> runOutputValidation(PipeLine pipeLine, PipeLineSession pipeLineSession, ProcessingResult<PipeLineExit> processingResult, boolean outputValidationFailedPreviously, @Nullable IPipe outputWrapper, @Nullable IValidator outputValidator) throws PipeRunException {
 		PipeLineExit plExit = processingResult.forwardTarget;
 
-		boolean outputWrapError = false;
+		boolean outputError = false;
 		IForwardTarget forwardTarget = plExit;
 		Message message = processingResult.message;
 
@@ -181,7 +181,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			if (!wrapResult.isSuccessful()) {
 				forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
 				log.warn("forwarding execution flow to [{}] due to wrap fault", forwardTarget::getName);
-				outputWrapError = true;
+				outputError = true;
 			} else {
 				log.debug("wrap succeeded");
 				message = wrapResult.getResult();
@@ -189,7 +189,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			log.debug("PipeLineResult after wrapping: ({}) [{}]", message.getClass().getSimpleName(), message);
 		}
 
-		if (!outputWrapError && !plExit.isSkipValidation() &&  outputValidator != null) {
+		if (!outputError && !plExit.isSkipValidation() &&  outputValidator != null) {
 			if (outputValidationFailedPreviously) {
 				log.debug("validating error message after PipeLineResult validation failed");
 			} else {
@@ -198,6 +198,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			String exitSpecificResponseRoot = plExit.getResponseRoot();
 			PipeRunResult validationResult = pipeProcessor.validate(pipeLine, outputValidator, message, pipeLineSession, exitSpecificResponseRoot);
 			if (!validationResult.isSuccessful()) {
+				outputError = true;
 				if (!outputValidationFailedPreviously) {
 					forwardTarget = pipeLine.resolveForward(outputValidator, validationResult.getPipeForward());
 					log.warn("forwarding execution flow to [{}] due to validation fault", forwardTarget::getName);
@@ -213,10 +214,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		if (forwardTarget instanceof PipeLineExit pipeLineExit) {
 			// If forwarding to an exit, return results as they now are
-			return new ProcessingResult<>(pipeLineExit, message, outputWrapError);
+			return new ProcessingResult<>(pipeLineExit, message, outputError);
 		} else {
 			// Forwarding to a pipe that handles output-validation errors
-			ProcessingResult<PipeLineExit> errorHandlerResult = runToExit(pipeLine, forwardTarget, message, pipeLineSession);
+			ProcessingResult<PipeLineExit> errorHandlerResult = runToExit(pipeLine, forwardTarget, message, pipeLineSession, outputError);
 			if (outputValidationFailedPreviously) {
 				// If output validation had already failed previously, and we fail again, do not again try to apply post-processing, use current result
 				return errorHandlerResult;
@@ -226,9 +227,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		}
 	}
 
-	private ProcessingResult<PipeLineExit> runToExit(PipeLine pipeLine, IForwardTarget startAtTarget, Message input, PipeLineSession pipeLineSession) throws PipeRunException {
+	private ProcessingResult<PipeLineExit> runToExit(PipeLine pipeLine, IForwardTarget startAtTarget, Message input, PipeLineSession pipeLineSession, boolean processInError) throws PipeRunException {
 		if (startAtTarget instanceof PipeLineExit pipeLineExit) {
-			return new  ProcessingResult<>(pipeLineExit, input, false);
+			return new  ProcessingResult<>(pipeLineExit, input, processInError);
 		}
 		Message message = input;
 		IForwardTarget forwardTarget = startAtTarget;
@@ -241,7 +242,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			forwardTarget = pipeLine.resolveForward(pipeToRun, pipeForward);
 
 			if (forwardTarget instanceof PipeLineExit pipeLineExit) {
-				return new ProcessingResult<>(pipeLineExit, message, false);
+				return new ProcessingResult<>(pipeLineExit, message, processInError);
 			}
 		}
 		throw new IllegalStateException("Processing loop exited with forwardTarget [" + forwardTarget + "] that appears to be neither a Pipe nor a PipeLineExit");
