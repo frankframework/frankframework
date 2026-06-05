@@ -120,7 +120,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		try {
 			PipeLineSession pipeLineSessionDebugger = PipeLineSessionDebugger.newInstance(pipeLineSession, reportGenerator);
 			Object[] args = proceedingJoinPoint.getArgs();
-			args[3] = pipeLineSessionDebugger;
+			args[4] = pipeLineSessionDebugger;
 			pipeLineResult = (PipeLineResult)proceedingJoinPoint.proceed(args);
 		} catch (Throwable throwable) {
 			throw reportGenerator.pipelineAbort(pipeLine, correlationId, throwable);
