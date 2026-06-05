@@ -57,6 +57,7 @@ import org.frankframework.processors.CacheSenderWrapperProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.processors.LimitingParallelExecutionPipeProcessor;
 import org.frankframework.processors.PipeLineProcessor;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.job.SendMessageJob.SendMessageJobSender;
 import org.frankframework.senders.AbstractSenderWrapper;
 import org.frankframework.senders.ParallelSenderExecutor;
@@ -105,7 +106,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	/**
 	 * Provides advice for {@link PipeLineProcessor#processPipeLine(org.frankframework.receivers.Receiver, PipeLine, String, Message, PipeLineSession, String)}
 	 */
-	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession) throws Throwable {
+	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Receiver<?> receiver, PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return (PipeLineResult)proceedingJoinPoint.proceed();
 		}
@@ -157,7 +158,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[2] = result;
 			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args); // in case of 'preserveInput', this result is already replaced with the preserved input
-		} catch(Throwable throwable) {
+		} catch (Throwable throwable) {
 			throw reportGenerator.pipeAbort(pipeLine, pipe, correlationId, throwable);
 		}
 		if (pipe.isPreserveInput()) {
@@ -229,7 +230,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 				Object[] args = proceedingJoinPoint.getArgs();
 				args[messageParamIndex] = result;
 				Object resultObject = proceedingJoinPoint.proceed(args);
-				if(resultObject instanceof Message message1) {
+				if (resultObject instanceof Message message1) {
 					senderResult = new SenderResult(message1);
 				} else {
 					senderResult = (SenderResult) resultObject;
