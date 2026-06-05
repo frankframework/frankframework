@@ -31,7 +31,7 @@ import org.frankframework.stream.Message;
 /**
  * Selects an exitState, based on whether the input is an XML string.
  * The input is an XML string if it, after removing leading white-space characters, starts with '&lt;'.
- *
+ * The input message is also the output message.
  *
  * @author  Peter Leeuwenburgh
  * @since   4.3
@@ -115,5 +115,19 @@ public class IsXmlPipe extends AbstractPipe {
 	 */
 	public void setElseForwardOnEmptyInput(boolean b) {
 		elseForwardOnEmptyInput = b;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>
+	 *     Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+	 *     {@link org.frankframework.core.IPipe#setGetInputFromSessionKey(String)}.
+	 * </p>
+	 */
+	@Override
+	@SuppressWarnings("java:S1185") // Sonar warning not relevant b/c we want to add extra JavaDoc
+	public void setPreserveInput(boolean preserveInput) {
+		super.setPreserveInput(preserveInput);
 	}
 }

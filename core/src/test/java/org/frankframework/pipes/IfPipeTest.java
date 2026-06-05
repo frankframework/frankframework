@@ -150,6 +150,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 	@MethodSource("messageSource")
 	@ParameterizedTest
+	@SuppressWarnings("removal")
 	void testWithCustomThenForward(Message message) throws Exception {
 		String forwardName = "someText";
 		pipe.setThenForwardName(forwardName);
@@ -162,6 +163,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 	@MethodSource("messageSource")
 	@ParameterizedTest
+	@SuppressWarnings("removal")
 	void testWithCustomElseForward(Message message) throws Exception {
 		String forwardName = "someText";
 		pipe.setElseForwardName(forwardName);

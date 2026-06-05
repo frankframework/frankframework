@@ -50,6 +50,7 @@ import org.frankframework.util.XmlUtils;
 /**
  * Selects an exitState, based on either the content of the input message, by means
  * of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.
+ * This pipe returns its input.
  *
  * @ff.tip When using a jPath, the pipe input message will be set to the JSON object called {@code $}, so if you wish to switch on field 'key' in: {@code { key:'forwardname'}} use {@code $.key}.
  *
@@ -291,5 +292,19 @@ public class SwitchPipe extends AbstractPipe {
 	 */
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>
+	 *     Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+	 *     {@link org.frankframework.core.IPipe#setGetInputFromSessionKey(String)}.
+	 * </p>
+	 */
+	@Override
+	@SuppressWarnings("java:S1185") // Sonar warning not relevant b/c we want to add extra JavaDoc
+	public void setPreserveInput(boolean preserveInput) {
+		super.setPreserveInput(preserveInput);
 	}
 }

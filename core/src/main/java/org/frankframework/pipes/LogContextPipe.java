@@ -26,11 +26,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
+import org.frankframework.doc.Protected;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -58,6 +62,14 @@ public class LogContextPipe extends FixedForwardPipe {
 	 * @ff.default false
 	 */
 	private @Getter @Setter boolean continueOnError;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (getParameterList().isEmpty()) {
+			ConfigurationWarnings.add(this, "No configuration parameters were provided, so this pipe will have no effect");
+		}
+	}
 
 	@NonNull
 	@Override
@@ -87,7 +99,17 @@ public class LogContextPipe extends FixedForwardPipe {
 				session.scheduleCloseOnSessionExit(CloseableThreadContext.putAll(values));
 			}
 		}
-		return new PipeRunResult(getSuccessForward(),message);
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
+	/**
+	 * @deprecated There is no use setting this property on this pipe as it will always return its actual input and does not need to have the original input restored.
+	 */
+	@Protected
+	@ConfigurationWarning("This property is not needed on this pipe, because the pipe always returns the input message")
+	@Deprecated(since = "10.2")
+	@Override
+	public void setPreserveInput(boolean preserveInput) {
+		super.setPreserveInput(preserveInput);
+	}
 }
