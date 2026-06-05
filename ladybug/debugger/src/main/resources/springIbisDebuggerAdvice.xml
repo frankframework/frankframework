@@ -42,10 +42,13 @@
 					execution(
 						*
 						org.frankframework.processors.InputOutputPipeProcessor.processPipe(
+							org.frankframework.receivers.Receiver,
 							org.frankframework.core.PipeLine,
+							java.lang.String,
 							org.frankframework.core.IPipe,
 							org.frankframework.stream.Message,
-							org.frankframework.core.PipeLineSession
+							org.frankframework.core.PipeLineSession,
+							java.lang.String
 						)
 					)
 					and
@@ -60,10 +63,13 @@
 					execution(
 						*
 						org.frankframework.processors.LimitingParallelExecutionPipeProcessor.processPipe(
+							org.frankframework.receivers.Receiver,
 							org.frankframework.core.PipeLine,
+							java.lang.String,
 							org.frankframework.core.IPipe,
 							org.frankframework.stream.Message,
-							org.frankframework.core.PipeLineSession
+							org.frankframework.core.PipeLineSession,
+							java.lang.String
 						)
 					)
 					and

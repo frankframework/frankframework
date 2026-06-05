@@ -70,7 +70,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 	private static PipeLineResult createPipeLineResult(PipeLine pipeLine, String messageId, PipeLineSession pipeLineSession, ProcessingResult<PipeLineExit> result) {
 		PipeLineResult pipeLineResult = PipeLineResult.create(result.forwardTarget, result.message);
-		if (log.isDebugEnabled()){  // for performance reasons
+		if (log.isDebugEnabled()) {  // for performance reasons
 			StringBuilder skString = new StringBuilder();
 			for (Map.Entry<String, Object> entry: pipeLineSession.entrySet()) {
 				String key = entry.getKey();
@@ -149,7 +149,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			log.debug("input after wrapping [{}]", inputMessage);
 		}
 
-
 		return new ProcessingResult<>(forwardTarget, inputMessage, inputError);
 	}
 
@@ -159,7 +158,6 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			// No validation or wrapping on empty results; creating empty PipeLineResult will be done later so pass back original message.
 			return processingResult;
 		}
-
 
 		ProcessingResult<PipeLineExit> pipeLineExitProcessingResult = runOutputValidation(pipeLine, pipeLineSession, processingResult, false, pipeLine.getOutputWrapper(), pipeLine.getOutputValidator());
 		if (receiver == null || pipeLineExitProcessingResult.error) {
