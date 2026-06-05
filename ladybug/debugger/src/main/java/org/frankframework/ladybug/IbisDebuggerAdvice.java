@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,9 +76,9 @@ import org.frankframework.xml.XmlWriter;
  */
 @SuppressWarnings("unchecked")
 @Log4j2
-public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
+public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<@NonNull DebuggerStatusChangedEvent>, IXmlDebugger {
 
-	private @Setter @Autowired LadybugReportGenerator reportGenerator;
+	private @Setter @Autowired @Nullable LadybugReportGenerator reportGenerator;
 	private @Setter @Autowired LadybugDebugger debugger;
 	protected @Setter @Autowired @Getter IbisManager ibisManager;
 
@@ -106,6 +107,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	/**
 	 * Provides advice for {@link PipeLineProcessor#processPipeLine(org.frankframework.receivers.Receiver, PipeLine, String, Message, PipeLineSession, String)}
 	 */
+	@SuppressWarnings({ "java:S1172", "unused" }) // The unused parameters are needed to make the AOP work
 	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Receiver<?> receiver, PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return (PipeLineResult)proceedingJoinPoint.proceed();
@@ -173,6 +175,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	 * Provides advice for {@link LimitingParallelExecutionPipeProcessor#processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession session)}
 	 * LimitingParallelExecutionPipeProcessor is just after InputOutputPipeProcessor, so it sees the effect of the replacements made by the latter.
 	 */
+	@SuppressWarnings({ "java:S1172", "unused" }) // The unused parameters are needed to make the AOP work
 	public PipeRunResult debugPipeGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return (PipeRunResult) proceedingJoinPoint.proceed();
@@ -289,6 +292,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	/**
 	 * Provides advice for {@link IBlockEnabledSender#sendMessage(Object blockHandle, Message message, PipeLineSession session)}
 	 */
+	@SuppressWarnings({ "java:S1172", "unused" }) // The unused parameters are needed to make the AOP work
 	public SenderResult debugBlockEnabledSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Object blockHandle, Message message, PipeLineSession session) throws Throwable {
 		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 1);
 	}
@@ -343,7 +347,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	/**
 	 * Provides advice for {@link CacheSenderWrapperProcessor#sendMessage(AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session)}
 	 */
-	public SenderResult debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session) throws Throwable {
+	public @Nullable SenderResult debugSenderGetInputFrom(ProceedingJoinPoint proceedingJoinPoint, AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session) throws Throwable {
 		if (!isEnabled()) {
 			return (SenderResult)proceedingJoinPoint.proceed();
 		}
@@ -361,7 +365,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		return (SenderResult)proceedingJoinPoint.proceed(args); // this message contains the original result, before replacing via preserveInput
 	}
 
-	public <M> M debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<M> listener, String correlationId, PipeLineSession pipeLineSession) throws Throwable {
+	public <M> @Nullable M debugReplyListenerInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, ICorrelatedPullingListener<M> listener, String correlationId, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return (M)proceedingJoinPoint.proceed();
 		}
@@ -394,7 +398,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	@Override
-	public ThreadDebugInfo announceChildThread(Object owner, String correlationId) {
+	public @Nullable ThreadDebugInfo announceChildThread(Object owner, String correlationId) {
 		if (!isEnabled()) {
 			return null;
 		}
@@ -521,8 +525,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 	}
 
-	public String getCorrelationId(PipeLineSession session) {
-		return session==null?null:session.getCorrelationId();
+	public @Nullable String getCorrelationId(@Nullable PipeLineSession session) {
+		return session == null ? null : session.getCorrelationId();
 	}
 
 	private void setEnabled(boolean enable) {
