@@ -15,6 +15,8 @@
  */
 package org.frankframework.extensions.api;
 
+import org.jspecify.annotations.Nullable;
+
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -59,7 +61,7 @@ public class ApiWsdlXmlValidator extends WsdlXmlValidator {
 	}
 
 	@Override
-	public String getDocumentation() {
+	public @Nullable String getDocumentation() {
 		if (multipart) {
 			return """
 					<br/>\

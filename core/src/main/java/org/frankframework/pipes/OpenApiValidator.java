@@ -193,7 +193,7 @@ public class OpenApiValidator extends AbstractValidator {
 	}
 
 	@Override
-	protected boolean isConfiguredForMixedValidation() {
+	public boolean isConfiguredForMixedValidation() {
 		return false;
 	}
 

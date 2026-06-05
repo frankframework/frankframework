@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -56,6 +57,7 @@ import org.xml.sax.SAXException;
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -69,12 +71,14 @@ import org.frankframework.core.HasSender;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.ICorrelatedSender.LinkMethod;
+import org.frankframework.core.IDualModeValidator;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IKnowsDeliveryCount;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowser.HideMethod;
 import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.IPipe;
 import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
@@ -83,11 +87,14 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.IThreadCountControllable;
 import org.frankframework.core.ITransactionRequirements;
 import org.frankframework.core.ITransactionalStorage;
+import org.frankframework.core.IValidator;
+import org.frankframework.core.IWrapperPipe;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ManagableLifecycle;
 import org.frankframework.core.NameAware;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
@@ -255,9 +262,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		CLOSE
 	}
 
-	private @Getter OnError onError = OnError.CONTINUE;
+	private @Getter @NonNull OnError onError = OnError.CONTINUE;
 
-	private @Getter String name;
+	private @Getter @Nullable String name;
 
 	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private @Getter int numThreads = 1;
@@ -271,9 +278,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private @Getter boolean checkForDuplicates=false;
 	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID }
 
-	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
-	private @Getter Integer maxRetries = null;
-	private Integer maxBackoffDelay = null;
+	private @Getter @NonNull CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
+	private @Getter @Nullable Integer maxRetries = null;
+	private @Nullable Integer maxBackoffDelay = null;
 	private @Getter int processResultCacheSize = 100;
 
 	/**
@@ -283,26 +290,26 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	private @Getter boolean supportProgrammaticRetry=false;
 
-	private @Getter String correlationIDXPath;
-	private @Getter String correlationIDNamespaceDefs;
-	private @Getter String correlationIDStyleSheet;
+	private @Getter @Nullable String correlationIDXPath;
+	private @Getter @Nullable String correlationIDNamespaceDefs;
+	private @Getter @Nullable String correlationIDStyleSheet;
 
-	private @Getter String labelXPath;
-	private @Getter String labelNamespaceDefs;
-	private @Getter String labelStyleSheet;
+	private @Getter @Nullable String labelXPath;
+	private @Getter @Nullable String labelNamespaceDefs;
+	private @Getter @Nullable String labelStyleSheet;
 
-	private @Getter String chompCharSize = null;
-	private @Getter String elementToMove = null;
-	private @Getter String elementToMoveSessionKey = null;
-	private @Getter String elementToMoveChain = null;
+	private @Getter @Nullable String chompCharSize = null;
+	private @Getter @Nullable String elementToMove = null;
+	private @Getter @Nullable String elementToMoveSessionKey = null;
+	private @Getter @Nullable String elementToMoveChain = null;
 	private @Getter boolean removeCompactMsgNamespaces = true;
 
-	private @Getter String hideRegex = null;
-	private Pattern hideRegexPattern = null;
-	private @Getter HideMethod hideMethod = HideMethod.ALL;
-	private @Getter String hiddenInputSessionKeys=null;
+	private @Getter @Nullable String hideRegex = null;
+	private @Nullable Pattern hideRegexPattern = null;
+	private @Getter @NonNull HideMethod hideMethod = HideMethod.ALL;
+	private @Getter @Nullable String hiddenInputSessionKeys=null;
 
-	private final AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
+	private final @NonNull AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
@@ -311,10 +318,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private boolean suspensionMessagePending=false;
 	private @Getter boolean isConfigured = false;
 
-	protected final RunStateManager runState = new RunStateManager();
-	private PullingListenerContainer<M> listenerContainer;
+	protected final @NonNull RunStateManager runState = new RunStateManager();
+	private @Nullable PullingListenerContainer<M> listenerContainer;
 
-	private final AtomicInteger threadsProcessing = new AtomicInteger();
+	private final @NonNull AtomicInteger threadsProcessing = new AtomicInteger();
 
 	private long lastMessageDate = 0;
 
@@ -325,19 +332,25 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private final List<DistributionSummary> processStatistics = new ArrayList<>();
 
+	private @Getter @Nullable IValidator inputValidator;
+	private @Getter @Nullable IValidator outputValidator;
+	private @Getter @Nullable IWrapperPipe inputWrapper;
+	private @Getter @Nullable IWrapperPipe outputWrapper;
+	private Map<String, IPipe> validatorsAndWrappers;
+
 	// The adapter that handles the messages and initiates this listener
 	private @Getter Adapter adapter;
 
 	private @Getter IListener<M> listener;
 
 	// See configure() for explanation on this field
-	private @Getter ITransactionalStorage<Serializable> messageLog = null;
-	private @Getter ITransactionalStorage<Serializable> errorStorage = null;
-	private @Getter ICorrelatedSender sender = null; // reply-sender
-	private final Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new EnumMap<>(ProcessState.class);
+	private @Getter @Nullable ITransactionalStorage<Serializable> messageLog = null;
+	private @Getter @Nullable ITransactionalStorage<Serializable> errorStorage = null;
+	private @Getter @Nullable ICorrelatedSender sender = null; // reply-sender
+	private final @NonNull Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new EnumMap<>(ProcessState.class);
 
-	private TransformerPool correlationIDTp=null;
-	private TransformerPool labelTp=null;
+	private @Nullable TransformerPool correlationIDTp=null;
+	private @Nullable TransformerPool labelTp=null;
 
 	private @Setter MetricsInitializer configurationMetrics;
 
@@ -443,12 +456,25 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * if IPullingListener -> PullingListenerContainer has to call closeAllResources();
 	 */
 	protected void tellResourcesToStop() {
+		validatorsAndWrappers.forEach(this::stopPipe);
 		if (getListener() instanceof IPushingListener) {
 			closeAllResources();
 		}
 		// IPullingListeners stop as their threads finish, as the runstate is set to stopping
 		// See PullingListenerContainer that calls receiver.isInRunState(RunStateEnum.STARTED)
 		// and receiver.closeAllResources()
+	}
+
+	private void stopPipe(@NonNull String type, @NonNull IPipe pipe) {
+		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
+			log.debug("stopping {}", type);
+			pipe.stop();
+			log.debug("successfully stopped {}", type);
+		} catch (Exception t) {
+			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
+			throw t;
+		}
+
 	}
 
 	/**
@@ -537,7 +563,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		isConfigured = false;
 		try {
 			super.configure();
-			if(getName().contains("/")) {
+			if (getName().contains("/")) {
 				throw new ConfigurationException("It is not allowed to have '/' in receiver name ["+getName()+"]");
 			}
 
@@ -545,19 +571,19 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			numRetried = configurationMetrics.createCounter(this, FrankMeterType.RECEIVER_RETRIED);
 			numRejected = configurationMetrics.createCounter(this, FrankMeterType.RECEIVER_REJECTED);
 
-			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
-			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
-			registerEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-			registerEvent(RCV_SHUTDOWN_MONITOR_EVENT);
-			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
-			registerEvent(RCV_RESUMED_MONITOR_EVENT);
-			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
+			List.of(
+					RCV_CONFIGURED_MONITOR_EVENT, RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT, RCV_STARTED_RUNNING_MONITOR_EVENT,
+					RCV_SHUTDOWN_MONITOR_EVENT, RCV_SUSPENDED_MONITOR_EVENT, RCV_RESUMED_MONITOR_EVENT, RCV_THREAD_EXIT_MONITOR_EVENT
+			).forEach(this::registerEvent);
+
 			txNewWithTimeout = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
+
+			this.validatorsAndWrappers = configureSpecialPipes();
 
 			// Do propagate-name AFTER changing the errorStorage!
 			propagateName();
-			if (getListener()==null) {
-				throw new ConfigurationException(getLogPrefix()+"has no listener");
+			if (getListener() == null) {
+				throw new ConfigurationException(getLogPrefix() + "has no listener");
 			}
 			if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
 				throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
@@ -583,14 +609,12 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					info("Listener has answer-sender on "+destination.getPhysicalDestinationName());
 				}
 			}
-			if (getListener() instanceof ITransactionRequirements tr) {
-				if (tr.transactionalRequired() && !isTransacted()) {
-					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY);
-					// throw new ConfigurationException(msg);
-				}
+			if (getListener() instanceof ITransactionRequirements tr && tr.transactionalRequired() && !isTransacted()) {
+				ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY);
 			}
+
 			ISender sender = getSender();
-			if (sender!=null) {
+			if (sender != null) {
 				sender.configure();
 				if (sender instanceof HasPhysicalDestination destination) {
 					info("has answer-sender on "+destination.getPhysicalDestinationName());
@@ -604,7 +628,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 
 			ITransactionalStorage<Serializable> messageLog = getMessageLog();
-			if (messageLog!=null) {
+			if (messageLog != null) {
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers<?>)getListener()).getMessageBrowser(ProcessState.DONE)!=null) {
 					throw new ConfigurationException("listener with built-in messageLog cannot have external messageLog too");
 				}
@@ -624,8 +648,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				}
 			}
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
-			if (errorStorage!=null) {
-				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers<?>)getListener()).getMessageBrowser(ProcessState.ERROR)!=null) {
+			if (errorStorage != null) {
+				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers<?>)getListener()).getMessageBrowser(ProcessState.ERROR) != null) {
 					throw new ConfigurationException("listener with built-in errorStorage cannot have external errorStorage too");
 				}
 				errorStorage.setName("errorStorage of ["+getName()+"]");
@@ -654,7 +678,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 			}
 
-			if (isTransacted() && errorStorage==null && !knownProcessStates().contains(ProcessState.ERROR)) {
+			if (isTransacted() && errorStorage == null && !knownProcessStates().contains(ProcessState.ERROR)) {
 				ConfigurationWarnings.add(this, log, "sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorStorage. Messages processed with errors will be lost", SuppressKeys.TRANSACTION_SUPPRESS_KEY);
 			}
 
@@ -704,6 +728,39 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
+	private Map<String, IPipe> configureSpecialPipes() {
+		Map<String, IPipe> specialPipes = new HashMap<>();
+		if (inputWrapper != null) {
+			specialPipes.put("InputWrapper", inputWrapper);
+		}
+		if (outputWrapper != null) {
+			specialPipes.put("OutputWrapper", outputWrapper);
+		}
+		if (inputValidator != null) {
+			specialPipes.put("InputValidator", inputValidator);
+			if (outputValidator == null && inputValidator instanceof IDualModeValidator dualModeValidator && dualModeValidator.isConfiguredForMixedValidation()) {
+				outputValidator = dualModeValidator.getResponseValidator();
+			}
+		}
+		if (outputValidator != null) {
+			specialPipes.put("OutputValidator", outputValidator);
+		}
+
+		specialPipes.forEach(this::configureSpecialPipe);
+		return specialPipes;
+	}
+
+	@SneakyThrows // SneakyThrows so that we can call throwing method in the map.forEach
+	private void configureSpecialPipe(@NonNull String type, @NonNull IPipe pipe) {
+		pipe.setName("Receiver " + getName() + " - " + type);
+
+		PipeForward pf = new PipeForward();
+		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
+		pipe.addForward(pf);
+
+		getAdapter().getPipeLine().configure(pipe);
+	}
+
 	protected int calculateAdjustedMaxBackoffDelay(Integer configuredMaxBackoffDelay) {
 		int backoffDelay = configuredMaxBackoffDelay != null ? configuredMaxBackoffDelay : AppConstants.getInstance(configurationClassLoader).getInt(DEFAULT_MAX_BACKOFF_DELAY_KEY, DEFAULT_MAX_BACKOFF_DELAY);
 		int transactionTimeoutCap = getActualTransactionTimeout() / 2;
@@ -715,6 +772,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	@Override
+	@SuppressWarnings("java:S1181") // Ignore Sonar complaint for catching Throwable
 	public void start() {
 		try {
 			RunState adapterRunState = adapter.getRunState();
@@ -735,7 +793,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				warn("configuration unload in progress or done. Starting the receiver ["+getName()+"] is not possible");
 				return;
 			}
-			log.trace("{} Receiver StartRunning - synchronize (lock) on Receiver runState[{}]", this::getLogPrefix, runState::toString);
 			synchronized (runState) {
 				RunState currentRunState = getRunState();
 				if (currentRunState!=RunState.STOPPED
@@ -752,7 +809,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				}
 				runState.setRunState(RunState.STARTING);
 			}
-			log.trace("{} Receiver StartRunning - lock on Receiver runState[{}] released", this::getLogPrefix, runState::toString);
 
 			openAllResources();
 
@@ -783,6 +839,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				if (getMessageLog()!=null) {
 					getMessageLog().start();
 				}
+				validatorsAndWrappers.forEach(this::startSpecialPipe);
 			} catch (Exception e) {
 				throw new LifecycleException(e);
 			}
@@ -797,6 +854,17 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			listenerContainer.start();
 		}
 		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
+	}
+
+	private void startSpecialPipe(@NonNull String type, @NonNull IPipe pipe) {
+		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put(type, pipe.getName())) {
+			log.debug("starting {}", type);
+			pipe.start();
+			log.debug("successfully started {}", type);
+		} catch (Exception t) {
+			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
+			throw t;
+		}
 	}
 
 	// After successfully closing all resources the state should be set to stopped
@@ -1267,9 +1335,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						tg.activateGuard(getTransactionTimeout());
 
 						setPipelineCallerInMessageContext(getListener().getName(), compactedMessage);
-
-						pipeLineResult = adapter.processMessageWithExceptions(messageId, compactedMessage, session);
-
+						pipeLineResult = adapter.processMessageWithExceptions(this, messageId, compactedMessage, session);
 						session.setExitState(pipeLineResult);
 						result = pipeLineResult.getResult();
 
@@ -1288,7 +1354,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						}
 
 						log.debug("{} received result: {}", logPrefix, statusMessage);
-						messageInError=itx.isRollbackOnly();
+						messageInError = itx.isRollbackOnly();
 					} finally {
 						log.debug("{} canceling TimeoutGuard, isInterrupted [{}]", () -> logPrefix, () -> Thread.currentThread().isInterrupted());
 						if (tg.cancel()) {
@@ -1296,7 +1362,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 							if (Message.isEmpty(result)) {
 								result = new Message("<timeout/>");
 							}
-							messageInError=true;
+							messageInError = true;
 						}
 					}
 					if (!messageInError && !isTransacted()) {
@@ -1308,8 +1374,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					}
 					error("Exception in message processing", t);
 					statusMessage = t.getMessage();
-					if (pipeLineResult==null) {
-						pipeLineResult=new PipeLineResult();
+					if (pipeLineResult == null) {
+						pipeLineResult = new PipeLineResult();
 						pipeLineResult.setExitCode(session.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 500)); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
 					}
 					messageInError = true;
@@ -1397,7 +1463,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 *
 	 * @param messageWrapper Message for which to register the failure.
 	 */
-	private void registerTransactionFailureHandler(MessageWrapper<M> messageWrapper) {
+	private void registerTransactionFailureHandler(@NonNull MessageWrapper<M> messageWrapper) {
 		if (TransactionSynchronizationManager.isSynchronizationActive()) {
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 				@Override
@@ -1421,23 +1487,24 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
-	private void setPipelineCallerInMessageContext(String listenerOriginName, Message message) {
+	private void setPipelineCallerInMessageContext(@Nullable String listenerOriginName, @NonNull Message message) {
 		if (listenerOriginName != null) {
 			// preserve the Listener called in the metadata/context
 			message.getContext().put(MessageContext.CONTEXT_PIPELINE_CALLER, listenerOriginName);
 		}
 	}
 
-	private String ensureMessageIdNotEmpty(String messageId) {
-		if (StringUtils.isEmpty(messageId)) {
-			messageId = MessageUtils.generateFallbackMessageId();
-			if (log.isDebugEnabled())
-				log.debug("{} Message without message id; generated messageId [{}]", getLogPrefix(), messageId);
+	private @NonNull String ensureMessageIdNotEmpty(@Nullable String messageId) {
+		if (StringUtils.isNotEmpty(messageId)) {
+			return messageId;
 		}
-		return messageId;
+		String fallbackMessageId = MessageUtils.generateFallbackMessageId();
+		if (log.isDebugEnabled())
+			log.debug("{} Message without message id; generated messageId [{}]", getLogPrefix(), fallbackMessageId);
+		return fallbackMessageId;
 	}
 
-	private Message compactMessageIfRequired(Message message, PipeLineSession session) throws ListenerException {
+	private @NonNull Message compactMessageIfRequired(@NonNull Message message, @NonNull PipeLineSession session) throws ListenerException {
 		if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
 			log.debug("{} compact received message", getLogPrefix());
 			try {
@@ -1462,7 +1529,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * @return {@code true} if message has history and should not be processed; {@code false} if the message should be processed.
 	 * @throws ListenerException If an exception happens during processing.
 	 */
-	private boolean checkMessageHistory(MessageWrapper<M> messageWrapper, PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
+	private boolean checkMessageHistory(@NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
 		String logPrefix = getLogPrefix();
 		String messageId = messageWrapper.getId();
 		String correlationId = messageWrapper.getCorrelationId();
@@ -1501,7 +1568,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return false;
 	}
 
-	private String extractLabel(Message message) {
+	private @Nullable String extractLabel(Message message) {
 		if (labelTp != null) {
 			try {
 				return labelTp.transformToString(message);
@@ -2278,5 +2345,33 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	public void setMaxBackoffDelay(Integer maxBackoffDelaySeconds) {
 		this.maxBackoffDelay = maxBackoffDelaySeconds;
+	}
+
+	/**
+	 * Request validator, or combined validator for request and response.
+	 */
+	public void setInputValidator(IValidator inputValidator) {
+		this.inputValidator = inputValidator;
+	}
+
+	/**
+	 * Optional validator to validate the response. Can be specified if the response cannot be validated by the request validator.
+	 */
+	public void setOutputValidator(IValidator outputValidator) {
+		this.outputValidator = outputValidator;
+	}
+
+	/**
+	 * Optional wrapper to extract the request message from its envelope.
+	 */
+	public void setInputWrapper(IWrapperPipe inputWrapper) {
+		this.inputWrapper = inputWrapper;
+	}
+
+	/**
+	 * Optional wrapper to wrap the response message in an envelope.
+	 */
+	public void setOutputWrapper(IWrapperPipe outputWrapper) {
+		this.outputWrapper = outputWrapper;
 	}
 }

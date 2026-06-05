@@ -98,25 +98,25 @@ public class TestReceiverOnError {
 		return receiver;
 	}
 
-	private <M> Adapter setupAdapter() throws Exception {
+	private Adapter setupAdapter() throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
 		doAnswer(invocation -> {
-			Message m = invocation.getArgument(1);
+			Message m = invocation.getArgument(2);
 			if("processMessageException".equals(m.asString())) {
 				throw new ListenerException(m.asString());
 			}
 			return invocation.callRealMethod();
-		}).when(adapter).processMessageWithExceptions(anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(adapter).processMessageWithExceptions(any(), anyString(), any(Message.class), any(PipeLineSession.class));
 
 		PipeLine pl = spy(SpringUtils.createBean(adapter, PipeLine.class));
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(ExitState.SUCCESS);
-			plr.setResult(p.getArgument(1));
+			plr.setResult(p.getArgument(2));
 			return plr;
-		}).when(pl).process(anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(pl).process(any(), anyString(), any(Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();

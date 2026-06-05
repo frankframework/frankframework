@@ -793,7 +793,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 	}
 
 	@Override
-	public void validateSenderDestination(ISender sender) throws ConfigurationException {
+	public void validateSenderDestination(ISender sender) {
 		retrievePhysicalDestinationFromSender(sender);
 	}
 }

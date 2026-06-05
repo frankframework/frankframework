@@ -183,11 +183,11 @@ public class ReceiverTest {
 		return receiver;
 	}
 
-	public <M> Adapter setupAdapter() throws Exception {
+	public Adapter setupAdapter() throws Exception {
 		return setupAdapter(ExitState.SUCCESS);
 	}
 
-	public <M> Adapter setupAdapter(ExitState exitState) throws Exception {
+	public Adapter setupAdapter(ExitState exitState) throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
@@ -195,9 +195,9 @@ public class ReceiverTest {
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(exitState);
-			plr.setResult(p.getArgument(1));
+			plr.setResult(p.getArgument(2));
 			return plr;
-		}).when(pl).process(anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(pl).process(any(), anyString(), any(Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();
@@ -708,7 +708,7 @@ public class ReceiverTest {
 		PipeLineResult pipeLineResult = new PipeLineResult();
 		pipeLineResult.setState(ExitState.SUCCESS);
 		pipeLineResult.setResult(testMessage);
-		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
+		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any(), any());
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
@@ -752,7 +752,7 @@ public class ReceiverTest {
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message(testMessage));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act
 		receiver.retryMessage("1");
@@ -790,7 +790,7 @@ public class ReceiverTest {
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message(testMessage));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act
 		receiver.retryMessage("1");
@@ -817,7 +817,7 @@ public class ReceiverTest {
 		MessageStoreListener listener = setupMessageStoreListener();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
-		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(errorStorage).consumeMessage("1");
 		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
 
@@ -847,7 +847,7 @@ public class ReceiverTest {
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, null);
 		IMessageBrowser<String> messageBrowser = mock();
 
-		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
 
 		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(messageBrowser).browseMessage(any());
@@ -1167,7 +1167,7 @@ public class ReceiverTest {
 		plr.setResult(result);
 		plr.setState(ExitState.SUCCESS);
 
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);

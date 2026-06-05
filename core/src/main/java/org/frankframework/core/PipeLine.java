@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +57,7 @@ import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
@@ -130,10 +132,11 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	private long messageSizeWarn = Misc.getMessageSizeWarnByDefault();
 	private Message transformNullMessage = null;
 
-	private @Getter IValidator inputValidator = null;
-	private @Getter IValidator outputValidator = null;
-	private @Getter IWrapperPipe inputWrapper = null;
-	private @Getter IWrapperPipe outputWrapper = null;
+	private @Getter @Nullable IValidator inputValidator;
+	private @Getter @Nullable IValidator outputValidator;
+	private @Getter @Nullable IWrapperPipe inputWrapper;
+	private @Getter @Nullable IWrapperPipe outputWrapper;
+	private final Map<String, IPipe> validatorsAndWrappers = new LinkedHashMap<>();
 
 	private final Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
 	private final Map<String, PipeForward> globalForwards = new HashMap<>();
@@ -277,34 +280,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 			throw new ConfigurationException("no pipe found for firstPipe [" + firstPipe + "]");
 		}
 
-		IValidator inputValidator = getInputValidator();
-		IValidator outputValidator = getOutputValidator();
-		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator) {
-			outputValidator = validator.getResponseValidator();
-			setOutputValidator(outputValidator);
-		}
-		if (inputValidator != null) {
-			log.debug("configuring InputValidator");
-			configurationException = configureSpecialPipe(inputValidator, INPUT_VALIDATOR_NAME, configurationException);
-		}
-		if (outputValidator != null) {
-			log.debug("configuring OutputValidator");
-			configurationException = configureSpecialPipe(outputValidator, OUTPUT_VALIDATOR_NAME, configurationException);
-		}
-
-		IWrapperPipe inputWrapper = getInputWrapper();
-		if (inputWrapper != null) {
-			log.debug("configuring InputWrapper");
-			configurationException = configureSpecialPipe(inputWrapper, INPUT_WRAPPER_NAME, configurationException);
-		}
-		IWrapperPipe outputWrapper = getOutputWrapper();
-		if (outputWrapper != null) {
-			log.debug("configuring OutputWrapper");
-			if (outputWrapper instanceof DestinationValidator validator) {
-				validator.validateListenerDestinations(this);
-			}
-			configurationException = configureSpecialPipe(outputWrapper, OUTPUT_WRAPPER_NAME, configurationException);
-		}
+		configurationException = configureSpecialPipes(configurationException);
 		if (getLocker() != null) {
 			log.debug("configuring Locker");
 			getLocker().configure();
@@ -330,19 +306,53 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		}
 	}
 
+	private @Nullable ConfigurationException configureSpecialPipes(@Nullable ConfigurationException configurationException) throws ConfigurationException {
+		IValidator inputValidator = getInputValidator();
+		IValidator outputValidator = getOutputValidator();
+		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator && validator.isConfiguredForMixedValidation()) {
+			outputValidator = validator.getResponseValidator();
+			setOutputValidator(outputValidator);
+		}
+		validatorsAndWrappers.clear();
+		if (inputValidator != null) {
+			validatorsAndWrappers.put("InputValidator", inputValidator);
+		}
+		if (outputValidator != null) {
+			validatorsAndWrappers.put("OutputValidator", outputValidator);
+		}
+
+		IWrapperPipe inputWrapper = getInputWrapper();
+		if (inputWrapper != null) {
+			validatorsAndWrappers.put("InputWrapper", inputWrapper);
+		}
+		IWrapperPipe outputWrapper = getOutputWrapper();
+		if (outputWrapper != null) {
+			if (outputWrapper instanceof DestinationValidator validator) {
+				validator.validateListenerDestinations(this);
+			}
+			validatorsAndWrappers.put("OutputWrapper", outputWrapper);
+		}
+		ConfigurationException pipesCE = validatorsAndWrappers.entrySet().stream()
+				.map(entry -> configureSpecialPipe(entry.getKey(), entry.getValue()))
+				.filter(Objects::nonNull)
+				.reduce(PipeLine::suppressException)
+				.orElse(null);
+		return pipesCE == null ? configurationException : suppressException(configurationException, pipesCE);
+	}
+
 	@Nullable
-	private ConfigurationException configureSpecialPipe(@NonNull final IPipe pipe, @NonNull final String name, @Nullable final ConfigurationException configurationException) throws ConfigurationException {
-		PipeForward pf = new PipeForward();
-		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-		pipe.addForward(pf);
-		pipe.setName(name);
+	private ConfigurationException configureSpecialPipe(@NonNull final String type, @NonNull final IPipe pipe) {
+		log.debug("configuring {}", type);
 
 		try {
+			PipeForward pf = new PipeForward();
+			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
+			pipe.addForward(pf);
 			configure(pipe);
 		} catch (ConfigurationException e) {
-			return suppressException(configurationException, e);
+			return e;
 		}
-		return configurationException;
+		return null;
 	}
 
 	@NonNull
@@ -431,14 +441,14 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeLineResult process(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
 		}
 		if (!expectsSessionKeysSet.isEmpty()) {
 			verifyExpectedSessionKeysPresent(pipeLineSession);
 		}
-		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
+		return pipeLineProcessor.processPipeLine(receiver, this, messageId, message, pipeLineSession, firstPipe);
 	}
 
 	private void verifyExpectedSessionKeysPresent(PipeLineSession session) throws PipeRunException {
@@ -476,19 +486,13 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	public void start() {
 		log.info("starting pipeline");
 
-		if (cache!=null) {
+		if (cache != null) {
 			log.debug("starting cache");
 			cache.open();
 		}
 
-		startPipe("InputWrapper",getInputWrapper());
-		startPipe("InputValidator",getInputValidator());
-		startPipe("OutputValidator",getOutputValidator());
-		startPipe("OutputWrapper",getOutputWrapper());
-
-		for (int i=0; i<pipes.size(); i++) {
-			startPipe("Pipe", getPipe(i));
-		}
+		validatorsAndWrappers.forEach(this::startPipe);
+		pipes.forEach(pipe -> startPipe("Pipe", pipe));
 
 		super.start();
 		log.info("successfully started pipeline");
@@ -499,10 +503,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		return Integer.MIN_VALUE; // Starts first, stops last
 	}
 
-	protected void startPipe(String type, IPipe pipe) {
-		if (pipe == null) {
-			return;
-		}
+	protected void startPipe(@NonNull String type, @NonNull IPipe pipe) {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
 			log.debug("starting {}", type);
 			pipe.start();
@@ -523,16 +524,10 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		log.info("is closing pipeline");
 		super.stop();
 
-		stopPipe("InputWrapper", getInputWrapper());
-		stopPipe("InputValidator", getInputValidator());
-		stopPipe("OutputValidator", getOutputValidator());
-		stopPipe("OutputWrapper", getOutputWrapper());
+		validatorsAndWrappers.forEach(this::stopPipe);
+		pipes.forEach(pipe -> stopPipe("Pipe", pipe));
 
-		for (int i=0; i<pipes.size(); i++) {
-			stopPipe("Pipe", getPipe(i));
-		}
-
-		if (cache!=null) {
+		if (cache != null) {
 			log.debug("closing cache");
 			cache.close();
 		}
@@ -550,10 +545,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		return Collections.unmodifiableMap(pipeLineExits);
 	}
 
-	protected void stopPipe(String type, IPipe pipe) {
-		if (pipe == null) {
-			return;
-		}
+	protected void stopPipe(@NonNull String type, @NonNull IPipe pipe) {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
 			log.debug("stopping {}", type);
 			pipe.stop();
@@ -582,7 +574,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	protected void additionalToString(StringBuilder result) {
 		result.append("[startPipe=").append(firstPipe).append("]");
 		result.append("[transactionAttribute=").append(getTransactionAttribute()).append("]");
-		for (int i=0; i<pipes.size(); i++) {
+		for (int i = 0; i < pipes.size(); i++) {
 			result.append("pipe").append(i).append("=[").append(getPipe(i).getName()).append("]");
 		}
 		for (PipeLineExit pe : pipeLineExits.values()) {
@@ -592,25 +584,38 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 
 	/** Request validator, or combined validator for request and response */
 	public void setInputValidator(IValidator inputValidator) {
+		if (inputValidator != null) {
+			inputValidator.setName(INPUT_VALIDATOR_NAME);
+		}
 		this.inputValidator = inputValidator;
 	}
 
 	/** Optional pipe to validate the response. Can be specified if the response cannot be validated by the request validator */
 	public void setOutputValidator(IValidator outputValidator) {
+		if (outputValidator != null) {
+			outputValidator.setName(OUTPUT_VALIDATOR_NAME);
+		}
 		this.outputValidator = outputValidator;
 	}
 
 	/** Optional pipe to extract the request message from its envelope */
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
+		if (inputWrapper != null) {
+			inputWrapper.setName(INPUT_WRAPPER_NAME);
+		}
 		this.inputWrapper = inputWrapper;
 	}
 
 	/** Optional pipe to wrap the response message in an envelope */
 	public void setOutputWrapper(IWrapperPipe outputWrapper) {
+		if (outputWrapper != null) {
+			outputWrapper.setName(OUTPUT_WRAPPER_NAME);
+		}
 		this.outputWrapper = outputWrapper;
 	}
 
 	/** PipeLine exits. If no exits are specified, a default one is created with name={@value #DEFAULT_SUCCESS_EXIT_NAME} and state={@value PipeLine.ExitState#SUCCESS_EXIT_STATE} */
+	@SuppressWarnings("java:S1874")
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
 			addPipeLineExit(exit);
@@ -625,13 +630,13 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		if (pipeLineExits.containsKey(exit.getName())) {
 			ConfigurationWarnings.add(this, log, "exit named ["+exit.getName()+"] already exists");
 		}
-		if (exit.getExitCode()>0) {
-			for(PipeLineExit item: pipeLineExits.values()) {
-				if (item.getExitCode()==exit.getExitCode()) {
-					ConfigurationWarnings.add(this, log, "exit ["+exit.getName()+"] has code ["+exit.getExitCode()+"] that is already defined. Only the first exit ["+item.getName()+"] with this code will be represented in OpenAPI schema when it is generated");
-					break;
-				}
-			}
+		if (exit.getExitCode() > 0) {
+			pipeLineExits.values().stream()
+					.filter(item -> item.getExitCode() == exit.getExitCode())
+					.findFirst()
+					.ifPresent(item ->
+							ConfigurationWarnings.add(this, log, "exit [" + exit.getName() + "] has code [" + exit.getExitCode() + "] that is already defined. Only the first exit [" + item.getName() + "] with this code will be represented in OpenAPI schema when it is generated")
+					);
 		}
 		pipeLineExits.put(exit.getName(), exit);
 	}
@@ -641,8 +646,9 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>exception</code> forward to every pipe in the pipeline.
 	 */
 	// Here for the FrankDoc documentation
+	@SuppressWarnings("java:S1874")
 	public void setGlobalForwards(PipeForwards forwards){
-		for(PipeForward forward: forwards.getForwards()) {
+		for (PipeForward forward : forwards.getForwards()) {
 			addForward(forward);
 		}
 	}
