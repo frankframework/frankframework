@@ -1,0 +1,22 @@
+<Configuration name="SimpleConfiguration">
+	<Adapter name="HelloUniverse">
+		<Receiver name="HelloUniverse">
+			<listener name="HelloUniverse" className="org.frankframework.testdummies.TestDummyListener"/>
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_In"/>
+		</Receiver>
+		<Pipeline firstPipe="HelloUniverseSender">
+			<Exit name="EXIT" state="success"/>
+
+			<SenderPipe name="HelloUniverseSender" className="org.frankframework.pipes.SenderPipe">
+				<HttpSender urlParam="https://www.example.com" methodType="GET">
+					<truststore truststoreResource="testTruststore" />
+					<param name="url_param" xpathExpression="*/@uri" />
+					<param name="Message-Id" pattern="{uuid}" />
+					<param name="Correlation-Id" pattern="{uuid}" />
+				</HttpSender>
+				<forward name="success" path="EXIT"/>
+			</SenderPipe>
+
+		</Pipeline>
+	</Adapter>
+</Configuration>
