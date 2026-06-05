@@ -9087,7 +9087,11 @@ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documen
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -9198,7 +9202,11 @@ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documen
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -9280,7 +9288,11 @@ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documen
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -9472,7 +9484,11 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -9521,7 +9537,11 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -9704,7 +9724,11 @@ validator if you want to validate both input and output. Default: false</xs:docu
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -10050,7 +10074,11 @@ validator if you want to validate both input and output. Default: false</xs:docu
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -12697,7 +12725,11 @@ exceeds the timeout, or in other situations no reply message is received.</xs:do
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -13487,7 +13519,37 @@ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_sepa
   </xs:attributeGroup>
   <xs:attributeGroup name="DelayPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="DelayPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attribute ref="emptyInputReplacement" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DirectWrapperPipeType">
     <xs:sequence>
@@ -13924,10 +13986,48 @@ Be aware that memory consumption appears to increase with file size when this at
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="defaultMediaType" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IfPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IfPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attribute ref="emptyInputReplacement" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IncreaseIntegerPipeType">
     <xs:sequence>
@@ -13969,10 +14069,48 @@ Be aware that memory consumption appears to increase with file size when this at
         <xs:documentation>The J2EE role(s) to check. If the user is in multiple roles, the first specified role will be matched.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the next pipe, but want to match roles based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IsUserInRolePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IsUserInRolePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attribute ref="emptyInputReplacement" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IsXmlPipeType">
     <xs:sequence>
@@ -13999,10 +14137,48 @@ Be aware that memory consumption appears to increase with file size when this at
         <xs:documentation>Returns elseforward when the input is empty (or thenforward). Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IsXmlPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IsXmlPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attribute ref="emptyInputReplacement" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JsonPathPipeType">
     <xs:sequence>
@@ -14670,7 +14846,37 @@ When the root is left unspecified, absolute paths to files and folders can be us
   </xs:attributeGroup>
   <xs:attributeGroup name="LogContextPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="LogContextPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attribute ref="emptyInputReplacement" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="MailSenderPipeType">
     <xs:sequence>
@@ -15188,7 +15394,11 @@ by the #setLineSeparatorSymbol(String).</xs:documentation>
     </xs:attribute>
     <xs:attribute name="lineSeparatorSymbol" type="xs:string">
       <xs:annotation>
-        <xs:documentation>sets the string that will represent the line-separator in the #setFind(String) and #setReplace(String) strings.</xs:documentation>
+        <xs:documentation>Replaces occurences of the given lineSeperatorSymbol with the host system's lineSeparator in the find and replace values.
+On UNIX systems, it returns &lt;pre&gt;\n&lt;/pre&gt;; on Microsoft Windows systems it returns &lt;pre&gt;\r\n&lt;/pre&gt;.
+&lt;br/&gt;
+This may be needed when your #setFind(String) and #setReplace(String) strings must match the content exactly
+and the input message's line-separator can differ. This attribute is not used for the input message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replaceNonXmlChars" type="frankBoolean">
@@ -15211,7 +15421,8 @@ See also:
     </xs:attribute>
     <xs:attribute name="nonXmlReplacementCharacter" type="xs:string">
       <xs:annotation>
-        <xs:documentation>character that will replace each non-valid xml character (empty string is also possible) (use &amp;amp;#x00bf; for inverted question mark) Default: empty string</xs:documentation>
+        <xs:documentation>Character that will replace each non-valid xml character (empty string is also possible) (use &amp;amp;#x00bf; for inverted question mark).
+Note that the find/replace actions are done based on TEXT and not XML content. Default: empty string</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replaceNonXmlChar" type="xs:string" />
@@ -15696,10 +15907,48 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="SwitchPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="SwitchPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attribute ref="emptyInputReplacement" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="Text2XmlPipeType">
     <xs:sequence>
@@ -15940,7 +16189,45 @@ The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="defaultMediaType" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attribute ref="emptyInputReplacement" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XmlSwitchType">
     <xs:sequence>
@@ -15982,7 +16269,45 @@ The input-message &lt;b&gt;fully&lt;/b&gt; matching the given regular expression
         <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attribute ref="emptyInputReplacement" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ZipIteratorPipeType">
     <xs:sequence>
@@ -18193,11 +18518,6 @@ throw an exception that the session-key is missing.</xs:documentation>
     <xs:annotation>
       <xs:documentation>If set and the input is empty, this fixed value is taken as the default input. The &lt;code&gt;defaultValue&lt;/code&gt; itself may be set to an empty value, for example
 to use an empty value as fallback for a missing session-key configured with &lt;code&gt;getInputFromSessionKey&lt;/code&gt;.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="preserveInput" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="storeResultInSessionKey" type="xs:string">

@@ -35,7 +35,8 @@ import org.frankframework.util.StringUtil;
 
 /**
  * Pipe that checks if the calling user has a specified role.
- * Uses the PipeLineSessions methods.
+ * Uses the PipeLineSession's methods.
+ * The input message is also the output message.
  * <p>
  * If the role is not specified by the role attribute, the input of
  * the pipe is used as the role.
@@ -116,5 +117,19 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 	/** The J2EE role(s) to check. If the user is in multiple roles, the first specified role will be matched. */
 	public void setRole(String string) {
 		role = string;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>
+	 *     Use this if you want to pass the original input message of this pipe to the next pipe, but want to match roles based on a session-key value via
+	 *     {@link org.frankframework.core.IPipe#setGetInputFromSessionKey(String)}.
+	 * </p>
+	 */
+	@Override
+	@SuppressWarnings("java:S1185") // Sonar warning not relevant b/c we want to add extra JavaDoc
+	public void setPreserveInput(boolean preserveInput) {
+		super.setPreserveInput(preserveInput);
 	}
 }

@@ -58,7 +58,7 @@ public class SkipPipe extends FixedForwardPipe {
 			} else {
 				byte[] bytesInput = message.asByteArray();
 				byte[] bytesResult;
-				if (skip > bytesInput.length) {
+				if (bytesInput == null || skip > bytesInput.length) {
 					bytesResult = new byte[0];
 				} else {
 					if (length >= 0 && length < bytesInput.length - skip) {

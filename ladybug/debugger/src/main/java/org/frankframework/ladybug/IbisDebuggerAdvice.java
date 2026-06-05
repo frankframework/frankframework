@@ -96,7 +96,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (reportGenerator == null) {
 			log.info("no Ladybug found on classpath, skipping reportGenerator.");
 		} else {
-			if(debugger == null) {
+			if (debugger == null) {
 				throw new FatalBeanException("missing bean [LadybugDebugger]");
 			}
 			debugger.setIbisManager(ibisManager);
