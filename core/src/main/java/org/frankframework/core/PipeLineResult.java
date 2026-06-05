@@ -58,7 +58,7 @@ public class PipeLineResult {
 	}
 
 	public boolean isSuccessful() {
-		return getState() == ExitState.SUCCESS;
+		return getState().isSuccess();
 	}
 
 	public Message getResult() {

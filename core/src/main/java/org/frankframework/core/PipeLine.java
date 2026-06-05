@@ -167,6 +167,10 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		REJECTED;
 
 		public static final String SUCCESS_EXIT_STATE = "SUCCESS";
+
+		public boolean isSuccess() {
+			return this == SUCCESS;
+		}
 	}
 
 	@Override
