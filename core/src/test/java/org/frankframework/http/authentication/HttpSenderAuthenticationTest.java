@@ -30,6 +30,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.encryption.KeystoreConfiguration;
+import org.frankframework.encryption.TruststoreConfiguration;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpEntityType;
@@ -690,6 +692,42 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setTruststore("/Signature/saml-keystore.p12");
 		sender.setTruststorePassword("geheim");
 		sender.setTruststoreAuthAlias("myalias");
+
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		sender.setSamlIssuer("www.successfactors.com");
+		sender.setSamlAudience("www.successfactors.com");
+
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTimeout(100000);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	void testSamlAssertionWithTruststoreElement() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.OAUTH_PATH);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
+
+		KeystoreConfiguration keystoreConfiguration = new KeystoreConfiguration();
+		keystoreConfiguration.setKeystoreResource("/Signature/saml-keystore.p12");
+		keystoreConfiguration.setKeystorePassword("geheim");
+		keystoreConfiguration.setKeystoreAlias("myalias");
+		keystoreConfiguration.setKeystoreAliasPassword("geheim");
+		sender.setKeystoreConfiguration(keystoreConfiguration);
+
+		TruststoreConfiguration truststoreConfiguration = new TruststoreConfiguration();
+		truststoreConfiguration.setTruststoreResource("/Signature/saml-keystore.p12");
+		truststoreConfiguration.setTruststorePassword("geheim");
+		truststoreConfiguration.setTruststoreAuthAlias("myalias");
+		sender.setTruststoreConfiguration(truststoreConfiguration);
 
 		sender.setClientId(MockTokenServer.CLIENT_ID);
 		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);

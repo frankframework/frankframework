@@ -46,7 +46,7 @@ import org.frankframework.doc.ReferTo;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreConfiguration;
-import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.TruststoreConfiguration;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSession;
 import org.frankframework.lifecycle.LifecycleException;
@@ -299,186 +299,29 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(HasKeystore.class)
-	public void setKeystore(String keystore) {
-		httpSession.setKeystore(keystore);
-	}
-
-	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		this.httpSession.setKeystoreConfiguration(keystoreConfiguration);
 	}
 
+	/**
+	 * Override getter to delegate to httpSession
+	 */
 	@Override
 	public KeystoreConfiguration getKeystoreConfiguration() {
 		return httpSession.getKeystoreConfiguration();
 	}
 
 	@Override
-	public String getKeystore() {
-		return httpSession.getKeystore();
+	public void setTruststoreConfiguration(TruststoreConfiguration truststoreConfiguration) {
+		httpSession.setTruststoreConfiguration(truststoreConfiguration);
 	}
 
+	/**
+	 * Override getter to delegate to httpSession
+	 */
 	@Override
-	@ReferTo(HasKeystore.class)
-	public void setKeystoreType(KeystoreType keystoreType) {
-		httpSession.setKeystoreType(keystoreType);
-	}
-
-	@Override
-	public KeystoreType getKeystoreType() {
-		return httpSession.getKeystoreType();
-	}
-
-	@Override
-	@ReferTo(HasKeystore.class)
-	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
-		httpSession.setKeystoreAuthAlias(keystoreAuthAlias);
-	}
-
-	@Override
-	public String getKeystoreAuthAlias() {
-		return httpSession.getKeystoreAuthAlias();
-	}
-
-	@Override
-	@ReferTo(HasKeystore.class)
-	public void setKeystorePassword(String keystorePassword) {
-		httpSession.setKeystorePassword(keystorePassword);
-	}
-
-	@Override
-	public String getKeystorePassword() {
-		return httpSession.getKeystorePassword();
-	}
-
-	@Override
-	@ReferTo(HasKeystore.class)
-	public void setKeystoreAlias(String keystoreAlias) {
-		httpSession.setKeystoreAlias(keystoreAlias);
-	}
-
-	@Override
-	public String getKeystoreAlias() {
-		return httpSession.getKeystoreAlias();
-	}
-
-	@Override
-	@ReferTo(HasKeystore.class)
-	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
-		httpSession.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
-	}
-
-	@Override
-	public String getKeystoreAliasAuthAlias() {
-		return httpSession.getKeystoreAliasAuthAlias();
-	}
-
-	@Override
-	@ReferTo(HasKeystore.class)
-	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
-		httpSession.setKeystoreAliasPassword(keystoreAliasPassword);
-	}
-
-	@Override
-	public String getKeystoreAliasPassword() {
-		return httpSession.getKeystoreAliasPassword();
-	}
-
-	@Override
-	@ReferTo(HasKeystore.class)
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		httpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
-	}
-
-	@Override
-	public String getKeyManagerAlgorithm() {
-		return httpSession.getKeyManagerAlgorithm();
-	}
-
-	@Override
-	@ReferTo(AbstractHttpSession.class)
-	public void setTruststore(String truststore) {
-		httpSession.setTruststore(truststore);
-	}
-
-	@Override
-	public String getTruststore() {
-		return httpSession.getTruststore();
-	}
-
-	@Override
-	@ReferTo(AbstractHttpSession.class)
-	public void setTruststoreType(KeystoreType truststoreType) {
-		httpSession.setTruststoreType(truststoreType);
-	}
-
-	@Override
-	public KeystoreType getTruststoreType() {
-		return httpSession.getTruststoreType();
-	}
-
-	@Override
-	@ReferTo(AbstractHttpSession.class)
-	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		httpSession.setTruststoreAuthAlias(truststoreAuthAlias);
-	}
-
-	@Override
-	public String getTruststoreAuthAlias() {
-		return httpSession.getTruststoreAuthAlias();
-	}
-
-	@Override
-	@ReferTo(AbstractHttpSession.class)
-	public void setTruststorePassword(String truststorePassword) {
-		httpSession.setTruststorePassword(truststorePassword);
-	}
-
-	@Override
-	public String getTruststorePassword() {
-		return httpSession.getTruststorePassword();
-	}
-
-	@Override
-	@ReferTo(AbstractHttpSession.class)
-	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		httpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
-	}
-	@Override
-	public String getTrustManagerAlgorithm() {
-		return httpSession.getTrustManagerAlgorithm();
-	}
-
-	@Override
-	@ReferTo(AbstractHttpSession.class)
-	public void setVerifyHostname(boolean verifyHostname) {
-		httpSession.setVerifyHostname(verifyHostname);
-	}
-	@Override
-	public boolean isVerifyHostname() {
-		return httpSession.isVerifyHostname();
-	}
-
-	@Override
-	@ReferTo(AbstractHttpSession.class)
-	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
-		httpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
-	}
-	@Override
-	public boolean isAllowSelfSignedCertificates() {
-		return httpSession.isAllowSelfSignedCertificates();
-	}
-
-	@Override
-	@ReferTo(AbstractHttpSession.class)
-	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-		httpSession.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
-	}
-
-	@Override
-	public boolean isIgnoreCertificateExpiredException() {
-		return httpSession.isIgnoreCertificateExpiredException();
+	public TruststoreConfiguration getTruststoreConfiguration() {
+		return httpSession.getTruststoreConfiguration();
 	}
 
 	@ReferTo(AbstractHttpSession.class)
