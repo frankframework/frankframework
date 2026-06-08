@@ -204,6 +204,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		} else {
 			// Forwarding to a pipe that handles output-validation errors
 			ProcessingResult<PipeLineExit> errorHandlerResult = runToExit(pipeLine, forwardTarget, message, pipeLineSession);
+			if (outputValidationFailedPreviously) {
+				return errorHandlerResult;
+			}
 			// Recursive call to do post-processing of the output from error-handling pipe
 			return postProcessOutput(pipeLine, errorHandlerResult, pipeLineSession, true);
 		}
