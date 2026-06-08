@@ -32,7 +32,7 @@ public class TruststoreConfiguration {
 
 	/**
 	 * Type of truststore
-	 * @ff.default pkcs12
+	 * @ff.default JKS
 	 */
 	private KeystoreType truststoreType = KeystoreType.JKS;
 
