@@ -16,7 +16,6 @@
 package org.frankframework.extensions.cmis;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
@@ -152,8 +151,9 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 	}
 
 	@Override
-	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) {
 		int responseCode = -1;
+
 		try {
 			StatusLine statusline = responseHandler.getStatusLine();
 			responseCode = statusline.getStatusCode();
@@ -162,16 +162,16 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 			InputStream responseStream = null;
 			InputStream errorStream = null;
 			Map<String, List<String>> headerFields = responseHandler.getHeaderFields();
+
 			if (responseCode == 200 || responseCode == 201 || responseCode == 203 || responseCode == 206) {
 				responseStream = responseMessage.asInputStream();
-			}
-			else {
+			} else {
 				errorStream = responseMessage.asInputStream();
 			}
+
 			Response response = new Response(responseCode, statusline.toString(), headerFields, responseStream, errorStream);
 			session.put("__response", response);
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
 		}
 
@@ -197,5 +197,4 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 			}
 		}
 	}
-
 }

@@ -31,8 +31,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationContext;
 
 import org.frankframework.core.IScopeProvider;
+import org.frankframework.encryption.HasKeystore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.ClassLoaderUtils;
@@ -41,8 +44,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
-
-public class CmisSessionBuilder {
+public class CmisSessionBuilder implements HasKeystore{
 	private final Logger log = LogUtil.getLogger(this);
 
 	private BindingTypes bindingType = null;
@@ -63,17 +65,13 @@ public class CmisSessionBuilder {
 	private boolean allowSelfSignedCertificates = false;
 	private boolean verifyHostname = true;
 	private boolean ignoreCertificateExpiredException = false;
-	private String keystore = null;
-	private String keystoreAuthAlias = null;
-	private String keystorePassword = null;
-	private String keystoreAlias = null;
-	private String keystoreAliasAuthAlias = null;
-	private String keystoreAliasPassword = null;
+
+	private KeystoreConfiguration keystoreConfiguration;
+
 	private String truststore = null;
 	private String truststoreAuthAlias = null;
 	private String truststorePassword = null;
-	private KeystoreType keystoreType = KeystoreType.PKCS12;
-	private String keyManagerAlgorithm = "PKIX";
+
 	private KeystoreType truststoreType = KeystoreType.JKS;
 	private String trustManagerAlgorithm = "PKIX";
 
@@ -95,15 +93,14 @@ public class CmisSessionBuilder {
 
 	public CmisSessionBuilder() {
 	}
+
 	public static CmisSessionBuilder create() {
 		return new CmisSessionBuilder();
 	}
 
-	public CmisSessionBuilder(IScopeProvider scopeProvider) {
+	public CmisSessionBuilder(IScopeProvider scopeProvider, KeystoreConfiguration keystoreConfiguration) {
 		this.scopeProvider = scopeProvider;
-	}
-	public static CmisSessionBuilder create(IScopeProvider scopeProvider) {
-		return new CmisSessionBuilder(scopeProvider);
+		this.keystoreConfiguration = keystoreConfiguration;
 	}
 
 	/**
@@ -206,19 +203,24 @@ public class CmisSessionBuilder {
 		parameterMap.setRepositoryId(repository);
 
 		// SSL
-		if (keystore!=null || truststore!=null || allowSelfSignedCertificates) {
-			CredentialFactory keystoreCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
+		if (keystoreConfiguration != null || truststore != null || allowSelfSignedCertificates) {
+			String keystoreResource = keystoreConfiguration.getKeystoreResource();
+
+			CredentialFactory keystoreCf = new CredentialFactory(keystoreResource, null, keystoreConfiguration.getKeystorePassword());
+			String keystoreAliasPassword = getKeystoreAliasPassword();
+			String keystoreAliasAuthAlias = keystoreConfiguration.getKeystoreAliasAuthAlias();
+
 			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword)
 							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword)
 							: keystoreCf;
 			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
 
-			parameterMap.put("keystoreUrl", keystore);
+			parameterMap.put("keystoreUrl", keystoreResource);
 			parameterMap.put("keystorePassword", keystoreCf.getPassword());
-			parameterMap.put("keystoreType", keystoreType.name());
-			parameterMap.put("keystoreAlias", keystoreAlias);
+			parameterMap.put("keystoreType", keystoreConfiguration.getKeystoreType().name());
+			parameterMap.put("keystoreAlias", keystoreConfiguration.getKeystoreAlias());
+			parameterMap.put("keyManagerAlgorithm", keystoreConfiguration.getKeyManagerAlgorithm());
 			parameterMap.put("keystoreAliasPassword", keystoreAliasCf.getPassword());
-			parameterMap.put("keyManagerAlgorithm", keyManagerAlgorithm);
 			parameterMap.put("truststoreUrl", truststore);
 			parameterMap.put("truststorePassword", truststoreCf.getPassword());
 			parameterMap.put("truststoreType", truststoreType.name());
@@ -275,6 +277,16 @@ public class CmisSessionBuilder {
 		return session;
 	}
 
+	@Override
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
+		this.keystoreConfiguration = keystoreConfiguration;
+	}
+
+	@Override
+	public KeystoreConfiguration getKeystoreConfiguration() {
+		return keystoreConfiguration;
+	}
+
 	public static String getRepositoryInfo(Session cmisSession) {
 		RepositoryInfo ri = cmisSession.getRepositoryInfo();
 		String id = ri.getId();
@@ -290,44 +302,6 @@ public class CmisSessionBuilder {
 		if(!overrideEntryPointWSDL.isEmpty())
 			this.overrideEntryPointWSDL = overrideEntryPointWSDL;
 
-		return this;
-	}
-
-	public CmisSessionBuilder setKeystore(String string) {
-		keystore = string;
-		return this;
-	}
-
-	public CmisSessionBuilder setKeystoreType(KeystoreType value) {
-		keystoreType = value;
-		return this;
-	}
-
-	public CmisSessionBuilder setKeystoreAuthAlias(String string) {
-		keystoreAuthAlias = string;
-		return this;
-	}
-
-	public CmisSessionBuilder setKeystorePassword(String string) {
-		keystorePassword = string;
-		return this;
-	}
-
-	public CmisSessionBuilder setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		this.keyManagerAlgorithm = keyManagerAlgorithm;
-		return this;
-	}
-
-	public CmisSessionBuilder setKeystoreAlias(String string) {
-		keystoreAlias = string;
-		return this;
-	}
-	public CmisSessionBuilder setKeystoreAliasAuthAlias(String string) {
-		keystoreAliasAuthAlias = string;
-		return this;
-	}
-	public CmisSessionBuilder setKeystoreAliasPassword(String string) {
-		keystoreAliasPassword = string;
 		return this;
 	}
 
@@ -466,31 +440,6 @@ public class CmisSessionBuilder {
 	public String toString() {
 		return StringUtil.reflectionToString(this);
 	}
-
-	public String getKeystore() {
-		return keystore;
-	}
-	public KeystoreType getKeystoreType() {
-		return keystoreType;
-	}
-	public String getKeystoreAuthAlias() {
-		return keystoreAuthAlias;
-	}
-	public String getKeystorePassword() {
-		return keystorePassword;
-	}
-	public String getKeystoreAlias() {
-		return keystoreAlias;
-	}
-	public String getKeystoreAliasAuthAlias() {
-		return keystoreAliasAuthAlias;
-	}
-	public String getKeystoreAliasPassword() {
-		return keystoreAliasPassword;
-	}
-	public String getKeyManagerAlgorithm() {
-		return keyManagerAlgorithm;
-	}
 	public String getTruststore() {
 		return truststore;
 	}
@@ -514,5 +463,10 @@ public class CmisSessionBuilder {
 	}
 	public boolean isIgnoreCertificateExpiredException() {
 		return ignoreCertificateExpiredException;
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		throw new IllegalArgumentException("ApplicationContext is not supported by CmisSessionBuilder");
 	}
 }

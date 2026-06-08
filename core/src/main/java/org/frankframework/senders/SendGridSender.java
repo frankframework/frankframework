@@ -45,6 +45,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSession;
@@ -298,9 +299,19 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystore(String keystore) {
 		httpSession.setKeystore(keystore);
+	}
+
+	@Override
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
+		this.httpSession.setKeystoreConfiguration(keystoreConfiguration);
+	}
+
+	@Override
+	public KeystoreConfiguration getKeystoreConfiguration() {
+		return httpSession.getKeystoreConfiguration();
 	}
 
 	@Override
@@ -309,7 +320,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
 		httpSession.setKeystoreType(keystoreType);
 	}
@@ -320,7 +331,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		httpSession.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
@@ -331,7 +342,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystorePassword(String keystorePassword) {
 		httpSession.setKeystorePassword(keystorePassword);
 	}
@@ -342,7 +353,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAlias(String keystoreAlias) {
 		httpSession.setKeystoreAlias(keystoreAlias);
 	}
@@ -353,7 +364,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		httpSession.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
@@ -364,7 +375,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		httpSession.setKeystoreAliasPassword(keystoreAliasPassword);
 	}
@@ -375,7 +386,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	}
 
 	@Override
-	@ReferTo(AbstractHttpSession.class)
+	@ReferTo(HasKeystore.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		httpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
@@ -464,6 +475,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		httpSession.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
+
 	@Override
 	public boolean isIgnoreCertificateExpiredException() {
 		return httpSession.isIgnoreCertificateExpiredException();
@@ -483,7 +495,6 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 	public void setStaleTimeout(int timeout) {
 		httpSession.setStaleTimeout(timeout);
 	}
-
 
 	@ReferTo(AbstractHttpSession.class)
 	public void setProtocol(String protocol) {

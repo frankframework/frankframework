@@ -68,6 +68,7 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
@@ -232,7 +233,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 
 	private CloseableCmisSession globalSession;
 
-	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
+	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this, createKeystoreConfiguration());
 
 	private @Getter String fileSessionKey;
 
@@ -1009,76 +1010,18 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 
 	@Override
 	public void setKeystore(String keystore) {
-		sessionBuilder.setKeystore(keystore);
-	}
-	@Override
-	public String getKeystore() {
-		return sessionBuilder.getKeystore();
+		sessionBuilder.getKeystoreConfiguration().setKeystoreResource(keystore);
 	}
 
 	@Override
-	public void setKeystoreType(KeystoreType keystoreType) {
-		sessionBuilder.setKeystoreType(keystoreType);
-	}
-	@Override
-	public KeystoreType getKeystoreType() {
-		return sessionBuilder.getKeystoreType();
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
+		sessionBuilder.setKeystoreConfiguration(keystoreConfiguration);
 	}
 
 	@Override
-	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
-		sessionBuilder.setKeystoreAuthAlias(keystoreAuthAlias);
+	public KeystoreConfiguration getKeystoreConfiguration() {
+		return sessionBuilder.getKeystoreConfiguration();
 	}
-	@Override
-	public String getKeystoreAuthAlias() {
-		return sessionBuilder.getKeystoreAuthAlias();
-	}
-
-	@Override
-	public void setKeystorePassword(String keystorePassword) {
-		sessionBuilder.setKeystorePassword(keystorePassword);
-	}
-	@Override
-	public String getKeystorePassword() {
-		return sessionBuilder.getKeystorePassword();
-	}
-
-	@Override
-	public void setKeystoreAlias(String keystoreAlias) {
-		sessionBuilder.setKeystoreAlias(keystoreAlias);
-	}
-	@Override
-	public String getKeystoreAlias() {
-		return sessionBuilder.getKeystoreAlias();
-	}
-
-	@Override
-	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
-		sessionBuilder.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
-	}
-	@Override
-	public String getKeystoreAliasAuthAlias() {
-		return sessionBuilder.getKeystoreAliasAuthAlias();
-	}
-
-	@Override
-	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
-		sessionBuilder.setKeystoreAliasPassword(keystoreAliasPassword);
-	}
-	@Override
-	public String getKeystoreAliasPassword() {
-		return sessionBuilder.getKeystoreAliasPassword();
-	}
-
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		sessionBuilder.setKeyManagerAlgorithm(keyManagerAlgorithm);
-	}
-	@Override
-	public String getKeyManagerAlgorithm() {
-		return sessionBuilder.getKeyManagerAlgorithm();
-	}
-
 
 	@Override
 	public void setTruststore(String truststore) {
