@@ -22,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 
@@ -29,6 +30,8 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -95,6 +98,17 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		}
 		if (StringUtils.isEmpty(getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
+		}
+		if (getKeystoreType() == KeystoreType.PEM && Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+			Security.addProvider(new BouncyCastleProvider());
+		}
+		if (!Security.getAlgorithms("Signature").contains(getAlgorithm())  && Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+			// If the algorithm is not supported, first try if that is solved by adding the BouncyCastle provider
+			Security.addProvider(new BouncyCastleProvider());
+		}
+
+		if (!Security.getAlgorithms("Signature").contains(getAlgorithm())) {
+			throw new ConfigurationException("Signature algorithm [" + getAlgorithm() + "] not supported, supported algorithms: " + Security.getAlgorithms("Signature"));
 		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
