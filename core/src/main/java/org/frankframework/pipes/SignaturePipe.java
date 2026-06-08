@@ -28,6 +28,7 @@ import java.security.SignatureException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jspecify.annotations.NonNull;
 
@@ -97,13 +98,15 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (getKeystoreType() == KeystoreType.PEM && Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
 			Security.addProvider(new BouncyCastleProvider());
 		}
-		if (!Security.getAlgorithms("Signature").contains(getAlgorithm())  && Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+
+		String signingAlgorithm = getAlgorithm();
+		if (!isSigningAlgorithmAvailable(signingAlgorithm) && Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
 			// If the algorithm is not supported, first try if that is solved by adding the BouncyCastle provider
 			Security.addProvider(new BouncyCastleProvider());
 		}
 
-		if (!Security.getAlgorithms("Signature").contains(getAlgorithm())) {
-			throw new ConfigurationException("Signature algorithm [" + getAlgorithm() + "] not supported, supported algorithms: " + Security.getAlgorithms("Signature"));
+		if (!isSigningAlgorithmAvailable(signingAlgorithm)) {
+			throw new ConfigurationException("Signature algorithm [" + signingAlgorithm + "] not supported, supported algorithms: " + Security.getAlgorithms("Signature"));
 		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
@@ -116,6 +119,10 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 				throw new ConfigurationException("Forward [failure] must be specified for action [" + action + "]");
 			}
 		}
+	}
+
+	private static boolean isSigningAlgorithmAvailable(String signingAlgorithm) {
+		return Strings.CI.equalsAny(signingAlgorithm, Security.getAlgorithms("Signature").toArray(String[]::new));
 	}
 
 	@Override
