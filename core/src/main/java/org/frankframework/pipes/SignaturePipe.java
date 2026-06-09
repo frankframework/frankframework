@@ -95,34 +95,38 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (StringUtils.isEmpty(this.getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
-		if (getKeystoreType() == KeystoreType.PEM && Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+		if (getKeystoreType() == KeystoreType.PEM && isNoBouncyCastleLoaded()) {
 			Security.addProvider(new BouncyCastleProvider());
 		}
 
 		String signingAlgorithm = getAlgorithm();
-		if (!isSigningAlgorithmAvailable(signingAlgorithm) && Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+		if (isSigningAlgorithmMissing(signingAlgorithm) && isNoBouncyCastleLoaded()) {
 			// If the algorithm is not supported, first try if that is solved by adding the BouncyCastle provider
 			Security.addProvider(new BouncyCastleProvider());
 		}
 
-		if (!isSigningAlgorithmAvailable(signingAlgorithm)) {
+		if (isSigningAlgorithmMissing(signingAlgorithm)) {
 			throw new ConfigurationException("Signature algorithm [" + signingAlgorithm + "] not supported, supported algorithms: " + Security.getAlgorithms("Signature"));
 		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
 		if (getAction() == Action.VERIFY) {
 			if (!getParameterList().hasParameter(PARAMETER_SIGNATURE)) {
-				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
+				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specified for action [" + action + "]");
 			}
 			failureForward = findForward("failure");
-			if (failureForward==null)  {
+			if (failureForward == null)  {
 				throw new ConfigurationException("Forward [failure] must be specified for action [" + action + "]");
 			}
 		}
 	}
 
-	private static boolean isSigningAlgorithmAvailable(String signingAlgorithm) {
-		return Strings.CI.equalsAny(signingAlgorithm, Security.getAlgorithms("Signature").toArray(String[]::new));
+	private static boolean isNoBouncyCastleLoaded() {
+		return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null;
+	}
+
+	private static boolean isSigningAlgorithmMissing(String signingAlgorithm) {
+		return !Strings.CI.equalsAny(signingAlgorithm, Security.getAlgorithms("Signature").toArray(String[]::new));
 	}
 
 	@Override
