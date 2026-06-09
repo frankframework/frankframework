@@ -16,13 +16,11 @@ limitations under the License.
 package org.frankframework.doc;
 
 import java.lang.annotation.Documented;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
 @Label(name = "Components")
-@Repeatable(FrankDocGroups.class)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FrankDocGroup {
 	FrankDocGroupValue value();
