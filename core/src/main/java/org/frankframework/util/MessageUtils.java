@@ -48,6 +48,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.Tika;
+import org.apache.tika.io.TikaInputStream;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
@@ -315,7 +316,7 @@ public class MessageUtils {
 			name = filename;
 		}
 
-		try (InputStream inputStream = message.asInputStream()) {
+		try (TikaInputStream inputStream = TikaInputStream.get(message.asInputStream())) {
 			String mediaType = TIKA.detect(inputStream, name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
 			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && StringUtils.isBlank(FilenameUtils.getExtension(name))) {

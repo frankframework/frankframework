@@ -16,6 +16,7 @@
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,8 +31,8 @@ import com.aspose.pdf.XpsLoadOptions;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
 
 /**
@@ -57,16 +58,24 @@ public class PdfConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public Message convert(MediaType mediaType, Message message) throws Exception {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
-		try (InputStream inputStream = message.asInputStream(charset); Document doc = new Document(inputStream, getLoadOptions(mediaType))) {
-			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
-			doc.freeMemory();
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (InputStream inputStream = message.asInputStream(configuration.getCharset());
+				Document doc = new Document(inputStream, getLoadOptions(mediaType))) {
+
+			int numberOfPages = doc.getPages().size();
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				doc.save(messageBuilder.asOutputStream(), SaveFormat.Pdf);
+			}
+
+			Message result = messageBuilder.build();
+			result.getContext().withMimeType(PDF_MIMETYPE).with("Pdf.Pages", numberOfPages);
+			return result;
 		}
-		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
 
 	@NonNull

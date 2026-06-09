@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2024, 2026 WeAreFrank!
+   Copyright 2019, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,35 +15,46 @@
 */
 package org.frankframework.extensions.aspose.services.conv;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
+
+import com.aspose.pdf.Document;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.extensions.aspose.ConversionOption;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.PathMessage;
 import org.frankframework.util.XmlBuilder;
 
-/**
- * @author
- * 	Gerard van der Hoorn
- */
 public class CisConversionResult {
 
+	private static final String DEFAULT_FILENAME = "default_filename";
 	private static final String PASSWORD_MESSAGE = "Failed to convert to PDF. Reason: The file has been protected with a password.";
 
 	private @Getter @Setter ConversionOption conversionOption;
 	private @Getter @Setter MediaType mediaType;
-	private @Getter @Setter String documentName;
+	private @Getter String documentName;
 	private @Getter @Setter String failureReason;
 	private @Getter @Setter int numberOfPages;
-	private @Getter @Setter String resultFilePath;
-	private @Getter @Setter String resultSessionKey;
+	private Message message;
+	private @Setter String resultSessionKey;
+
+	public void setDocumentName(String filename) {
+		documentName = StringUtils.defaultIfBlank(filename, DEFAULT_FILENAME);
+	}
 
 	/**
 	 * List with documents which where part of the source document (e.g. attachments
@@ -54,69 +65,79 @@ public class CisConversionResult {
 	 * can contain pdf files.
 	 * </p>
 	 */
-	private final List<CisConversionResult> attachments = new ArrayList<>();
+	private final List<Message> attachments = new ArrayList<>();
 
 	/**
-	 * Converted document when succeeded (otherwise <code>null</code>)
+	 * If set, the converted PDF file should be placed in this location.
 	 */
-	@Setter @Getter private File pdfResultFile;
+	private Path resultFileLocation;
 
-	public static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType,
-			String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
+	public void setPersistToDisk(String pdfOutputLocation) throws IOException {
+		Path resultFileDirectory = Paths.get(pdfOutputLocation);
+		resultFileLocation = Files.createTempFile(resultFileDirectory, "msg", ".pdf");
+	}
 
-		CisConversionResult cisConversionResult = new CisConversionResult();
-		cisConversionResult.setConversionOption(conversionOption);
-		cisConversionResult.setMediaType(mediaType);
-		cisConversionResult.setDocumentName(documentName);
-		cisConversionResult.setPdfResultFile(pdfResultFile);
-		cisConversionResult.setFailureReason(failureReason);
-		if (argAttachments != null) {
-			for (CisConversionResult attachment : argAttachments) {
-				cisConversionResult.addAttachment(attachment);
+	public void setMessage(Message message) throws IOException {
+		this.message = message;
+		if (message == null) return;
+
+		if (!message.getContext().containsKey("Pdf.Pages")) {
+			try (InputStream inStream = message.asInputStream()) {
+				try(Document doc = new Document(inStream)) {
+					numberOfPages = doc.getPages().size();
+				}
 			}
+		} else {
+			numberOfPages = (int) message.getContext().get("Pdf.Pages");
+		}
+	}
+
+	public Message getMessage() throws IOException {
+		if (resultFileLocation == null) {
+			return message;
 		}
 
-		return cisConversionResult;
+		try (OutputStream out = Files.newOutputStream(resultFileLocation)) {
+			message.asInputStream().transferTo(out);
+		}
+		return PathMessage.asTemporaryMessage(resultFileLocation);
 	}
 
-	/**
-	 * Create a successful CisConversionResult
-	 */
-	public static CisConversionResult createSuccessResult(ConversionOption conversionOption,
-			MediaType mediaTypeReceived, String documentName, File pdfResultFile,
-			List<CisConversionResult> attachments) {
-		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, pdfResultFile, null,
-				attachments);
+	public Message rawMessage() {
+		return message;
 	}
 
-	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
-			MediaType mediaTypeReceived, String documentName, String failureReason) {
-		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, null, failureReason, null);
-	}
-
-	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
-			MediaType mediaTypeReceived, String documentName, String failureReason,
-			List<CisConversionResult> attachments) {
-		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, null, failureReason,
-				attachments);
-	}
-
-	public static CisConversionResult createPasswordFailureResult(String filename, ConversionOption conversionOption,
-			MediaType mediaTypeReceived) {
+	public static CisConversionResult createPasswordFailureResult(String filename, ConversionOption conversionOption, MediaType mediaTypeReceived) {
 		StringBuilder msg = new StringBuilder();
 		if (filename != null) {
 			msg.append(filename);
 		}
 		msg.append(" ").append(PASSWORD_MESSAGE);
-		return createFailureResult(conversionOption, mediaTypeReceived, filename, msg.toString(), null);
+		return createFailureResult(conversionOption, mediaTypeReceived, filename, msg.toString());
+	}
+
+	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
+			MediaType mediaTypeReceived, String documentName, String failureReason) {
+		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, failureReason);
+	}
+
+	private static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType, String documentName, String failureReason) {
+
+		CisConversionResult cisConversionResult = new CisConversionResult();
+		cisConversionResult.setConversionOption(conversionOption);
+		cisConversionResult.setMediaType(mediaType);
+		cisConversionResult.setDocumentName(documentName);
+		cisConversionResult.setFailureReason(failureReason);
+
+		return cisConversionResult;
 	}
 
 	@NonNull
-	public List<CisConversionResult> getAttachments() {
+	public List<Message> getAttachments() {
 		return Collections.unmodifiableList(attachments);
 	}
 
-	public void addAttachment(CisConversionResult attachment) {
+	public void addAttachment(Message attachment) {
 		this.attachments.add(attachment);
 	}
 
@@ -129,45 +150,34 @@ public class CisConversionResult {
 		return super.toString() + String.format("ConversionOption=[%s]", getConversionOption()) +
 				String.format("mediaType=[%s]", getMediaType()) +
 				String.format("documentName=[%s]", getDocumentName()) +
-				"pdfResultFile=[%s]".formatted(getPdfResultFile() == null ? "null" : getPdfResultFile().getName()) +
-				String.format("sessionKey=[%s]", getResultSessionKey()) +
+				"pdfResultFile=[%s]".formatted(resultFileLocation == null ? "null" : resultFileLocation) +
+				String.format("sessionKey=[%s]", resultSessionKey) +
 				String.format("failureReason=[%s]", getFailureReason()) +
 				"attachments=[%s]".formatted(getAttachments());
 	}
 
 	/**
-	 * Creates and xml containing conversion results both attachments and the main document.
+	 * Creates an XML containing conversion results both attachments and the main document.
 	 */
-	public void buildXmlFromResult(XmlBuilder main, boolean isRoot) {
-		buildXmlFromResult(main, this, isRoot);
+	public XmlBuilder toXML() throws IOException {
+		return toXML(new XmlBuilder("main"));
 	}
-	private void buildXmlFromResult(XmlBuilder main, CisConversionResult cisConversionResult, boolean isRoot) {
-		if(isRoot) {
-			main.addAttribute("conversionOption", this.getConversionOption().getValue());
-			main.addAttribute("mediaType", this.getMediaType().toString());
-			main.addAttribute("documentName", this.getDocumentName());
-			main.addAttribute("failureReason", this.getFailureReason());
-			main.addAttribute("numberOfPages", this.getNumberOfPages());
-			main.addAttribute("convertedDocument", this.getResultFilePath());
-			main.addAttribute("sessionKey", this.getResultSessionKey());
-		}
-		List<CisConversionResult> attachmentList = cisConversionResult.getAttachments();
-		if (!attachmentList.isEmpty()) {
-			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
-			for (CisConversionResult attachment : attachmentList) {
-				XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
-				attachmentAsXml.addAttribute("conversionOption", attachment.getConversionOption().getValue() + "");
-				attachmentAsXml.addAttribute("mediaType", attachment.getMediaType().toString());
-				attachmentAsXml.addAttribute("documentName", attachment.getDocumentName());
-				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
-				attachmentAsXml.addAttribute("numberOfPages", attachment.getNumberOfPages());
-				attachmentAsXml.addAttribute("convertedDocument", attachment.getResultFilePath());
-				attachmentAsXml.addAttribute("sessionKey", attachment.getResultSessionKey());
-				attachmentsAsXml.addSubElement(attachmentAsXml);
 
-				buildXmlFromResult(attachmentAsXml, attachment, false);
-			}
-			main.addSubElement(attachmentsAsXml);
+	/**
+	 * Append this result to the parent
+	 */
+	public XmlBuilder toXML(XmlBuilder xmlResult) throws IOException {
+		xmlResult.addAttribute("conversionOption", getConversionOption().getValue());
+		xmlResult.addAttribute("mediaType", getMediaType().toString());
+		xmlResult.addAttribute("documentName", getDocumentName());
+		xmlResult.addAttribute("failureReason", getFailureReason());
+		xmlResult.addAttribute("numberOfPages", getNumberOfPages());
+
+		if (message != null && resultFileLocation != null) {
+			xmlResult.addAttribute("convertedDocument", resultFileLocation.toString());
 		}
+		xmlResult.addAttribute("sessionKey", resultSessionKey);
+		return xmlResult;
 	}
+
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022, 2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import com.aspose.pdf.Page;
 import com.aspose.pdf.SaveFormat;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.LogUtil;
@@ -79,11 +78,12 @@ public class PdfImageConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public Message convert(MediaType mediaType, Message message) throws IOException {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
+		MessageBuilder messageBuilder = new MessageBuilder();
 		try (Document doc = new Document()) {
 			Page page = doc.getPages().add(); // Don't close this!?
 
@@ -103,11 +103,15 @@ public class PdfImageConvertor extends AbstractConvertor {
 				}
 			}
 
-			long startTime = System.currentTimeMillis();
-			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
-			long endTime = System.currentTimeMillis();
-			LOGGER.info("Conversion(save operation in convert method) takes  ::: {} ms", () -> (endTime - startTime));
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				doc.save(messageBuilder.asOutputStream(), SaveFormat.Pdf);
+			}
+
+			doc.freeMemory();
+
+			Message result = messageBuilder.build();
+			result.getContext().withMimeType(PDF_MIMETYPE);
+			return result;
 		}
 	}
 

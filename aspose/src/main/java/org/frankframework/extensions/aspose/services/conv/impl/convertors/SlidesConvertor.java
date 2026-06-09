@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2023 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,13 +31,12 @@ import com.aspose.slides.SaveFormat;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
 
 /**
- * Converts the files which are required and supported by the aspose slides
- * library.
+ * Converts the files which are required and supported by the Aspose slides library.
  *
  */
 @Log4j2
@@ -57,22 +57,28 @@ public class SlidesConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public Message convert(MediaType mediaType, Message input) throws Exception {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
-		try (InputStream inputStream = message.asInputStream(charset)) {
+
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (InputStream inputStream = input.asInputStream(configuration.getCharset())) {
 			LoadOptions loadOptions = getLoadOptions(mediaType);
 			if(!configuration.isLoadExternalResources()){
 				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 			}
 			Presentation presentation = new Presentation(inputStream, loadOptions);
-			long startTime = System.currentTimeMillis();
-			presentation.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
-			long endTime = System.currentTimeMillis();
-			log.debug("conversion (save operation in convert method) took [{}ms]", (endTime - startTime));
+
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				presentation.save(stream, SaveFormat.Pdf);
+			}
+
+			Message result = messageBuilder.build();
 			presentation.dispose();
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+
+			result.getContext().withMimeType(PDF_MIMETYPE);
+			return result;
 		}
 	}
 

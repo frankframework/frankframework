@@ -56,7 +56,7 @@ public class ConvertorFactory {
 	}
 
 	/**
-	 * Return <code>null</code> when no convertor is found.
+	 * Return <code>null</code> when no converter is found.
 	 */
 	public Convertor getConvertor(MediaType mediaType) {
 		return convertorLookupMap.get(mediaType);

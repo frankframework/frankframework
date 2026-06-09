@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,22 +15,22 @@
 */
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.OutputStream;
 
-import org.apache.commons.io.ByteOrderMark;
-import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.http.MediaType;
 
+import com.aspose.pdf.Document;
+import com.aspose.pdf.SaveFormat;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 
 /**
- * Convertor for a pdf file (no conversion required).
+ * Converter for a pdf file (no conversion required).
  *
  */
 public class PdfStandaardConvertor extends AbstractConvertor {
@@ -39,16 +39,24 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 		super(configuration, new MediaType("application", "pdf"));
 	}
 
+	/**
+	 * Read the PDF to ensure it's validity and get the amount of pages.
+	 */
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-		try (InputStream is = BOMInputStream.builder()
-				.setInputStream(message.asInputStream(charset))
-				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
-				.get()){
-			Files.copy(is, Paths.get(result.getPdfResultFile().getCanonicalPath()));
-		}
+	public Message convert(MediaType mediaType, Message message) throws IOException {
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (InputStream inputStream = message.asInputStream(configuration.getCharset());
+				Document doc = new Document(inputStream)) {
 
-		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+			int numberOfPages = doc.getPages().size();
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				doc.save(stream, SaveFormat.Pdf);
+			}
+
+			Message result = messageBuilder.build();
+			result.getContext().withMimeType(PDF_MIMETYPE).with("Pdf.Pages", numberOfPages);
+			return result;
+		}
 	}
 
 	@Override
