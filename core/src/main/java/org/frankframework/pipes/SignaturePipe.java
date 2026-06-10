@@ -95,16 +95,11 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (StringUtils.isEmpty(this.getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
-		if (getKeystoreType() == KeystoreType.PEM && isNoBouncyCastleLoaded()) {
-			Security.addProvider(new BouncyCastleProvider());
-		}
-
 		String signingAlgorithm = getAlgorithm();
-		if (isSigningAlgorithmMissing(signingAlgorithm) && isNoBouncyCastleLoaded()) {
-			// If the algorithm is not supported, first try if that is solved by adding the BouncyCastle provider
+		if (isNoBouncyCastleLoaded() && (getKeystoreType() == KeystoreType.PEM || isSigningAlgorithmMissing(signingAlgorithm))) {
 			Security.addProvider(new BouncyCastleProvider());
 		}
-
+		// Adding BouncyCastle may add the missing algorithm, check again after loading BC.
 		if (isSigningAlgorithmMissing(signingAlgorithm)) {
 			throw new ConfigurationException("Signature algorithm [" + signingAlgorithm + "] not supported, supported algorithms: " + Security.getAlgorithms("Signature"));
 		}
