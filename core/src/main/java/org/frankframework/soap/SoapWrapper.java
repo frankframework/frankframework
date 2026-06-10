@@ -276,10 +276,10 @@ public class SoapWrapper {
 		String soapHeader = "";
 		String encodingStyle = "";
 		String targetObjectNamespaceClause = "";
-		if (!StringUtils.isEmpty(encodingStyleUri)) {
+		if (StringUtils.isNotEmpty(encodingStyleUri)) {
 			encodingStyle = " soapenv:encodingStyle=\"" + encodingStyleUri + "\"";
 		}
-		if (!StringUtils.isEmpty(targetObjectNamespace)) {
+		if (StringUtils.isNotEmpty(targetObjectNamespace)) {
 			targetObjectNamespaceClause = " xmlns=\"" + targetObjectNamespace + "\"";
 		}
 		if (StringUtils.isNotEmpty(soapHeaderInitial)) {
