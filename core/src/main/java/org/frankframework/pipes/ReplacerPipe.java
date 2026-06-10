@@ -88,7 +88,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 			}
 			log.debug("finds [{}] replaces with [{}]", getFind(), getReplace());
 
-			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
+			if (StringUtils.isNotEmpty(getLineSeparatorSymbol())) {
 				find = find != null ? find.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
 				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
 			}

@@ -116,7 +116,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 				throw new ConfigurationException("attribute flowId too short");
 			}
 		} else {
-			if (!StringUtils.isEmpty(getFlowId())) {
+			if (StringUtils.isNotEmpty(getFlowId())) {
 				throw new ConfigurationException("attribute flowId must not be specified");
 			}
 			fxfDir = AppConstants.getInstance(getConfigurationClassLoader()).getProperty("fxf.dir");
