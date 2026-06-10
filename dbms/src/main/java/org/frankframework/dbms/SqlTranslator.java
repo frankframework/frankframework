@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -40,14 +44,15 @@ import org.frankframework.util.StreamUtil;
 @Log4j2
 public class SqlTranslator implements ISqlTranslator {
 	private static final String PATTERN_FILE = "SqlTranslationPatterns.properties";
-	private Map<String, Pattern> sources;
-	private Map<String, String> targets;
-	private String target;
+	private final @NonNull Map<String, Pattern> sources = new LinkedHashMap<>();
+	private final @NonNull Map<String, String> targets = new LinkedHashMap<>();
+	private final @NonNull String target;
 	private boolean configured = false;
 
 	public SqlTranslator(String source, String target) throws DbmsException {
-		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
+		if (StringUtils.isAnyEmpty(source, target))
 			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
+		this.target = target;
 		if (source.equalsIgnoreCase(target)) {
 			log.warn("Same source and target for SqlTranslator. Skipping pattern generation.");
 			return;
@@ -59,7 +64,6 @@ public class SqlTranslator implements ISqlTranslator {
 		} catch (Exception e) {
 			throw new DbmsException("cannot create SqlTranslator", e);
 		}
-		this.target = target;
 		configured = true;
 	}
 
@@ -75,21 +79,20 @@ public class SqlTranslator implements ISqlTranslator {
 	 * @param original Original query to be translated.
 	 * @return Translated query.
 	 */
+	@Nullable
 	@Override
-	public String translate(String original) {
+	public String translate(@Nonnull String original) {
 		String query = original;
-		if (sources != null) {
-			for (Map.Entry<String, Pattern> entry : sources.entrySet()) {
-				String label = entry.getKey();
-				Matcher matcher = entry.getValue().matcher(query);
-				if (matcher.find()) {
-					if (log.isTraceEnabled()) log.trace("Found a match for label [{}] pattern [{}]", label, sources.get(label));
-					String replacement = targets.get(label);
-					if (StringUtils.isNotEmpty(replacement)) {
-						query = matcher.replaceAll(replacement);
-					} else {
-						query = matcher.replaceAll("");
-					}
+		for (Map.Entry<String, Pattern> entry : sources.entrySet()) {
+			String label = entry.getKey();
+			Matcher matcher = entry.getValue().matcher(query);
+			if (matcher.find()) {
+				if (log.isTraceEnabled()) log.trace("Found a match for label [{}] pattern [{}]", label, sources.get(label));
+				String replacement = targets.get(label);
+				if (StringUtils.isNotEmpty(replacement)) {
+					query = matcher.replaceAll(replacement);
+				} else {
+					query = matcher.replaceAll("");
 				}
 			}
 		}
@@ -119,8 +122,8 @@ public class SqlTranslator implements ISqlTranslator {
 	 * @throws IOException If database name can not be found or file can not be read.
 	 */
 	private boolean readPatterns(String sourceDialect, String targetDialect) throws IOException {
-		sources = new LinkedHashMap<>();
-		targets = new LinkedHashMap<>();
+		sources.clear();
+		targets.clear();
 
 		String sourceMatch = (".source." + sourceDialect.replace(" ", "_")).toLowerCase();
 		String targetMatch = (".target." + targetDialect.replace(" ", "_")).toLowerCase();

@@ -71,7 +71,7 @@ public enum Dbms {
 					result = dbms.getDbmsSupport();
 					log.debug("Returning built-in DBMS [{}] found for product [{}]", dbms, product);
 					return result;
-				} catch (ReflectiveOperationException | SecurityException e) {
+				} catch (ReflectiveOperationException e) {
 					log.warn("Could not instantiate DbmsSupport for DBMS [{}] found for product [{}]",dbms, product, e);
 				}
 			}
@@ -80,7 +80,7 @@ public enum Dbms {
 		return new GenericDbmsSupport();
 	}
 
-	public IDbmsSupport getDbmsSupport() throws ReflectiveOperationException, SecurityException {
+	public IDbmsSupport getDbmsSupport() throws ReflectiveOperationException {
 		if (dbmsSupportClass == null) {
 			return null;
 		}
