@@ -39,7 +39,7 @@ class JdbcQueryListenerTest {
 
 		DataSource ds = mock(DataSource.class);
 		doReturn(ds).when(listener).getDatasource();
-		H2DbmsSupport dbmsSupport = new H2DbmsSupport("2.3.232 (2024-08-11)");
+		H2DbmsSupport dbmsSupport = new H2DbmsSupport("2.3.232 (2024-08-11)", "jdbc:h2:db;MODE=MSQLServer");
 		doReturn(dbmsSupport).when(listener).getDbmsSupport();
 	}
 
