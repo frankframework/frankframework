@@ -603,4 +603,25 @@ class OpenApiTest extends OpenApiTestBase {
 		String expected = TestFileUtils.getTestFile("/OpenApi/multipleMethods.json");
 		MatchUtils.assertJsonEquals(expected, result);
 	}
+
+	@Test
+	@DisplayName("Empty responseRoot on inputValidator should produce no $ref, not a broken '#/components/schemas/' reference")
+	void emptyResponseRootProducesNoSchemaRef() throws Exception {
+		String uri = "/emptyResponseRoot";
+		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
+
+		// responseRoot="" triggered a bug, before this was fixed in "org.frankframework.http.openapi.OpenApiGenerator.getSchemaReferenceElement".
+		// Giving "" to Optional.ofNullable created a non-empty Optional
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+				.setListener(uri, HttpMethod.GET, null)
+				.setInputValidator("simple.xsd", null, "", null)
+				.addExit(200)
+				.build(true);
+
+		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
+		String result = callOpenApi(uri);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/emptyResponseRoot.json");
+		MatchUtils.assertJsonEquals(expected, result);
+	}
 }
