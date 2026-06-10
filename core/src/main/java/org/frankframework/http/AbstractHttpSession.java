@@ -612,7 +612,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 */
 	private void preAuthenticate(HttpClientContext clientContext) {
 		// This is only executed when credentials are available.
-		if (getCredentials() != null && !StringUtils.isEmpty(getCredentials().getUsername())) {
+		if (getCredentials() != null && StringUtils.isNotEmpty(getCredentials().getUsername())) {
 			AuthState authState = clientContext.getTargetAuthState();
 			if (authState == null) {
 				authState = new AuthState();

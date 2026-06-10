@@ -160,7 +160,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			throw new ConfigurationException("while configuring parameters", e);
 		}
 
-		if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
+		if (StringUtils.isNotEmpty(getElementToMove()) && StringUtils.isNotEmpty(getElementToMoveChain())) {
 			throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 		}
 

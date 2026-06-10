@@ -86,7 +86,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		if (csrfEnabled) {
 			// HttpOnly needs to be false for Angular to read it
 			CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-			if(!StringUtils.isEmpty(csrfCookiePath)) {
+			if(StringUtils.isNotEmpty(csrfCookiePath)) {
 				csrfTokenRepository.setCookiePath(csrfCookiePath);
 			}
 

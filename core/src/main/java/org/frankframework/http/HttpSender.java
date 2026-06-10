@@ -131,7 +131,7 @@ public class HttpSender extends AbstractHttpSender {
 		try {
 			boolean queryParametersAppended = false;
 			StringBuilder relativePath = new StringBuilder(uri.getRawPath());
-			if (!StringUtils.isEmpty(uri.getRawQuery())) {
+			if (StringUtils.isNotEmpty(uri.getRawQuery())) {
 				relativePath.append("?").append(uri.getRawQuery());
 				queryParametersAppended = true;
 			}

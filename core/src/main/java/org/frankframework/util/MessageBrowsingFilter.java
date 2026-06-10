@@ -111,32 +111,32 @@ public class MessageBrowsingFilter {
 	}
 
 	public void setTypeMask(String typeMask) {
-		if(!StringUtils.isEmpty(typeMask))
+		if(StringUtils.isNotEmpty(typeMask))
 			type = typeMask;
 	}
 
 	public void setHostMask(String hostMask) {
-		if(!StringUtils.isEmpty(hostMask))
+		if(StringUtils.isNotEmpty(hostMask))
 			host = hostMask;
 	}
 
 	public void setIdMask(String idMask) {
-		if(!StringUtils.isEmpty(idMask))
+		if(StringUtils.isNotEmpty(idMask))
 			id = idMask;
 	}
 
 	public void setMessageIdMask(String messageIdMask) {
-		if(!StringUtils.isEmpty(messageIdMask))
+		if(StringUtils.isNotEmpty(messageIdMask))
 			messageId = messageIdMask;
 	}
 
 	public void setCorrelationIdMask(String correlationIdMask) {
-		if(!StringUtils.isEmpty(correlationIdMask))
+		if(StringUtils.isNotEmpty(correlationIdMask))
 			correlationId = correlationIdMask;
 	}
 
 	public void setCommentMask(String commentMask) {
-		if(!StringUtils.isEmpty(commentMask))
+		if(StringUtils.isNotEmpty(commentMask))
 			comment = commentMask;
 	}
 
@@ -166,12 +166,12 @@ public class MessageBrowsingFilter {
 	}
 
 	public void setLabelMask(String labelMask) {
-		if(!StringUtils.isEmpty(labelMask))
+		if(StringUtils.isNotEmpty(labelMask))
 			label = labelMask;
 	}
 
 	public void setStartDateMask(String startDateMask) {
-		if(!StringUtils.isEmpty(startDateMask)) {
+		if(StringUtils.isNotEmpty(startDateMask)) {
 			try {
 				startDate = DateFormatUtils.parseAnyDate(startDateMask);
 			}
@@ -182,7 +182,7 @@ public class MessageBrowsingFilter {
 	}
 
 	public void setEndDateMask(String endDateMask) {
-		if(!StringUtils.isEmpty(endDateMask)) {
+		if(StringUtils.isNotEmpty(endDateMask)) {
 			try {
 				endDate = DateFormatUtils.parseAnyDate(endDateMask);
 			}
