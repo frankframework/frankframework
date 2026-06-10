@@ -40,6 +40,7 @@ import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.util.CredentialFactory;
@@ -55,7 +56,10 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
+	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
+
 	private @Getter FtpType ftpType = FtpType.FTP;
+
 	public enum FtpType implements DocumentedEnum {
 		@EnumLabel("FTP") FTP(null, true),
 		@EnumLabel("FTPSI") FTPS_IMPLICIT("TLS", true),
@@ -113,14 +117,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private @Getter boolean passive=true;
 
 	// configuration parameters for SSL Context and SocketFactory
-	private @Getter String keystore;
-	private @Getter String keystoreAuthAlias;
-	private @Getter String keystorePassword;
-	private @Getter KeystoreType keystoreType = KeystoreType.PKCS12;
-	private @Getter String keystoreAlias;
-	private @Getter String keystoreAliasAuthAlias;
-	private @Getter String keystoreAliasPassword;
-	private @Getter String keyManagerAlgorithm=null;
 	private @Getter String truststore = null;
 	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
 	private @Getter String truststoreAuthAlias;
@@ -323,56 +319,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		proxyTransportType = type;
 	}
 
-	/** (ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used. */
-	@Override
-	public void setKeystore(String string) {
-		keystore = string;
-	}
-
-	/** (ftps) Type of keystore
-	 * @ff.default pkcs12
-	 */
-	@Override
-	public void setKeystoreType(KeystoreType value) {
-		keystoreType = value;
-	}
-
-	/** (ftps) Authentication alias used to obtain keystore password */
-	@Override
-	public void setKeystoreAuthAlias(String string) {
-		keystoreAuthAlias = string;
-	}
-
-	/** (ftps) Default password to access keystore */
-	@Override
-	public void setKeystorePassword(String string) {
-		keystorePassword = string;
-	}
-
-	/** (ftps) Key manager algorithm. Can be left empty to use the servers default algorithm */
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		this.keyManagerAlgorithm = keyManagerAlgorithm;
-	}
-
-	/** (ftps) Alias to obtain specific certificate or key in keystore */
-	@Override
-	public void setKeystoreAlias(String string) {
-		keystoreAlias = string;
-	}
-
-	/** (ftps) Authentication alias to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
-	@Override
-	public void setKeystoreAliasAuthAlias(String string) {
-		keystoreAliasAuthAlias = string;
-	}
-
-	/** (ftps) Default password to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
-	@Override
-	public void setKeystoreAliasPassword(String string) {
-		keystoreAliasPassword = string;
-	}
-
 	/** (ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
 	@Override
 	public void setTruststore(String string) {
@@ -437,5 +383,10 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	 */
 	public void setProt(Prot prot) {
 		this.prot = prot;
+	}
+
+	@Override
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
+		this.keystoreConfiguration = keystoreConfiguration;
 	}
 }

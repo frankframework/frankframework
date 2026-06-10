@@ -43,7 +43,7 @@ import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
-import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -56,28 +56,24 @@ import org.frankframework.stream.Message;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
-	public static final String PARAMETER_SIGNATURE="signature";
-	public static final String ALGORITHM_DEFAULT = "SHA256withRSA";
-
+	private static final String PARAMETER_SIGNATURE="signature";
+	private static final String ALGORITHM_DEFAULT = "SHA256withRSA";
 
 	private @Getter Action action = Action.SIGN;
 	private @Getter String algorithm;
 	private @Getter String provider;
 	private @Getter boolean signatureBase64 = true;
 
-	private @Getter String keystore;
-	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
-	private @Getter String keystoreAuthAlias;
-	private @Getter String keystorePassword;
-	private @Getter String keystoreAlias;
-	private @Getter String keystoreAliasAuthAlias;
-	private @Getter String keystoreAliasPassword;
-	private @Getter String keyManagerAlgorithm=null;
+	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
 
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private PipeForward failureForward; // forward used when verification fails
 
+	@Override
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
+		this.keystoreConfiguration = keystoreConfiguration;
+	}
 
 	public enum Action {
 		/** signs the input */
@@ -92,7 +88,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (StringUtils.isEmpty(getAlgorithm())) {
 			setAlgorithm(ALGORITHM_DEFAULT);
 		}
-		if (StringUtils.isEmpty(getKeystore())) {
+		if (StringUtils.isEmpty(this.getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
 
@@ -200,62 +196,6 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	 */
 	public void setSignatureBase64(boolean signatureBase64) {
 		this.signatureBase64 = signatureBase64;
-	}
-
-
-	/** Keystore to obtain signing key
-	 * @ff.mandatory
-	 */
-	@Override
-	public void setKeystore(String string) {
-		keystore = string;
-	}
-
-	/** Type of keystore, can be pkcs12 or pem
-	 * @ff.default pkcs12
-	 */
-	@Override
-	public void setKeystoreType(KeystoreType value) {
-		keystoreType = value;
-	}
-
-	/** Alias used to obtain keystore password */
-	@Override
-	public void setKeystoreAuthAlias(String string) {
-		keystoreAuthAlias = string;
-	}
-
-	/** Keystore password */
-	@Override
-	public void setKeystorePassword(String string) {
-		keystorePassword = string;
-	}
-
-	/** Alias in keystore */
-	@Override
-	public void setKeystoreAlias(String string) {
-		keystoreAlias = string;
-	}
-
-	/** Alias used to obtain keystoreAlias password
-	 * @ff default same as {@code keystoreAuthAlias}
-	 */
-	@Override
-	public void setKeystoreAliasAuthAlias(String string) {
-		keystoreAliasAuthAlias = string;
-	}
-
-	/** KeystoreAlias password
-	 * @ff default same as <code>keystorePassword</code>
-	 */
-	@Override
-	public void setKeystoreAliasPassword(String string) {
-		keystoreAliasPassword = string;
-	}
-
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
 
 }
