@@ -9,12 +9,12 @@
 
 			<SenderPipe name="HelloUniverseSender" className="org.frankframework.pipes.SenderPipe">
 				<HttpSender urlParam="https://www.example.com" methodType="GET">
-					<truststore truststoreResource="testTruststore" />
-					<param name="url_param" xpathExpression="*/@uri" />
-					<param name="Message-Id" pattern="{uuid}" />
-					<param name="Correlation-Id" pattern="{uuid}" />
+					<Truststore truststoreResource="testTruststore" />
+					<Param name="url_param" xpathExpression="*/@uri" />
+					<Param name="Message-Id" pattern="{uuid}" />
+					<Param name="Correlation-Id" pattern="{uuid}" />
 				</HttpSender>
-				<forward name="success" path="EXIT"/>
+				<Forward name="success" path="EXIT"/>
 			</SenderPipe>
 
 		</Pipeline>
