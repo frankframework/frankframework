@@ -52,7 +52,7 @@ public class FileViewer {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FILE_VIEWER, BusAction.GET);
 
 		if (StringUtils.isEmpty(acceptHeader)) acceptHeader = "*/*";
-		String acceptType = !StringUtils.isEmpty(acceptParam) ? acceptParam : acceptHeader.split(",")[0];
+		String acceptType = StringUtils.isNotEmpty(acceptParam) ? acceptParam : acceptHeader.split(",")[0];
 		String wantedType = MediaType.valueOf(acceptType).getSubtype();
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", wantedType);

@@ -258,7 +258,7 @@ public class TransformerPool {
 				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
 			}
 		}
-		if (!StringUtils.isEmpty(styleSheetName)) {
+		if (StringUtils.isNotEmpty(styleSheetName)) {
 			if (StringUtils.isNotEmpty(namespaceDefs)) {
 				throw new ConfigurationException("cannot have namespaceDefs specified for a styleSheetName");
 			}

@@ -200,7 +200,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 
 	@NonNull
 	protected String convertQuery(@NonNull String query) throws SQLException, DbmsException {
-		if (!StringUtils.isNotEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getTargetSqlDialect())) {
+		if (StringUtils.isEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getTargetSqlDialect())) {
 			return query;
 		}
 		if (log.isDebugEnabled()) {
