@@ -32,9 +32,12 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -96,33 +99,31 @@ public class XmlQuerySender extends DirectQuerySender {
 
 	@Getter
 	private static class Column {
-		private final String name;
-		private final String value;
-		private String type = TYPE_STRING;
-		private final String decimalSeparator;
-		private final String groupingSeparator;
-		private String formatString = TYPE_DATETIME_PATTERN;
-		private Object parameter = null;
-		private String queryValue = null;
+		private final @Nullable String name;
+		private final @Nullable String value;
+		private final @NonNull String type;
+		private final @Nullable String decimalSeparator;
+		private final @Nullable String groupingSeparator;
+		private final @NonNull String formatString;
+		private final @Nullable Object parameter;
+		private final @Nullable String queryValue;
 
-		public Column(String name, String value, String type, String decimalSeparator, String groupingSeparator, String formatString) throws SenderException {
+		public Column(@Nullable String name, @Nullable String value, @Nullable String type, @Nullable String decimalSeparator, @Nullable String groupingSeparator, @Nullable String formatString) throws SenderException {
 			this.name = name;
 			this.value = value;
-			if (type != null) {
-				this.type = type;
-			}
+			this.type = Objects.requireNonNullElse(type, TYPE_STRING);
 			this.decimalSeparator = decimalSeparator;
 			this.groupingSeparator = groupingSeparator;
-			if (formatString != null) {
-				this.formatString = formatString;
-			}
-			if (value != null) {
-				fillParameter();
-			}
-			fillQueryValue();
+			this.formatString = Objects.requireNonNullElse(formatString, TYPE_DATETIME_PATTERN);
+			this.parameter = fillParameter(this.type, value);
+			this.queryValue = fillQueryValue();
 		}
 
-		private void fillParameter() throws SenderException {
+		private @Nullable Object fillParameter(@NonNull String type, @Nullable String value) throws SenderException {
+			if (value == null) {
+				return null;
+			}
+			Object parameter;
 			if (type.equalsIgnoreCase(TYPE_INTEGER)) {
 				DecimalFormat df = new DecimalFormat();
 				Number n;
@@ -177,15 +178,18 @@ public class XmlQuerySender extends DirectQuerySender {
 			} else {
 				if (!type.equalsIgnoreCase(TYPE_FUNCTION)) {
 					parameter = value;
+				} else {
+					parameter = null;
 				}
 			}
+			return parameter;
 		}
 
-		private void fillQueryValue() {
+		private String fillQueryValue() {
 			if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
-				queryValue = value;
+				return value;
 			} else {
-				queryValue = "?";
+				return "?";
 			}
 		}
 	}
