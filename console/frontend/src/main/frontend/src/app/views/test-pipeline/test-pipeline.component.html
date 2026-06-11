@@ -44,23 +44,23 @@
                 />
               </div>
             </div>
-            @for (sessionKey of formSessionKeys; track sessionKey.key; let index = $index) {
+            @for (sessionKey of formSessionKeys | keyvalue; track sessionKey.key) {
               <div class="row form-group test-pipeline-session-keys">
-                <label class="col-sm-3 control-label label-height-30" [for]="`sessionKey${index}`">
-                  @if (index === 0) {
-                    <span>Session Key</span>
+                <div class="col-sm-3">
+                  @if ($first) {
+                    <label class="control-label label-height-30" [for]="`#sessionKey${sessionKey.key}`">Session Keys</label>
                   }
-                </label>
+                </div>
                 <div class="col-sm-4">
                   <input
                     data-cy-test-pipeline="sessionKeyName"
                     class="form-control"
                     placeholder="Name"
                     type="text"
-                    [name]="`sessionKey${index}`"
-                    [id]="`sessionKey${index}`"
-                    [(ngModel)]="sessionKey.key"
-                    (blur)="updateSessionKeys(sessionKey)"
+                    [name]="`sessionKey${sessionKey.key}`"
+                    [id]="`sessionKey${sessionKey.key}`"
+                    [value]="sessionKey.key"
+                    (blur)="updateSessionKey(sessionKey.key)"
                   />
                 </div>
                 <div class="col-sm-5">
@@ -69,13 +69,41 @@
                     class="form-control"
                     placeholder="Value"
                     type="text"
-                    [name]="`sessionKeyValue${index}`"
-                    [(ngModel)]="sessionKey.value"
-                    (blur)="updateSessionKeys(sessionKey)"
+                    [name]="`sessionKeyValue${sessionKey.key}`"
+                    [id]="`sessionKeyValue${sessionKey.key}`"
+                    [(ngModel)]="formSessionKeys[sessionKey.key]"
                   />
                 </div>
               </div>
             }
+            <div class="row form-group test-pipeline-session-keys">
+              <div class="col-sm-3">
+                <label for="newSessionKey">Add Session Key</label>
+              </div>
+              <div class="col-sm-4">
+                <input
+                  data-cy-test-pipeline="sessionKeyName"
+                  class="form-control"
+                  placeholder="Name"
+                  type="text"
+                  name="newSessionKey"
+                  id="newSessionKey"
+                  [(ngModel)]="newSessionKey.key"
+                  (blur)="addNewSessionKey()"
+                />
+              </div>
+              <div class="col-sm-5">
+                <input
+                  data-cy-test-pipeline="sessionKeyValue"
+                  class="form-control"
+                  placeholder="Value"
+                  type="text"
+                  name="newSessionKeyValue"
+                  id="newSessionKeyValue"
+                  [(ngModel)]="newSessionKey.value"
+                />
+              </div>
+            </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30" for="upload">Upload File</label>
               <div class="col-sm-9 col-md-4">
