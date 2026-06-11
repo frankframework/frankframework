@@ -619,17 +619,17 @@ public class XmlTypeToJsonSchemaConverter  {
 							What is the best method to do this? Try and catch int, long & then bigint or directly to big int?
 						*/
 						try {
-							builder.add(key, Integer.parseInt(lexicalFacetValue));
+							builder.add(key, Integer.parseInt(lexicalFacetValue.trim()));
 						} catch (NumberFormatException nfe) {
 							log.warn("Couldn't parse value [{}] as Integer... retrying as Long", lexicalFacetValue);
 
 							try {
-								builder.add(key, Long.parseLong(lexicalFacetValue));
+								builder.add(key, Long.parseLong(lexicalFacetValue.trim()));
 							} catch (NumberFormatException nfex) {
 								log.warn("Couldn't parse value [{}] as Long... retrying as BigInteger", lexicalFacetValue);
 
 								try {
-									builder.add(key, new BigInteger(lexicalFacetValue));
+									builder.add(key, new BigInteger(lexicalFacetValue.trim()));
 								} catch (NumberFormatException nfexx) {
 									log.warn("Couldn't parse value [{}] as BigInteger", lexicalFacetValue);
 								}

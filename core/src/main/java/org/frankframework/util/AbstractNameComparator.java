@@ -52,7 +52,7 @@ public abstract class AbstractNameComparator<T> implements Comparator<T> {
 			if (numeric) {
 				long lres;
 				try {
-					lres = Long.parseLong(part0)-Long.parseLong(part1);
+					lres = Long.parseLong(part0)-Long.parseLong(part1.trim());
 				} catch (NumberFormatException e) {
 					lres = part0.compareTo(part1);
 				}

@@ -358,7 +358,7 @@ public class WsdlXmlValidator extends SoapValidator {
 					throw new ConfigurationException("Schema reference " + split[i + 1] + " should start with '" + RESOURCE_INTERNAL_REFERENCE_PREFIX + "'");
 				}
 				try {
-					int j = Integer.parseInt(split[i + 1].substring(RESOURCE_INTERNAL_REFERENCE_PREFIX.length())) - 1;
+					int j = Integer.parseInt(split[i + 1].substring(RESOURCE_INTERNAL_REFERENCE_PREFIX.length()).trim()) - 1;
 					filteredSchemas.add(schemas.get(j));
 					filteredReferences.put(schemas.get(j), RESOURCE_INTERNAL_REFERENCE_PREFIX + (j + 1));
 					filteredNamespaces.put(schemas.get(j), split[i]);

@@ -124,7 +124,7 @@ public class RestListenerServlet extends AbstractHttpServlet {
 				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response);
 
 				if(Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
-					int status = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+					int status = Integer.parseInt( (""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY)).trim());
 					response.setStatus(status);
 					log.trace("aborted request with status [{}]", status);
 					return;
@@ -136,7 +136,7 @@ public class RestListenerServlet extends AbstractHttpServlet {
 
 				int statusCode = 0;
 				if(messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY))
-					statusCode = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+					statusCode = Integer.parseInt( (""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY)).trim());
 				if(statusCode > 0)
 					response.setStatus(statusCode);
 

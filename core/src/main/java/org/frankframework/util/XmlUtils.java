@@ -661,7 +661,7 @@ public class XmlUtils {
 		if (StringUtils.isEmpty(xsltVersion)) {
 			return 0;
 		}
-		return Integer.parseInt(xsltVersion);
+		return Integer.parseInt(xsltVersion.trim());
 	}
 
 	public static int detectXsltVersion(String xsltString) throws TransformerConfigurationException {
@@ -926,7 +926,7 @@ public class XmlUtils {
 			return defaultValue;
 		}
 		try {
-			num = Long.parseLong(str);
+			num = Long.parseLong(str.trim());
 		} catch (NumberFormatException e) {
 			num = defaultValue;
 			log.error("Tag [{}] has no integer value", tag, e);

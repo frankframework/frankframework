@@ -105,7 +105,7 @@ public class ParameterValue {
 			return i;
 		}
 
-		return Integer.parseInt(valueAsString());
+		return Integer.parseInt(valueAsString().trim());
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class ParameterValue {
 	 * @return convert the value to a long
 	 */
 	public long asLongValue(long defaultValue) {
-		return value != null ? Long.parseLong(valueAsString()) : defaultValue;
+		return value != null ? Long.parseLong(valueAsString().trim()) : defaultValue;
 	}
 
 	/**

@@ -84,7 +84,7 @@ public class Misc {
 			s = s.substring(0, index);
 		}
 		try {
-			return Long.parseLong(s) * multiplier;
+			return Long.parseLong(s.trim()) * multiplier;
 		} catch (NumberFormatException e) {
 			log.error("[{}] not in expected format", value, e);
 		}
@@ -212,7 +212,7 @@ public class Misc {
 			s = s.substring(0, index);
 		}
 		try {
-			return Long.parseLong(s) * multiplier;
+			return Long.parseLong(s.trim()) * multiplier;
 		} catch (NumberFormatException e) {
 			log.error("[{}] not in expected format", value, e);
 		}

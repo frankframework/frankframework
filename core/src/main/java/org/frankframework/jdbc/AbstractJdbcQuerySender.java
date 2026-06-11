@@ -618,14 +618,12 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					pstmt.setString(parameterIndex, string);
 					parameterIndex++;
 				}
-				if (o instanceof Integer) {
-					int x = Integer.parseInt(o.toString());
-					pstmt.setInt(parameterIndex, x);
+				if (o instanceof Integer i) {
+					pstmt.setInt(parameterIndex, i);
 					parameterIndex++;
 				}
-				if (o instanceof Float) {
-					float x = Float.parseFloat(o.toString());
-					pstmt.setFloat(parameterIndex, x);
+				if (o instanceof Float f) {
+					pstmt.setFloat(parameterIndex, f);
 					parameterIndex++;
 				}
 			}

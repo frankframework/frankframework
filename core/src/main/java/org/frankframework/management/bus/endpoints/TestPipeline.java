@@ -198,7 +198,7 @@ public class TestPipeline extends BusEndpointBase {
 				indexBraceClose = str.indexOf("}", indexBraceOpen+1);
 				if (indexBraceClose > indexBraceOpen) {
 					String ibisContextLength = str.substring(indexBraceOpen+1, indexBraceClose);
-					int icLength = Integer.parseInt(ibisContextLength);
+					int icLength = Integer.parseInt(ibisContextLength.trim());
 					if (icLength > 0) {
 						indexStartNextSearch = indexBraceClose + 1 + icLength;
 						String ibisContext = str.substring(indexBraceClose+1, indexStartNextSearch);

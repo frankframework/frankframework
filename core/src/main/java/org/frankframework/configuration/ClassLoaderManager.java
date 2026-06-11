@@ -141,8 +141,8 @@ public class ClassLoaderManager {
 		String className = class1.getName().toLowerCase();
 		return switch (className) {
 			case "boolean" -> Boolean.parseBoolean(value);
-			case "int", "integer" -> Integer.parseInt(value);
-			case "long" -> Long.parseLong(value);
+			case "int", "integer" -> Integer.parseInt(value.trim());
+			case "long" -> Long.parseLong(value.trim());
 			default -> value;
 		};
 	}

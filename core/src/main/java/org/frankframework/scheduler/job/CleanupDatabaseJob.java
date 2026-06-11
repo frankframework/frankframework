@@ -133,7 +133,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 				qs.start();
 
 				Message result = qs.sendMessageOrThrow(Message.nullMessage(), session);
-				int numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()));
+				int numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()).trim());
 				if (numberOfRowsAffected > 0) {
 					getMessageKeeper().add("deleted [" + numberOfRowsAffected + "] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
 				}
@@ -189,7 +189,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 						if (!NumberUtils.isDigits(resultString)) {
 							throw new SenderException("Sent message result did not result in a number, found: " + resultString);
 						}
-						numberOfRowsAffected = Integer.parseInt(resultString);
+						numberOfRowsAffected = Integer.parseInt(resultString.trim());
 					}
 					if (maxRows <= 0 || numberOfRowsAffected < maxRows) {
 						deletedAllRecords = true;
