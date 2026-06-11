@@ -32,7 +32,6 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -447,12 +446,13 @@ public class XmlQuerySender extends DirectQuerySender {
 					statement.setBytes(pos, bytes);
 					++pos;
 				}
-				case null, default -> {
+				case null -> {} // Skip null values
+				default -> {
 					if (parameterMetaData == null && parameterTypeMatchRequired) {
 						parameterMetaData = statement.getParameterMetaData();
 					}
-					log.debug("parm [{}] is an Object with value [{}]", pos, columnValue);
-					JdbcUtil.setParameter(statement, pos, Objects.toString(columnValue, null), parameterTypeMatchRequired, parameterMetaData);
+					log.debug("parm [{}] is a {} with value [{}]", pos, columnValue.getClass().getSimpleName(), columnValue);
+					JdbcUtil.setParameter(statement, pos, columnValue.toString(), parameterTypeMatchRequired, parameterMetaData);
 					++pos;
 				}
 			}

@@ -626,32 +626,17 @@ public class JdbcUtil {
 		}
 		try {
 			switch (sqlType) {
-				case Types.INTEGER:
-					statement.setInt(parameterIndex, Integer.parseInt(value.trim()));
-					break;
-				case Types.NUMERIC:
-				case Types.DOUBLE:
-					statement.setDouble(parameterIndex, Double.parseDouble(value.trim()));
-					break;
-				case Types.BIGINT:
-					statement.setLong(parameterIndex, Long.parseLong(value.trim()));
-					break;
-				case Types.BLOB:
-					statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
-					break;
-				case Types.DATE:
-					statement.setDate(parameterIndex, new java.sql.Date(DateFormatUtils.parseAnyDate(value).getTime()));
-					break;
-				case Types.TIMESTAMP:
-					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
-					break;
-				default:
+				case Types.INTEGER -> statement.setInt(parameterIndex, Integer.parseInt(value.trim()));
+				case Types.NUMERIC, Types.DOUBLE -> statement.setDouble(parameterIndex, Double.parseDouble(value.trim()));
+				case Types.BIGINT -> statement.setLong(parameterIndex, Long.parseLong(value.trim()));
+				case Types.BLOB -> statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
+				case Types.DATE -> statement.setDate(parameterIndex, new java.sql.Date(DateFormatUtils.parseAnyDate(value).getTime()));
+				case Types.TIMESTAMP -> statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
+				case Types.CHAR, Types.VARCHAR -> statement.setString(parameterIndex, value);
+				default -> {
 					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlType).getName());
-					// $FALL-THROUGH$
-				case Types.CHAR:
-				case Types.VARCHAR:
 					statement.setString(parameterIndex, value);
-					break;
+				}
 			}
 		} catch (DateTimeParseException | IllegalArgumentException e) { // thrown by parseAnyDate in case DATE and TIMESTAMP
 			throw new SQLException("Could not convert [" + value + "] for parameter [" + parameterIndex + "]", e);
