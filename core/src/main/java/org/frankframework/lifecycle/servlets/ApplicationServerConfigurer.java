@@ -19,6 +19,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,12 +49,12 @@ public class ApplicationServerConfigurer implements WebApplicationInitializer {
 		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
 
 		String serverInfo = servletContext.getServerInfo();
-		String autoDeterminedApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
+		String autoDeterminedApplicationServerType;
+		if (Strings.CI.contains(serverInfo, "Tomcat")) {
 			autoDeterminedApplicationServerType = "TOMCAT";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
+		} else if (Strings.CI.contains(serverInfo, "JBoss")) {
 			autoDeterminedApplicationServerType = "JBOSS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WildFly")) {
+		} else if (Strings.CI.contains(serverInfo, "WildFly")) {
 			autoDeterminedApplicationServerType = "JBOSS";
 		} else {
 			autoDeterminedApplicationServerType = "TOMCAT";

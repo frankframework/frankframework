@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import lombok.Getter;
 
@@ -143,7 +144,7 @@ public class MessageBrowsingFilter {
 	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		if(message != null) {
 			String msg = getMessageText(storage, listener, iterItem.getId());
-			return StringUtils.containsIgnoreCase(msg, message);
+			return Strings.CI.contains(msg, message);
 		}
 		return true;
 	}
