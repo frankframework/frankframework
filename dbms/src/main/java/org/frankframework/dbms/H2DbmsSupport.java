@@ -86,7 +86,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		Matcher matcher = MODE_RE.matcher(url);
 		if (!matcher.find()) {
 			return defaultDialect;
-		};
+		}
 		String mode = matcher.group(1);
 		if (StringUtils.isEmpty(mode)) {
 			return defaultDialect;

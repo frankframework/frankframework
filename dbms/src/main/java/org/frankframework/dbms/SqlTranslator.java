@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -81,7 +79,7 @@ public class SqlTranslator implements ISqlTranslator {
 	 */
 	@Nullable
 	@Override
-	public String translate(@Nonnull String original) {
+	public String translate(@NonNull String original) {
 		String query = original;
 		for (Map.Entry<String, Pattern> entry : sources.entrySet()) {
 			String label = entry.getKey();
