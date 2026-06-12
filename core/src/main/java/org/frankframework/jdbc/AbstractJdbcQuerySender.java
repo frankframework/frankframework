@@ -766,9 +766,9 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 								}
 							} else {
 								if (element.contains(".")) {
-									paramArray[idx] = Float.parseFloat(element);
+									paramArray[idx] = Float.parseFloat(element.trim());
 								} else {
-									paramArray[idx] = Integer.parseInt(element);
+									paramArray[idx] = Integer.parseInt(element.trim());
 								}
 							}
 						}

@@ -396,7 +396,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 			String column, String operator, String searchValue)
 					throws StorageException {
 		try {
-			BigDecimal bigDecimal = new BigDecimal(searchValue);
+			BigDecimal bigDecimal = new BigDecimal(searchValue.trim());
 			addExpression(query, column + " " + operator + " ?");
 			args.add(bigDecimal);
 			argTypes.add(Types.DECIMAL);

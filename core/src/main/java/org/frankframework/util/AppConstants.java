@@ -198,7 +198,7 @@ public final class AppConstants extends PropertyLoader {
 		if (retval == null) {
 			return null;
 		}
-		return Boolean.parseBoolean(retval);
+		return Boolean.parseBoolean(retval.trim());
 	}
 
 	/**

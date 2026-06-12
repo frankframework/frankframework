@@ -322,7 +322,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		return request;
 	}
 
-	private class MsalResponse implements IHttpResponse {
+	private static class MsalResponse implements IHttpResponse {
 		protected Logger log = LogUtil.getLogger(this);
 
 		private final int statusCode;
@@ -330,9 +330,8 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		private String body = "";
 
 		public MsalResponse(Message response, PipeLineSession session) {
-			this.statusCode = Integer.parseInt((String) session.get(STATUS_CODE_SESSION_KEY));
-			if(log.isDebugEnabled())
-				log.debug("Parsing status code [{}]", statusCode);
+			this.statusCode = session.get(STATUS_CODE_SESSION_KEY, 200);
+			if (log.isDebugEnabled()) log.debug("Parsing status code [{}]", statusCode);
 
 			String[] headersAsCsv = ((String) session.get(RESPONSE_HEADERS_SESSION_KEY)).split(",");
 			for (String headerName : headersAsCsv) {
@@ -340,8 +339,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 				String headerValue = (String) session.get(headerName);
 				values.add(headerValue);
 
-				if(log.isDebugEnabled())
-					log.debug("Parsing header [{}] [{}]", headerName, headerValue);
+				if (log.isDebugEnabled()) log.debug("Parsing header [{}] [{}]", headerName, headerValue);
 				this.headers.put(headerName, values);
 			}
 

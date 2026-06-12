@@ -503,7 +503,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(ob instanceof Number number) {
 			return number.doubleValue();
 		}
-		return Double.parseDouble(Objects.requireNonNull(this.getString(key)));
+		return Double.parseDouble(Objects.requireNonNull(this.getString(key)).trim());
 	}
 
 	public void scheduleCloseOnSessionExit(AutoCloseable resource) {

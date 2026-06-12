@@ -203,7 +203,7 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		checkState(State.VALUE);
 		try {
 			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
-				nodeBuilder.setValue(new BigDecimal(value));
+				nodeBuilder.setValue(new BigDecimal(value.trim()));
 			}
 		} catch (SAXException e) {
 			throwBSONException(e);

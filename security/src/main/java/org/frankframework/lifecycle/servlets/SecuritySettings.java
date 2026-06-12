@@ -45,7 +45,7 @@ public class SecuritySettings {
 
 		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
 		String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);
-		webSecurityEnabled = StringUtils.isNotEmpty(isAuthEnabled) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
+		webSecurityEnabled = StringUtils.isNotEmpty(isAuthEnabled) ? Boolean.parseBoolean(isAuthEnabled.trim()) : !isDtapStageLoc;
 
 		String constraintType = properties.getProperty(HTTPS_ENABLED_KEY);
 		if (StringUtils.isNotEmpty(constraintType)) {

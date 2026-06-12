@@ -502,7 +502,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			boolean setPropertyAsNull = false;
 			String isNull = propertyElement.getAttribute("isNull");
 			if (StringUtils.isNotEmpty(isNull)) {
-				setPropertyAsNull = Boolean.parseBoolean(isNull);
+				setPropertyAsNull = Boolean.parseBoolean(isNull.trim());
 			}
 
 			if (StringUtils.isNotEmpty(property) || setPropertyAsNull) {
@@ -514,9 +514,9 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 				} else if (StringUtils.isEmpty(typeAttr) || "string".equalsIgnoreCase(typeAttr)) {
 					props.put(nameAttr, property);
 				} else if ("integer".equalsIgnoreCase(typeAttr)) {
-					props.put(nameAttr, new BigInteger(property));
+					props.put(nameAttr, new BigInteger(property.trim()));
 				} else if ("boolean".equalsIgnoreCase(typeAttr)) {
-					props.put(nameAttr, Boolean.parseBoolean(property));
+					props.put(nameAttr, Boolean.parseBoolean(property.trim()));
 				} else if ("datetime".equalsIgnoreCase(typeAttr)) {
 					String formatStringAttr = propertyElement.getAttribute("formatString");
 					if (StringUtils.isEmpty(formatStringAttr)) {
@@ -590,14 +590,14 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 
 		OperationContext operationContext = cmisSession.createOperationContext();
 		if (StringUtils.isNotEmpty(maxItems)) {
-			operationContext.setMaxItemsPerPage(Integer.parseInt(maxItems));
+			operationContext.setMaxItemsPerPage(Integer.parseInt(maxItems.trim()));
 		}
 		boolean sav = false;
 		if (StringUtils.isNotEmpty(searchAllVersions)) {
-			sav = Boolean.parseBoolean(searchAllVersions);
+			sav = Boolean.parseBoolean(searchAllVersions.trim());
 		}
 		if (StringUtils.isNotEmpty(includeAllowableActions)) {
-			operationContext.setIncludeAllowableActions(Boolean.parseBoolean(searchAllVersions));
+			operationContext.setIncludeAllowableActions(Boolean.parseBoolean(includeAllowableActions.trim()));
 		}
 
 		XmlBuilder cmisXml = new XmlBuilder("cmis");
@@ -713,7 +713,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 				Element contentStreamXml = XmlUtils.getFirstChildTag(requestElement, "contentStream");
 				Message stream = session.getMessage("ContentStream");
 				String fileName = contentStreamXml.getAttribute("filename");
-				long fileLength = Long.parseLong(contentStreamXml.getAttribute("length"));
+				long fileLength = Long.parseLong(contentStreamXml.getAttribute("length").trim());
 				String mediaType = contentStreamXml.getAttribute("mimeType");
 				ContentStream contentStream;
 
@@ -810,12 +810,12 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 				BigInteger maxItems = null;
 				String maxItemsString = XmlUtils.getChildTagAsString(requestElement, "maxItems");
 				if (StringUtils.isNotEmpty(maxItemsString)) {
-					maxItems = BigInteger.valueOf(Long.parseLong(maxItemsString));
+					maxItems = BigInteger.valueOf(Long.parseLong(maxItemsString.trim()));
 				}
 				BigInteger skipCount = null;
 				String skipCountString = XmlUtils.getChildTagAsString(requestElement, "skipCount");
 				if (StringUtils.isNotEmpty(skipCountString)) {
-					skipCount = BigInteger.valueOf(Long.parseLong(skipCountString));
+					skipCount = BigInteger.valueOf(Long.parseLong(skipCountString.trim()));
 				}
 
 				// Create a operationContext and do session.query?

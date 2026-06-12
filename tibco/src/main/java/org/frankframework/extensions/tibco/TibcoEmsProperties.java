@@ -63,7 +63,7 @@ public class TibcoEmsProperties extends HashMap<String, Object> {
 			return Boolean.parseBoolean(value);
 		}
 		try {
-			return Integer.parseInt(value);
+			return Integer.parseInt(value.trim());
 		} catch (NumberFormatException e) {
 			// ignore exception
 		}

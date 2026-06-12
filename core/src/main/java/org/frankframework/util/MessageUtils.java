@@ -485,15 +485,19 @@ public class MessageUtils {
 		return result;
 	}
 
-	private static boolean isBooleanOrNumber(Object originalValue, String valueAsString) {
+	private static boolean isBooleanOrNumber(@Nullable Object originalValue, @Nullable String valueAsString) {
 		if (originalValue instanceof Boolean || originalValue instanceof Number) {
 			return true;
 		}
-		if ("true".equalsIgnoreCase(valueAsString) || "false".equalsIgnoreCase(valueAsString)) {
+		if (valueAsString == null) {
+			return false;
+		}
+		String trimmedValue = valueAsString.trim();
+		if ("true".equalsIgnoreCase(trimmedValue) || "false".equalsIgnoreCase(trimmedValue)) {
 			return true;
 		}
 		try {
-			new BigDecimal(valueAsString);
+			new BigDecimal(trimmedValue);
 			return true;
 		} catch (NumberFormatException e) {
 			return false;

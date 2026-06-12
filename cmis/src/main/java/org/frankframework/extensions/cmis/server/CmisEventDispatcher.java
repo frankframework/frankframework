@@ -129,7 +129,7 @@ public class CmisEventDispatcher {
 
 			try {
 				String result = listener.processRequest(null, event.getLabel(), messageContext);
-				return Boolean.parseBoolean(result); // Result should determine if we should proceed, an exception may be thrown.
+				return Boolean.parseBoolean(result.trim()); // Result should determine if we should proceed, an exception may be thrown.
 			} catch (ListenerException e) {
 				throw new CmisRuntimeException("unable to bridge cmis request: " + e.getMessage(), e); // Append the message so it becomes visible in the soap-fault (when using WS)
 			}

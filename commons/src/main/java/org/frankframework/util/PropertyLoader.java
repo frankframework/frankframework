@@ -296,7 +296,7 @@ public class PropertyLoader extends Properties {
 		String ob = this.getResolvedProperty(key);
 
 		if (ob == null) return dfault;
-		return Integer.parseInt(ob);
+		return Integer.parseInt(ob.trim());
 	}
 
 	/**
@@ -311,7 +311,7 @@ public class PropertyLoader extends Properties {
 		String ob = this.getResolvedProperty(key);
 
 		if (ob == null) return dfault;
-		return Long.parseLong(ob);
+		return Long.parseLong(ob.trim());
 	}
 
 	/**
@@ -325,7 +325,7 @@ public class PropertyLoader extends Properties {
 	public double getDouble(String key, double dfault) {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null) return dfault;
-		return Double.parseDouble(ob);
+		return Double.parseDouble(ob.trim());
 	}
 
 	/**

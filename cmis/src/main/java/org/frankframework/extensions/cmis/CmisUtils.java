@@ -284,7 +284,7 @@ public class CmisUtils {
 				propertyType = PropertyType.ID;
 			}
 
-			boolean isNull = Boolean.parseBoolean(propertyElement.getAttribute("isNull"));
+			boolean isNull = Boolean.parseBoolean(propertyElement.getAttribute("isNull").trim());
 			if (isNull)
 				propertyValue = null;
 
@@ -298,7 +298,7 @@ public class CmisUtils {
 				case INTEGER:
 					BigInteger bigInt = null;
 					if (StringUtils.isNotEmpty(propertyValue)) {
-						bigInt = new BigInteger(propertyValue);
+						bigInt = new BigInteger(propertyValue.trim());
 					}
 					properties.addProperty(new PropertyIntegerImpl(addStandardDefinitions(new PropertyIntegerDefinitionImpl(), propertyElement, propertyType), bigInt));
 					break;
@@ -330,14 +330,14 @@ public class CmisUtils {
 				case BOOLEAN:
 					Boolean bool = null;
 					if (StringUtils.isNotEmpty(propertyValue)) {
-						bool = Boolean.parseBoolean(propertyValue);
+						bool = Boolean.parseBoolean(propertyValue.trim());
 					}
 					properties.addProperty(new PropertyBooleanImpl(addStandardDefinitions(new PropertyBooleanDefinitionImpl(), propertyElement, propertyType), bool));
 					break;
 				case DECIMAL:
 					BigDecimal decimal = null;
 					if (StringUtils.isNotEmpty(propertyValue)) {
-						decimal = new BigDecimal(propertyValue);
+						decimal = new BigDecimal(propertyValue.trim());
 					}
 					properties.addProperty(new PropertyDecimalImpl(addStandardDefinitions(new PropertyDecimalDefinitionImpl(), propertyElement, propertyType), decimal));
 					break;
@@ -575,7 +575,7 @@ public class CmisUtils {
 	 */
 	private static @Nullable Boolean parseBooleanAttr(Element xml, String attribute) {
 		if(xml.hasAttribute(attribute)) {
-			return Boolean.parseBoolean(xml.getAttribute(attribute));
+			return Boolean.parseBoolean(xml.getAttribute(attribute).trim());
 		}
 		return null;
 	}
@@ -586,7 +586,7 @@ public class CmisUtils {
 	private static @Nullable BigInteger parseBigIntegerAttr(Element xml, String attribute) {
 		if(xml.hasAttribute(attribute)) {
 			String value = xml.getAttribute(attribute);
-			long longValue = Long.parseLong(value);
+			long longValue = Long.parseLong(value.trim());
 			return BigInteger.valueOf(longValue);
 		}
 		return null;
@@ -1082,7 +1082,7 @@ public class CmisUtils {
 		// Handle isExactAcl
 		String isExactAcl = XmlUtils.getChildTagAsString(cmisElement, "isExactAcl");
 		if(isExactAcl != null) {
-			impl.setIsExactAcl(Boolean.parseBoolean(isExactAcl));
+			impl.setIsExactAcl(Boolean.parseBoolean(isExactAcl.trim()));
 		}
 
 		// If the original object exists copy the permissions over. These cannot (and shouldn't) be changed)

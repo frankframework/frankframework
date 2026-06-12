@@ -303,13 +303,13 @@ public class ClassUtils {
 
 		try {
 			return switch (type.getTypeName()) {
-				case "int", "java.lang.Integer" -> Integer.parseInt(value);
-				case "long", "java.lang.Long" -> Long.parseLong(value);
+				case "int", "java.lang.Integer" -> Integer.parseInt(value.trim());
+				case "long", "java.lang.Long" -> Long.parseLong(value.trim());
 				case "boolean", "java.lang.Boolean" -> {
 					if (value.isEmpty()) { // parseBoolean returns FALSE when it cannot parse the value
 						throw new IllegalArgumentException("cannot convert empty string to boolean");
 					}
-					yield Boolean.parseBoolean(value); // parseBoolean returns FALSE when it cannot parse the value
+					yield Boolean.parseBoolean(value.trim()); // parseBoolean returns FALSE when it cannot parse the value
 				}
 				case "java.lang.String" -> value;
 				default -> throw new IllegalArgumentException("cannot convert to type [" + type.getName() + "], not implemented");
