@@ -28,10 +28,10 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.MimeType;
 
 import lombok.NoArgsConstructor;
@@ -222,8 +222,11 @@ public class OpenApiGenerator {
 
 			JsonObjectBuilder exit = Json.createObjectBuilder();
 
-			Response.Status status = Response.Status.fromStatusCode(exitCode);
-			exit.add("description", status.getReasonPhrase());
+			// Make sure that we don't fail here because HttpStatus is missing a status
+			HttpStatus status = HttpStatus.resolve(exitCode);
+			if (status != null) {
+				exit.add("description", status.getReasonPhrase());
+			}
 
 			Optional<Json2XmlValidator> outputValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, pipeLineExit.getName());
 			outputValidator.ifPresent(validator -> addComponentsToTheSchema(schemas, validator.getXSModels()));
@@ -253,7 +256,11 @@ public class OpenApiGenerator {
 		}
 
 		if (inputValidator != null) {
-			return Optional.ofNullable(inputValidator.getMessageRoot(true));
+			String messageRoot = inputValidator.getMessageRoot(true);
+			// MessageRoot might be "" (empty string)
+			if (StringUtils.isNotBlank(messageRoot)) {
+				return Optional.of(messageRoot);
+			}
 		}
 
 		return Optional.empty();

@@ -35,8 +35,9 @@ import org.springframework.context.ApplicationContext;
 
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.encryption.HasKeystore;
+import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreConfiguration;
-import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.TruststoreConfiguration;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
@@ -44,7 +45,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
-public class CmisSessionBuilder implements HasKeystore{
+public class CmisSessionBuilder implements HasKeystore, HasTruststore {
 	private final Logger log = LogUtil.getLogger(this);
 
 	private BindingTypes bindingType = null;
@@ -61,19 +62,8 @@ public class CmisSessionBuilder implements HasKeystore{
 	private String username;
 	private String password;
 
-	/** SSL TLS **/
-	private boolean allowSelfSignedCertificates = false;
-	private boolean verifyHostname = true;
-	private boolean ignoreCertificateExpiredException = false;
-
-	private KeystoreConfiguration keystoreConfiguration;
-
-	private String truststore = null;
-	private String truststoreAuthAlias = null;
-	private String truststorePassword = null;
-
-	private KeystoreType truststoreType = KeystoreType.JKS;
-	private String trustManagerAlgorithm = "PKIX";
+	private KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
+	private TruststoreConfiguration truststoreConfiguration = createTruststoreConfiguration();
 
 	/** PROXY **/
 	private String proxyHost;
@@ -98,9 +88,8 @@ public class CmisSessionBuilder implements HasKeystore{
 		return new CmisSessionBuilder();
 	}
 
-	public CmisSessionBuilder(IScopeProvider scopeProvider, KeystoreConfiguration keystoreConfiguration) {
+	public CmisSessionBuilder(IScopeProvider scopeProvider) {
 		this.scopeProvider = scopeProvider;
-		this.keystoreConfiguration = keystoreConfiguration;
 	}
 
 	/**
@@ -203,7 +192,7 @@ public class CmisSessionBuilder implements HasKeystore{
 		parameterMap.setRepositoryId(repository);
 
 		// SSL
-		if (keystoreConfiguration != null || truststore != null || allowSelfSignedCertificates) {
+		if (keystoreConfiguration.getKeystoreResource() != null || truststoreConfiguration.getTruststoreResource() != null) {
 			String keystoreResource = keystoreConfiguration.getKeystoreResource();
 
 			CredentialFactory keystoreCf = new CredentialFactory(keystoreResource, null, keystoreConfiguration.getKeystorePassword());
@@ -213,7 +202,8 @@ public class CmisSessionBuilder implements HasKeystore{
 			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword)
 							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword)
 							: keystoreCf;
-			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
+
+			CredentialFactory truststoreCf = new CredentialFactory(truststoreConfiguration.getTruststoreAuthAlias(),  null, truststoreConfiguration.getTruststorePassword());
 
 			parameterMap.put("keystoreUrl", keystoreResource);
 			parameterMap.put("keystorePassword", keystoreCf.getPassword());
@@ -221,16 +211,16 @@ public class CmisSessionBuilder implements HasKeystore{
 			parameterMap.put("keystoreAlias", keystoreConfiguration.getKeystoreAlias());
 			parameterMap.put("keyManagerAlgorithm", keystoreConfiguration.getKeyManagerAlgorithm());
 			parameterMap.put("keystoreAliasPassword", keystoreAliasCf.getPassword());
-			parameterMap.put("truststoreUrl", truststore);
+			parameterMap.put("truststoreUrl", truststoreConfiguration.getTruststoreResource());
 			parameterMap.put("truststorePassword", truststoreCf.getPassword());
-			parameterMap.put("truststoreType", truststoreType.name());
-			parameterMap.put("trustManagerAlgorithm", trustManagerAlgorithm);
+			parameterMap.put("truststoreType", truststoreConfiguration.getTruststoreType().name());
+			parameterMap.put("trustManagerAlgorithm", truststoreConfiguration.getTrustManagerAlgorithm());
 		}
 
 		// SSL+
-		parameterMap.put("isAllowSelfSignedCertificates", "" + allowSelfSignedCertificates);
-		parameterMap.put("isVerifyHostname", "" + verifyHostname);
-		parameterMap.put("isIgnoreCertificateExpiredException", "" + ignoreCertificateExpiredException);
+		parameterMap.put("isAllowSelfSignedCertificates", "" + truststoreConfiguration.isAllowSelfSignedCertificates());
+		parameterMap.put("isVerifyHostname", "" + truststoreConfiguration.isVerifyHostname());
+		parameterMap.put("isIgnoreCertificateExpiredException", "" + truststoreConfiguration.isIgnoreCertificateExpiredException());
 
 		// PROXY
 		if (StringUtils.isNotEmpty(proxyHost)) {
@@ -287,6 +277,16 @@ public class CmisSessionBuilder implements HasKeystore{
 		return keystoreConfiguration;
 	}
 
+	@Override
+	public TruststoreConfiguration getTruststoreConfiguration() {
+		return truststoreConfiguration;
+	}
+
+	@Override
+	public void setTruststoreConfiguration(TruststoreConfiguration truststoreConfiguration) {
+		this.truststoreConfiguration = truststoreConfiguration;
+	}
+
 	public static String getRepositoryInfo(Session cmisSession) {
 		RepositoryInfo ri = cmisSession.getRepositoryInfo();
 		String id = ri.getId();
@@ -302,46 +302,6 @@ public class CmisSessionBuilder implements HasKeystore{
 		if(!overrideEntryPointWSDL.isEmpty())
 			this.overrideEntryPointWSDL = overrideEntryPointWSDL;
 
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststore(String string) {
-		truststore = string;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststoreAuthAlias(String string) {
-		truststoreAuthAlias = string;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststorePassword(String string) {
-		truststorePassword = string;
-		return this;
-	}
-
-	public CmisSessionBuilder setTruststoreType(KeystoreType value) {
-		truststoreType = value;
-		return this;
-	}
-
-	public CmisSessionBuilder setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		this.trustManagerAlgorithm = trustManagerAlgorithm;
-		return this;
-	}
-
-	public CmisSessionBuilder setVerifyHostname(boolean b) {
-		verifyHostname = b;
-		return this;
-	}
-
-	public CmisSessionBuilder setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
-		return this;
-	}
-
-	public CmisSessionBuilder setIgnoreCertificateExpiredException(boolean b) {
-		ignoreCertificateExpiredException = b;
 		return this;
 	}
 
@@ -439,30 +399,6 @@ public class CmisSessionBuilder implements HasKeystore{
 	@Override
 	public String toString() {
 		return StringUtil.reflectionToString(this);
-	}
-	public String getTruststore() {
-		return truststore;
-	}
-	public KeystoreType getTruststoreType() {
-		return truststoreType;
-	}
-	public String getTruststoreAuthAlias() {
-		return truststoreAuthAlias;
-	}
-	public String getTruststorePassword() {
-		return truststorePassword;
-	}
-	public String getTrustManagerAlgorithm() {
-		return trustManagerAlgorithm;
-	}
-	public boolean isVerifyHostname() {
-		return verifyHostname;
-	}
-	public boolean isAllowSelfSignedCertificates() {
-		return allowSelfSignedCertificates;
-	}
-	public boolean isIgnoreCertificateExpiredException() {
-		return ignoreCertificateExpiredException;
 	}
 
 	@Override

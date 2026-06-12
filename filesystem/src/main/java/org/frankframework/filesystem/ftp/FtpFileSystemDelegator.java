@@ -19,7 +19,7 @@ import org.frankframework.doc.ReferTo;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreConfiguration;
-import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.TruststoreConfiguration;
 import org.frankframework.filesystem.ftp.FtpSession.FileType;
 import org.frankframework.filesystem.ftp.FtpSession.FtpType;
 import org.frankframework.filesystem.ftp.FtpSession.Prot;
@@ -93,86 +93,6 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 		getFileSystem().setProxyTransportType(proxyTransportType);
 	}
 
-	@Override
-	@ReferTo(FtpFileSystem.class)
-	default void setTruststore(String truststore) {
-		getFileSystem().setTruststore(truststore);
-	}
-	@Override
-	default String getTruststore() {
-		return getFileSystem().getTruststore();
-	}
-
-	@Override
-	@ReferTo(FtpFileSystem.class)
-	default void setTruststoreType(KeystoreType truststoreType) {
-		getFileSystem().setTruststoreType(truststoreType);
-	}
-	@Override
-	default KeystoreType getTruststoreType() {
-		return getFileSystem().getTruststoreType();
-	}
-
-	@Override
-	@ReferTo(FtpFileSystem.class)
-	default void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		getFileSystem().setTruststoreAuthAlias(truststoreAuthAlias);
-	}
-	@Override
-	default String getTruststoreAuthAlias() {
-		return getFileSystem().getTruststoreAuthAlias();
-	}
-
-	@Override
-	@ReferTo(FtpFileSystem.class)
-	default void setTruststorePassword(String truststorePassword) {
-		getFileSystem().setTruststorePassword(truststorePassword);
-	}
-	@Override
-	default String getTruststorePassword() {
-		return getFileSystem().getTruststorePassword();
-	}
-
-	@Override
-	@ReferTo(FtpFileSystem.class)
-	default void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
-	}
-	@Override
-	default String getTrustManagerAlgorithm() {
-		return getFileSystem().getTrustManagerAlgorithm();
-	}
-
-	@Override
-	@ReferTo(FtpFileSystem.class)
-	default void setVerifyHostname(boolean verifyHostname) {
-		getFileSystem().setVerifyHostname(verifyHostname);
-	}
-	@Override
-	default boolean isVerifyHostname() {
-		return getFileSystem().isVerifyHostname();
-	}
-
-	@Override
-	@ReferTo(FtpFileSystem.class)
-	default void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
-		getFileSystem().setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
-	}
-	@Override
-	default boolean isAllowSelfSignedCertificates() {
-		return getFileSystem().isAllowSelfSignedCertificates();
-	}
-
-	@Override
-	@ReferTo(FtpFileSystem.class)
-	default void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-		getFileSystem().setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
-	}
-	@Override
-	default boolean isIgnoreCertificateExpiredException() {
-		return getFileSystem().isIgnoreCertificateExpiredException();
-	}
-
 	@ReferTo(FtpFileSystem.class)
 	default void setProt(Prot prot) {
 		getFileSystem().setProt(prot);
@@ -189,5 +109,18 @@ public interface FtpFileSystemDelegator extends HasKeystore, HasTruststore {
 	@Override
 	default KeystoreConfiguration getKeystoreConfiguration() {
 		return getFileSystem().getKeystoreConfiguration();
+	}
+
+	@Override
+	default void setTruststoreConfiguration(TruststoreConfiguration truststoreConfiguration) {
+		getFileSystem().setTruststoreConfiguration(truststoreConfiguration);
+	}
+
+	/**
+	 * Override default method to use the truststoreConfiguration in the fileSystem
+	 */
+	@Override
+	default TruststoreConfiguration  getTruststoreConfiguration() {
+		return getFileSystem().getTruststoreConfiguration();
 	}
 }

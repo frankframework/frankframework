@@ -65,91 +65,29 @@ public class CorePkiUtil {
 	}
 
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
+		TruststoreConfiguration truststoreConfiguration = new TruststoreConfiguration();
+		truststoreConfiguration.setTruststoreResource(keystoreOwner.getKeystore());
+		truststoreConfiguration.setTruststoreType(keystoreOwner.getKeystoreType());
+		truststoreConfiguration.setTruststoreAuthAlias(keystoreOwner.getKeystoreAuthAlias());
+		truststoreConfiguration.setTruststorePassword(keystoreOwner.getKeystorePassword());
+		truststoreConfiguration.setTrustManagerAlgorithm(keystoreOwner.getKeyManagerAlgorithm());
+
 		return new HasTruststore() {
+
+			@Override
+			public void setTruststoreConfiguration(TruststoreConfiguration truststoreConfiguration) {
+				throw new NotImplementedException("This method is not implemented because the truststore configuration is derived from the keystore " +
+						"configuration and cannot be set independently.");
+			}
+
+			@Override
+			public TruststoreConfiguration getTruststoreConfiguration() {
+				return truststoreConfiguration;
+			}
 
 			@Override
 			public ClassLoader getConfigurationClassLoader() {
 				return keystoreOwner.getConfigurationClassLoader();
-			}
-
-			@Override
-			public String getTruststore() {
-				return keystoreOwner.getKeystore();
-			}
-
-			@Override
-			public KeystoreType getTruststoreType() {
-				return keystoreOwner.getKeystoreType();
-			}
-
-			@Override
-			public String getTruststoreAuthAlias() {
-				return keystoreOwner.getKeystoreAuthAlias();
-			}
-
-			@Override
-			public String getTruststorePassword() {
-				return keystoreOwner.getKeystorePassword();
-			}
-
-			@Override
-			public String getTrustManagerAlgorithm() {
-				return keystoreOwner.getKeyManagerAlgorithm();
-			}
-
-			@Override
-			public boolean isVerifyHostname() {
-				return true;
-			}
-
-			@Override
-			public boolean isAllowSelfSignedCertificates() {
-				return false;
-			}
-
-			@Override
-			public boolean isIgnoreCertificateExpiredException() {
-				return false;
-			}
-
-			@Override
-			public void setTruststore(String truststore) {
-				keystoreOwner.setKeystore(truststore);
-			}
-
-			@Override
-			public void setTruststoreType(KeystoreType truststoreType) {
-				keystoreOwner.setKeystoreType(truststoreType);
-			}
-
-			@Override
-			public void setTruststoreAuthAlias(String truststoreAuthAlias) {
-				keystoreOwner.setKeystoreAuthAlias(truststoreAuthAlias);
-			}
-
-			@Override
-			public void setTruststorePassword(String truststorePassword) {
-				keystoreOwner.setKeystorePassword(truststorePassword);
-			}
-
-			@Override
-			public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-				keystoreOwner.setKeyManagerAlgorithm(trustManagerAlgorithm);
-			}
-
-			@Override
-			public void setVerifyHostname(boolean verifyHostname) {
-				throw new NotImplementedException();
-			}
-
-			@Override
-			public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-				throw new NotImplementedException();
-			}
-
-			@Override
-			public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-				throw new NotImplementedException();
 			}
 		};
 	}
