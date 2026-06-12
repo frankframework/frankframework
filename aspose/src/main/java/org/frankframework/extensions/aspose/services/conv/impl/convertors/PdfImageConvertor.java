@@ -104,7 +104,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			}
 
 			try (OutputStream stream = messageBuilder.asOutputStream()) {
-				doc.save(messageBuilder.asOutputStream(), SaveFormat.Pdf);
+				doc.save(stream, SaveFormat.Pdf);
 			}
 
 			doc.freeMemory();

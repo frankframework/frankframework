@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +47,6 @@ import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.stream.PathMessage;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
@@ -167,55 +165,57 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	private Message handleAttachments(CisConversionResult result, ConversionOption conversionOption, PipeLineSession session) throws IOException {
-		AtomicInteger index = new AtomicInteger(0);
-
-		if (result.isConversionSuccessful()) {
-			String sessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
-			result.setResultSessionKey(sessionKey);
-			session.put(sessionKey, result.getMessage());
-		}
-
-		if (result.getAttachments().isEmpty()) {
+		if (!result.isConversionSuccessful()) {
 			return result.toXML().asMessage();
 		}
 
-		XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
-		try (InputStream is = result.rawMessage().asInputStream(); com.aspose.pdf.Document pdfDoc = new com.aspose.pdf.Document(is)) {
-			pdfDoc.setPageMode(PageMode.UseAttachments);
-
-			for (Message attachment : result.getAttachments()) {
-				XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
-				CisConversionResult cisConversionResult = cisConversionService.convertToPdf(attachment, conversionOption);
-
-				if (cisConversionResult.isConversionSuccessful()) {
-					if (ConversionOption.SINGLEPDF == conversionOption) {
-						try (InputStream attachIs = cisConversionResult.rawMessage().asInputStream()) {
-							String fileName = cisConversionResult.getDocumentName() + ".pdf";
-							pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachIs, fileName));
-						}
-						// We don't need to add the file to the session because it is now incorporated in the PDF itself.
-						cisConversionResult.setMessage(null);
-					} else {
-						String attachmentSessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
-						cisConversionResult.setResultSessionKey(attachmentSessionKey);
-						session.put(attachmentSessionKey, cisConversionResult.getMessage());
-					}
-				}
-
-				cisConversionResult.toXML(attachmentAsXml);
-				attachmentsAsXml.addSubElement(attachmentAsXml);
-			}
-
-			MessageBuilder messageBuilder = new MessageBuilder();
-			try (OutputStream out = messageBuilder.asOutputStream()) {
-				pdfDoc.save(out);
-			}
-
-			result.setMessage(messageBuilder.build());
-		}
+		AtomicInteger index = new AtomicInteger(0);
+		// The sessionKey should be determined here, because it should be the one with the lowest number.
+		String sessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
+		result.setResultSessionKey(sessionKey);
 
 		XmlBuilder xmlResult = result.toXML();
-		xmlResult.addSubElement(attachmentsAsXml);
+		if (!result.getAttachments().isEmpty()) {
+			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
+			try (InputStream is = result.rawMessage().asInputStream(); com.aspose.pdf.Document pdfDoc = new com.aspose.pdf.Document(is)) {
+				pdfDoc.setPageMode(PageMode.UseAttachments);
+
+				for (Message attachment : result.getAttachments()) {
+					XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
+					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(attachment, conversionOption);
+
+					if (cisConversionResult.isConversionSuccessful()) {
+						if (ConversionOption.SINGLEPDF == conversionOption) {
+							try (InputStream attachIs = cisConversionResult.rawMessage().asInputStream()) {
+								String fileName = cisConversionResult.getDocumentName();
+								pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachIs, fileName));
+							}
+							// We don't need to add the file to the session because it is now incorporated in the PDF itself.
+							cisConversionResult.setMessage(null);
+						} else {
+							String attachmentSessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
+							cisConversionResult.setResultSessionKey(attachmentSessionKey);
+							session.put(attachmentSessionKey, cisConversionResult.getMessage());
+						}
+					}
+
+					cisConversionResult.toXML(attachmentAsXml);
+					attachmentsAsXml.addSubElement(attachmentAsXml);
+				}
+
+				MessageBuilder messageBuilder = new MessageBuilder();
+				try (OutputStream out = messageBuilder.asOutputStream()) {
+					pdfDoc.save(out);
+				}
+
+				result.setMessage(messageBuilder.build());
+			}
+			xmlResult.addSubElement(attachmentsAsXml);
+		}
+
+		// Here because we may have changed the underlying PDF by adding attachments to it.
+		session.put(sessionKey, result.getMessage());
+
 		return xmlResult.asMessage();
 	}
 
@@ -313,10 +313,15 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Directory to save resulting pdf files after conversion.
-	 * If not set then a temporary directory will be created and the conversion results will cleaned up automatically.
-	 * This behavior differers from v10.0 and earlier where conversion results were persistent.
-	 * In order to use the old behavior, set this to {@code ${ibis.tmpdir}/Pdf}.
+	 * Directory to save resulting PDF files after conversion.
+	 * If not set documents will be streamed in memory opposed to written to disk.
+	 * A temporary directory is automatically used if needed and the conversion results will cleaned up automatically.
+	 * <br/>
+	 * NOTE: <strong>Converted documents should be fetched from the {@link PipeLineSession session} and not from disk.</strong>
+	 * <br/>
+	 * This behavior differers from v10.0 and earlier where conversion results were persistent and always stored on disk.
+	 * In order to use the old (non-streaming) behavior, set this to {@code ${ibis.tmpdir}/Pdf}.
+	 * By setting a location the {@code convertedDocument} attribute will be used to store the PDF location.
 	 * 
 	 * @ff.default null
 	 */

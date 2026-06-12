@@ -69,7 +69,7 @@ public class PdfConvertor extends AbstractConvertor {
 
 			int numberOfPages = doc.getPages().size();
 			try (OutputStream stream = messageBuilder.asOutputStream()) {
-				doc.save(messageBuilder.asOutputStream(), SaveFormat.Pdf);
+				doc.save(stream, SaveFormat.Pdf);
 			}
 
 			Message result = messageBuilder.build();

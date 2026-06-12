@@ -97,8 +97,8 @@ public class CisConversionResult {
 			return message;
 		}
 
-		try (OutputStream out = Files.newOutputStream(resultFileLocation)) {
-			message.asInputStream().transferTo(out);
+		try (InputStream in = message.asInputStream(); OutputStream out = Files.newOutputStream(resultFileLocation)) {
+			in.transferTo(out);
 		}
 		return PathMessage.asTemporaryMessage(resultFileLocation);
 	}
