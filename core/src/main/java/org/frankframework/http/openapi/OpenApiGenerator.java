@@ -256,7 +256,11 @@ public class OpenApiGenerator {
 		}
 
 		if (inputValidator != null) {
-			return Optional.ofNullable(inputValidator.getMessageRoot(true));
+			String messageRoot = inputValidator.getMessageRoot(true);
+			// MessageRoot might be "" (empty string)
+			if (StringUtils.isNotBlank(messageRoot)) {
+				return Optional.of(messageRoot);
+			}
 		}
 
 		return Optional.empty();
