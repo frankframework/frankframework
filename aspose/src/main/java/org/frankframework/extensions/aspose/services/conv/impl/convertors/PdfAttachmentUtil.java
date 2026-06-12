@@ -48,7 +48,6 @@ public class PdfAttachmentUtil {
 			}
 
 			pdfDoc.freeMemory();
-			pdfDoc.close();
 
 			return messageBuilder.build();
 		}

@@ -53,7 +53,7 @@ public class CisConversionService {
 			if (convertor == null) {
 				// Conversion not supported.
 				String errorMessage = "Omzetten naar PDF mislukt! Reden: bestandstype wordt niet ondersteund (mediaType: "+ mediaType + ")";
-				return createFailureResult(filename, conversionOption, mediaType, errorMessage);
+				return CisConversionResult.createFailureResult(conversionOption, mediaType, filename, errorMessage);
 			} else {
 				CisConversionResult result = new CisConversionResult();
 				result.setConversionOption(conversionOption);
@@ -63,28 +63,21 @@ public class CisConversionService {
 				long startTime = System.currentTimeMillis();
 				// Convertor found, convert the file
 				try {
+					convertor.convertToPdf(result, mediaType, message);
+
 					if (StringUtils.isNotBlank(configuration.getPdfOutputLocation())) {
 						result.setPersistToDisk(configuration.getPdfOutputLocation());
 					}
 
-					convertor.convertToPdf(result, mediaType, message);
 					log.debug("Convert (in {} msec): mediatype: {}, filename: {}, attachmentoptions: {}", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption);
 					return result;
 				} catch (InvalidPasswordException e) {
 					return CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 				} catch (Exception e) {
-					return createFailureResult(filename, conversionOption, mediaType, e.getMessage());
+					return CisConversionResult.createFailureResult(conversionOption, mediaType, filename, e.getMessage());
 				}
 			}
 		}
-	}
-
-	private CisConversionResult createFailureResult(String filename, ConversionOption conversionOption, MediaType mediaType, String message) {
-		CisConversionResult result;
-		log.warn("Conversion not supported: {}", message);
-
-		result = CisConversionResult.createFailureResult(conversionOption, mediaType, filename, message);
-		return result;
 	}
 
 	private boolean isPasswordProtected(MediaType mediaType) {

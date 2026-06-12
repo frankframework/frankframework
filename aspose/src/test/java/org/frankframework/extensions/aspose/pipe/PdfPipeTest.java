@@ -120,7 +120,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		String documentMetadata = executeConversion(pipeName, fileToConvert);
 		String expected = TestFileUtils.getTestFile(metadataXml);
 
-		log.info("using filelocation: {}", pdfOutputLocation);
+		log.debug("using filelocation: {}", pdfOutputLocation);
 		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(documentMetadata), true);
 
 		// Get document for path

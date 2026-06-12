@@ -52,10 +52,6 @@ public class CisConversionResult {
 	private Message message;
 	private @Setter String resultSessionKey;
 
-	public void setDocumentName(String filename) {
-		documentName = StringUtils.defaultIfBlank(filename, DEFAULT_FILENAME);
-	}
-
 	/**
 	 * List with documents which where part of the source document (e.g. attachments
 	 * in mails). Will be an empty list if there are no attachments.
@@ -75,6 +71,10 @@ public class CisConversionResult {
 	public void setPersistToDisk(String pdfOutputLocation) throws IOException {
 		Path resultFileDirectory = Paths.get(pdfOutputLocation);
 		resultFileLocation = Files.createTempFile(resultFileDirectory, "msg", ".pdf");
+	}
+
+	public void setDocumentName(String filename) {
+		documentName = StringUtils.defaultIfBlank(filename, DEFAULT_FILENAME);
 	}
 
 	public void setMessage(Message message) throws IOException {
@@ -118,14 +118,10 @@ public class CisConversionResult {
 
 	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
 			MediaType mediaTypeReceived, String documentName, String failureReason) {
-		return createCisConversionResult(conversionOption, mediaTypeReceived, documentName, failureReason);
-	}
-
-	private static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType, String documentName, String failureReason) {
 
 		CisConversionResult cisConversionResult = new CisConversionResult();
 		cisConversionResult.setConversionOption(conversionOption);
-		cisConversionResult.setMediaType(mediaType);
+		cisConversionResult.setMediaType(mediaTypeReceived);
 		cisConversionResult.setDocumentName(documentName);
 		cisConversionResult.setFailureReason(failureReason);
 

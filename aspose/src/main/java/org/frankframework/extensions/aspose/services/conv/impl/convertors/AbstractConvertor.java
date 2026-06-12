@@ -102,11 +102,9 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	/**
-	 * Converts the given file to a pdf. MediaType is the detected media type of the
-	 * file. The convertor should support the given mediatype (otherwise it gives
-	 * programming error).
-	 * @param charset
-	 *
+	 * Converts the given file to a PDF. MediaType is the detected media type of the
+ 	 * file. The convertor should support the given mediaType (otherwise it is a
+ 	 * programming error).
 	 */
 	protected abstract Message convert(MediaType mediaType, Message file) throws Exception;
 

@@ -44,7 +44,6 @@ import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import org.frankframework.pipes.FixedForwardPipe;
-import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassLoaderUtils;
@@ -259,7 +258,7 @@ public class PdfPipe extends FixedForwardPipe {
 	 *         <li>{@code pdfConversionResultFiles2}</li>
 	 *         <li>{@code pdfConversionResultFiles3}</li>
 	 *     </ol>
-	 *     Each session key will contain a {@link FileMessage} referencing the contents of that PDF.
+	 *     Each session key will contain a {@link Message} referencing the contents of that PDF.
 	 * </p>
 	 * @ff.default pdfConversionResultFiles
 	 *
@@ -315,11 +314,11 @@ public class PdfPipe extends FixedForwardPipe {
 	/**
 	 * Directory to save resulting PDF files after conversion.
 	 * If not set documents will be streamed in memory opposed to written to disk.
-	 * A temporary directory is automatically used if needed and the conversion results will cleaned up automatically.
+	 * A temporary directory is automatically used if needed and the conversion results will be cleaned up automatically.
 	 * <br/>
 	 * NOTE: <strong>Converted documents should be fetched from the {@link PipeLineSession session} and not from disk.</strong>
 	 * <br/>
-	 * This behavior differers from v10.0 and earlier where conversion results were persistent and always stored on disk.
+	 * This behavior differs from v10.0 and earlier where conversion results were persistent and always stored on disk.
 	 * In order to use the old (non-streaming) behavior, set this to {@code ${ibis.tmpdir}/Pdf}.
 	 * By setting a location the {@code convertedDocument} attribute will be used to store the PDF location.
 	 * 
