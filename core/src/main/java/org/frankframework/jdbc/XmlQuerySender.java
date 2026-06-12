@@ -117,7 +117,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			this.groupingSeparator = groupingSeparator;
 			this.formatString = Objects.requireNonNullElse(formatString, TYPE_DATETIME_PATTERN);
 			this.parameter = convertParameterValue(this.type, value);
-			this.queryValue = convertQueryValue(type, value);
+			this.queryValue = convertQueryValue(this.type, value);
 		}
 
 		private @Nullable Object convertParameterValue(@NonNull String type, @Nullable String value) throws SenderException {
