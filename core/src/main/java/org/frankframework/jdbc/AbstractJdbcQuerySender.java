@@ -781,8 +781,8 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 				// Check if output parameter exists is expected in original message and append an ending ?(out-parameter)
 				int parameterCount = idx + (message.contains("?") ? 1 : 0);
 				if (parameterCount > 0) {
-					newMessage.append("?");
-					newMessage.append(",?".repeat(parameterCount - 1));
+					newMessage.append("?")
+							.repeat(",?", parameterCount - 1);
 				}
 				newMessage.append(message, closingBracePosition, lengthMessage);
 			}

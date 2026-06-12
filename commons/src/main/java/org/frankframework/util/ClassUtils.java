@@ -294,11 +294,11 @@ public class ClassUtils {
 		}
 		// Unbox an array to its component type. Convert string input to values. Put back into an array with the right type
 		if (type.isArray()) {
-			List<Object> list = StringUtil.splitToStream(value)
-					.map(part -> convertToTypeRawTyped(type.getComponentType(), part))
+			Class<?> componentType = type.getComponentType();
+			List<?> list = StringUtil.splitToStream(value)
+					.map(part -> convertToTypeRawTyped(componentType, part))
 					.toList();
-
-			return list.toArray((Object[]) Array.newInstance(type.getComponentType(), 1));
+			return list.toArray((Object[])Array.newInstance(componentType, list.size()));
 		}
 
 		try {

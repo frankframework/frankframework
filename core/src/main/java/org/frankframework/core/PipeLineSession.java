@@ -452,7 +452,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number number) {
+		if (ob instanceof Number number) {
 			return number.intValue();
 		}
 		return Integer.parseInt(Objects.requireNonNull(this.getString(key)).trim());
@@ -484,7 +484,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number number) {
+		if (ob instanceof Number number) {
 			return number.longValue();
 		}
 		return Long.parseLong(Objects.requireNonNull(this.getString(key)).trim());
@@ -500,7 +500,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
-		if(ob instanceof Number number) {
+		if (ob instanceof Number number) {
 			return number.doubleValue();
 		}
 		return Double.parseDouble(Objects.requireNonNull(this.getString(key)).trim());

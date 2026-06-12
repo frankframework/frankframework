@@ -32,6 +32,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -111,82 +112,79 @@ public class XmlQuerySender extends DirectQuerySender {
 		public Column(@Nullable String name, @Nullable String value, @Nullable String type, @Nullable String decimalSeparator, @Nullable String groupingSeparator, @Nullable String formatString) throws SenderException {
 			this.name = name;
 			this.value = value;
-			this.type = Objects.requireNonNullElse(type, TYPE_STRING);
+			this.type = Objects.requireNonNullElse(type, TYPE_STRING).toLowerCase(Locale.ROOT);
 			this.decimalSeparator = decimalSeparator;
 			this.groupingSeparator = groupingSeparator;
 			this.formatString = Objects.requireNonNullElse(formatString, TYPE_DATETIME_PATTERN);
-			this.parameter = fillParameter(this.type, value);
-			this.queryValue = fillQueryValue();
+			this.parameter = convertParameterValue(this.type, value);
+			this.queryValue = convertQueryValue(type, value);
 		}
 
-		private @Nullable Object fillParameter(@NonNull String type, @Nullable String value) throws SenderException {
+		private @Nullable Object convertParameterValue(@NonNull String type, @Nullable String value) throws SenderException {
 			if (value == null) {
 				return null;
 			}
-			Object parameter;
-			if (type.equalsIgnoreCase(TYPE_INTEGER)) {
-				DecimalFormat df = new DecimalFormat();
-				Number n;
-				try {
-					n = df.parse(value.trim());
-				} catch (ParseException e) {
-					throw new SenderException("got exception parsing value [" + value + "] to Integer", e);
+			return switch (type) {
+				case TYPE_INTEGER -> {
+					DecimalFormat df = new DecimalFormat();
+					Number n;
+					try {
+						n = df.parse(value.trim());
+					} catch (ParseException e) {
+						throw new SenderException("got exception parsing value [" + value + "] to Integer", e);
+					}
+					yield n.intValue();
 				}
-				parameter = n.intValue();
-			} else if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
-				parameter = Boolean.valueOf(value.trim());
-			} else if (type.equalsIgnoreCase(TYPE_NUMBER)) {
-				DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-				if (StringUtils.isNotEmpty(decimalSeparator)) {
-					decimalFormatSymbols.setDecimalSeparator(decimalSeparator.charAt(0));
+				case TYPE_BOOLEAN -> Boolean.valueOf(value.trim());
+				case TYPE_NUMBER -> {
+					DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+					if (StringUtils.isNotEmpty(decimalSeparator)) {
+						decimalFormatSymbols.setDecimalSeparator(decimalSeparator.charAt(0));
+					}
+					if (StringUtils.isNotEmpty(groupingSeparator)) {
+						decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
+					}
+					DecimalFormat df = new DecimalFormat();
+					df.setDecimalFormatSymbols(decimalFormatSymbols);
+					Number n;
+					try {
+						n = df.parse(value.trim());
+					} catch (ParseException e) {
+						throw new SenderException("got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
+					}
+					if (value.indexOf('.') >= 0) {
+						yield n.doubleValue();
+					} else {
+						yield n.intValue();
+					}
 				}
-				if (StringUtils.isNotEmpty(groupingSeparator)) {
-					decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
-				}
-				DecimalFormat df = new DecimalFormat();
-				df.setDecimalFormatSymbols(decimalFormatSymbols);
-				Number n;
-				try {
-					n = df.parse(value.trim());
-				} catch (ParseException e) {
-					throw new SenderException("got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
-				}
-				if (value.indexOf('.') >= 0) {
-					parameter = n.doubleValue();
-				} else {
-					parameter = n.intValue();
-				}
-			} else if (type.equalsIgnoreCase(TYPE_DATETIME)) {
-				DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatString);
+				case TYPE_DATETIME -> {
+					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatString);
 
-				try {
-					TemporalAccessor parsed = formatter.parse(value);
-					parameter = Timestamp.from(Instant.from(parsed));
-				} catch (DateTimeParseException e) {
-					throw new SenderException("got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
+					try {
+						TemporalAccessor parsed = formatter.parse(value);
+						yield Timestamp.from(Instant.from(parsed));
+					} catch (DateTimeParseException e) {
+						throw new SenderException("got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
+					}
 				}
-			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
-				java.util.Date nDate;
-				try {
-					nDate = XmlUtils.parseXmlDateTime(value);
-				} catch (Exception e) {
-					throw new SenderException("got exception parsing value [" + value + "] from xml dateTime to Date", e);
+				case TYPE_XMLDATETIME -> {
+					java.util.Date nDate;
+					try {
+						nDate = XmlUtils.parseXmlDateTime(value);
+					} catch (Exception e) {
+						throw new SenderException("got exception parsing value [" + value + "] from xml dateTime to Date", e);
+					}
+					yield new Timestamp(nDate.getTime());
 				}
-				parameter = new Timestamp(nDate.getTime());
-			} else if (type.equalsIgnoreCase(TYPE_BLOB)) {
-				parameter = value.getBytes();
-			} else {
-				if (!type.equalsIgnoreCase(TYPE_FUNCTION)) {
-					parameter = value;
-				} else {
-					parameter = null;
-				}
-			}
-			return parameter;
+				case TYPE_BLOB -> value.getBytes();
+				case TYPE_FUNCTION -> null;
+				default -> value;
+			};
 		}
 
-		private String fillQueryValue() {
-			if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
+		private @Nullable String convertQueryValue(@NonNull String type, @Nullable String value) {
+			if (type.equals(TYPE_FUNCTION)) {
 				return value;
 			} else {
 				return "?";
@@ -200,9 +198,8 @@ public class XmlQuerySender extends DirectQuerySender {
 			throw new SenderException("unable to execute query, no input provided");
 		}
 
-		Message result;
 		try {
-			Element queryElement = XmlUtils.buildElement(message.asString());
+			Element queryElement = XmlUtils.buildElement(Objects.requireNonNull(message.asString()));
 			String root = queryElement.getTagName();
 			String tableName = XmlUtils.getChildTagAsString(queryElement, "tableName");
 			Element columnsElement = XmlUtils.getFirstChildTag(queryElement, "columns");
@@ -215,25 +212,24 @@ public class XmlQuerySender extends DirectQuerySender {
 			String where = XmlUtils.getChildTagAsString(queryElement, "where");
 			String order = XmlUtils.getChildTagAsString(queryElement, "order");
 
-			if ("select".equalsIgnoreCase(root)) {
-				result = selectQuery(blockHandle, tableName, columns, where, order).getResult();
-			} else if ("insert".equalsIgnoreCase(root)) {
-				result = insertQuery(blockHandle, tableName, columns);
-			} else if ("delete".equalsIgnoreCase(root)) {
-				result = deleteQuery(blockHandle, tableName, where);
-			} else if ("update".equalsIgnoreCase(root)) {
-				result = updateQuery(blockHandle, tableName, columns, where);
-			} else if ("alter".equalsIgnoreCase(root)) {
-				String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
-				int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith").trim());
-				result = alterQuery(blockHandle, sequenceName, startWith);
-			} else if ("sql".equalsIgnoreCase(root)) {
-				String type = XmlUtils.getChildTagAsString(queryElement, "type");
-				String query = XmlUtils.getChildTagAsString(queryElement, "query");
-				result = sql(blockHandle, query, type);
-			} else {
-				throw new SenderException("unknown root element [" + root + "]");
-			}
+			Message result = switch (root.toLowerCase(Locale.ROOT)) {
+				case "select" -> selectQuery(blockHandle, tableName, columns, where, order).getResult();
+				case "insert" -> insertQuery(blockHandle, tableName, columns);
+				case "delete" -> deleteQuery(blockHandle, tableName, where);
+				case "update" -> updateQuery(blockHandle, tableName, columns, where);
+				case "alter" -> {
+					String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
+					int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith").trim());
+					yield alterQuery(blockHandle, sequenceName, startWith);
+				}
+				case "sql" -> {
+					String type = XmlUtils.getChildTagAsString(queryElement, "type");
+					String query = XmlUtils.getChildTagAsString(queryElement, "query");
+					yield sql(blockHandle, query, type);
+				}
+				case null, default -> throw new SenderException("unknown root element [" + root + "]");
+			};
+			return new SenderResult(result);
 		} catch (DomBuilderException e) {
 			throw new SenderException("got exception parsing [" + message + "]", e);
 		} catch (JdbcException e) {
@@ -241,8 +237,6 @@ public class XmlQuerySender extends DirectQuerySender {
 		} catch (IOException e) {
 			throw new SenderException("got exception creating [" + message + "]", e);
 		}
-
-		return new SenderResult(result);
 	}
 
 	private SenderResult selectQuery(Connection connection, String tableName, List<Column> columns, String where, String order) throws SenderException, JdbcException {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,15 +43,14 @@ public class TibcoEmsProperties extends HashMap<String, Object> {
 	}
 
 	public TibcoEmsProperties(URL externalURL) throws IOException {
-		if(externalURL == null) throw new IOException("file ["+externalURL+"] not found");
+		if (externalURL == null) throw new IOException("file ["+externalURL+"] not found");
 		Properties properties = new Properties();
 		try (InputStream is = externalURL.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			properties.load(reader);
 			log.info("Tibco EMS properties loaded from url [{}]", externalURL::toString);
 		}
 
-		for (Object keyObj : properties.keySet()) {
-			final String key = (String) keyObj;
+		for (String key : properties.stringPropertyNames()) {
 			Object parseToValue = parseValue(properties.getProperty(key));
 			log.debug("mapped key [{}] to type [{}]", () -> key, () -> parseToValue.getClass().getSimpleName());
 			put(key, parseToValue);
@@ -60,11 +59,11 @@ public class TibcoEmsProperties extends HashMap<String, Object> {
 
 	private Object parseValue(String value) {
 		if ("true".equals(value) || "false".equals(value)) {
-			return Boolean.parseBoolean(value);
+			return Boolean.valueOf(value);
 		}
 		try {
-			return Integer.parseInt(value.trim());
-		} catch (NumberFormatException e) {
+			return Integer.valueOf(value.trim());
+		} catch (NumberFormatException | NullPointerException e) {
 			// ignore exception
 		}
 		return value;

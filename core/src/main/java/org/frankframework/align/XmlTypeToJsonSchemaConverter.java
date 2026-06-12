@@ -593,7 +593,7 @@ public class XmlTypeToJsonSchemaConverter  {
 	private void applyFacet(XSSimpleTypeDefinition simpleTypeDefinition, JsonObjectBuilder builder, String key, short facet){
 		if(simpleTypeDefinition.getFacet(facet) != null){
 			String lexicalFacetValue = simpleTypeDefinition.getLexicalFacetValue(facet);
-			if(lexicalFacetValue != null){
+			if (lexicalFacetValue != null) {
 				switch(facet){
 					case XSSimpleTypeDefinition.FACET_MAXINCLUSIVE:
 					case XSSimpleTypeDefinition.FACET_MININCLUSIVE:
@@ -656,7 +656,7 @@ public class XmlTypeToJsonSchemaConverter  {
 						log.trace("Inspecting multiValuedFacet.getFacetKind() == pattern for [{}] which has value of [{}]", multiValuedFacet.getName(), multiValuedFacet.getFacetKind() == XSSimpleTypeDefinition.FACET_PATTERN);
 					}
 
-					if(facet == multiValuedFacet.getFacetKind()){
+					if (facet == multiValuedFacet.getFacetKind()) {
 						StringList lexicalFacetValues = multiValuedFacet.getLexicalFacetValues();
 
 						/*
@@ -665,18 +665,17 @@ public class XmlTypeToJsonSchemaConverter  {
 
 							don't we need to try and parse?
 						*/
+						switch (facet) {
+							case XSSimpleTypeDefinition.FACET_ENUMERATION -> {
+								JsonArrayBuilder enumBuilder = Json.createArrayBuilder();
+								for (int x = 0; x < lexicalFacetValues.getLength(); x++) {
+									lexicalFacetValue = lexicalFacetValues.item(x);
+									enumBuilder.add(lexicalFacetValue);
+								}
 
-						if(facet == XSSimpleTypeDefinition.FACET_ENUMERATION){
-							JsonArrayBuilder enumBuilder = Json.createArrayBuilder();
-							for (int x=0; x<lexicalFacetValues.getLength(); x++) {
-								lexicalFacetValue = lexicalFacetValues.item(x);
-								enumBuilder.add(lexicalFacetValue);
+								builder.add(key, enumBuilder.build());
 							}
-
-							builder.add(key, enumBuilder.build());
-						}
-						else if(facet == XSSimpleTypeDefinition.FACET_PATTERN){
-							builder.add(key, lexicalFacetValues.item(0));
+							case XSSimpleTypeDefinition.FACET_PATTERN -> builder.add(key, lexicalFacetValues.item(0));
 						}
 					}
 				}

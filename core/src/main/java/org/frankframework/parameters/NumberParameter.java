@@ -115,8 +115,9 @@ public class NumberParameter extends AbstractParameter<Number> {
 		return result;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	protected Number getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected @NonNull Number getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if(getType() == ParameterType.NUMBER) {
 			if (request.asObject() instanceof Number number) {
 				return number;
@@ -132,7 +133,7 @@ public class NumberParameter extends AbstractParameter<Number> {
 		}
 		if(getType() == ParameterType.INTEGER) {
 			if (request.asObject() instanceof Number number) {
-				return number;
+				return number.intValue();
 			}
 			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->request);
 			try {
