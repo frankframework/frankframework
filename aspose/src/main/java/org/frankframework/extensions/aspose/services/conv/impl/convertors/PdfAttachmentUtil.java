@@ -16,9 +16,13 @@
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import com.aspose.pdf.Document;
 import com.aspose.pdf.FileSpecification;
@@ -29,19 +33,24 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 
 /**
  * This class will combine separate PDF files into a single PDF with attachments.
  */
 @Log4j2
 public class PdfAttachmentUtil {
+	private static final MimeType PDF_MIMETYPE = new MediaType("application", "pdf");
 
 	@NonNull
-	public static Message combineFiles(@NonNull Message parent, @NonNull Message attachment, String fileName) throws IOException {
-		try (Document pdfDoc = new Document(parent.asInputStream())) {
+	public static Message combineFiles(@NonNull Message parent, @NonNull Message attachment, String attachmentName) throws IOException {
+		try (InputStream is = parent.asInputStream(); Document pdfDoc = new Document(is)) {
 			pdfDoc.setPageMode(PageMode.UseAttachments);
 
-			pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachment.asInputStream(), fileName));
+			try (InputStream attachIs = attachment.asInputStream()) {
+				pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachIs, attachmentName));
+			}
+
 			MessageBuilder messageBuilder = new MessageBuilder();
 			try (OutputStream out = messageBuilder.asOutputStream()) {
 				pdfDoc.save(out, SaveFormat.Pdf);
@@ -49,8 +58,26 @@ public class PdfAttachmentUtil {
 
 			pdfDoc.freeMemory();
 
-			return messageBuilder.build();
+			Message result = messageBuilder.build();
+			result.getContext().withMimeType(PDF_MIMETYPE);
+			return result;
 		}
 	}
 
+	public static String getValidFileName(Message input, String extension) {
+		return getValidFileName(input, "default_filename", extension);
+	}
+
+	// Not sure why we need to get the name trim the extension only to add it again, but for now leave it as is...
+	public static String getValidFileName(Message input, String fallbackName, String extension) {
+		String name = (String) input.getContext().get(MessageContext.METADATA_NAME);
+		if (StringUtils.isBlank(name)) {
+			return fallbackName+"."+extension;
+		}
+		String result = StringUtils.substringBeforeLast(name, ".") + "." + extension;
+		if (!result.equals(name)) {
+			log.debug("updated filename to a valid filename from [{}] to [{}]", name, result);
+		}
+		return result;
+	}
 }

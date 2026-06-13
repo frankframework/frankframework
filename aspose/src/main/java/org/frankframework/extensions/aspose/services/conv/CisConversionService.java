@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2026 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.springframework.util.MimeType;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.Convertor;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import org.frankframework.stream.Message;
@@ -38,25 +37,24 @@ public class CisConversionService {
 
 	public CisConversionService(CisConfiguration configuration) {
 		this.configuration = configuration;
-		convertorFactory = new ConvertorFactory(this, configuration);
+		convertorFactory = new ConvertorFactory(configuration);
 	}
 
-	public CisConversionResult convertToPdf(Message message, ConversionOption conversionOption) {
+	public CisConversionResult convertToPdf(Message message) {
 		String filename = (String) message.getContext().get(MessageContext.METADATA_NAME);
 		MediaType mediaType = getMimeType(message, filename);
 
 		if (isPasswordProtected(mediaType)) {
-			return CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
+			return CisConversionResult.createPasswordFailureResult(filename, mediaType);
 		} else {
 			// Get the converter for the given mediatype.
 			Convertor convertor = convertorFactory.getConvertor(mediaType);
 			if (convertor == null) {
 				// Conversion not supported.
 				String errorMessage = "Omzetten naar PDF mislukt! Reden: bestandstype wordt niet ondersteund (mediaType: "+ mediaType + ")";
-				return CisConversionResult.createFailureResult(conversionOption, mediaType, filename, errorMessage);
+				return CisConversionResult.createFailureResult(mediaType, filename, errorMessage);
 			} else {
 				CisConversionResult result = new CisConversionResult();
-				result.setConversionOption(conversionOption);
 				result.setMediaType(mediaType);
 				result.setDocumentName(filename);
 
@@ -69,12 +67,12 @@ public class CisConversionService {
 						result.setPersistToDisk(configuration.getPdfOutputLocation());
 					}
 
-					log.debug("Convert (in {} msec): mediatype: {}, filename: {}, attachmentoptions: {}", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption);
+					log.debug("Convert (in {} msec): mediatype: {}, filename: {}", System.currentTimeMillis() - startTime, mediaType, filename);
 					return result;
 				} catch (InvalidPasswordException e) {
-					return CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
+					return CisConversionResult.createPasswordFailureResult(filename, mediaType);
 				} catch (Exception e) {
-					return CisConversionResult.createFailureResult(conversionOption, mediaType, filename, e.getMessage());
+					return CisConversionResult.createFailureResult(mediaType, filename, e.getMessage());
 				}
 			}
 		}

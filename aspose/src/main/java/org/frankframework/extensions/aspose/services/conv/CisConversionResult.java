@@ -107,20 +107,17 @@ public class CisConversionResult {
 		return message;
 	}
 
-	public static CisConversionResult createPasswordFailureResult(String filename, ConversionOption conversionOption, MediaType mediaTypeReceived) {
+	public static CisConversionResult createPasswordFailureResult(String filename, MediaType mediaTypeReceived) {
 		StringBuilder msg = new StringBuilder();
 		if (filename != null) {
 			msg.append(filename);
 		}
 		msg.append(" ").append(PASSWORD_MESSAGE);
-		return createFailureResult(conversionOption, mediaTypeReceived, filename, msg.toString());
+		return createFailureResult(mediaTypeReceived, filename, msg.toString());
 	}
 
-	public static CisConversionResult createFailureResult(ConversionOption conversionOption,
-			MediaType mediaTypeReceived, String documentName, String failureReason) {
-
+	public static CisConversionResult createFailureResult(MediaType mediaTypeReceived, String documentName, String failureReason) {
 		CisConversionResult cisConversionResult = new CisConversionResult();
-		cisConversionResult.setConversionOption(conversionOption);
 		cisConversionResult.setMediaType(mediaTypeReceived);
 		cisConversionResult.setDocumentName(documentName);
 		cisConversionResult.setFailureReason(failureReason);

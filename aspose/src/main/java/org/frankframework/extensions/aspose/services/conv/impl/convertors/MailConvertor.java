@@ -48,7 +48,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
@@ -86,7 +85,7 @@ class MailConvertor extends AbstractConvertor {
 		options.setPreserveOriginalDate(true);
 	}
 
-	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
+	protected MailConvertor(CisConfiguration configuration) {
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 

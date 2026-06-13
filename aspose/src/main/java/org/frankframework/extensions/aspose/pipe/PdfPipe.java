@@ -129,29 +129,29 @@ public class PdfPipe extends FixedForwardPipe {
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
+		String filename = session.getString(FILENAME_SESSION_KEY);
+		if (StringUtils.isNotBlank(filename)) {
+			input.getContext().withName(filename);
+		}
+
 		try {
 			switch(getAction()) {
 				case COMBINE:
 					// Get main document to attach attachments
 					Message mainPdf = session.getMessage(getMainDocumentSessionKey());
 					// Get file name of attachment
-					String fileNameToAttach = session.getString(getFilenameToAttachSessionKey());
+					String fallbackFilename = session.getString(getFilenameToAttachSessionKey());
 
-					Message result = PdfAttachmentUtil.combineFiles(mainPdf, input, fileNameToAttach + ".pdf");
+					String attachmentName = PdfAttachmentUtil.getValidFileName(input, fallbackFilename, "pdf");
+					Message result = PdfAttachmentUtil.combineFiles(mainPdf, input, attachmentName);
 
-					session.put("CONVERSION_OPTION", ConversionOption.SINGLEPDF);
 					session.put(getMainDocumentSessionKey(), result);
 					return new PipeRunResult(getSuccessForward(), result);
 				case CONVERT:
-					String filename = session.getString(FILENAME_SESSION_KEY);
-					if (StringUtils.isNotBlank(filename)) {
-						input.getContext().withName(filename);
-					}
+					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input);
+					cisConversionResult.setConversionOption(isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 
-					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input, isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
-
-					Message message = handleAttachments(cisConversionResult, isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF, session);
-
+					Message message = handleAttachments(cisConversionResult, session);
 					session.put(getConversionResultDocumentSessionKey(), message);
 
 					return new PipeRunResult(getSuccessForward(), message);
@@ -163,7 +163,7 @@ public class PdfPipe extends FixedForwardPipe {
 		}
 	}
 
-	private Message handleAttachments(CisConversionResult result, ConversionOption conversionOption, PipeLineSession session) throws IOException {
+	private Message handleAttachments(CisConversionResult result, PipeLineSession session) throws IOException {
 		if (!result.isConversionSuccessful()) {
 			return result.toXML().asMessage();
 		}
@@ -181,10 +181,10 @@ public class PdfPipe extends FixedForwardPipe {
 
 				for (Message attachment : result.getAttachments()) {
 					XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
-					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(attachment, conversionOption);
+					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(attachment);
 
 					if (cisConversionResult.isConversionSuccessful()) {
-						if (ConversionOption.SINGLEPDF == conversionOption) {
+						if (ConversionOption.SINGLEPDF == result.getConversionOption()) {
 							try (InputStream attachIs = cisConversionResult.rawMessage().asInputStream()) {
 								String fileName = cisConversionResult.getDocumentName();
 								pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachIs, fileName));
