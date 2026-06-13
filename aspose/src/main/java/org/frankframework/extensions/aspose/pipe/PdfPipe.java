@@ -182,6 +182,7 @@ public class PdfPipe extends FixedForwardPipe {
 				for (Message attachment : result.getAttachments()) {
 					XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
 					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(attachment);
+					cisConversionResult.setConversionOption(isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 
 					if (cisConversionResult.isConversionSuccessful()) {
 						if (ConversionOption.SINGLEPDF == result.getConversionOption()) {
