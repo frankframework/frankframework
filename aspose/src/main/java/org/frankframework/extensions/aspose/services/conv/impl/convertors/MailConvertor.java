@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2025 WeAreFrank!
+   Copyright 2019, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
 */
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.OutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,12 +46,11 @@ import com.aspose.words.Shape;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.frankframework.extensions.aspose.services.conv.CisConversionService;
-import org.frankframework.extensions.aspose.services.util.ConvertorUtil;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 
@@ -64,7 +61,6 @@ class MailConvertor extends AbstractConvertor {
 	private static final float MAX_IMAGE_HEIGHT_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
 	private static final String MAIL_HEADER_DATEFORMAT = "dd-MM-yyyy HH:mm:ss";
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(MAIL_HEADER_DATEFORMAT);
-	private final CisConversionService cisConversionService;
 
 	// contains mapping from MediaType to the LoadOption for the Aspose Word conversion.
 	private static final Map<MediaType, Class<? extends LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
@@ -89,17 +85,17 @@ class MailConvertor extends AbstractConvertor {
 		options.setPreserveOriginalDate(true);
 	}
 
-	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
+	protected MailConvertor(CisConfiguration configuration) {
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
-		this.cisConversionService = cisConversionService;
 	}
 
+	/**
+	 * Override the default method because we're modifying the {@link CisConversionResult}.
+	 */
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-		try (InputStream inputStream = message.asInputStream(charset);
+	public void convertToPdf(CisConversionResult result, MediaType mediaType, Message message) throws Exception {
+		try (InputStream inputStream = message.asInputStream(configuration.getCharset());
 			MailMessage eml = MailMessage.load(inputStream, ClassUtils.newInstance(MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType)))) {
-
-			AttachmentCollection attachments = eml.getAttachments();
 
 			if (log.isDebugEnabled()) {
 				log.debug("cc : [{}]", toString(eml.getCC()));
@@ -111,58 +107,59 @@ class MailConvertor extends AbstractConvertor {
 			}
 
 			// Overrules the default documentname.
-			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
+			result.setDocumentName(eml.getSubject());
 
-			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
+			MessageBuilder messageBuilder = new MessageBuilder();
 			String date = DATE_TIME_FORMATTER.format(eml.getDate().toInstant());
 			eml.getHeaders().set_Item("Date", date);
-			eml.save(tempMHtmlFile.getAbsolutePath(), options);
-
-			// Load the stream in Word document
-			HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-			loadOptions.setLoadFormat(LoadFormat.MHTML);
-			loadOptions.setWebRequestTimeout(0);
-			if(!configuration.isLoadExternalResources()){
-				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				eml.save(stream, options);
 			}
 
-			Long startTime = System.currentTimeMillis();
-			try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
-				Document doc = new Document(fis, loadOptions);
-				new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
-				resizeInlineImages(doc);
+			// We've updated the EML, now convert it.
+			Message emlMessage = messageBuilder.build();
+			super.convertToPdf(result, mediaType, emlMessage);
 
-				doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
-
-				result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-				Long endTime = System.currentTimeMillis();
-				log.debug("document converted in [{}ms]", (endTime - startTime));
-			} finally {
-				Files.delete(tempMHtmlFile.toPath());
-			}
-
-			// Convert and (optional add) any attachment of the mail.
+			// And see if there are any attachments.
+			AttachmentCollection attachments = eml.getAttachments();
 			for (int index = 0; index < attachments.size(); index++) {
 				// Initialize Attachment object and Get the indexed Attachment reference
 				Attachment attachment = attachments.get_Item(index);
 
 				// Convert the attachment.
-				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
-				// If it is a singlepdf add the file to the current pdf.
-				if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
-					try {
-						PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
-						pdfAttachmentUtil.addAttachmentInSinglePdf();
-					} finally {
-						deleteFile(cisConversionResultAttachment.getPdfResultFile());
-						// Clear the file because it is now incorporated in the file itself.
-						cisConversionResultAttachment.setPdfResultFile(null);
-						cisConversionResultAttachment.setResultFilePath(null);
-					}
-
-				}
-				result.addAttachment(cisConversionResultAttachment);
+				Message attachmentMsg = attachmentToMessage(attachment);
+				log.debug("convert attachment [{}]", attachment);
+				result.addAttachment(attachmentMsg);
 			}
+		}
+	}
+
+	@Override
+	protected Message convert(MediaType mediaType, Message file) throws Exception {
+		// Load the stream in Word document
+		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
+		loadOptions.setLoadFormat(LoadFormat.MHTML);
+		loadOptions.setWebRequestTimeout(0);
+		if(!configuration.isLoadExternalResources()) {
+			loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
+		}
+
+		try(InputStream fis = file.asInputStream()) {
+			Document doc = new Document(fis, loadOptions);
+			new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
+			resizeInlineImages(doc);
+
+			int numberOfPages = doc.getPageCount();
+			MessageBuilder messageBuilder = new MessageBuilder();
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				doc.save(stream, SaveFormat.PDF);
+			}
+
+			Message result = messageBuilder.build();
+			doc.cleanup();
+
+			result.getContext().withMimeType(PDF_MIMETYPE).with("Pdf.Pages", numberOfPages);
+			return result;
 		}
 	}
 
@@ -194,17 +191,16 @@ class MailConvertor extends AbstractConvertor {
 		return scaleFactor * currentValue;
 	}
 
-	/**
-	 * Converts an email attachment to a pdf via the cisConversionService.
-	 */
-	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
-		log.debug("convert attachment [{}]", attachment::getName);
-
+	private Message attachmentToMessage(Attachment attachment) throws IOException {
 		// Get the name of the file (segment) (this is the last part).
 		String[] segments = attachment.getName().split("/");
 		String segmentFilename = segments[segments.length - 1];
 
-		return cisConversionService.convertToPdf(new Message(attachment.getContentStream()), segmentFilename, conversionOption);
+		MessageContext context = new MessageContext()
+			.withCharset(attachment.getNameEncoding())
+			.withName(segmentFilename);
+
+		return new Message(attachment.getContentStream(), context);
 	}
 
 	private String toString(Iterable<MailAddress> iterable) {

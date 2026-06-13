@@ -17,13 +17,16 @@ package org.frankframework.extensions.aspose.pipe;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
-import java.nio.file.Path;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.jspecify.annotations.NonNull;
+
+import com.aspose.pdf.FileSpecification;
+import com.aspose.pdf.PageMode;
 
 import lombok.Getter;
 
@@ -39,14 +42,12 @@ import org.frankframework.extensions.aspose.ConversionOption;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.extensions.aspose.services.conv.CisConversionService;
-import org.frankframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import org.frankframework.pipes.FixedForwardPipe;
-import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.XmlBuilder;
 
 
@@ -82,9 +83,11 @@ public class PdfPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+
 		if(getAction() == null) {
 			throw new ConfigurationException("please specify an action for pdf pipe ["+getName()+"]. possible values: "+ EnumUtils.getEnumList(DocumentAction.class));
 		}
+
 		if(StringUtils.isNotEmpty(getPdfOutputLocation())) {
 			File outputLocation = new File(getPdfOutputLocation());
 			if (!outputLocation.exists()) {
@@ -94,15 +97,8 @@ public class PdfPipe extends FixedForwardPipe {
 			if (!outputLocation.isDirectory()) {
 				throw new ConfigurationException("pdf output location is not a valid directory");
 			}
-		} else {
-			try {
-				Path ibisTempDir = TemporaryDirectoryUtils.getTempDirectory("Pdf");
-				setPdfOutputLocation(ibisTempDir.toString());
-				log.info("temporary directory path [{}]", ibisTempDir);
-			} catch (IOException e) {
-				throw new ConfigurationException(e);
-			}
 		}
+
 		if (StringUtils.isEmpty(getLicense())) {
 			ConfigurationWarnings.add(this, log, "Aspose License is not configured. There will be evaluation watermarks on the converted documents. There are also some restrictions in the API use. License field should be set with a valid information to avoid this. ");
 		} else {
@@ -127,40 +123,35 @@ public class PdfPipe extends FixedForwardPipe {
 		}
 
 		CisConfiguration configuration = new CisConfiguration(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath());
-		cisConversionService = new CisConversionServiceImpl(configuration);
+		cisConversionService = new CisConversionService(configuration);
 	}
 
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
-		// message should always be available.
-		if (Message.isEmpty(input)) {
-			throw new IllegalArgumentException("message == null");
+		String filename = session.getString(FILENAME_SESSION_KEY);
+		if (StringUtils.isNotBlank(filename)) {
+			input.getContext().withName(filename);
 		}
+
 		try {
 			switch(getAction()) {
 				case COMBINE:
 					// Get main document to attach attachments
 					Message mainPdf = session.getMessage(getMainDocumentSessionKey());
 					// Get file name of attachment
-					String fileNameToAttach = session.getString(getFilenameToAttachSessionKey());
+					String fallbackFilename = session.getString(getFilenameToAttachSessionKey());
 
-					Message result = PdfAttachmentUtil.combineFiles(mainPdf, input, fileNameToAttach + ".pdf", getCharset());
+					String attachmentName = PdfAttachmentUtil.getValidFileName(input, fallbackFilename, "pdf");
+					Message result = PdfAttachmentUtil.combineFiles(mainPdf, input, attachmentName);
 
-					session.put("CONVERSION_OPTION", ConversionOption.SINGLEPDF);
 					session.put(getMainDocumentSessionKey(), result);
 					return new PipeRunResult(getSuccessForward(), result);
 				case CONVERT:
-					String filename = session.getString(FILENAME_SESSION_KEY);
-					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input, filename, isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
+					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input);
+					cisConversionResult.setConversionOption(isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 
-					// Populate Session before creating main-xml as it will update session keys.
-					populateSession(cisConversionResult, session, new MutableInt(0));
-
-					XmlBuilder main = new XmlBuilder("main");
-					cisConversionResult.buildXmlFromResult(main, true);
-
-					Message message = main.asMessage();
+					Message message = handleAttachments(cisConversionResult, session);
 					session.put(getConversionResultDocumentSessionKey(), message);
 
 					return new PipeRunResult(getSuccessForward(), message);
@@ -172,20 +163,60 @@ public class PdfPipe extends FixedForwardPipe {
 		}
 	}
 
-	private void populateSession(CisConversionResult result, PipeLineSession session, MutableInt index) {
-		if (StringUtils.isNotEmpty(result.getResultFilePath())) {
-			// TODO: Use a PathMessage.asTemporaryMessage() here in future so that all these files
-			//       are automatically cleaned up on close of the PipeLineSession.
-			FileMessage document = new FileMessage(new File(result.getResultFilePath()));
-			String sessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
-			result.setResultSessionKey(sessionKey);
-			session.put(sessionKey, document);
+	private Message handleAttachments(CisConversionResult result, PipeLineSession session) throws IOException {
+		if (!result.isConversionSuccessful()) {
+			return result.toXML().asMessage();
 		}
 
-		List<CisConversionResult> attachmentList = result.getAttachments();
-		for (CisConversionResult cisConversionResult : attachmentList) {
-			populateSession(cisConversionResult, session, index);
+		AtomicInteger index = new AtomicInteger(0);
+		// The sessionKey should be determined here, because it should be the one with the lowest number.
+		String sessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
+		result.setResultSessionKey(sessionKey);
+
+		XmlBuilder xmlResult = result.toXML();
+		if (!result.getAttachments().isEmpty()) {
+			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
+			try (InputStream is = result.rawMessage().asInputStream(); com.aspose.pdf.Document pdfDoc = new com.aspose.pdf.Document(is)) {
+				pdfDoc.setPageMode(PageMode.UseAttachments);
+
+				for (Message attachment : result.getAttachments()) {
+					XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
+					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(attachment);
+					cisConversionResult.setConversionOption(isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
+
+					if (cisConversionResult.isConversionSuccessful()) {
+						if (ConversionOption.SINGLEPDF == result.getConversionOption()) {
+							try (InputStream attachIs = cisConversionResult.rawMessage().asInputStream()) {
+								String fileName = cisConversionResult.getDocumentName();
+								pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachIs, fileName));
+							}
+							// We don't need to add the file to the session because it is now incorporated in the PDF itself.
+							cisConversionResult.setMessage(null);
+						} else {
+							String attachmentSessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
+							cisConversionResult.setResultSessionKey(attachmentSessionKey);
+							session.put(attachmentSessionKey, cisConversionResult.getMessage());
+						}
+					}
+
+					cisConversionResult.toXML(attachmentAsXml);
+					attachmentsAsXml.addSubElement(attachmentAsXml);
+				}
+
+				MessageBuilder messageBuilder = new MessageBuilder();
+				try (OutputStream out = messageBuilder.asOutputStream()) {
+					pdfDoc.save(out);
+				}
+
+				result.setMessage(messageBuilder.build());
+			}
+			xmlResult.addSubElement(attachmentsAsXml);
 		}
+
+		// Here because we may have changed the underlying PDF by adding attachments to it.
+		session.put(sessionKey, result.getMessage());
+
+		return xmlResult.asMessage();
 	}
 
 	public void setAction(DocumentAction action) {
@@ -228,7 +259,7 @@ public class PdfPipe extends FixedForwardPipe {
 	 *         <li>{@code pdfConversionResultFiles2}</li>
 	 *         <li>{@code pdfConversionResultFiles3}</li>
 	 *     </ol>
-	 *     Each session key will contain a {@link FileMessage} referencing the contents of that PDF.
+	 *     Each session key will contain a {@link Message} referencing the contents of that PDF.
 	 * </p>
 	 * @ff.default pdfConversionResultFiles
 	 *
@@ -282,9 +313,19 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.
+	 * Directory to save resulting PDF files after conversion.
+	 * If not set documents will be streamed in memory opposed to written to disk.
+	 * A temporary directory is automatically used if needed and the conversion results will be cleaned up automatically.
+	 * <br/>
+	 * NOTE: <strong>Converted documents should be fetched from the {@link PipeLineSession session} and not from disk.</strong>
+	 * <br/>
+	 * This behavior differs from v10.0 and earlier where conversion results were persistent and always stored on disk.
+	 * In order to use the old (non-streaming) behavior, set this to {@code ${ibis.tmpdir}/Pdf}.
+	 * By setting a location the {@code convertedDocument} attribute will be used to store the PDF location.
+	 * 
 	 * @ff.default null
 	 */
+	@Deprecated
 	public void setPdfOutputLocation(String pdfOutputLocation) {
 		this.pdfOutputLocation = pdfOutputLocation;
 	}

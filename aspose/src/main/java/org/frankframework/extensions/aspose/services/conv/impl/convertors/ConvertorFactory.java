@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2022 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.springframework.http.MediaType;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 
 /**
  * Convertor factory instantiates all convertor types and keeps them in a map.
@@ -36,8 +35,8 @@ public class ConvertorFactory {
 
 	private final Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
 
-	public ConvertorFactory(CisConversionService cisConversionService, CisConfiguration configuration) {
-		addToConvertorLookupMap(new MailConvertor(cisConversionService, configuration));
+	public ConvertorFactory(CisConfiguration configuration) {
+		addToConvertorLookupMap(new MailConvertor(configuration));
 		addToConvertorLookupMap(new PdfStandaardConvertor(configuration));
 		addToConvertorLookupMap(new PdfConvertor(configuration));
 		addToConvertorLookupMap(new PdfImageConvertor(configuration));
@@ -56,7 +55,7 @@ public class ConvertorFactory {
 	}
 
 	/**
-	 * Return <code>null</code> when no convertor is found.
+	 * Return <code>null</code> when no converter is found.
 	 */
 	public Convertor getConvertor(MediaType mediaType) {
 		return convertorLookupMap.get(mediaType);

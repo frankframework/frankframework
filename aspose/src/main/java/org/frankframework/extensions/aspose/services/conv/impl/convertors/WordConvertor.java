@@ -16,6 +16,7 @@
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +36,8 @@ import com.aspose.words.SaveOptions;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 
 /**
  * Converts the files which are required and supported by the aspose words
@@ -75,13 +76,13 @@ class WordConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-
+	public Message convert(MediaType mediaType, Message input) throws Exception {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
-		try (InputStream inputStream = message.asInputStream(charset)) {
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (InputStream inputStream = input.asInputStream(configuration.getCharset())) {
 			LoadOptions loadOptions = getLoadOptions(mediaType);
 
 			Document doc = new Document(inputStream, loadOptions);
@@ -89,11 +90,16 @@ class WordConvertor extends AbstractConvertor {
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 
-			long startTime = System.currentTimeMillis();
-			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
-			long endTime = System.currentTimeMillis();
-			log.debug("conversion (save operation in convert method) took [{}ms]", (endTime - startTime));
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+			int numberOfPages = doc.getPageCount();
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				doc.save(stream, saveOptions);
+			}
+
+			Message result = messageBuilder.build();
+			doc.cleanup();
+
+			result.getContext().withMimeType(PDF_MIMETYPE).with("Pdf.Pages", numberOfPages);
+			return result;
 		}
 	}
 
