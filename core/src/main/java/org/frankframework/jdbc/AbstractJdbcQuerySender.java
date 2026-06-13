@@ -587,7 +587,13 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					resultset.absolute(getStartRow()-1);
 					log.debug("Index set at position: {}", resultset.getRow());
 				}
-				return new SenderResult(getResult(resultset, blobOrClobFilename));
+				// When no blob/clob target file is set (the normal SELECT case), dispatch through
+				// the overridable getResult(ResultSet) so subclasses such as
+				// IbisstoreSummaryQuerySender can format the result themselves (e.g. as JSON).
+				// The private two-arg variant is only needed for blob/clob streaming to a file.
+				return new SenderResult(blobOrClobFilename == null
+						? getResult(resultset)
+						: getResult(resultset, blobOrClobFilename));
 			}
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException("got exception executing a SELECT SQL command", e );
