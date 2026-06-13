@@ -44,7 +44,7 @@ public class DB2DocumentWriter {
 	private boolean decompressBlobs=false;
 	private boolean getBlobSmart=false;
 	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private static final boolean CONVERT_FIELDNAMES_TO_UPPERCASE = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
+	private static final boolean CONVERT_FIELDNAMES_TO_UPPERCASE = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", true);
 
 	public static String getFieldType (int type) {
 		return JDBCType.valueOf(type).getName();

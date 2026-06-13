@@ -47,7 +47,7 @@ public class PropertyUtil {
 		if (StringUtils.isEmpty(result)) {
 			return defaultValue;
 		}
-		return Boolean.parseBoolean(result);
+		return Boolean.parseBoolean(result.trim());
 	}
 
 	public static int getProperty(String propertyFile, String property, int defaultValue) {
@@ -55,7 +55,7 @@ public class PropertyUtil {
 		if (StringUtils.isEmpty(result)) {
 			return defaultValue;
 		}
-		return Integer.parseInt(result);
+		return Integer.parseInt(result.trim());
 	}
 
 }

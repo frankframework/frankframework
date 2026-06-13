@@ -618,14 +618,12 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					pstmt.setString(parameterIndex, string);
 					parameterIndex++;
 				}
-				if (o instanceof Integer) {
-					int x = Integer.parseInt(o.toString());
-					pstmt.setInt(parameterIndex, x);
+				if (o instanceof Integer i) {
+					pstmt.setInt(parameterIndex, i);
 					parameterIndex++;
 				}
-				if (o instanceof Float) {
-					float x = Float.parseFloat(o.toString());
-					pstmt.setFloat(parameterIndex, x);
+				if (o instanceof Float f) {
+					pstmt.setFloat(parameterIndex, f);
 					parameterIndex++;
 				}
 			}
@@ -768,9 +766,9 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 								}
 							} else {
 								if (element.contains(".")) {
-									paramArray[idx] = Float.parseFloat(element);
+									paramArray[idx] = Float.parseFloat(element.trim());
 								} else {
-									paramArray[idx] = Integer.parseInt(element);
+									paramArray[idx] = Integer.parseInt(element.trim());
 								}
 							}
 						}
@@ -783,8 +781,8 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 				// Check if output parameter exists is expected in original message and append an ending ?(out-parameter)
 				int parameterCount = idx + (message.contains("?") ? 1 : 0);
 				if (parameterCount > 0) {
-					newMessage.append("?");
-					newMessage.append(",?".repeat(parameterCount - 1));
+					newMessage.append("?")
+							.repeat(",?", parameterCount - 1);
 				}
 				newMessage.append(message, closingBracePosition, lengthMessage);
 			}

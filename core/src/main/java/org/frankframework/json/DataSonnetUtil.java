@@ -159,7 +159,7 @@ public class DataSonnetUtil {
 			} else if (value instanceof Boolean bool) {
 				return Val.bool(bool);
 			} else if (value instanceof Number) {
-				return new Val.Num(Double.parseDouble(""+value));
+				return new Val.Num(Double.parseDouble((""+value).trim()));
 			}
 
 			MimeType mimeType = MessageUtils.computeMimeType(result);

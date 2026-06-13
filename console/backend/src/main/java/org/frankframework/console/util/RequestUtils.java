@@ -38,11 +38,11 @@ public class RequestUtils {
 
 	@SuppressWarnings("unchecked")
 	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
-		if(clazz.isAssignableFrom(InputStream.class)) {
+		if (clazz.isAssignableFrom(InputStream.class)) {
 			return (T) is;
 		}
 		String str = StreamUtil.streamToString(is);
-		if(clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
+		if (clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
 			return (T) Boolean.valueOf(str); // At the moment we allow null/empty -> FALSE
 		}
 		return ClassUtils.convertToType(clazz, str);
@@ -54,7 +54,7 @@ public class RequestUtils {
 	 */
 	public static @Nullable String getValue(Map<String, Object> json, String key) {
 		Object val = json.get(key);
-		if(val != null) {
+		if (val != null) {
 			return val.toString();
 		}
 		return null;
@@ -62,16 +62,16 @@ public class RequestUtils {
 
 	public static @Nullable Integer getIntegerValue(Map<String, Object> json, String key) {
 		String value = getValue(json, key);
-		if(value != null) {
-			return Integer.parseInt(value);
+		if (value != null) {
+			return Integer.parseInt(value.trim());
 		}
 		return null;
 	}
 
 	public static @Nullable Boolean getBooleanValue(Map<String, Object> json, String key) {
 		String value = getValue(json, key);
-		if(value != null) {
-			return Boolean.parseBoolean(value);
+		if (value != null) {
+			return Boolean.parseBoolean(value.trim());
 		}
 		return null;
 	}
@@ -81,37 +81,37 @@ public class RequestUtils {
 		if (multiFormProperty != null) {
 			return multiFormProperty;
 		}
-		if(defaultValue != null) {
+		if (defaultValue != null) {
 			return defaultValue;
 		}
 		throw new ApiException("Key ["+key+"] not defined", 400);
 	}
 
-	public static String resolveStringWithEncoding(String key, MultipartFile message, String defaultEncoding, boolean nullOnEmpty) {
-		if(message != null) {
-			String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			String messageContentType = message.getContentType();
-			if (messageContentType != null) {
-				MediaType contentType = MediaType.valueOf(messageContentType);
-				Charset charset = contentType.getCharset();
-				if(charset != null) {
-					encoding = charset.toString();
-				}
-			}
-
-			try {
-				InputStream is = message.getInputStream();
-				String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
-				if(nullOnEmpty) {
-					return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
-				}
-				return inputMessage;
-			} catch (UnsupportedEncodingException e) {
-				throw new ApiException("unsupported file encoding ["+encoding+"]");
-			} catch (IOException e) {
-				throw new ApiException("error parsing value of key ["+key+"]", e);
+	public static @Nullable String resolveStringWithEncoding(@NonNull String key, @Nullable MultipartFile message, @Nullable String defaultEncoding, boolean nullOnEmpty) {
+		if (message == null) {
+			return null;
+		}
+		String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		String messageContentType = message.getContentType();
+		if (messageContentType != null) {
+			MediaType contentType = MediaType.valueOf(messageContentType);
+			Charset charset = contentType.getCharset();
+			if (charset != null) {
+				encoding = charset.toString();
 			}
 		}
-		return null;
+
+		try {
+			InputStream is = message.getInputStream();
+			String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
+			if (nullOnEmpty) {
+				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
+			}
+			return inputMessage;
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException("unsupported file encoding ["+encoding+"]");
+		} catch (IOException e) {
+			throw new ApiException("error parsing value of key ["+key+"]", e);
+		}
 	}
 }

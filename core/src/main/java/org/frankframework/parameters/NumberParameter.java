@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -114,8 +115,9 @@ public class NumberParameter extends AbstractParameter<Number> {
 		return result;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
-	protected Number getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected @NonNull Number getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if(getType() == ParameterType.NUMBER) {
 			if (request.asObject() instanceof Number number) {
 				return number;
@@ -130,12 +132,12 @@ public class NumberParameter extends AbstractParameter<Number> {
 			}
 		}
 		if(getType() == ParameterType.INTEGER) {
-			if (request.asObject() instanceof Integer integer) {
-				return integer;
+			if (request.asObject() instanceof Number number) {
+				return number.intValue();
 			}
 			log.debug("Parameter [{}] converting result [{}] to integer", this::getName, ()->request);
 			try {
-				return Integer.parseInt(request.asString());
+				return Integer.parseInt(Objects.requireNonNull(request.asString()).trim());
 			} catch (NumberFormatException e) {
 				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to integer", e);
 			}
