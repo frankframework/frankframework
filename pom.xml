@@ -90,7 +90,7 @@
 		<junit.includedTags />
 
 		<jackson.version>2.22.0</jackson.version>
-		<cxf.version>4.2.1</cxf.version>
+		<cxf.version>4.2.2</cxf.version>
 		<spring.version>7.0.7</spring.version>
 		<spring-security.version>7.0.5</spring-security.version>
 		<spring-integration.version>7.0.4</spring-integration.version>
@@ -101,7 +101,7 @@
 
 		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
-		<micrometer.version>1.16.5</micrometer.version>
+		<micrometer.version>1.16.6</micrometer.version>
 		<argLine />
 		<!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
@@ -806,7 +806,7 @@
 							<path>
 								<groupId>com.uber.nullaway</groupId>
 								<artifactId>nullaway</artifactId>
-								<version>0.13.5</version>
+								<version>0.13.6</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>
