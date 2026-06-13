@@ -39,6 +39,7 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -67,6 +68,10 @@ public class LadybugReportGenerator implements InitializingBean {
 		if(testTool == null || pipeDescriptionProvider == null) {
 			log.info("no TestTool or pipeDescriptionProvider found on classpath, skipping testtool wireing.");
 			APPLICATION_LOG.info("No TestTool or pipeDescriptionProvider found on classpath, skipping testtool wireing.");
+		} else {
+			String application = AppConstants.getInstance().getProperty("instance.name");
+			log.debug("testTool.setApplication() - set value [{}]", application);
+			testTool.setApplication(application);
 		}
 	}
 
