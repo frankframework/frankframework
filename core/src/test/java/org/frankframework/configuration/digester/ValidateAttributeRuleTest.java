@@ -599,7 +599,7 @@ public class ValidateAttributeRuleTest {
 
 	private AppConstants loadAppConstants(ApplicationContext applicationContext) throws IOException {
 		AppConstants appConstants = AppConstants.getInstance(applicationContext != null ? applicationContext.getClassLoader() : this.getClass().getClassLoader());
-		appConstants.load(getClass().getClassLoader().getResourceAsStream("AppConstants/AppConstants_ValidateAttributeRuleTest.properties"));
+		appConstants.load(getClass().getClassLoader().getResourceAsStream("ValidateAttributeRule/AppConstants_ValidateAttributeRuleTest.properties"));
 		return appConstants;
 	}
 
