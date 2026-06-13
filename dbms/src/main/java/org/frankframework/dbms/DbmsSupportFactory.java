@@ -60,13 +60,13 @@ public class DbmsSupportFactory {
 			DatabaseMetaData md = connection.getMetaData();
 			String name = md.getDatabaseProductName();
 			String version = md.getDatabaseProductVersion();
-			return getDbmsSupport(name, version);
+			return getDbmsSupport(name, version, md.getURL());
 		} catch (SQLException | DbmsException e) {
 			throw new RuntimeException("cannot obtain product from connection metadata", e);
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(String product, String productVersion) throws DbmsException {
+	public IDbmsSupport getDbmsSupport(String product, String productVersion, String url) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {
@@ -91,7 +91,7 @@ public class DbmsSupportFactory {
 					}
 				}
 			}
-			return Dbms.findDbmsSupportByProduct(product, productVersion);
+			return Dbms.findDbmsSupportByProduct(product, productVersion, url);
 		}
 		log.debug("Setting databasetype to GENERIC, productName [{}]", product);
 		return new GenericDbmsSupport();

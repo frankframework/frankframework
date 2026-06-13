@@ -20,6 +20,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,14 +37,23 @@ import org.frankframework.util.StringUtil;
  */
 public class H2DbmsSupport extends GenericDbmsSupport {
 
+	private static final Pattern MODE_RE = Pattern.compile("(?i)(?:^|;)MODE=(\\w+)(?:;|$)");
+
 	private final boolean dbmsHasSkipLockedFunctionality;
+	private final String customSqlDialect;
 
 	public H2DbmsSupport() {
 		throw new IllegalStateException("H2DbmsSupport should be instantiated with product-version to determine supported featureset. Calling this constructor is a code-bug.");
 	}
 
-	public H2DbmsSupport(String productVersion) {
+	public H2DbmsSupport(String productVersion, String url) {
 		dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
+		customSqlDialect = determineCustomSqlDialectFromUrl(url, getDbmsName());
+	}
+
+	@Override
+	public String getTargetSqlDialect() {
+		return customSqlDialect;
 	}
 
 	@Override
@@ -69,6 +80,25 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 		log.debug("unable to automatically determine H2 product version from [{}]", productVersion);
 		return false;
+	}
+
+	private static String determineCustomSqlDialectFromUrl(String url, String defaultDialect) {
+		Matcher matcher = MODE_RE.matcher(url);
+		if (!matcher.find()) {
+			return defaultDialect;
+		}
+		String mode = matcher.group(1);
+		if (StringUtils.isEmpty(mode)) {
+			return defaultDialect;
+		}
+		if (mode.equals("MSSQLServer")) {
+			return Dbms.MSSQL.getProductName();
+		}
+		try {
+			return Dbms.valueOf(mode.toUpperCase()).getProductName();
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Unsupported H2 connection mode [" + mode + "]", e);
+		}
 	}
 
 	@Override

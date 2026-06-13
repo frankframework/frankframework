@@ -47,10 +47,10 @@ import org.frankframework.util.StringUtil;
  * @author Gerrit van Brakel
  */
 public class GenericDbmsSupport implements IDbmsSupport {
-	protected Logger log = LogManager.getLogger(this.getClass());
+	protected final Logger log = LogManager.getLogger(this.getClass());
 
 	protected static final String KEYWORD_SELECT = "select";
-	protected static Map<String, ISqlTranslator> sqlTranslators = new HashMap<>();
+	protected static final Map<String, ISqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
 	public Dbms getDbms() {
@@ -96,7 +96,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	public boolean autoIncrementUsesSequenceObject() {
 		return false;
 	}
-
 
 	@Override
 	public String getTimestampFieldType() {
@@ -258,11 +257,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 			return null;
 		}
 		return blob.getBinaryStream();
-	}
-
-	@Override
-	public String getTextFieldType() {
-		return "VARCHAR";
 	}
 
 	@Override
@@ -457,27 +451,18 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return sqlState != null && sqlState.startsWith("23");
 	}
 
-	@Override
-	public String getLength(String column) {
-		return "LENGTH(" + column + ")";
-	}
-
-	@Override
-	public String getBooleanValue(boolean value) {
-		return ("" + value).toUpperCase();
-	}
-
-	protected ISqlTranslator createTranslator(String source, String target) throws DbmsException {
+	protected @NonNull ISqlTranslator createTranslator(String source, String target) throws DbmsException {
 		return new SqlTranslator(source, target);
 	}
 
 	@Nullable
 	protected ISqlTranslator getSqlTranslator(@NonNull String sqlDialectFrom) throws DbmsException {
-		String translatorKey = sqlDialectFrom + "->" + getDbmsName();
+		String targetSqlDialect = getTargetSqlDialect();
+		String translatorKey = sqlDialectFrom + "->" + targetSqlDialect;
 		if (!sqlTranslators.containsKey(translatorKey)) {
 			try {
-				ISqlTranslator translator = createTranslator(sqlDialectFrom, getDbmsName());
-				if (!translator.canConvert(sqlDialectFrom, getDbmsName())) {
+				ISqlTranslator translator = createTranslator(sqlDialectFrom, targetSqlDialect);
+				if (!translator.canConvert(sqlDialectFrom, targetSqlDialect)) {
 					sqlTranslators.put(translatorKey, null); // avoid trying to set up the translator again the next time
 					return null;
 				}
@@ -487,7 +472,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 				sqlTranslators.put(translatorKey, null); // avoid trying to set up the translator again the next time
 				return null;
 			} catch (Exception e) {
-				throw new DbmsException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
+				throw new DbmsException("Could not translate sql query from " + sqlDialectFrom + " to " + targetSqlDialect, e);
 			}
 		}
 		return sqlTranslators.get(translatorKey);
@@ -519,14 +504,14 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	protected void warnConvertQuery(String sqlDialectFrom) {
-		log.warn("don't know how to convert queries from [{}] to [{}]", sqlDialectFrom, getDbmsName());
+		log.warn("don't know how to convert queries from [{}] to [{}]", sqlDialectFrom, getTargetSqlDialect());
 	}
 
 	protected boolean isQueryConversionRequired(String sqlDialectFrom) {
-		return StringUtils.isNotEmpty(sqlDialectFrom) && StringUtils.isNotEmpty(getDbmsName()) && !sqlDialectFrom.equalsIgnoreCase(getDbmsName());
+		return StringUtils.isNotEmpty(sqlDialectFrom) && StringUtils.isNotEmpty(getTargetSqlDialect()) && !sqlDialectFrom.equalsIgnoreCase(getTargetSqlDialect());
 	}
 
-	protected List<String> splitQuery(String query) {
+	protected @NonNull List<String> splitQuery(@NonNull String query) {
 		// A query can contain multiple queries separated by a semicolon
 		List<String> splittedQueries = new ArrayList<>();
 		if (!query.contains(";")) {

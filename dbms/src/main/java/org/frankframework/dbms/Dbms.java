@@ -47,7 +47,7 @@ public enum Dbms {
 		this.dbmsSupportClass = dbmsSupportClass;
 	}
 
-	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion) {
+	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion, String url) {
 		if (productVersion.contains("MariaDB")) {
 			if (MYSQL.getProductName().equals(product)) {
 				log.debug("Setting databasetype to MARIADB (using MySQL driver)");
@@ -56,7 +56,7 @@ public enum Dbms {
 			}
 			return new MariaDbDbmsSupport(productVersion);
 		} else if (product.equals("H2")) {
-			return new H2DbmsSupport(productVersion);
+			return new H2DbmsSupport(productVersion, url);
 		}
 		if (product.startsWith("DB2/")) {
 			log.debug("Setting databasetype to DB2 for product [{}]", product);
@@ -71,7 +71,7 @@ public enum Dbms {
 					result = dbms.getDbmsSupport();
 					log.debug("Returning built-in DBMS [{}] found for product [{}]", dbms, product);
 					return result;
-				} catch (ReflectiveOperationException | SecurityException e) {
+				} catch (ReflectiveOperationException e) {
 					log.warn("Could not instantiate DbmsSupport for DBMS [{}] found for product [{}]",dbms, product, e);
 				}
 			}
@@ -80,7 +80,7 @@ public enum Dbms {
 		return new GenericDbmsSupport();
 	}
 
-	public IDbmsSupport getDbmsSupport() throws ReflectiveOperationException, SecurityException {
+	public IDbmsSupport getDbmsSupport() throws ReflectiveOperationException {
 		if (dbmsSupportClass == null) {
 			return null;
 		}

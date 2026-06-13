@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package org.frankframework.dbms;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public interface ISqlTranslator {
 
 	boolean canConvert(String from, String to);
@@ -26,6 +29,6 @@ public interface ISqlTranslator {
 	 * @param original Original query to be translated.
 	 * @return Translated query.
 	 */
-	String translate(String original);
+	@Nullable String translate(@NonNull String original);
 
 }
