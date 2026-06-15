@@ -99,7 +99,7 @@ public class PGPPipe extends FixedForwardPipe {
 		if (action == null) {
 			throw new ConfigurationException("Action can not be null!");
 		}
-		if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
 			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
 		}
 
