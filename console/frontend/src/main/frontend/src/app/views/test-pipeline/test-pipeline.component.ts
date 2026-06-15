@@ -124,10 +124,13 @@ export class TestPipelineComponent implements OnInit {
     const input = document.querySelector(`#sessionKey${key}`) as HTMLInputElement;
     if (input && key !== input.value) {
       const newKey = input.value;
-      if (this.formSessionKeys[newKey]) {
+      if (newKey === '') {
+        delete this.formSessionKeys[key];
+        return;
+      } else if (this.formSessionKeys[newKey]) {
         this.addNote('warning', 'Session keys cannot have the same name!');
         return;
-      } else if (newKey === '') delete this.formSessionKeys[key];
+      }
 
       this.formSessionKeys[newKey] = this.formSessionKeys[key];
       delete this.formSessionKeys[key];
