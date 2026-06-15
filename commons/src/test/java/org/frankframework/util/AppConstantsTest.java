@@ -202,8 +202,8 @@ public class AppConstantsTest {
 
 	@Test
 	public void testSubAppConstants() {
-		Properties propertiesStartingWithConfigurations = constants.getAppConstants("configurations");
-		assertEquals("true", propertiesStartingWithConfigurations.getProperty("configurations.validate"));
+		Properties propertiesStartingWithConfigurations = constants.getAppConstants("test.basekey");
+		assertEquals("3", propertiesStartingWithConfigurations.getProperty("test.basekey.prop3"));
 	}
 
 	private class ClassLoaderMock extends ClassLoader {
