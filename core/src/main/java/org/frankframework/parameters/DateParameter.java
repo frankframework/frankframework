@@ -138,7 +138,7 @@ public class DateParameter extends AbstractParameter<Date> {
 			String sanitized = value.replace(".", "")
 									.replace(",", "")
 									.replace("_", "");
-			long epoch = Long.parseLong(sanitized);
+			long epoch = Long.parseLong(sanitized.trim());
 
 			if (epoch < 1_000_000_000_000L) {
 				epoch *= 1000L; // convert seconds to milliseconds
