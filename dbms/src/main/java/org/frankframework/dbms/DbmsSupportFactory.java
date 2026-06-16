@@ -18,10 +18,10 @@ package org.frankframework.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -90,8 +90,8 @@ public class DbmsSupportFactory {
 		if (StringUtils.isBlank(dbms.getCustomServerPropertiesQuery())) {
 			return Map.of();
 		}
-		try (Statement stmt = connection.createStatement();
-		ResultSet rs = stmt.executeQuery(dbms.getCustomServerPropertiesQuery())) {
+		try (PreparedStatement stmt = connection.prepareStatement(dbms.getCustomServerPropertiesQuery());
+		     ResultSet rs = stmt.executeQuery()) {
 			ResultSetMetaData resultSetMetaData = rs.getMetaData();
 			int columnCount = resultSetMetaData.getColumnCount();
 			Map<String, String> customServerProperties = new HashMap<>();
