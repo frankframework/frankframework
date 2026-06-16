@@ -5,7 +5,7 @@
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd"
 	objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
 
-	<property name="uuid" value="uid.uuid_generate_v4()" dbms="postgresql"/>
+	<property name="uuid" value="gen_random_uuid()" dbms="postgresql"/>
 	<property name="uuid" value="NEWID()" dbms="mssql"/>
 	<property name="uuid" value="sys_guid()" dbms="oracle"/>
 	<property name="uuid" value="random_uuid()" dbms="h2"/>
