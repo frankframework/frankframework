@@ -26,8 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
-
 /**
  * Configuration Constants for this application.
  *
@@ -60,9 +58,11 @@ public final class AppConstants extends PropertyLoader {
 
 	private static final String APP_CONSTANTS_PROPERTIES_FILE = "AppConstants.properties";
 	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
-	public static final String APPLICATION_SERVER_TYPE_PROPERTY = ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY;
-	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY;
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX";
+
+	// These statics defined here are also defined in ApplicationServerConfigurer in core project, but without mutual dependency between these classes
+	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
+	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
 
 	private static final Properties globalAppConstants = new Properties();
 

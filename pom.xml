@@ -90,18 +90,18 @@
 		<junit.includedTags />
 
 		<jackson.version>2.22.0</jackson.version>
-		<cxf.version>4.2.1</cxf.version>
-		<spring.version>7.0.7</spring.version>
-		<spring-security.version>7.0.5</spring-security.version>
-		<spring-integration.version>7.0.4</spring-integration.version>
-		<spring.boot.version>4.0.6</spring.boot.version>
+		<cxf.version>4.2.2</cxf.version>
+		<spring.version>7.0.8</spring.version>
+		<spring-security.version>7.0.6</spring-security.version>
+		<spring-integration.version>7.1.0</spring-integration.version>
+		<spring.boot.version>4.1.0</spring.boot.version>
 		<tomcat.version>11.0.22</tomcat.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<tika.version>3.3.1</tika.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
-		<micrometer.version>1.16.5</micrometer.version>
+		<micrometer.version>1.17.0</micrometer.version>
 		<argLine />
 		<!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
@@ -801,12 +801,12 @@
 								<groupId>com.google.errorprone</groupId>
 								<artifactId>error_prone_core</artifactId>
 								<!-- NB: When an ErrorProne update breaks the build, check if NullAway should perhaps be updated at the same time -->
-								<version>2.49.0</version>
+								<version>2.50.0</version>
 							</path>
 							<path>
 								<groupId>com.uber.nullaway</groupId>
 								<artifactId>nullaway</artifactId>
-								<version>0.13.5</version>
+								<version>0.13.6</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>

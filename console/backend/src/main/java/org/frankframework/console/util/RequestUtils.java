@@ -19,62 +19,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.NoArgsConstructor;
 
 import org.frankframework.console.ApiException;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class RequestUtils {
-
-	@SuppressWarnings("unchecked")
-	protected static <T> T convert(Class<T> clazz, InputStream is) throws IOException {
-		if (clazz.isAssignableFrom(InputStream.class)) {
-			return (T) is;
-		}
-		String str = StreamUtil.streamToString(is);
-		if (clazz.isAssignableFrom(boolean.class) || clazz.isAssignableFrom(Boolean.class)) {
-			return (T) Boolean.valueOf(str); // At the moment we allow null/empty -> FALSE
-		}
-		return ClassUtils.convertToType(clazz, str);
-	}
-
-	/**
-	 * If present returns the value as String
-	 * Else returns NULL
-	 */
-	public static @Nullable String getValue(Map<String, Object> json, String key) {
-		Object val = json.get(key);
-		if (val != null) {
-			return val.toString();
-		}
-		return null;
-	}
-
-	public static @Nullable Integer getIntegerValue(Map<String, Object> json, String key) {
-		String value = getValue(json, key);
-		if (value != null) {
-			return Integer.parseInt(value.trim());
-		}
-		return null;
-	}
-
-	public static @Nullable Boolean getBooleanValue(Map<String, Object> json, String key) {
-		String value = getValue(json, key);
-		if (value != null) {
-			return Boolean.parseBoolean(value.trim());
-		}
-		return null;
-	}
 
 	@NonNull
 	public static <T> T resolveRequiredProperty(String key, T multiFormProperty, T defaultValue) throws ApiException {

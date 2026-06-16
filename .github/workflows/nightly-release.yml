@@ -12,7 +12,7 @@ jobs:
     name: Nightly Release Build
     runs-on: ubuntu-latest
     steps:
-      - uses: bluwy/substitute-string-action@70ff0b17357670ffd3fee68e95b6de9963b66bad # v3
+      - uses: bluwy/substitute-string-action@66aab512ea85c8215b45e20a14bf12da819c881e # v4
         name: Get branch name
         id: branch
         with:
