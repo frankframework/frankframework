@@ -8,7 +8,9 @@
 	<property name="uuid" value="gen_random_uuid()" dbms="postgresql"/>
 	<property name="uuid" value="NEWID()" dbms="mssql"/>
 	<property name="uuid" value="sys_guid()" dbms="oracle"/>
-	<property name="uuid" value="random_uuid()" dbms="h2"/>
+	<property name="uuid" value="random_uuid()" dbms="h2"/> 
+	<property name="uuid" value="UUID()" dbms="mariadb"/>
+	<property name="uuid" value="UUID()" dbms="mysql"/>
 
 	<changeSet id="insert-row-into-ibisstores" author="Niels Meijer">
 		<!-- SLOT 1 -->
