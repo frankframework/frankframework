@@ -15,6 +15,11 @@
 */
 package org.frankframework.dbms;
 
+import java.util.Map;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
@@ -28,26 +33,45 @@ public enum Dbms {
 	ORACLE("Oracle", OracleDbmsSupport.class),
 	MSSQL("MS_SQL", "Microsoft SQL Server", MsSqlServerDbmsSupport.class),
 	DB2("DB2", Db2DbmsSupport.class),
-	H2("H2", H2DbmsSupport.class),
+	H2("H2", H2DbmsSupport.class, "SELECT SETTING_VALUE AS MODE FROM INFORMATION_SCHEMA.SETTINGS WHERE SETTING_NAME = 'MODE'"),
 	MYSQL("MySQL", MySqlDbmsSupport.class),
 	MARIADB("MariaDB", MariaDbDbmsSupport.class),
 	POSTGRESQL("PostgreSQL", PostgresqlDbmsSupport.class);
 
-	private final @Getter String key;
-	private final @Getter String productName;
-	private final Class<? extends IDbmsSupport> dbmsSupportClass;
+	private final @Getter @NonNull String key;
+	private final @Getter @NonNull String productName;
+	private final @Nullable Class<? extends IDbmsSupport> dbmsSupportClass;
+	private final @Getter @Nullable String customServerPropertiesQuery;
 
-	Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
+	Dbms(@NonNull String key, @Nullable Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this(key, key, dbmsSupportClass);
 	}
 
-	Dbms(String key, String productName, Class<? extends IDbmsSupport> dbmsSupportClass) {
+	Dbms(@NonNull String key, @Nullable Class<? extends IDbmsSupport> dbmsSupportClass, @Nullable String customServerPropertiesQuery) {
+		this(key, key, dbmsSupportClass, customServerPropertiesQuery);
+	}
+
+	Dbms(@NonNull String key, @NonNull String productName, @Nullable Class<? extends IDbmsSupport> dbmsSupportClass) {
+		this(key, productName, dbmsSupportClass, null);
+	}
+
+	Dbms(@NonNull String key, @NonNull String productName, @Nullable Class<? extends IDbmsSupport> dbmsSupportClass, @Nullable String customServerPropertiesQuery) {
 		this.key = key;
 		this.productName = productName;
 		this.dbmsSupportClass = dbmsSupportClass;
+		this.customServerPropertiesQuery = customServerPropertiesQuery;
 	}
 
-	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion, String url) {
+	public static @NonNull Dbms getDbms(@NonNull String key) {
+		try {
+			return Dbms.valueOf(key.toUpperCase());
+		}  catch (IllegalArgumentException e) {
+			log.warn("Cannot determine dbms for key [{}]: {}", key, e.getMessage());
+			return Dbms.NONE;
+		}
+	}
+
+	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion, Map<String, String> customServerProperties) {
 		if (productVersion.contains("MariaDB")) {
 			if (MYSQL.getProductName().equals(product)) {
 				log.debug("Setting databasetype to MARIADB (using MySQL driver)");
@@ -56,7 +80,7 @@ public enum Dbms {
 			}
 			return new MariaDbDbmsSupport(productVersion);
 		} else if (product.equals("H2")) {
-			return new H2DbmsSupport(productVersion, url);
+			return new H2DbmsSupport(productVersion, customServerProperties);
 		}
 		if (product.startsWith("DB2/")) {
 			log.debug("Setting databasetype to DB2 for product [{}]", product);

@@ -11,7 +11,11 @@ jdbc:
     # This datasource is used to test query translation when the mode is set in the URL.
   - name: "H2-MSSQL-Mode"
     type: "org.h2.jdbcx.JdbcDataSource"
-    url: "jdbc:h2:mem:test_db3;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;MODE=MSSQLServer"
+    url: "jdbc:h2:mem:test_db_mssql;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;MODE=MSSQLServer"
+
+  - name: "H2-Oracle-Mode"
+    type: "org.h2.jdbcx.JdbcDataSource"
+    url: "jdbc:h2:mem:test_db_ora;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;MODE=Oracle"
 
     # This datasource is used for testing Narayana ObjectStore transaction-log storage, obtained from the resources.yml
   - name: "H2-txlog"

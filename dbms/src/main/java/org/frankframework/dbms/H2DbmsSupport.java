@@ -20,12 +20,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.StringUtil;
 
@@ -35,25 +38,40 @@ import org.frankframework.util.StringUtil;
  *
  * @author Jaco de Groot
  */
+@Log4j2
 public class H2DbmsSupport extends GenericDbmsSupport {
 
-	private static final Pattern MODE_RE = Pattern.compile("(?i)(?:^|;)MODE=(\\w+)(?:;|$)");
-
 	private final boolean dbmsHasSkipLockedFunctionality;
-	private final String customSqlDialect;
+	private final String sqlDialect;
 
 	public H2DbmsSupport() {
 		throw new IllegalStateException("H2DbmsSupport should be instantiated with product-version to determine supported featureset. Calling this constructor is a code-bug.");
 	}
 
-	public H2DbmsSupport(String productVersion, String url) {
+	public H2DbmsSupport(@Nullable String productVersion, @NonNull Map<String, String> customServerProperties) {
 		dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
-		customSqlDialect = determineCustomSqlDialectFromUrl(url, getDbmsName());
+		sqlDialect = determineSqlDialectFromProperties(customServerProperties, getDbmsName());
+	}
+
+	private @NonNull String determineSqlDialectFromProperties(@NonNull Map<String, String> customServerProperties, @NonNull String defaultDialect) {
+		String mode = customServerProperties.get("MODE");
+		if (StringUtils.isEmpty(mode)) {
+			return defaultDialect;
+		}
+		if (mode.equals("MSSQLServer")) {
+			return Dbms.MSSQL.getProductName();
+		}
+		try {
+			return Dbms.valueOf(mode.toUpperCase()).getProductName();
+		} catch (IllegalArgumentException e) {
+			log.warn("Cannot map H2 connection mode [{}] to a SQL dialect, using default [{}]", mode, defaultDialect);
+			return defaultDialect;
+		}
 	}
 
 	@Override
 	public String getTargetSqlDialect() {
-		return customSqlDialect;
+		return sqlDialect;
 	}
 
 	@Override
@@ -80,25 +98,6 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 		log.debug("unable to automatically determine H2 product version from [{}]", productVersion);
 		return false;
-	}
-
-	private static String determineCustomSqlDialectFromUrl(String url, String defaultDialect) {
-		Matcher matcher = MODE_RE.matcher(url);
-		if (!matcher.find()) {
-			return defaultDialect;
-		}
-		String mode = matcher.group(1);
-		if (StringUtils.isEmpty(mode)) {
-			return defaultDialect;
-		}
-		if (mode.equals("MSSQLServer")) {
-			return Dbms.MSSQL.getProductName();
-		}
-		try {
-			return Dbms.valueOf(mode.toUpperCase()).getProductName();
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("Unsupported H2 connection mode [" + mode + "]", e);
-		}
 	}
 
 	@Override

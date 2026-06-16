@@ -9,6 +9,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +41,7 @@ class JdbcQueryListenerTest {
 
 		DataSource ds = mock(DataSource.class);
 		doReturn(ds).when(listener).getDatasource();
-		H2DbmsSupport dbmsSupport = new H2DbmsSupport("2.3.232 (2024-08-11)", "jdbc:h2:db;MODE=MSSQLServer");
+		H2DbmsSupport dbmsSupport = new H2DbmsSupport("2.3.232 (2024-08-11)", Map.of("MODE", "MSSQLServer"));
 		doReturn(dbmsSupport).when(listener).getDbmsSupport();
 	}
 

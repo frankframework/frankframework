@@ -18,7 +18,11 @@ package org.frankframework.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -55,18 +60,51 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(Connection connection) throws SQLException {
+	public IDbmsSupport getDbmsSupport(@NonNull Connection connection) throws SQLException {
 		try {
 			DatabaseMetaData md = connection.getMetaData();
+
+			if (log.isDebugEnabled()) {
+				ResultSet clientInfoProperties = md.getClientInfoProperties();
+				ResultSetMetaData clientInfoPropertiesMetaData = clientInfoProperties.getMetaData();
+				if (clientInfoProperties.isAfterLast()) {
+					log.debug("No client info properties found");
+				} else while(clientInfoProperties.next()) {
+					for (int i = 1; i <= clientInfoPropertiesMetaData.getColumnCount(); ++i) {
+						log.debug("Client info property [{}]=[{}]", clientInfoPropertiesMetaData.getColumnName(i), clientInfoProperties.getString(i));
+					}
+				}
+				log.debug("URL [{}],\n Server supported SQL Keywords: [{}]", md.getURL(), md.getSQLKeywords());
+			}
 			String name = md.getDatabaseProductName();
 			String version = md.getDatabaseProductVersion();
-			return getDbmsSupport(name, version, md.getURL());
+			Map<String, String> customServerProperties = getCustomServerProperties(name, connection);
+			return getDbmsSupport(name, version, customServerProperties);
 		} catch (SQLException | DbmsException e) {
 			throw new RuntimeException("cannot obtain product from connection metadata", e);
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(String product, String productVersion, String url) throws DbmsException {
+	private @NonNull Map<String, String> getCustomServerProperties(@NonNull String product, @NonNull Connection connection) throws SQLException {
+		Dbms dbms = Dbms.getDbms(product);
+		if (StringUtils.isBlank(dbms.getCustomServerPropertiesQuery())) {
+			return Map.of();
+		}
+		try (Statement stmt = connection.createStatement();
+		ResultSet rs = stmt.executeQuery(dbms.getCustomServerPropertiesQuery())) {
+			ResultSetMetaData resultSetMetaData = rs.getMetaData();
+			int columnCount = resultSetMetaData.getColumnCount();
+			Map<String, String> customServerProperties = new HashMap<>();
+			while (rs.next()) {
+				for (int i = 1; i <= columnCount; ++i) {
+					customServerProperties.put(resultSetMetaData.getColumnName(i), rs.getString(i));
+				}
+			}
+			return customServerProperties;
+		}
+	}
+
+	public IDbmsSupport getDbmsSupport(String product, String productVersion, @NonNull Map<String, String> customServerProperties) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {
@@ -91,7 +129,7 @@ public class DbmsSupportFactory {
 					}
 				}
 			}
-			return Dbms.findDbmsSupportByProduct(product, productVersion, url);
+			return Dbms.findDbmsSupportByProduct(product, productVersion, customServerProperties);
 		}
 		log.debug("Setting databasetype to GENERIC, productName [{}]", product);
 		return new GenericDbmsSupport();
