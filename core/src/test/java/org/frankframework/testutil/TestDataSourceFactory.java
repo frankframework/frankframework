@@ -17,7 +17,7 @@ public class TestDataSourceFactory extends DataSourceFactory {
 	@NonNull
 	@Override
 	public DataSource getDataSource(@NonNull String jndiName, Properties jndiEnvironment) {
-		String enrichedDataSourceName = TestDatasource.valueOf(jndiName).getDataSourceName();
+		String enrichedDataSourceName = TestDatasource.getDataSourceUrl(jndiName);
 		return super.getDataSource(enrichedDataSourceName, jndiEnvironment);
 	}
 
