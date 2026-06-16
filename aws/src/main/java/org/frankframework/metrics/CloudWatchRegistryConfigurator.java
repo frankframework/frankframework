@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@ import io.micrometer.cloudwatch2.CloudWatchConfig;
 import io.micrometer.cloudwatch2.CloudWatchMeterRegistry;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
+
+import org.frankframework.aws.AwsUtil;
 
 public class CloudWatchRegistryConfigurator extends AbstractMetricsRegistryConfigurator<CloudWatchConfig> {
 
@@ -32,6 +35,11 @@ public class CloudWatchRegistryConfigurator extends AbstractMetricsRegistryConfi
 
 	@Override
 	protected MeterRegistry createRegistry(CloudWatchConfig config) {
-		return new CloudWatchMeterRegistry(config, Clock.SYSTEM, CloudWatchAsyncClient.create());
+		AwsCredentialsProvider credentialProvider = AwsUtil.createCredentialProviderChain(getCredentialFactory());
+
+		CloudWatchAsyncClient client = CloudWatchAsyncClient.builder()
+				.credentialsProvider(credentialProvider)
+				.build();
+		return new CloudWatchMeterRegistry(config, Clock.SYSTEM, client);
 	}
 }
