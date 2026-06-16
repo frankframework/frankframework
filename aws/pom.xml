@@ -12,6 +12,7 @@
 	<name>Frank!Framework support for AWS</name>
 
 	<!-- One would say this is redundant because it's already in the parent pom... If only our CI would think the same. -->
+	<!-- Used only by the AWS CloudWatch Micrometer Registry-->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -36,6 +37,12 @@
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>software.amazon.awssdk</groupId>
+					<artifactId>netty-nio-client</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
@@ -54,6 +61,10 @@
 				<exclusion>
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jms_1.1_spec</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>software.amazon.awssdk</groupId>
+					<artifactId>netty-nio-client</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

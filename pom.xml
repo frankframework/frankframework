@@ -164,6 +164,7 @@
 				<scope>import</scope>
 			</dependency>
 
+			<!-- Used by the AWS CloudWatch Micrometer Registry-->
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
