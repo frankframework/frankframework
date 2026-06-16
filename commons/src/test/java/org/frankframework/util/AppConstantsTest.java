@@ -7,19 +7,19 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class AppConstantsTest {
-	private final Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 
 	private ClassLoaderMock classLoader;
 	private AppConstants constants;
@@ -202,12 +202,12 @@ public class AppConstantsTest {
 
 	@Test
 	public void testSubAppConstants() {
-		Properties propertiesStartingWithConfigurations = constants.getAppConstants("configurations");
-		assertEquals("true", propertiesStartingWithConfigurations.getProperty("configurations.validate"));
+		Properties propertiesStartingWithConfigurations = constants.getAppConstants("test.basekey");
+		assertEquals("3", propertiesStartingWithConfigurations.getProperty("test.basekey.prop3"));
 	}
 
 	private class ClassLoaderMock extends ClassLoader {
-		private boolean simulateReload = false;
+		private boolean simulateReload;
 
 		public ClassLoaderMock(ClassLoader parent, boolean simulateReload) {
 			super(parent);
@@ -221,7 +221,7 @@ public class AppConstantsTest {
 		}
 
 		@Override
-		public Enumeration<URL> getResources(String name) throws IOException {
+		public Enumeration<URL> getResources(String name) {
 			Vector<URL> urls = new Vector<>();
 			String nameToUse = name;
 
