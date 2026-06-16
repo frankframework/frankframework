@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.bus.endpoints;
 
+import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -64,7 +65,8 @@ public class IbisstoreSummary extends BusEndpointBase {
 		return execute(datasource, query);
 	}
 
-	private StringMessage execute(String datasource, String query) {
+	// Protected for testing purposes only!
+	protected StringMessage execute(String datasource, String query) {
 		String result = "";
 		try {
 			IbisstoreSummaryQuerySender qs;
@@ -78,8 +80,10 @@ public class IbisstoreSummary extends BusEndpointBase {
 				qs.setAvoidLocking(true);
 				qs.configure(true);
 				qs.start();
+
 				String actualQuery = query != null ? query : this.getIbisStoreSummaryQuery(qs.getDbmsSupport());
 				org.frankframework.stream.Message message = qs.sendMessageOrThrow(new org.frankframework.stream.Message(actualQuery), session);
+
 				result = message.asString();
 			} catch (Throwable t) {
 				throw new BusException("An error occurred on executing jdbc query", t);
@@ -94,7 +98,8 @@ public class IbisstoreSummary extends BusEndpointBase {
 		return new StringMessage(resultObject, MediaType.APPLICATION_JSON);
 	}
 
-	private List<Adapter> getAdapters() {
+	// Protected for testing purposes only!
+	protected List<Adapter> getAdapters() {
 		List<Adapter> registeredAdapters = new ArrayList<>();
 		for (Configuration configuration : getIbisManager().getActiveConfigurations()) {
 			registeredAdapters.addAll(configuration.getRegisteredAdapters());
@@ -173,7 +178,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected org.frankframework.stream.Message getResult(ResultSet resultset) throws SQLException {
+	protected org.frankframework.stream.Message getResult(ResultSet resultset, Path ignored) throws SQLException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
 		JsonObjectBuilder typeBuilder=null;
