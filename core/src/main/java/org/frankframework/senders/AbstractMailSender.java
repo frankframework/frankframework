@@ -244,7 +244,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		for (Node node : recipientsNode) {
 			Element recipientElement = (Element) node;
 			String value = XmlUtils.getStringValue(recipientElement);
-			if (!StringUtils.isNotEmpty(value)) {
+			if (StringUtils.isEmpty(value)) {
 				log.debug("empty recipient found, ignoring");
 				continue;
 			}

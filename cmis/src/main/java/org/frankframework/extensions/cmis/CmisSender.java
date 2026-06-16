@@ -65,10 +65,10 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
-import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
-import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.KeystoreConfiguration;
+import org.frankframework.encryption.TruststoreConfiguration;
 import org.frankframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
@@ -1008,152 +1008,23 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	}
 
 	@Override
-	public void setKeystore(String keystore) {
-		sessionBuilder.setKeystore(keystore);
-	}
-	@Override
-	public String getKeystore() {
-		return sessionBuilder.getKeystore();
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
+		sessionBuilder.setKeystoreConfiguration(keystoreConfiguration);
 	}
 
 	@Override
-	public void setKeystoreType(KeystoreType keystoreType) {
-		sessionBuilder.setKeystoreType(keystoreType);
-	}
-	@Override
-	public KeystoreType getKeystoreType() {
-		return sessionBuilder.getKeystoreType();
+	public KeystoreConfiguration getKeystoreConfiguration() {
+		return sessionBuilder.getKeystoreConfiguration();
 	}
 
 	@Override
-	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
-		sessionBuilder.setKeystoreAuthAlias(keystoreAuthAlias);
-	}
-	@Override
-	public String getKeystoreAuthAlias() {
-		return sessionBuilder.getKeystoreAuthAlias();
+	public TruststoreConfiguration getTruststoreConfiguration() {
+		return sessionBuilder.getTruststoreConfiguration();
 	}
 
 	@Override
-	public void setKeystorePassword(String keystorePassword) {
-		sessionBuilder.setKeystorePassword(keystorePassword);
-	}
-	@Override
-	public String getKeystorePassword() {
-		return sessionBuilder.getKeystorePassword();
-	}
-
-	@Override
-	public void setKeystoreAlias(String keystoreAlias) {
-		sessionBuilder.setKeystoreAlias(keystoreAlias);
-	}
-	@Override
-	public String getKeystoreAlias() {
-		return sessionBuilder.getKeystoreAlias();
-	}
-
-	@Override
-	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
-		sessionBuilder.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
-	}
-	@Override
-	public String getKeystoreAliasAuthAlias() {
-		return sessionBuilder.getKeystoreAliasAuthAlias();
-	}
-
-	@Override
-	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
-		sessionBuilder.setKeystoreAliasPassword(keystoreAliasPassword);
-	}
-	@Override
-	public String getKeystoreAliasPassword() {
-		return sessionBuilder.getKeystoreAliasPassword();
-	}
-
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		sessionBuilder.setKeyManagerAlgorithm(keyManagerAlgorithm);
-	}
-	@Override
-	public String getKeyManagerAlgorithm() {
-		return sessionBuilder.getKeyManagerAlgorithm();
-	}
-
-
-	@Override
-	public void setTruststore(String truststore) {
-		sessionBuilder.setTruststore(truststore);
-	}
-	@Override
-	public String getTruststore() {
-		return sessionBuilder.getTruststore();
-	}
-
-	@Override
-	public void setTruststoreType(KeystoreType truststoreType) {
-		sessionBuilder.setTruststoreType(truststoreType);
-	}
-	@Override
-	public KeystoreType getTruststoreType() {
-		return sessionBuilder.getTruststoreType();
-	}
-
-
-	@Override
-	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		sessionBuilder.setTruststoreAuthAlias(truststoreAuthAlias);
-	}
-	@Override
-	public String getTruststoreAuthAlias() {
-		return sessionBuilder.getTruststoreAuthAlias();
-	}
-
-	@Override
-	public void setTruststorePassword(String truststorePassword) {
-		sessionBuilder.setTruststorePassword(truststorePassword);
-	}
-	@Override
-	public String getTruststorePassword() {
-		return sessionBuilder.getTruststorePassword();
-	}
-
-	@Override
-	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		sessionBuilder.setTrustManagerAlgorithm(trustManagerAlgorithm);
-	}
-	@Override
-	public String getTrustManagerAlgorithm() {
-		return sessionBuilder.getTrustManagerAlgorithm();
-	}
-
-	@Unsafe
-	@Override
-	public void setVerifyHostname(boolean verifyHostname) {
-		sessionBuilder.setVerifyHostname(verifyHostname);
-	}
-	@Override
-	public boolean isVerifyHostname() {
-		return sessionBuilder.isVerifyHostname();
-	}
-
-	@Unsafe
-	@Override
-	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
-		sessionBuilder.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
-	}
-	@Override
-	public boolean isAllowSelfSignedCertificates() {
-		return sessionBuilder.isAllowSelfSignedCertificates();
-	}
-
-	@Unsafe
-	@Override
-	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-		sessionBuilder.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
-	}
-	@Override
-	public boolean isIgnoreCertificateExpiredException() {
-		return sessionBuilder.isIgnoreCertificateExpiredException();
+	public void setTruststoreConfiguration(TruststoreConfiguration truststoreConfiguration) {
+		sessionBuilder.setTruststoreConfiguration(truststoreConfiguration);
 	}
 
 	/** Proxy host url */

@@ -22,11 +22,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
@@ -43,6 +46,7 @@ import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
+import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
@@ -56,28 +60,24 @@ import org.frankframework.stream.Message;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 
-	public static final String PARAMETER_SIGNATURE="signature";
-	public static final String ALGORITHM_DEFAULT = "SHA256withRSA";
-
+	private static final String PARAMETER_SIGNATURE="signature";
+	private static final String ALGORITHM_DEFAULT = "SHA256withRSA";
 
 	private @Getter Action action = Action.SIGN;
 	private @Getter String algorithm;
 	private @Getter String provider;
 	private @Getter boolean signatureBase64 = true;
 
-	private @Getter String keystore;
-	private @Getter KeystoreType keystoreType=KeystoreType.PKCS12;
-	private @Getter String keystoreAuthAlias;
-	private @Getter String keystorePassword;
-	private @Getter String keystoreAlias;
-	private @Getter String keystoreAliasAuthAlias;
-	private @Getter String keystoreAliasPassword;
-	private @Getter String keyManagerAlgorithm=null;
+	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
 
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
 	private PipeForward failureForward; // forward used when verification fails
 
+	@Override
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
+		this.keystoreConfiguration = keystoreConfiguration;
+	}
 
 	public enum Action {
 		/** signs the input */
@@ -92,20 +92,36 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (StringUtils.isEmpty(getAlgorithm())) {
 			setAlgorithm(ALGORITHM_DEFAULT);
 		}
-		if (StringUtils.isEmpty(getKeystore())) {
+		if (StringUtils.isEmpty(this.getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
+		}
+		String signingAlgorithm = getAlgorithm();
+		if (isNoBouncyCastleLoaded() && (getKeystoreType() == KeystoreType.PEM || isSigningAlgorithmMissing(signingAlgorithm))) {
+			Security.addProvider(new BouncyCastleProvider());
+		}
+		// Adding BouncyCastle may add the missing algorithm, check again after loading BC.
+		if (isSigningAlgorithmMissing(signingAlgorithm)) {
+			throw new ConfigurationException("Signature algorithm [" + signingAlgorithm + "] not supported, supported algorithms: " + Security.getAlgorithms("Signature"));
 		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
 		if (getAction() == Action.VERIFY) {
 			if (!getParameterList().hasParameter(PARAMETER_SIGNATURE)) {
-				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
+				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specified for action [" + action + "]");
 			}
 			failureForward = findForward("failure");
-			if (failureForward==null)  {
+			if (failureForward == null)  {
 				throw new ConfigurationException("Forward [failure] must be specified for action [" + action + "]");
 			}
 		}
+	}
+
+	private static boolean isNoBouncyCastleLoaded() {
+		return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null;
+	}
+
+	private static boolean isSigningAlgorithmMissing(String signingAlgorithm) {
+		return !Strings.CI.equalsAny(signingAlgorithm, Security.getAlgorithms("Signature").toArray(String[]::new));
 	}
 
 	@Override
@@ -200,62 +216,6 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	 */
 	public void setSignatureBase64(boolean signatureBase64) {
 		this.signatureBase64 = signatureBase64;
-	}
-
-
-	/** Keystore to obtain signing key
-	 * @ff.mandatory
-	 */
-	@Override
-	public void setKeystore(String string) {
-		keystore = string;
-	}
-
-	/** Type of keystore, can be pkcs12 or pem
-	 * @ff.default pkcs12
-	 */
-	@Override
-	public void setKeystoreType(KeystoreType value) {
-		keystoreType = value;
-	}
-
-	/** Alias used to obtain keystore password */
-	@Override
-	public void setKeystoreAuthAlias(String string) {
-		keystoreAuthAlias = string;
-	}
-
-	/** Keystore password */
-	@Override
-	public void setKeystorePassword(String string) {
-		keystorePassword = string;
-	}
-
-	/** Alias in keystore */
-	@Override
-	public void setKeystoreAlias(String string) {
-		keystoreAlias = string;
-	}
-
-	/** Alias used to obtain keystoreAlias password
-	 * @ff default same as {@code keystoreAuthAlias}
-	 */
-	@Override
-	public void setKeystoreAliasAuthAlias(String string) {
-		keystoreAliasAuthAlias = string;
-	}
-
-	/** KeystoreAlias password
-	 * @ff default same as <code>keystorePassword</code>
-	 */
-	@Override
-	public void setKeystoreAliasPassword(String string) {
-		keystoreAliasPassword = string;
-	}
-
-	@Override
-	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		this.keyManagerAlgorithm = keyManagerAlgorithm;
 	}
 
 }

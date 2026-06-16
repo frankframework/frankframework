@@ -58,7 +58,7 @@ public class WebServiceSender extends HttpSender {
 	private @Getter boolean wssPasswordDigest = true;
 
 	private SoapWrapper soapWrapper;
-	private CredentialFactory wsscf=null;
+	private CredentialFactory wsscf = null;
 	private IParameter soapActionParameter;
 	private IParameter serviceNamespaceURIParameter;
 

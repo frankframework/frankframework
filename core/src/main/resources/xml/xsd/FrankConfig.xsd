@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.1.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.0-SNAPSHOT">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -577,11 +577,6 @@ or marked for roll back by the calling party.</xs:documentation>
     <xs:attribute name="messageSizeWarn" type="xs:string">
       <xs:annotation>
         <xs:documentation>If messageSizeWarn&gt;=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes &lt;code&gt;KB&lt;/code&gt;, &lt;code&gt;MB&lt;/code&gt; or &lt;code&gt;GB&lt;/code&gt; Default: application default (30MB)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="transformNullMessage" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>when specified and &lt;code&gt;null&lt;/code&gt; is received as a message the message is changed to the specified value</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="expectsSessionKeys" type="xs:string">
@@ -1590,6 +1585,7 @@ If not specified, the default is INPUT.</xs:documentation>
     <xs:attribute name="xpathResult">
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
+&lt;p&gt;
 If xpathResult is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 This results in an xml-string including the XML tags, if you want the contents of the element (as scalar value), use TEXT.
 &lt;/p&gt;
@@ -1736,13 +1732,13 @@ to avoid potential duplicate filename errors. Prior to release 9.0, it is recomm
 
 A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -1768,7 +1764,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -1809,7 +1805,11 @@ This class sends messages with JMS.</xs:documentation>
       </xs:element>
       <xs:element name="ExchangeMailListener">
         <xs:annotation>
-          <xs:documentation>Microsoft Exchange Implementation of a mailbox based filesystem.</xs:documentation>
+          <xs:documentation>Implementation of a AbstractFileSystemSender that enables to manipulate messages in an Exchange folder.
+Uses the MS Graph API to manage a mailbox.
+
+Compared to older versions of the Frank!Framework the &lt;code&gt;DELETE&lt;/code&gt; action was a soft delete. Now it's a hard delete and
+thus no longer moves the mail item to the &lt;code&gt;Archive&lt;/code&gt; or &lt;code&gt;Deleted items&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -1876,13 +1876,13 @@ ESB (Enterprise Service Bus) extension of JmsListener.
 
 A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -1908,7 +1908,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -1962,18 +1962,17 @@ This class sends messages with JMS.</xs:documentation>
 JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.
 &lt;p&gt;
 To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
-The JavaListener listens to Java method calls. You can issue Java method calls using a IbisJavaSender (external call)
+The JavaListener listens to Java method calls. You can issue Java method calls using a org.frankframework.senders.IbisJavaSender (external call)
 or IbisLocalSender (internal call).
 &lt;/p&gt;
 &lt;p&gt;
-    Calling the JavaListener via the IbisJavaSender forces all request messages to be passed as strings without
+    Calling the JavaListener via the org.frankframework.senders.IbisJavaSender forces all request messages to be passed as strings without
     metadata.
 &lt;/p&gt;
 &lt;p&gt;
     When calling the JavaListener via the IbisLocalSender all messages are passed in their native format,
     retaining all their metadata.
-&lt;/p&gt;
-&lt;p&gt;</xs:documentation>
+&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -2011,13 +2010,13 @@ or IbisLocalSender (internal call).
         <xs:annotation>
           <xs:documentation>A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -2043,7 +2042,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -2191,7 +2190,8 @@ flag can be used to set the disk storage location.</xs:documentation>
  specified in the message, the JmsListener sends the result of the processing
  in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  specified Sender, that in turn sends the message to
- whatever it is configured to.&lt;/p&gt;
+ whatever it is configured to.
+
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
@@ -2216,7 +2216,7 @@ This class sends messages with JMS.</xs:documentation>
           <xs:documentation>JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -2291,11 +2291,12 @@ to avoid potential duplicate filename errors. Prior to release 9.0, it is recomm
       </xs:element>
       <xs:element name="SapListener">
         <xs:annotation>
-          <xs:documentation>Implementation of a IPushingListener,
+          <xs:documentation>Implementation of a org.frankframework.core.IPushingListener,
 that enables a Receiver to receive messages from SAP-systems.
-
+&lt;p&gt;
 In SAP, the function to be called is an RFC-function to the destination that is registered using &lt;code&gt;progid&lt;/code&gt;.
-&lt;/b&gt;
+&lt;/p&gt;
+&lt;p&gt;
 N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
 If no replyFieldIndex or replyFieldName is specified, output is converted from xml.
 &lt;/p&gt;</xs:documentation>
@@ -2329,30 +2330,17 @@ to avoid potential duplicate filename errors. Prior to release 9.0, it is recomm
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="SimpleJdbcListener">
-        <xs:annotation>
-          <xs:documentation>Database Listener that returns a count of messages available, but does not perform any locking or
-other management of processing messages in parallel.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="SimpleJdbcListenerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="TibcoLogJmsListener">
         <xs:annotation>
           <xs:documentation>A true multi-threaded Listener-class.
 &lt;br/&gt;
-
+&lt;p&gt;
 Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
 transacted attribute. If this is set to &lt;code&gt;true&lt;/code&gt;, received messages are
 committed or rolled back, possibly together with other actions, by the receiver or the pipeline.
 In case of a failure, all actions within the transaction are rolled back.
 &lt;/p&gt;&lt;p&gt;
-Setting listener.acknowledgeMode to "auto" means that messages are allways acknowledged (removed from
+Setting listener.acknowledgeMode to "auto" means that messages are always acknowledged removed from
 the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
 when the state of the Adapter equals the success state for committing.
 The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
@@ -2378,7 +2366,7 @@ jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
 JMSListener re-implemented as a pushing listener rather than a pulling listener.
 The JMS messages have to come in from an external source: an MDB or a Spring
 message container.
-
+&lt;p&gt;
 This version of the &lt;code&gt;JmsListener&lt;/code&gt; supports distributed transactions using the XA-protocol.
 No special action is required to have the listener join the transaction.
 &lt;/p&gt;&lt;p&gt;
@@ -2644,18 +2632,13 @@ fields may not be one of the #RESERVED_NAMES. Default: name of the first form-pa
     </xs:attribute>
     <xs:attribute name="allowedParameters" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Whitelist of request parameters (Query and POST Parameters) that are allowed to be
-copied into the session.
+        <xs:documentation>Whitelist of request parameters (Query and POST Parameters) that are allowed to be copied into the session.
 &lt;br/&gt;
 Entered as a comma-separated value.
 &lt;br/&gt;
-If the list contains any names that are in #RESERVED_NAMES, these will be removed from the list.
-&lt;br/&gt;
-If left empty, then all HTTP parameters are copied into the session, which can pose
+&lt;strong&gt;If left empty, then all HTTP parameters are copied into the session, which can pose
 a security risk and is therefore discouraged. The risk is that parameters could be sent,
-that overwrite system session variables.
-&lt;br/&gt;
-This only works as a backwards-compatibility feature and can be switched off setting #setAllowAllParams(boolean) to &lt;code&gt;false&lt;/code&gt;.</xs:documentation>
+that overwrite system session variables.&lt;/strong&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowAllParams" type="frankBoolean">
@@ -2665,12 +2648,10 @@ default all parameters are allowed until removal of this flag.
 Copying all POST and query parameters to the session is considered a security risk,
 so this should not be left enabled.
 &lt;br/&gt;
-Even so, names listed in #RESERVED_NAMES will never be copied from the HTTP parameters to the session.
+&lt;strong&gt;When setting #setAllowedParameters(String), this value is ignored. This value is only
+used when the allowed parameter list has not been set, or set empty.&lt;/strong&gt;
 &lt;br/&gt;
-When setting #setAllowedParameters(String), this value is ignored. This value is only
-used when the allowed parameter list has not been set, or set empty.
-&lt;br/&gt;
-For backwards compatibility, this is &lt;code&gt;true&lt;/code&gt; by default. Default: true</xs:documentation>
+&lt;strong&gt;For backwards compatibility, this is &lt;code&gt;true&lt;/code&gt; by default.&lt;/strong&gt; Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="requiredIssuer" type="xs:string">
@@ -3357,6 +3338,27 @@ If the attribute tenantId is not empty, the username and password are treated as
   </xs:attributeGroup>
   <xs:attributeGroup name="ExchangeMailListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ExchangeMailListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
+&lt;/ul&gt; Default: EMAIL</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FrankListenerType">
@@ -3651,27 +3653,6 @@ If the alias refers to a password without a username, the password is treated as
   <xs:attributeGroup name="ImapListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="ImapListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractMailListenerCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerDeclaredAttributeGroup">
-    <xs:attribute name="messageType">
-      <xs:annotation>
-        <xs:documentation>Determines the contents of the message that is sent to the Pipeline. can be one of:
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;EMAIL&lt;/code&gt;, for an XML containing most relevant information, except the body and the attachments&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;CONTENTS&lt;/code&gt;, for the body of the message&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;MIME&lt;/code&gt;, for the MIME contents of the message&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;NAME&lt;/code&gt; or &lt;code&gt;PATH&lt;/code&gt;, for an internal handle of mail message, that can be used by a related MailFileSystemSender&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;HEADER&lt;/code&gt;, for the value of the header matching the searchKey in the message context&lt;/li&gt;
-&lt;/ul&gt; Default: EMAIL</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MessageTypeAttributeValuesType_2 variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractMailListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="AbstractMailListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JavaListenerType">
     <xs:group ref="JavaListenerDeclaredChildGroup" />
@@ -4357,23 +4338,6 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     <xs:attributeGroup ref="SftpFileSystemListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="SimpleJdbcListenerType">
-    <xs:group ref="JdbcFacadeDeclaredChildGroup" />
-    <xs:attributeGroup ref="SimpleJdbcListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.SimpleJdbcListener" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="SimpleJdbcListenerDeclaredAttributeGroup">
-    <xs:attribute name="selectQuery" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>count query that returns the number of available records. when there are available records the pipeline is activated</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trace" type="frankBoolean" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="SimpleJdbcListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="SimpleJdbcListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="TibcoLogJmsListenerType">
     <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
     <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
@@ -4764,8 +4728,8 @@ always appears in combination with a sender or listener. This sender or listener
 a key based on the sent or received message. Messages with the same key are considered to
 be the same.
 &lt;br/&gt;&lt;br/&gt;
-Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
-the Frank!Framework will try to create them.
+Storage structure is defined in the liquibase migration `/IAF_util/IAF_DatabaseChangelog.xml`. On startup, liquibase will try to create this structure
+if not present already.
 &lt;br/&gt;&lt;br/&gt;
 {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
 for the JdbcErrorStorage or JdbcMessageLog. Otherwise messages may get lost.}
@@ -5114,8 +5078,8 @@ always appears in combination with a sender or listener. This sender or listener
 a key based on the sent or received message. Messages with the same key are considered to
 be the same.
 &lt;br/&gt;&lt;br/&gt;
-Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
-the Frank!Framework will try to create them.
+Storage structure is defined in the liquibase migration `/IAF_util/IAF_DatabaseChangelog.xml`. On startup, liquibase will try to create this structure
+if not present already.
 &lt;br/&gt;&lt;br/&gt;
 {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
 for the JdbcErrorStorage or JdbcMessageLog. Otherwise messages may get lost.}
@@ -5650,7 +5614,11 @@ SoapValidator is will also add the SOAP envelope XSD.</xs:documentation>
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -5753,7 +5721,11 @@ SoapValidator is will also add the SOAP envelope XSD.</xs:documentation>
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -5828,7 +5800,11 @@ SoapValidator is will also add the SOAP envelope XSD.</xs:documentation>
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -6007,7 +5983,11 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -6054,7 +6034,11 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -6096,7 +6080,8 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     </xs:attribute>
     <xs:attribute name="cmhVersion" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/b&gt; Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
+        <xs:documentation>&lt;p&gt;Only used when &lt;code&gt;mode=reg&lt;/code&gt;!&lt;/p&gt;
+Sets the Common Message Header version. 1 or 2 Default: 1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6178,13 +6163,14 @@ OpenAPI specification.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="reasonSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set: creates a sessionKey to store any errors when validating the json output Default: failureReason</xs:documentation>
+        <xs:documentation>Stores the validation errors, if any, in the sessionKey with this value. Defaults to 'failureReason' Default: failureReason</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useAsOutputValidator" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Mark this Validator as configured for mixed validation, meaning it will be used for both request and response validation. Depending solely on the
-responseRoot being set is not sufficient, since in case of OpenApiValidator, the resposeRoot is not used, but it is still a mixed validator. Default: false</xs:documentation>
+        <xs:documentation>Set this validator to be used as an output validator. Please note that 'mixed' validation doesn't work well, and you need to define
+both an input and an output validator instance of this type with this value set to true for the output validator and false (default) for the input
+validator if you want to validate both input and output. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6214,7 +6200,11 @@ responseRoot being set is not sufficient, since in case of OpenApiValidator, the
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -6843,7 +6833,11 @@ value specified by ${fxf.retention}).</xs:documentation>
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -7279,6 +7273,7 @@ value specified by ${fxf.retention}).</xs:documentation>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+              <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -7367,6 +7362,7 @@ N.B. the default values shown can be overridden using properties in appConstants
   <xs:group name="AbstractCacheAdapterDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractCacheAdapterDeclaredAttributeGroup">
@@ -7375,62 +7371,9 @@ N.B. the default values shown can be overridden using properties in appConstants
         <xs:documentation>Name of the cache, will be lowercased Default: &lt;code&gt;&amp;lt;ownerName&amp;gt;&lt;/code&gt;_cache</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="keyXPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>xpath expression to extract cache key from request message</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyXPathOutputType">
-      <xs:annotation>
-        <xs:documentation>output type of xpath expression to extract cache key from request message Default: text</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keyNamespaceDefs" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>namespace defintions for keyxpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyStyleSheet" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>stylesheet to extract cache key from request message. Use in combination with cacheEmptyKeys to inhibit caching for certain groups of request messages</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyInputSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key to use as input for transformation of request message to key by keyxpath or keystylesheet</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="cacheEmptyKeys" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>controls whether empty keys are used for caching. when set true, cache entries with empty keys can exist. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="valueXPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>xpath expression to extract value to be cached key from response message. Use in combination with cacheEmptyValues to inhibit caching for certain groups of response messages</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="valueXPathOutputType">
-      <xs:simpleType>
-        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="valueNamespaceDefs" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>namespace defintions for valuexpath. must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt; definitions</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="valueStyleSheet" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>stylesheet to extract value to be cached from response message</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="valueInputSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>session key to use as input for transformation of response message to cached value by valuexpath or valuestylesheet</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="cacheEmptyValues" type="frankBoolean">
@@ -7521,7 +7464,8 @@ N.B. the default values shown can be overridden using properties in appConstants
  specified in the message, the JmsListener sends the result of the processing
  in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  specified Sender, that in turn sends the message to
- whatever it is configured to.&lt;/p&gt;
+ whatever it is configured to.
+
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
@@ -7906,14 +7850,16 @@ When &lt;code&gt;action=update&lt;/code&gt; the input (xml string) indicates doc
       </xs:element>
       <xs:element name="CompositeSender">
         <xs:annotation>
-          <xs:documentation>Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+          <xs:documentation>Pipe that allows you to call a Frank!Framework Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
 As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
 For example:
 
-&lt;pre&gt;&lt;code&gt;&amp;lt;CompositePipe name=&amp;quot;name-of-the-pipe&amp;quot; plugin=&amp;quot;name-of-the-plugin&amp;quot;&amp;gt;
-    &amp;lt;Param name=&amp;quot;inject-me&amp;quot; value=&amp;quot;im a value&amp;quot; /&amp;gt;
-    &amp;lt;Param name=&amp;quot;inject-me-too&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; /&amp;gt;
-&amp;lt;/CompositePipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;A plugin may have multiple entrypoints (or ref's), each one can be called independently.&lt;/p&gt;</xs:documentation>
+&lt;pre&gt;&lt;code&gt;&amp;lt;ForEachChildElementPipe name=&amp;quot;callPluginAsSender&amp;quot; ...&amp;gt;
+    &amp;lt;CompositeSender name=&amp;quot;plugin&amp;quot; plugin=&amp;quot;demo-plugin&amp;quot; ref=&amp;quot;demo-test-part.xml&amp;quot;&amp;gt;
+        &amp;lt;Param name=&amp;quot;inject-me&amp;quot; value=&amp;quot;im a value&amp;quot; /&amp;gt;
+        &amp;lt;Param name=&amp;quot;inject-me-too&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; /&amp;gt;
+    &amp;lt;/CompositeSender&amp;gt;
+&amp;lt;/ForEachChildElementPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;A plugin may have multiple entrypoints (or ref's), each one can be called independently.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -7981,7 +7927,11 @@ This class sends messages with JMS.</xs:documentation>
       </xs:element>
       <xs:element name="ExchangeFileSystemSender">
         <xs:annotation>
-          <xs:documentation>Implementation of a AbstractFileSystemSender that enables to manipulate messages in an Exchange folder.</xs:documentation>
+          <xs:documentation>Implementation of a AbstractFileSystemSender that enables to manipulate messages in an Exchange folder.
+Uses the MS Graph API to manage a mailbox.
+
+Compared to older versions of the Frank!Framework the &lt;code&gt;DELETE&lt;/code&gt; action was a soft delete. Now it's a hard delete and
+thus no longer moves the mail item to the &lt;code&gt;Archive&lt;/code&gt; or &lt;code&gt;Deleted items&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8311,6 +8261,7 @@ This class sends messages with JMS.</xs:documentation>
 An IbisJavaSender makes a call to a Receiver with a JavaListener
 or any other application in the same JVM that has registered a &lt;code&gt;RequestProcessor&lt;/code&gt; with the IbisServiceDispatcher.
 &lt;/p&gt;
+&lt;p&gt;
 The IbisJavaSender is now considered to be legacy. The new way to call another adapter or java application from your own
 adapter is by using the FrankSender.
 &lt;/p&gt;
@@ -8810,7 +8761,7 @@ represents the nonce and the password the access token.&lt;/p&gt;</xs:documentat
         <xs:annotation>
           <xs:documentation>Wrapper for senders, that opens the wrapped sender at runtime before each sender action, and closes it afterwards.
 This prevents (long) open connections inside Senders and possible connection failures.
-
+&lt;p&gt;
 &lt;b&gt;Example:&lt;/b&gt;
 &lt;pre&gt;&lt;code&gt;&amp;lt;SenderPipe&amp;gt;
     &amp;lt;ReconnectSenderWrapper&amp;gt;
@@ -11152,8 +11103,9 @@ If the alias refers to a password without a username, the password is treated as
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -11234,8 +11186,9 @@ If left empty, the xpathExpression will match any namespace</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -12810,13 +12763,9 @@ Alternatively, warnings can be switched off using suppression properties Suppres
   </xs:attributeGroup>
   <xs:complexType name="ZipWriterSenderType">
     <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
-    <xs:attributeGroup ref="ZipWriterSenderCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractCollectorSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.compression.ZipWriterSender" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="ZipWriterSenderDeclaredAttributeGroup" />
-  <xs:attributeGroup name="ZipWriterSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="AbstractCollectorSenderCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:attributeGroup name="AbstractCollectorSenderDeclaredAttributeGroup">
     <xs:attribute name="collectionName" type="xs:string">
       <xs:annotation>
@@ -13002,7 +12951,8 @@ The outputFields description can contain the following functions:
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
@@ -13570,7 +13520,7 @@ This pipe can be used in combination with IncreaseIntegerPipe to construct loops
       </xs:element>
       <xs:element name="CompositePipe">
         <xs:annotation>
-          <xs:documentation>Pipe that allows you to call a Frank! Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
+          <xs:documentation>Pipe that allows you to call a Frank!Framework Plugin. Just like a FrankSender this pipe calls a sub-process, or sub-adapter.
 As not all session variables are copied over, if you wish to propagate a value, you can do so by using Parameters.
 For example:
 
@@ -13717,7 +13667,7 @@ results in &lt;code&gt;[{&amp;quot;number&amp;quot;:&amp;quot;1&amp;quot;},{&amp
       </xs:element>
       <xs:element name="DelayPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that sleeps for a specified time, which defaults to 5000 msecs.
+          <xs:documentation>Pipe that sleeps for a specified time, which defaults to 5000 msecs. The pipe echos back its input message.
 It is useful for testing purposes.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -14337,7 +14287,7 @@ The supported integrity &lt;i&gt;and&lt;/i&gt; authenticity algorithms are:
       </xs:element>
       <xs:element name="IfPipe">
         <xs:annotation>
-          <xs:documentation>&lt;p&gt;Selects a forward based on an expression. The expression type is coupled to the mediaType:&lt;/p&gt;
+          <xs:documentation>&lt;p&gt;Selects a forward based on an expression, and passes the input message on to that forward. The expression type is coupled to the mediaType:&lt;/p&gt;
 &lt;ul&gt;
     &lt;li&gt;XML (application/xml) uses Xpath.&lt;/li&gt;
     &lt;li&gt;JSON (application/json) uses jsonPath.&lt;/li&gt;
@@ -14435,7 +14385,8 @@ It can be used in combination with CompareIntegerPipe to construct loops.</xs:do
       <xs:element name="IsUserInRolePipe">
         <xs:annotation>
           <xs:documentation>Pipe that checks if the calling user has a specified role.
-Uses the PipeLineSessions methods.
+Uses the PipeLineSession's methods.
+The input message is also the output message.
 &lt;p&gt;
 If the role is not specified by the role attribute, the input of
 the pipe is used as the role.
@@ -14454,7 +14405,8 @@ N.B. The role itself must be specified by hand in the deployment descriptors web
       <xs:element name="IsXmlPipe">
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on whether the input is an XML string.
-The input is an XML string if it, after removing leading white-space characters, starts with '&amp;lt;'.</xs:documentation>
+The input is an XML string if it, after removing leading white-space characters, starts with '&amp;lt;'.
+The input message is also the output message.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -14868,7 +14820,8 @@ With combine action you can attach files into main pdf file.</xs:documentation>
       <xs:element name="PutInSessionPipe">
         <xs:annotation>
           <xs:documentation>Puts the input or the &lt;code&gt;value&lt;/code&gt; in the PipeLineSession, under the key specified by
-&lt;code&gt;sessionKey&lt;/code&gt;. Additionally, stores parameter values in the PipeLineSession.</xs:documentation>
+&lt;code&gt;sessionKey&lt;/code&gt;. Additionally, stores parameter values in the PipeLineSession.
+This pipe returns its input as the output.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -14980,7 +14933,8 @@ If a parameter for the given value is not found, it will not be replaced and the
 &lt;p&gt;
 &lt;li&gt;If attribute &lt;code&gt;substituteVars&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;, then expressions &lt;code&gt;${...}&lt;/code&gt; are substituted using
 system properties, session variables and application properties. Please note that no &lt;code&gt;${...}&lt;/code&gt; patterns are left in the input. &lt;/li&gt;
-&lt;/ol&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;See Parameter to see how parameter values are determined.&lt;/p&gt;</xs:documentation>
+&lt;/ol&gt;
+This pipe may convert non-xml characters, but it's a text based replace. Find and replace characters should therefore match the input message directly.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Special characters such as &lt;pre&gt;\r&lt;/pre&gt; are interpreted by the XML Parser and do not propagate to the FrankElement. In order to use such special characters you could create a property and refer it in the attribute. (e.g. &lt;code&gt;find=&amp;quot;${special-property-name}&amp;quot;&lt;/code&gt; ).&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;See Parameter to see how parameter values are determined.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15179,7 +15133,8 @@ Each line will be handled by this recordHandler and resultHandler.</xs:documenta
       <xs:element name="SwitchPipe">
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on either the content of the input message, by means
-of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.</xs:documentation>
+of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.
+This pipes returns it's input.&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;When using a jPath, the pipe input message will be set to the JSON object called &lt;code&gt;$&lt;/code&gt;, so if you wish to switch on field 'key' in: &lt;code&gt;{ key:'forwardname'}&lt;/code&gt; use &lt;code&gt;$.key&lt;/code&gt;.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15668,7 +15623,11 @@ exceeds the timeout, or in other situations no reply message is received.</xs:do
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="defaultValue" />
-    <xs:attribute ref="preserveInput" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute ref="storeResultInSessionKey" />
     <xs:attribute ref="maxThreads" />
     <xs:attribute ref="chompCharSize" />
@@ -15832,8 +15791,9 @@ exceeds the timeout, or in other situations no reply message is received.</xs:do
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
-&lt;/p&gt;
-This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
+&lt;p&gt;
+This field controls how to iterate over the input and does not determine the pipe's output.
+&lt;/p&gt; Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -15989,8 +15949,9 @@ A sequence of lines with the same key is put in one block and send to the sender
       <xs:annotation>
         <xs:documentation>Only valid for xPathExpression.
 If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
-&lt;/p&gt;
-This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
+&lt;p&gt;
+This field controls how to iterate over the input and does not determine the pipe's output.
+&lt;/p&gt; Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -16075,16 +16036,6 @@ Defaults to &lt;code&gt;Configuration.xml&lt;/code&gt; but can be any XML file. 
     <xs:attribute name="compress" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the pipe compresses; otherwise, it decompresses. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="messageIsContent" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>A flag that indicates whether the message is the content or the path to a file with the contents. For multiple files, use ';' as a delimiter. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="resultIsContent" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>A flag that indicates whether the result must be written to the message or to a file (filename = message). Default: true when outputDirectory is not set.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="fileFormat">
@@ -16259,7 +16210,36 @@ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_sepa
   </xs:attributeGroup>
   <xs:attributeGroup name="DelayPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="DelayPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DirectWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -16300,9 +16280,42 @@ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_sepa
   </xs:attributeGroup>
   <xs:complexType name="EchoPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="EchoPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.EchoPipe" use="prohibited" />
   </xs:complexType>
+  <xs:attributeGroup name="EchoPipeDeclaredAttributeGroup" />
+  <xs:attributeGroup name="EchoPipeCumulativeAttributeGroup">
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="EscapePipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="EscapePipeCumulativeAttributeGroup" />
@@ -16557,11 +16570,6 @@ Be aware that memory consumption appears to increase with file size when this at
         <xs:union memberTypes="AlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Character set to use for converting the secret from String to bytes. Default: UTF-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="hashEncoding">
       <xs:annotation>
         <xs:documentation>Method to use for converting the hash from bytes to String. Default: Base64</xs:documentation>
@@ -16630,10 +16638,47 @@ Be aware that memory consumption appears to increase with file size when this at
         <xs:union memberTypes="SupportedMediaTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IfPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IfPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IncreaseIntegerPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -16667,10 +16712,47 @@ Be aware that memory consumption appears to increase with file size when this at
         <xs:documentation>The J2EE role(s) to check. If the user is in multiple roles, the first specified role will be matched.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the next pipe, but want to match roles based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IsUserInRolePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IsUserInRolePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IsXmlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -16693,10 +16775,47 @@ Be aware that memory consumption appears to increase with file size when this at
         <xs:documentation>Returns elseforward when the input is empty (or thenforward). Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="IsXmlPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IsXmlPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JsonPathPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -16802,8 +16921,9 @@ When direction is XML2JSON, can not be used. Default: root</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -16883,8 +17003,9 @@ If left empty, the xpathExpression will match any namespace</xs:documentation>
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xPathExpression.
-If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+        <xs:documentation>&lt;p&gt;
+Only valid for xPathExpression.
+If outputType is TransformerPool.OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
 &lt;/p&gt;
 This field controls how to read the input and does not determine the output. Default: text</xs:documentation>
       </xs:annotation>
@@ -17300,7 +17421,36 @@ When the root is left unspecified, absolute paths to files and folders can be us
   </xs:attributeGroup>
   <xs:attributeGroup name="LogContextPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="LogContextPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="MailSenderPipeType">
     <xs:group ref="MessageSendingPipeCumulativeChildGroup" />
@@ -17541,7 +17691,36 @@ separately.
   </xs:attributeGroup>
   <xs:attributeGroup name="PutInSessionPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="PutInSessionPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PutSystemDateInSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -17756,7 +17935,11 @@ by the #setLineSeparatorSymbol(String).</xs:documentation>
     </xs:attribute>
     <xs:attribute name="lineSeparatorSymbol" type="xs:string">
       <xs:annotation>
-        <xs:documentation>sets the string that will represent the line-separator in the #setFind(String) and #setReplace(String) strings.</xs:documentation>
+        <xs:documentation>Replaces occurences of the given lineSeperatorSymbol with the host system's lineSeparator in the find and replace values.
+On UNIX systems, it returns &lt;pre&gt;\n&lt;/pre&gt;; on Microsoft Windows systems it returns &lt;pre&gt;\r\n&lt;/pre&gt;.
+&lt;br/&gt;
+This may be needed when your #setFind(String) and #setReplace(String) strings must match the content exactly
+and the input message's line-separator can differ. This attribute is not used for the input message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replaceNonXmlChars" type="frankBoolean">
@@ -17779,7 +17962,8 @@ See also:
     </xs:attribute>
     <xs:attribute name="nonXmlReplacementCharacter" type="xs:string">
       <xs:annotation>
-        <xs:documentation>character that will replace each non-valid xml character (empty string is also possible) (use &amp;amp;#x00bf; for inverted question mark) Default: empty string</xs:documentation>
+        <xs:documentation>Character that will replace each non-valid xml character (empty string is also possible) (use &amp;amp;#x00bf; for inverted question mark).
+Note that the find/replace actions are done based on TEXT and not XML content. Default: empty string</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowUnicodeSupplementaryCharacters" type="frankBoolean">
@@ -18205,10 +18389,47 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     <xs:attribute ref="storeForwardInSessionKey" />
     <xs:attribute ref="forwardNameSessionKey" />
     <xs:attribute ref="namespaceAware" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="SwitchPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="SwitchPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="Text2XmlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -18400,7 +18621,44 @@ with the inverted question mark (0x00bf) Default: true</xs:documentation>
     <xs:attribute ref="storeForwardInSessionKey" />
     <xs:attribute ref="forwardNameSessionKey" />
     <xs:attribute ref="namespaceAware" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+    <xs:attribute name="preserveInput" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>&lt;p&gt;
+    Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+    org.frankframework.core.IPipe#setGetInputFromSessionKey(String).
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="getInputFromSessionKey" />
+    <xs:attribute ref="getInputFromFixedValue" />
+    <xs:attribute ref="defaultValue" />
+    <xs:attribute ref="storeResultInSessionKey" />
+    <xs:attribute ref="maxThreads" />
+    <xs:attribute ref="chompCharSize" />
+    <xs:attribute ref="elementToMove" />
+    <xs:attribute ref="elementToMoveSessionKey" />
+    <xs:attribute ref="elementToMoveChain" />
+    <xs:attribute ref="durationThreshold" />
+    <xs:attribute ref="removeCompactMsgNamespaces" />
+    <xs:attribute ref="restoreMovedElements" />
+    <xs:attribute ref="sizeStatistics" />
+    <xs:attribute ref="writeToSecLog" />
+    <xs:attribute ref="secLogSessionKeys" />
+    <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
+    <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ZipIteratorPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
@@ -20586,6 +20844,15 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
       <xs:enumeration value="JCEKS" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="MessageTypeAttributeValuesType_2">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="EMAIL" />
+      <xs:enumeration value="CONTENTS" />
+      <xs:enumeration value="MIME" />
+      <xs:enumeration value="NAME" />
+      <xs:enumeration value="PATH" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="FtpTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="FTP" />
@@ -20629,15 +20896,6 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
           <xs:documentation>Private</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="MessageTypeAttributeValuesType_2">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="EMAIL" />
-      <xs:enumeration value="CONTENTS" />
-      <xs:enumeration value="MIME" />
-      <xs:enumeration value="NAME" />
-      <xs:enumeration value="PATH" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MessageFieldTypeAttributeValuesType">
@@ -21990,11 +22248,6 @@ throw an exception that the session-key is missing.</xs:documentation>
 to use an empty value as fallback for a missing session-key configured with &lt;code&gt;getInputFromSessionKey&lt;/code&gt;.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="preserveInput" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of &lt;code&gt;getInputFromSessionKey&lt;/code&gt;, &lt;code&gt;getInputFromFixedValue&lt;/code&gt; or &lt;code&gt;emptyInputReplacement&lt;/code&gt;)</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="storeResultInSessionKey" type="xs:string">
     <xs:annotation>
       <xs:documentation>If set, the pipe result is copied to a session key that has the name defined by this attribute.
@@ -22110,7 +22363,14 @@ with &lt;code&gt;mode = 0&lt;/code&gt; for how regular expressions are matched a
   </xs:attribute>
   <xs:attribute name="soapHeader" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap header, for example to allow element x and an empty soap header use: x,)</xs:documentation>
+      <xs:documentation>Name of the child element of the SOAP header, or a comma separated list of names to choose from (only one is allowed). This is a restriction that is enforced on top of the XSD validations.
+
+ &lt;p&gt;
+ When not set, any header is allowed that is accepted by the XSD, including no header. To allow a specific set of headers but have them be optional, specify an empty element in the list, like this: &lt;pre&gt;&amp;quot;MessageHeader,&amp;quot;&lt;/pre&gt;.
+ &lt;/p&gt;
+ &lt;p&gt;
+ The wsdl generator will only use the first element specified.
+ &lt;/p&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="soapHeaderNamespace" type="xs:string">

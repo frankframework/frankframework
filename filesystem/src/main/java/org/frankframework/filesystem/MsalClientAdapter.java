@@ -243,7 +243,6 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		}
 	}
 
-
 	@Override
 	public IHttpResponse send(HttpRequest httpRequest) throws Exception {
 		try (PipeLineSession session = prepareSession(httpRequest)) {

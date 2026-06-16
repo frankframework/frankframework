@@ -410,5 +410,4 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 			}
 		}
 	}
-
 }

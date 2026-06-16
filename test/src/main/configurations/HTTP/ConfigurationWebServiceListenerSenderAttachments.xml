@@ -76,8 +76,8 @@
 			>
 				<forward name="success" path="SetMultipartSessionKey"/>
 			</pipe>
-			<pipe name="SetMultipartSessionKey" preserveInput="true"
-                  className="org.frankframework.pipes.PutInSessionPipe" getInputFromFixedValue="hello world"
+			<pipe name="SetMultipartSessionKey"
+                  className="org.frankframework.pipes.PutInSessionPipe"
 			>
 				<param name="multipartXml" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="EXIT" />

@@ -20,7 +20,6 @@ import org.jspecify.annotations.NonNull;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 
-
 /**
  * Base interface to allow objects to declare that they accept parameters.
  *

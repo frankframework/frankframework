@@ -1,3 +1,4 @@
+import { KeyValuePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, OnInit, Signal, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
@@ -37,7 +38,7 @@ type Form = {
 type TestPipelineSession = {
   configuration: string;
   form: Form;
-  sessionKeys: FormSessionKey[];
+  sessionKeys: Record<string, string>;
 };
 
 @Component({
@@ -52,6 +53,7 @@ type TestPipelineSession = {
     InputFileUploadComponent,
     MonacoEditorComponent,
     LaddaModule,
+    KeyValuePipe,
   ],
 })
 export class TestPipelineComponent implements OnInit {
@@ -70,7 +72,8 @@ export class TestPipelineComponent implements OnInit {
   protected processingMessage = false;
   protected result = '';
 
-  protected formSessionKeys: FormSessionKey[] = [{ key: '', value: '' }];
+  protected formSessionKeys: Record<string, string> = {};
+  protected newSessionKey: FormSessionKey = { key: '', value: '' };
 
   protected form: Form = {
     adapter: '',
@@ -102,21 +105,35 @@ export class TestPipelineComponent implements OnInit {
     this.setTestPipelineSession();
   }
 
-  protected updateSessionKeys(sessionKey: FormSessionKey): void {
-    if (sessionKey?.key != '' && sessionKey?.value != '') {
-      const keyIndex = this.formSessionKeys.slice(0, -1).findIndex((f) => f.key === sessionKey.key);
-      if (keyIndex !== -1) {
-        if (!this.state.some((f) => f.message === 'Session keys cannot have the same name!'))
-          // avoid adding it more than once
-          this.addNote('warning', 'Session keys cannot have the same name!');
+  protected addNewSessionKey(): void {
+    const { key, value } = this.newSessionKey;
+    if (key in this.formSessionKeys) {
+      this.addNote('warning', 'Session keys cannot have the same name!');
+    } else if (key != '') {
+      this.formSessionKeys[key] = value;
+      this.state = [];
+      this.newSessionKey = { key: '', value: '' };
+      setTimeout(() => {
+        const sessionKeyElement = document.querySelector(`#sessionKeyValue${key}`) as HTMLInputElement;
+        sessionKeyElement?.focus();
+      });
+    }
+  }
+
+  protected updateSessionKey(key: string): void {
+    const input = document.querySelector(`#sessionKey${key}`) as HTMLInputElement;
+    if (input && key !== input.value) {
+      const newKey = input.value;
+      if (newKey === '') {
+        delete this.formSessionKeys[key];
+        return;
+      } else if (this.formSessionKeys[newKey]) {
+        this.addNote('warning', 'Session keys cannot have the same name!');
         return;
       }
 
-      this.formSessionKeys.push({
-        key: '',
-        value: '',
-      });
-      this.state = [];
+      this.formSessionKeys[newKey] = this.formSessionKeys[key];
+      delete this.formSessionKeys[key];
     }
   }
 
@@ -149,21 +166,16 @@ export class TestPipelineComponent implements OnInit {
       fd.append('message', new Blob([this.form.message], { type: `text/plain${encoding}` }), 'message');
     }
 
-    if (this.formSessionKeys.length > 1) {
-      this.formSessionKeys.pop();
-      const incompleteKeyIndex = this.formSessionKeys.findIndex((f) => f.key === '' || f.value === '');
+    const sessionKeys = Object.entries(this.formSessionKeys);
+    if (sessionKeys.length > 0) {
+      const incompleteKeyIndex = sessionKeys.findIndex(([key, value]) => key === '' || value === '');
 
       if (incompleteKeyIndex === -1) {
-        fd.append('sessionKeys', JSON.stringify(this.formSessionKeys));
+        fd.append('sessionKeys', JSON.stringify(sessionKeys.map(([key, value]) => ({ key, value }))));
       } else {
         this.addNote('warning', 'Please make sure all sessionkeys have name and value!');
         return;
       }
-
-      this.formSessionKeys.push({
-        key: '',
-        value: '',
-      });
     }
 
     this.processingMessage = true;
@@ -202,7 +214,7 @@ export class TestPipelineComponent implements OnInit {
       encoding: '',
       message: '',
     };
-    this.formSessionKeys = [{ key: '', value: '' }];
+    this.formSessionKeys = {};
     this.file = null;
     this.formFile.reset();
   }

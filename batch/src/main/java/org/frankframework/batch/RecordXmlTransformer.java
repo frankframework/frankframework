@@ -96,7 +96,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			String value = "";
 			if (ndx < parsedRecord.size()) {
 				value = parsedRecord.get(ndx++);
-				if (!it.hasNext() && !StringUtils.isEmpty(endOfRecord)) {
+				if (!it.hasNext() && StringUtils.isNotEmpty(endOfRecord)) {
 					if (value.endsWith(endOfRecord)) {
 						int ei = value.length() - endOfRecord.length();
 						value = value.substring(0, ei);
@@ -104,7 +104,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 				}
 			}
 			// if tagname is empty, then it is not added to the XML
-			if (!StringUtils.isEmpty(tagName)) {
+			if (StringUtils.isNotEmpty(tagName)) {
 				XmlBuilder field = new XmlBuilder(tagName);
 				field.setValue(value,true);
 				record.addSubElement(field);

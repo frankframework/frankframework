@@ -46,7 +46,7 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
 /**
- * <p>Selects a forward based on an expression. The expression type is coupled to the mediaType:</p>
+ * <p>Selects a forward based on an expression, and passes the input message on to that forward. The expression type is coupled to the mediaType:</p>
  * <ul>
  *     <li>XML (application/xml) uses Xpath.</li>
  *     <li>JSON (application/json) uses jsonPath.</li>
@@ -126,7 +126,7 @@ import org.frankframework.util.XmlUtils;
  * <p>Without an expression, the default behaviour is to assume the input is a string. The code will try to match the string to an optional regular expression
  * or tries to match the string value to the optional expressionValue.</p>
  *
- * @ff.note Some behaviour has been slightly modified compared to XmlIf!
+ * @ff.note Some behaviour has been slightly modified compared to {@link XmlIf}!
  *
  * @see <a href="https://github.com/json-path/JsonPath">JsonPath / Jayway implementation including examples</a>
  * @see <a href="https://jsonpath.fly.dev/">JsonPath online evaluator</a>
@@ -414,5 +414,19 @@ public class IfPipe extends AbstractPipe {
 	 */
 	public void setDefaultMediaType(SupportedMediaType defaultMediaType) {
 		this.defaultMediaType = defaultMediaType;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>
+	 *     Use this if you want to pass the original input message of this pipe to the branch, but want to select a branch based on a session-key value via
+	 *     {@link org.frankframework.core.IPipe#setGetInputFromSessionKey(String)}.
+	 * </p>
+	 */
+	@Override
+	@SuppressWarnings("java:S1185") // Sonar warning not relevant b/c we want to add extra JavaDoc
+	public void setPreserveInput(boolean preserveInput) {
+		super.setPreserveInput(preserveInput);
 	}
 }

@@ -41,7 +41,8 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
-import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.KeystoreConfiguration;
+import org.frankframework.encryption.TruststoreConfiguration;
 import org.frankframework.filesystem.AbstractFileSystem;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileSystemException;
@@ -100,24 +101,6 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	private @Getter String replyAddressFields = IMailFileSystem.REPLY_ADDRESS_FIELDS_DEFAULT;
 
-	/* SSL */
-	private @Getter @Setter String keystore;
-	private @Getter @Setter String keystoreAuthAlias;
-	private @Getter @Setter String keystorePassword;
-	private @Getter @Setter KeystoreType keystoreType = KeystoreType.PKCS12;
-	private @Getter @Setter String keystoreAlias;
-	private @Getter @Setter String keystoreAliasAuthAlias;
-	private @Getter @Setter String keystoreAliasPassword;
-	private @Getter @Setter String keyManagerAlgorithm = null;
-
-	private @Getter @Setter String truststore = null;
-	private @Getter @Setter String truststoreAuthAlias;
-	private @Getter @Setter String truststorePassword = null;
-	private @Getter @Setter KeystoreType truststoreType = KeystoreType.JKS;
-	private @Getter @Setter String trustManagerAlgorithm = null;
-	private @Getter @Setter boolean allowSelfSignedCertificates = false;
-	private @Getter @Setter boolean verifyHostname = true;
-	private @Getter @Setter boolean ignoreCertificateExpiredException = false;
 	private @Getter @Setter boolean enableConnectionTracing = false;
 
 	private @Getter CredentialFactory credentials = null;
@@ -127,6 +110,8 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	private MsalClientAdapter msalClientAdapter;
 	private GraphClient client;
 	private MailFolder mailFolder;
+	private @Getter KeystoreConfiguration keystoreConfiguration	= createKeystoreConfiguration();
+	private @Getter TruststoreConfiguration truststoreConfiguration	= createTruststoreConfiguration();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -143,28 +128,14 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 		msalClientAdapter.setProxyHost(getProxyHost());
 		msalClientAdapter.setProxyPort(getProxyPort());
 		CredentialFactory proxyCf = getProxyCredentials();
+
 		if (proxyCf != null) {
 			msalClientAdapter.setProxyUsername(proxyCf.getUsername());
 			msalClientAdapter.setProxyPassword(proxyCf.getPassword());
 		}
 
-		msalClientAdapter.setKeystore(getKeystore());
-		msalClientAdapter.setKeystoreType(getKeystoreType());
-		msalClientAdapter.setKeystoreAuthAlias(getKeystoreAuthAlias());
-		msalClientAdapter.setKeystorePassword(getKeystorePassword());
-		msalClientAdapter.setKeystoreAlias(getKeystoreAlias());
-		msalClientAdapter.setKeystoreAliasAuthAlias(getKeystoreAliasAuthAlias());
-		msalClientAdapter.setKeystoreAliasPassword(getKeystoreAliasPassword());
-		msalClientAdapter.setKeyManagerAlgorithm(getKeyManagerAlgorithm());
-
-		msalClientAdapter.setTruststore(getTruststore());
-		msalClientAdapter.setTruststoreType(getTruststoreType());
-		msalClientAdapter.setTruststoreAuthAlias(getTruststoreAuthAlias());
-		msalClientAdapter.setTruststorePassword(getTruststorePassword());
-		msalClientAdapter.setTrustManagerAlgorithm(getTrustManagerAlgorithm());
-		msalClientAdapter.setVerifyHostname(isVerifyHostname());
-		msalClientAdapter.setAllowSelfSignedCertificates(isAllowSelfSignedCertificates());
-		msalClientAdapter.setIgnoreCertificateExpiredException(isIgnoreCertificateExpiredException());
+		msalClientAdapter.setKeystoreConfiguration(this.getKeystoreConfiguration());
+		msalClientAdapter.setTruststoreConfiguration(this.getTruststoreConfiguration());
 
 		msalClientAdapter.configure();
 
@@ -708,5 +679,15 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	@Override
 	public Map<String, Object> getAdditionalAttachmentProperties(MailMessage a) throws FileSystemException {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
+		this.keystoreConfiguration = keystoreConfiguration;
+	}
+
+	@Override
+	public void setTruststoreConfiguration(TruststoreConfiguration truststoreConfiguration) {
+		this.truststoreConfiguration = truststoreConfiguration;
 	}
 }

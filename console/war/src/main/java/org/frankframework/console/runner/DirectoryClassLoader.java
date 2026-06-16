@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Vector;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +47,7 @@ import org.frankframework.util.StreamUtil;
 @Log4j2
 public class DirectoryClassLoader extends ClassLoader implements SmartClassLoader {
 
-	private File directory;
+	private final File directory;
 
 	private final List<String> loadedCustomClasses = new ArrayList<>();
 
@@ -94,7 +93,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 		}
 
 		// It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent classloader
-		if(name.startsWith("META-INF/")) {
+		if (name.startsWith("META-INF/")) {
 			return getParent().getResource(name);
 		}
 
@@ -105,7 +104,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	 * @param name of the file to search for in the current local classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>null</code> when the file cannot be found
 	 */
-	private URL getLocalResource(String name) {
+	private @Nullable URL getLocalResource(@NonNull String name) {
 		File file = new File(directory, name);
 		if (file.exists()) {
 			try {
@@ -126,9 +125,9 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	 */
 	@Nullable
 	private URL getResource(@Nullable String name, boolean useParent) {
-		URL url = null;
+		URL url;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
-		if(normalizedFilename == null) {
+		if (normalizedFilename == null) {
 			return null; // If the path after normalization equals null, return null
 		}
 		// Resources retrieved from ClassLoaders should never start with a leading slash
@@ -137,14 +136,12 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 		}
 
 		url = getLocalResource(normalizedFilename);
-		if(log.isTraceEnabled())
-			log.trace("{} local resource [{}]", url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
+		if (log.isTraceEnabled()) log.trace("{} local resource [{}]", url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
 
 		// URL without basepath cannot be found, follow parent hierarchy
-		if(url == null && useParent) {
+		if (url == null && useParent) {
 			url = getParent().getResource(name);
-			if(log.isTraceEnabled())
-				log.trace("{} resource [{}] from parent", url == null ? "failed to retrieve" : "retrieved", name);
+			if(log.isTraceEnabled()) log.trace("{} resource [{}] from parent", url == null ? "failed to retrieve" : "retrieved", name);
 		}
 
 		return url;
@@ -157,7 +154,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 			return getParent().getResources(name);
 		}
 
-		Vector<URL> urls = new Vector<>();
+		List<URL> urls = new ArrayList<>();
 
 		// Search for the file in the local classpath only
 		URL localResource = getResource(name, false);
@@ -168,14 +165,14 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 		// Add all files found in the classpath's parent
 		urls.addAll(Collections.list(getParent().getResources(name)));
 
-		if(log.isTraceEnabled()) log.trace("retrieved files [{}] found urls {}", name, urls);
+		if (log.isTraceEnabled()) log.trace("retrieved files [{}] found urls {}", name, urls);
 
-		return urls.elements();
+		return Collections.enumeration(urls);
 	}
 
 	@Override
 	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-		if(name == null) {
+		if (name == null) {
 			throw new IllegalArgumentException("classname to load may not be null");
 		}
 
@@ -188,7 +185,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 			}
 		}
 
-		Throwable throwable = null;
+		Throwable throwable;
 		try {
 			return super.loadClass(name, resolve); // First try to load the class natively
 		} catch (ClassNotFoundException | NoClassDefFoundError t) { // Catch NoClassDefFoundError and ClassNotFoundExceptions
@@ -213,7 +210,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	 */
 	@NonNull
 	@Override
-	public Class<?> publicDefineClass(@NonNull String name, @NonNull byte[] b, @Nullable ProtectionDomain protectionDomain) {
+	public Class<?> publicDefineClass(@NonNull String name, byte @NonNull [] b, @Nullable ProtectionDomain protectionDomain) {
 		return super.defineClass(name, b, 0, b.length, protectionDomain);
 	}
 
@@ -238,7 +235,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 					ProtectionDomain protectionDomain = ReflectUtils.getProtectionDomain(this.getClass());
 					Class<?> clazz = publicDefineClass(name, bytes, protectionDomain);
 
-					if(resolve) {
+					if (resolve) {
 						resolveClass(clazz);
 					}
 
@@ -246,12 +243,12 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 
 					return clazz;
 				} catch (Exception e) {
-					throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this+"]", e);
+					throw new ClassNotFoundException("failed to load class [" + path + "] in classloader [" + this + "]", e);
 				}
 			}
 		}
 
-		throw new ClassNotFoundException("class ["+name+"] not found in classloader ["+this+"]"); // Throw ClassNotFoundException when nothing was found
+		throw new ClassNotFoundException("class [" + name + "] not found in classloader [" + this + "]"); // Throw ClassNotFoundException when nothing was found
 	}
 
 	@Override

@@ -193,7 +193,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 				char[] passwordChars = cfPassword != null ? cfPassword.toCharArray() : new char[0];
 				return new AuthenticationContext(credentialFactory.getUsername(), passwordChars, getDomainName());
 			case SPNEGO:
-				if(!StringUtils.isEmpty(kdc) && !StringUtils.isEmpty(realm)) {
+				if(StringUtils.isNotEmpty(kdc) && StringUtils.isNotEmpty(realm)) {
 					System.setProperty("java.security.krb5.kdc", kdc);
 					System.setProperty("java.security.krb5.realm", realm);
 				}

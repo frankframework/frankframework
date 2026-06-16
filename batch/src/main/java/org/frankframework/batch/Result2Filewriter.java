@@ -80,7 +80,7 @@ public class Result2Filewriter extends ResultWriter {
 			file.delete();
 			return null;
 		}
-		if (!StringUtils.isEmpty(getMove2dirAfterFinalize())) {
+		if (StringUtils.isNotEmpty(getMove2dirAfterFinalize())) {
 			File movedFile = new File(getMove2dirAfterFinalize(), file.getName());
 			if (movedFile.exists()) {
 				log.warn("File [{}] exists, file gets overwritten", movedFile.getAbsolutePath());
