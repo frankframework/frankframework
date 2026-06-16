@@ -433,11 +433,11 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 				.collect(Collectors.joining(", "));
 	}
 
-	protected Message getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
+	private Message getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
 		return getResult(resultset, null);
 	}
 
-	private Message getResult(ResultSet resultset, @Nullable Path blobOrClobFilename) throws JdbcException, SQLException, IOException {
+	protected Message getResult(ResultSet resultset, @Nullable Path blobOrClobFilename) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {

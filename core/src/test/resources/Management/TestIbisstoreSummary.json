@@ -1,0 +1,59 @@
+{
+    "result": [
+        {
+            "type": "E",
+            "name": "errorlog",
+            "slotcount": 2,
+            "datecount": 3,
+            "msgcount": 6,
+            "slots": [
+                {
+                    "id": "slot1",
+                    "datecount": 1,
+                    "msgcount": 1,
+                    "dates": [
+                        {
+                            "id": "2026-05-15",
+                            "count": 1
+                        }
+                    ]
+                },
+                {
+                    "id": "slot2",
+                    "datecount": 2,
+                    "msgcount": 5,
+                    "dates": [
+                        {
+                            "id": "2026-05-15",
+                            "count": 3
+                        },
+                        {
+                            "id": "2026-06-15",
+                            "count": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "M",
+            "name": "messagelog",
+            "slotcount": 1,
+            "datecount": 1,
+            "msgcount": 2,
+            "slots": [
+                {
+                    "id": "slot1",
+                    "datecount": 1,
+                    "msgcount": 2,
+                    "dates": [
+                        {
+                            "id": "2026-06-15",
+                            "count": 2
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
