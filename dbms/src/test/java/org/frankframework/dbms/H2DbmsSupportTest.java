@@ -1,6 +1,7 @@
 package org.frankframework.dbms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.Map;
@@ -54,5 +55,10 @@ class H2DbmsSupportTest {
 
 		// Assert
 		assertEquals(expected, h2DbmsSupport.getTargetSqlDialect());
+	}
+
+	@Test
+	void testCannotCreateWithoutParams() {
+		assertThrows(IllegalStateException.class, H2DbmsSupport::new);
 	}
 }

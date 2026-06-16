@@ -39,7 +39,7 @@ public class FindAvailableDataSources {
 			xaDataSourceName = xaDataSource;
 		}
 
-		public static String getDataSourceUrl(String dataSourceName) {
+		public static String getDataSourceResourceName(String dataSourceName) {
 			try {
 				return TestDatasource.valueOf(dataSourceName).getDataSourceName();
 			} catch (IllegalArgumentException e) {
