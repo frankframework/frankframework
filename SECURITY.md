@@ -21,6 +21,17 @@ your application security could be in jeopardy.
 is your own code. It is highly recommended to adopt secure software development 
 best practices and perform security testing before releasing your application.
 
+## Features that are disabled by default
+Some features of the Frank!Framework are disabled by default, and need to be explicitly enabled in the configuration. 
+These features are disabled by default because they have a risk of being exploited when enabled, and are not
+recommended to be used in production environments. If you choose to enable these features, please ensure that you 
+understand the security implications and take appropriate measures to mitigate any risks.
+
+This applies to the following features:
+* Ladybug is disabled by default on ACC/PRD environments
+* Larva is disabled by default on ACC/PRD environments
+* The IAF_Util configuration should not be used on non-dev environments
+* The (Log) FileViewer permissions are limited to the log directory by default
 
 ## Supported Versions
 
