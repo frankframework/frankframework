@@ -1,8 +1,20 @@
-import { AfterViewInit, Component, ContentChild, Input, OnDestroy, QueryList, ViewChildren } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ContentChild,
+  inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import { CdkTableModule, DataSource } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { WebStorageService } from '../../services/web-storage.service';
+import { ComboboxComponent } from '../combobox/combobox.component';
 import { DtContentDirective } from './dt-content.directive';
 import { TruncatePipe } from '../../pipes/truncate.pipe';
 import { ToDateDirective } from '../to-date.directive';
@@ -55,7 +67,7 @@ export type DataTableServerResponseInfo<T> = {
   templateUrl: './datatable.component.html',
   styleUrl: './datatable.component.scss',
 })
-export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
+export class DatatableComponent<T> implements OnInit, AfterViewInit, OnDestroy {
   @Input({ required: true }) public datasource!: DataTableDataSource<T>;
   @Input({ required: true }) public displayColumns: DataTableColumn<T>[] = [];
   @Input() public truncate = false;
@@ -70,21 +82,25 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
 
   private datasourceSubscription: Subscription = new Subscription();
   private originalData: T[] | null = null;
+  private readonly webStorageService = inject(WebStorageService);
 
   protected get displayedColumns(): string[] {
     return this.displayColumns.map((column) => column.name);
   }
 
+  ngOnInit(): void {
+    const cachedSize: number = this.getCachedSize();
+    this.applyPaginationSize(cachedSize.toString());
+  }
+
   ngAfterViewInit(): void {
-    if (this.datasource) {
-      const subscription = this.datasource.getEntriesInfo().subscribe((entriesInfo) => {
-        this.totalEntries = entriesInfo.totalEntries;
-        this.totalFilteredEntries = entriesInfo.totalFilteredEntries;
-        this.minPageEntry = entriesInfo.minPageEntry;
-        this.maxPageEntry = entriesInfo.maxPageEntry;
-      });
-      this.datasourceSubscription.add(subscription);
-    }
+    const subscription = this.datasource.getEntriesInfo().subscribe((entriesInfo) => {
+      this.totalEntries = entriesInfo.totalEntries;
+      this.totalFilteredEntries = entriesInfo.totalFilteredEntries;
+      this.minPageEntry = entriesInfo.minPageEntry;
+      this.maxPageEntry = entriesInfo.maxPageEntry;
+    });
+    this.datasourceSubscription.add(subscription);
   }
 
   ngOnDestroy(): void {
@@ -98,6 +114,7 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
 
   applyPaginationSize(sizeValue: string): void {
     this.datasource.options = { size: +sizeValue };
+    this.webStorageService.set('datatablePageSize', sizeValue);
   }
 
   updatePage(pageNumber: number): void {
@@ -119,6 +136,11 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
 
     if (this.originalData === null) this.originalData = this.datasource.data;
     this.datasource.data = basicAnyValueTableSort(this.originalData, this.sortableHeaders, event);
+  }
+
+  protected getCachedSize(): number {
+    const cachedSize = this.webStorageService.get<string>('datatablePageSize');
+    return cachedSize ? +cachedSize : 50;
   }
 }
 
