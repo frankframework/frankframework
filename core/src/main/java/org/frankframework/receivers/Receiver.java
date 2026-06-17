@@ -585,7 +585,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			if (getListener() == null) {
 				throw new ConfigurationException(getLogPrefix() + "has no listener");
 			}
-			if (!StringUtils.isEmpty(getElementToMove()) && !StringUtils.isEmpty(getElementToMoveChain())) {
+			if (StringUtils.isNotEmpty(getElementToMove()) && StringUtils.isNotEmpty(getElementToMoveChain())) {
 				throw new ConfigurationException("cannot have both an elementToMove and an elementToMoveChain specified");
 			}
 			if (getListener() instanceof ReceiverAware<M> ra) {

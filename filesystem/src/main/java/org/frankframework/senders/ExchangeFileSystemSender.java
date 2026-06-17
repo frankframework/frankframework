@@ -177,5 +177,4 @@ public class ExchangeFileSystemSender extends AbstractFileSystemSender<MailItemI
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
 		getFileSystem().setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
-
 }

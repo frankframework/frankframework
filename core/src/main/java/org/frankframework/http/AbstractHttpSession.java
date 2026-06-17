@@ -80,12 +80,11 @@ import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreConfiguration;
-import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.TruststoreConfiguration;
 import org.frankframework.http.authentication.AuthenticationScheme;
 import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
 import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
@@ -163,6 +162,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
+	private @Getter TruststoreConfiguration truststoreConfiguration = createTruststoreConfiguration();
 	private @Getter @Setter String name;
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter MetricsInitializer configurationMetrics;
@@ -280,15 +280,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Getter String proxyPassword;
 	private @Getter String proxyRealm=null;
 	private @Getter boolean prefillProxyAuthCache;
-
-	private @Getter String truststore=null;
-	private @Getter String truststoreAuthAlias;
-	private @Getter String truststorePassword=null;
-	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
-	private @Getter String trustManagerAlgorithm=null;
-	private @Getter boolean allowSelfSignedCertificates = false;
-	private @Getter boolean verifyHostname=true;
-	private @Getter boolean ignoreCertificateExpiredException=false;
 
 	private @Getter boolean followRedirects=true;
 	private @Getter boolean ignoreRedirects=false;
@@ -621,7 +612,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 */
 	private void preAuthenticate(HttpClientContext clientContext) {
 		// This is only executed when credentials are available.
-		if (getCredentials() != null && !StringUtils.isEmpty(getCredentials().getUsername())) {
+		if (getCredentials() != null && StringUtils.isNotEmpty(getCredentials().getUsername())) {
 			AuthState authState = clientContext.getTargetAuthState();
 			if (authState == null) {
 				authState = new AuthState();
@@ -650,7 +641,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	@NonNull
 	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws ConfigurationException {
 		SSLConnectionSocketFactory sslConnectionSocketFactory;
-		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
+		HostnameVerifier hostnameVerifier = getTruststoreConfiguration().isVerifyHostname() ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
 
 		final String[] supportedProtocols = StringUtils.isBlank(protocol) ? null : new String[] { protocol };
 		final String[] cipherSuites;
@@ -916,50 +907,6 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		return disableCookies;
 	}
 
-	/** Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
-	@Override
-	public void setTruststore(String string) {
-		truststore = string;
-	}
-
-	@Override
-	public void setTruststoreAuthAlias(String string) {
-		truststoreAuthAlias = string;
-	}
-
-	@Override
-	public void setTruststorePassword(String string) {
-		truststorePassword = string;
-	}
-
-	@Override
-	public void setTruststoreType(KeystoreType value) {
-		truststoreType = value;
-	}
-
-	@Override
-	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		this.trustManagerAlgorithm = trustManagerAlgorithm;
-	}
-
-	@Override
-	@Unsafe
-	public void setVerifyHostname(boolean b) {
-		verifyHostname = b;
-	}
-
-	@Unsafe
-	@Override
-	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
-		this.allowSelfSignedCertificates = allowSelfSignedCertificates;
-	}
-
-	@Override
-	@Unsafe
-	public void setIgnoreCertificateExpiredException(boolean b) {
-		ignoreCertificateExpiredException = b;
-	}
-
 	/**
 	 * If <code>true</code>, a redirect request will be honoured, e.g. to switch to HTTPS
 	 * @ff.default true
@@ -1031,5 +978,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		this.keystoreConfiguration = keystoreConfiguration;
+	}
+
+	@Override
+	public void setTruststoreConfiguration(TruststoreConfiguration truststoreConfiguration) {
+		this.truststoreConfiguration = truststoreConfiguration;
 	}
 }

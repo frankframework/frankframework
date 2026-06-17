@@ -36,12 +36,11 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
-import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreConfiguration;
-import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.TruststoreConfiguration;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -57,6 +56,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
+	private @Getter TruststoreConfiguration truststoreConfiguration = createTruststoreConfiguration();
 
 	private @Getter FtpType ftpType = FtpType.FTP;
 
@@ -115,16 +115,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 	private @Getter FileType fileType = null;
 	private @Getter boolean passive=true;
-
-	// configuration parameters for SSL Context and SocketFactory
-	private @Getter String truststore = null;
-	private @Getter KeystoreType truststoreType=KeystoreType.JKS;
-	private @Getter String truststoreAuthAlias;
-	private @Getter String truststorePassword = null;
-	private @Getter String trustManagerAlgorithm=null;
-	private @Getter boolean verifyHostname = true;
-	private @Getter boolean allowSelfSignedCertificates = false;
-	private @Getter boolean ignoreCertificateExpiredException = false;
 
 	private FTPClient ftpClient;
 
@@ -319,64 +309,6 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		proxyTransportType = type;
 	}
 
-	/** (ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used. */
-	@Override
-	public void setTruststore(String string) {
-		truststore = string;
-	}
-
-	/** (ftps) Type of truststore
-	 * @ff.default jks
-	 */
-	@Override
-	public void setTruststoreType(KeystoreType value) {
-		truststoreType = value;
-	}
-
-	/** (ftps) Authentication alias used to obtain truststore password */
-	@Override
-	public void setTruststoreAuthAlias(String string) {
-		truststoreAuthAlias = string;
-	}
-
-	/** (ftps) Default password to access truststore */
-	@Override
-	public void setTruststorePassword(String string) {
-		truststorePassword = string;
-	}
-
-	/** (ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm */
-	@Override
-	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		this.trustManagerAlgorithm = trustManagerAlgorithm;
-	}
-
-	/** (ftps) If <code>true</code>, the hostname in the certificate will be checked against the actual hostname of the peer */
-	@Unsafe
-	@Override
-	public void setVerifyHostname(boolean b) {
-		verifyHostname = b;
-	}
-
-	/** (ftps) If <code>true</code>, self signed certificates are accepted
-	 * @ff.default false
-	 */
-	@Unsafe
-	@Override
-	public void setAllowSelfSignedCertificates(boolean b) {
-		allowSelfSignedCertificates = b;
-	}
-
-	/**
-	 * (ftps) If <code>true</code>, CertificateExpiredExceptions are ignored
-	 * @ff.default false
-	 */
-	@Unsafe
-	@Override
-	public void setIgnoreCertificateExpiredException(boolean b) {
-		ignoreCertificateExpiredException = b;
-	}
-
 	/**
 	 * Sets the <code>Data Channel Protection Level</code>.
 	 * @ff.default C
@@ -388,5 +320,10 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	@Override
 	public void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration) {
 		this.keystoreConfiguration = keystoreConfiguration;
+	}
+
+	@Override
+	public void setTruststoreConfiguration(TruststoreConfiguration truststoreConfiguration) {
+		this.truststoreConfiguration = truststoreConfiguration;
 	}
 }

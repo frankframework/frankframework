@@ -20,8 +20,8 @@ import org.frankframework.core.IScopeProvider;
 import org.frankframework.doc.ReferTo;
 
 /**
- * marker interface with default behaviour to set values in the Keystore object. The goal is to only support 'setKeystore' in the future
- * instead of all the ReferTo methods, but for now we want to support both ways of setting the keystore values.
+ * marker interface with default behaviour to set values in the {@link KeystoreConfiguration} object. The goal is to only support 'setKeystoreConfiguration'
+ * in the future instead of all the ReferTo methods, but for now we want to support both ways of setting the keystore values.
  */
 public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 

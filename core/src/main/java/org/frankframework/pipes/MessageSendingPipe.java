@@ -613,7 +613,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	private boolean validResult(Message result) throws IOException {
-		return (!isCheckXmlWellFormed() && !StringUtils.isNotEmpty(getCheckRootTag()))
+		return (!isCheckXmlWellFormed() && StringUtils.isEmpty(getCheckRootTag()))
 				|| XmlUtils.isWellFormed(result.asString(), getCheckRootTag());
 	}
 

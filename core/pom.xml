@@ -557,7 +557,7 @@
 		<dependency>
 			<groupId>com.sun.xml.messaging.saaj</groupId>
 			<artifactId>saaj-impl</artifactId>
-			<version>3.0.5</version>
+			<version>3.0.6</version>
 		</dependency>
 
 		<!-- Upgraded version of the Extended StAX API which does not depend on any StAX API. -->
@@ -570,7 +570,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>7.2.0</version>
+			<version>7.2.1</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>
