@@ -64,18 +64,6 @@ public class DbmsSupportFactory {
 		try {
 			DatabaseMetaData md = connection.getMetaData();
 
-			if (log.isDebugEnabled()) {
-				ResultSet clientInfoProperties = md.getClientInfoProperties();
-				ResultSetMetaData clientInfoPropertiesMetaData = clientInfoProperties.getMetaData();
-				if (clientInfoProperties.isAfterLast()) {
-					log.debug("No client info properties found");
-				} else while(clientInfoProperties.next()) {
-					for (int i = 1; i <= clientInfoPropertiesMetaData.getColumnCount(); ++i) {
-						log.debug("Client info property [{}]=[{}]", clientInfoPropertiesMetaData.getColumnName(i), clientInfoProperties.getString(i));
-					}
-				}
-				log.debug("URL [{}],\n Server supported SQL Keywords: [{}]", md.getURL(), md.getSQLKeywords());
-			}
 			String name = md.getDatabaseProductName();
 			String version = md.getDatabaseProductVersion();
 			Map<String, String> customServerProperties = getCustomServerProperties(name, connection);
@@ -104,7 +92,7 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(String product, String productVersion, @NonNull Map<String, String> customServerProperties) throws DbmsException {
+	private IDbmsSupport getDbmsSupport(String product, String productVersion, @NonNull Map<String, String> customServerProperties) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {
