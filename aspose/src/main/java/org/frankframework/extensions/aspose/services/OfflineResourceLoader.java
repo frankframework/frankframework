@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.services;
 
 import com.aspose.slides.IResourceLoadingArgs;
 import com.aspose.words.ResourceLoadingAction;

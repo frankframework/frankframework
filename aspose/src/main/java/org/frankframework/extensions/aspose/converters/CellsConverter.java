@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,12 +28,12 @@ import com.aspose.cells.Workbook;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 
 @Log4j2
-class CellsConvertor extends AbstractConvertor {
+class CellsConverter extends AbstractConverter {
 
 	private static final MediaType XLS_MEDIA_TYPE = new MediaType("application", "vnd.ms-excel");
 	private static final MediaType XLSX_MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -49,7 +49,7 @@ class CellsConvertor extends AbstractConvertor {
 
 	private final LoadOptions defaultLoadOptions;
 
-	protected CellsConvertor(CisConfiguration configuration) {
+	protected CellsConverter(CisConfiguration configuration) {
 		super(configuration, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
 		defaultLoadOptions = new FontManager(configuration.getFontsDirectory()).getCellsLoadOptions();
 	}

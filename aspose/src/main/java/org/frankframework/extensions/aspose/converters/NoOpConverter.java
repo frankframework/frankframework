@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,17 +25,17 @@ import com.aspose.pdf.Document;
 import com.aspose.pdf.SaveFormat;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 
 /**
- * Converter for a pdf file (no conversion required).
- *
+ * The No-Op converter (no conversion required).
+ * Opens the PDF to verify it can be read (not signed or password-protected).
  */
-public class PdfStandaardConvertor extends AbstractConvertor {
+public class NoOpConverter extends AbstractConverter {
 
-	protected PdfStandaardConvertor(CisConfiguration configuration) {
+	protected NoOpConverter(CisConfiguration configuration) {
 		super(configuration, new MediaType("application", "pdf"));
 	}
 

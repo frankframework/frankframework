@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv;
+package org.frankframework.extensions.aspose.services;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +36,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.extensions.aspose.ConversionOption;
-import org.frankframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
+import org.frankframework.extensions.aspose.converters.PdfAttachmentUtil;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.util.XmlBuilder;

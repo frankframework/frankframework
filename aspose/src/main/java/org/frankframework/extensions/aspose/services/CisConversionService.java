@@ -13,15 +13,15 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv;
+package org.frankframework.extensions.aspose.services;
 
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.services.conv.impl.convertors.Convertor;
-import org.frankframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
+import org.frankframework.extensions.aspose.converters.Converter;
+import org.frankframework.extensions.aspose.converters.ConverterFactory;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.MessageUtils;
@@ -31,10 +31,10 @@ import org.frankframework.util.MessageUtils;
  */
 @Log4j2
 public class CisConversionService {
-	private final ConvertorFactory convertorFactory;
+	private final ConverterFactory convertorFactory;
 
 	public CisConversionService(CisConfiguration configuration) {
-		convertorFactory = new ConvertorFactory(configuration);
+		convertorFactory = new ConverterFactory(configuration);
 	}
 
 	public CisConversionResult convertToPdf(Message message) {
@@ -45,7 +45,7 @@ public class CisConversionService {
 			return CisConversionResult.createPasswordFailureResult(filename, mediaType);
 		} else {
 			// Get the converter for the given mediatype.
-			Convertor convertor = convertorFactory.getConvertor(mediaType);
+			Converter convertor = convertorFactory.getConvertor(mediaType);
 			if (convertor == null) {
 				// Conversion not supported.
 				String errorMessage = "Omzetten naar PDF mislukt! Reden: bestandstype wordt niet ondersteund (mediaType: "+ mediaType + ")";
@@ -56,7 +56,7 @@ public class CisConversionService {
 				result.setDocumentName(filename);
 
 				long startTime = System.currentTimeMillis();
-				// Convertor found, convert the file
+				// Converter found, convert the file
 				try {
 					convertor.convertToPdf(result, mediaType, message);
 					log.debug("Convert (in {} msec): mediatype: {}, filename: {}", System.currentTimeMillis() - startTime, mediaType, filename);

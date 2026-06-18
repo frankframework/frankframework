@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,8 +46,9 @@ import com.aspose.words.Shape;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
+import org.frankframework.extensions.aspose.services.CisConversionResult;
+import org.frankframework.extensions.aspose.services.OfflineResourceLoader;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
@@ -55,7 +56,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 
 @Log4j2
-class MailConvertor extends AbstractConvertor {
+class MailConverter extends AbstractConverter {
 
 	private static final float MAX_IMAGE_WIDTH_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
 	private static final float MAX_IMAGE_HEIGHT_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
@@ -85,7 +86,7 @@ class MailConvertor extends AbstractConvertor {
 		options.setPreserveOriginalDate(true);
 	}
 
-	protected MailConvertor(CisConfiguration configuration) {
+	protected MailConverter(CisConfiguration configuration) {
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 

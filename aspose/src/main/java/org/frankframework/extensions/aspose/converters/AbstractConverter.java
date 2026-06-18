@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,25 +25,25 @@ import org.springframework.util.MimeType;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
-import org.frankframework.extensions.aspose.services.conv.InvalidPasswordException;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
+import org.frankframework.extensions.aspose.services.CisConversionResult;
+import org.frankframework.extensions.aspose.services.InvalidPasswordException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 
 @Log4j2
-abstract class AbstractConvertor implements Convertor {
+abstract class AbstractConverter implements Converter {
 	protected static final MimeType PDF_MIMETYPE = new MediaType("application", "pdf");
 
 	private final Set<MediaType> supportedMediaTypes;
 	protected CisConfiguration configuration;
 
-	protected AbstractConvertor(CisConfiguration configuration, Set<MediaType> mediaTypes) {
+	protected AbstractConverter(CisConfiguration configuration, Set<MediaType> mediaTypes) {
 		this.configuration = configuration;
 		this.supportedMediaTypes = Collections.unmodifiableSet(mediaTypes);
 	}
 
-	protected AbstractConvertor(CisConfiguration configuration, MediaType... args) {
+	protected AbstractConverter(CisConfiguration configuration, MediaType... args) {
 		this(configuration, new HashSet<>(Arrays.asList(args)));
 	}
 

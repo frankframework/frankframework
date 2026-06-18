@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,32 +22,32 @@ import org.springframework.http.MediaType;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
 
 /**
- * Convertor factory instantiates all convertor types and keeps them in a map.
+ * Converter factory instantiates all convertor types and keeps them in a map.
  *
  * @author Gerard van der Hoorn
  *
  */
 @Log4j2
-public class ConvertorFactory {
+public class ConverterFactory {
 
-	private final Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
+	private final Map<MediaType, Converter> convertorLookupMap = new HashMap<>();
 
-	public ConvertorFactory(CisConfiguration configuration) {
-		addToConvertorLookupMap(new MailConvertor(configuration));
-		addToConvertorLookupMap(new PdfStandaardConvertor(configuration));
-		addToConvertorLookupMap(new PdfConvertor(configuration));
-		addToConvertorLookupMap(new PdfImageConvertor(configuration));
-		addToConvertorLookupMap(new WordConvertor(configuration));
-		addToConvertorLookupMap(new CellsConvertor(configuration));
-		addToConvertorLookupMap(new SlidesConvertor(configuration));
+	public ConverterFactory(CisConfiguration configuration) {
+		addToConvertorLookupMap(new MailConverter(configuration));
+		addToConvertorLookupMap(new NoOpConverter(configuration));
+		addToConvertorLookupMap(new XpsConverter(configuration));
+		addToConvertorLookupMap(new ImageConverter(configuration));
+		addToConvertorLookupMap(new WordConverter(configuration));
+		addToConvertorLookupMap(new CellsConverter(configuration));
+		addToConvertorLookupMap(new SlidesConverter(configuration));
 	}
 
-	private void addToConvertorLookupMap(Convertor convertor) {
+	private void addToConvertorLookupMap(Converter convertor) {
 		for (MediaType mediaTypeSupported : convertor.getSupportedMediaTypes()) {
-			Convertor oldConvertor = convertorLookupMap.put(mediaTypeSupported, convertor);
+			Converter oldConvertor = convertorLookupMap.put(mediaTypeSupported, convertor);
 			if (oldConvertor != null) {
 				log.warn("more than one convertor found for [{}]", mediaTypeSupported);
 			}
@@ -57,7 +57,7 @@ public class ConvertorFactory {
 	/**
 	 * Return <code>null</code> when no converter is found.
 	 */
-	public Convertor getConvertor(MediaType mediaType) {
+	public Converter getConvertor(MediaType mediaType) {
 		return convertorLookupMap.get(mediaType);
 	}
 }

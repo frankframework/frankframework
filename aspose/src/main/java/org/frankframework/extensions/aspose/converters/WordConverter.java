@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,7 +35,8 @@ import com.aspose.words.SaveOptions;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
+import org.frankframework.extensions.aspose.services.OfflineResourceLoader;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 
@@ -45,7 +46,7 @@ import org.frankframework.stream.MessageBuilder;
  *
  */
 @Log4j2
-class WordConvertor extends AbstractConvertor {
+class WordConverter extends AbstractConverter {
 	private static final Map<MediaType, Supplier<LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
@@ -71,7 +72,7 @@ class WordConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected WordConvertor(CisConfiguration cisConfiguration) {
+	protected WordConverter(CisConfiguration cisConfiguration) {
 		super(cisConfiguration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 

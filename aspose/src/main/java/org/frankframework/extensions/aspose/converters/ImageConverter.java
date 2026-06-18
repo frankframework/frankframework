@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -36,7 +36,7 @@ import com.aspose.pdf.LoadOptions;
 import com.aspose.pdf.Page;
 import com.aspose.pdf.SaveFormat;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.LogUtil;
@@ -45,9 +45,9 @@ import org.frankframework.util.LogUtil;
  * Converts the files which are required and supported by the Aspose image library.
  * @author Gerard van der Hoorn
  */
-public class PdfImageConvertor extends AbstractConvertor {
+public class ImageConverter extends AbstractConverter {
 
-	private static final Logger LOGGER = LogUtil.getLogger(PdfImageConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(ImageConverter.class);
 
 	private static final float NO_SCALE_FACTOR = 1.0f;
 	private static final int NUMBER_OF_MARGINS = 2;
@@ -72,7 +72,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected PdfImageConvertor(CisConfiguration configuration) {
+	protected ImageConverter(CisConfiguration configuration) {
 		// Give the supported media types.
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
