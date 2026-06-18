@@ -29,6 +29,23 @@ public class MessageBuilderTest {
 	}
 
 	@Test
+	public void testMessageContext() throws Exception {
+		MessageBuilder msgBuilder = new MessageBuilder();
+		try (OutputStream out = msgBuilder.asOutputStream()) {
+			out.write("tralala".getBytes());
+		}
+
+		MessageContext context = new MessageContext();
+		context.withName("test-name");
+		context.withMimeType(MediaType.APPLICATION_OCTET_STREAM);
+		Message result = msgBuilder.build(context);
+
+		assertEquals("tralala", result.asString());
+		assertEquals("test-name", result.getContext().get(MessageContext.METADATA_NAME));
+		assertEquals(MediaType.APPLICATION_OCTET_STREAM, result.getContext().get(MessageContext.METADATA_MIMETYPE));
+	}
+
+	@Test
 	public void testWriter() throws Exception {
 		MessageBuilder msgBuilder = new MessageBuilder();
 		try (Writer writer = msgBuilder.asWriter()) {
