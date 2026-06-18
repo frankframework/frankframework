@@ -31,20 +31,28 @@ public class FindAvailableDataSources {
 		MariaDB,
 		PostgreSQL("PostgreSQL-xa");
 
-		private final String dataSourceName;
+		private final String xaDataSourceName;
 		TestDatasource() {
 			this(null);
 		}
 		TestDatasource(String xaDataSource) {
-			dataSourceName = xaDataSource;
+			xaDataSourceName = xaDataSource;
 		}
 
+		public static String getDataSourceResourceName(String dataSourceName) {
+			try {
+				return TestDatasource.valueOf(dataSourceName).getDataSourceName();
+			} catch (IllegalArgumentException e) {
+				// Was not a valid Enum name but can be a custom datasource
+				return JDBC_RESOURCE_PREFIX + dataSourceName;
+			}
+		}
 		public String getDataSourceName() {
 			return JDBC_RESOURCE_PREFIX + this.name();
 		}
 
 		public String getXaDataSourceName() {
-			return JDBC_RESOURCE_PREFIX + (dataSourceName != null ? dataSourceName : this.name());
+			return JDBC_RESOURCE_PREFIX + (xaDataSourceName != null ? xaDataSourceName : this.name());
 		}
 	}
 
