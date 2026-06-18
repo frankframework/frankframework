@@ -14,7 +14,6 @@ import { CommonModule } from '@angular/common';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { WebStorageService } from '../../services/web-storage.service';
-import { ComboboxComponent } from '../combobox/combobox.component';
 import { DtContentDirective } from './dt-content.directive';
 import { TruncatePipe } from '../../pipes/truncate.pipe';
 import { ToDateDirective } from '../to-date.directive';
@@ -63,7 +62,14 @@ export type DataTableServerResponseInfo<T> = {
 
 @Component({
   selector: 'app-datatable',
-  imports: [CommonModule, FormsModule, CdkTableModule, TruncatePipe, ToDateDirective, ThSortableDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CdkTableModule,
+    TruncatePipe,
+    ToDateDirective,
+    ThSortableDirective,
+  ],
   templateUrl: './datatable.component.html',
   styleUrl: './datatable.component.scss',
 })
@@ -79,6 +85,8 @@ export class DatatableComponent<T> implements OnInit, AfterViewInit, OnDestroy {
   protected totalEntries = 0;
   protected minPageEntry = 0;
   protected maxPageEntry = 0;
+  protected showjumpToPage = false;
+  protected jumpToPageIndex = 1;
 
   private datasourceSubscription: Subscription = new Subscription();
   private originalData: T[] | null = null;
@@ -136,6 +144,19 @@ export class DatatableComponent<T> implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.originalData === null) this.originalData = this.datasource.data;
     this.datasource.data = basicAnyValueTableSort(this.originalData, this.sortableHeaders, event);
+  }
+
+  protected jumpToPage(event?: KeyboardEvent): void {
+    if ((event && event.key !== 'Enter') || this.jumpToPageIndex === this.datasource.currentPage) return;
+    this.updatePage(this.jumpToPageIndex);
+    this.toggleJumpToPage();
+  }
+
+  protected toggleJumpToPage(): void {
+    if (!this.showjumpToPage) {
+      this.jumpToPageIndex = this.datasource.currentPage;
+    }
+    this.showjumpToPage =!this.showjumpToPage;
   }
 
   protected getCachedSize(): number {
