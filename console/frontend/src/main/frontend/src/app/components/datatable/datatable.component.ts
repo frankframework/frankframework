@@ -301,16 +301,27 @@ export class DataTableDataSource<T> extends DataSource<T> {
   }
 
   private paginateData(data: T[]): T[] {
-    const currentStart = (this._currentPage - 1) * this.options.size;
-    const paginatedData = data.slice(currentStart, currentStart + this.options.size);
-    this._renderData.next(paginatedData);
+    if (data.length > 0) {
+      const currentStart = (this._currentPage - 1) * this.options.size;
+      const paginatedData = data.slice(currentStart, currentStart + this.options.size);
+      this._renderData.next(paginatedData);
+      this._entriesInfo.next({
+        minPageEntry: (this.currentPage - 1) * this.options.size + 1,
+        maxPageEntry: Math.min(this.currentPage * this.options.size, this._filteredData.length),
+        totalFilteredEntries: this._filteredData.length,
+        totalEntries: this.data.length,
+      });
+      return paginatedData;
+    }
+
+    this._renderData.next(data);
     this._entriesInfo.next({
-      minPageEntry: (this.currentPage - 1) * this.options.size + 1,
-      maxPageEntry: Math.min(this.currentPage * this.options.size, this._filteredData.length),
-      totalFilteredEntries: this._filteredData.length,
-      totalEntries: this.data.length,
+      minPageEntry: 0,
+      maxPageEntry: 0,
+      totalFilteredEntries: 0,
+      totalEntries: 0,
     });
-    return paginatedData;
+    return data;
   }
 
   private filterData(data: T[]): T[] {
