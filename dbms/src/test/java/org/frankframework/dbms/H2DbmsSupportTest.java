@@ -2,25 +2,17 @@ package org.frankframework.dbms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import java.util.stream.Stream;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
+import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class H2DbmsSupportTest {
-
-	static Stream<Arguments> testCustomSqlDialectFromMode() {
-		return Stream.of(
-				arguments("MSSQLServer", "Microsoft SQL Server"),
-				arguments("Oracle", "Oracle"),
-				arguments("", "H2"),
-				arguments("LEGACY", "H2")
-		);
-	}
 
 	@Test
 	void testConvertQueryOracleToH2() throws JdbcException {
@@ -46,18 +38,31 @@ class H2DbmsSupportTest {
 		assertEquals(expected, translatedQuery);
 	}
 
-	@ParameterizedTest
-	@MethodSource
-	void testCustomSqlDialectFromMode(String mode, String expected) {
-		// Act
-		String targetDialect = H2DbmsSupport.getDialectFromMode(mode, "H2");
-
-		// Assert
-		assertEquals(expected, targetDialect);
-	}
-
 	@Test
 	void testCannotCreateWithoutParams() {
 		assertThrows(IllegalStateException.class, H2DbmsSupport::new);
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			// Since a connection is required for these tests, all datasources are for in-memory H2
+			"'jdbc:h2:mem:test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;', H2",
+			"'jdbc:h2:mem:test_db_mssql;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;MODE=MSSQLServer', 'Microsoft SQL Server'",
+			"'jdbc:h2:mem:test_db_ora;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;MODE=Oracle', Oracle"
+	})
+	void testCreateInstanceWithConnection(String dataSourceUrl, String expectedSqlDialect) throws SQLException {
+		// Arrange
+		JdbcDataSource dataSource = new JdbcDataSource();
+		dataSource.setUrl(dataSourceUrl);
+		try (Connection connection = dataSource.getConnection()) {
+			DatabaseMetaData metaData = connection.getMetaData();
+
+			// Act
+			IDbmsSupport dbmsSupport = new H2DbmsSupport(metaData.getDatabaseProductVersion(), connection);
+
+			// Assert
+			assertEquals(Dbms.H2, dbmsSupport.getDbms());
+			assertEquals(expectedSqlDialect, dbmsSupport.getTargetSqlDialect());
+		}
 	}
 }

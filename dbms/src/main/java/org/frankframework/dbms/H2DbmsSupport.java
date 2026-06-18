@@ -65,7 +65,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
-	static @NonNull String getDialectFromMode(@Nullable String mode, @NonNull String defaultDialect) {
+	private static @NonNull String getDialectFromMode(@Nullable String mode, @NonNull String defaultDialect) {
 		if (StringUtils.isBlank(mode)) {
 			return defaultDialect;
 		}
