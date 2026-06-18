@@ -1,0 +1,11 @@
+<main conversionOption="0" convertedDocument="IGNORE" documentName="nested MSG with Excel file-Evaluation copy is limited to 3 attachments.(Aspose.Email Evaluation)" mediaType="application/vnd.ms-outlook" numberOfPages="1" sessionKey="pdfConversionResultFiles1">
+	<attachments>
+		<attachment conversionOption="0" documentName="ATTR3FVJ.pdf" mediaType="application/pdf" numberOfPages="15"/>
+		<attachment conversionOption="0" documentName="mail(Aspose.Email Evaluation)" mediaType="application/vnd.ms-outlook" numberOfPages="1">
+			<attachment conversionOption="0" documentName="0to5kmin7w.xls" mediaType="application/vnd.ms-excel" numberOfPages="11"/>
+		</attachment>
+		<attachment conversionOption="0" documentName="MailwithPdf(Aspose.Email Evaluation)" mediaType="application/vnd.ms-outlook" numberOfPages="1">
+			<attachment conversionOption="0" documentName="ATTR3FVJ.pdf" mediaType="application/pdf" numberOfPages="15"/>
+		</attachment>
+	</attachments>
+</main>

@@ -116,10 +116,11 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		super.tearDown();
 	}
 
-	public void expectSuccessfulConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {
-		String documentMetadata = executeConversion(pipeName, fileToConvert);
+	public void expectSuccessfulConversion(String fileToConvert, String metadataXml, String expectedFile) throws Exception {
+		String documentMetadata = executeConversion(fileToConvert);
 		String expected = TestFileUtils.getTestFile(metadataXml);
 
+		log.debug("using filelocation: {}", pdfOutputLocation);
 		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(documentMetadata), true);
 
 		// Get document for path
@@ -207,15 +208,15 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return sftpTestFS.getAbsolutePath();
 	}
 
-	public void expectUnSuccessfulConversion(String name, String fileToConvert, String fileContaingExpectedXml) throws Exception {
-		String actualXml = executeConversion(name, fileToConvert);
+	public void expectUnSuccessfulConversion(String fileToConvert, String fileContaingExpectedXml) throws Exception {
+		String actualXml = executeConversion(fileToConvert);
 		String expected = TestFileUtils.getTestFile(fileContaingExpectedXml);
 
 		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(actualXml), true);
 	}
 
-	public String executeConversion(String pipeName, String fileToConvert) throws Exception {
-		pipe.setName(pipeName);
+	public String executeConversion(String fileToConvert) throws Exception {
+		pipe.setName("dummy-name");
 		pipe.setAction(DocumentAction.CONVERT);
 		pipe.configure();
 		pipe.start();
@@ -256,7 +257,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void bmp2Pdf() throws Exception {
-		expectSuccessfulConversion("Bmp2Pdf", "/PdfPipe/bmp.bmp", "/PdfPipe/xml-results/bmp.xml", "/PdfPipe/results/bmp.pdf");
+		expectSuccessfulConversion("/PdfPipe/bmp.bmp", "/PdfPipe/xml-results/bmp.xml", "/PdfPipe/results/bmp.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -265,7 +266,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void docWord2016Macro2Pdf() throws Exception {
-		expectSuccessfulConversion("DocWord2016Macro2Pdf", "/PdfPipe/docm-word-2016-macro.docm", "/PdfPipe/xml-results/docm-word-2016-macro.xml", "/PdfPipe/results/docm-word-2016-macro.pdf");
+		expectSuccessfulConversion("/PdfPipe/docm-word-2016-macro.docm", "/PdfPipe/xml-results/docm-word-2016-macro.xml", "/PdfPipe/results/docm-word-2016-macro.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -274,7 +275,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void docWord20032Pdf() throws Exception {
-		expectSuccessfulConversion("DocWord20032Pdf", "/PdfPipe/doc-word-2003.doc", "/PdfPipe/xml-results/doc-word-2003.xml", "/PdfPipe/results/doc-word-2003.pdf");
+		expectSuccessfulConversion("/PdfPipe/doc-word-2003.doc", "/PdfPipe/xml-results/doc-word-2003.xml", "/PdfPipe/results/doc-word-2003.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -283,7 +284,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void dot2Pdf() throws Exception {
-		expectSuccessfulConversion("Dot2Pdf", "/PdfPipe/dot.dot", "/PdfPipe/xml-results/dot.xml", "/PdfPipe/results/dot.pdf");
+		expectSuccessfulConversion("/PdfPipe/dot.dot", "/PdfPipe/xml-results/dot.xml", "/PdfPipe/results/dot.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -292,7 +293,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emlFromGroupmailbox2Pdf() throws Exception {
-		expectSuccessfulConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
+		expectSuccessfulConversion("/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -301,7 +302,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void gif2Pdf() throws Exception {
-		expectSuccessfulConversion("Gif2Pdf", "/PdfPipe/gif.gif", "/PdfPipe/xml-results/gif.xml", "/PdfPipe/results/gif.pdf");
+		expectSuccessfulConversion("/PdfPipe/gif.gif", "/PdfPipe/xml-results/gif.xml", "/PdfPipe/results/gif.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -310,7 +311,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void htm2Pdf() throws Exception {
-		expectSuccessfulConversion("Htm2Pdf", "/PdfPipe/htm.htm", "/PdfPipe/xml-results/htm.xml", "/PdfPipe/results/htm.pdf");
+		expectSuccessfulConversion("/PdfPipe/htm.htm", "/PdfPipe/xml-results/htm.xml", "/PdfPipe/results/htm.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -319,7 +320,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void html2Pdf() throws Exception {
-		expectSuccessfulConversion("Html2Pdf", "/PdfPipe/html.html", "/PdfPipe/xml-results/html.xml", "/PdfPipe/results/html.pdf");
+		expectSuccessfulConversion("/PdfPipe/html.html", "/PdfPipe/xml-results/html.xml", "/PdfPipe/results/html.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -328,7 +329,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void jpeg2Pdf() throws Exception {
-		expectSuccessfulConversion("Jpeg2Pdf", "/PdfPipe/jpeg.jpeg", "/PdfPipe/xml-results/jpeg.xml", "/PdfPipe/results/jpeg.pdf");
+		expectSuccessfulConversion("/PdfPipe/jpeg.jpeg", "/PdfPipe/xml-results/jpeg.xml", "/PdfPipe/results/jpeg.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -337,7 +338,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void jpg2Pdf() throws Exception {
-		expectSuccessfulConversion("Jpg2Pdf", "/PdfPipe/jpg.jpg", "/PdfPipe/xml-results/jpg.xml", "/PdfPipe/results/jpg.pdf");
+		expectSuccessfulConversion("/PdfPipe/jpg.jpg", "/PdfPipe/xml-results/jpg.xml", "/PdfPipe/results/jpg.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -346,7 +347,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void log2Pdf() throws Exception {
-		expectSuccessfulConversion("Log2Pdf", "/PdfPipe/log.log", "/PdfPipe/xml-results/log.xml", "/PdfPipe/results/log.pdf");
+		expectSuccessfulConversion("/PdfPipe/log.log", "/PdfPipe/xml-results/log.xml", "/PdfPipe/results/log.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -355,7 +356,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void png2Pdf() throws Exception {
-		expectSuccessfulConversion("Png2Pdf", "/PdfPipe/png.png", "/PdfPipe/xml-results/png.xml", "/PdfPipe/results/png.pdf");
+		expectSuccessfulConversion("/PdfPipe/png.png", "/PdfPipe/xml-results/png.xml", "/PdfPipe/results/png.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -364,7 +365,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void ppt2Pdf() throws Exception {
-		expectSuccessfulConversion("Ppt2Pdf", "/PdfPipe/ppt.ppt", "/PdfPipe/xml-results/ppt.xml", "/PdfPipe/results/ppt.pdf");
+		expectSuccessfulConversion("/PdfPipe/ppt.ppt", "/PdfPipe/xml-results/ppt.xml", "/PdfPipe/results/ppt.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -373,7 +374,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void rtf2Pdf() throws Exception {
-		expectSuccessfulConversion("Rtf2Pdf", "/PdfPipe/rtf.rtf", "/PdfPipe/xml-results/rtf.xml", "/PdfPipe/results/rtf.pdf");
+		expectSuccessfulConversion("/PdfPipe/rtf.rtf", "/PdfPipe/xml-results/rtf.xml", "/PdfPipe/results/rtf.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -382,7 +383,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void tiff2Pdf() throws Exception {
-		expectSuccessfulConversion("Tiff2Pdf", "/PdfPipe/tiff.tiff", "/PdfPipe/xml-results/tiff.xml", "/PdfPipe/results/tiff.pdf");
+		expectSuccessfulConversion("/PdfPipe/tiff.tiff", "/PdfPipe/xml-results/tiff.xml", "/PdfPipe/results/tiff.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -391,7 +392,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void multipageTiff2Pdf() throws Exception {
-		expectSuccessfulConversion("Tiff2Pdf", "/PdfPipe/multipage_tiff.tif", "/PdfPipe/xml-results/multipage_tif.xml", "/PdfPipe/results/multipage_tif.pdf");
+		expectSuccessfulConversion("/PdfPipe/multipage_tiff.tif", "/PdfPipe/xml-results/multipage_tif.xml", "/PdfPipe/results/multipage_tif.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -400,7 +401,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void txt2Pdf() throws Exception {
-		expectSuccessfulConversion("Txt2Pdf", "/PdfPipe/txt.txt", "/PdfPipe/xml-results/txt.xml", "/PdfPipe/results/txt.pdf");
+		expectSuccessfulConversion("/PdfPipe/txt.txt", "/PdfPipe/xml-results/txt.xml", "/PdfPipe/results/txt.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -409,7 +410,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void zip2Pdf() throws Exception {
-		expectUnSuccessfulConversion("Zip2Pdf", "/PdfPipe/PdfPipe.zip", "/PdfPipe/xml-results/zip.xml");
+		expectUnSuccessfulConversion("/PdfPipe/PdfPipe.zip", "/PdfPipe/xml-results/zip.xml");
 		assertTrue(session.containsKey("documents"));
 		assertFalse(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -418,7 +419,16 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emailWithAttachments() throws Exception {
-		expectSuccessfulConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
+		expectSuccessfulConversion("/PdfPipe/MailWithAttachments/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
+	}
+
+	@Test
+	public void mailWithSubAttachments() throws Exception {
+		expectSuccessfulConversion("/PdfPipe/MailWithAttachments/mailWithSubAttachments.msg", "/PdfPipe/xml-results/mailWithSubAttachments.xml", "/PdfPipe/results/mailWithSubAttachments.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -427,7 +437,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void excel2pdf() throws Exception {
-		expectSuccessfulConversion("xls2pdf", "/PdfPipe/excel.xls", "/PdfPipe/xml-results/xls.xml", "/PdfPipe/results/excel.pdf");
+		expectSuccessfulConversion("/PdfPipe/excel.xls", "/PdfPipe/xml-results/xls.xml", "/PdfPipe/results/excel.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -436,7 +446,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void xslx2pdf() throws Exception {
-		expectSuccessfulConversion("xslx2pdf", "/PdfPipe/fonttest.xlsx", "/PdfPipe/xml-results/xlsx.xml", "/PdfPipe/results/fonttest.pdf");
+		expectSuccessfulConversion("/PdfPipe/fonttest.xlsx", "/PdfPipe/xml-results/xlsx.xml", "/PdfPipe/results/fonttest.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -445,7 +455,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void fontTestEmail() throws Exception {
-		expectSuccessfulConversion("fontTestEmail", "/PdfPipe/fonttest/fontTestEmail.msg", "/PdfPipe/xml-results/fontTestEmail.xml", "/PdfPipe/results/fontTestEmail.pdf");
+		expectSuccessfulConversion("/PdfPipe/fonttest/fontTestEmail.msg", "/PdfPipe/xml-results/fontTestEmail.xml", "/PdfPipe/results/fontTestEmail.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -454,7 +464,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void fontTestSlides() throws Exception {
-		expectSuccessfulConversion("fontTestSlides", "/PdfPipe/fonttest/fontTestSlides.msg", "/PdfPipe/xml-results/fontTestSlides.xml", "/PdfPipe/results/fontTestSlides.pdf");
+		expectSuccessfulConversion("/PdfPipe/fonttest/fontTestSlides.msg", "/PdfPipe/xml-results/fontTestSlides.xml", "/PdfPipe/results/fontTestSlides.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -463,7 +473,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void fontTestWord() throws Exception {
-		expectSuccessfulConversion("fontTestWord", "/PdfPipe/fonttest/fontTestWord.msg", "/PdfPipe/xml-results/fontTestWord.xml", "/PdfPipe/results/fontTestWord.pdf");
+		expectSuccessfulConversion("/PdfPipe/fonttest/fontTestWord.msg", "/PdfPipe/xml-results/fontTestWord.xml", "/PdfPipe/results/fontTestWord.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -472,7 +482,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithExcelAttachment() throws Exception {
-		expectSuccessfulConversion("mailWithExcelAttachment", "/PdfPipe/MailWithAttachments/mailWithExcelAttachment.msg", "/PdfPipe/xml-results/mailWithExcelAttachment.xml", "/PdfPipe/results/mailWithExcelAttachment.pdf");
+		expectSuccessfulConversion("/PdfPipe/MailWithAttachments/mailWithExcelAttachment.msg", "/PdfPipe/xml-results/mailWithExcelAttachment.xml", "/PdfPipe/results/mailWithExcelAttachment.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -481,7 +491,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithImage() throws Exception {
-		expectSuccessfulConversion("mailWithImage", "/PdfPipe/MailWithAttachments/mailWithImage.msg", "/PdfPipe/xml-results/mailWithImage.xml", "/PdfPipe/results/mailWithImage.pdf");
+		expectSuccessfulConversion("/PdfPipe/MailWithAttachments/mailWithImage.msg", "/PdfPipe/xml-results/mailWithImage.xml", "/PdfPipe/results/mailWithImage.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -490,7 +500,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithLargeImage() throws Exception {
-		expectSuccessfulConversion("mailWithLargeImage", "/PdfPipe/aspect-ratio/aspect-ratio-test.msg", "/PdfPipe/xml-results/mail-with-large-image.xml", "/PdfPipe/results/mailWithLargeImage.pdf");
+		expectSuccessfulConversion("/PdfPipe/aspect-ratio/aspect-ratio-test.msg", "/PdfPipe/xml-results/mail-with-large-image.xml", "/PdfPipe/results/mailWithLargeImage.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -499,7 +509,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithSmallImage() throws Exception {
-		expectSuccessfulConversion("mailWithSmallImage", "/PdfPipe/aspect-ratio/mailWithSmallImage.msg", "/PdfPipe/xml-results/mailWithSmallImage.xml", "/PdfPipe/results/mailWithSmallImage.pdf");
+		expectSuccessfulConversion("/PdfPipe/aspect-ratio/mailWithSmallImage.msg", "/PdfPipe/xml-results/mailWithSmallImage.xml", "/PdfPipe/results/mailWithSmallImage.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -508,7 +518,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithPdfAttachment() throws Exception {
-		expectSuccessfulConversion("mailWithPdfAttachment", "/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");
+		expectSuccessfulConversion("/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -517,7 +527,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithWordAttachment() throws Exception {
-		expectSuccessfulConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+		expectSuccessfulConversion("/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -528,7 +538,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void mailWithAttachmentSaveSeparateFiles() throws Exception {
 		pipe.setSaveSeparate(true);
 
-		expectSuccessfulConversion("mailWithAttachmentSaveSeparateFiles", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachmentSaveSeparate.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+		expectSuccessfulConversion("/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachmentSaveSeparate.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
@@ -543,7 +553,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.setConversionResultDocumentSessionKey("output");
 		pipe.setConversionResultFilesSessionKey("pdf");
 
-		expectSuccessfulConversion("mailWithAttachmentDifferentSessionKeyNames", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithAttachmentDifferentSessionKeys.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+		expectSuccessfulConversion("/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithAttachmentDifferentSessionKeys.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 
 		assertFalse(session.containsKey("documents"));
 		assertFalse(session.containsKey("pdfConversionResultFiles1"));
@@ -637,7 +647,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	@Test
 	@DisplayName("Expect successful conversion when providing unsigned PDF")
 	public void unsignedPdf() throws Exception {
-		expectSuccessfulConversion("unsignedPdf", "/PdfPipe/unsigned.pdf", "/PdfPipe/xml-results/pdf.xml", "/PdfPipe/results/unsigned.pdf");
+		expectSuccessfulConversion("/PdfPipe/unsigned.pdf", "/PdfPipe/xml-results/pdf.xml", "/PdfPipe/results/unsigned.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -647,7 +657,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	@Test
 	@DisplayName("Expect successful conversion when providing signed PDF")
 	public void signedPdf() throws Exception {
-		expectSuccessfulConversion("SignedPdf", "/PdfPipe/signed.pdf", "/PdfPipe/xml-results/signed_pdf.xml", "/PdfPipe/results/signed.pdf");
+		expectSuccessfulConversion("/PdfPipe/signed.pdf", "/PdfPipe/xml-results/signed_pdf.xml", "/PdfPipe/results/signed.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
