@@ -128,6 +128,7 @@ class MailConvertor extends AbstractConvertor {
 
 				// Convert the attachment.
 				Message attachmentMsg = attachmentToMessage(attachment);
+
 				log.debug("convert attachment [{}]", attachment);
 				result.addAttachment(attachmentMsg);
 			}
@@ -135,7 +136,7 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	protected Message convert(MediaType mediaType, Message file) throws Exception {
+	protected Message convert(MediaType mediaType, Message message) throws Exception {
 		// Load the stream in Word document
 		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
 		loadOptions.setLoadFormat(LoadFormat.MHTML);
@@ -144,7 +145,7 @@ class MailConvertor extends AbstractConvertor {
 			loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 		}
 
-		try(InputStream fis = file.asInputStream()) {
+		try(InputStream fis = message.asInputStream()) {
 			Document doc = new Document(fis, loadOptions);
 			new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
 			resizeInlineImages(doc);
@@ -199,6 +200,14 @@ class MailConvertor extends AbstractConvertor {
 		MessageContext context = new MessageContext()
 			.withCharset(attachment.getNameEncoding())
 			.withName(segmentFilename);
+
+		if (attachment.getContentType() != null) {
+			MediaType mimeType = MediaType.parseMediaType(attachment.getContentType().getMediaType());
+			if (!mimeType.equalsTypeAndSubtype(MediaType.APPLICATION_OCTET_STREAM)) {
+				// Only set the MimeType when we actually know it...
+				context.withMimeType(mimeType);
+			}
+		}
 
 		return new Message(attachment.getContentStream(), context);
 	}

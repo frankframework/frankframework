@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2026 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.extensions.aspose.services.conv.InvalidPasswordException;
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 
 @Log4j2
 abstract class AbstractConvertor implements Convertor {
@@ -89,9 +90,9 @@ abstract class AbstractConvertor implements Convertor {
 		checkForSupportedMediaType(mediaType);
 
 		try {
-			log.debug("Converting [{}] to PDF", message);
+			log.debug("converting [{}] to PDF using converter [{}]", () -> message, () -> ClassUtils.nameOf(this));
 			result.setMessage(convert(mediaType, message));
-			log.debug("Converting [{}] to file finished", message);
+			log.trace("converting [{}] to file finished", message);
 		} catch (Exception e) {
 			if (isPasswordException(e)) {
 				throw new InvalidPasswordException(e);

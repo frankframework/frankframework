@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 
@@ -33,6 +34,7 @@ import com.aspose.pdf.exceptions.InvalidPasswordException;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.ClassUtils;
 
 /**
@@ -74,6 +76,12 @@ public class PdfConvertor extends AbstractConvertor {
 
 			Message result = messageBuilder.build();
 			result.getContext().withMimeType(PDF_MIMETYPE).with("Pdf.Pages", numberOfPages);
+
+			String originalName = (String) message.getContext().get(MessageContext.METADATA_NAME);
+			if (StringUtils.isNotEmpty(originalName)) {
+				result.getContext().withName(originalName);
+			}
+
 			return result;
 		}
 	}

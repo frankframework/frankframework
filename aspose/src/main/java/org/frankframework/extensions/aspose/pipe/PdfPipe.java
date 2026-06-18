@@ -17,16 +17,11 @@ package org.frankframework.extensions.aspose.pipe;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
-
-import com.aspose.pdf.FileSpecification;
-import com.aspose.pdf.PageMode;
 
 import lombok.Getter;
 
@@ -45,7 +40,6 @@ import org.frankframework.extensions.aspose.services.conv.CisConversionService;
 import org.frankframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlBuilder;
@@ -165,7 +159,9 @@ public class PdfPipe extends FixedForwardPipe {
 
 	private Message handleAttachments(CisConversionResult result, PipeLineSession session) throws IOException {
 		if (!result.isConversionSuccessful()) {
-			return result.toXML().asMessage();
+			XmlBuilder xmlResult = new XmlBuilder("main");
+			result.toXML(xmlResult);
+			return xmlResult.asMessage();
 		}
 
 		AtomicInteger index = new AtomicInteger(0);
@@ -173,50 +169,48 @@ public class PdfPipe extends FixedForwardPipe {
 		String sessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
 		result.setResultSessionKey(sessionKey);
 
-		XmlBuilder xmlResult = result.toXML();
+		XmlBuilder xmlResult = new XmlBuilder("main");
 		if (!result.getAttachments().isEmpty()) {
 			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
-			try (InputStream is = result.rawMessage().asInputStream(); com.aspose.pdf.Document pdfDoc = new com.aspose.pdf.Document(is)) {
-				pdfDoc.setPageMode(PageMode.UseAttachments);
-
-				for (Message attachment : result.getAttachments()) {
-					XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
-					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(attachment);
-					cisConversionResult.setConversionOption(isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
-
-					if (cisConversionResult.isConversionSuccessful()) {
-						if (ConversionOption.SINGLEPDF == result.getConversionOption()) {
-							try (InputStream attachIs = cisConversionResult.rawMessage().asInputStream()) {
-								String fileName = cisConversionResult.getDocumentName();
-								pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachIs, fileName));
-							}
-							// We don't need to add the file to the session because it is now incorporated in the PDF itself.
-							cisConversionResult.setMessage(null);
-						} else {
-							String attachmentSessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
-							cisConversionResult.setResultSessionKey(attachmentSessionKey);
-							session.put(attachmentSessionKey, cisConversionResult.getMessage());
-						}
-					}
-
-					cisConversionResult.toXML(attachmentAsXml);
-					attachmentsAsXml.addSubElement(attachmentAsXml);
-				}
-
-				MessageBuilder messageBuilder = new MessageBuilder();
-				try (OutputStream out = messageBuilder.asOutputStream()) {
-					pdfDoc.save(out);
-				}
-
-				result.setMessage(messageBuilder.build());
+			for (Message attachment : result.getAttachments()) {
+				XmlBuilder attachmentAsXml = handleAttachment(result, attachment, session, index);
+				attachmentsAsXml.addSubElement(attachmentAsXml);
 			}
 			xmlResult.addSubElement(attachmentsAsXml);
 		}
 
 		// Here because we may have changed the underlying PDF by adding attachments to it.
-		session.put(sessionKey, result.getMessage());
+		session.put(sessionKey, result.getMessage(pdfOutputLocation));
+		result.toXML(xmlResult);
 
 		return xmlResult.asMessage();
+	}
+
+	private XmlBuilder handleAttachment(CisConversionResult attResult, Message attachment, PipeLineSession session, AtomicInteger index) throws IOException {
+		CisConversionResult cisConversionResult = cisConversionService.convertToPdf(attachment);
+		cisConversionResult.setConversionOption(isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
+		XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
+
+		if (cisConversionResult.isConversionSuccessful()) {
+			// Are there sub-attachments?
+			for (Message att : cisConversionResult.getAttachments()) {
+				XmlBuilder xml = handleAttachment(cisConversionResult, att, session, index);
+				attachmentAsXml.addSubElement(xml);
+			}
+
+			if (ConversionOption.SINGLEPDF == attResult.getConversionOption()) {
+				String fileName = PdfAttachmentUtil.getValidFileName(cisConversionResult.getMessage(), cisConversionResult.getDocumentName(), "pdf");
+				attResult.setMessage(PdfAttachmentUtil.combineFiles(attResult.getMessage(), cisConversionResult.getMessage(), fileName));
+				// We don't need to add the file to the session because it is now incorporated in the PDF itself.
+			} else {
+				String attachmentSessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
+				cisConversionResult.setResultSessionKey(attachmentSessionKey);
+				session.put(attachmentSessionKey, cisConversionResult.getMessage(pdfOutputLocation));
+			}
+		}
+
+		cisConversionResult.toXML(attachmentAsXml);
+		return attachmentAsXml;
 	}
 
 	public void setAction(DocumentAction action) {

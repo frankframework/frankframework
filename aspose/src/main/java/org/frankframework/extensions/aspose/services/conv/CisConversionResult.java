@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
@@ -35,13 +36,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.extensions.aspose.ConversionOption;
+import org.frankframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.util.XmlBuilder;
 
 public class CisConversionResult {
 
-	private static final String DEFAULT_FILENAME = "default_filename";
 	private static final String PASSWORD_MESSAGE = "Failed to convert to PDF. Reason: The file has been protected with a password.";
 
 	private @Getter @Setter ConversionOption conversionOption;
@@ -68,13 +69,11 @@ public class CisConversionResult {
 	 */
 	private Path resultFileLocation;
 
-	public void setPersistToDisk(String pdfOutputLocation) throws IOException {
-		Path resultFileDirectory = Paths.get(pdfOutputLocation);
-		resultFileLocation = Files.createTempFile(resultFileDirectory, "msg", ".pdf");
-	}
-
+	/**
+	 * Set the filename, ensure it's never empty.
+	 */
 	public void setDocumentName(String filename) {
-		documentName = StringUtils.defaultIfBlank(filename, DEFAULT_FILENAME);
+		documentName = StringUtils.defaultIfBlank(filename, PdfAttachmentUtil.DEFAULT_FILENAME);
 	}
 
 	public void setMessage(Message message) throws IOException {
@@ -93,17 +92,21 @@ public class CisConversionResult {
 	}
 
 	public Message getMessage() throws IOException {
-		if (resultFileLocation == null) {
+		return getMessage(null);
+	}
+
+	public @Nullable Message getMessage(String pdfOutputLocation) throws IOException {
+		if (StringUtils.isBlank(pdfOutputLocation)) {
 			return message;
 		}
+
+		Path resultFileDirectory = Paths.get(pdfOutputLocation);
+		resultFileLocation = Files.createTempFile(resultFileDirectory, "msg", ".pdf");
 
 		try (InputStream in = message.asInputStream(); OutputStream out = Files.newOutputStream(resultFileLocation)) {
 			in.transferTo(out);
 		}
-		return PathMessage.asTemporaryMessage(resultFileLocation);
-	}
-
-	public Message rawMessage() {
+		message = PathMessage.asTemporaryMessage(resultFileLocation);
 		return message;
 	}
 
@@ -150,27 +153,19 @@ public class CisConversionResult {
 	}
 
 	/**
-	 * Creates an XML containing conversion results both attachments and the main document.
-	 */
-	public XmlBuilder toXML() throws IOException {
-		return toXML(new XmlBuilder("main"));
-	}
-
-	/**
 	 * Append this result to the parent
 	 */
-	public XmlBuilder toXML(XmlBuilder xmlResult) throws IOException {
+	public void toXML(XmlBuilder xmlResult) throws IOException {
 		xmlResult.addAttribute("conversionOption", getConversionOption().getValue());
 		xmlResult.addAttribute("mediaType", getMediaType().toString());
 		xmlResult.addAttribute("documentName", getDocumentName());
 		xmlResult.addAttribute("failureReason", getFailureReason());
 		xmlResult.addAttribute("numberOfPages", getNumberOfPages());
 
-		if (message != null && resultFileLocation != null) {
+		if (resultFileLocation != null) {
 			xmlResult.addAttribute("convertedDocument", resultFileLocation.toString());
 		}
 		xmlResult.addAttribute("sessionKey", resultSessionKey);
-		return xmlResult;
 	}
 
 }

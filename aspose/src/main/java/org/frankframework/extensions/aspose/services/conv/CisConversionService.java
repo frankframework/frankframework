@@ -15,7 +15,6 @@
 */
 package org.frankframework.extensions.aspose.services.conv;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
@@ -32,11 +31,9 @@ import org.frankframework.util.MessageUtils;
  */
 @Log4j2
 public class CisConversionService {
-	private final CisConfiguration configuration;
 	private final ConvertorFactory convertorFactory;
 
 	public CisConversionService(CisConfiguration configuration) {
-		this.configuration = configuration;
 		convertorFactory = new ConvertorFactory(configuration);
 	}
 
@@ -62,11 +59,6 @@ public class CisConversionService {
 				// Convertor found, convert the file
 				try {
 					convertor.convertToPdf(result, mediaType, message);
-
-					if (StringUtils.isNotBlank(configuration.getPdfOutputLocation())) {
-						result.setPersistToDisk(configuration.getPdfOutputLocation());
-					}
-
 					log.debug("Convert (in {} msec): mediatype: {}, filename: {}", System.currentTimeMillis() - startTime, mediaType, filename);
 					return result;
 				} catch (InvalidPasswordException e) {

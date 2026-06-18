@@ -40,15 +40,32 @@ import org.frankframework.stream.MessageContext;
  */
 @Log4j2
 public class PdfAttachmentUtil {
+	public static final String DEFAULT_FILENAME = "default_filename";
 	private static final MimeType PDF_MIMETYPE = new MediaType("application", "pdf");
 
+	private PdfAttachmentUtil() {
+		// NO OP
+	}
+
+	/**
+	 * Silly code due to Aspose limitations...
+	 * https://forum.aspose.com/t/filespecification-from-stream-modified-is-unknown/68301/16
+	 */
 	@NonNull
 	public static Message combineFiles(@NonNull Message parent, @NonNull Message attachment, String attachmentName) throws IOException {
 		try (InputStream is = parent.asInputStream(); Document pdfDoc = new Document(is)) {
 			pdfDoc.setPageMode(PageMode.UseAttachments);
 
-			try (InputStream attachIs = attachment.asInputStream()) {
-				pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachIs, attachmentName));
+			String location = (String) attachment.getContext().get(MessageContext.METADATA_LOCATION);
+			if (location != null) {
+				pdfDoc.getEmbeddedFiles().add(new FileSpecification(location, attachmentName));
+			} else {
+				// When using an InputStream, it's streaming, but no size is present.
+				// When using a String (filepath) it reads from disk, the name is scrambled but the size is correct...
+				// In both cases the description field is correct.
+				try (InputStream attachIs = attachment.asInputStream()) {
+					pdfDoc.getEmbeddedFiles().add(new FileSpecification(attachIs, attachmentName));
+				}
 			}
 
 			MessageBuilder messageBuilder = new MessageBuilder();
@@ -60,24 +77,27 @@ public class PdfAttachmentUtil {
 
 			Message result = messageBuilder.build();
 			result.getContext().withMimeType(PDF_MIMETYPE);
+
 			return result;
 		}
 	}
 
 	public static String getValidFileName(Message input, String extension) {
-		return getValidFileName(input, "default_filename", extension);
+		return getValidFileName(input, DEFAULT_FILENAME, extension);
 	}
 
 	// Not sure why we need to get the name trim the extension only to add it again, but for now leave it as is...
 	public static String getValidFileName(Message input, String fallbackName, String extension) {
 		String name = (String) input.getContext().get(MessageContext.METADATA_NAME);
 		if (StringUtils.isBlank(name)) {
-			return fallbackName+"."+extension;
+			return StringUtils.substringBeforeLast(fallbackName, ".") + "." + extension;
 		}
+
 		String result = StringUtils.substringBeforeLast(name, ".") + "." + extension;
 		if (!result.equals(name)) {
 			log.debug("updated filename to a valid filename from [{}] to [{}]", name, result);
 		}
+
 		return result;
 	}
 }
