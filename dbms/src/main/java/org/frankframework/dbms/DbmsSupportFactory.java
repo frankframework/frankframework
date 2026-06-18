@@ -18,11 +18,7 @@ package org.frankframework.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,33 +62,13 @@ public class DbmsSupportFactory {
 
 			String name = md.getDatabaseProductName();
 			String version = md.getDatabaseProductVersion();
-			Map<String, String> customServerProperties = getCustomServerProperties(name, connection);
-			return getDbmsSupport(name, version, customServerProperties);
+			return getDbmsSupport(name, version, connection);
 		} catch (SQLException | DbmsException e) {
 			throw new RuntimeException("cannot obtain product from connection metadata", e);
 		}
 	}
 
-	private @NonNull Map<String, String> getCustomServerProperties(@NonNull String product, @NonNull Connection connection) throws SQLException {
-		Dbms dbms = Dbms.getDbms(product);
-		if (StringUtils.isBlank(dbms.getCustomServerPropertiesQuery())) {
-			return Map.of();
-		}
-		try (PreparedStatement stmt = connection.prepareStatement(dbms.getCustomServerPropertiesQuery());
-		     ResultSet rs = stmt.executeQuery()) {
-			ResultSetMetaData resultSetMetaData = rs.getMetaData();
-			int columnCount = resultSetMetaData.getColumnCount();
-			Map<String, String> customServerProperties = new HashMap<>();
-			while (rs.next()) {
-				for (int i = 1; i <= columnCount; ++i) {
-					customServerProperties.put(resultSetMetaData.getColumnName(i), rs.getString(i));
-				}
-			}
-			return customServerProperties;
-		}
-	}
-
-	private IDbmsSupport getDbmsSupport(String product, String productVersion, @NonNull Map<String, String> customServerProperties) throws DbmsException {
+	private IDbmsSupport getDbmsSupport(String product, String productVersion, @NonNull Connection connection) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {
@@ -117,7 +93,7 @@ public class DbmsSupportFactory {
 					}
 				}
 			}
-			return Dbms.findDbmsSupportByProduct(product, productVersion, customServerProperties);
+			return Dbms.findDbmsSupportByProduct(product, productVersion, connection);
 		}
 		log.debug("Setting databasetype to GENERIC, productName [{}]", product);
 		return new GenericDbmsSupport();

@@ -18,9 +18,9 @@ package org.frankframework.dbms;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,14 +48,25 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		throw new IllegalStateException("H2DbmsSupport should be instantiated with product-version to determine supported featureset. Calling this constructor is a code-bug.");
 	}
 
-	public H2DbmsSupport(@Nullable String productVersion, @NonNull Map<String, String> customServerProperties) {
+	public H2DbmsSupport(@Nullable String productVersion, @Nullable Connection connection) {
 		dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
-		sqlDialect = determineSqlDialectFromProperties(customServerProperties, getDbmsName());
+		sqlDialect = determineSqlDialectFromConnection(connection, getDbmsName());
 	}
 
-	private @NonNull String determineSqlDialectFromProperties(@NonNull Map<String, String> customServerProperties, @NonNull String defaultDialect) {
-		String mode = customServerProperties.get("MODE");
-		if (StringUtils.isEmpty(mode)) {
+	private static @NonNull String determineSqlDialectFromConnection(@Nullable Connection connection, @NonNull String defaultDialect) {
+		if (connection == null) return defaultDialect;
+
+		try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT SETTING_VALUE FROM INFORMATION_SCHEMA.SETTINGS WHERE SETTING_NAME = 'MODE'")) {
+			if (!rs.next()) return defaultDialect;
+			return getDialectFromMode(rs.getString(1), defaultDialect);
+		} catch (SQLException e) {
+			log.warn("Cannot query database for SQL mode, using default dialect [{}]", defaultDialect, e);
+			return defaultDialect;
+		}
+	}
+
+	static @NonNull String getDialectFromMode(@Nullable String mode, @NonNull String defaultDialect) {
+		if (StringUtils.isBlank(mode)) {
 			return defaultDialect;
 		}
 		if (mode.equals("MSSQLServer")) {
