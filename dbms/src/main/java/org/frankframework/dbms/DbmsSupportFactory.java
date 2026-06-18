@@ -43,11 +43,11 @@ public class DbmsSupportFactory {
 
 	private @Getter Properties dbmsSupportMap;
 
-	public IDbmsSupport getDbmsSupport(DataSource datasource) {
+	public @NonNull IDbmsSupport getDbmsSupport(DataSource datasource) {
 		return dbmsSupport.computeIfAbsent(datasource, this::compute);
 	}
 
-	private IDbmsSupport compute(DataSource datasource) {
+	private @NonNull IDbmsSupport compute(DataSource datasource) {
 		try (Connection connection = datasource.getConnection()) {
 			return getDbmsSupport(connection);
 		} catch (SQLException e) {
@@ -56,7 +56,7 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(@NonNull Connection connection) throws SQLException {
+	public @NonNull IDbmsSupport getDbmsSupport(@NonNull Connection connection) throws SQLException {
 		try {
 			DatabaseMetaData md = connection.getMetaData();
 
@@ -68,7 +68,7 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	private IDbmsSupport getDbmsSupport(String product, String productVersion, @NonNull Connection connection) throws DbmsException {
+	private @NonNull IDbmsSupport getDbmsSupport(@NonNull String product, @NonNull String productVersion, @NonNull Connection connection) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {

@@ -52,7 +52,7 @@ public enum Dbms {
 		this.dbmsSupportClass = dbmsSupportClass;
 	}
 
-	public static IDbmsSupport findDbmsSupportByProduct(@NonNull String product, @NonNull String productVersion, @Nullable Connection connection) {
+	public static @NonNull IDbmsSupport findDbmsSupportByProduct(@NonNull String product, @NonNull String productVersion, @Nullable Connection connection) {
 		if (productVersion.contains("MariaDB")) {
 			if (MYSQL.getProductName().equals(product)) {
 				log.debug("Setting databasetype to MARIADB (using MySQL driver)");
