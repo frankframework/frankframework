@@ -15,6 +15,7 @@
 */
 package org.frankframework.jms;
 
+import java.net.URI;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -39,8 +40,9 @@ import com.amazon.sqs.javamessaging.SQSConnectionFactory;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.http.apache.ProxyConfiguration;
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.SqsClientBuilder;
 
 import org.frankframework.aws.AwsBase;
 
@@ -101,10 +103,22 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 	}
 
 	public SqsClient createSqsClient() {
-		SqsClientBuilder builder = SqsClient.builder();
-		builder.region(getClientRegion());
-		builder.credentialsProvider(getAwsCredentialsProvider());
-//		builder.endpointProvider(new SqsEndpointProvider()); // TODO allow the use of destinationName="https://sqs.eu-west-1.amazonaws.com/00123567890/dummy-ibis-test-queue"
-		return builder.build();
+		return SqsClient.builder()
+				.region(getClientRegion())
+				.credentialsProvider(getAwsCredentialsProvider())
+				.httpClientBuilder(getHttpClientBuilder())
+//				.endpointProvider(new SqsEndpointProvider()); // TODO allow the use of destinationName="https://sqs.eu-west-1.amazonaws.com/00123567890/dummy-ibis-test-queue"
+				.build();
+	}
+
+	protected ApacheHttpClient.Builder getHttpClientBuilder() {
+		ApacheHttpClient.Builder httpClientBuilder = ApacheHttpClient.builder();
+
+		if (getProxyHost() != null && getProxyPort() != null) {
+			httpClientBuilder.proxyConfiguration(ProxyConfiguration.builder()
+					.endpoint(URI.create("https://" + getProxyHost() + ":" + getProxyPort()))
+					.build());
+		}
+		return httpClientBuilder;
 	}
 }
