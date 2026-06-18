@@ -264,7 +264,7 @@ public class PropertyLoader extends Properties {
 	public String getString(String key, @Nullable String dfault) {
 		String ob = this.getResolvedProperty(key);
 
-		if (ob == null) return dfault;
+		if (StringUtils.isBlank(ob)) return dfault;
 		return ob;
 	}
 
@@ -279,7 +279,7 @@ public class PropertyLoader extends Properties {
 	 */
 	public boolean getBoolean(String key, boolean dfault) {
 		String ob = this.getResolvedProperty(key);
-		if (ob == null) return dfault;
+		if (ob == null) return dfault; // Only return dfault on null, not on empty strings, because that breaks stuff (including several Larva scenarios)
 
 		return "true".equalsIgnoreCase(ob) || "!false".equalsIgnoreCase(ob);
 	}
@@ -295,7 +295,7 @@ public class PropertyLoader extends Properties {
 	public int getInt(String key, int dfault) {
 		String ob = this.getResolvedProperty(key);
 
-		if (ob == null) return dfault;
+		if (StringUtils.isBlank(ob)) return dfault;
 		return Integer.parseInt(ob.trim());
 	}
 
@@ -310,7 +310,7 @@ public class PropertyLoader extends Properties {
 	public long getLong(String key, long dfault) {
 		String ob = this.getResolvedProperty(key);
 
-		if (ob == null) return dfault;
+		if (StringUtils.isBlank(ob)) return dfault;
 		return Long.parseLong(ob.trim());
 	}
 
