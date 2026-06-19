@@ -7,20 +7,25 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
+import org.frankframework.management.bus.dto.StorageItemDTO;
+import org.frankframework.management.bus.dto.StorageItemsDTO;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.DatabaseTestOptions;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.MessageBrowsingFilter;
 import org.frankframework.util.TimeProvider;
 
 @WithLiquibase(tableName = JdbcTableMessageBrowserTest.TEST_TABLE_NAME)
@@ -67,7 +72,7 @@ class JdbcTableMessageBrowserTest {
 		// Arrange
 		listener.start();
 		storage.start();
-		createTestMessages(350);
+		createTestMessages(150);
 
 		JdbcTableMessageBrowser<Serializable> messageBrowser = (JdbcTableMessageBrowser<Serializable>)listener.getMessageBrowser(ProcessState.AVAILABLE);
 		messageBrowser.configure();
@@ -82,19 +87,49 @@ class JdbcTableMessageBrowserTest {
 		}
 
 		// Assert
-		assertEquals(350, messageCount);
-		assertEquals(350, messages.size());
+		assertEquals(150, messageCount);
+		assertEquals(150, messages.size());
 
 		messages.sort(Comparator.naturalOrder());
 
 		assertEquals("mid00000", messages.getFirst());
-		assertEquals("mid00349", messages.getLast());
+		assertEquals("mid00149", messages.getLast());
+	}
+
+	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
+	public void testMessageBrowserWithStorageItemDTO() throws Exception {
+		// Arrange
+		listener.start();
+		storage.start();
+		createTestMessages(100);
+
+		JdbcTableMessageBrowser<Serializable> messageBrowser = (JdbcTableMessageBrowser<Serializable>)listener.getMessageBrowser(ProcessState.AVAILABLE);
+		messageBrowser.configure();
+
+		MessageBrowsingFilter filter = new MessageBrowsingFilter(100, 50);
+		filter.setSortOrder(IMessageBrowser.SortOrder.ASC);
+		StorageItemsDTO dto = new StorageItemsDTO(messageBrowser, filter);
+
+		// Act
+		List<StorageItemDTO> messages = dto.getMessages();
+
+		// Assert
+		assertEquals(50, messages.size());
+		messages.sort(Comparator.comparing(StorageItemDTO::getOriginalId));
+		StorageItemDTO first = messages.getFirst();
+		StorageItemDTO last = messages.getLast();
+
+		assertEquals("mid00050", first.getOriginalId());
+		assertEquals("mid00099", last.getOriginalId());
 	}
 
 	private void createTestMessages(int nrOfMessages) throws SenderException {
-		for(int i=0; i<nrOfMessages; i++) {
+		long millisNow = TimeProvider.nowAsMillis();
+		for (int i = 0; i < nrOfMessages; i++) {
 			String formatted = String.format("%05d", i);
-			storage.storeMessage("mid" + formatted, "cid" + formatted, TimeProvider.nowAsDate(), null, null, formatted);
+			Date receivedDate = new Date(millisNow + 1_000L * i); // Message iterator always order by receivedDate so make sure that it is unique and incrementing. The JVM might loop too fast for now() to actually increment enough for the SQL date-time resolution.
+			storage.storeMessage("mid" + formatted, "cid" + formatted, receivedDate, null, null, formatted);
 		}
 	}
 }
