@@ -29,26 +29,32 @@
                 </thead>
                 <tbody>
                   @for (column of messageFields; track column) {
-                    <tr>
-                      <th>{{ column.displayName }}</th>
-                      <td>
-                        <input
-                          type="checkbox"
-                          [(ngModel)]="column.display"
-                          (change)="updateColumnDisplay(column.fieldName)"
-                        />
-                      </td>
-                      <td>
-                        <input type="text" class="full-width" [(ngModel)]="column.filter" />
-                      </td>
-                    </tr>
+                    @if (column.type !== 'date') {
+                      <tr>
+                        <th>{{ column.displayName }}</th>
+                        <td>
+                          <input
+                            type="checkbox"
+                            [(ngModel)]="column.display"
+                            (change)="updateColumnDisplay(column.fieldName)"
+                          />
+                        </td>
+                        <td>
+                          <input type="text" class="full-width" [(ngModel)]="column.filter" />
+                        </td>
+                      </tr>
+                    }
                   }
                   @for (column of staticMessageFields; track column) {
                     <tr>
                       <th>{{ column.displayName }}</th>
                       <td>&nbsp;</td>
                       <td>
-                        <input type="text" class="full-width" [(ngModel)]="column.filter" />
+                        @if (column.type === 'date') {
+                          <input type="date" class="full-width" [(ngModel)]="column.filter" />
+                        } @else {
+                          <input type="text" class="full-width" [(ngModel)]="column.filter" />
+                        }
                       </td>
                     </tr>
                   }
@@ -62,7 +68,12 @@
                       </select>
                     </td>
                     <td>
-                      <button class="btn btn-info btn-sm" type="button" [ladda]="searching" (click)="searchUpdated()">
+                      <button
+                        class="btn btn-info btn-sm space-it-out"
+                        type="button"
+                        [ladda]="searching"
+                        (click)="searchUpdated()"
+                      >
                         <fa-icon aria-hidden="true" [icon]="faSearch" /> Search
                       </button>
                       <button
