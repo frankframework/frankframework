@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -37,6 +38,7 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
@@ -110,11 +112,13 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 
 	@Override
 	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+		ParameterValueList parameterValues = resolveParameterValues(message, session);
+
 		// the messageId to be inserted can also be specified via the parameter messageId, but defaults to the messageId of the session
-		String messageId = resolveParameter(message, session, PARAM_MESSAGEID, session.getMessageId());
+		String messageId = resolveParameter(PARAM_MESSAGEID, session.getMessageId(), parameterValues);
 
 		// the correlationId to be inserted can also be specified via the parameter correlationId, but defaults to the correlationId of the session
-		String correlationId = resolveParameter(message, session, PARAM_CORRELATION_ID, session.getCorrelationId());
+		String correlationId = resolveParameter(PARAM_CORRELATION_ID, session.getCorrelationId(), parameterValues);
 
 		Serializable messageToStore;
 		if (StringUtils.isBlank(sessionKeys)) {
@@ -133,18 +137,27 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 	}
 
 	/**
+	 * Resolves the parameter values if relevant parameters are present, returns null otherwise.
+	 */
+	private @Nullable ParameterValueList resolveParameterValues(Message message, PipeLineSession session) throws SenderException {
+		if (!paramList.hasParameter(PARAM_MESSAGEID) && !paramList.hasParameter(PARAM_CORRELATION_ID)) {
+			return null;
+		}
+		try {
+			return paramList.getValues(message, session);
+		} catch (ParameterException e) {
+			throw new SenderException("Could not resolve parameters", e);
+		}
+	}
+
+	/**
 	 * If the given parameterName is not in the parameterList, fall back to the default value. If it is, resolve the value
 	 */
-	private String resolveParameter(Message message, PipeLineSession session, String parameterName, String defaultValue) throws SenderException {
-		if (!paramList.hasParameter(parameterName)) {
+	private String resolveParameter(String parameterName, String defaultValue, @Nullable ParameterValueList parameterValues) {
+		if (parameterValues == null || !paramList.hasParameter(parameterName)) {
 			return defaultValue;
 		}
-
-		try {
-			return paramList.getValues(message, session).get(parameterName).asStringValue();
-		} catch (ParameterException e) {
-			throw new SenderException("Could not resolve parameter " + parameterName, e);
-		}
+		return parameterValues.get(parameterName).asStringValue();
 	}
 
 	/**
