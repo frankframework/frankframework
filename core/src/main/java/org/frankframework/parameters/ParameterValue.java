@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -91,8 +92,8 @@ public class ParameterValue {
 			return b;
 		}
 
-		String valueAsString = valueAsString();
-		return valueAsString != null && Boolean.parseBoolean(valueAsString.trim());
+		String valueAsString = Objects.requireNonNull(valueAsString(), "Value as string cannot be null here").trim();
+		return "true".equalsIgnoreCase(valueAsString) || "!false".equalsIgnoreCase(valueAsString);
 	}
 
 	/**
