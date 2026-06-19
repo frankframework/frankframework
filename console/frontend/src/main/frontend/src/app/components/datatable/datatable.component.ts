@@ -156,7 +156,7 @@ export class DatatableComponent<T> implements OnInit, AfterViewInit, OnDestroy {
     if (!this.showjumpToPage) {
       this.jumpToPageIndex = this.datasource.currentPage;
     }
-    this.showjumpToPage =!this.showjumpToPage;
+    this.showjumpToPage = !this.showjumpToPage;
   }
 
   protected getCachedSize(): number {
