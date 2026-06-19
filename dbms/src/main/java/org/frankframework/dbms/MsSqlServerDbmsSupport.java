@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 
 /**
@@ -144,6 +145,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		return DbmsUtil.executeStringQuery(conn, "SELECT SCHEMA_NAME()");
 	}
 
+	@NonNull
 	@Override
 	public String getLength(String column) {
 		return "LEN(" + column + ")";
@@ -181,6 +183,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 		}
 	}
 
+	@NonNull
 	@Override
 	public String getBooleanValue(boolean value) {
 		return value ? "1" : "0";

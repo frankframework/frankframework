@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022, 2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,9 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,17 +24,16 @@ import org.springframework.http.MediaType;
 
 import com.aspose.cells.LoadOptions;
 import com.aspose.cells.SaveFormat;
-import com.aspose.cells.Style;
 import com.aspose.cells.Workbook;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 
 @Log4j2
-class CellsConvertor extends AbstractConvertor {
+class CellsConverter extends AbstractConverter {
 
 	private static final MediaType XLS_MEDIA_TYPE = new MediaType("application", "vnd.ms-excel");
 	private static final MediaType XLSX_MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -49,31 +49,29 @@ class CellsConvertor extends AbstractConvertor {
 
 	private final LoadOptions defaultLoadOptions;
 
-	protected CellsConvertor(CisConfiguration configuration) {
+	protected CellsConverter(CisConfiguration configuration) {
 		super(configuration, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
 		defaultLoadOptions = new FontManager(configuration.getFontsDirectory()).getCellsLoadOptions();
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public Message convert(MediaType mediaType, Message message) throws Exception {
 		// Convert Excel to pdf and store in result
-		Workbook workbook = null;
-		try (InputStream inputStream = message.asInputStream(charset)) {
-			workbook = new Workbook(inputStream, defaultLoadOptions);
+		try (InputStream inputStream = message.asInputStream(configuration.getCharset())) {
+			Workbook workbook = new Workbook(inputStream, defaultLoadOptions);
 
-			Style style = workbook.getDefaultStyle();
-			log.debug("default font: [{}]", style.getFont());
+			log.trace("default font: [{}]", () -> workbook.getDefaultStyle().getFont());
 
-			workbook.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-
-			// Add original file as attachment to resulting pdf file.
-			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(result.getPdfResultFile());
-			pdfAttachmentUtil.addAttachmentToPdf(message, result.getDocumentName(), FILE_TYPE_MAP.get(mediaType));
-		} finally {
-			if (workbook != null) {
+			MessageBuilder messageBuilder = new MessageBuilder();
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				workbook.save(stream, SaveFormat.PDF);
+			} finally {
 				workbook.dispose();
 			}
+
+			// Add original file as attachment to resulting pdf file.
+			String attachmentName = PdfAttachmentUtil.getValidFileName(message, FILE_TYPE_MAP.get(mediaType));
+			return PdfAttachmentUtil.combineFiles(messageBuilder.build(), message, attachmentName);
 		}
 	}
 

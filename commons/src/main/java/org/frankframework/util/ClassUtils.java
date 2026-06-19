@@ -134,10 +134,9 @@ public class ClassUtils {
 	 * @param expectedType The class type to expect
 	 * @return A new instance
 	 * @throws ReflectiveOperationException If an instantiation error occurs
-	 * @throws SecurityException            If a security violation occurs
 	 */
 	@SuppressWarnings("unchecked") // because we checked it...
-	public static <T> T newInstance(String className, Class<T> expectedType) throws ReflectiveOperationException, SecurityException {
+	public static <T> T newInstance(String className, Class<T> expectedType) throws ReflectiveOperationException {
 		Class<?> clazz = loadClass(className);
 		if (expectedType.isAssignableFrom(clazz)) {
 			return (T) newInstance(clazz);
@@ -145,7 +144,7 @@ public class ClassUtils {
 		throw new InstantiationException("created class [" + className + "] is not of required type [" + expectedType.getSimpleName() + "]");
 	}
 
-	public static <T> T newInstance(Class<T> clazz) throws ReflectiveOperationException, SecurityException {
+	public static <T> T newInstance(Class<T> clazz) throws ReflectiveOperationException {
 		return clazz.getDeclaredConstructor().newInstance();
 	}
 
@@ -331,11 +330,11 @@ public class ClassUtils {
 		return EnumUtils.parse((Class<E>) enumClass, null, value);
 	}
 
-	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, ReflectiveOperationException, IllegalArgumentException {
+	public static void invokeSetter(Object o, String name, Object value) throws ReflectiveOperationException, IllegalArgumentException {
 		invokeSetter(o, name, value, value.getClass());
 	}
 
-	public static void invokeSetter(Object o, String name, Object value, Class<?> clazz) throws SecurityException, ReflectiveOperationException, IllegalArgumentException {
+	public static void invokeSetter(Object o, String name, Object value, Class<?> clazz) throws ReflectiveOperationException, IllegalArgumentException {
 		List<Method> methods = Stream.of(o.getClass().getMethods())
 				.filter(m -> m.getParameterCount() == 1) // Only Setters with 1 argument
 				.filter(m -> name.equals(m.getName())) // Method name must match
@@ -353,7 +352,7 @@ public class ClassUtils {
 		setterMtd.invoke(o, args);
 	}
 
-	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws SecurityException, ReflectiveOperationException, IllegalArgumentException {
+	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws ReflectiveOperationException, IllegalArgumentException {
 		Method getterMtd = o.getClass().getMethod(name, (Class<?>[]) null);
 		if (forceAccess) {
 			getterMtd.setAccessible(true);
@@ -362,7 +361,7 @@ public class ClassUtils {
 	}
 
 	@Nullable
-	public static Object getDeclaredFieldValue(Object o, Class<?> c, String name) throws IllegalArgumentException, SecurityException, NoSuchFieldException {
+	public static Object getDeclaredFieldValue(Object o, Class<?> c, String name) throws IllegalArgumentException, NoSuchFieldException {
 		Field f = c.getDeclaredField(name);
 		try {
 			f.setAccessible(true);
@@ -374,7 +373,7 @@ public class ClassUtils {
 	}
 
 	@Nullable
-	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, NoSuchFieldException {
+	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, NoSuchFieldException {
 		return getDeclaredFieldValue(o, o.getClass(), name);
 	}
 

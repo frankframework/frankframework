@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 /**
  * @author Gerrit van Brakel
@@ -72,7 +73,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getTextFieldType() {
+	public @NonNull String getTextFieldType() {
 		return "VARCHAR2";
 	}
 
@@ -136,6 +137,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		return DbmsUtil.executeStringQuery(conn, "SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL");
 	}
 
+	@NonNull
 	@Override
 	public String getBooleanValue(boolean value) {
 		return value ? "1" : "0";
@@ -190,6 +192,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		return false;
 	}
 
+	@NonNull
 	@Override
 	public SQLType getCursorSqlType() {
 		return ORACLE_CURSOR_TYPE_DEF;
