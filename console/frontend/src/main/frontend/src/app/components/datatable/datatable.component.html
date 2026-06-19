@@ -89,7 +89,21 @@
           @if (datasource.currentPage > 2) {
             <span class="dt-btn fill">...</span>
           }
-          <span class="dt-btn current-page">{{ datasource.currentPage }}</span>
+          @if (showjumpToPage) {
+            <input
+              type="number"
+              class="dt-btn current-page"
+              min="1"
+              [max]="datasource.totalPages"
+              [(ngModel)]="jumpToPageIndex"
+              (blur)="jumpToPage()"
+              (keydown)="jumpToPage($event)"
+            />
+          } @else {
+            <button class="dt-btn current-page" title="Jump to page" (click)="toggleJumpToPage()">
+              {{ datasource.currentPage }}
+            </button>
+          }
           @if (datasource.currentPage < datasource.totalPages - 1) {
             <span class="dt-btn fill">...</span>
           }
