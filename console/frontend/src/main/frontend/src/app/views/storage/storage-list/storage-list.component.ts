@@ -126,6 +126,8 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly storageParams = this.storageService.storageParams;
   protected readonly staticMessageFields: SearchColumn[] = [
     { fieldName: 'message', property: 'message', type: 'string', display: true, filter: '', displayName: 'Message' },
+    { fieldName: 'startDate', property: 'startDate', type: 'date', display: true, filter: '', displayName: 'From' },
+    { fieldName: 'endDate', property: 'endDate', type: 'date', display: true, filter: '', displayName: 'To' },
   ];
   protected readonly faChevronUp = faChevronUp;
   protected readonly faChevronDown = faChevronDown;
@@ -191,7 +193,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.displayedColumns = [
         ...this.initialDisplayedColumns,
         ...response.fields.map<DataTableColumn<MessageData>>((field) => ({
-          name: /*field.fieldName ?? */ field.property as string,
+          name: field.property as string,
           property: field.property,
           displayName: field.displayName,
           className: field.type === 'date' ? 'date' : undefined,
