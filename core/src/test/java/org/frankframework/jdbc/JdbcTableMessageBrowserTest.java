@@ -102,12 +102,12 @@ class JdbcTableMessageBrowserTest {
 		// Arrange
 		listener.start();
 		storage.start();
-		createTestMessages(100);
+		createTestMessages(250);
 
 		JdbcTableMessageBrowser<Serializable> messageBrowser = (JdbcTableMessageBrowser<Serializable>)listener.getMessageBrowser(ProcessState.AVAILABLE);
 		messageBrowser.configure();
 
-		MessageBrowsingFilter filter = new MessageBrowsingFilter(100, 50);
+		MessageBrowsingFilter filter = new MessageBrowsingFilter(100, 200);
 		filter.setSortOrder(IMessageBrowser.SortOrder.ASC);
 		StorageItemsDTO dto = new StorageItemsDTO(messageBrowser, filter);
 
@@ -120,8 +120,8 @@ class JdbcTableMessageBrowserTest {
 		StorageItemDTO first = messages.getFirst();
 		StorageItemDTO last = messages.getLast();
 
-		assertEquals("mid00050", first.getOriginalId());
-		assertEquals("mid00099", last.getOriginalId());
+		assertEquals("mid00200", first.getOriginalId());
+		assertEquals("mid00249", last.getOriginalId());
 	}
 
 	private void createTestMessages(int nrOfMessages) throws SenderException {
