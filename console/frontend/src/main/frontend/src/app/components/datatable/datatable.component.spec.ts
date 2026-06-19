@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DatatableComponent } from './datatable.component';
+import { DatatableComponent, DataTableDataSource } from './datatable.component';
 
 describe('DatatableComponent', () => {
   let component: DatatableComponent<object>;
@@ -12,7 +12,9 @@ describe('DatatableComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(DatatableComponent<object>);
+
     component = fixture.componentInstance;
+    component.datasource = new DataTableDataSource();
     fixture.detectChanges();
   });
 
