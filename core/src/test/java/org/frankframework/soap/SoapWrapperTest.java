@@ -1,6 +1,7 @@
 package org.frankframework.soap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -54,6 +55,7 @@ import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPPart;
 
 import org.apache.wss4j.common.WSS4JConstants;
+import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WsuIdAllocator;
@@ -370,6 +372,48 @@ public class SoapWrapperTest {
 		Message decrypted = SoapWrapper.getInstance().decryptMessage(encrypted, keystore, certificateName, "changeit");
 		// Ensure the decrypted result is the same as the initial document
 		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), decrypted.asString());
+	}
+
+	@Test
+	void validateEncryptedErrorSoap1_1() throws Exception {
+		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
+		assertNotNull(file); // ensure we can find the file
+
+		String certificateName = "tralalal";
+		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
+
+		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+		keyGen.init(256);
+		SecretKey secretKey = keyGen.generateKey();
+
+		Message encrypted = SoapWrapper.getInstance().encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey);
+		SoapWrapper wrapper = SoapWrapper.getInstance();
+
+		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, certificateName, "wrong-password"));
+		assertEquals("The private key for the supplied alias does not exist in the keystore", e1.getMessage());
+
+		WSSecurityException e2 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, "wrong-cert", "changeit"));
+		assertEquals("The private key for the supplied alias does not exist in the keystore", e2.getMessage());
+
+		KeyStore differentStoreSameCertname = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
+		WSSecurityException e3 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, differentStoreSameCertname, certificateName, "changeit"));
+		assertEquals("No certificates were found for decryption (KeyId)", e3.getMessage());
+
+		Message manipulatedMessage = new Message(encrypted.asString()
+				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>"));
+		WSSecurityException e4 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage, keystore, certificateName, "changeit"));
+		assertEquals("The signature or decryption was invalid", e4.getMessage());
+
+		// Replace the first 4 characters of the CipherValue
+		Message manipulatedMessage2 = new Message(encrypted.asString()
+				.replaceAll("<xenc:CipherValue>(.{4})(.*)</xenc:CipherValue>", "<xenc:CipherValue>L+Li$2</xenc:CipherValue>"));
+		assertNotEquals(encrypted.asString(), manipulatedMessage2.asString());
+
+		WSSecurityException e5 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit"));
+		assertEquals("Given final block not properly padded. Such issues can arise if a bad key is used during decryption.", e5.getMessage());
+
+		Message resultMessage = wrapper.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit");
+		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), resultMessage.asString());
 	}
 
 	private Document toSoapMessage(InputStream is) throws Exception {

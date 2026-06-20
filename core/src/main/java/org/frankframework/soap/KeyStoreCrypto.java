@@ -63,6 +63,8 @@ import org.apache.wss4j.common.ext.WSSecurityException;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.AppConstants;
+
 /**
  * A Crypto implementation based on two Java KeyStore objects, one being the keystore, and one
  * being the truststore. When no truststore is provided the defaut (CACERTS) is used.
@@ -71,7 +73,9 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class KeyStoreCrypto extends CryptoBase {
-	public static final String CA_CERTS_PASSWORD = "changeit";
+	@SuppressWarnings("java:S2068")
+	private static final String CA_CERTS_PASSWORD = AppConstants.getInstance().getProperty("cacerts.password");
+	private static final String CA_CERTS_PATH = AppConstants.getInstance().getProperty("cacerts.location");
 
 	protected KeyStore keystore;
 	protected KeyStore truststore;
@@ -81,8 +85,7 @@ public class KeyStoreCrypto extends CryptoBase {
 	}
 
 	private static KeyStore getDefaultTruststore() {
-		String cacertsPath = System.getProperty("java.home") + "/lib/security/cacerts";
-		try (InputStream cacertsIs = Files.newInputStream(Paths.get(cacertsPath))) {
+		try (InputStream cacertsIs = Files.newInputStream(Paths.get(CA_CERTS_PATH))) {
 			KeyStore truststore = KeyStore.getInstance(KeyStore.getDefaultType());
 			truststore.load(cacertsIs, CA_CERTS_PASSWORD.toCharArray());
 
@@ -602,8 +605,7 @@ public class KeyStoreCrypto extends CryptoBase {
 					}
 				}
 
-				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate) {
-					X509Certificate x509cert = (X509Certificate) certs[0];
+				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate x509cert) {
 					log.debug("Keystore alias {} has issuer {} and serial {}", alias, x509cert.getIssuerX500Principal().getName(), x509cert.getSerialNumber());
 					if (x509cert.getSerialNumber().compareTo(serialNumber) == 0) {
 						Object certName = createBCX509Name(x509cert.getIssuerX500Principal().getName());
@@ -679,8 +681,7 @@ public class KeyStoreCrypto extends CryptoBase {
 					}
 				}
 
-				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate) {
-					X509Certificate x509cert = (X509Certificate) certs[0];
+				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate x509cert) {
 					try {
 						sha.update(x509cert.getEncoded());
 					} catch (CertificateEncodingException ex) {
@@ -711,12 +712,14 @@ public class KeyStoreCrypto extends CryptoBase {
 	private X509Certificate[] getX509CertificatesSKI(byte[] skiBytes) throws WSSecurityException {
 		Certificate[] certs = null;
 		if (keystore != null) {
-			certs = getCertificates(skiBytes, keystore, false);
+			log.debug("Searching keystore for cert using Subject Key Identifier bytes");
+			certs = getCertificates(skiBytes, keystore);
 		}
 
 		// If we can't find the issuer in the keystore then look at the truststore
 		if ((certs == null || certs.length == 0) && truststore != null) {
-			certs = getCertificates(skiBytes, truststore, true);
+			log.debug("Searching truststore for cert using Subject Key Identifier bytes");
+			certs = getCertificates(skiBytes, truststore);
 		}
 
 		if (certs == null || certs.length == 0) {
@@ -733,12 +736,8 @@ public class KeyStoreCrypto extends CryptoBase {
 	 * @return an X509 Certificate (chain)
 	 * @throws WSSecurityException
 	 */
-	private Certificate[] getCertificates(byte[] skiBytes, KeyStore store, boolean truststore) throws WSSecurityException {
-		String keystore = "keystore";
-		if (truststore) {
-			keystore = "truststore";
-		}
-		log.debug("Searching {} for cert using Subject Key Identifier bytes", keystore);
+	private Certificate[] getCertificates(byte[] skiBytes, KeyStore store) throws WSSecurityException {
+		log.debug("Searching {} for cert using Subject Key Identifier bytes", store);
 		try {
 			for (Enumeration<String> e = store.aliases(); e.hasMoreElements();) {
 				String alias = e.nextElement();
@@ -751,8 +750,7 @@ public class KeyStoreCrypto extends CryptoBase {
 					}
 				}
 
-				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate) {
-					X509Certificate x509cert = (X509Certificate) certs[0];
+				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate x509cert) {
 					byte[] data = getSKIBytesFromCert(x509cert);
 					if (data.length == skiBytes.length && Arrays.equals(data, skiBytes)) {
 						log.debug("SKI match found using keystore alias {}", alias);
@@ -764,7 +762,7 @@ public class KeyStoreCrypto extends CryptoBase {
 			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "keystore");
 		}
 
-		log.debug("No SKI match found in {}", keystore);
+		log.debug("No SKI match found in {}", store);
 		return new Certificate[] {};
 	}
 
@@ -866,11 +864,8 @@ public class KeyStoreCrypto extends CryptoBase {
 		if (keyStoreToSearch == null) {
 			return false;
 		}
-		String keystore = "keystore";
-		if (truststore) {
-			keystore = "truststore";
-		}
-		log.debug("Searching {} for public key {}", keystore, publicKey);
+		String keyStoreName = truststore ? "truststore" : "keystore";
+		log.debug("Searching {} for public key {}", keyStoreName, publicKey);
 		try {
 			for (Enumeration<String> e = keyStoreToSearch.aliases(); e.hasMoreElements();) {
 				String alias = e.nextElement();
@@ -883,7 +878,7 @@ public class KeyStoreCrypto extends CryptoBase {
 					}
 				}
 
-				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate && publicKey.equals(((X509Certificate) certs[0]).getPublicKey())) {
+				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate crt && publicKey.equals(crt.getPublicKey())) {
 					log.debug("PublicKey match found using keystore alias {}", alias);
 					return true;
 				}
@@ -892,7 +887,7 @@ public class KeyStoreCrypto extends CryptoBase {
 			return false;
 		}
 
-		log.debug("No PublicKey match found in {}", keystore);
+		log.debug("No PublicKey match found in {}", keyStoreName);
 		return false;
 	}
 
@@ -922,8 +917,8 @@ public class KeyStoreCrypto extends CryptoBase {
 						certs = new Certificate[] { cert };
 					}
 				}
-				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate) {
-					X500Principal foundRDN = ((X509Certificate) certs[0]).getSubjectX500Principal();
+				if (certs != null && certs.length > 0 && certs[0] instanceof X509Certificate crt) {
+					X500Principal foundRDN = crt.getSubjectX500Principal();
 					Object certName = createBCX509Name(foundRDN.getName());
 
 					if (subjectRDN.equals(certName)) {
@@ -953,9 +948,9 @@ public class KeyStoreCrypto extends CryptoBase {
 			sb.append(aliases.nextElement());
 			firstAlias = false;
 		}
-		String msg = " in keystore of type [" + keystore.getType() + "] from provider [" + keystore.getProvider() + "] with size [" + keystore
-				.size() + "] and aliases: {" + sb.toString() + "}";
-		return msg;
+
+		return " in keystore of type [%s] from provider [%s] with size [%d] and aliasses [%s]".formatted(
+				keystore.getType(), keystore.getProvider(), keystore.size(),  sb.toString() );
 	}
 
 	/**
@@ -973,9 +968,8 @@ public class KeyStoreCrypto extends CryptoBase {
 	 *
 	 * @param set       the set to which to add the {@code TrustAnchor}s
 	 * @param keyStore  the store to search for {@code X509Certificate}s
-	 * @throws KeyStoreException if a problem occurs accessing the keyStore
 	 */
-	protected void addTrustAnchors(Set<TrustAnchor> set, KeyStore keyStore) throws KeyStoreException, WSSecurityException {
+	protected void addTrustAnchors(Set<TrustAnchor> set, KeyStore keyStore) throws KeyStoreException {
 		Enumeration<String> aliases = keyStore.aliases();
 		while (aliases.hasMoreElements()) {
 			String alias = aliases.nextElement();

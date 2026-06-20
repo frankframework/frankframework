@@ -18,6 +18,7 @@ package org.frankframework.soap;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.Security;
+import java.util.Objects;
 import java.util.StringTokenizer;
 
 import javax.crypto.SecretKey;
@@ -354,16 +355,7 @@ public class SoapWrapper {
 
 	public Message signMessage(Message soapMessage, String user, String password, boolean passwordDigest) {
 		try {
-			// We only support signing for soap1_1 ?
-			// Create an empty message and populate it later. createMessage(MimeHeaders, InputStream) requires proper headers to be set which we do not have...
-			MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL);
-			SOAPMessage msg = factory.createMessage();
-			SOAPPart part = msg.getSOAPPart();
-			part.setContent(new StreamSource(soapMessage.asInputStream()));
-
-			// create unsigned envelope
-			SOAPEnvelope unsignedEnvelope = part.getEnvelope();
-			Document doc = unsignedEnvelope.getOwnerDocument();
+			Document doc = toSoapDocument(soapMessage);
 
 			// create security header and insert it into unsigned envelope
 			WSSecHeader secHeader = new WSSecHeader(doc);
@@ -460,12 +452,12 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 	encrypt.getParts().addAll(parts);
 */
 
-			encrypt.setKeyEncAlgo(WSConstants.KEYTRANSPORT_RSAOAEP); // Key EncryptionMethod (rsa-oaep-mgf1p)
+			encrypt.setKeyEncAlgo(WSS4JConstants.KEYTRANSPORT_RSAOAEP); // Key EncryptionMethod (rsa-oaep-mgf1p)
 			encrypt.setEncryptSymmKey(true);
 
 			encrypt.setKeyIdentifierType(WSConstants.THUMBPRINT_IDENTIFIER); // embeds KeyInfo with BinarySecurityToken ref
-			encrypt.setSymmetricEncAlgorithm(WSConstants.AES_256); // Data EncryptionMethod (aes256-cbc)
-			encrypt.setDigestAlgorithm(WSConstants.SHA1); // DigestMethod
+			encrypt.setSymmetricEncAlgorithm(WSS4JConstants.AES_256); // Data EncryptionMethod (aes256-cbc)
+			encrypt.setDigestAlgorithm(WSS4JConstants.SHA1); // DigestMethod
 			encrypt.setIncludeEncryptionToken(true);
 
 			// Add a Timestamp
@@ -505,26 +497,27 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 			WSSecurityEngine engine = new WSSecurityEngine();
 			WSHandlerResult result = engine.processSecurityHeader(doc, requestData);
 
-			boolean encryptionProcessed = false;
-			for (WSSecurityEngineResult r : result.getResults()) {
-				Integer action = (Integer) r.get(WSSecurityEngineResult.TAG_ACTION);
-				if (action != null) {
-					if ((action & WSConstants.ENCR) == WSConstants.ENCR) {
-						encryptionProcessed = true;
-					}
-				}
+			if (result == null || result.getResults().isEmpty()) {
+				// Return message as-is. It appears to not be encrypted/signed.
+				return new Message(doc);
 			}
 
-			if (!encryptionProcessed) {
-				throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "Encryption was not processed");
-			}
+			result.getResults().stream()
+					.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
+					.map(Integer.class::cast)
+					.filter(Objects::nonNull)
+					.filter(action -> (action & WSConstants.ENCR) == WSConstants.ENCR)
+					.findAny()
+					.orElseThrow(() -> new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "encryption was not processed"));
 
 			WSSecHeader secHeader = new WSSecHeader(doc);
 			secHeader.removeSecurityHeader();
 
 			return new Message(doc);
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_CHECK);
 		} catch (SOAPException | IOException e) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "Could not decrypt message");
+			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "could not read soap-message");
 		}
 	}
 }
