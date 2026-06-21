@@ -504,12 +504,12 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 
 			boolean encryptionProcessed = result.getResults().stream()
 					.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
-					.map(Integer.class::cast)
 					.filter(Objects::nonNull)
+					.map(Integer.class::cast)
 					.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
 
 			if (!encryptionProcessed) {
-				new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "encryption was not processed");
+				throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "encryption was not processed");
 			}
 
 			WSSecHeader secHeader = new WSSecHeader(doc);
