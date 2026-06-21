@@ -502,13 +502,15 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 				return new Message(doc);
 			}
 
-			result.getResults().stream()
+			boolean encryptionProcessed = result.getResults().stream()
 					.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
 					.map(Integer.class::cast)
 					.filter(Objects::nonNull)
-					.filter(action -> (action & WSConstants.ENCR) == WSConstants.ENCR)
-					.findAny()
-					.orElseThrow(() -> new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "encryption was not processed"));
+					.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
+
+			if (!encryptionProcessed) {
+				new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "encryption was not processed");
+			}
 
 			WSSecHeader secHeader = new WSSecHeader(doc);
 			secHeader.removeSecurityHeader();
