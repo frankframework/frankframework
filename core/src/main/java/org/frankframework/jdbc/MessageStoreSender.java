@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2021, 2022, 2023 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ import org.frankframework.doc.ExcludeFromType;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
@@ -67,12 +69,14 @@ import org.frankframework.util.TimeProvider;
  * }</pre>
  *
  * @ff.parameter messageId messageId to check for duplicates, when this parameter isn't present the messageId is read from sessionKey messageId
+ * @ff.parameter correlationId correlationId to check for duplicates, when this parameter isn't present the correlationId is read from sessionKey correlationId
  *
  * @author Jaco de Groot
  */
 @ExcludeFromType(ITransactionalStorage.class)
 public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> implements ISenderWithParameters {
-	public static final String PARAM_MESSAGEID = "messageId";
+	static final String PARAM_MESSAGEID = "messageId";
+	static final String PARAM_CORRELATION_ID = "correlationId";
 
 	private final @Nonnull ParameterList paramList = new ParameterList();
 	private @Getter String sessionKeys = null;
@@ -108,18 +112,13 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
-		// the messageId to be inserted in the messageStore defaults to the messageId of the session
-		String messageId = session.getMessageId();
-		String correlationID = session.getCorrelationId();
+		ParameterValueList parameterValues = resolveParameterValues(message, session);
 
-		if (paramList.hasParameter(PARAM_MESSAGEID)) {
-			try {
-				// the messageId to be inserted can also be specified via the parameter messageId
-				messageId = paramList.getValues(message, session).get(PARAM_MESSAGEID).asStringValue();
-			} catch (ParameterException e) {
-				throw new SenderException("Could not resolve parameter messageId", e);
-			}
-		}
+		// the messageId to be inserted can also be specified via the parameter messageId, but defaults to the messageId of the session
+		String messageId = resolveParameter(PARAM_MESSAGEID, session.getMessageId(), parameterValues);
+
+		// the correlationId to be inserted can also be specified via the parameter correlationId, but defaults to the correlationId of the session
+		String correlationId = resolveParameter(PARAM_CORRELATION_ID, session.getCorrelationId(), parameterValues);
 
 		Serializable messageToStore;
 		if (StringUtils.isBlank(sessionKeys)) {
@@ -130,15 +129,44 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 					.map(key -> Map.entry(key, session.get(key)))
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-			MessageWrapper<Serializable> messageWrapper = new MessageWrapper<>(message, messageId, correlationID);
+			MessageWrapper<Serializable> messageWrapper = new MessageWrapper<>(message, messageId, correlationId);
 			messageWrapper.getContext().putAll(sessionValuesToStore);
 			messageToStore = messageWrapper;
 		}
-		return new SenderResult(storeMessage(messageId, correlationID, TimeProvider.nowAsDate(), null, null, messageToStore));
+		return new SenderResult(storeMessage(messageId, correlationId, TimeProvider.nowAsDate(), null, null, messageToStore));
 	}
 
 	/**
-	 * Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding {@link MessageStoreListener} must have the same value for this attribute.
+	 * Resolves the parameter values one of, or both, messageId and correlationId parameters are present, returns null otherwise.
+	 */
+	private ParameterValueList resolveParameterValues(Message message, PipeLineSession session) throws SenderException {
+		if (!paramList.hasParameter(PARAM_MESSAGEID) && !paramList.hasParameter(PARAM_CORRELATION_ID)) {
+			return new ParameterValueList();
+		}
+
+		try {
+			return paramList.getValues(message, session);
+		} catch (ParameterException e) {
+			throw new SenderException("Could not resolve parameters", e);
+		}
+	}
+
+	/**
+	 * If the given parameterName is not in the parameterList, fall back to the default value. If it is, resolve the value
+	 */
+	private String resolveParameter(String parameterName, String defaultValue, ParameterValueList parameterValues) {
+		ParameterValue parameterValue = parameterValues.get(parameterName);
+
+		if (parameterValue == null) {
+			return defaultValue;
+		}
+
+		return parameterValue.asStringValue();
+	}
+
+	/**
+	 * Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding {@link MessageStoreListener} must have the
+	 * same value for this attribute.
 	 */
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
