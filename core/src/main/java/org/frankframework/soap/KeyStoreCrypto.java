@@ -82,6 +82,7 @@ import org.frankframework.util.AppConstants;
  * @author Niels Meijer
  */
 @Log4j2
+@SuppressWarnings("java:S1141") // Suppress 'Try-catch blocks should not be nested'.
 public class KeyStoreCrypto extends CryptoBase {
 	@SuppressWarnings("java:S2068")
 	private static final String CA_CERTS_PASSWORD = AppConstants.getInstance().getProperty("cacerts.password");
@@ -433,12 +434,14 @@ public class KeyStoreCrypto extends CryptoBase {
 			Object subject = convertSubjectToPrincipal(issuerString);
 
 			if (keystore != null) {
-				foundIssuingCertChains = getCertificates(subject, keystore, false);
+				log.debug("Searching keystore [{}] for cert with Subject {}", keystore, subject);
+				foundIssuingCertChains = getCertificates(subject, keystore);
 			}
 
 			// If we can't find the issuer in the keystore then look at the truststore
 			if ((foundIssuingCertChains == null || foundIssuingCertChains.isEmpty()) && truststore != null) {
-				foundIssuingCertChains = getCertificates(subject, truststore, true);
+				log.debug("Searching truststore [{}] for cert with Subject {}", truststore, subject);
+				foundIssuingCertChains = getCertificates(subject, truststore);
 			}
 
 			if (foundIssuingCertChains == null || foundIssuingCertChains.isEmpty() || foundIssuingCertChains.get(0).length < 1) {
@@ -651,12 +654,14 @@ public class KeyStoreCrypto extends CryptoBase {
 		}
 		Certificate[] certs = null;
 		if (keystore != null) {
-			certs = getCertificates(thumbprint, keystore, sha, false);
+			log.debug("Searching keystore [{}] for cert using a SHA-1 thumbprint", keystore);
+			certs = getCertificates(thumbprint, keystore, sha);
 		}
 
 		// If we can't find the issuer in the keystore then look at the truststore
 		if ((certs == null || certs.length == 0) && truststore != null) {
-			certs = getCertificates(thumbprint, truststore, sha, true);
+			log.debug("Searching truststore [{}] for cert using a SHA-1 thumbprint", truststore);
+			certs = getCertificates(thumbprint, truststore, sha);
 		}
 
 		if (certs == null || certs.length == 0) {
@@ -673,12 +678,7 @@ public class KeyStoreCrypto extends CryptoBase {
 	 * @return an X509 Certificate (chain)
 	 * @throws WSSecurityException
 	 */
-	private Certificate[] getCertificates(byte[] thumbprint, KeyStore store, MessageDigest sha, boolean truststore) throws WSSecurityException {
-		String keystore = "keystore";
-		if (truststore) {
-			keystore = "truststore";
-		}
-		log.debug("Searching {} for cert using a SHA-1 thumbprint", keystore);
+	private Certificate[] getCertificates(byte[] thumbprint, KeyStore store, MessageDigest sha) throws WSSecurityException {
 		try {
 			for (Enumeration<String> e = store.aliases(); e.hasMoreElements();) {
 				String alias = e.nextElement();
@@ -709,7 +709,7 @@ public class KeyStoreCrypto extends CryptoBase {
 			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "keystore");
 		}
 
-		log.debug("No thumbprint match found in {}", keystore);
+		log.debug("No thumbprint match found in {}", store);
 		return new Certificate[] {};
 	}
 
@@ -788,12 +788,14 @@ public class KeyStoreCrypto extends CryptoBase {
 
 		List<Certificate[]> certs = null;
 		if (keystore != null) {
-			certs = getCertificates(subject, keystore, false);
+			certs = getCertificates(subject, keystore);
+			log.debug("Searching keystore [{}] for cert with Subject {}", keystore, subject);
 		}
 
 		// If we can't find the issuer in the keystore then look at the truststore
 		if ((certs == null || certs.isEmpty()) && truststore != null) {
-			certs = getCertificates(subject, truststore, true);
+			certs = getCertificates(subject, truststore);
+			log.debug("Searching truststore [{}] for cert with Subject {}", truststore, subject);
 		}
 
 		if (certs == null || certs.isEmpty()) {
@@ -909,12 +911,8 @@ public class KeyStoreCrypto extends CryptoBase {
 	 * @return an X509 Certificate (chain)
 	 * @throws WSSecurityException
 	 */
-	private List<Certificate[]> getCertificates(Object subjectRDN, KeyStore store, boolean truststore) throws WSSecurityException {
-		String keystore = "keystore";
-		if (truststore) {
-			keystore = "truststore";
-		}
-		log.debug("Searching {} for cert with Subject {}", keystore, subjectRDN);
+	private List<Certificate[]> getCertificates(Object subjectRDN, KeyStore store) throws WSSecurityException {
+		log.debug("Searching {} for cert with Subject {}", store, subjectRDN);
 		List<Certificate[]> foundCerts = new ArrayList<>();
 		try {
 			for (Enumeration<String> e = store.aliases(); e.hasMoreElements();) {
@@ -942,7 +940,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		}
 
 		if (foundCerts.isEmpty()) {
-			log.debug("No Subject match found in {}", keystore);
+			log.debug("No Subject match found in {}", store);
 		}
 		return foundCerts;
 	}
