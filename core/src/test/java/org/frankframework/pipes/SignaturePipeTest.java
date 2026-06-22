@@ -216,7 +216,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		failure.setName("failure");
 		pipe.addForward(failure);
 
-		Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+		Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME); // Why?
 
 		configureAndStartPipe();
 
@@ -226,7 +226,6 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		// Assert
 		assertEquals(testMessage, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
-		assertNotNull(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME));
 	}
 
 	@Test
@@ -238,13 +237,12 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreType(KeystoreType.JKS);
 
-		Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+		Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME); // Why?
 
 		// Act
 		ConfigurationException ce = assertThrows(ConfigurationException.class, pipe::configure);
 
 		// Assert
 		assertThat(ce.getMessage(), Matchers.startsWith("Signature algorithm [bad_algorithm] not supported"));
-		assertNotNull(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME));
 	}
 }

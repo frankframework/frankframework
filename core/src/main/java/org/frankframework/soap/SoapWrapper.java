@@ -17,7 +17,6 @@ package org.frankframework.soap;
 
 import java.io.IOException;
 import java.security.KeyStore;
-import java.security.Security;
 import java.util.Objects;
 import java.util.StringTokenizer;
 
@@ -56,7 +55,6 @@ import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
 import org.apache.wss4j.dom.message.WSSecUsernameToken;
 import org.apache.xml.security.algorithms.JCEMapper;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -112,7 +110,6 @@ public class SoapWrapper {
 		super();
 		WSSConfig.init();
 		JCEMapper.registerDefaultAlgorithms();
-		Security.addProvider(new BouncyCastleProvider());
 	}
 
 	private static synchronized void initTransformerPools() throws ConfigurationException {

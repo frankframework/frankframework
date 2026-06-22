@@ -66,8 +66,18 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.util.AppConstants;
 
 /**
- * A Crypto implementation based on two Java KeyStore objects, one being the keystore, and one
- * being the truststore. When no truststore is provided the defaut (CACERTS) is used.
+ * A WSS4J Crypto implementation based on a Java KeyStore.
+ * <br />
+ * WSS4J does not come with a method to use a KeyStore.
+ * There is a property based WSS4J Merlin implementation, but that does not suit the
+ * configuration based approach we use in the Frank!Framework.
+ * 
+ * This way the {@code keystore} element can be used to provided a certificate.
+ * 
+ * NOTE: When no truststore is provided the default (CACERTS) is used.
+ * 
+ * The KeyStore is used for signing and encrypting SOAP Messages, the TrustStore is used to validate the CA Chains.
+ * The default should suffice but it's configurable for those who have their own Certificate Authority.
  * 
  * @author Niels Meijer
  */
