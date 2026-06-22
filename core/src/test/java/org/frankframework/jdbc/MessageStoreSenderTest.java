@@ -79,6 +79,35 @@ public class MessageStoreSenderTest {
 	}
 
 	@DatabaseTest
+	public void testSendMessageCorrelationIdFromParameter() throws ConfigurationException, SenderException, TimeoutException, IOException, SQLException {
+		// Arrange
+		String messageId = UUID.randomUUID().toString();
+		String paramCorrelationId = "param-cid-" + UUID.randomUUID();
+		String sessionCorrelationId = "session-cid-should-not-be-stored";
+
+		sender.setSlotId("testSendMessageCorrelationIdFromParameter");
+		sender.addParameter(new Parameter(MessageStoreSender.PARAM_CORRELATION_ID, paramCorrelationId));
+		sender.configure();
+		sender.start();
+
+		Message message = new Message("<dummy/>");
+		session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, sessionCorrelationId);
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertNotNull(result);
+		assertTrue(result.getResult().asString().matches("<id>\\d+</id>"), "Message [" + result.getResult().asString() + "] did not match pattern [<id>\\d+</id>]");
+
+		assertEquals(1, countRecordsBySlotAndCorrelationId(sender.getSlotId(), paramCorrelationId),
+				"Expected the parameter correlationId to be stored, not the session correlationId");
+		assertEquals(0, countRecordsBySlotAndCorrelationId(sender.getSlotId(), sessionCorrelationId),
+				"Session correlationId should not have been stored");
+	}
+
+	@DatabaseTest
 	public void testSendMessageMessageIdFromParameter() throws ConfigurationException, SenderException, TimeoutException, IOException, SQLException {
 		// Arrange
 		String messageId = UUID.randomUUID().toString();
@@ -178,6 +207,24 @@ public class MessageStoreSenderTest {
 				"<result>WARN_MESSAGEID_ALREADY_EXISTS</result><result>ERROR_MESSAGE_IS_DIFFERENT</result></results>";
 		assertEquals(expected, result2.getResult().asString());
 		assertEquals(1, countRecordsBySlotAndMessageId(sender.getSlotId(), messageId));
+	}
+
+	public int countRecordsBySlotAndCorrelationId(String slotId, String correlationId) throws SQLException {
+		try (Connection connection = env.getConnection()) {
+			String selectQuery = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE " + sender.getSlotIdField() + "=? AND " + sender.getCorrelationIdField() + "=?";
+			try (PreparedStatement statement = connection.prepareStatement(selectQuery)) {
+				statement.setString(1, slotId);
+				statement.setString(2, correlationId);
+				try (ResultSet rs = statement.executeQuery()) {
+					if (rs.next()) {
+						return rs.getInt(1);
+					} else {
+						fail("The query [" + selectQuery + "] did not return any results");
+						return -1;
+					}
+				}
+			}
+		}
 	}
 
 	public int countRecordsBySlotAndMessageId(String slotId, String messageId) throws SQLException {
