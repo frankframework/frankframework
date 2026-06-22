@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022, 2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -36,8 +36,7 @@ import com.aspose.pdf.LoadOptions;
 import com.aspose.pdf.Page;
 import com.aspose.pdf.SaveFormat;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.LogUtil;
@@ -46,9 +45,9 @@ import org.frankframework.util.LogUtil;
  * Converts the files which are required and supported by the Aspose image library.
  * @author Gerard van der Hoorn
  */
-public class PdfImageConvertor extends AbstractConvertor {
+public class ImageConverter extends AbstractConverter {
 
-	private static final Logger LOGGER = LogUtil.getLogger(PdfImageConvertor.class);
+	private static final Logger LOGGER = LogUtil.getLogger(ImageConverter.class);
 
 	private static final float NO_SCALE_FACTOR = 1.0f;
 	private static final int NUMBER_OF_MARGINS = 2;
@@ -73,17 +72,18 @@ public class PdfImageConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected PdfImageConvertor(CisConfiguration configuration) {
+	protected ImageConverter(CisConfiguration configuration) {
 		// Give the supported media types.
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public Message convert(MediaType mediaType, Message message) throws IOException {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
+		MessageBuilder messageBuilder = new MessageBuilder();
 		try (Document doc = new Document()) {
 			Page page = doc.getPages().add(); // Don't close this!?
 
@@ -103,11 +103,15 @@ public class PdfImageConvertor extends AbstractConvertor {
 				}
 			}
 
-			long startTime = System.currentTimeMillis();
-			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
-			long endTime = System.currentTimeMillis();
-			LOGGER.info("Conversion(save operation in convert method) takes  ::: {} ms", () -> (endTime - startTime));
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				doc.save(stream, SaveFormat.Pdf);
+			}
+
+			doc.freeMemory();
+
+			Message result = messageBuilder.build();
+			result.getContext().withMimeType(PDF_MIMETYPE);
+			return result;
 		}
 	}
 

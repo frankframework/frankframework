@@ -13,13 +13,15 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 
@@ -29,9 +31,10 @@ import com.aspose.pdf.SaveFormat;
 import com.aspose.pdf.XpsLoadOptions;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
-import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.CisConfiguration;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.ClassUtils;
 
 /**
@@ -39,7 +42,7 @@ import org.frankframework.util.ClassUtils;
  *
  * @author Gerard van der Hoorn
  */
-public class PdfConvertor extends AbstractConvertor {
+public class XpsConverter extends AbstractConverter {
 
 	private static final Map<MediaType, Class<? extends LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
@@ -52,21 +55,35 @@ public class PdfConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected PdfConvertor(CisConfiguration configuration) {
+	protected XpsConverter(CisConfiguration configuration) {
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 
 	@Override
-	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
+	public Message convert(MediaType mediaType, Message message) throws Exception {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
-		try (InputStream inputStream = message.asInputStream(charset); Document doc = new Document(inputStream, getLoadOptions(mediaType))) {
-			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
-			doc.freeMemory();
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (InputStream inputStream = message.asInputStream(configuration.getCharset());
+				Document doc = new Document(inputStream, getLoadOptions(mediaType))) {
+
+			int numberOfPages = doc.getPages().size();
+			try (OutputStream stream = messageBuilder.asOutputStream()) {
+				doc.save(stream, SaveFormat.Pdf);
+			}
+
+			Message result = messageBuilder.build();
+			result.getContext().withMimeType(PDF_MIMETYPE).with("Pdf.Pages", numberOfPages);
+
+			String originalName = (String) message.getContext().get(MessageContext.METADATA_NAME);
+			if (StringUtils.isNotEmpty(originalName)) {
+				result.getContext().withName(originalName);
+			}
+
+			return result;
 		}
-		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
 
 	@NonNull

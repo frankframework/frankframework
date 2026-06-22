@@ -145,7 +145,7 @@ public class EnumUtils {
 		try {
 			Field field = enumValue.getDeclaringClass().getField(enumValue.name());
 			return field.getAnnotation(annotationType);
-		} catch (NoSuchFieldException | SecurityException ignored) {
+		} catch (NoSuchFieldException ignored) {
 			return null;
 		} // No field found or not accessible, no warning
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.DatabaseTestOptions;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.TimeProvider;
 
@@ -67,14 +68,17 @@ public class JdbcTransactionalStorageTest {
 		storage.setCheckTable(false);
 		storage.setSequenceName("SEQ_" + tableName);
 		storage.setSlotId("test");
+		storage.setOnlyStoreWhenMessageIdUnique(true);
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testQueryTextAndBrowseMessage() throws Exception {
 		testQueryTextAndBrowseMessageHelper(true);
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testQueryTextAndBrowseMessageNotCompressed() throws Exception {
 		testQueryTextAndBrowseMessageHelper(false);
 	}
@@ -97,11 +101,13 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testRetrieveObject() throws Exception {
 		testRetrieveObjectHelper(true);
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testRetrieveObjectNotCompressed() throws Exception {
 		testRetrieveObjectHelper(false);
 	}
@@ -137,6 +143,7 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testBrowseMessage() throws Exception {
 		boolean blobsCompressed = true;
 		storage.setBlobsCompressed(blobsCompressed);
@@ -199,11 +206,13 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testRetrieveObjectWithADifferentColumnNotCompressed() {
 		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(false), "unknown compression method");
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testRetrieveObjectWithADifferentColumn() {
 		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(true), "invalid stream header");
 	}
@@ -232,6 +241,7 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testStoreAndConsumeMessage() throws Exception {
 		storage.configure();
 
@@ -250,6 +260,7 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	@DatabaseTest
+	@DatabaseTestOptions(additionalDataSources = { "H2-MSSQL-Mode", "H2-Oracle-Mode" })
 	public void testGetContext() throws Exception {
 		storage.configure();
 		String key;
