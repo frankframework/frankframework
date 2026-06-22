@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -37,7 +36,6 @@ import org.frankframework.doc.ExcludeFromType;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
-
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
@@ -137,12 +135,13 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 	}
 
 	/**
-	 * Resolves the parameter values if relevant parameters are present, returns null otherwise.
+	 * Resolves the parameter values one of, or both, messageId and correlationId parameters are present, returns null otherwise.
 	 */
-	private @Nullable ParameterValueList resolveParameterValues(Message message, PipeLineSession session) throws SenderException {
+	private ParameterValueList resolveParameterValues(Message message, PipeLineSession session) throws SenderException {
 		if (!paramList.hasParameter(PARAM_MESSAGEID) && !paramList.hasParameter(PARAM_CORRELATION_ID)) {
-			return null;
+			return new ParameterValueList();
 		}
+
 		try {
 			return paramList.getValues(message, session);
 		} catch (ParameterException e) {
@@ -153,15 +152,17 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 	/**
 	 * If the given parameterName is not in the parameterList, fall back to the default value. If it is, resolve the value
 	 */
-	private String resolveParameter(String parameterName, String defaultValue, @Nullable ParameterValueList parameterValues) {
-		if (parameterValues == null || !paramList.hasParameter(parameterName)) {
+	private String resolveParameter(String parameterName, String defaultValue, ParameterValueList parameterValues) {
+		if (!paramList.hasParameter(parameterName)) {
 			return defaultValue;
 		}
+
 		return parameterValues.get(parameterName).asStringValue();
 	}
 
 	/**
-	 * Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding {@link MessageStoreListener} must have the same value for this attribute.
+	 * Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding {@link MessageStoreListener} must have the
+	 * same value for this attribute.
 	 */
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;
