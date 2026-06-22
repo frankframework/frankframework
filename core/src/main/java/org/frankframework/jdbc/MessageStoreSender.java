@@ -36,6 +36,7 @@ import org.frankframework.doc.ExcludeFromType;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
@@ -153,11 +154,13 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 	 * If the given parameterName is not in the parameterList, fall back to the default value. If it is, resolve the value
 	 */
 	private String resolveParameter(String parameterName, String defaultValue, ParameterValueList parameterValues) {
-		if (!paramList.hasParameter(parameterName)) {
+		ParameterValue parameterValue = parameterValues.get(parameterName);
+
+		if (parameterValue == null) {
 			return defaultValue;
 		}
 
-		return parameterValues.get(parameterName).asStringValue();
+		return parameterValue.asStringValue();
 	}
 
 	/**
