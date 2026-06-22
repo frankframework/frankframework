@@ -86,6 +86,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	protected Logger log = LogUtil.getLogger(this);
 	private static final Logger secLog = LogUtil.getLogger("SEC");
 	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
+	private static final boolean LADYBUG_ON_CLASSPATH = checkLadybugOnClasspath();
 
 	private Boolean autoStart = null;
 
@@ -102,6 +103,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 
 	public Configuration() {
 		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); // Don't call the super(..), it will trigger a refresh.
+	}
+
+	private static boolean checkLadybugOnClasspath() {
+		try {
+			return Thread.currentThread().getContextClassLoader().loadClass("org.wearefrank.ladybug.TestTool") != null;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -132,7 +141,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
 		}
 
-		if (StringUtils.isNotEmpty(AppConstants.getInstance().getProperty("frankframework-ladybug-debugger.version"))) {
+		if (LADYBUG_ON_CLASSPATH) {
 			this.getEnvironment().addActiveProfile("aop"); // Makes this configurable depending on if the ladybug is present on the classpath.
 		}
 
