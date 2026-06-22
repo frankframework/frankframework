@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,17 +13,16 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv.impl.convertors;
+package org.frankframework.extensions.aspose.converters;
 
 import java.util.Set;
 
 import org.springframework.http.MediaType;
 
-import org.frankframework.extensions.aspose.ConversionOption;
-import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
+import org.frankframework.extensions.aspose.services.CisConversionResult;
 import org.frankframework.stream.Message;
 
-public interface Convertor {
+public interface Converter {
 
 	/**
 	 * Returns the supported media types.
@@ -37,6 +36,6 @@ public interface Convertor {
 	 * @param charset
 	 *
 	 */
-	CisConversionResult convertToPdf(MediaType mediaType, String filename, Message message, ConversionOption conversionOption, String charset);
+	void convertToPdf(CisConversionResult result, MediaType mediaType, Message message) throws Exception;
 
 }

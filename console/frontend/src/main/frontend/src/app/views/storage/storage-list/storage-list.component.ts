@@ -43,6 +43,7 @@ type SearchColumn = MessageField & FieldSearchInfo;
 
 type MessageData = MessageStore['messages'][number];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TEST_API_RESPONSE: DataTableServerResponseInfo<Message> = {
   data: [
     {
@@ -123,6 +124,11 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly storageService: StorageService = inject(StorageService);
   protected readonly getProcessStateIconFn = getProcessStateIcon;
   protected readonly storageParams = this.storageService.storageParams;
+  protected readonly staticMessageFields: SearchColumn[] = [
+    { fieldName: 'message', property: 'message', type: 'string', display: true, filter: '', displayName: 'Message' },
+    { fieldName: 'startDate', property: 'startDate', type: 'date', display: true, filter: '', displayName: 'From' },
+    { fieldName: 'endDate', property: 'endDate', type: 'date', display: true, filter: '', displayName: 'To' },
+  ];
   protected readonly faChevronUp = faChevronUp;
   protected readonly faChevronDown = faChevronDown;
   protected readonly faSearch = faSearch;
@@ -187,7 +193,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.displayedColumns = [
         ...this.initialDisplayedColumns,
         ...response.fields.map<DataTableColumn<MessageData>>((field) => ({
-          name: /*field.fieldName ?? */ field.property as string,
+          name: field.property as string,
           property: field.property,
           displayName: field.displayName,
           className: field.type === 'date' ? 'date' : undefined,
@@ -268,6 +274,9 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.Session.remove('storageFiltering');
 
     for (const column of this.messageFields) {
+      column.filter = '';
+    }
+    for (const column of this.staticMessageFields) {
       column.filter = '';
     }
     this.storageService.updateTable();
@@ -437,7 +446,8 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private updateSessionStorage(onColumnUpdate?: (column: SearchColumn) => void): void {
     const searchSession: FieldSearchInfo[] = [];
-    for (const column of this.messageFields) {
+    const columns: SearchColumn[] = [...this.messageFields, ...this.staticMessageFields];
+    for (const column of columns) {
       if (column.filter !== '' || !column.display) {
         if (onColumnUpdate) onColumnUpdate(column);
         searchSession.push({

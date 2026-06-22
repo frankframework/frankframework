@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,30 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extensions.aspose.services.conv;
+package org.frankframework.extensions.aspose.services;
 
-/**
- * @author
- * 	Gerard van der Hoorn
- */
-public class CisConversionException extends RuntimeException {
+import org.frankframework.core.IbisException;
 
-	private static final long serialVersionUID = 1L;
+@SuppressWarnings("serial")
+public class InvalidPasswordException extends IbisException {
 
-	public CisConversionException() {
-		super();
+	public InvalidPasswordException(String msg) {
+		super(msg);
 	}
 
-	public CisConversionException(String message, Throwable cause) {
-		super(message, cause);
+	public InvalidPasswordException(String msg, Throwable th) {
+		super(msg, th);
 	}
 
-	public CisConversionException(String message) {
-		super(message);
+	public InvalidPasswordException(Throwable e) {
+		super(e);
 	}
-
-	public CisConversionException(Throwable cause) {
-		super(cause);
-	}
-
 }

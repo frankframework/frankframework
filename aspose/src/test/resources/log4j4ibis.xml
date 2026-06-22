@@ -16,6 +16,7 @@
 	</Appenders>
 
 	<Loggers>
+		<Logger name="org.frankframework.extensions.aspose.AsposeFontManager" level="WARN" />
 		<Logger name="org.frankframework" level="DEBUG" />
 
 		<Root level="INFO">

@@ -18,12 +18,17 @@ package org.frankframework.dbms;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.StringUtil;
 
@@ -33,16 +38,51 @@ import org.frankframework.util.StringUtil;
  *
  * @author Jaco de Groot
  */
+@Log4j2
 public class H2DbmsSupport extends GenericDbmsSupport {
 
 	private final boolean dbmsHasSkipLockedFunctionality;
+	private final String sqlDialect;
 
 	public H2DbmsSupport() {
 		throw new IllegalStateException("H2DbmsSupport should be instantiated with product-version to determine supported featureset. Calling this constructor is a code-bug.");
 	}
 
-	public H2DbmsSupport(String productVersion) {
+	public H2DbmsSupport(@Nullable String productVersion, @Nullable Connection connection) {
 		dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
+		sqlDialect = determineSqlDialectFromConnection(connection, getDbmsName());
+	}
+
+	private static @NonNull String determineSqlDialectFromConnection(@Nullable Connection connection, @NonNull String defaultDialect) {
+		if (connection == null) return defaultDialect;
+
+		try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT SETTING_VALUE FROM INFORMATION_SCHEMA.SETTINGS WHERE SETTING_NAME = 'MODE'")) {
+			if (!rs.next()) return defaultDialect;
+			return getDialectFromMode(rs.getString(1), defaultDialect);
+		} catch (SQLException e) {
+			log.warn("Cannot query database for SQL mode, using default dialect [{}]", defaultDialect, e);
+			return defaultDialect;
+		}
+	}
+
+	private static @NonNull String getDialectFromMode(@Nullable String mode, @NonNull String defaultDialect) {
+		if (StringUtils.isBlank(mode)) {
+			return defaultDialect;
+		}
+		if (mode.equals("MSSQLServer")) {
+			return Dbms.MSSQL.getProductName();
+		}
+		try {
+			return Dbms.valueOf(mode.toUpperCase()).getProductName();
+		} catch (IllegalArgumentException e) {
+			log.warn("Cannot map H2 connection mode [{}] to a SQL dialect, using default [{}]", mode, defaultDialect);
+			return defaultDialect;
+		}
+	}
+
+	@Override
+	public String getTargetSqlDialect() {
+		return sqlDialect;
 	}
 
 	@Override

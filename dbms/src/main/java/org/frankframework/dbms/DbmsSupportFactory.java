@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -42,11 +43,11 @@ public class DbmsSupportFactory {
 
 	private @Getter Properties dbmsSupportMap;
 
-	public IDbmsSupport getDbmsSupport(DataSource datasource) {
+	public @NonNull IDbmsSupport getDbmsSupport(DataSource datasource) {
 		return dbmsSupport.computeIfAbsent(datasource, this::compute);
 	}
 
-	private IDbmsSupport compute(DataSource datasource) {
+	private @NonNull IDbmsSupport compute(DataSource datasource) {
 		try (Connection connection = datasource.getConnection()) {
 			return getDbmsSupport(connection);
 		} catch (SQLException e) {
@@ -55,18 +56,19 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(Connection connection) throws SQLException {
+	public @NonNull IDbmsSupport getDbmsSupport(@NonNull Connection connection) throws SQLException {
 		try {
 			DatabaseMetaData md = connection.getMetaData();
+
 			String name = md.getDatabaseProductName();
 			String version = md.getDatabaseProductVersion();
-			return getDbmsSupport(name, version);
+			return getDbmsSupport(name, version, connection);
 		} catch (SQLException | DbmsException e) {
 			throw new RuntimeException("cannot obtain product from connection metadata", e);
 		}
 	}
 
-	public IDbmsSupport getDbmsSupport(String product, String productVersion) throws DbmsException {
+	private @NonNull IDbmsSupport getDbmsSupport(@NonNull String product, @NonNull String productVersion, @NonNull Connection connection) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {
@@ -91,7 +93,7 @@ public class DbmsSupportFactory {
 					}
 				}
 			}
-			return Dbms.findDbmsSupportByProduct(product, productVersion);
+			return Dbms.findDbmsSupportByProduct(product, productVersion, connection);
 		}
 		log.debug("Setting databasetype to GENERIC, productName [{}]", product);
 		return new GenericDbmsSupport();

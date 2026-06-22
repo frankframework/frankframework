@@ -328,7 +328,7 @@
 		<dependency>
 			<groupId>io.swagger.parser.v3</groupId>
 			<artifactId>swagger-parser-v3</artifactId>
-			<version>2.1.43</version>
+			<version>2.1.44</version>
 			<exclusions>
 				<exclusion>
 					<groupId>io.swagger.core.v3</groupId>
@@ -344,12 +344,12 @@
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-core-jakarta</artifactId>
-			<version>2.2.50</version>
+			<version>2.2.51</version>
 		</dependency>
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-models-jakarta</artifactId>
-			<version>2.2.50</version>
+			<version>2.2.51</version>
 		</dependency>
 		<dependency>
 			<groupId>com.networknt</groupId>
@@ -748,7 +748,7 @@
 		<dependency>
 			<groupId>com.icegreen</groupId>
 			<artifactId>greenmail-junit5</artifactId>
-			<version>2.1.8</version>
+			<version>2.1.9</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -828,7 +828,7 @@
 		<dependency>
 			<groupId>com.unboundid</groupId>
 			<artifactId>unboundid-ldapsdk</artifactId>
-			<version>7.0.4</version>
+			<version>7.0.5</version>
 			<scope>test</scope>
 		</dependency>
 
