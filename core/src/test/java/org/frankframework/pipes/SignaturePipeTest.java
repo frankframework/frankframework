@@ -47,7 +47,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@BeforeAll
-	public static void setup() throws ConfigurationException {
+	public static void setup() {
 		// Load BouncyCastle if not already set.
 		new LoadBouncyCastleBean().afterPropertiesSet();
 	}

@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -74,7 +73,7 @@ import org.frankframework.util.AppConstants;
  * 
  * This way the {@code keystore} element can be used to provided a certificate.
  * 
- * NOTE: When no truststore is provided the default (CACERTS) is used.
+ * NOTE: When no TrustStore is provided the default (CACERTS) is used.
  * 
  * The KeyStore is used for signing and encrypting SOAP Messages, the TrustStore is used to validate the CA Chains.
  * The default should suffice but it's configurable for those who have their own Certificate Authority.
@@ -84,7 +83,7 @@ import org.frankframework.util.AppConstants;
 @Log4j2
 @SuppressWarnings("java:S1141") // Suppress 'Try-catch blocks should not be nested'.
 public class KeyStoreCrypto extends CryptoBase {
-	@SuppressWarnings("java:S2068")
+	@SuppressWarnings("java:S2068") // Suppress 'Hard-coded credentials are security-sensitive'
 	private static final String CA_CERTS_PASSWORD = AppConstants.getInstance().getProperty("cacerts.password");
 	private static final String CA_CERTS_PATH = AppConstants.getInstance().getProperty("cacerts.location");
 
@@ -115,31 +114,6 @@ public class KeyStoreCrypto extends CryptoBase {
 
 		this.keystore = keystore;
 		this.truststore = truststore;
-	}
-
-	/**
-	 * Loads the keystore from an <code>InputStream </code>.
-	 * <p/>
-	 *
-	 * @param input <code>InputStream</code> to read from
-	 * @throws WSSecurityException
-	 */
-	protected KeyStore load(InputStream input, String storepass, String provider, String type) throws WSSecurityException {
-		KeyStore ks = null;
-
-		try {
-			if (provider == null || provider.length() == 0) {
-				ks = KeyStore.getInstance(type);
-			} else {
-				ks = KeyStore.getInstance(type, provider);
-			}
-
-			ks.load(input, storepass == null || storepass.length() == 0 ? new char[0] : storepass.toCharArray());
-		} catch (IOException | GeneralSecurityException e) {
-			log.debug(e.getMessage(), e);
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "failedCredentialLoad");
-		}
-		return ks;
 	}
 
 	/**
@@ -248,28 +222,15 @@ public class KeyStoreCrypto extends CryptoBase {
 		if (cryptoType == null) {
 			return new X509Certificate[0];
 		}
-		CryptoType.TYPE type = cryptoType.getType();
-		X509Certificate[] certs = new X509Certificate[0];
-		switch (type) {
-			case ISSUER_SERIAL:
-				certs = getX509Certificates(cryptoType.getIssuer(), cryptoType.getSerial());
-				break;
-			case THUMBPRINT_SHA1:
-				certs = getX509Certificates(cryptoType.getBytes());
-				break;
-			case SKI_BYTES:
-				certs = getX509CertificatesSKI(cryptoType.getBytes());
-				break;
-			case SUBJECT_DN:
-				certs = getX509CertificatesSubjectDN(cryptoType.getSubjectDN());
-				break;
-			case ALIAS:
-				certs = getX509Certificates(cryptoType.getAlias());
-				break;
-			case ENDPOINT:
-				break;
-		}
-		return certs;
+
+		return switch (cryptoType.getType()) {
+			case ISSUER_SERIAL -> getX509Certificates(cryptoType.getIssuer(), cryptoType.getSerial());
+			case THUMBPRINT_SHA1 -> getX509Certificates(cryptoType.getBytes());
+			case SKI_BYTES -> getX509CertificatesSKI(cryptoType.getBytes());
+			case SUBJECT_DN -> getX509CertificatesSubjectDN(cryptoType.getSubjectDN());
+			case ALIAS -> getX509Certificates(cryptoType.getAlias());
+			case ENDPOINT -> new X509Certificate[0];
+		};
 	}
 
 	/**
@@ -396,7 +357,7 @@ public class KeyStoreCrypto extends CryptoBase {
 	 *
 	 * @throws WSSecurityException if the certificate chain is invalid
 	 */
-	protected void verifyTrust(X509Certificate[] certs, boolean enableRevocation, Collection<Pattern> subjectCertConstraints) throws WSSecurityException {
+	private void verifyTrust(X509Certificate[] certs, boolean enableRevocation, Collection<Pattern> subjectCertConstraints) throws WSSecurityException {
 		//
 		// FIRST step - Search the keystore for the transmitted certificate
 		//
@@ -523,6 +484,7 @@ public class KeyStoreCrypto extends CryptoBase {
 	@Override
 	public void verifyTrust(X509Certificate[] certs, boolean enableRevocation, Collection<Pattern> subjectCertConstraints, Collection<Pattern> issuerCertConstraints) throws WSSecurityException {
 		verifyTrust(certs, enableRevocation, subjectCertConstraints);
+
 		if (!matchesIssuerDnPattern(certs[0], issuerCertConstraints)) {
 			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
 		}
@@ -578,12 +540,14 @@ public class KeyStoreCrypto extends CryptoBase {
 		}
 		Certificate[] certs = null;
 		if (keystore != null) {
-			certs = getCertificates(issuerName, serialNumber, keystore, false);
+			log.debug("Searching keystore [{}] for cert with issuer {} and serial {}", keystore, issuerName, serialNumber);
+			certs = getCertificates(issuerName, serialNumber, keystore);
 		}
 
 		// If we can't find the issuer in the keystore then look at the truststore
 		if ((certs == null || certs.length == 0) && truststore != null) {
-			certs = getCertificates(issuerName, serialNumber, truststore, true);
+			log.debug("Searching keystore [{}] for cert with issuer {} and serial {}", truststore, issuerName, serialNumber);
+			certs = getCertificates(issuerName, serialNumber, truststore);
 		}
 
 		if (certs == null || certs.length == 0) {
@@ -600,12 +564,8 @@ public class KeyStoreCrypto extends CryptoBase {
 	 * @return an X509 Certificate (chain)
 	 * @throws WSSecurityException
 	 */
-	private Certificate[] getCertificates(Object issuerRDN, BigInteger serialNumber, KeyStore store, boolean truststore) throws WSSecurityException {
-		String keystore = "keystore";
-		if (truststore) {
-			keystore = "truststore";
-		}
-		log.debug("Searching {} for cert with issuer {} and serial {}", keystore, issuerRDN, serialNumber);
+	private Certificate[] getCertificates(Object issuerRDN, BigInteger serialNumber, KeyStore store) throws WSSecurityException {
+		log.debug("Searching {} for cert with issuer {} and serial {}", issuerRDN, serialNumber);
 		try {
 			for (Enumeration<String> e = store.aliases(); e.hasMoreElements();) {
 				String alias = e.nextElement();
@@ -633,7 +593,7 @@ public class KeyStoreCrypto extends CryptoBase {
 			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "keystore");
 		}
 
-		log.debug("No issuer serial match found in {}", keystore);
+		log.debug("No issuer serial match found in {}", store);
 		return new Certificate[] {};
 	}
 
@@ -652,6 +612,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		} catch (NoSuchAlgorithmException e) {
 			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "decoding.general");
 		}
+
 		Certificate[] certs = null;
 		if (keystore != null) {
 			log.debug("Searching keystore [{}] for cert using a SHA-1 thumbprint", keystore);
