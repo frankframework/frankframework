@@ -428,7 +428,6 @@ public class SoapWrapper {
 
 			Crypto crypto = new KeyStoreCrypto(keystore);
 
-			// how BinarySecurityToken
 			WSSecEncrypt encrypt = new WSSecEncrypt(secHeader);
 			encrypt.setUserInfo(certificateName);
 /*
