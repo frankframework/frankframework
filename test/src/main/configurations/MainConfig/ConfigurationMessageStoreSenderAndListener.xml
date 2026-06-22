@@ -1,12 +1,12 @@
 <Module>
 	<Adapter name="writeIbisstore">
 		<Receiver name="writeIbisstoreReceiver">
-			<JavaListener name="writeIbisstoreListener" serviceName="ibis4test-WriteToMessageStore"  />
-			<JdbcErrorStorage slotId="TestMessageStoreSenderAndListener-WriteErrors" />
+			<JavaListener name="writeIbisstoreListener" serviceName="ibis4test-WriteToMessageStore"/>
+			<JdbcErrorStorage slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
 		</Receiver>
 		<Pipeline>
 			<Exits>
-				<Exit name="EXIT" state="SUCCESS" code="200" />
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
 			</Exits>
 
 			<PutInSessionPipe name="prepareSessionKeys">
@@ -14,13 +14,13 @@
 				<Param name="key2" value="double quote: [&quot;] single quote [']"/>
 			</PutInSessionPipe>
 			<SenderPipe name="sendMessagePipe">
-				<JdbcMessageLog slotId="TestMessageStoreSenderAndListener-WriteLog" />
+				<JdbcMessageLog slotId="TestMessageStoreSenderAndListener-WriteLog"/>
 				<MessageStoreSender
 					slotId="TestMessageStoreSenderAndListener-Queue"
 					sessionKeys="key1,key2">
-					<Param name="messageId" xpathExpression="/Envelope/Header/MessageID" />
+					<Param name="messageId" xpathExpression="/Envelope/Header/MessageID"/>
 				</MessageStoreSender>
-				<Forward name="success" path="EXIT" />
+				<Forward name="success" path="EXIT"/>
 			</SenderPipe>
 		</Pipeline>
 	</Adapter>
@@ -28,7 +28,7 @@
 		<Receiver name="readIbisstoreReceiver" pollInterval="1" maxRetries="-1">
 			<MessageStoreListener name="MyListener"
 				slotId="TestMessageStoreSenderAndListener-Queue"
-				sessionKeys="key1,key2" />
+				sessionKeys="key1,key2"/>
 		</Receiver>
 		<Pipeline>
 			<InputValidator className="org.frankframework.pipes.XmlValidator"
@@ -38,31 +38,31 @@
 			</InputValidator>
 
 			<Exits>
-				<Exit name="EXIT" state="SUCCESS" code="200" />
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
 			</Exits>
 
-			<XsltPipe name="collectResults" xpathExpression="concat('original message [',$msg,'] key1 [',$k1,'] key2 [',$k2,']')" >
-				<Param name="msg" sessionKey="originalMessage" />
-				<Param name="k1" sessionKey="key1" />
-				<Param name="k2" sessionKey="key2" />
-				<Forward name="success" path="EXIT" />
+			<XsltPipe name="collectResults" xpathExpression="concat('original message [',$msg,'] key1 [',$k1,'] key2 [',$k2,']')">
+				<Param name="msg" sessionKey="originalMessage"/>
+				<Param name="k1" sessionKey="key1"/>
+				<Param name="k2" sessionKey="key2"/>
+				<Forward name="success" path="EXIT"/>
 			</XsltPipe>
 		</Pipeline>
 	</Adapter>
 
 	<Adapter name="testMessageStoreNoMessageLog">
 		<Receiver name="WriteToMessageStoreNoLog">
-			<JavaListener name="WriteToMessageStoreNoLog" serviceName="ibis4test-WriteToMessageStoreNoLog"  />
+			<JavaListener name="WriteToMessageStoreNoLog" serviceName="ibis4test-WriteToMessageStoreNoLog"/>
 		</Receiver>
 		<Pipeline>
 			<Exits>
-				<Exit name="EXIT" state="SUCCESS" code="200" />
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
 			</Exits>
 
 			<SenderPipe name="sendMessagePipe">
 				<MessageStoreSender
-					slotId="TestMessageStoreSenderAndListener-NoLog" />
-				<Forward name="success" path="EXIT" />
+					slotId="TestMessageStoreSenderAndListener-NoLog"/>
+				<Forward name="success" path="EXIT"/>
 			</SenderPipe>
 		</Pipeline>
 	</Adapter>
@@ -70,15 +70,60 @@
 		<Receiver name="testReadMessageStoreNoMessageLog" pollInterval="1" maxRetries="0">
 			<MessageStoreListener name="testReadMessageStoreNoMessageLog"
 				slotId="TestMessageStoreSenderAndListener-NoLog"
-				moveToMessageLog="false" />
+				moveToMessageLog="false"/>
 		</Receiver>
 		<Pipeline>
 			<Exits>
-				<Exit name="EXIT" state="SUCCESS" code="200" />
-				<Exit name="EXCEPTION" state="ERROR" />
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
+				<Exit name="EXCEPTION" state="ERROR"/>
 			</Exits>
 
-			<ExceptionPipe name="error" />
+			<ExceptionPipe name="error"/>
 		</Pipeline>
 	</Adapter>
+
+	<Adapter name="writeIbisstoreWithCidXsl">
+		<Receiver name="writeIbisstoreReceiverWithCidXsl">
+			<JavaListener name="writeIbisstoreListenerWithCidXsl" serviceName="ibis4test-WriteToMessageStoreWithCidXsl"/>
+			<JdbcErrorStorage slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
+			</Exits>
+
+			<SenderPipe name="sendMessagePipe">
+				<JdbcMessageLog slotId="TestMessageStoreSenderAndListener-WriteLog"/>
+				<MessageStoreSender
+					slotId="TestMessageStoreSenderAndListener-Queue"
+					sessionKeys="key1,key2">
+					<Param name="correlationId" styleSheetName="MessageStoreSenderAndListener/extractCorrelationId.xsl"/>
+				</MessageStoreSender>
+				<Forward name="success" path="EXIT"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="writeIbisstoreWithCid">
+		<Receiver name="writeIbisstoreReceiverWithCid">
+			<JavaListener name="writeIbisstoreListenerWithCid" serviceName="ibis4test-WriteToMessageStoreWithCid"/>
+			<JdbcErrorStorage slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
+			</Exits>
+
+			<SenderPipe name="sendMessagePipe">
+				<JdbcMessageLog slotId="TestMessageStoreSenderAndListener-WriteLog"/>
+				<MessageStoreSender
+					slotId="TestMessageStoreSenderAndListener-Queue"
+					sessionKeys="key1,key2">
+					<Param name="correlationId" xpathExpression="/Envelope/Header/CorrelationID"/>
+				</MessageStoreSender>
+				<Forward name="success" path="EXIT"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
 </Module>
