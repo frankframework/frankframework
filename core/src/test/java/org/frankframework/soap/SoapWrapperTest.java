@@ -77,6 +77,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.encryption.KeystoreType;
+import org.frankframework.lifecycle.LoadBouncyCastleBean;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
@@ -315,6 +316,9 @@ public class SoapWrapperTest {
 	}
 
 	private KeyStore createDummyKeyStoreWithNullKeyPassword(String certificateName, String certificatePassword) throws Exception {
+		// Load BouncyCastle if not already set.
+		new LoadBouncyCastleBean().afterPropertiesSet();
+
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 		keyGen.initialize(2048);
 		KeyPair keyPair = keyGen.generateKeyPair();
