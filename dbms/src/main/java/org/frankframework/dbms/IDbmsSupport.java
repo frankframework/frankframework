@@ -45,6 +45,10 @@ public interface IDbmsSupport {
 		return getDbms().getKey();
 	}
 
+	default String getTargetSqlDialect() {
+		return getDbmsName();
+	}
+
 	default boolean isParameterTypeMatchRequired() {
 		return false;
 	}
@@ -122,7 +126,10 @@ public interface IDbmsSupport {
 
 	void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, DbmsException;
 
-	String getTextFieldType();
+	@NonNull
+	default String getTextFieldType() {
+		return "VARCHAR";
+	}
 
 	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws DbmsException;
 
@@ -173,9 +180,15 @@ public interface IDbmsSupport {
 
 	boolean isConstraintViolation(SQLException e);
 
-	String getLength(String column);
+	@NonNull
+	default String getLength(String column) {
+		return "LENGTH(" + column + ")";
+	}
 
-	String getBooleanValue(boolean value);
+	@NonNull
+	default String getBooleanValue(boolean value) {
+		return ("" + value).toUpperCase();
+	}
 
 	/**
 	 * DBMS Feature flag: is it possible to call a stored procedure that returns the results of a SELECT statement
@@ -187,7 +200,7 @@ public interface IDbmsSupport {
 		return true;
 	}
 
-	default SQLType getCursorSqlType() {
+	default @NonNull SQLType getCursorSqlType() {
 		return JDBCType.REF_CURSOR;
 	}
 

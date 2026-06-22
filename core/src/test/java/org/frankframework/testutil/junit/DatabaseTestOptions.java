@@ -45,4 +45,10 @@ public @interface DatabaseTestOptions {
 	 * Ensure the database test environment is cleaned up after use
 	 */
 	boolean cleanupAfterUse() default false;
+
+	/**
+	 * Add additional (custom) datasources to be used in the test, in addition to the standard datasources provided by the test harness.
+	 * These datasources should be listed in the `resources.yml` file under the `jdbc` section.
+	 */
+	String[] additionalDataSources() default "";
 }

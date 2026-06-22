@@ -15,6 +15,11 @@
 */
 package org.frankframework.dbms;
 
+import java.sql.Connection;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
@@ -33,21 +38,21 @@ public enum Dbms {
 	MARIADB("MariaDB", MariaDbDbmsSupport.class),
 	POSTGRESQL("PostgreSQL", PostgresqlDbmsSupport.class);
 
-	private final @Getter String key;
-	private final @Getter String productName;
-	private final Class<? extends IDbmsSupport> dbmsSupportClass;
+	private final @Getter @NonNull String key;
+	private final @Getter @NonNull String productName;
+	private final @Nullable Class<? extends IDbmsSupport> dbmsSupportClass;
 
-	Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
+	Dbms(@NonNull String key, @Nullable Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this(key, key, dbmsSupportClass);
 	}
 
-	Dbms(String key, String productName, Class<? extends IDbmsSupport> dbmsSupportClass) {
+	Dbms(@NonNull String key, @NonNull String productName, @Nullable Class<? extends IDbmsSupport> dbmsSupportClass) {
 		this.key = key;
 		this.productName = productName;
 		this.dbmsSupportClass = dbmsSupportClass;
 	}
 
-	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion) {
+	public static @NonNull IDbmsSupport findDbmsSupportByProduct(@NonNull String product, @NonNull String productVersion, @Nullable Connection connection) {
 		if (productVersion.contains("MariaDB")) {
 			if (MYSQL.getProductName().equals(product)) {
 				log.debug("Setting databasetype to MARIADB (using MySQL driver)");
@@ -56,7 +61,7 @@ public enum Dbms {
 			}
 			return new MariaDbDbmsSupport(productVersion);
 		} else if (product.equals("H2")) {
-			return new H2DbmsSupport(productVersion);
+			return new H2DbmsSupport(productVersion, connection);
 		}
 		if (product.startsWith("DB2/")) {
 			log.debug("Setting databasetype to DB2 for product [{}]", product);
@@ -71,7 +76,7 @@ public enum Dbms {
 					result = dbms.getDbmsSupport();
 					log.debug("Returning built-in DBMS [{}] found for product [{}]", dbms, product);
 					return result;
-				} catch (ReflectiveOperationException | SecurityException e) {
+				} catch (ReflectiveOperationException e) {
 					log.warn("Could not instantiate DbmsSupport for DBMS [{}] found for product [{}]",dbms, product, e);
 				}
 			}
@@ -80,7 +85,7 @@ public enum Dbms {
 		return new GenericDbmsSupport();
 	}
 
-	public IDbmsSupport getDbmsSupport() throws ReflectiveOperationException, SecurityException {
+	public IDbmsSupport getDbmsSupport() throws ReflectiveOperationException {
 		if (dbmsSupportClass == null) {
 			return null;
 		}

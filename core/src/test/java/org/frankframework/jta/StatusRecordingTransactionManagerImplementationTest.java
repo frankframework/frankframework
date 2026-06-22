@@ -255,7 +255,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		return qs;
 	}
 
-	private void doQuery(DirectQuerySender qs, String query) {
+	private void doQuery(@NonNull DirectQuerySender qs, @NonNull String query) {
 		try (PipeLineSession session = new PipeLineSession()) {
 			qs.sendMessageOrThrow(new Message(query), session);
 		} catch (Exception e) {

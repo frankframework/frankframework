@@ -98,6 +98,9 @@ public class MessageBuilder {
 	 * @return {@link SerializableFileReference} as {@link PathMessage}. Repeatable.
 	 */
 	public Message build() {
+		return build(new MessageContext());
+	}
+	public Message build(MessageContext context) {
 		final Message result;
 		if(outputStream instanceof OverflowToDiskOutputStream odo) {
 			result = odo.toMessage(binary);
@@ -108,6 +111,8 @@ public class MessageBuilder {
 		if(mimeType != null) {
 			result.getContext().withMimeType(mimeType);
 		}
+
+		result.getContext().putAll(context.getAll());
 
 		return result;
 	}

@@ -17,7 +17,6 @@ package org.frankframework.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.sql.DataSource;
@@ -151,14 +150,8 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 			return dbmsSupport;
 		}
 		try {
-			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
-				Map<String, String> md = proxy.getMetaData();
-				dbmsSupport = dbmsSupportFactory.getDbmsSupport(md.get("product"), md.get("product-version"));
-			}
-			if (dbmsSupport == null) {
-				dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
-			}
-		} catch (JdbcException | SQLException e) {
+			dbmsSupport = dbmsSupportFactory.getDbmsSupport(getDatasource());
+		} catch (JdbcException e) {
 			throw new IllegalStateException("cannot obtain connection to determine dbmsSupport", e);
 		}
 		return dbmsSupport;
