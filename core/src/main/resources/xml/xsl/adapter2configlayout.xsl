@@ -552,7 +552,6 @@
 		<xsl:param name="subText" select="(listener/@className,sender/@className,@className)[1]"/>
 		<xsl:param name="extensive" tunnel="yes" select="'false'"/>
 
-		<xsl:text>  </xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
 		<xsl:text>'<![CDATA[<text data-html-node="b">]]></xsl:text>
@@ -624,7 +623,6 @@
 	</xsl:template>
 
 	<xsl:template match="forward" mode="convertForwards">
-		<xsl:text>  </xsl:text>
 		<xsl:value-of select="parent::*/@elementID"/>
 		<xsl:text> --> |<![CDATA[<text>]]></xsl:text>
 		<xsl:value-of select="@name"/>

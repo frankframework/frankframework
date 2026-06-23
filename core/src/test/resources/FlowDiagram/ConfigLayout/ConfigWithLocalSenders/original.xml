@@ -1,0 +1,27 @@
+<configuration>
+	<adapter name="ConfigWithLocalSenders0">
+		<receiver>
+			<listener className="org.frankframework.http.rest.ApiListener"/>
+			<listener className="org.frankframework.receivers.JavaListener" name="ConfigWithLocalSenders0"/>
+		</receiver>
+		<pipeline>
+			<pipe name="ForEach" className="org.frankframework.pipes.ForEachChildElementPipe">
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ConfigWithLocalSenders1"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="ConfigWithLocalSenders1">
+		<receiver>
+			<listener className="org.frankframework.jdbc.JdbcListener"/>
+			<listener className="org.frankframework.receivers.JavaListener" name="ConfigWithLocalSenders1"/>
+		</receiver>
+		<pipeline>
+			<pipe name="Sender" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.SenderSeries">
+					<sender className="org.frankframework.mqtt.extensions.MqttSender"/>
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ConfigWithLocalSenders0"/>
+				</sender>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

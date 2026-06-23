@@ -1,0 +1,51 @@
+d2e2('<text data-html-node="b">Test1</text><text>JavaListener</text>'):::normal
+d2e12('<text data-html-node="b">InputValidator</text>'):::normal
+d2e77('<text data-html-node="b">resolveError</text><text>Text2XmlPipe</text>'):::errorOutline
+d2e17-ERROR('<text data-html-node="b">OutputWrapper</text>'):::errorOutline
+d2e12-ERROR('<text data-html-node="b">OutputValidator</text>'):::errorOutline
+d2e7('<text data-html-node="b">error</text>'):::errorOutline
+d2e17-EXIT('<text data-html-node="b">OutputWrapper</text>'):::normal
+d2e12-EXIT('<text data-html-node="b">OutputValidator</text>'):::normal
+d2e6('<text data-html-node="b">success</text>'):::normal
+d2e16('<text data-html-node="b">InputWrapper</text>'):::normal
+d2e18('<text data-html-node="b">TestXmlIfWithForwards</text><text>XmlIf</text>'):::normal
+d2e24('<text data-html-node="b">TestXmlIfWithAttributes</text><text>XmlIf</text>'):::normal
+d2e32('<text data-html-node="b">TestXmlSwitchWithForwards</text><text>XmlSwitch</text>'):::normal
+d2e65('<text data-html-node="b">TestCompareInteger</text><text>CompareIntegerPipe</text>'):::normal
+d2e38('<text data-html-node="b">TestXmlSwitchWithAttributes</text><text>XmlSwitch</text>'):::normal
+d2e26('<text data-html-node="b">TestXmlIfWithBoth</text><text>XmlIf</text>'):::normal
+d2e42('<text data-html-node="b">TestXmlSwitchWithBoth</text><text>XmlSwitch</text>'):::normal
+d2e51('<text data-html-node="b">TestXmlSwitchWithNone</text><text>XmlSwitch</text>'):::normal
+d2e53('<text data-html-node="b">TestCompareString</text><text>TestCompareString</text>'):::normal
+d2e2 --> |<text>success</text>| d2e12
+d2e12 --> |<text>exception</text>| d2e77
+d2e12 --> |<text>success</text>| d2e16
+d2e77 --> |<text>exception</text>| d2e17-ERROR
+d2e77 --> |<text>success</text>| d2e17-EXIT
+d2e17-ERROR --> |<text>success</text>| d2e12-ERROR
+d2e12-ERROR --> |<text>exception</text>| d2e77
+d2e12-ERROR --> |<text>success</text><text>ERROR</text>| d2e7
+d2e17-EXIT --> |<text>success</text>| d2e12-EXIT
+d2e12-EXIT --> |<text>exception</text>| d2e77
+d2e12-EXIT --> |<text>success</text><text>EXIT</text>| d2e6
+d2e16 --> |<text>success</text>| d2e18
+d2e18 --> |<text>then</text>| d2e24
+d2e18 --> |<text>else</text>| d2e26
+d2e24 --> |<text>then</text>| d2e32
+d2e24 --> |<text>else</text>| d2e38
+d2e32 --> |<text>option1</text>| d2e65
+d2e32 --> |<text>option2</text>| d2e17-EXIT
+d2e32 --> |<text>exception</text>| d2e17-ERROR
+d2e65 --> |<text>lessthan</text><text>greaterthan</text><text>equals</text><text>success</text>| d2e17-EXIT
+d2e65 --> |<text>exception</text>| d2e17-ERROR
+d2e38 --> |<text>empty</text>| d2e65
+d2e38 --> |<text>exception</text>| d2e17-ERROR
+d2e26 --> |<text>then</text>| d2e42
+d2e26 --> |<text>else</text>| d2e53
+d2e42 --> |<text>option1</text>| d2e17-EXIT
+d2e42 --> |<text>option2</text>| d2e51
+d2e42 --> |<text>notFound</text>| d2e53
+d2e42 --> |<text>exception</text>| d2e17-ERROR
+d2e51 --> |<text>exception</text>| d2e17-ERROR
+d2e53 --> |<text>lessthan</text><text>greaterthan</text><text>equals</text><text>success</text>| d2e17-EXIT
+d2e53 --> |<text>exception</text>| d2e17-ERROR

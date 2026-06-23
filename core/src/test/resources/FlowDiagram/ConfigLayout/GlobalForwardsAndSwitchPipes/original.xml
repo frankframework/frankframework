@@ -1,0 +1,80 @@
+<adapter name="Test1" description="test" active="${test}">
+	<receiver name="Test1">
+		<listener name="Test1_Listener" className="org.frankframework.receivers.JavaListener"/>
+	</receiver>
+
+	<pipeline firstPipe="TestXmlIf">
+		<exits>
+			<exit name="EXIT" state="success" />
+			<exit name="ERROR" state="error" />
+		</exits>
+
+		<global-forwards>
+			<forward name="exception" path="ERROR"/>
+		</global-forwards>
+
+		<inputValidator responseRoot="test">
+			<forward name="exception" path="resolveError" />
+		</inputValidator>
+		<inputWrapper/>
+		<outputWrapper/>
+
+		<pipe name="TestXmlIfWithForwards" className="org.frankframework.pipes.XmlIf"
+			  elementXPathExpression="test">
+			<forward name="then" path="TestXmlIfWithAttributes" />
+			<forward name="else" path="TestXmlIfWithBoth" />
+		</pipe>
+
+		<pipe name="TestXmlIfWithAttributes" className="org.frankframework.pipes.XmlIf"
+			  elementXPathExpression="test" thenForwardName="TestXmlSwitchWithForwards" elseForwardName="TestXmlSwitchWithAttributes">
+		</pipe>
+
+		<pipe name="TestXmlIfWithBoth" className="org.frankframework.pipes.XmlIf"
+			  elementXPathExpression="test" thenForwardName="TestXmlSwitchWithBoth" elseForwardName="TestCompareString">
+			<forward name="then" path="TestXmlSwitchWithForwards" />
+			<forward name="else" path="TestXmlSwitchWithAttributes" />
+		</pipe>
+
+		<pipe name="TestXmlSwitchWithForwards" className="org.frankframework.pipes.XmlSwitch"
+			  elementXPathExpression="test">
+			<forward name="option1" path="TestCompareInteger" />
+			<forward name="option2" path="EXIT" />
+		</pipe>
+
+		<pipe name="TestXmlSwitchWithAttributes" className="org.frankframework.pipes.XmlSwitch"
+			  elementXPathExpression="test" notFoundForwardName="ERROR" emptyForwardName="empty">
+			<forward name="empty" path="TestCompareInteger" />
+		</pipe>
+
+		<pipe name="TestXmlSwitchWithBoth" className="org.frankframework.pipes.XmlSwitch"
+			  elementXPathExpression="test" notFoundForwardName="notFound" emptyForwardName="ERROR">
+			<forward name="option1" path="EXIT" />
+			<forward name="option2" path="TestXmlSwitchWithNone" />
+			<forward name="notFound" path="TestCompareString" />
+		</pipe>
+
+		<pipe name="TestXmlSwitchWithNone" className="org.frankframework.pipes.XmlSwitch"
+			  elementXPathExpression="test">
+		</pipe>
+
+		<pipe name="TestCompareString" className="org.frankframework.pipes.TestCompareString"
+			  operand1="test" operand2="test">
+			<forward name="lessthan" path="EXIT" />
+			<forward name="greaterthan" path="EXIT" />
+			<forward name="equals" path="EXIT" />
+			<forward name="success" path="EXIT" />
+			<forward name="exception" path="ERROR" />
+		</pipe>
+
+		<pipe name="TestCompareInteger" className="org.frankframework.pipes.CompareIntegerPipe"
+			  operand1="test" operand2="test">
+			<forward name="lessthan" path="EXIT" />
+			<forward name="greaterthan" path="EXIT" />
+			<forward name="equals" path="EXIT" />
+			<forward name="success" path="EXIT" />
+			<forward name="exception" path="ERROR" />
+		</pipe>
+
+		<pipe name="resolveError" className="org.frankframework.pipes.Text2XmlPipe"/>
+	</pipeline>
+</adapter>

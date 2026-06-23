@@ -114,7 +114,6 @@
 		<xsl:param name="text" select="xs:string((@name,name())[1])"/>
 		<xsl:param name="style" select="'normal'"/>
 
-		<xsl:text>  </xsl:text>
 		<xsl:value-of select="@elementID"/>
 		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
 		<xsl:text>'<![CDATA[<text]]></xsl:text>
@@ -132,7 +131,6 @@
 	</xsl:template>
 
 	<xsl:template match="forward" mode="convertForwards">
-		<xsl:text>  </xsl:text>
 		<xsl:value-of select="parent::*/@elementID"/>
 		<xsl:text> --> </xsl:text>
 		<xsl:value-of select="@targetID"/>

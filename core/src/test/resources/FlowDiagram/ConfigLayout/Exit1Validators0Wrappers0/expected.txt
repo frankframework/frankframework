@@ -1,0 +1,24 @@
+d2e2('<text data-html-node="b">testtool-HelloLines</text><text>JavaListener</text>'):::normal
+d2e4('<text data-html-node="b">ApiListener</text><text>ApiListener</text>'):::normal
+d2e6('<text data-html-node="b">testtool-HelloLines-1</text><text>JavaListener</text>'):::normal
+d2e8('<text data-html-node="b">WebServiceListener</text><text>WebServiceListener</text>'):::normal
+d2e10('<text data-html-node="b">testtool-HelloLines-2</text><text>JavaListener</text>'):::normal
+d2e15('<text data-html-node="b">Remove namespaces</text><text>XsltPipe</text>'):::normal
+d2e19('<text data-html-node="b">Only one line?</text><text>XmlSwitch</text>'):::normal
+d2e25('<text data-html-node="b">Call HelloWorld</text><text>IbisLocalSender</text>'):::normal
+d2e31('<text data-html-node="b">Transform result to XML</text><text>Text2XmlPipe</text>'):::normal
+d2e43('<text data-html-node="b">Add documentation</text><text>XsltPipe</text>'):::normal
+d2e14('<text data-html-node="b">SUCCESS</text>'):::normal
+d2e35('<text data-html-node="b">Call HelloWorld for every line</text><text>IbisLocalSender</text>'):::normal
+d2e2 --> |<text>success</text>| d2e15
+d2e4 --> |<text>success</text>| d2e15
+d2e6 --> |<text>success</text>| d2e15
+d2e8 --> |<text>success</text>| d2e15
+d2e10 --> |<text>success</text>| d2e15
+d2e15 --> |<text>success</text>| d2e19
+d2e19 --> |<text>true</text>| d2e25
+d2e19 --> |<text>false</text>| d2e35
+d2e25 --> |<text>success</text>| d2e31
+d2e31 --> |<text>success</text>| d2e43
+d2e43 --> |<text>success</text>| d2e14
+d2e35 --> |<text>success</text>| d2e43
