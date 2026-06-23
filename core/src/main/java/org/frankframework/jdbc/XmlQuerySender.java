@@ -32,9 +32,13 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -95,108 +99,97 @@ public class XmlQuerySender extends DirectQuerySender {
 	public static final String TYPE_XMLDATETIME = "xmldatetime";
 
 	@Getter
-	private class Column {
-		private String name = null;
-		private String value = null;
-		private String type = TYPE_STRING;
-		private String decimalSeparator = null;
-		private String groupingSeparator = null;
-		private String formatString = TYPE_DATETIME_PATTERN;
-		private Object parameter = null;
-		private String queryValue = null;
+	private static class Column {
+		private final @Nullable String name;
+		private final @Nullable String value;
+		private final @NonNull String type;
+		private final @Nullable String decimalSeparator;
+		private final @Nullable String groupingSeparator;
+		private final @NonNull String formatString;
+		private final @Nullable Object parameter;
+		private final @Nullable String queryValue;
 
-		public Column(String name, String value, String type, String decimalSeparator, String groupingSeparator, String formatString) throws SenderException {
-			if (name != null) {
-				this.name = name;
-			}
-			if (value != null) {
-				this.value = value;
-			}
-			if (type != null) {
-				this.type = type;
-			}
-			if (decimalSeparator != null) {
-				this.decimalSeparator = decimalSeparator;
-			}
-			if (groupingSeparator != null) {
-				this.groupingSeparator = groupingSeparator;
-			}
-			if (formatString != null) {
-				this.formatString = formatString;
-			}
-			if (value != null) {
-				fillParameter();
-			}
-			fillQueryValue();
+		public Column(@Nullable String name, @Nullable String value, @Nullable String type, @Nullable String decimalSeparator, @Nullable String groupingSeparator, @Nullable String formatString) throws SenderException {
+			this.name = name;
+			this.value = value;
+			this.type = Objects.requireNonNullElse(type, TYPE_STRING).toLowerCase(Locale.ROOT);
+			this.decimalSeparator = decimalSeparator;
+			this.groupingSeparator = groupingSeparator;
+			this.formatString = Objects.requireNonNullElse(formatString, TYPE_DATETIME_PATTERN);
+			this.parameter = convertParameterValue(this.type, value);
+			this.queryValue = convertQueryValue(this.type, value);
 		}
 
-		private void fillParameter() throws SenderException {
-			if (type.equalsIgnoreCase(TYPE_INTEGER)) {
-				DecimalFormat df = new DecimalFormat();
-				Number n;
-				try {
-					n = df.parse(value);
-				} catch (ParseException e) {
-					throw new SenderException("got exception parsing value [" + value + "] to Integer", e);
+		private @Nullable Object convertParameterValue(@NonNull String type, @Nullable String value) throws SenderException {
+			if (value == null) {
+				return null;
+			}
+			return switch (type) {
+				case TYPE_INTEGER -> {
+					DecimalFormat df = new DecimalFormat();
+					Number n;
+					try {
+						n = df.parse(value.trim());
+					} catch (ParseException e) {
+						throw new SenderException("got exception parsing value [" + value + "] to Integer", e);
+					}
+					yield n.intValue();
 				}
-				parameter = n.intValue();
-			} else if (type.equalsIgnoreCase(TYPE_BOOLEAN)) {
-				parameter = Boolean.valueOf(value);
-			} else if (type.equalsIgnoreCase(TYPE_NUMBER)) {
-				DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
-				if (StringUtils.isNotEmpty(decimalSeparator)) {
-					decimalFormatSymbols.setDecimalSeparator(decimalSeparator.charAt(0));
+				case TYPE_BOOLEAN -> Boolean.valueOf(value.trim());
+				case TYPE_NUMBER -> {
+					DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
+					if (StringUtils.isNotEmpty(decimalSeparator)) {
+						decimalFormatSymbols.setDecimalSeparator(decimalSeparator.charAt(0));
+					}
+					if (StringUtils.isNotEmpty(groupingSeparator)) {
+						decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
+					}
+					DecimalFormat df = new DecimalFormat();
+					df.setDecimalFormatSymbols(decimalFormatSymbols);
+					Number n;
+					try {
+						n = df.parse(value.trim());
+					} catch (ParseException e) {
+						throw new SenderException("got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
+					}
+					if (value.indexOf('.') >= 0) {
+						yield n.doubleValue();
+					} else {
+						yield n.intValue();
+					}
 				}
-				if (StringUtils.isNotEmpty(groupingSeparator)) {
-					decimalFormatSymbols.setGroupingSeparator(groupingSeparator.charAt(0));
-				}
-				DecimalFormat df = new DecimalFormat();
-				df.setDecimalFormatSymbols(decimalFormatSymbols);
-				Number n;
-				try {
-					n = df.parse(value);
-				} catch (ParseException e) {
-					throw new SenderException("got exception parsing value [" + value + "] to Number using decimalSeparator [" + decimalSeparator + "] and groupingSeparator [" + groupingSeparator + "]", e);
-				}
-				if (value.indexOf('.') >= 0) {
-					parameter = n.doubleValue();
-				} else {
-					parameter = n.intValue();
-				}
-			} else if (type.equalsIgnoreCase(TYPE_DATETIME)) {
-				DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatString);
+				case TYPE_DATETIME -> {
+					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatString);
 
-				try {
-					TemporalAccessor parsed = formatter.parse(value);
-					parameter = Timestamp.from(Instant.from(parsed));
-				} catch (DateTimeParseException e) {
-					throw new SenderException("got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
+					try {
+						TemporalAccessor parsed = formatter.parse(value);
+						yield Timestamp.from(Instant.from(parsed));
+					} catch (DateTimeParseException e) {
+						throw new SenderException("got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
+					}
 				}
-			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
-				java.util.Date nDate;
-				try {
-					nDate = XmlUtils.parseXmlDateTime(value);
-				} catch (Exception e) {
-					throw new SenderException("got exception parsing value [" + value + "] from xml dateTime to Date", e);
+				case TYPE_XMLDATETIME -> {
+					java.util.Date nDate;
+					try {
+						nDate = XmlUtils.parseXmlDateTime(value);
+					} catch (Exception e) {
+						throw new SenderException("got exception parsing value [" + value + "] from xml dateTime to Date", e);
+					}
+					yield new Timestamp(nDate.getTime());
 				}
-				parameter = new Timestamp(nDate.getTime());
-			} else if (type.equalsIgnoreCase(TYPE_BLOB)) {
-				parameter = value.getBytes();
+				case TYPE_BLOB -> value.getBytes();
+				case TYPE_FUNCTION -> null;
+				default -> value;
+			};
+		}
+
+		private @Nullable String convertQueryValue(@NonNull String type, @Nullable String value) {
+			if (type.equals(TYPE_FUNCTION)) {
+				return value;
 			} else {
-				if (!type.equalsIgnoreCase(TYPE_FUNCTION)) {
-					parameter = value;
-				}
+				return "?";
 			}
 		}
-
-		private void fillQueryValue() {
-			if (type.equalsIgnoreCase(TYPE_FUNCTION)) {
-				queryValue = value;
-			} else {
-				queryValue = "?";
-			}
-		}
-
 	}
 
 	@Override
@@ -205,9 +198,8 @@ public class XmlQuerySender extends DirectQuerySender {
 			throw new SenderException("unable to execute query, no input provided");
 		}
 
-		Message result;
 		try {
-			Element queryElement = XmlUtils.buildElement(message.asString());
+			Element queryElement = XmlUtils.buildElement(Objects.requireNonNull(message.asString()));
 			String root = queryElement.getTagName();
 			String tableName = XmlUtils.getChildTagAsString(queryElement, "tableName");
 			Element columnsElement = XmlUtils.getFirstChildTag(queryElement, "columns");
@@ -220,25 +212,24 @@ public class XmlQuerySender extends DirectQuerySender {
 			String where = XmlUtils.getChildTagAsString(queryElement, "where");
 			String order = XmlUtils.getChildTagAsString(queryElement, "order");
 
-			if ("select".equalsIgnoreCase(root)) {
-				result = selectQuery(blockHandle, tableName, columns, where, order).getResult();
-			} else if ("insert".equalsIgnoreCase(root)) {
-				result = insertQuery(blockHandle, tableName, columns);
-			} else if ("delete".equalsIgnoreCase(root)) {
-				result = deleteQuery(blockHandle, tableName, where);
-			} else if ("update".equalsIgnoreCase(root)) {
-				result = updateQuery(blockHandle, tableName, columns, where);
-			} else if ("alter".equalsIgnoreCase(root)) {
-				String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
-				int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
-				result = alterQuery(blockHandle, sequenceName, startWith);
-			} else if ("sql".equalsIgnoreCase(root)) {
-				String type = XmlUtils.getChildTagAsString(queryElement, "type");
-				String query = XmlUtils.getChildTagAsString(queryElement, "query");
-				result = sql(blockHandle, query, type);
-			} else {
-				throw new SenderException("unknown root element [" + root + "]");
-			}
+			Message result = switch (root.toLowerCase(Locale.ROOT)) {
+				case "select" -> selectQuery(blockHandle, tableName, columns, where, order).getResult();
+				case "insert" -> insertQuery(blockHandle, tableName, columns);
+				case "delete" -> deleteQuery(blockHandle, tableName, where);
+				case "update" -> updateQuery(blockHandle, tableName, columns, where);
+				case "alter" -> {
+					String sequenceName = XmlUtils.getChildTagAsString(queryElement, "sequenceName");
+					int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith").trim());
+					yield alterQuery(blockHandle, sequenceName, startWith);
+				}
+				case "sql" -> {
+					String type = XmlUtils.getChildTagAsString(queryElement, "type");
+					String query = XmlUtils.getChildTagAsString(queryElement, "query");
+					yield sql(blockHandle, query, type);
+				}
+				case null, default -> throw new SenderException("unknown root element [" + root + "]");
+			};
+			return new SenderResult(result);
 		} catch (DomBuilderException e) {
 			throw new SenderException("got exception parsing [" + message + "]", e);
 		} catch (JdbcException e) {
@@ -246,8 +237,6 @@ public class XmlQuerySender extends DirectQuerySender {
 		} catch (IOException e) {
 			throw new SenderException("got exception creating [" + message + "]", e);
 		}
-
-		return new SenderResult(result);
 	}
 
 	private SenderResult selectQuery(Connection connection, String tableName, List<Column> columns, String where, String order) throws SenderException, JdbcException {
@@ -418,42 +407,51 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	private void applyParameters(PreparedStatement statement, List<Column> columns) throws SQLException {
-		int var = 1;
 		ParameterMetaData parameterMetaData = null;
+		boolean parameterTypeMatchRequired = getDbmsSupport().isParameterTypeMatchRequired();
+
+		int pos = 1;
 		for (Column column : columns) {
-			if (column.getParameter() != null) {
-				if (column.getParameter() instanceof Integer) {
-					log.debug("parm [{}] is an Integer with value [{}]", var, column.getParameter());
-					statement.setInt(var, Integer.parseInt(column.getParameter().toString()));
-					var++;
-				} else if (column.getParameter() instanceof Boolean) {
-					log.debug("parm [{}] is an Boolean with value [{}]", var, column.getParameter());
-					statement.setBoolean(var, Boolean.parseBoolean(column.getParameter().toString()));
-					var++;
-				} else if (column.getParameter() instanceof Double) {
-					log.debug("parm [{}] is a Double with value [{}]", var, column.getParameter());
-					statement.setDouble(var, Double.parseDouble(column.getParameter().toString()));
-					var++;
-				} else if (column.getParameter() instanceof Float) {
-					log.debug("parm [{}] is a Float with value [{}]", var, column.getParameter());
-					statement.setFloat(var, Float.parseFloat(column.getParameter().toString()));
-					var++;
-				} else if (column.getParameter() instanceof Timestamp) {
-					log.debug("parm [{}] is a Timestamp with value [{}]", var, column.getParameter());
-					statement.setTimestamp(var, (Timestamp) column.getParameter());
-					var++;
-				} else if (column.getParameter() instanceof byte[]) {
-					log.debug("parm [{}] is a byte array with value [{}] = [{}]", var, column.getParameter(), new String((byte[]) column.getParameter()));
-					statement.setBytes(var, (byte[]) column.getParameter());
-					var++;
-				} else {
-					// if (column.getParameter() instanceof String)
-					if (parameterMetaData == null && getDbmsSupport().isParameterTypeMatchRequired()) {
+			Object columnValue = column.getParameter();
+			switch (columnValue) {
+				case Integer i -> {
+					log.debug("parm [{}] is an Integer with value [{}]", pos, i);
+					statement.setInt(pos, i);
+					++pos;
+				}
+				case Boolean b -> {
+					log.debug("parm [{}] is an Boolean with value [{}]", pos, b);
+					statement.setBoolean(pos, b);
+					++pos;
+				}
+				case Double d -> {
+					log.debug("parm [{}] is a Double with value [{}]", pos, d);
+					statement.setDouble(pos, d);
+					++pos;
+				}
+				case Float f -> {
+					log.debug("parm [{}] is a Float with value [{}]", pos, f);
+					statement.setFloat(pos, f);
+					++pos;
+				}
+				case Timestamp ts -> {
+					log.debug("parm [{}] is a Timestamp with value [{}]", pos, ts);
+					statement.setTimestamp(pos, ts);
+					++pos;
+				}
+				case byte[] bytes -> {
+					log.debug("parm [{}] is a byte array with value [{}] = [{}]", pos, bytes, new String(bytes));
+					statement.setBytes(pos, bytes);
+					++pos;
+				}
+				case null -> {} // Skip null values
+				default -> {
+					if (parameterMetaData == null && parameterTypeMatchRequired) {
 						parameterMetaData = statement.getParameterMetaData();
 					}
-					log.debug("parm [{}] is a String with value [{}]", var, column.getParameter());
-					JdbcUtil.setParameter(statement, var, (String) column.getParameter(), getDbmsSupport().isParameterTypeMatchRequired(), parameterMetaData);
-					var++;
+					log.debug("parm [{}] is a {} with value [{}]", pos, columnValue.getClass().getSimpleName(), columnValue);
+					JdbcUtil.setParameter(statement, pos, columnValue.toString(), parameterTypeMatchRequired, parameterMetaData);
+					++pos;
 				}
 			}
 		}

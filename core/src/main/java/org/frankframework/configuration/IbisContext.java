@@ -67,7 +67,7 @@ public class IbisContext extends IbisApplicationContext {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	static {
-		if(!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
+		if (!APP_CONSTANTS.getBoolean("jdbc.convertFieldnamesToUppercase", true))
 			ApplicationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
 		String loadFileSuffix = APP_CONSTANTS.getProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);

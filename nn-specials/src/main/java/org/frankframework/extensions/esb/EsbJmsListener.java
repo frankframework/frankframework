@@ -32,8 +32,6 @@ import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -70,7 +68,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	private static final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
 	private static final Map<String, TransformerPool> LOG_KEY_TRANSFORMER_POOLS = new ConcurrentHashMap<>();
 	static final String JMS_RR_FORCE_MESSAGE_KEY = "jms.esb.rr.forceMessageIdAsCorrelationId.default";
-	private final String messageIdAsCorrelationIdRR = APP_CONSTANTS.getString(JMS_RR_FORCE_MESSAGE_KEY, null);
+	private final boolean messageIdAsCorrelationIdRR = APP_CONSTANTS.getBoolean(JMS_RR_FORCE_MESSAGE_KEY, true);
 
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter boolean copyAEProperties = false;
@@ -89,13 +87,9 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			if (getForceMessageIdAsCorrelationId() == null) {
-				if (StringUtils.isNotBlank(messageIdAsCorrelationIdRR)) {
-					setForceMessageIdAsCorrelationId(Boolean.parseBoolean(messageIdAsCorrelationIdRR));
-				} else {
-					setForceMessageIdAsCorrelationId(true);
-				}
+				setForceMessageIdAsCorrelationId(messageIdAsCorrelationIdRR);
 			}
-			if (getCacheMode()==CacheMode.CACHE_CONSUMER) {
+			if (getCacheMode() == CacheMode.CACHE_CONSUMER) {
 				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY);
 			}
 			setCacheMode(CacheMode.CACHE_CONSUMER);

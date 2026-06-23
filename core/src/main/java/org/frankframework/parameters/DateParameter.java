@@ -136,7 +136,8 @@ public class DateParameter extends AbstractParameter<Date> {
 		try {
 			String sanitized = value.replace(".", "")
 									.replace(",", "")
-									.replace("_", "");
+									.replace("_", "")
+									.trim();
 			long epoch = Long.parseLong(sanitized);
 
 			if (epoch < 1_000_000_000_000L) {

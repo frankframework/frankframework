@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class Misc {
 			s = s.substring(0, index);
 		}
 		try {
-			return Long.parseLong(s) * multiplier;
+			return Long.parseLong(s.trim()) * multiplier;
 		} catch (NumberFormatException e) {
 			log.error("[{}] not in expected format", value, e);
 		}
@@ -212,7 +212,7 @@ public class Misc {
 			s = s.substring(0, index);
 		}
 		try {
-			return Long.parseLong(s) * multiplier;
+			return Long.parseLong(s.trim()) * multiplier;
 		} catch (NumberFormatException e) {
 			log.error("[{}] not in expected format", value, e);
 		}

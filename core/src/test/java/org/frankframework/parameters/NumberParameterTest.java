@@ -17,6 +17,22 @@ import org.frankframework.util.TimeProvider;
 public class NumberParameterTest {
 
 	@Test
+	public void testNumberWithSpacesInValue() throws Exception {
+		NumberParameter p = new NumberParameter();
+		p.setName("number");
+		p.setValue(" 8 ");
+		p.configure();
+
+		Object result = p.getValue(new Message("fakeMessage"), null).getValue();
+		Integer i1 = assertInstanceOf(Integer.class, result);
+		assertEquals(8, i1.intValue());
+
+		Number valueAsType = p.getValueAsType(new Message(" 9 "), false);
+		Integer i2 = assertInstanceOf(Integer.class, valueAsType);
+		assertEquals(9, i2.intValue());
+	}
+
+	@Test
 	public void testNumberWithMinLength() throws Exception {
 		NumberParameter p = new NumberParameter();
 		p.setName("number");
@@ -28,7 +44,7 @@ public class NumberParameterTest {
 
 		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
-		assertEquals("0000000008", (String) result);
+		assertEquals("0000000008", result);
 	}
 
 	@Test
