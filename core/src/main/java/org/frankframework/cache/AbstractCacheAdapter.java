@@ -15,6 +15,8 @@
 */
 package org.frankframework.cache;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -82,8 +84,12 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String,V>, Frank
 
 	@Override
 	public String transformKey(String input, PipeLineSession session) {
-		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session!=null) {
-			input=(String)session.get(getKeyInputSessionKey());
+		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session != null) {
+			try {
+				input = session.getMessage(getKeyInputSessionKey()).asString();
+			} catch (IOException e) {
+				log.error("{}cannot determine cache key", getLogPrefix(), e);
+			}
 		}
 		if (keyTp!=null) {
 			try {
