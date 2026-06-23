@@ -15,10 +15,6 @@
 */
 package org.frankframework.configuration;
 
-import static org.frankframework.credentialprovider.CredentialFactory.CREDENTIAL_FACTORY_KEY;
-import static org.frankframework.credentialprovider.CredentialFactory.LEGACY_PACKAGE_NAME;
-import static org.frankframework.credentialprovider.CredentialFactory.ORG_FRANKFRAMEWORK_PACKAGE_NAME;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +36,7 @@ import lombok.Getter;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
+import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.http.RestServiceDispatcher;
 import org.frankframework.jdbc.JdbcPropertySourceFactory;
@@ -72,6 +69,10 @@ public class IbisContext extends IbisApplicationContext {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	static {
+		checkForDeprecations();
+	}
+
+	public static void checkForDeprecations() {
 		if (!APP_CONSTANTS.getBoolean("jdbc.convertFieldnamesToUppercase", true))
 			ApplicationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
@@ -83,14 +84,13 @@ public class IbisContext extends IbisApplicationContext {
 		if (StringUtils.isNotEmpty(autoDatabaseClassLoader))
 			ApplicationWarnings.add(LOG, "DEPRECATED property [configurations.autoDatabaseClassLoader], please use [configurations.database.autoLoad] instead");
 
-		String credentialFactoryClassNames = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
+		String credentialFactoryClassNames = CredentialConstants.getInstance().getProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY);
 		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
-		if (StringUtils.isNotEmpty(credentialFactoryClassNames) && credentialFactoryClassNames.contains(LEGACY_PACKAGE_NAME)) {
+		if (StringUtils.isNotEmpty(credentialFactoryClassNames) && credentialFactoryClassNames.contains(CredentialFactory.LEGACY_PACKAGE_NAME)) {
 			ApplicationWarnings.add(LOG, "DEPRECATED legacy classnames from package [" +
-					LEGACY_PACKAGE_NAME + "] used for creating CredentialProviders, please update to use new classnames starting with [" +
-					ORG_FRANKFRAMEWORK_PACKAGE_NAME + "]: [" + credentialFactoryClassNames + "]");
+					CredentialFactory.LEGACY_PACKAGE_NAME + "] used for creating CredentialProviders, please update to use new classnames starting with [" +
+					CredentialFactory.ORG_FRANKFRAMEWORK_PACKAGE_NAME + "]: [" + credentialFactoryClassNames + "]");
 		}
-
 	}
 
 	private @Getter IbisManager ibisManager;
