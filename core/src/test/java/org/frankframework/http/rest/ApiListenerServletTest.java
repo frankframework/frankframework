@@ -2026,6 +2026,28 @@ public class ApiListenerServletTest {
 		assertEquals("localhost", result.getContentAsString());
 	}
 
+	@Test
+	public void testSetResponseHeaders() throws Exception {
+		// Arrange
+		new ApiListenerBuilder("/request/with/custom/responseHeader", List.of(HttpMethod.GET))
+				.withResultSessionKey("key-1", "value-1")
+				.withResultSessionKey("key-2", "value-2")
+				.withResultSessionKey("key-3", "value-3")
+				.setResponseHeaderSessionKeys("key-1;key-3;key-4")
+				.build();
+
+		// Act
+		Response result = service(createRequest("/request/with/custom/responseHeader", HttpMethod.GET));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertTrue(result.containsHeader("key-1"));
+		assertTrue(result.containsHeader("key-3"));
+		assertFalse(result.containsHeader("key-4"));
+		assertEquals("value-1", result.getHeader("key-1"));
+		assertEquals("value-3", result.getHeader("key-3"));
+	}
+
 	private String createJWT() throws Exception {
 		JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).build();
 
@@ -2380,6 +2402,11 @@ public class ApiListenerServletTest {
 			return this;
 		}
 
+		public ApiListenerBuilder setResponseHeaderSessionKeys(String sessionKeys) {
+			listener.setResponseHeaderSessionKeys(sessionKeys);
+			return this;
+		}
+
 		public ApiListener build() throws ConfigurationException {
 			listener.configure();
 			listener.start();
@@ -2408,19 +2435,19 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public Message processRequest(IPushingListener<Message> origin, MessageWrapper<Message> messageWrapper, PipeLineSession context) throws ListenerException {
+		public Message processRequest(IPushingListener<Message> origin, MessageWrapper<Message> messageWrapper, PipeLineSession session) throws ListenerException {
 			Message message = messageWrapper.getMessage();
 			assertNotNull(message, "input message may not be null");
 
 			handlerInvoked = true;
-			session.putAll(context);
+			ApiListenerServletTest.this.session.putAll(session);
 			requestMessage = message;
 			if (shouldThrow) {
 				throw new ListenerException("Hard Throw");
 			}
-			context.putAll(sessionKeysToSet);
+			session.putAll(sessionKeysToSet);
 			if (exitCode > 0) {
-				context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, exitCode);
+				session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, exitCode);
 			}
 			if (responseContent != null) {
 				return Message.asMessage(responseContent);

@@ -223,7 +223,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		String remoteUser = request.getRemoteUser();
 
 		ApiDispatchConfig config = dispatcher.findConfigForRequest(method, uri);
-		if(config == null) {
+		if (config == null) {
 			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
 			response.setStatus(404);
 			return;
@@ -387,7 +387,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					}
 				}
 
-				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
+				if (StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
 					String contentDisposition = pipelineSession.getString(listener.getContentDispositionHeaderSessionKey());
 					if(StringUtils.isNotEmpty(contentDisposition)) {
 						LOG.debug("Setting Content-Disposition header to [{}]", contentDisposition);
@@ -399,7 +399,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
 				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
-				if(statusCode > 0) {
+				if (statusCode > 0) {
 					response.setStatus(statusCode);
 				}
 
@@ -780,6 +780,12 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	 */
 	private static boolean writeToResponseStream(ApiListener listener, HttpServletResponse response, Message result, PipeLineSession session) throws IOException {
 		response.resetBuffer();
+		for (String headerName : listener.getResponseHeaderSessionKeySet()) {
+			String headerValue = session.getString(headerName);
+			if (StringUtils.isNotBlank(headerName)) {
+				response.addHeader(headerName, headerValue);
+			}
+		}
 		HttpEntity entity = listener.getResponseEntityBuilder().create(result, null, session);
 
 		long contentLength = entity.getContentLength();
