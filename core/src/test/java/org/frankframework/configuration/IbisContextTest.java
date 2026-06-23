@@ -152,9 +152,10 @@ public class IbisContextTest {
 	}
 
 	@Test
-	public void testDeprecationChecksAllDes() {
+	public void testDeprecationChecksAllDeps() {
 		// Arrange
 		ApplicationWarnings.removeInstance();
+		AppConstants.removeInstance();
 		AppConstants appConstants = AppConstants.getInstance();
 		Object jdbcFieldNamesOriginalValue = appConstants.setProperty("jdbc.convertFieldnamesToUppercase", false);
 		Object additionalPropFilesSuffixOriginalValue = appConstants.setProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, ".propmap");
@@ -180,17 +181,8 @@ public class IbisContextTest {
 					));
 		} finally {
 			// Clean up properties set for this test to make sure we do not mess up any other tests
-			if (jdbcFieldNamesOriginalValue == null) {
-				appConstants.remove("jdbc.convertFieldnamesToUppercase");
-			} else {
-				appConstants.setProperty("jdbc.convertFieldnamesToUppercase", jdbcFieldNamesOriginalValue.toString());
-			}
-			if (additionalPropFilesSuffixOriginalValue == null) {
-				appConstants.remove(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
-			} else {
-				appConstants.setProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, additionalPropFilesSuffixOriginalValue.toString());
-			}
-			appConstants.remove("configurations.autoDatabaseClassLoader");
+			AppConstants.removeInstance();
+			ApplicationWarnings.removeInstance();
 			if (credentialFactoryOriginalValue == null) {
 				credentialConstants.remove(CredentialFactory.CREDENTIAL_FACTORY_KEY);
 			} else {
