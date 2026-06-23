@@ -150,7 +150,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
 	private @Setter ServletManager servletManager;
 
-	private Set<String> responseHeaderSessionKeys;
+	private @NonNull Set<@NonNull String> responseHeaderSessionKeys = Set.of();
 
 	private @Getter HttpEntityType responseType;
 	private @Getter String responseMultipartXmlSessionKey;
@@ -467,11 +467,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/**
 	 * An optional list of session keys to be used to set response-headers. Session key names should be separated with a {@literal ,} or {@literal ;}.
 	 */
-	public void setResponseHeaderSessionKeys(String responseHeaderSessionKeys) {
+	public void setResponseHeaderSessionKeys(@Nullable String responseHeaderSessionKeys) {
 		this.responseHeaderSessionKeys = new HashSet<>(StringUtil.split(responseHeaderSessionKeys, ",;"));
 	}
 
-	public Set<String> getResponseHeaderSessionKeySet() {
+	public @NonNull Set<@NonNull String> getResponseHeaderSessionKeySet() {
 		return responseHeaderSessionKeys;
 	}
 
