@@ -16,9 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.OutputStream;
-import java.security.Security;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -98,11 +96,6 @@ public class PGPPipe extends FixedForwardPipe {
 		if (action == null) {
 			throw new ConfigurationException("Action can not be null!");
 		}
-		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
-			Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-		}
-
-		Security.addProvider(new BouncyCastleProvider());
 
 		switch (action) {
 			case ENCRYPT:

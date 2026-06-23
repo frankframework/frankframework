@@ -29,7 +29,6 @@ import java.security.SignatureException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
@@ -47,7 +46,6 @@ import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.KeystoreConfiguration;
-import org.frankframework.encryption.KeystoreType;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -96,9 +94,6 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 			throw new ConfigurationException("keystore must be specified");
 		}
 		String signingAlgorithm = getAlgorithm();
-		if (isNoBouncyCastleLoaded() && (getKeystoreType() == KeystoreType.PEM || isSigningAlgorithmMissing(signingAlgorithm))) {
-			Security.addProvider(new BouncyCastleProvider());
-		}
 		// Adding BouncyCastle may add the missing algorithm, check again after loading BC.
 		if (isSigningAlgorithmMissing(signingAlgorithm)) {
 			throw new ConfigurationException("Signature algorithm [" + signingAlgorithm + "] not supported, supported algorithms: " + Security.getAlgorithms("Signature"));
@@ -114,10 +109,6 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 				throw new ConfigurationException("Forward [failure] must be specified for action [" + action + "]");
 			}
 		}
-	}
-
-	private static boolean isNoBouncyCastleLoaded() {
-		return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null;
 	}
 
 	private static boolean isSigningAlgorithmMissing(String signingAlgorithm) {

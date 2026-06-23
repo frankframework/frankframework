@@ -117,12 +117,12 @@ public class HeuristicDetectingRecoveryModule implements RecoveryModule {
 	protected static Duration calculateHeuristicFailuresBackoffDuration(int heuristicFailuresAttempts, String heuristicFailuresBackoff, int defaultTxTimeout) {
 		final Duration providedDuration;
 		if (StringUtils.isNotBlank(heuristicFailuresBackoff)) {
-			providedDuration = Duration.ofMinutes(Integer.parseInt(heuristicFailuresBackoff));
+			providedDuration = Duration.ofMinutes(Integer.parseInt(heuristicFailuresBackoff.trim()));
 		} else {
 			providedDuration = Duration.ZERO;
 		}
 
-		Duration minimumDuration = Duration.ofSeconds( (defaultTxTimeout * heuristicFailuresAttempts) + 10L); // Add 10 seconds
+		Duration minimumDuration = Duration.ofSeconds( ((long) defaultTxTimeout * heuristicFailuresAttempts) + 10L); // Add 10 seconds
 
 		// If the providedDuration is `0` or lower than the minimum expected duration, return minimumDuration.
 		if (providedDuration.compareTo(minimumDuration) < 0) {

@@ -123,6 +123,7 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.server.support.TypeDefinitionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -284,7 +285,7 @@ public class CmisUtils {
 				propertyType = PropertyType.ID;
 			}
 
-			boolean isNull = Boolean.parseBoolean(propertyElement.getAttribute("isNull"));
+			boolean isNull = propertyElement.hasAttribute("isNull") && Boolean.parseBoolean(propertyElement.getAttribute("isNull").trim());
 			if (isNull)
 				propertyValue = null;
 
@@ -298,7 +299,7 @@ public class CmisUtils {
 				case INTEGER:
 					BigInteger bigInt = null;
 					if (StringUtils.isNotEmpty(propertyValue)) {
-						bigInt = new BigInteger(propertyValue);
+						bigInt = new BigInteger(propertyValue.trim());
 					}
 					properties.addProperty(new PropertyIntegerImpl(addStandardDefinitions(new PropertyIntegerDefinitionImpl(), propertyElement, propertyType), bigInt));
 					break;
@@ -330,14 +331,14 @@ public class CmisUtils {
 				case BOOLEAN:
 					Boolean bool = null;
 					if (StringUtils.isNotEmpty(propertyValue)) {
-						bool = Boolean.parseBoolean(propertyValue);
+						bool = Boolean.parseBoolean(propertyValue.trim());
 					}
 					properties.addProperty(new PropertyBooleanImpl(addStandardDefinitions(new PropertyBooleanDefinitionImpl(), propertyElement, propertyType), bool));
 					break;
 				case DECIMAL:
 					BigDecimal decimal = null;
 					if (StringUtils.isNotEmpty(propertyValue)) {
-						decimal = new BigDecimal(propertyValue);
+						decimal = new BigDecimal(propertyValue.trim());
 					}
 					properties.addProperty(new PropertyDecimalImpl(addStandardDefinitions(new PropertyDecimalDefinitionImpl(), propertyElement, propertyType), decimal));
 					break;
@@ -515,7 +516,7 @@ public class CmisUtils {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static PropertyDefinition<?> xml2PropertyDefinition(Element propertyDefinitionXml) {
+	private static @NonNull PropertyDefinition<?> xml2PropertyDefinition(@NonNull Element propertyDefinitionXml) {
 		MutablePropertyDefinition<?> definition;
 
 		PropertyType type = PropertyType.fromValue(propertyDefinitionXml.getAttribute("propertyType"));
@@ -564,7 +565,7 @@ public class CmisUtils {
 	 * Helper class
 	 */
 	private static @Nullable String parseStringAttr(Element xml, String attribute) {
-		if(xml.hasAttribute(attribute)) {
+		if (xml.hasAttribute(attribute)) {
 			return xml.getAttribute(attribute);
 		}
 		return null;
@@ -574,8 +575,8 @@ public class CmisUtils {
 	 * Helper class because Boolean can also be NULL in some cases with CMIS
 	 */
 	private static @Nullable Boolean parseBooleanAttr(Element xml, String attribute) {
-		if(xml.hasAttribute(attribute)) {
-			return Boolean.parseBoolean(xml.getAttribute(attribute));
+		if (xml.hasAttribute(attribute)) {
+			return Boolean.parseBoolean(xml.getAttribute(attribute).trim());
 		}
 		return null;
 	}
@@ -584,9 +585,9 @@ public class CmisUtils {
 	 * Helper class because BigInteger can also be NULL in some cases with CMIS
 	 */
 	private static @Nullable BigInteger parseBigIntegerAttr(Element xml, String attribute) {
-		if(xml.hasAttribute(attribute)) {
+		if (xml.hasAttribute(attribute)) {
 			String value = xml.getAttribute(attribute);
-			long longValue = Long.parseLong(value);
+			long longValue = Long.parseLong(value.trim());
 			return BigInteger.valueOf(longValue);
 		}
 		return null;
@@ -1081,8 +1082,8 @@ public class CmisUtils {
 
 		// Handle isExactAcl
 		String isExactAcl = XmlUtils.getChildTagAsString(cmisElement, "isExactAcl");
-		if(isExactAcl != null) {
-			impl.setIsExactAcl(Boolean.parseBoolean(isExactAcl));
+		if (isExactAcl != null) {
+			impl.setIsExactAcl(Boolean.parseBoolean(isExactAcl.trim()));
 		}
 
 		// If the original object exists copy the permissions over. These cannot (and shouldn't) be changed)

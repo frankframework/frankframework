@@ -11,14 +11,13 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.Security;
 import java.util.Arrays;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -28,6 +27,7 @@ import org.frankframework.encryption.CommonsPkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.LoadBouncyCastleBean;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.SignaturePipe.Action;
 import org.frankframework.stream.Message;
@@ -44,6 +44,12 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	@Override
 	public SignaturePipe createPipe() {
 		return new SignaturePipe();
+	}
+
+	@BeforeAll
+	public static void setup() {
+		// Load BouncyCastle if not already set.
+		new LoadBouncyCastleBean().afterPropertiesSet();
 	}
 
 	@Test
@@ -216,8 +222,6 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		failure.setName("failure");
 		pipe.addForward(failure);
 
-		Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-
 		configureAndStartPipe();
 
 		// Act
@@ -226,7 +230,6 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		// Assert
 		assertEquals(testMessage, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
-		assertNotNull(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME));
 	}
 
 	@Test
@@ -238,13 +241,10 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreType(KeystoreType.JKS);
 
-		Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-
 		// Act
 		ConfigurationException ce = assertThrows(ConfigurationException.class, pipe::configure);
 
 		// Assert
 		assertThat(ce.getMessage(), Matchers.startsWith("Signature algorithm [bad_algorithm] not supported"));
-		assertNotNull(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME));
 	}
 }
