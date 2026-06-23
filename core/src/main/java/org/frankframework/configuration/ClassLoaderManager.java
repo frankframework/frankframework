@@ -137,12 +137,12 @@ public class ClassLoaderManager {
 		}
 	}
 
-	private Object getCastValue(Class<?> class1, String value) {
+	private @NonNull Object getCastValue(@NonNull Class<?> class1, @NonNull String value) {
 		String className = class1.getName().toLowerCase();
 		return switch (className) {
-			case "boolean" -> Boolean.parseBoolean(value);
-			case "int", "integer" -> Integer.parseInt(value);
-			case "long" -> Long.parseLong(value);
+			case "boolean" -> Boolean.parseBoolean(value.trim());
+			case "int", "integer" -> Integer.parseInt(value.trim());
+			case "long" -> Long.parseLong(value.trim());
 			default -> value;
 		};
 	}

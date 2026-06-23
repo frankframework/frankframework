@@ -136,7 +136,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 	public int getSize() throws StorageException {
 		try {
 			return jdbcTemplate.queryForObject("select count(*) from " + table, Integer.class);
-		} catch(DataAccessException e){
+		} catch (DataAccessException | NullPointerException e) {
 			throw new StorageException("Could not read size", e);
 		}
 	}
@@ -144,9 +144,8 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 	@Override
 	public List<Integer> getStorageIds() throws StorageException {
 		try {
-			List<Integer> storageIds = jdbcTemplate.query("select LOGID from " + table + " order by LOGID desc",
+			return jdbcTemplate.query("select LOGID from " + table + " order by LOGID desc",
 					(rs, rowNum) -> rs.getInt(1));
-			return storageIds;
 		} catch(DataAccessException e){
 			throw new StorageException("Could not read storage id's", e);
 		}
@@ -170,14 +169,12 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 					&& searchValue.endsWith(">")) {
 				rangeSearchValues.add(searchValue);
 				regexSearchValues.add(null);
-				searchValues.remove(i);
-				searchValues.add(i, null);
+				searchValues.set(i, null);
 			} else if (searchValue != null && searchValue.startsWith("(")
 					&& searchValue.endsWith(")")) {
 				rangeSearchValues.add(null);
 				regexSearchValues.add(searchValue);
-				searchValues.remove(i);
-				searchValues.add(i, null);
+				searchValues.set(i, null);
 			} else {
 				rangeSearchValues.add(null);
 				regexSearchValues.add(null);
@@ -396,7 +393,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 			String column, String operator, String searchValue)
 					throws StorageException {
 		try {
-			BigDecimal bigDecimal = new BigDecimal(searchValue);
+			BigDecimal bigDecimal = new BigDecimal(searchValue.trim());
 			addExpression(query, column + " " + operator + " ?");
 			args.add(bigDecimal);
 			argTypes.add(Types.DECIMAL);
@@ -431,7 +428,6 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 				throwExceptionOnInvalidTimestamp(searchValue);
 			}
 			if (searchValueToParse.charAt(4) != '-'
-					|| searchValueToParse.charAt(7) != '-'
 					|| searchValueToParse.charAt(7) != '-'
 					|| searchValueToParse.charAt(10) != 'T'
 					|| searchValueToParse.charAt(13) != ':'

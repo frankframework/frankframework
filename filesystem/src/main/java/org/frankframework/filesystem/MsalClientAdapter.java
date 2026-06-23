@@ -37,7 +37,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 
@@ -50,6 +49,7 @@ import com.microsoft.aad.msal4j.IHttpClient;
 import com.microsoft.aad.msal4j.IHttpResponse;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -71,7 +71,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JacksonUtils;
-import org.frankframework.util.LogUtil;
 
 /**
  * This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSocketFactory.
@@ -322,26 +321,23 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		return request;
 	}
 
-	private class MsalResponse implements IHttpResponse {
-		protected Logger log = LogUtil.getLogger(this);
-
+	@Log4j2
+	private static class MsalResponse implements IHttpResponse {
 		private final int statusCode;
 		private final Map<String, List<String>> headers = new HashMap<>();
 		private String body = "";
 
 		public MsalResponse(Message response, PipeLineSession session) {
-			this.statusCode = Integer.parseInt((String) session.get(STATUS_CODE_SESSION_KEY));
-			if(log.isDebugEnabled())
-				log.debug("Parsing status code [{}]", statusCode);
+			this.statusCode = session.get(STATUS_CODE_SESSION_KEY, 200);
+			if (log.isDebugEnabled()) log.debug("Parsing status code [{}]", statusCode);
 
 			String[] headersAsCsv = ((String) session.get(RESPONSE_HEADERS_SESSION_KEY)).split(",");
 			for (String headerName : headersAsCsv) {
 				List<String> values = new ArrayList<>();
-				String headerValue = (String) session.get(headerName);
+				String headerValue = session.getString(headerName);
 				values.add(headerValue);
 
-				if(log.isDebugEnabled())
-					log.debug("Parsing header [{}] [{}]", headerName, headerValue);
+				if (log.isDebugEnabled()) log.debug("Parsing header [{}] [{}]", headerName, headerValue);
 				this.headers.put(headerName, values);
 			}
 

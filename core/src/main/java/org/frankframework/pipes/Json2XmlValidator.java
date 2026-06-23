@@ -175,7 +175,7 @@ public class Json2XmlValidator extends XmlValidator {
 
 	private static double getQuality(String mimeType) {
 		String q = MimeTypeUtils.parseMimeType(mimeType).getParameter("q");
-		return StringUtils.isNotBlank(q) ? Double.parseDouble(q) : 1.0;
+		return StringUtils.isNotBlank(q) ? Double.parseDouble(q.trim()) : 1.0;
 	}
 
 	/**

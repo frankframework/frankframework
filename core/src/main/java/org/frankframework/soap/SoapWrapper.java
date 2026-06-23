@@ -252,7 +252,7 @@ public class SoapWrapper {
 			return 0;
 		}
 		log.debug("getFaultCount(): transformation result [{}]", faultCount);
-		return Integer.parseInt(faultCount);
+		return Integer.parseInt(faultCount.trim());
 	}
 
 	private String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session) throws IOException, TransformerException, SAXException {
