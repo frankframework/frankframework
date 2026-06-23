@@ -90,7 +90,7 @@ public class DebuggerActive implements ApplicationEventPublisherAware, Applicati
 	}
 
 	@Override
-	public void onApplicationEvent(@NonNull DebuggerStatusChangedEvent event) {
+	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
 		if (event.getSource() != this) {
 			log.debug("received DebuggerStatusChangedEvent [{}]", event);
 			setState(event.isEnabled());
