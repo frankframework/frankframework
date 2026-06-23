@@ -15,10 +15,16 @@
 */
 package org.frankframework.ladybug;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.ApplicationListener;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.util.AppConstants;
@@ -31,7 +37,10 @@ import org.frankframework.util.AppConstants;
  * @see LadybugDebugger
  * @see IbisDebuggerAdvice
  */
-public class DebuggerActive implements ApplicationEventPublisherAware, InitializingBean {
+@Log4j2
+public class DebuggerActive implements ApplicationEventPublisherAware, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean, BooleanSupplier {
+	private AtomicBoolean IS_LADYBUG_ACTIVE = new AtomicBoolean(false);
+	private static final String TESTTOOL_ENABLED_PROPERTY = "testtool.enabled";
 
 	private ApplicationEventPublisher applicationEventPublisher;
 
@@ -45,26 +54,51 @@ public class DebuggerActive implements ApplicationEventPublisherAware, Initializ
 		// Contract for testtool state:
 		// - when the state changes a DebuggerStatusChangedEvent must be fired to notify others
 		// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
-		// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 
-		final AppConstants appConstants = AppConstants.getInstance();
-		String testToolEnabledProperty = appConstants.getProperty("testtool.enabled");
+		boolean testToolEnabled = inferTestToolState();
 
-		boolean testToolEnabled = true;
-		if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
-			testToolEnabled = "true".equalsIgnoreCase(testToolEnabledProperty) || "!false".equalsIgnoreCase(testToolEnabledProperty);
-		} else {
-			String stage = appConstants.getProperty("dtap.stage");
-			if ("ACC".equals(stage) || "PRD".equals(stage)) {
-				testToolEnabled = false;
-			}
-			AppConstants.setGlobalProperty("testtool.enabled", testToolEnabled);
-		}
+		// update the state
+		setState(testToolEnabled);
 
 		// notify other components of status of debugger
 		DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, testToolEnabled);
 		if (applicationEventPublisher != null) {
+			log.debug("sending DebuggerStatusChangedEvent [{}]", event);
 			applicationEventPublisher.publishEvent(event);
 		}
+	}
+
+	private boolean inferTestToolState() {
+		final AppConstants appConstants = AppConstants.getInstance();
+		String testToolEnabledProperty = appConstants.getProperty(TESTTOOL_ENABLED_PROPERTY);
+
+		if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
+			return "true".equalsIgnoreCase(testToolEnabledProperty) || "!false".equalsIgnoreCase(testToolEnabledProperty);
+		}
+
+		// Property has not been set, so determine it based on the dtap.stage.
+		String stage = appConstants.getProperty("dtap.stage");
+		return !("ACC".equals(stage) || "PRD".equals(stage));
+	}
+
+	// Store the state in AppConstants testtool.enabled for use by GUI/Larva
+	private void setState(boolean testToolEnabled) {
+		// Always store the new updated value in the AppConstants
+		AppConstants.setGlobalProperty(TESTTOOL_ENABLED_PROPERTY, testToolEnabled);
+
+		IS_LADYBUG_ACTIVE.set(testToolEnabled);
+	}
+
+	@Override
+	public void onApplicationEvent(@NonNull DebuggerStatusChangedEvent event) {
+		if (event.getSource() != this) {
+			log.debug("received DebuggerStatusChangedEvent [{}]", event);
+			setState(event.isEnabled());
+		}
+	}
+
+	@Override
+	public boolean getAsBoolean() {
+		return IS_LADYBUG_ACTIVE.get();
 	}
 }

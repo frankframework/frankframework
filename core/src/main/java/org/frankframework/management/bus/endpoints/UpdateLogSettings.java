@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 
 import jakarta.annotation.security.RolesAllowed;
 
@@ -50,7 +51,6 @@ import org.frankframework.util.LogUtil;
 @TopicSelector(BusTopic.LOG_CONFIGURATION)
 public class UpdateLogSettings extends BusEndpointBase implements ApplicationEventPublisherAware {
 	private static final String LOG_INTERMEDIARY_RESULTS_PROPERTY = "log.logIntermediaryResults";
-	private static final String TESTTOOL_ENABLED_PROPERTY = "testtool.enabled";
 	private @Setter ApplicationEventPublisher applicationEventPublisher;
 
 	@ActionSelector(BusAction.GET)
@@ -68,7 +68,7 @@ public class UpdateLogSettings extends BusEndpointBase implements ApplicationEve
 
 		logSettings.put("logIntermediaryResults", AppConstants.getInstance().getBoolean(LOG_INTERMEDIARY_RESULTS_PROPERTY, true));
 
-		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean(TESTTOOL_ENABLED_PROPERTY, true));
+		logSettings.put("enableDebugger", isTesttoolEnabled());
 
 		return new JsonMessage(logSettings);
 	}
@@ -117,9 +117,8 @@ public class UpdateLogSettings extends BusEndpointBase implements ApplicationEve
 		}
 
 		if (enableDebugger != null) {
-			boolean testtoolEnabled=AppConstants.getInstance().getBoolean(TESTTOOL_ENABLED_PROPERTY, true);
-			if (testtoolEnabled!=enableDebugger) {
-				AppConstants.setGlobalProperty(TESTTOOL_ENABLED_PROPERTY, "" + enableDebugger);
+			boolean testtoolEnabled = isTesttoolEnabled();
+			if (testtoolEnabled != enableDebugger) {
 				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
 				if (applicationEventPublisher!=null) {
 					log.info("setting debugger enabled [{}]", enableDebugger);
@@ -137,6 +136,16 @@ public class UpdateLogSettings extends BusEndpointBase implements ApplicationEve
 		if (!msg.isEmpty()) {
 			log.warn(msg);
 			LogUtil.getLogger("SEC").info(msg);
+		}
+	}
+
+	private boolean isTesttoolEnabled() {
+		try {
+			return getApplicationContext().getBean("debuggerActive", BooleanSupplier.class).getAsBoolean();
+		} catch (Exception e) {
+			// Ignore all exceptions. If the bean is not present, assume false!
+			log.warn("unable to determine ladybug testtool state", e);
+			return false;
 		}
 	}
 }
