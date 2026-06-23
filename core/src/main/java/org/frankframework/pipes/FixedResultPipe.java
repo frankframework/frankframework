@@ -398,8 +398,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * Name of the session key containing the file name of the file that contains the result message.
 	 */
-	@Deprecated(since = "8.2", forRemoval = true)
-	@ConfigurationWarning("fileNameSessionKey is scheduled for removal. Please use a <param> if you need a session value")
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
 	}
