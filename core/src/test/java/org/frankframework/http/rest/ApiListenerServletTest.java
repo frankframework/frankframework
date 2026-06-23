@@ -2043,6 +2043,7 @@ public class ApiListenerServletTest {
 		assertEquals(200, result.getStatus());
 		assertTrue(result.containsHeader("key-1"));
 		assertTrue(result.containsHeader("key-3"));
+		assertFalse(result.containsHeader("key-2"));
 		assertFalse(result.containsHeader("key-4"));
 		assertEquals("value-1", result.getHeader("key-1"));
 		assertEquals("value-3", result.getHeader("key-3"));
