@@ -36,7 +36,7 @@ import org.frankframework.util.ClassUtils;
 @Log
 public class CredentialFactory {
 
-	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
+	public static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
 	public static final String CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY = "credentialFactory.optionalPrefix";
 
 	private static final String FALLBACK_CREDENTIAL_FACTORY = FileSystemCredentialFactory.class.getName();
