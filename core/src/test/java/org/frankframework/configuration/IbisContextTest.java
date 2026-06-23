@@ -157,8 +157,8 @@ public class IbisContextTest {
 		ApplicationWarnings.removeInstance();
 		AppConstants.removeInstance();
 		AppConstants appConstants = AppConstants.getInstance();
-		Object jdbcFieldNamesOriginalValue = appConstants.setProperty("jdbc.convertFieldnamesToUppercase", false);
-		Object additionalPropFilesSuffixOriginalValue = appConstants.setProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, ".propmap");
+		appConstants.setProperty("jdbc.convertFieldnamesToUppercase", false);
+		appConstants.setProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, ".propmap");
 		appConstants.setProperty("configurations.autoDatabaseClassLoader", "not-empty");
 
 		CredentialConstants credentialConstants = CredentialConstants.getInstance();
@@ -172,7 +172,6 @@ public class IbisContextTest {
 			List<String> warnings = ApplicationWarnings.getWarningsList();
 
 			assertEquals(4, warnings.size());
-
 			assertThat(warnings, containsInAnyOrder(
 					containsString("DEPRECATED legacy classnames from package [" + CredentialFactory.LEGACY_PACKAGE_NAME + "] used for creating CredentialProviders"),
 					containsString("DEPRECATED property [configurations.autoDatabaseClassLoader]"),
