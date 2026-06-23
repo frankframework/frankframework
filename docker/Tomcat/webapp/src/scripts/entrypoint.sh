@@ -14,7 +14,9 @@ export JAVA_OPTS="\
 	--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
 	$JAVA_OPTS"
 
-if [ ${dtap.stage:-PRD} == "LOC" ]; then
+# Default we want to disable this functionality. When dtap is LOC, enable GC debugging.
+DTAP_STAGE="${dtap.stage:-}"
+if [ "$DTAP_STAGE" == "LOC" ]; then
 	export JAVA_OPTS="-Xlog:gc*,gc+age=trace:file=/usr/local/tomcat/logs/gc-log.log:time,uptime:filesize=104857600,filecount=5 $JAVA_OPTS"
 else
 	export JAVA_OPTS="-XX:+PerfDisableSharedMem $JAVA_OPTS"
