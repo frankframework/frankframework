@@ -18,9 +18,6 @@ package org.frankframework.console.controllers;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.logging.log4j.Level;
-
-import org.frankframework.console.util.RequestUtils;
-
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +32,7 @@ import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
+import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
