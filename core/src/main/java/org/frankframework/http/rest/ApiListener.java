@@ -460,6 +460,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.authenticationRoles = StringUtil.split(authRoles, ",;");
 	}
 
+	/**
+	 * Get authentication roles as list. Method cannot be named after the setter because the types are different, and that breaks Frank!Doc.
+	 */
 	public List<String> getAuthenticationRoleList() {
 		return authenticationRoles;
 	}
@@ -471,6 +474,9 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.responseHeaderSessionKeys = new HashSet<>(StringUtil.split(responseHeaderSessionKeys, ",;"));
 	}
 
+	/**
+	 * Get response-header session keys as set. Method cannot be named after the setter because the types are different, and that breaks Frank!Doc.
+	 */
 	public @NonNull Set<@NonNull String> getResponseHeaderSessionKeySet() {
 		return responseHeaderSessionKeys;
 	}
