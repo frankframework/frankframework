@@ -1,6 +1,7 @@
 package org.frankframework.soap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,14 +14,25 @@ import static org.mockito.Mockito.verify;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
 import java.security.MessageDigest;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.KeySelector;
@@ -43,10 +55,16 @@ import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPPart;
 
 import org.apache.wss4j.common.WSS4JConstants;
+import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WsuIdAllocator;
 import org.apache.xml.security.algorithms.JCEMapper;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -58,9 +76,13 @@ import org.xml.sax.SAXException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.encryption.KeystoreType;
+import org.frankframework.lifecycle.LoadBouncyCastleBean;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlUtils;
@@ -291,6 +313,111 @@ public class SoapWrapperTest {
 		assertNotNull(file); // ensure we can find the file
 
 		assertTrue(verifySoapDigest(file.openStream()));
+	}
+
+	private KeyStore createDummyKeyStoreWithNullKeyPassword(String certificateName, String certificatePassword) throws Exception {
+		// Load BouncyCastle if not already set.
+		new LoadBouncyCastleBean().afterPropertiesSet();
+
+		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+		keyGen.initialize(2048);
+		KeyPair keyPair = keyGen.generateKeyPair();
+
+		X500Name owner = new X500Name("CN=Test, OU=Test, O=Test, L=Test, C=US");
+		BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
+		Instant validFrom = Instant.now();
+		Instant validTo = validFrom.plus(365, ChronoUnit.DAYS);
+
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+				owner,
+				serial,
+				Date.from(validFrom),
+				Date.from(validTo),
+				owner,
+				keyPair.getPublic()
+		);
+		ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA").build(keyPair.getPrivate());
+		X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBuilder.build(signer));
+
+		KeyStore ks = KeyStore.getInstance(KeystoreType.PKCS12.name());
+		ks.load(null, "password".toCharArray());
+		ks.setKeyEntry(certificateName, keyPair.getPrivate(), certificatePassword.toCharArray(), new Certificate[] { cert } );
+		return ks;
+	}
+
+	@Test
+	void validateEncryptedSoap1_1() throws Exception {
+		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
+		assertNotNull(file); // ensure we can find the file
+
+		String certificateName = "tralalal";
+		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
+
+		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+		keyGen.init(256);
+		SecretKey secretKey = keyGen.generateKey();
+//		SecretKey secretKey = new SecretKeySpec(symmetricKey.getBytes(), "AES");
+
+		Message encrypted = SoapWrapper.getInstance().encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey);
+
+		String encryptedString = encrypted.asString()
+				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>")
+				.replaceAll("<wsu:Created>.*?</wsu:Created>", "<wsu:Created>IGNORE-CREATED</wsu:Created>")
+				.replaceAll("<wsu:Expires>.*?</wsu:Expires>", "<wsu:Expires>IGNORE-EXPIRES</wsu:Expires>")
+				.replaceAll("(Id=\")[^\"]*\"", "Id=\"id-here\"")
+				.replaceAll("(URI=\")[^\"]*\"", "URI=\"uri-here\"")
+				.replaceAll("(<wsse:BinarySecurityToken[^>]*>)[^<]*(</wsse:BinarySecurityToken>)", "$1IGNORE-BST$2")
+				.replaceAll("(<wsse:KeyIdentifier[^>]*>)[^<]*(</wsse:KeyIdentifier>)", "$1IGNORE-KI$2");
+
+		URL expectedFile = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap-encrypted.xml");
+		assertNotNull(expectedFile); // ensure we can find the file
+		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(expectedFile), encryptedString);
+
+		Message decrypted = SoapWrapper.getInstance().decryptMessage(encrypted, keystore, certificateName, "changeit");
+		// Ensure the decrypted result is the same as the initial document
+		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), decrypted.asString());
+	}
+
+	@Test
+	void validateEncryptedErrorSoap1_1() throws Exception {
+		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
+		assertNotNull(file); // ensure we can find the file
+
+		String certificateName = "tralalal";
+		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
+
+		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+		keyGen.init(256);
+		SecretKey secretKey = keyGen.generateKey();
+
+		Message encrypted = SoapWrapper.getInstance().encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey);
+		SoapWrapper wrapper = SoapWrapper.getInstance();
+
+		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, certificateName, "wrong-password"));
+		assertEquals("The private key for the supplied alias does not exist in the keystore", e1.getMessage());
+
+		WSSecurityException e2 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, "wrong-cert", "changeit"));
+		assertEquals("The private key for the supplied alias does not exist in the keystore", e2.getMessage());
+
+		KeyStore differentStoreSameCertname = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
+		WSSecurityException e3 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, differentStoreSameCertname, certificateName, "changeit"));
+		assertEquals("No certificates were found for decryption (KeyId)", e3.getMessage());
+
+		Message manipulatedMessage = new Message(encrypted.asString()
+				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>"));
+		WSSecurityException e4 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage, keystore, certificateName, "changeit"));
+		assertEquals("The signature or decryption was invalid", e4.getMessage());
+
+		// Replace the first 4 characters of the CipherValue
+		Message manipulatedMessage2 = new Message(encrypted.asString()
+				.replaceAll("<xenc:CipherValue>(.{4})(.*)</xenc:CipherValue>", "<xenc:CipherValue>L+Li$2</xenc:CipherValue>"));
+		assertNotEquals(encrypted.asString(), manipulatedMessage2.asString());
+
+		WSSecurityException e5 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit"));
+		assertEquals("Given final block not properly padded. Such issues can arise if a bad key is used during decryption.", e5.getMessage());
+
+		Message resultMessage = wrapper.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit");
+		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), resultMessage.asString());
 	}
 
 	private Document toSoapMessage(InputStream is) throws Exception {

@@ -190,11 +190,8 @@ public class BytesOutputPipe extends FixedForwardPipe {
 							throw new SAXException("Size [" + sizeString + "] is not a valid number for field with type [" + type + "] and value [" + value + "]");
 						}
 					}
-					int size = Integer.parseInt(sizeString);
+					int size = Integer.parseInt(sizeString.trim());
 					byte[] bytes = new byte[size];
-					for (int i = 0; i < bytes.length; i++) {
-						bytes[i] = 0;
-					}
 					if (size < 1) {
 						throw new SAXException("Size is smaller than 1 for field with type [" + type + "] and value [" + value + "]");
 					}

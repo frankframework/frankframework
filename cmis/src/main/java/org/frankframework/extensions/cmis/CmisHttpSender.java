@@ -42,6 +42,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpResponseHandler;
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
@@ -79,8 +80,8 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 					Output writer = (Output) session.get(WRITER_KEY);
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
-					if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
+					ParameterValue clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
+					if ((clientCompression != null) && clientCompression.asBooleanValue(false)) {
 						httpPost.setHeader("Content-Encoding", "gzip");
 						writer.write(new GZIPOutputStream(out, 4096));
 					} else {
@@ -103,8 +104,8 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 					Output writer = (Output) session.get(WRITER_KEY);
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
-					if ((clientCompression != null) && Boolean.parseBoolean(clientCompression.toString())) {
+					ParameterValue clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
+					if ((clientCompression != null) && clientCompression.asBooleanValue(false)) {
 						httpPut.setHeader("Content-Encoding", "gzip");
 						writer.write(new GZIPOutputStream(out, 4096));
 					} else {

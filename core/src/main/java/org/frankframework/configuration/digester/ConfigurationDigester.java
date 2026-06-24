@@ -294,7 +294,7 @@ public class ConfigurationDigester implements ConfigurationAware {
 
 		String stubFile = properties.getString(ConfigurationUtils.STUB4TESTTOOL_XSLT_KEY, ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
 		Map<String, Object> parameters = new HashMap<>();
-		parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, "false")));
+		parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, properties.getBoolean(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, false));
 
 		ContentHandler currentHandler = handler;
 		for (String file : StringUtil.split(stubFile)) {

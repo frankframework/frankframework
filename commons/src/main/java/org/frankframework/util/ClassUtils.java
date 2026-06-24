@@ -293,22 +293,22 @@ public class ClassUtils {
 		}
 		// Unbox an array to its component type. Convert string input to values. Put back into an array with the right type
 		if (type.isArray()) {
-			List<Object> list = StringUtil.splitToStream(value)
-					.map(part -> convertToTypeRawTyped(type.getComponentType(), part))
+			Class<?> componentType = type.getComponentType();
+			List<?> list = StringUtil.splitToStream(value)
+					.map(part -> convertToTypeRawTyped(componentType, part))
 					.toList();
-
-			return list.toArray((Object[]) Array.newInstance(type.getComponentType(), 1));
+			return list.toArray((Object[])Array.newInstance(componentType, list.size()));
 		}
 
 		try {
 			return switch (type.getTypeName()) {
-				case "int", "java.lang.Integer" -> Integer.parseInt(value);
-				case "long", "java.lang.Long" -> Long.parseLong(value);
+				case "int", "java.lang.Integer" -> Integer.parseInt(value.trim());
+				case "long", "java.lang.Long" -> Long.parseLong(value.trim());
 				case "boolean", "java.lang.Boolean" -> {
 					if (value.isEmpty()) { // parseBoolean returns FALSE when it cannot parse the value
 						throw new IllegalArgumentException("cannot convert empty string to boolean");
 					}
-					yield Boolean.parseBoolean(value); // parseBoolean returns FALSE when it cannot parse the value
+					yield Boolean.parseBoolean(value.trim()); // parseBoolean returns FALSE when it cannot parse the value
 				}
 				case "java.lang.String" -> value;
 				default -> throw new IllegalArgumentException("cannot convert to type [" + type.getName() + "], not implemented");

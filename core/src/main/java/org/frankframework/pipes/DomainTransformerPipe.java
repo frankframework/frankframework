@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.StringTokenizer;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -170,10 +171,10 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), builder.toString());
 	}
 
-	public String getValueOut(String label, String valueIn, String type, PreparedStatement stmt) throws SQLException {
+	public @Nullable String getValueOut(@NonNull String label, @NonNull String valueIn, @NonNull String type, @NonNull PreparedStatement stmt) throws SQLException {
 		stmt.setString(1, label);
 		if (type.equals(TYPE_NUMBER)) {
-			double d = Double.parseDouble(valueIn);
+			double d = Double.parseDouble(valueIn.trim());
 			stmt.setDouble(2, d);
 		} else {
 			stmt.setString(2, valueIn);

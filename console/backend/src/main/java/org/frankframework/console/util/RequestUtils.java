@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,37 +39,37 @@ public class RequestUtils {
 		if (multiFormProperty != null) {
 			return multiFormProperty;
 		}
-		if(defaultValue != null) {
+		if (defaultValue != null) {
 			return defaultValue;
 		}
 		throw new ApiException("Key ["+key+"] not defined", 400);
 	}
 
-	public static String resolveStringWithEncoding(String key, MultipartFile message, String defaultEncoding, boolean nullOnEmpty) {
-		if(message != null) {
-			String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			String messageContentType = message.getContentType();
-			if (messageContentType != null) {
-				MediaType contentType = MediaType.valueOf(messageContentType);
-				Charset charset = contentType.getCharset();
-				if(charset != null) {
-					encoding = charset.toString();
-				}
-			}
-
-			try {
-				InputStream is = message.getInputStream();
-				String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
-				if(nullOnEmpty) {
-					return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
-				}
-				return inputMessage;
-			} catch (UnsupportedEncodingException e) {
-				throw new ApiException("unsupported file encoding ["+encoding+"]");
-			} catch (IOException e) {
-				throw new ApiException("error parsing value of key ["+key+"]", e);
+	public static @Nullable String resolveStringWithEncoding(@NonNull String key, @Nullable MultipartFile message, @Nullable String defaultEncoding, boolean nullOnEmpty) {
+		if (message == null) {
+			return null;
+		}
+		String encoding = StringUtils.isNotEmpty(defaultEncoding) ? defaultEncoding : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		String messageContentType = message.getContentType();
+		if (messageContentType != null) {
+			MediaType contentType = MediaType.valueOf(messageContentType);
+			Charset charset = contentType.getCharset();
+			if (charset != null) {
+				encoding = charset.toString();
 			}
 		}
-		return null;
+
+		try {
+			InputStream is = message.getInputStream();
+			String inputMessage = StreamUtil.streamToString(is, "\n", encoding, false);
+			if (nullOnEmpty) {
+				return StringUtils.isEmpty(inputMessage) ? null : inputMessage;
+			}
+			return inputMessage;
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException("unsupported file encoding ["+encoding+"]");
+		} catch (IOException e) {
+			throw new ApiException("error parsing value of key ["+key+"]", e);
+		}
 	}
 }

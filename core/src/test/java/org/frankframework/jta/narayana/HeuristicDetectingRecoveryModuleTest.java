@@ -48,9 +48,9 @@ public class HeuristicDetectingRecoveryModuleTest {
 
 	@ParameterizedTest
 	@CsvSource({"10,910", "15,910", "16,960", "25,1500", "1000,60000"})
-	public void testBackoffDuration(String heuristicFailuresBackoff, String expected) {
+	public void testBackoffDuration(String heuristicFailuresBackoff, Long expected) {
 		Duration backoffDuration = HeuristicDetectingRecoveryModule.calculateHeuristicFailuresBackoffDuration(5, heuristicFailuresBackoff, 180);
-		assertEquals(Long.parseLong(expected), backoffDuration.getSeconds());
+		assertEquals(expected, backoffDuration.getSeconds());
 	}
 
 	@Test
