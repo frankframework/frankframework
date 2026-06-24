@@ -107,6 +107,17 @@ public abstract class AmqpSenderTest {
 		System.clearProperty("amqp.port");
 	}
 
+	/**
+	 * Creates receiver options for a QUEUE type receiver.
+	 * Override in subclasses for server-specific capability requirements
+	 * (e.g., RabbitMQ 4 v2 addresses do not use capabilities).
+	 */
+	protected ReceiverOptions createQueueReceiverOptions() {
+		ReceiverOptions options = new ReceiverOptions();
+		options.sourceOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+		return options;
+	}
+
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	void sendMessageToQueueNoReply(boolean sendStreaming) throws Exception {
@@ -201,8 +212,7 @@ public abstract class AmqpSenderTest {
 		CompletableFuture<Message> future = new CompletableFuture<>();
 
 		return future.completeAsync(() -> {
-			ReceiverOptions receiverOptions = new ReceiverOptions();
-			receiverOptions.sourceOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+			ReceiverOptions receiverOptions = createQueueReceiverOptions();
 			try (Connection connection = factory.getConnectionFactory(getResourceName()).getConnection();
 				 Receiver receiver = connection.openReceiver(rrQueue, receiverOptions)) {
 				Delivery request = receiver.receive(60, TimeUnit.SECONDS);

@@ -89,6 +89,10 @@ public class AmqpListenerContainer {
 			connection = amqpConnectionFactoryFactory.getConnectionFactory(connectionName).getConnection();
 			SessionOptions sessionOptions = new SessionOptions();
 			session = connection.openSession(sessionOptions);
+
+			if (RabbitMqHelper.isRabbitMq4(connection.properties())) {
+				log.info("RabbitMQ 4+ detected, using AMQP 1.0 v2 addresses with management protocol");
+			}
 		} catch (ClientException | NoSuchElementException | IllegalStateException e) {
 			throw new LifecycleException("Cannot open AMQP connection", e);
 		}

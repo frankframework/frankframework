@@ -2,9 +2,9 @@ package org.frankframework.messaging.amqp;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Disabled;
-import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.rabbitmq.RabbitMQContainer;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -12,13 +12,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 class RabbitMQ4AmqpSenderTest extends AmqpSenderTest {
 
-	private static final String RABBIT_MQ_DOCKER_TAG = "rabbitmq:4.2-alpine";
+	private static final String RABBIT_MQ_DOCKER_TAG = "rabbitmq:4-alpine";
 
 	@Container
-	private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(RABBIT_MQ_DOCKER_TAG)
-//			.withAdminUser("admin")
-//			.withAdminPassword("admin")
-			;
+	private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(RABBIT_MQ_DOCKER_TAG);
 
 	@NonNull
 	@Override

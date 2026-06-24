@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.DeliveryMode;
@@ -62,9 +61,7 @@ import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
-import org.frankframework.util.UUIDUtil;
 
 /**
  * Sender to send to AMQP 1.0 end-points.
@@ -151,19 +148,23 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 			// NB: There are a number of things that might go wrong only when using RabbitMQ, but we don't know if we're talking to
 			// RabbitMQ or another server until we open the connection. So we create a test-connection here.
-			serverIsRabbitMQ = "RabbitMQ".equals(connection.properties().get("product"));
+			serverIsRabbitMQ = RabbitMqHelper.isRabbitMq(connection.properties());
 
 			if (serverIsRabbitMQ) {
 				// RabbitMQ 4.x AMQP 1.0 v2 addresses (/queues/<name>, /exchanges/<name>) require a slash prefix and are valid.
 				// Only warn for addresses that contain slashes but do not follow the v2 pattern.
-				boolean addressIsV1 = Strings.CS.contains(address, "/") && !address.startsWith("/queues/") && !address.startsWith("/exchanges/");
-				boolean replyIsV1 = replyAddress != null && Strings.CS.contains(replyAddress, "/") && !replyAddress.startsWith("/queues/") && !replyAddress.startsWith("/exchanges/");
-				if (addressIsV1 || replyIsV1) {
+				if (RabbitMqHelper.isAddressUsingV1Format(this.address) || RabbitMqHelper.isReplyUsingV1Format(this.replyAddress)) {
 					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + address + "]; reply queue: [" + replyAddress + "])");
+
+					if (RabbitMqHelper.isRabbitMq4(connection.properties())) {
+						ConfigurationWarnings.add(this, log, "RabbitMQ 4+ detected which only supports AMQP 1.0 v2 address format by default. " +
+								"Please update the address to follow the v2 format, e.g. prefix with '/queues/' or '/exchanges/'");
+					}
 				}
 
 				if (messageProtocol == MessageProtocol.RR && StringUtils.isEmpty(replyAddress)) {
-					replyAddress = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
+					String replyAddress = this.address + "_replies";
+					// replyAddress = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
 					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using randomly generated queue name [" + replyAddress + "]");
 				}
 			}
@@ -181,20 +182,20 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			if (streamingMessages) {
 				StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
 				streamSenderOptions.deliveryMode(deliveryMode);
-				if (messageProtocol == MessageProtocol.RR) {
-					streamSenderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
-				} else {
-					streamSenderOptions.targetOptions().capabilities(addressType.getCapabilityName());
-				}
+					if (messageProtocol == MessageProtocol.RR) {
+						streamSenderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+					} else {
+						streamSenderOptions.targetOptions().capabilities(addressType.getCapabilityName());
+					}
 				streamSender = session.connection().openStreamSender(address, streamSenderOptions);
 			} else {
 				SenderOptions senderOptions = new SenderOptions();
 				senderOptions.deliveryMode(deliveryMode);
-				if (messageProtocol == MessageProtocol.RR) {
-					senderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
-				} else {
-					senderOptions.targetOptions().capabilities(addressType.getCapabilityName());
-				}
+					if (messageProtocol == MessageProtocol.RR) {
+						senderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+					} else {
+						senderOptions.targetOptions().capabilities(addressType.getCapabilityName());
+					}
 				sender = session.openSender(address, senderOptions);
 			}
 		} catch (ClientException | RuntimeException e) {

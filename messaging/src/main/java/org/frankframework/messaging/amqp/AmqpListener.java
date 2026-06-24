@@ -58,7 +58,6 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	public static final long DEFAULT_TIMEOUT_SECONDS = 30L;
 	public static final long DEFAULT_TIME_TO_LIVE = Header.DEFAULT_TIME_TO_LIVE;
 
-
 	private @Getter String connectionName;
 	private @Getter AddressType addressType = AddressType.QUEUE;
 	private @Getter String address;
@@ -127,6 +126,8 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 		if (onException == null) {
 			onException = messageProtocol == MessageProtocol.FF ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 		}
+
+		// TODO check of we hier ook de connectie kunnen testen zoals in de sender
 	}
 
 	@Override
