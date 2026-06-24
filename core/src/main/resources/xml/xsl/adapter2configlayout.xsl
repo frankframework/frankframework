@@ -6,6 +6,7 @@
 
 	<xsl:variable name="adapterCount" select="count(//adapter)"/>
 	<xsl:variable name="errorForwards" select="('exception','failure','fail','timeout','illegalResult','presumedTimeout','interrupt','parserError','outputParserError','outputFailure')"/>
+	<xsl:key name="elementsById" match="*[@elementID]" use="@elementID"/>
 
 	<xsl:template match="/">
 		<!-- Create the Mermaid graph in 2 steps
@@ -279,6 +280,13 @@
 				<xsl:apply-templates select="../global-forwards/forward[not(@name = current()/forward/@name)]" mode="#current"/>
 			</xsl:variable>
 
+			<!-- Add success forward if not present -->
+			<xsl:call-template name="createForwardIfNecessary">
+				<xsl:with-param name="forwards" select="$forwards/forward"/>
+				<xsl:with-param name="name" select="'success'"/>
+				<xsl:with-param name="path" select="(following-sibling::pipe/@name,../exits/exit[lower-case(@state)='success']/@name,'READY')[1]"/>
+			</xsl:call-template>
+
 			<xsl:copy-of select="$forwards"/>
 		</xsl:copy>
 	</xsl:template>
@@ -516,6 +524,7 @@
 
 	<xsl:template match="pipe" mode="convertElements">
 		<xsl:call-template name="createMermaidElement"/>
+		<xsl:apply-templates select="inputValidator|inputWrapper|outputValidator|outputWrapper" mode="#current"/>
 	</xsl:template>
 
 	<xsl:template match="exit" mode="convertElements">
@@ -623,17 +632,19 @@
 	</xsl:template>
 
 	<xsl:template match="forward" mode="convertForwards">
-		<xsl:value-of select="parent::*/@elementID"/>
-		<xsl:text> --> |<![CDATA[<text>]]></xsl:text>
-		<xsl:value-of select="@name"/>
-		<xsl:text><![CDATA[</text>]]></xsl:text>
-		<xsl:if test="exists(@customText)">
-			<xsl:text><![CDATA[<text>]]></xsl:text>
-			<xsl:value-of select="@customText"/>
+		<xsl:if test="parent::*/@elementID != '' and exists(key('elementsById', @targetID, root(.)))">
+			<xsl:value-of select="parent::*/@elementID"/>
+			<xsl:text> --> |<![CDATA[<text>]]></xsl:text>
+			<xsl:value-of select="@name"/>
 			<xsl:text><![CDATA[</text>]]></xsl:text>
+			<xsl:if test="exists(@customText)">
+				<xsl:text><![CDATA[<text>]]></xsl:text>
+				<xsl:value-of select="@customText"/>
+				<xsl:text><![CDATA[</text>]]></xsl:text>
+			</xsl:if>
+			<xsl:text>| </xsl:text>
+			<xsl:value-of select="@targetID"/>
+			<xsl:text>&#10;</xsl:text>
 		</xsl:if>
-		<xsl:text>| </xsl:text>
-		<xsl:value-of select="@targetID"/>
-		<xsl:text>&#10;</xsl:text>
 	</xsl:template>
 </xsl:stylesheet>
