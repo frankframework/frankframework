@@ -19,7 +19,8 @@
     "ignoreDeps": [
         "pnpm",
         "org.eclipse.m2e:lifecycle-mapping",
-        "com.eclipsesource.j2v8:j2v8_linux_x86_64"
+        "com.eclipsesource.j2v8:j2v8_linux_x86_64",
+        "net.sf.saxon:Saxon-HE"
     ],
     "prHourlyLimit": 10,
     "rebaseWhen": "conflicted",
