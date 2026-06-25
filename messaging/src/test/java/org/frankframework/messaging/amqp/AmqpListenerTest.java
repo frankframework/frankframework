@@ -367,16 +367,16 @@ abstract class AmqpListenerTest {
 	@Test
 	void testManyListenersOnSameConnection() throws Exception {
 		// Arrange
-		startListener(listener, AddressType.QUEUE, getQueueExchangeName(), "-1");
+		startListener(listener, AddressType.QUEUE, getQueueExchangeName(), "_1");
 
 		AmqpListener listener1 = createAmqpListener();
-		startListener(listener1, AddressType.QUEUE, getQueueExchangeName(), "-2");
+		startListener(listener1, AddressType.QUEUE, getQueueExchangeName(), "_2");
 
 		AmqpListener listener2 = createAmqpListener();
-		startListener(listener2, AddressType.TOPIC, getTopicExchangeName(), "-1");
+		startListener(listener2, AddressType.TOPIC, getTopicExchangeName(), "_1");
 
 		// Act 1
-		Amqp1Helper.sendFFMessage(factory, getResourceName(), getTopicExchangeName() + "-1", AddressType.TOPIC, new Message("topic message 1"));
+		Amqp1Helper.sendFFMessage(factory, getResourceName(), getTopicExchangeName() + "_1", AddressType.TOPIC, new Message("topic message 1"));
 
 		// Assert 1
 		await().atMost(10, TimeUnit.SECONDS)
@@ -390,9 +390,9 @@ abstract class AmqpListenerTest {
 		// Act 2
 
 		for (int i = 1; i <= 10; i++) {
-			Amqp1Helper.sendFFMessage(factory, getResourceName(), getQueueExchangeName() + "-1", AddressType.QUEUE, new Message("test q1 " + i));
-			Amqp1Helper.sendFFMessage(factory, getResourceName(), getQueueExchangeName() + "-2", AddressType.QUEUE, new Message("test q2 " + i));
-			Amqp1Helper.sendFFMessage(factory, getResourceName(), getTopicExchangeName() + "-1", AddressType.TOPIC, new Message("test t1 " + i));
+			Amqp1Helper.sendFFMessage(factory, getResourceName(), getQueueExchangeName() + "_1", AddressType.QUEUE, new Message("test q1 " + i));
+			Amqp1Helper.sendFFMessage(factory, getResourceName(), getQueueExchangeName() + "_2", AddressType.QUEUE, new Message("test q2 " + i));
+			Amqp1Helper.sendFFMessage(factory, getResourceName(), getTopicExchangeName() + "_1", AddressType.TOPIC, new Message("test t1 " + i));
 		}
 
 		// Assert 2

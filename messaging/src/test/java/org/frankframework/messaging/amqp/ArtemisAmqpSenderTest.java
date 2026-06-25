@@ -13,6 +13,16 @@ public class ArtemisAmqpSenderTest extends AmqpSenderTest {
 	private static final ArtemisContainer container = new ArtemisContainer(ARTEMIS_TAG)
 			.withEnv("ANONYMOUS_LOGIN", "true");
 
+	@Override
+	String getQueueExchangeName() {
+		return QUEUE_EXCHANGE_NAME;
+	}
+
+	@Override
+	String getTopicExchangeName() {
+		return TOPIC_EXCHANGE_NAME;
+	}
+
 	@NonNull
 	@Override
 	protected String getResourceName() {

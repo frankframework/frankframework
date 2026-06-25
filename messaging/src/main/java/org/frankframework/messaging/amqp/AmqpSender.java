@@ -28,6 +28,7 @@ import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.DeliveryMode;
 import org.apache.qpid.protonj2.client.OutputStreamOptions;
 import org.apache.qpid.protonj2.client.Receiver;
+import org.apache.qpid.protonj2.client.ReceiverOptions;
 import org.apache.qpid.protonj2.client.Sender;
 import org.apache.qpid.protonj2.client.SenderOptions;
 import org.apache.qpid.protonj2.client.Session;
@@ -163,9 +164,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				}
 
 				if (messageProtocol == MessageProtocol.RR && StringUtils.isEmpty(replyAddress)) {
-					String replyAddress = this.address + "_replies";
-					// replyAddress = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
-					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using randomly generated queue name [" + replyAddress + "]");
+					this.replyAddress = this.address + "_replies";
+					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using queue name [" + this.replyAddress + "]");
 				}
 			}
 		} catch (ClientException e) {
@@ -182,20 +182,20 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			if (streamingMessages) {
 				StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
 				streamSenderOptions.deliveryMode(deliveryMode);
-					if (messageProtocol == MessageProtocol.RR) {
-						streamSenderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
-					} else {
-						streamSenderOptions.targetOptions().capabilities(addressType.getCapabilityName());
-					}
+				if (messageProtocol == MessageProtocol.RR) {
+					streamSenderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+				} else {
+					streamSenderOptions.targetOptions().capabilities(addressType.getCapabilityName());
+				}
 				streamSender = session.connection().openStreamSender(address, streamSenderOptions);
 			} else {
 				SenderOptions senderOptions = new SenderOptions();
 				senderOptions.deliveryMode(deliveryMode);
-					if (messageProtocol == MessageProtocol.RR) {
-						senderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
-					} else {
-						senderOptions.targetOptions().capabilities(addressType.getCapabilityName());
-					}
+				if (messageProtocol == MessageProtocol.RR) {
+					senderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+				} else {
+					senderOptions.targetOptions().capabilities(addressType.getCapabilityName());
+				}
 				sender = session.openSender(address, senderOptions);
 			}
 		} catch (ClientException | RuntimeException e) {
@@ -232,9 +232,11 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	}
 
 	private @NonNull SenderResult sendRequestResponse(@NonNull Message message) throws SenderException {
+		ReceiverOptions receiverOptions = new ReceiverOptions();
+		receiverOptions.sourceOptions().capabilities(AddressType.QUEUE.getCapabilityName());
 
 		// It seems that dynamic receivers cannot be streaming?
-		try (Receiver responseReceiver = StringUtils.isEmpty(replyAddress) ? session.openDynamicReceiver() : session.openReceiver(replyAddress)) {
+		try (Receiver responseReceiver = StringUtils.isEmpty(replyAddress) ? session.openDynamicReceiver() : session.openReceiver(replyAddress, receiverOptions)) {
 			String responseQueueAddress = responseReceiver.address();
 			doSend(message, responseQueueAddress);
 			Delivery response = responseReceiver.receive(timeout, TimeUnit.SECONDS);
@@ -261,10 +263,10 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	/**
 	 * Send a message and return its messageId object.
-	 * @param message {@link Message} to be sent
+	 * @param message      {@link Message} to be sent
 	 * @param replyAddress Option reply-address
 	 * @return The AMQP messageId object
-	 * @throws SenderException If there was an exception sending the message
+	 * @throws SenderException  If there was an exception sending the message
 	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
 	 */
 	private Object doSend(@NonNull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
@@ -277,10 +279,10 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	/**
 	 * Send an object-message. Can be binary (Data Section) or character (AmqpValue Section).
-	 * @param message {@link Message} to send
+	 * @param message      {@link Message} to send
 	 * @param replyAddress Optional reply-address. If given, will be set on the AMQP message
 	 * @return Message ID, as {@link Object}.
-	 * @throws SenderException If there was an exception sending the message
+	 * @throws SenderException  If there was an exception sending the message
 	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
 	 */
 	private Object sendObjectMessage(@NonNull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
@@ -341,10 +343,10 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	/**
 	 * Send a streaming message. This will always be sent as a binary Data message.
-	 * @param message {@link Message} to send
+	 * @param message      {@link Message} to send
 	 * @param replyAddress Optional reply-address. If given, will be set on the AMQP message
 	 * @return Message ID, as {@link Object}.
-	 * @throws SenderException If there was an exception sending the message
+	 * @throws SenderException  If there was an exception sending the message
 	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
 	 */
 	private Object sendStreamingMessage(@NonNull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
@@ -357,7 +359,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				outputStreamOptions.bodyLength(Math.toIntExact(message.size()));
 			}
 			try (OutputStream outputStream = streamSenderMessage.body(outputStreamOptions);
-				InputStream inputStream = message.asInputStream()) {
+			     InputStream inputStream = message.asInputStream()) {
 				inputStream.transferTo(outputStream);
 			} catch (IOException e) {
 				log.warn("Cannot send streaming AMQP message to AMQP server, aborting message", e);

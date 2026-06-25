@@ -67,10 +67,10 @@ class RabbitMQ4AmqpListenerTest extends AmqpListenerTest {
 	@BeforeAll
 	static void setupClass() throws IOException, TimeoutException, InterruptedException {
 		// try creating the needed exchanges and queues here
-		// v2 implies a lot, including that queues and exchanges aren't created by default anymore, so we have to manually do that.
+		// v2 implies a lot, including that queues and exchanges aren't created by default any more, so we have to manually do that.
 		// A few other issues arose. In a nutshell:
-		// * Protonj is a v1 client, and we need v2 support
-		// * using the rabbitmq:4-management image doesn't work because that implicitly enables sasl authentication
+		// * Protonj is a v1 client, and we need v2 support (so create them with rabbitmq client)
+		// * using the rabbitmq:4-management image doesn't work because that implicitly enables SASL authentication
 
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rabbitMQContainer.getHost());
@@ -113,6 +113,5 @@ class RabbitMQ4AmqpListenerTest extends AmqpListenerTest {
 		channel.exchangeDeclare(exchangeName, type, true);
 		channel.queueDeclare("queue_" + exchangeName, true, false, false, null);
 		channel.queueBind("queue_" + exchangeName, exchangeName, "#");
-
 	}
 }
