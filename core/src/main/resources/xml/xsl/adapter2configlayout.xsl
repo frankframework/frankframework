@@ -524,7 +524,12 @@
 
 	<xsl:template match="pipe" mode="convertElements">
 		<xsl:call-template name="createMermaidElement"/>
-		<xsl:apply-templates select="inputValidator|inputWrapper|outputValidator|outputWrapper" mode="#current"/>
+		<!-- make sure everything in the pipeline gets rendered -->
+		<xsl:for-each select="inputValidator|inputWrapper|outputValidator|outputWrapper">
+			<xsl:if test="exists(forward[exists(key('elementsById', @targetID, root(.)))]) or exists(root(.)//forward[@targetID = current()/@elementID and parent::*/@elementID != ''])">
+				<xsl:apply-templates select="." mode="#current"/>
+			</xsl:if>
+		</xsl:for-each>
 	</xsl:template>
 
 	<xsl:template match="exit" mode="convertElements">
