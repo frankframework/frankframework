@@ -47,9 +47,8 @@ import org.frankframework.util.StringResolver;
 import org.frankframework.util.TransformerPool;
 
 /**
- * This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
- * provide this by using the <code>filename</code> attribute or with a <code>param</code> element to be able to
- * use a sessionKey for instance.
+ * This Pipe opens and returns a file from the classpath. You can provide this by using the
+ * <code>filenameSessionKey</code> attribute or with the <code>filename</code> attribute.
  *
  * <h2>Migrating from deprecated features</h2>
  * The FixedResultPipe was a jack of all trades. You could use it to read a file (only text) and/or use
@@ -238,8 +237,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
-		filename = getFilename();
-
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 
 		if (StringUtils.isNotEmpty(getFilename())) {
@@ -255,7 +252,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		}
 
 		if(useOldSubstitutionStartDelimiter) {
-			if(StringUtils.isBlank(filename)) {
+			if(StringUtils.isBlank(getFilename())) {
 				throw new ConfigurationException("attribute [useOldSubstitutionStartDelimiter] may only be used in combination with attribute [filename]");
 			}
 			substitutionStartDelimiter = "$";
@@ -275,18 +272,19 @@ public class FixedResultPipe extends FixedForwardPipe {
 		Message resultMessage = null;
 		String resultString = getReturnString();
 
+		String filenameToUse;
 		if (StringUtils.isNotEmpty(getFilenameSessionKey())) {
-			filename = session.getString(getFilenameSessionKey());
+			filenameToUse = session.getString(getFilenameSessionKey());
 		} else {
-			filename = getFilename();
+			filenameToUse = getFilename();
 		}
 
-		if (StringUtils.isNotEmpty(filename)) {
+		if (StringUtils.isNotEmpty(filenameToUse)) {
 			URL resource;
 			try {
-				resource = ClassLoaderUtils.getResourceURL(this, filename);
+				resource = ClassLoaderUtils.getResourceURL(this, filenameToUse);
 			} catch (Exception e) {
-				throw new PipeRunException(this, "got exception searching for [" + filename + "]", e);
+				throw new PipeRunException(this, "got exception searching for [" + filenameToUse + "]", e);
 			}
 
 			if (resource == null) {
@@ -294,14 +292,14 @@ public class FixedResultPipe extends FixedForwardPipe {
 				if (fileNotFoundForward != null) {
 					return new PipeRunResult(fileNotFoundForward, message);
 				}
-				throw new PipeRunException(this, "cannot find resource [" + filename + "]");
+				throw new PipeRunException(this, "cannot find resource [" + filenameToUse + "]");
 			}
 
 			if (stringBasedOperationNeeded()) {
 				try {
 					resultString = new UrlMessage(resource).asString();
 				} catch (Exception e) {
-					throw new PipeRunException(this, "got exception loading [" + filename + "]", e);
+					throw new PipeRunException(this, "got exception loading [" + filenameToUse + "]", e);
 				}
 			} else {
 				resultMessage = new UrlMessage(resource);
@@ -398,8 +396,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 	/**
 	 * Name of the session key containing the file name of the file that contains the result message.
 	 */
-	@Deprecated(since = "8.2", forRemoval = true)
-	@ConfigurationWarning("fileNameSessionKey is scheduled for removal. Please use a <param> if you need a session value")
 	public void setFilenameSessionKey(String filenameSessionKey) {
 		this.filenameSessionKey = filenameSessionKey;
 	}
