@@ -146,7 +146,7 @@
 				<MessageStoreSender
 					slotId="log-many-messages-queue">
 					<Param name="messageId" pattern="{uuid}"/>
-					<Param name="correlationId" sessionKey="iteration"/>
+					<Param name="correlationId" sessionKey="loop.iteration"/>
 				</MessageStoreSender>
 				<Forward name="success" path="loop"/>
 			</SenderPipe>

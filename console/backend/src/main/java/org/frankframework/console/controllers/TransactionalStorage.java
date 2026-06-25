@@ -258,8 +258,6 @@ public class TransactionalStorage {
 		private String startDate;
 		private String endDate;
 		private String sort;
-		private String skipMessages;
-		private String maxMessages;
 	}
 
 	private ResponseEntity<?> getResponseForMessageIds(String messageIdsPart, RequestMessageBuilder builder) {
