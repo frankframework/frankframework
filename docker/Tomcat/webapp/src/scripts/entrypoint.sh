@@ -15,7 +15,7 @@ export JAVA_OPTS="\
 	$JAVA_OPTS"
 
 # By default, GC debugging is disabled.
-if [ "$GC_ENABLED" = "true" ]; then
+if [ "$GC_LOG_ENABLED" = "true" ]; then
 	export JAVA_OPTS="-Xlog:gc*,gc+age=trace:file=/usr/local/tomcat/logs/gc-log.log:time,uptime:filesize=104857600,filecount=5 $JAVA_OPTS"
 else
 	export JAVA_OPTS="-XX:+PerfDisableSharedMem $JAVA_OPTS"
