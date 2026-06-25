@@ -14,9 +14,8 @@ export JAVA_OPTS="\
 	--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
 	$JAVA_OPTS"
 
-# By default, GC debugging is disabled. Enable it when dtap.stage is LOC.
-DTAP_STAGE="$(printenv 'dtap.stage' 2>/dev/null || true)"
-if [ "$DTAP_STAGE" = "LOC" ]; then
+# By default, GC debugging is disabled.
+if [ "$GC_ENABLED" = "true" ]; then
 	export JAVA_OPTS="-Xlog:gc*,gc+age=trace:file=/usr/local/tomcat/logs/gc-log.log:time,uptime:filesize=104857600,filecount=5 $JAVA_OPTS"
 else
 	export JAVA_OPTS="-XX:+PerfDisableSharedMem $JAVA_OPTS"
