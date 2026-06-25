@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Integration Partners B.V.
+Copyright 2019-2026 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -406,5 +406,17 @@ public class ApiListenerTest {
 
 		// Expect/When
 		assertThrows(ConfigurationException.class, listener::configure, "[claim2] is not a valid key/value pair for [exactMatchClaims].");
+	}
+
+	@Test
+	public void testResponseHeaderSessionKeys() {
+		// Act
+		listener.setResponseHeaderSessionKeys("Header-A; Header-B, Header-3");
+
+		// Assert
+		assertTrue(listener.getResponseHeaderSessionKeySet().contains("Header-A"));
+		assertTrue(listener.getResponseHeaderSessionKeySet().contains("Header-B"));
+		assertTrue(listener.getResponseHeaderSessionKeySet().contains("Header-3"));
+
 	}
 }

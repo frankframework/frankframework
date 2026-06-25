@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -39,10 +42,10 @@ import org.frankframework.util.XmlUtils;
 public class ParameterValue {
 	private static final Logger LOG = LogManager.getLogger(ParameterValue.class);
 
-	private Object value;
-	private IParameter definition;
+	private final @Nullable Object value;
+	private @NonNull IParameter definition;
 
-	protected ParameterValue(IParameter type, Object value) {
+	protected ParameterValue(@NonNull IParameter type, @Nullable Object value) {
 		this.definition = type;
 		this.value = value;
 	}
@@ -50,7 +53,7 @@ public class ParameterValue {
 	/**
 	 * Returns the description of the IParameter
 	 */
-	public IParameter getDefinition() {
+	public @NonNull IParameter getDefinition() {
 		return definition;
 	}
 
@@ -64,16 +67,16 @@ public class ParameterValue {
 	/**
 	 * Returns the value of the IParameter
 	 */
-	public Object getValue() {
+	public @Nullable Object getValue() {
 		return value;
 	}
-	public Message asMessage() {
+	public @NonNull Message asMessage() {
 		if (value instanceof Message message) return message;
 		return Message.asMessage(value);
 	}
 
-	public void setDefinition(IParameter IParameterDef) {
-		this.definition = IParameterDef;
+	public void setDefinition(@NonNull IParameter parameterDef) {
+		this.definition = parameterDef;
 	}
 
 	/**
@@ -89,7 +92,8 @@ public class ParameterValue {
 			return b;
 		}
 
-		return Boolean.parseBoolean(valueAsString());
+		String valueAsString = Objects.requireNonNull(valueAsString(), "Value as string cannot be null here").trim();
+		return "true".equalsIgnoreCase(valueAsString) || "!false".equalsIgnoreCase(valueAsString);
 	}
 
 	/**
@@ -97,15 +101,15 @@ public class ParameterValue {
 	 * @return convert the value to an int
 	 */
 	public int asIntegerValue(int defaultValue) {
-		if (value == null) {
-			return defaultValue;
-		}
-
 		if (value instanceof Integer i) {
 			return i;
 		}
 
-		return Integer.parseInt(valueAsString());
+		String valueAsString = valueAsString();
+		if (valueAsString == null) {
+			return defaultValue;
+		}
+		return Integer.parseInt(valueAsString.trim());
 	}
 
 	/**
@@ -113,24 +117,34 @@ public class ParameterValue {
 	 * @return convert the value to a long
 	 */
 	public long asLongValue(long defaultValue) {
-		return value != null ? Long.parseLong(valueAsString()) : defaultValue;
+		if (value instanceof Long l) {
+			return l;
+		}
+		String valueAsString = valueAsString();
+		if (valueAsString == null) {
+			return defaultValue;
+		}
+		return Long.parseLong(valueAsString.trim());
 	}
 
 	/**
 	 * @return convert the value to a string
 	 */
-	public String asStringValue() {
+	public @Nullable String asStringValue() {
 		return asStringValue(null);
 	}
 	/**
 	 * @param defaultValue returned if value is null
 	 * @return convert the value to a string
 	 */
-	public String asStringValue(String defaultValue) {
+	public @Nullable String asStringValue(@Nullable String defaultValue) {
 		return value != null ? valueAsString() : defaultValue;
 	}
 
-	private String valueAsString() {
+	private @Nullable String valueAsString() {
+		if (value == null) {
+			return null;
+		}
 		if (value instanceof Message message) {
 			try {
 				return message.asString();
@@ -147,7 +161,7 @@ public class ParameterValue {
 		return value.toString();
 	}
 
-	public List<Node> asCollection() throws ParameterException {
+	public @NonNull List<Node> asCollection() throws ParameterException {
 		if (value == null) {
 			return List.of();
 		}

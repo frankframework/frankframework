@@ -36,7 +36,7 @@ import org.frankframework.util.ClassUtils;
 @Log
 public class CredentialFactory {
 
-	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
+	public static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
 	public static final String CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY = "credentialFactory.optionalPrefix";
 
 	private static final String FALLBACK_CREDENTIAL_FACTORY = FileSystemCredentialFactory.class.getName();
@@ -49,7 +49,7 @@ public class CredentialFactory {
 
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
 	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
-	private static boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
+	private static final boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
 
 	private static @Nullable CredentialFactory self;
 

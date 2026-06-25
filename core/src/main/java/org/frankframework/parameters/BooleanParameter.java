@@ -40,12 +40,17 @@ public class BooleanParameter extends AbstractParameter<Boolean> {
 
 	@Override
 	protected Boolean getValueAsType(@NonNull Message request, boolean namespaceAware) throws IOException {
+		//noinspection deprecation
 		if (request.asObject() instanceof Boolean bool) {
 			return bool;
 		}
 
 		log.debug("Parameter [{}] converting result [{}] to boolean", this::getName, () -> request);
 		String ob = request.asString();
+		if (ob == null) {
+			return Boolean.FALSE;
+		}
+		ob = ob.trim();
 		return "true".equalsIgnoreCase(ob) || "!false".equalsIgnoreCase(ob);
 	}
 }

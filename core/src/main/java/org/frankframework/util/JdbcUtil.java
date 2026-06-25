@@ -608,8 +608,8 @@ public class JdbcUtil {
 	/** Set a parameter in a prepared statement. If {@code parameterTypeMatchRequired = true} then you should also pass {@code ParameterMetaData}. Intended
 	 * for use when multiple parameters need to be set in the prepared statement, so that ParameterMetaData is fetched only once. (For some databases
 	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those). */
-	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired, ParameterMetaData parameterMetaData) throws SQLException {
-		if (!parameterTypeMatchRequired) {
+	public static void setParameter(@NonNull PreparedStatement statement, int parameterIndex, @Nullable String value, boolean parameterTypeMatchRequired, @Nullable ParameterMetaData parameterMetaData) throws SQLException {
+		if (!parameterTypeMatchRequired || parameterMetaData == null) {
 			if (value != null) {
 				statement.setString(parameterIndex, value);
 			} else {
@@ -626,32 +626,17 @@ public class JdbcUtil {
 		}
 		try {
 			switch (sqlType) {
-				case Types.INTEGER:
-					statement.setInt(parameterIndex, Integer.parseInt(value));
-					break;
-				case Types.NUMERIC:
-				case Types.DOUBLE:
-					statement.setDouble(parameterIndex, Double.parseDouble(value));
-					break;
-				case Types.BIGINT:
-					statement.setLong(parameterIndex, Long.parseLong(value));
-					break;
-				case Types.BLOB:
-					statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
-					break;
-				case Types.DATE:
-					statement.setDate(parameterIndex, new java.sql.Date(DateFormatUtils.parseAnyDate(value).getTime()));
-					break;
-				case Types.TIMESTAMP:
-					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
-					break;
-				default:
+				case Types.INTEGER -> statement.setInt(parameterIndex, Integer.parseInt(value.trim()));
+				case Types.NUMERIC, Types.DOUBLE -> statement.setDouble(parameterIndex, Double.parseDouble(value.trim()));
+				case Types.BIGINT -> statement.setLong(parameterIndex, Long.parseLong(value.trim()));
+				case Types.BLOB -> statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
+				case Types.DATE -> statement.setDate(parameterIndex, new java.sql.Date(DateFormatUtils.parseAnyDate(value).getTime()));
+				case Types.TIMESTAMP -> statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
+				case Types.CHAR, Types.VARCHAR -> statement.setString(parameterIndex, value);
+				default -> {
 					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlType).getName());
-					// $FALL-THROUGH$
-				case Types.CHAR:
-				case Types.VARCHAR:
 					statement.setString(parameterIndex, value);
-					break;
+				}
 			}
 		} catch (DateTimeParseException | IllegalArgumentException e) { // thrown by parseAnyDate in case DATE and TIMESTAMP
 			throw new SQLException("Could not convert [" + value + "] for parameter [" + parameterIndex + "]", e);
@@ -659,20 +644,10 @@ public class JdbcUtil {
 	}
 
 	public static boolean isSQLTypeNumeric(int sqlType) {
-		switch (sqlType) {
-			case Types.INTEGER:
-			case Types.NUMERIC:
-			case Types.DOUBLE:
-			case Types.BIGINT:
-			case Types.DECIMAL:
-			case Types.FLOAT:
-			case Types.REAL:
-			case Types.SMALLINT:
-			case Types.TINYINT:
-				return true;
-			default:
-				return false;
-		}
+		return switch (sqlType) {
+			case Types.INTEGER, Types.NUMERIC, Types.DOUBLE, Types.BIGINT, Types.DECIMAL, Types.FLOAT, Types.REAL, Types.SMALLINT, Types.TINYINT -> true;
+			default -> false;
+		};
 	}
 
 }

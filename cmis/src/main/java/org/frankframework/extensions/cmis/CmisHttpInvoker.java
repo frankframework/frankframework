@@ -87,7 +87,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 			if(session.get("proxyHost") != null) {
 				sender.setProxyHost((String) session.get("proxyHost"));
 				if(session.get("proxyPort") != null)
-					sender.setProxyPort(Integer.parseInt((String) session.get("proxyPort")));
+					sender.setProxyPort(Integer.parseInt(((String) session.get("proxyPort")).trim()));
 				if(session.get("proxyUsername") != null)
 					sender.setProxyUsername((String) session.get("proxyUsername"));
 				if(session.get("proxyPassword") != null)
@@ -117,16 +117,16 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 				sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
 
 			// SSL+
-			if(session.get("isAllowSelfSignedCertificates") != null) {
-				boolean isAllowSelfSignedCertificates = Boolean.parseBoolean((String) session.get("isAllowSelfSignedCertificates"));
+			if (session.get("isAllowSelfSignedCertificates") != null) {
+				boolean isAllowSelfSignedCertificates = session.get("isAllowSelfSignedCertificates", sender.isAllowSelfSignedCertificates());
 				sender.setAllowSelfSignedCertificates(isAllowSelfSignedCertificates);
 			}
-			if(session.get("isVerifyHostname") != null) {
-				boolean isVerifyHostname = Boolean.parseBoolean((String) session.get("isVerifyHostname"));
+			if (session.get("isVerifyHostname") != null) {
+				boolean isVerifyHostname = session.get("isVerifyHostname", sender.isVerifyHostname());
 				sender.setVerifyHostname(isVerifyHostname);
 			}
-			if(session.get("isIgnoreCertificateExpiredException") != null) {
-				boolean isIgnoreCertificateExpiredException = Boolean.parseBoolean((String) session.get("isIgnoreCertificateExpiredException"));
+			if (session.get("isIgnoreCertificateExpiredException") != null) {
+				boolean isIgnoreCertificateExpiredException = session.get("isIgnoreCertificateExpiredException", sender.isIgnoreCertificateExpiredException());
 				sender.setIgnoreCertificateExpiredException(isIgnoreCertificateExpiredException);
 			}
 
@@ -232,7 +232,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 			// compression
 			Object compression = session.get(SessionParameter.COMPRESSION);
-			if (compression != null && Boolean.parseBoolean(compression.toString())) {
+			if (compression != null && Boolean.parseBoolean(compression.toString().trim())) {
 				headers.put("Accept-Encoding", "gzip,deflate");
 			}
 

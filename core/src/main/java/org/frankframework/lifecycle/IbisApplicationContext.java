@@ -65,7 +65,6 @@ public class IbisApplicationContext implements Closeable {
 	private ApplicationContext parentContext = null;
 
 	private static final Logger LOG = LogUtil.getLogger(IbisApplicationContext.class);
-	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private BootState state = BootState.FIRST_START;
 
@@ -168,13 +167,13 @@ public class IbisApplicationContext implements Closeable {
 		MutablePropertySources propertySources = classPathApplicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
-		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.APPLICATION.getFriendlyName(), APP_CONSTANTS));
+		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.APPLICATION.getFriendlyName(), AppConstants.getInstance()));
 
 		ClassLoader classLoader = classPathApplicationContext.getClassLoader();
 		if (classLoader == null) throw new IllegalStateException("no ClassLoader found to initialize Spring from");
 		classPathApplicationContext.setConfigLocations(getSpringConfigurationFiles(classLoader));
 
-		String instanceName = APP_CONSTANTS.getProperty("instance.name");
+		String instanceName = AppConstants.getInstance().getProperty("instance.name");
 		classPathApplicationContext.setId(requireNonNull(instanceName));
 		classPathApplicationContext.setDisplayName("IbisApplicationContext [" + instanceName + "]");
 

@@ -223,7 +223,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		String remoteUser = request.getRemoteUser();
 
 		ApiDispatchConfig config = dispatcher.findConfigForRequest(method, uri);
-		if(config == null) {
+		if (config == null) {
 			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
 			response.setStatus(404);
 			return;
@@ -387,9 +387,9 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					}
 				}
 
-				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
+				if (StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
 					String contentDisposition = pipelineSession.getString(listener.getContentDispositionHeaderSessionKey());
-					if(StringUtils.isNotEmpty(contentDisposition)) {
+					if (StringUtils.isNotEmpty(contentDisposition)) {
 						LOG.debug("Setting Content-Disposition header to [{}]", contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);
 					}
@@ -399,7 +399,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
 				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
-				if(statusCode > 0) {
+				if (statusCode > 0) {
 					response.setStatus(statusCode);
 				}
 
@@ -723,7 +723,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		XmlBuilder headersXml = new XmlBuilder("headers");
 		List<String> params = StringUtil.split(listener.getHeaderParams());
 		for (String headerParam : params) {
-			if(IGNORE_HEADERS.contains(headerParam)) {
+			if (IGNORE_HEADERS.contains(headerParam)) {
 				continue;
 			}
 			String headerValue = request.getHeader(headerParam);
@@ -741,7 +741,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	}
 
 	private static @NonNull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) {
-		if(listener.getProduces() == MediaTypes.ANY) {
+		if (listener.getProduces() == MediaTypes.ANY) {
 			String contentType = messageContext.getString("contentType");
 			if(StringUtils.isNotEmpty(contentType)) {
 				try {
@@ -751,12 +751,12 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				}
 			}
 			MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
-			if(providedContentType != null) {
+			if (providedContentType != null) {
 				return providedContentType;
 			}
-		} else if(listener.getProduces() == MediaTypes.DETECT) {
+		} else if (listener.getProduces() == MediaTypes.DETECT) {
 			MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
-			if(computedContentType != null) {
+			if (computedContentType != null) {
 				return computedContentType;
 			}
 		}
@@ -780,6 +780,12 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	 */
 	private static boolean writeToResponseStream(ApiListener listener, HttpServletResponse response, Message result, PipeLineSession session) throws IOException {
 		response.resetBuffer();
+		for (String headerName : listener.getResponseHeaderSessionKeySet()) {
+			String headerValue = session.getString(headerName);
+			if (StringUtils.isNotBlank(headerValue)) {
+				response.addHeader(headerName, headerValue);
+			}
+		}
 		HttpEntity entity = listener.getResponseEntityBuilder().create(result, null, session);
 
 		long contentLength = entity.getContentLength();

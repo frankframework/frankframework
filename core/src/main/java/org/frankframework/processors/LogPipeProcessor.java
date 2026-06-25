@@ -64,7 +64,7 @@ public class LogPipeProcessor extends AbstractPipeProcessor {
 	 */
 	private boolean logIntermediaryResults(IPipe pipe) {
 		if (StringUtils.isNotEmpty(pipe.getLogIntermediaryResults())) {
-			return Boolean.parseBoolean(pipe.getLogIntermediaryResults());
+			return Boolean.parseBoolean(pipe.getLogIntermediaryResults().trim());
 		}
 		return LOG_INTERMEDIARY_RESULTS;
 	}

@@ -150,6 +150,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
 	private @Setter ServletManager servletManager;
 
+	private @NonNull Set<@NonNull String> responseHeaderSessionKeys = Set.of();
+
 	private @Getter HttpEntityType responseType;
 	private @Getter String responseMultipartXmlSessionKey;
 	private @Getter String responseFirstBodyPartName;
@@ -458,8 +460,25 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.authenticationRoles = StringUtil.split(authRoles, ",;");
 	}
 
+	/**
+	 * Get authentication roles as list. Method cannot be named after the setter because the types are different, and that breaks Frank!Doc.
+	 */
 	public List<String> getAuthenticationRoleList() {
 		return authenticationRoles;
+	}
+
+	/**
+	 * An optional list of session keys to be used to set response-headers. Session key names should be separated with a {@literal ,} or {@literal ;}.
+	 */
+	public void setResponseHeaderSessionKeys(@Nullable String responseHeaderSessionKeys) {
+		this.responseHeaderSessionKeys = new HashSet<>(StringUtil.split(responseHeaderSessionKeys, ",;"));
+	}
+
+	/**
+	 * Get response-header session keys as set. Method cannot be named after the setter because the types are different, and that breaks Frank!Doc.
+	 */
+	public @NonNull Set<@NonNull String> getResponseHeaderSessionKeySet() {
+		return responseHeaderSessionKeys;
 	}
 
 	/**

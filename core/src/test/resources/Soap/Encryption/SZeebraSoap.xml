@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+	<env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+		<wsa:To>http://www.w3.org/2005/08/addressing/anonymous</wsa:To>
+		<wsa:Action>http://www.company.org/bla/blaba/lala/Baa</wsa:Action>
+		<wsa:MessageID>urn:uuid:fc69c06d-9e5c-abcd-1234-9a7a877450c7</wsa:MessageID>
+		<myHeader xmlns="http://www.test.nl/v0101">
+			<value>waarde</value>
+		</myHeader>
+	</env:Header>
+	<env:Body>
+		<Baa
+			xmlns="http://www.company.org/Baa/v0101"
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<Authenticatie xmlns="">GWS14E55769286245FF8F81DE413A9A74DE</Authenticatie>
+			<DiagnoseSZeebra xmlns="">
+				<Datum>20260423</Datum>
+				<Medewerker>AASSEN</Medewerker>
+				<Registratienummer>asf534test</Registratienummer>
+				<DatumIngangWerkloosheid>20260423</DatumIngangWerkloosheid>
+				<BeschikbaarBuitenKantooruren>false</BeschikbaarBuitenKantooruren>
+				<ParttimeBaan>false</ParttimeBaan>
+				<Verslaving>false</Verslaving>
+				<MedischeBeperking>false</MedischeBeperking>
+				<Klantprofiel>B</Klantprofiel>
+				<Startkwalificatie>false</Startkwalificatie>
+				<BelemmeringMobiliteit>false</BelemmeringMobiliteit>
+				<Werkprocesnummer />
+				<Telefoon>0612345678</Telefoon>
+				<TelefoonMobiel />
+				<Email />
+			</DiagnoseSZeebra>
+		</Baa>
+	</env:Body>
+</env:Envelope>
