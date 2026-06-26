@@ -235,8 +235,7 @@
 	</xsl:template>
 
 	<!-- The following pipes do not have a success forward, so it should not be added by default -->
-	<xsl:template match="pipe[@className=('org.frankframework.pipes.CompareStringPipe',
-										 'org.frankframework.pipes.CompareIntegerPipe')]" mode="preprocess">
+	<xsl:template match="pipe[@className=('org.frankframework.pipes.CompareStringPipe', 'org.frankframework.pipes.CompareIntegerPipe')]" mode="preprocess">
 		<xsl:copy>
 			<xsl:call-template name="defaultPipeCopyActions"/>
 		</xsl:copy>
@@ -279,15 +278,29 @@
 				<xsl:apply-templates select="forward" mode="#current"/>
 				<xsl:apply-templates select="../global-forwards/forward[not(@name = current()/forward/@name)]" mode="#current"/>
 			</xsl:variable>
-
-			<!-- Add success forward if not present -->
-			<xsl:call-template name="createForwardIfNecessary">
-				<xsl:with-param name="forwards" select="$forwards/forward"/>
-				<xsl:with-param name="name" select="'success'"/>
-				<xsl:with-param name="path" select="(following-sibling::pipe/@name,../exits/exit[lower-case(@state)='success']/@name,'READY')[1]"/>
-			</xsl:call-template>
+			<xsl:variable name="currentSwitchId" select="generate-id()"/>
 
 			<xsl:copy-of select="$forwards"/>
+
+			<!-- If no forwards are configured at all, assume they call later orphan pipes, like adapter2dot does for dotted inferred caller edges -->
+			<xsl:if test="empty($forwards/forward)">
+				<xsl:for-each select="following-sibling::pipe[
+					not(parent::pipeline/@firstPipe = @name)
+					and not(parent::pipeline/pipe/forward/@path = @name)
+					and not(parent::pipeline/pipe/@notFoundForwardName = @name)
+					and not(parent::pipeline/pipe/@emptyForwardName = @name)
+					and not(parent::pipeline/pipe/@thenForwardName = @name)
+					and not(parent::pipeline/pipe/@elseForwardName = @name)
+					and generate-id((preceding-sibling::pipe[
+						(@className='org.frankframework.pipes.XmlSwitch' or @className='org.frankframework.pipes.SwitchPipe') and empty(forward) and empty(../global-forwards/forward)
+					])[last()]) = $currentSwitchId
+				]">
+					<xsl:call-template name="createForward">
+						<xsl:with-param name="name" select="@name"/>
+						<xsl:with-param name="path" select="@name"/>
+					</xsl:call-template>
+				</xsl:for-each>
+			</xsl:if>
 		</xsl:copy>
 	</xsl:template>
 
@@ -524,7 +537,7 @@
 
 	<xsl:template match="pipe" mode="convertElements">
 		<xsl:call-template name="createMermaidElement"/>
-		<!-- make sure everything in the pipeline gets rendered -->
+		<!-- Make sure everything in the pipeline gets rendered -->
 		<xsl:for-each select="inputValidator|inputWrapper|outputValidator|outputWrapper">
 			<xsl:if test="exists(forward[exists(key('elementsById', @targetID, root(.)))]) or exists(root(.)//forward[@targetID = current()/@elementID and parent::*/@elementID != ''])">
 				<xsl:apply-templates select="." mode="#current"/>
@@ -637,7 +650,7 @@
 	</xsl:template>
 
 	<xsl:template match="forward" mode="convertForwards">
-		<xsl:if test="parent::*/@elementID != '' and exists(key('elementsById', @targetID, root(.)))">
+<!--		<xsl:if test="parent::*/@elementID != '' and exists(key('elementsById', @targetID, root(.)))">-->
 			<xsl:value-of select="parent::*/@elementID"/>
 			<xsl:text> --> |<![CDATA[<text>]]></xsl:text>
 			<xsl:value-of select="@name"/>
@@ -650,6 +663,6 @@
 			<xsl:text>| </xsl:text>
 			<xsl:value-of select="@targetID"/>
 			<xsl:text>&#10;</xsl:text>
-		</xsl:if>
+<!--		</xsl:if>-->
 	</xsl:template>
 </xsl:stylesheet>
