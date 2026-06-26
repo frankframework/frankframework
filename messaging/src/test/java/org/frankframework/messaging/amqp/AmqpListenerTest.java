@@ -68,6 +68,7 @@ abstract class AmqpListenerTest {
 					return listenerContainer;
 				}
 		);
+
 		applicationContext = mock();
 		when(applicationContext.getAutowireCapableBeanFactory()).thenReturn(beanFactory);
 
@@ -85,6 +86,7 @@ abstract class AmqpListenerTest {
 		amqpListener.setAmqpListenerContainerManager(containerManager);
 		amqpListener.setDeliveryMode(DeliveryMode.AT_LEAST_ONCE);
 		amqpListener.setReplyTimeToLive(10_000L);
+		amqpListener.setAmqpConnectionFactoryFactory(factory);
 
 		IMessageHandler<org.apache.qpid.protonj2.client.Message<?>> messageHandler = mock();
 		amqpListener.setHandler(messageHandler);

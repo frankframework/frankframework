@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.DeliveryMode;
 import org.apache.qpid.protonj2.client.Message;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
@@ -72,6 +73,9 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 
 	@Autowired
 	private @Setter AmqpListenerContainerManager amqpListenerContainerManager;
+
+	private @Setter AmqpConnectionFactoryFactory amqpConnectionFactoryFactory;
+
 	private @Setter @Getter IMessageHandler<Message<?>> handler;
 	private @Setter @Getter IbisExceptionListener exceptionListener;
 	private @Setter @Getter ApplicationContext applicationContext;
@@ -127,7 +131,21 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 			onException = messageProtocol == MessageProtocol.FF ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 		}
 
-		// TODO check of we hier ook de connectie kunnen testen zoals in de sender
+		AmqpConnectionFactory connectionFactory = amqpConnectionFactoryFactory.getConnectionFactory(connectionName);
+
+		try (Connection connection = connectionFactory.getConnection()) {
+			if (RabbitMqHelper.isRabbitMq4(connection.properties())) {
+				// RabbitMQ 4.x AMQP 1.0 v2 addresses (/queues/<name>, /exchanges/<name>) require a slash prefix and are valid.
+				// Only warn when using RabbitMQ4 with addresses that contain slashes but do not follow the v2 pattern.
+				if (RabbitMqHelper.isAddressUsingV1Format(this.address) || RabbitMqHelper.isReplyUsingV1Format(this.replyAddress)) {
+					ConfigurationWarnings.add(this, log, "RabbitMQ 4+ detected which only supports AMQP 1.0 v2 address format by default. " +
+							"Please update the address to follow the v2 format, e.g. prefix with '/queues/' or '/exchanges/'");
+				}
+			}
+		} catch (ClientException e) {
+			throw new ConfigurationException("Cannot connection to the AMQP broker", e);
+		}
+
 	}
 
 	@Override
