@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public class PasswordHash {
 	public static boolean validatePassword(char[] password, String correctHash) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		// Decode the hash into its parameters
 		String[] params = correctHash.split(":");
-		int iterations = Integer.parseInt(params[ITERATION_INDEX]);
+		int iterations = Integer.parseInt(params[ITERATION_INDEX].trim());
 		byte[] salt = fromHex(params[SALT_INDEX]);
 		byte[] hash = fromHex(params[PBKDF2_INDEX]);
 		// Compute the hash of the provided password, using the same salt,

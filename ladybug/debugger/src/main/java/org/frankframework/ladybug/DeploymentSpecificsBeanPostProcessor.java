@@ -58,7 +58,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 
 			String maxBackupIndex = appConstants.getProperty("ibistesttool.maxBackupIndex");
 			if (maxBackupIndex != null) {
-				int maxBackupIndexInt = Integer.parseInt(maxBackupIndex);
+				int maxBackupIndexInt = Integer.parseInt(maxBackupIndex.trim());
 				loggingStorage.setMaximumBackupIndex(maxBackupIndexInt);
 			}
 

@@ -1,6 +1,8 @@
 package org.frankframework.configuration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -15,8 +17,11 @@ import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.DummyClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.credentialprovider.CredentialFactory;
+import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.testutil.NullClassLoader;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeperMessage;
 
 public class IbisContextTest {
@@ -129,6 +134,59 @@ public class IbisContextTest {
 			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating configuration"));
 			Throwable[] suppressed = ex.getCause().getSuppressed();
 			assertEquals(0, suppressed.length, "no further information");
+		}
+	}
+
+	@Test
+	public void testDeprecationChecksNoDeps() {
+		// Arrange
+		ApplicationWarnings.removeInstance();
+
+		// Act
+		IbisContext.checkForDeprecations();
+
+		// Assert
+		List<String> warnings = ApplicationWarnings.getWarningsList();
+
+		assertEquals(0, warnings.size());
+	}
+
+	@Test
+	public void testDeprecationChecksAllDeps() {
+		// Arrange
+		ApplicationWarnings.removeInstance();
+		AppConstants.removeInstance();
+		AppConstants appConstants = AppConstants.getInstance();
+		appConstants.setProperty("jdbc.convertFieldnamesToUppercase", false);
+		appConstants.setProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, ".propmap");
+		appConstants.setProperty("configurations.autoDatabaseClassLoader", "not-empty");
+
+		CredentialConstants credentialConstants = CredentialConstants.getInstance();
+		Object credentialFactoryOriginalValue = credentialConstants.setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "nl.nn.credentialprovider.PropertyFileCredentialFactory");
+
+		// Act
+		IbisContext.checkForDeprecations();
+
+		// Assert
+		try {
+			List<String> warnings = ApplicationWarnings.getWarningsList();
+
+			assertEquals(4, warnings.size());
+			assertThat(warnings, containsInAnyOrder(
+					containsString("DEPRECATED legacy classnames from package [" + CredentialFactory.LEGACY_PACKAGE_NAME + "] used for creating CredentialProviders"),
+					containsString("DEPRECATED property [configurations.autoDatabaseClassLoader]"),
+					containsString("DEPRECATED: SUFFIX [_"),
+					containsString("DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true")
+					));
+		} finally {
+			// Clean up properties set for this test to make sure we do not mess up any other tests
+			AppConstants.removeInstance();
+			ApplicationWarnings.removeInstance();
+			if (credentialFactoryOriginalValue == null) {
+				credentialConstants.remove(CredentialFactory.CREDENTIAL_FACTORY_KEY);
+			} else {
+				credentialConstants.setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, credentialFactoryOriginalValue.toString());
+			}
 		}
 	}
 }

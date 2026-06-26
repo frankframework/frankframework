@@ -36,6 +36,8 @@ import lombok.Getter;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
+import org.frankframework.credentialprovider.CredentialFactory;
+import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.http.RestServiceDispatcher;
 import org.frankframework.jdbc.JdbcPropertySourceFactory;
 import org.frankframework.lifecycle.IbisApplicationContext;
@@ -67,16 +69,29 @@ public class IbisContext extends IbisApplicationContext {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	static {
-		if(!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
+		checkForDeprecations();
+	}
+
+	public static void checkForDeprecations() {
+		AppConstants appConstants = AppConstants.getInstance();
+		if (!appConstants.getBoolean("jdbc.convertFieldnamesToUppercase", true))
 			ApplicationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
 
-		String loadFileSuffix = APP_CONSTANTS.getProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
+		String loadFileSuffix = appConstants.getProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
 		if (StringUtils.isNotEmpty(loadFileSuffix))
 			ApplicationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
 
-		String autoDatabaseClassLoader = APP_CONSTANTS.getProperty("configurations.autoDatabaseClassLoader");
+		String autoDatabaseClassLoader = appConstants.getProperty("configurations.autoDatabaseClassLoader");
 		if (StringUtils.isNotEmpty(autoDatabaseClassLoader))
 			ApplicationWarnings.add(LOG, "DEPRECATED property [configurations.autoDatabaseClassLoader], please use [configurations.database.autoLoad] instead");
+
+		String credentialFactoryClassNames = CredentialConstants.getInstance().getProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY);
+		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
+		if (StringUtils.isNotEmpty(credentialFactoryClassNames) && credentialFactoryClassNames.contains(CredentialFactory.LEGACY_PACKAGE_NAME)) {
+			ApplicationWarnings.add(LOG, "DEPRECATED legacy classnames from package [" +
+					CredentialFactory.LEGACY_PACKAGE_NAME + "] used for creating CredentialProviders, please update to use new classnames starting with [" +
+					CredentialFactory.ORG_FRANKFRAMEWORK_PACKAGE_NAME + "]: [" + credentialFactoryClassNames + "]");
+		}
 	}
 
 	private @Getter IbisManager ibisManager;
@@ -414,7 +429,7 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	public String getApplicationName() {
-		return APP_CONSTANTS.getProperty("instance.name", null);
+		return AppConstants.getInstance().getProperty("instance.name", null);
 	}
 
 	public boolean isLoadingConfigs() {

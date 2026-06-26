@@ -95,7 +95,7 @@
 		<spring-security.version>7.0.6</spring-security.version>
 		<spring-integration.version>7.1.0</spring-integration.version>
 		<spring.boot.version>4.1.0</spring.boot.version>
-		<tomcat.version>11.0.22</tomcat.version>
+		<tomcat.version>11.0.23</tomcat.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<tika.version>3.3.1</tika.version>
 
@@ -125,7 +125,7 @@
 		<activemq.driver.version>6.2.6</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
-		<rabbitmq.driver.version>5.31.0</rabbitmq.driver.version>
+		<rabbitmq.driver.version>5.32.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.6.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.39.2</aws.java.sdk.version>
@@ -940,7 +940,7 @@
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.7.0</version>
 					<configuration>
 						<java>
 							<removeUnusedImports />

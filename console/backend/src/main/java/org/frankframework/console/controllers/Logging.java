@@ -15,10 +15,20 @@
 */
 package org.frankframework.console.controllers;
 
+import jakarta.annotation.security.RolesAllowed;
+
+import org.apache.logging.log4j.Level;
+
+import org.frankframework.console.util.RequestUtils;
+
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
@@ -30,6 +40,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 
 @RestController
+@Description("all log related endpoints such as creating or updating log definitions for packages and classes or viewing the log directory")
 public class Logging {
 
 	private final FrankApiService frankApiService;
@@ -53,5 +64,88 @@ public class Logging {
 		return frankApiService.callSyncGateway(builder);
 	}
 
+	@AllowAllIbisUserRoles
+	@Relation("logging")
+	@Description("view the application log configuration")
+	@GetMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getLogConfiguration() {
+		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.GET));
+	}
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Relation("logging")
+	@Description("update the application log configuration")
+	@PutMapping(value = "/server/logging", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> updateLogConfiguration(@RequestBody UpdateLogConfigurationModel model) {
+		Level loglevel = Level.toLevel(model.loglevel, null);
+
+		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.MANAGE);
+		builder.addHeader("logLevel", loglevel == null ? null : loglevel.name());
+		builder.addHeader("logIntermediaryResults", model.logIntermediaryResults);
+		builder.addHeader("maxMessageLength", model.maxMessageLength);
+		builder.addHeader("enableDebugger", model.enableDebugger);
+		return frankApiService.callAsyncGateway(builder);
+	}
+
+	@AllowAllIbisUserRoles
+	@Relation("logging")
+	@Description("view the log definitions, default loggers and their corresponding levels")
+	@GetMapping(value = "/server/logging/settings", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getLogDefinitions(@RequestParam(value = "filter", required = false) String filter) {
+		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.GET);
+		request.addHeader("filter", filter);
+		return frankApiService.callSyncGateway(request);
+	}
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Relation("logging")
+	@Description("create a new logger definition")
+	@PostMapping(value = "/server/logging/settings", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> createLogDefinition(CreateLogDefinitionMultipartModel model) {
+		String logger = RequestUtils.resolveRequiredProperty("logger", model.logger(), null);
+		String level = RequestUtils.resolveRequiredProperty("level", model.level(), null);
+
+		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.UPLOAD);
+		request.addHeader("logPackage", logger);
+		request.addHeader("level", level);
+		return frankApiService.callSyncGateway(request);
+	}
+
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Relation("logging")
+	@Description("update the loglevel of a specific logger")
+	@PutMapping(value = "/server/logging/settings", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> updateLogDefinition(@RequestBody UpdateLogDefinitionModel model) {
+		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
+
+		Level level = Level.toLevel(model.level, null);
+		if (level != null) {
+			request.addHeader("level", level.name());
+		}
+		request.addHeader("logPackage", model.logger);
+		request.addHeader("reconfigure", model.reconfigure);
+
+		return frankApiService.callSyncGateway(request);
+	}
+
 	public record ParametersModel(String directory, String wildcard) {}
+
+	public record UpdateLogConfigurationModel(
+			String loglevel,
+			Boolean logIntermediaryResults,
+			Boolean enableDebugger,
+			Integer maxMessageLength
+	) {}
+
+	public record CreateLogDefinitionMultipartModel(
+			String logger,
+			String level
+	) {}
+
+	public record UpdateLogDefinitionModel(
+			String level,
+			String logger,
+			Boolean reconfigure
+	) {}
+
 }

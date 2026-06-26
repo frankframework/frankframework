@@ -26,6 +26,7 @@ import org.frankframework.testutil.ParameterBuilder;
  *
  * @author <Sina Sen>
  */
+@SuppressWarnings("removal")
 public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 
 	private static final String PIPES_2_TXT = "/Pipes/2.txt";

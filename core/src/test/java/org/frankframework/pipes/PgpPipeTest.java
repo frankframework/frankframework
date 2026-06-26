@@ -17,6 +17,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.lifecycle.LoadBouncyCastleBean;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
@@ -106,6 +107,9 @@ public class PgpPipeTest {
 	 */
 	@BeforeEach
 	public void setup() throws ConfigurationException {
+		// Load BouncyCastle if not already set.
+		new LoadBouncyCastleBean().afterPropertiesSet();
+
 		session = new PipeLineSession();
 
 		encryptPipe = new PGPPipe();
