@@ -18,6 +18,7 @@ package org.frankframework.messaging.amqp;
 import java.util.Map;
 
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
