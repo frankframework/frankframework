@@ -426,7 +426,6 @@ public class WsdlXmlValidator extends SoapValidator {
 	public void setSoapBodyNamespace(String soapBodyNamespace) {
 		this.soapBodyNamespace = soapBodyNamespace;
 	}
-
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
