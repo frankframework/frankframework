@@ -650,19 +650,17 @@
 	</xsl:template>
 
 	<xsl:template match="forward" mode="convertForwards">
-<!--		<xsl:if test="parent::*/@elementID != '' and exists(key('elementsById', @targetID, root(.)))">-->
-			<xsl:value-of select="parent::*/@elementID"/>
-			<xsl:text> --> |<![CDATA[<text>]]></xsl:text>
-			<xsl:value-of select="@name"/>
+		<xsl:value-of select="parent::*/@elementID"/>
+		<xsl:text> --> |<![CDATA[<text>]]></xsl:text>
+		<xsl:value-of select="@name"/>
+		<xsl:text><![CDATA[</text>]]></xsl:text>
+		<xsl:if test="exists(@customText)">
+			<xsl:text><![CDATA[<text>]]></xsl:text>
+			<xsl:value-of select="@customText"/>
 			<xsl:text><![CDATA[</text>]]></xsl:text>
-			<xsl:if test="exists(@customText)">
-				<xsl:text><![CDATA[<text>]]></xsl:text>
-				<xsl:value-of select="@customText"/>
-				<xsl:text><![CDATA[</text>]]></xsl:text>
-			</xsl:if>
-			<xsl:text>| </xsl:text>
-			<xsl:value-of select="@targetID"/>
-			<xsl:text>&#10;</xsl:text>
-<!--		</xsl:if>-->
+		</xsl:if>
+		<xsl:text>| </xsl:text>
+		<xsl:value-of select="@targetID"/>
+		<xsl:text>&#10;</xsl:text>
 	</xsl:template>
 </xsl:stylesheet>
