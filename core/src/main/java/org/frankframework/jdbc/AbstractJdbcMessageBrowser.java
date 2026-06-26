@@ -266,6 +266,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 					stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
 				}
 			}
+			stmt.setFetchSize(100);
 			ResultSet rs =  stmt.executeQuery();
 			result = new ResultSetIterator(conn,rs);
 			return result;
