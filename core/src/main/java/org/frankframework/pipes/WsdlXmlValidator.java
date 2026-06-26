@@ -93,16 +93,15 @@ public class WsdlXmlValidator extends SoapValidator {
 	private @Setter SharedWsdlDefinitions sharedWsdlDefinitions;
 	private Definition definition;
 
-
 	static {
-		WSDLFactory f;
+		WSDLFactory wsdlFactory;
 		try {
-			f = WSDLFactory.newInstance();
+			wsdlFactory = WSDLFactory.newInstance();
 		} catch (WSDLException e) {
-			f = null;
+			wsdlFactory = null;
 			LOG.error(e.getMessage(), e);
 		}
-		FACTORY = f;
+		FACTORY = wsdlFactory;
 	}
 
 	@Override
@@ -380,10 +379,27 @@ public class WsdlXmlValidator extends SoapValidator {
 			xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 			xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 			xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
-			xsd.initNamespace(StringUtils.isNotEmpty(getSchemaLocation())?filteredNamespaces.get(schema):null,this, getWsdl());
+
+			String namespaceToInit = getNamespaceToInit(filteredNamespaces, schema);
+			xsd.initNamespace(namespaceToInit,this, getWsdl());
 			xsds.add(xsd);
 		}
 		return xsds;
+	}
+
+	/**
+	 * Make sure to get the right namespace to init, or use the configurable fallback namespace for complex wsdl/with schema constructions
+	 */
+	private String getNamespaceToInit(Map<Schema, String> filteredNamespaces, Schema schema) {
+		if (StringUtils.isNotEmpty(getSchemaLocation())) {
+			return filteredNamespaces.get(schema);
+		}
+
+		if (StringUtils.isNotEmpty(getTargetNamespace())) {
+			return getTargetNamespace();
+		}
+
+		return null;
 	}
 
 	public String toExtendedString() {
