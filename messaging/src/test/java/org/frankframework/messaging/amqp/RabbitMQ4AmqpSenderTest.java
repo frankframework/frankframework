@@ -79,7 +79,7 @@ class RabbitMQ4AmqpSenderTest extends AmqpSenderTest {
 
 		try (Connection connection = factory.newConnection();
 		     Channel channel = connection.createChannel()) {
-			// If you create a queue with <name> here, it'll become available at '/queues/<name>'0
+			// If you create a queue with <name> here, it'll become available at '/queues/<name>'
 			channel.queueDeclare(QUEUE_NAME, true, false, false, null);
 			channel.queueDeclare(QUEUE_NAME + "_replies", true, false, false, null);
 
