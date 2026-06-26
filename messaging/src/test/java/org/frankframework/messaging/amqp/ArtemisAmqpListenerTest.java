@@ -14,16 +14,19 @@ public class ArtemisAmqpListenerTest extends AmqpListenerTest {
 			.withEnv("ANONYMOUS_LOGIN", "true");
 
 	@Override
+	@NonNull
 	String getQueueExchangeName() {
 		return QUEUE_EXCHANGE_NAME;
 	}
 
 	@Override
+	@NonNull
 	String getTopicExchangeName() {
 		return TOPIC_EXCHANGE_NAME;
 	}
 
 	@Override
+	@NonNull
 	String getDurableTopicExchangeName() {
 		return DURABLE_TOPIC_EXCHANGE_NAME;
 	}

@@ -32,16 +32,19 @@ class RabbitMQ4AmqpListenerTest extends AmqpListenerTest {
 	private static final String DURABLE_TOPIC_EXCHANGE = "testDurableTopicExchange";
 
 	@Override
+	@NonNull
 	String getQueueExchangeName() {
 		return "/queues/" + QUEUE_NAME;
 	}
 
 	@Override
+	@NonNull
 	String getTopicExchangeName() {
 		return "/queues/queue_" + TOPIC_EXCHANGE;
 	}
 
 	@Override
+	@NonNull
 	String getDurableTopicExchangeName() {
 		return "/queues/queue_" +  DURABLE_TOPIC_EXCHANGE;
 	}

@@ -31,7 +31,7 @@ public class RabbitMqHelper {
 	 * Returns {@code true} if the server represented by the given connection properties is RabbitMQ 4 or higher.
 	 * RabbitMQ 4+ requires AMQP 1.0 v2 address format and does not support the legacy v1 address format by default.
 	 */
-	static boolean isRabbitMq4(Map<?, ?> connectionProperties) {
+	static boolean isRabbitMq4(Map<String, Object> connectionProperties) {
 		if (!isRabbitMq(connectionProperties)) {
 			return false;
 		}
@@ -49,7 +49,7 @@ public class RabbitMqHelper {
 		return false;
 	}
 
-	static boolean isRabbitMq(Map<?, ?> connectionProperties) {
+	static boolean isRabbitMq(Map<String, Object> connectionProperties) {
 		if (connectionProperties == null) {
 			return false;
 		}

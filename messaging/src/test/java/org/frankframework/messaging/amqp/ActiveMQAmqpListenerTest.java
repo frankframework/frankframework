@@ -13,16 +13,19 @@ public class ActiveMQAmqpListenerTest extends AmqpListenerTest {
 	private static final ActiveMQContainer container = new ActiveMQContainer(ACTIVEMQ_TAG);
 
 	@Override
+	@NonNull
 	String getQueueExchangeName() {
 		return QUEUE_EXCHANGE_NAME;
 	}
 
 	@Override
+	@NonNull
 	String getTopicExchangeName() {
 		return TOPIC_EXCHANGE_NAME;
 	}
 
 	@Override
+	@NonNull
 	String getDurableTopicExchangeName() {
 		return DURABLE_TOPIC_EXCHANGE_NAME;
 	}

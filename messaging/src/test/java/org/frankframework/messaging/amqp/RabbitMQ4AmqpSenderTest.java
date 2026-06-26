@@ -64,7 +64,7 @@ class RabbitMQ4AmqpSenderTest extends AmqpSenderTest {
 	}
 
 	@BeforeAll
-	static void setupClass() throws IOException, TimeoutException, InterruptedException {
+	static void setupClass() throws IOException, TimeoutException {
 		// try creating the needed exchanges and queues here
 		// v2 implies a lot, including that queues and exchanges aren't created by default any more, so we have to manually do that.
 		// A few other issues arose. In a nutshell:

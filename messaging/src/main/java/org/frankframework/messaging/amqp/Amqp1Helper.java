@@ -55,17 +55,17 @@ public class Amqp1Helper {
 	public static Message getStreamingMessage(@NonNull Connection connection, @NonNull String address, @NonNull AddressType addressType) throws ClientException, IOException {
 		StreamReceiverOptions streamOptions = new StreamReceiverOptions();
 		streamOptions.sourceOptions().capabilities(addressType.getCapabilityName());
-			try (StreamReceiver receiver = connection.openStreamReceiver(address)) {
-				StreamDelivery delivery = receiver.receive(15, TimeUnit.SECONDS);
-				if (delivery != null) {
-					StreamReceiverMessage amqpMessage = delivery.message();
-					Message ffMessage = convertAmqpMessageToFFMessage(amqpMessage);
-					delivery.accept();
-					return ffMessage;
-				}
-		log.error("Could not get streaming message from {} [{}]", addressType, address);
-		return null;
-	}
+		try (StreamReceiver receiver = connection.openStreamReceiver(address)) {
+			StreamDelivery delivery = receiver.receive(15, TimeUnit.SECONDS);
+			if (delivery != null) {
+				StreamReceiverMessage amqpMessage = delivery.message();
+				Message ffMessage = convertAmqpMessageToFFMessage(amqpMessage);
+				delivery.accept();
+				return ffMessage;
+			}
+			log.error("Could not get streaming message from {} [{}]", addressType, address);
+			return null;
+		}
 	}
 
 	@NonNull

@@ -50,9 +50,9 @@ abstract class AmqpListenerTest {
 	private final List<AmqpListenerContainer> containers = new ArrayList<>();
 	private final List<Message> receivedMessages = new ArrayList<>();
 
-	abstract String getQueueExchangeName();
-	abstract String getTopicExchangeName();
-	abstract String getDurableTopicExchangeName();
+	@NonNull abstract String getQueueExchangeName();
+	@NonNull abstract String getTopicExchangeName();
+	@NonNull abstract String getDurableTopicExchangeName();
 
 	@BeforeEach
 	void setUp() throws Exception {

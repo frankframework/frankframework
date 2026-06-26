@@ -28,7 +28,6 @@ import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.DeliveryMode;
 import org.apache.qpid.protonj2.client.OutputStreamOptions;
 import org.apache.qpid.protonj2.client.Receiver;
-import org.apache.qpid.protonj2.client.ReceiverOptions;
 import org.apache.qpid.protonj2.client.Sender;
 import org.apache.qpid.protonj2.client.SenderOptions;
 import org.apache.qpid.protonj2.client.Session;
@@ -232,11 +231,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	}
 
 	private @NonNull SenderResult sendRequestResponse(@NonNull Message message) throws SenderException {
-		ReceiverOptions receiverOptions = new ReceiverOptions();
-		receiverOptions.sourceOptions().capabilities(AddressType.QUEUE.getCapabilityName());
-
 		// It seems that dynamic receivers cannot be streaming?
-		try (Receiver responseReceiver = StringUtils.isEmpty(replyAddress) ? session.openDynamicReceiver() : session.openReceiver(replyAddress, receiverOptions)) {
+		try (Receiver responseReceiver = StringUtils.isEmpty(replyAddress) ? session.openDynamicReceiver() : session.openReceiver(replyAddress)) {
 			String responseQueueAddress = responseReceiver.address();
 			doSend(message, responseQueueAddress);
 			Delivery response = responseReceiver.receive(timeout, TimeUnit.SECONDS);
