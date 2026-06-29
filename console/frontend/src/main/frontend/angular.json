@@ -134,6 +134,7 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "buildTarget": ":build:testing",
+            "browsers": ["ChromeHeadless"],
             "runner": "vitest"
           }
         },
