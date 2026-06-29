@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, Signal, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
@@ -14,6 +14,7 @@ import { faClipboard } from '@fortawesome/free-regular-svg-icons';
   selector: 'app-configurations-show',
   imports: [ConfigurationTabListComponent, NgClass, MonacoEditorComponent, FaIconComponent],
   templateUrl: './configurations-show.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./configurations-show.component.scss'],
 })
 export class ConfigurationsShowComponent implements OnInit, OnDestroy {

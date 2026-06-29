@@ -1,8 +1,8 @@
 import { SidebarDirective } from './sidebar.directive';
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 @Component({
   template: `<ul appSidebar>
@@ -10,6 +10,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
     <li></li>
     <li></li>
   </ul>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [SidebarDirective],
 })
 class TestComponent {
@@ -21,7 +22,7 @@ describe('SidebarDirective', () => {
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
       imports: [SidebarDirective, TestComponent],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding

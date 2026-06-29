@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, QueryList, ViewChildren, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -16,6 +16,7 @@ import { faCheck, faCloudDownload, faSearch, faTimes } from '@fortawesome/free-s
   selector: 'app-configurations-manage-details',
   imports: [FormsModule, SearchFilterPipe, RouterLink, ThSortableDirective, FaIconComponent],
   templateUrl: './configurations-manage-details.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./configurations-manage-details.component.scss'],
 })
 export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {

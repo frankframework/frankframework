@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { IAFRelease } from 'src/app/app.service';
 import { SessionService } from 'src/app/services/session.service';
@@ -11,6 +11,7 @@ import { faGithub } from '@fortawesome/free-brands-svg-icons';
   selector: 'app-iaf-update',
   imports: [MarkDownPipe, ToDateDirective, FaIconComponent],
   templateUrl: './iaf-update.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./iaf-update.component.scss'],
 })
 export class IafUpdateComponent implements OnInit {

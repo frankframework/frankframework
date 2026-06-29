@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
 import { ServerErrorResponse } from 'src/app/app.service';
 import { SchedulerService } from '../scheduler.service';
@@ -29,6 +29,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     FaIconComponent,
   ],
   templateUrl: '../scheduler-add-edit-parent.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./scheduler-add.component.scss'],
 })
 export class SchedulerAddComponent extends SchedulerAddEditParent {

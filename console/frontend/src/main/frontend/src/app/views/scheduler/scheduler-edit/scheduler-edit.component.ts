@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
 import { SchedulerService } from '../scheduler.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -28,6 +28,7 @@ import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
     FaIconComponent,
   ],
   templateUrl: '../scheduler-add-edit-parent.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./scheduler-edit.component.scss'],
 })
 export class SchedulerEditComponent extends SchedulerAddEditParent implements OnInit, OnDestroy {

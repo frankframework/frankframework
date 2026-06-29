@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { ConfigurationMessage, MessageLog } from '../../../app.service';
 import { NgClass } from '@angular/common';
 import { ToDateDirective } from '../../../components/to-date.directive';
@@ -9,6 +9,7 @@ import { faChevronDown, faChevronUp, faInfo, faTimes, faWarning } from '@fortawe
   selector: 'app-configuration-messages',
   imports: [NgClass, ToDateDirective, FaIconComponent],
   templateUrl: './configuration-messages.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './configuration-messages.component.scss',
 })
 export class ConfigurationMessagesComponent implements OnChanges {

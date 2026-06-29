@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { ServerTimeService } from './server-time.service';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('ServerTimeService', () => {
   let service: ServerTimeService;
@@ -10,7 +10,7 @@ describe('ServerTimeService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()],
     });
     service = TestBed.inject(ServerTimeService);
   });

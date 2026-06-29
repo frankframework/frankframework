@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Message, Note, PartialMessage, StorageService } from '../storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -19,6 +19,7 @@ import { faRepeat, faTimes } from '@fortawesome/free-solid-svg-icons';
   selector: 'app-storage-view',
   templateUrl: './storage-view.component.html',
   styleUrls: ['./storage-view.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [NgbAlert, OrderByPipe, ToDateDirective, HasAccessToLinkDirective, LaddaModule, FaIconComponent],
 })
 export class StorageViewComponent implements OnInit {

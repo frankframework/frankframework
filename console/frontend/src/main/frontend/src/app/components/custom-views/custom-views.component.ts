@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { RouterModule } from '@angular/router';
@@ -11,6 +11,7 @@ import { faDesktop } from '@fortawesome/free-solid-svg-icons';
   selector: 'app-custom-views',
   templateUrl: './custom-views.component.html',
   styleUrls: ['./custom-views.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [RouterModule, NgbModule, FaIconComponent],
 })
 export class CustomViewsComponent implements OnInit, OnDestroy {

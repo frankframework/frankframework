@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, Signal } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { AppService, Pipe } from 'src/app/app.service';
 import {
   AuthEntry,
@@ -20,6 +20,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   selector: 'app-security-items',
   imports: [KeyValuePipe, FaIconComponent],
   templateUrl: './security-items.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./security-items.component.scss'],
 })
 export class SecurityItemsComponent implements OnInit {

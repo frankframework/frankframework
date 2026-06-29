@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges } from '@angular/core';
+import { Component, inject, Input, OnChanges, ChangeDetectionStrategy } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { Adapter, AppService } from 'src/app/app.service';
@@ -21,6 +21,7 @@ type FlowModel = {
   selector: 'app-flow',
   templateUrl: './flow.component.html',
   styleUrls: ['./flow.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [HasAccessToLinkDirective, FlowDiagramComponent, FaIconComponent],
 })
 export class FlowComponent implements OnChanges {

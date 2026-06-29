@@ -6,7 +6,7 @@ import {
   HttpEventType,
   HttpResponse,
 } from '@angular/common/http';
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { debounceTime, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -15,6 +15,7 @@ import { MiscService } from 'src/app/services/misc.service';
   selector: 'app-file-viewer',
   templateUrl: './file-viewer.component.html',
   styleUrls: ['./file-viewer.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonModule],
 })
 export class FileViewerComponent implements OnInit {

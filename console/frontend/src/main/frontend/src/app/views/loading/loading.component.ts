@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 
@@ -7,6 +7,7 @@ import { AppService } from 'src/app/app.service';
   selector: 'app-loading',
   imports: [],
   templateUrl: './loading.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./loading.component.scss'],
 })
 export class LoadingComponent implements OnInit {

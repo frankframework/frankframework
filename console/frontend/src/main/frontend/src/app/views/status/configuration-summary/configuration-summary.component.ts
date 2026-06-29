@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, Signal } from '@angular/core';
+import { Component, inject, Input, OnChanges, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { AppService, MessageSummary, Summary } from '../../../app.service';
 import { NgClass } from '@angular/common';
 import { FlowComponent } from '../flow/flow.component';
@@ -10,6 +10,7 @@ import { faCheckSquare as faCheckSquareO, faStopCircle as faStopCircleO } from '
   selector: 'app-configuration-summary',
   templateUrl: './configuration-summary.component.html',
   styleUrl: './configuration-summary.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [NgClass, FlowComponent, FaIconComponent],
 })
 export class ConfigurationSummaryComponent implements OnChanges {

@@ -1,6 +1,6 @@
 import { KeyValuePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, OnInit, Signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
@@ -45,6 +45,7 @@ type TestPipelineSession = {
   selector: 'app-test-pipeline',
   templateUrl: './test-pipeline.component.html',
   styleUrls: ['./test-pipeline.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     NgbAlert,
     QuickSubmitFormDirective,

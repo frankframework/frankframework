@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { StorageService } from './storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ActivatedRoute, ActivationEnd, Router, RouterOutlet } from '@angular/router';
@@ -8,6 +8,7 @@ import { filter } from 'rxjs';
   selector: 'app-storage',
   templateUrl: './storage.component.html',
   styleUrls: ['./storage.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [RouterOutlet],
 })
 export class StorageComponent implements OnInit {

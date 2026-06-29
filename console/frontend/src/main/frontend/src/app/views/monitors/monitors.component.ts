@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AppService, Configuration } from 'src/app/app.service';
 import { Monitor, MonitorsService, Trigger } from './monitors.service';
 import { ActivatedRoute, convertToParamMap, ParamMap, RouterLink } from '@angular/router';
@@ -35,6 +35,7 @@ import { faFileCode } from '@fortawesome/free-regular-svg-icons';
     FaIconComponent,
   ],
   templateUrl: './monitors.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./monitors.component.scss'],
 })
 export class MonitorsComponent implements OnInit, OnDestroy {

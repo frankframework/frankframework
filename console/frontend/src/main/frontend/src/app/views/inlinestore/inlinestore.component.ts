@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utilities';
 import { KeyValuePipe } from '@angular/common';
@@ -19,6 +19,7 @@ type InlineStore = Record<string, { items: stateItemItem[]; totalMessageCount: n
   selector: 'app-inlinestore',
   imports: [RouterLink, KeyValuePipe, FaIconComponent],
   templateUrl: './inlinestore.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./inlinestore.component.scss'],
 })
 export class InlinestoreComponent implements OnInit {

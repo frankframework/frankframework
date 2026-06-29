@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -21,6 +21,7 @@ type ServerError = {
   selector: 'app-error',
   imports: [RouterLink, FaIconComponent],
   templateUrl: './error.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./error.component.scss'],
 })
 export class ErrorComponent implements OnInit, OnDestroy {

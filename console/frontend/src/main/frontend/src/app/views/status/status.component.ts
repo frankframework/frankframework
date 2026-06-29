@@ -1,4 +1,13 @@
-import { Component, computed, inject, OnDestroy, OnInit, Signal, TrackByFunction } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnDestroy,
+  OnInit,
+  Signal,
+  TrackByFunction,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfigurationFilter, ConfigurationFilterPipe } from 'src/app/pipes/configuration-filter.pipe';
@@ -33,6 +42,7 @@ type Filter = Record<AdapterStatus, boolean>;
   selector: 'app-status',
   templateUrl: './status.component.html',
   styleUrls: ['./status.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     ServerWarningsComponent,
     ConfigurationTabListComponent,

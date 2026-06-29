@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
@@ -6,6 +6,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
   selector: 'app-scroll-to-top',
   imports: [FaIconComponent],
   styleUrls: ['./scroll-to-top.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template:
     '<div class="scroll-to-top hidden-scroll"><a title="Scroll to top" (click)="scrollTop()"><fa-icon [icon]="faArrowUp"></fa-icon> <span class="nav-label">Scroll To Top</span></a></div>',
 })

@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnDestroy, OnInit, Signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService, Message } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
@@ -77,6 +77,7 @@ export type Job = {
     FaIconComponent,
   ],
   templateUrl: './scheduler.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./scheduler.component.scss'],
 })
 export class SchedulerComponent implements OnInit, OnDestroy {

@@ -1,4 +1,4 @@
-import { Component, computed, inject, Input, OnChanges, Signal } from '@angular/core';
+import { Component, computed, inject, Input, OnChanges, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { Notification, NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
 import { TimeSinceDirective } from '../../time-since.directive';
@@ -16,6 +16,7 @@ import { faBell } from '@fortawesome/free-solid-svg-icons';
   selector: 'app-pages-topnavbar',
   templateUrl: './pages-topnavbar.component.html',
   styleUrls: ['./pages-topnavbar.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule, FaIconComponent],
 })
 export class PagesTopnavbarComponent implements OnChanges {

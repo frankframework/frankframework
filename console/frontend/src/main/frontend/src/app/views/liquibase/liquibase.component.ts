@@ -1,4 +1,4 @@
-import { Component, computed, inject, Signal } from '@angular/core';
+import { Component, computed, inject, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { AppService, Configuration, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcService } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -18,6 +18,7 @@ type Form = {
   selector: 'app-liquibase',
   imports: [FormsModule, InputFileUploadComponent, LaddaModule, QuickSubmitFormDirective, FaIconComponent],
   templateUrl: './liquibase.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./liquibase.component.scss'],
 })
 export class LiquibaseComponent {

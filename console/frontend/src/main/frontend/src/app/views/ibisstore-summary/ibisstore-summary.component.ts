@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { first, Subscription } from 'rxjs';
 import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcService, JdbcSummary, JdbcSummaryForm } from '../jdbc/jdbc.service';
@@ -16,6 +16,7 @@ import { faDatabase, faSignIn, faSignOut, faTimesCircle } from '@fortawesome/fre
   selector: 'app-ibisstore-summary',
   imports: [RouterLink, NgClass, HasAccessToLinkDirective, QuickSubmitFormDirective, FormsModule, FaIconComponent],
   templateUrl: './ibisstore-summary.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./ibisstore-summary.component.scss'],
 })
 export class IbisstoreSummaryComponent implements OnInit, OnDestroy {

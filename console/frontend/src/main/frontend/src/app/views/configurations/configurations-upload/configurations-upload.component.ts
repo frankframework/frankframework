@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { JdbcService } from '../../jdbc/jdbc.service';
@@ -27,6 +27,7 @@ type Form = {
   selector: 'app-configurations-upload',
   imports: [FormsModule, InputFileUploadComponent, RouterLink, QuickSubmitFormDirective, FaIconComponent],
   templateUrl: './configurations-upload.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./configurations-upload.component.scss'],
 })
 export class ConfigurationsUploadComponent implements OnInit, OnDestroy {

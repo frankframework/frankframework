@@ -1,15 +1,16 @@
-import { Component, DebugElement } from '@angular/core';
+import { Component, DebugElement, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { By } from '@angular/platform-browser';
 import { ToDateDirective } from './to-date.directive';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 @Component({
   template: `
     <span appToDate [time]="1710111600000"></span>
     <span appToDate [time]="'Mon Mar 11 2024 00:00:00 GMT+0100'"></span>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [ToDateDirective],
 })
 class TestComponent {}
@@ -20,7 +21,7 @@ describe('ToDateDirective', () => {
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
       imports: [TestComponent, ToDateDirective],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding

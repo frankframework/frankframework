@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,6 +26,7 @@ import { faWarning } from '@fortawesome/free-solid-svg-icons';
     FaIconComponent,
   ],
   templateUrl: './logging-manage.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./logging-manage.component.scss'],
 })
 export class LoggingManageComponent implements OnInit {

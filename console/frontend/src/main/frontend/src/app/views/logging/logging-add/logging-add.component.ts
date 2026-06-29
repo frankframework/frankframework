@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ErrorLevels, errorLevelsConst, LoggingService } from '../logging.service';
 import { ServerErrorResponse } from '../../../app.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -16,6 +16,7 @@ type Form = {
   selector: 'app-logging-add',
   imports: [FormsModule, LaddaModule, QuickSubmitFormDirective, RouterLink],
   templateUrl: './logging-add.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './logging-add.component.scss',
 })
 export class LoggingAddComponent {

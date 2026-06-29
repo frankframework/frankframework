@@ -1,9 +1,10 @@
 import { DtContentDirective } from './dt-content.directive';
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
   template: `<ng-template appDtContent>TEST</ng-template>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [DtContentDirective],
 })
 class TestComponent {

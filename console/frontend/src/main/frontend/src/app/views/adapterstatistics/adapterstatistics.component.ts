@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { ChartDataset } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -33,6 +33,7 @@ import { faChevronDown, faChevronUp, faRefresh } from '@fortawesome/free-solid-s
     FaIconComponent,
   ],
   templateUrl: './adapterstatistics.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./adapterstatistics.component.scss'],
 })
 export class AdapterstatisticsComponent implements OnInit, OnDestroy {

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
@@ -31,6 +31,7 @@ type Form = {
   selector: 'app-test-service-listener',
   templateUrl: './test-service-listener.component.html',
   styleUrls: ['./test-service-listener.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     NgbAlert,
     QuickSubmitFormDirective,

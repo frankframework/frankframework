@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { FileViewerComponent } from './file-viewer.component';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('FileViewerComponent', () => {
   let component: FileViewerComponent;
@@ -11,7 +11,7 @@ describe('FileViewerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FileViewerComponent],
-      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FileViewerComponent);

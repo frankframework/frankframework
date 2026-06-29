@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../../../../../node_modules/monaco-editor/monaco.d.ts" />
 
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
@@ -18,6 +18,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
   selector: 'app-jdbc-execute-query',
   imports: [FormsModule, LaddaModule, QuickSubmitFormDirective, MonacoEditorComponent],
   templateUrl: './jdbc-execute-query.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./jdbc-execute-query.component.scss'],
 })
 export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {

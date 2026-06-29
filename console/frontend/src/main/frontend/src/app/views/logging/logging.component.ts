@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, inject, OnInit, QueryList, ViewChildren, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -36,6 +36,7 @@ import {
     FaIconComponent,
   ],
   templateUrl: './logging.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./logging.component.scss'],
 })
 export class LoggingComponent implements OnInit {

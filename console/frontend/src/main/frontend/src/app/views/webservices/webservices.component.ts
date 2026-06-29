@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
 
@@ -10,6 +10,7 @@ import { faExternalLink, faArrowAltCircleDown, faFileArchive, faFileCode } from 
   selector: 'app-webservices',
   templateUrl: './webservices.component.html',
   styleUrls: ['./webservices.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [HasAccessToLinkDirective, FaIconComponent],
 })
 export class WebservicesComponent implements OnInit {

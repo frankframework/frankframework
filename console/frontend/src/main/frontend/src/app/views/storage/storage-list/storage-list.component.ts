@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Message, MessageField, MessageStore, Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
@@ -87,6 +87,7 @@ const TEST_API_RESPONSE: DataTableServerResponseInfo<Message> = {
   selector: 'app-storage-list',
   templateUrl: './storage-list.component.html',
   styleUrls: ['./storage-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     NgbAlert,
     OrderByPipe,

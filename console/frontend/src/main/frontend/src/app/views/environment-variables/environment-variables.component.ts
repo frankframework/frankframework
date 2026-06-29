@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, Signal } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { KeyValue } from '@angular/common';
 import { TabListComponent } from '../../components/tab-list/tab-list.component';
@@ -14,6 +14,7 @@ export type KeyValueProperty = KeyValue<string, string>;
   selector: 'app-environment-variables',
   imports: [TabListComponent, FormsModule, VariablesFilterPipe, EnvironmentVariablesTableComponent, FaIconComponent],
   templateUrl: './environment-variables.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./environment-variables.component.scss'],
 })
 export class EnvironmentVariablesComponent implements OnInit {
