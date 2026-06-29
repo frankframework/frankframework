@@ -129,7 +129,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 
 	private String deprecatedGetKey(String input, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session != null) {
-			input = (String) session.get(getKeyInputSessionKey());
+			input = session.getString(getKeyInputSessionKey());
 		}
 
 		if (keyTp != null) {
