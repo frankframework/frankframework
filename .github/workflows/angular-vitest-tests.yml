@@ -45,4 +45,4 @@ jobs:
       run: pnpm install
 
     - name: Run Karma tests
-      run: npm run test -- --watch=false --browsers=ChromeHeadless
+      run: pnpm test --watch=false --browsers=ChromeHeadless
