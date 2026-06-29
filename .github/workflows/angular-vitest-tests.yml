@@ -44,5 +44,5 @@ jobs:
     - name: Install dependencies
       run: pnpm install
 
-    - name: Run Karma tests
-      run: pnpm test --watch=false --browsers=ChromeHeadless
+    - name: Run Vitest tests
+      run: pnpm test:ci
