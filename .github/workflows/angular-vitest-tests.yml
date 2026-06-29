@@ -41,6 +41,9 @@ jobs:
         cache: pnpm
         cache-dependency-path: '**/pnpm-lock.yaml'
 
+    - name: Set up Chrome
+      uses: browser-actions/setup-chrome@v2
+
     - name: Install dependencies
       run: pnpm install
 

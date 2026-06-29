@@ -10,7 +10,7 @@
     "watch": "ng build --watch --configuration development",
     "build:analysis": "ng build --configuration analysis",
     "test": "ng test",
-    "test:ci": "ng test --no-watch --no-progress",
+    "test:ci": "ng test --no-watch",
     "e2e": "ng e2e",
     "e2e:ci": "ng e2e -c ci",
     "cypress:open": "pnpm -C cypress exec cypress open",
