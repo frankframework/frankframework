@@ -1,6 +1,6 @@
 import { Component, inject, Input, ChangeDetectionStrategy } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { FlowDiagramComponent } from 'src/app/components/flow-diagram/flow-diagram.component';
+import { FlowDiagramComponent } from '../../../../components/flow-diagram/flow-diagram.component';
 import { ZoomPanDirective } from '../../../../components/zoom-pan.directive';
 
 @Component({

@@ -1,16 +1,16 @@
 import { KeyValuePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, OnInit, Signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
-import { Adapter, AppService, Configuration } from 'src/app/app.service';
-import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
+import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
+
+import { Adapter, AppService, Configuration } from '../../app.service';
+import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
 import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { ConfigurationFilter } from '../../pipes/configuration-filter.pipe';
-import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
-import { FormsModule } from '@angular/forms';
 import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
-import { LaddaModule } from 'angular2-ladda';
 import { WebStorageService } from '../../services/web-storage.service';
 
 type FormSessionKey = {

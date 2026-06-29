@@ -1,10 +1,10 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { AppService } from 'src/app/app.service';
-import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
-
-import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faExternalLink, faArrowAltCircleDown, faFileArchive, faFileCode } from '@fortawesome/free-solid-svg-icons';
+
+import { AppService } from '../../app.service';
+import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
+import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 
 @Component({
   selector: 'app-webservices',

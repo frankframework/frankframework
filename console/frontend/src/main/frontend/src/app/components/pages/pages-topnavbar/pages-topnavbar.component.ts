@@ -1,16 +1,16 @@
 import { Component, computed, inject, Input, OnChanges, Signal, ChangeDetectionStrategy } from '@angular/core';
-import { Notification, NotificationService } from 'src/app/services/notification.service';
-import { HamburgerComponent } from './hamburger.component';
-import { TimeSinceDirective } from '../../time-since.directive';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
-import { AuthService } from 'src/app/services/auth.service';
-import { AppService, ClusterMember } from 'src/app/app.service';
 import { FormsModule } from '@angular/forms';
-import { ServerTimeService } from '../../../services/server-time.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
+import { Notification, NotificationService } from '../../../services/notification.service';
+import { HamburgerComponent } from './hamburger.component';
+import { TimeSinceDirective } from '../../time-since.directive';
+import { AuthService } from '../../../services/auth.service';
+import { AppService, ClusterMember } from '../../../app.service';
+import { ServerTimeService } from '../../../services/server-time.service';
 
 @Component({
   selector: 'app-pages-topnavbar',

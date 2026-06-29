@@ -1,19 +1,19 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Message, Note, PartialMessage, StorageService } from '../storage.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppService } from 'src/app/app.service';
-import { Base64Service } from '../../../services/base64.service';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-
-import { OrderByPipe } from '../../../pipes/orderby.pipe';
-import { ToDateDirective } from '../../../components/to-date.directive';
-import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { LaddaModule } from 'angular2-ladda';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faArrowAltCircleDown, faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 import { faRepeat, faTimes } from '@fortawesome/free-solid-svg-icons';
+
+import { Message, Note, PartialMessage, StorageService } from '../storage.service';
+import { SweetalertService } from '../../../services/sweetalert.service';
+import { AppService } from '../../../app.service';
+import { Base64Service } from '../../../services/base64.service';
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { ToDateDirective } from '../../../components/to-date.directive';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 
 @Component({
   selector: 'app-storage-view',

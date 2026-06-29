@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AppService } from 'src/app/app.service';
+import { AppService } from '../../app.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faBug, faLifeRing } from '@fortawesome/free-solid-svg-icons';
 

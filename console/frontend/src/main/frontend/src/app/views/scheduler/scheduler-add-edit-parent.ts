@@ -1,6 +1,6 @@
-import { Adapter, AppService, Configuration } from 'src/app/app.service';
-import { JobForm } from './scheduler.service';
 import { inject, Signal } from '@angular/core';
+import { Adapter, AppService, Configuration } from '../../app.service';
+import { JobForm } from './scheduler.service';
 
 type StateItem = {
   type: string;

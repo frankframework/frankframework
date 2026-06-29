@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
-import { AppService, Configuration } from 'src/app/app.service';
+import { AppService, Configuration } from '../../../app.service';
 import { ConfigurationsService } from '../configurations.service';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';

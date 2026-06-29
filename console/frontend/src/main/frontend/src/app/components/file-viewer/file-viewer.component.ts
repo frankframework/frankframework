@@ -8,8 +8,8 @@ import {
 } from '@angular/common/http';
 import { Component, inject, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { debounceTime, filter } from 'rxjs';
-import { AppService } from 'src/app/app.service';
-import { MiscService } from 'src/app/services/misc.service';
+import { AppService } from '../../app.service';
+import { MiscService } from '../../services/misc.service';
 
 @Component({
   selector: 'app-file-viewer',

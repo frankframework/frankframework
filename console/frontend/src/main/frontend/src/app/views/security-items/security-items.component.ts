@@ -1,5 +1,10 @@
 import { Component, computed, inject, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
-import { AppService, Pipe } from 'src/app/app.service';
+import { KeyValuePipe } from '@angular/common';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faCheck, faCheckSquare, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { HttpErrorResponse } from '@angular/common/http';
+
+import { AppService, Pipe } from '../../app.service';
 import {
   AuthEntry,
   CertificateList,
@@ -11,10 +16,6 @@ import {
   SecurityRole,
   supportedConnectionOptions,
 } from './security-items.service';
-import { KeyValuePipe } from '@angular/common';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faCheck, faCheckSquare, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
-import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-security-items',

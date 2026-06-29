@@ -12,8 +12,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IMessage } from '@stomp/stompjs';
 import { Subscription } from 'rxjs';
-import { WebsocketService } from 'src/app/services/websocket.service';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { WebsocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-websocket-test',

@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppService } from 'src/app/app.service';
+import { AppService } from '../../app.service';
 
 @Component({
   selector: 'app-loading',
@@ -21,7 +21,7 @@ export class LoadingComponent implements OnInit {
       },
       error: (response: HttpErrorResponse) => {
         if (response.status == 401) return;
-        if (response.statusText == 'SERVICE_UNAVAILABLE') {
+        if (response.status == 503) {
           this.router.navigate(['/status']);
         } else {
           this.router.navigate(['/error']);

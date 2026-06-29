@@ -1,14 +1,15 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
-import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAlert, NgbDropdown, NgbDropdownItem, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
-import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { KeyValuePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faWarning } from '@fortawesome/free-solid-svg-icons';
+
+import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
+import { ToastService } from '../../../services/toast.service';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 
 @Component({
   selector: 'app-logging-manage',

@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
-import { AppService } from 'src/app/app.service';
+import { AppService } from '../../app.service';
 import { KeyValue } from '@angular/common';
 import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';

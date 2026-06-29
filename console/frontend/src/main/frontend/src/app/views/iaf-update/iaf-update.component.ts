@@ -1,11 +1,11 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
-import { IAFRelease } from 'src/app/app.service';
-import { SessionService } from 'src/app/services/session.service';
-import { MarkDownPipe } from '../../pipes/mark-down.pipe';
-import { ToDateDirective } from '../../components/to-date.directive';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { IAFRelease } from '../../app.service';
+import { SessionService } from '../../services/session.service';
+import { MarkDownPipe } from '../../pipes/mark-down.pipe';
+import { ToDateDirective } from '../../components/to-date.directive';
 
 @Component({
   selector: 'app-iaf-update',

@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { AppService } from 'src/app/app.service';
-import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utilities';
 import { KeyValuePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { AppService } from '../../app.service';
+import { getProcessStateIcon, getProcessStateIconColor } from '../../utilities';
 
 type stateItemItem = {
   configurationName: string;

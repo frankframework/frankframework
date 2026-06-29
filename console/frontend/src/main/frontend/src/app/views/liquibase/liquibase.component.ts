@@ -1,14 +1,14 @@
 import { Component, computed, inject, Signal, ChangeDetectionStrategy } from '@angular/core';
-import { AppService, Configuration, ServerErrorResponse } from 'src/app/app.service';
-import { JdbcService } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
 import { LaddaModule } from 'angular2-ladda';
-
-import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
+
+import { AppService, Configuration, ServerErrorResponse } from '../../app.service';
+import { JdbcService } from '../jdbc/jdbc.service';
+import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 
 type Form = {
   configuration: string;

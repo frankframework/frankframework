@@ -1,10 +1,10 @@
 import { Component, inject, OnDestroy, OnInit, QueryList, ViewChildren, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AppService, Configuration } from 'src/app/app.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { AppService, Configuration } from '../../../../app.service';
+import { SweetalertService } from '../../../../services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
-import { ToastService } from 'src/app/services/toast.service';
-import { basicAnyValueTableSort, SortEvent, ThSortableDirective } from 'src/app/components/th-sortable.directive';
+import { ToastService } from '../../../../services/toast.service';
+import { basicAnyValueTableSort, SortEvent, ThSortableDirective } from '../../../../components/th-sortable.directive';
 import { SearchFilterPipe } from '../../../../pipes/search-filter.pipe';
 
 import { FormsModule } from '@angular/forms';

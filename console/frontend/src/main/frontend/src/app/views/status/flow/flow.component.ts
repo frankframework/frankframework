@@ -1,15 +1,15 @@
 import { Component, inject, Input, OnChanges, ChangeDetectionStrategy } from '@angular/core';
-import { StatusService } from '../status.service';
-import { MiscService } from 'src/app/services/misc.service';
-import { Adapter, AppService } from 'src/app/app.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { FlowModalComponent } from './flow-modal/flow-modal.component';
-
-import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
-import { FlowDiagramComponent } from '../../../components/flow-diagram/flow-diagram.component';
 import { HttpResponse } from '@angular/common/http';
 import { faShareAltSquare } from '@fortawesome/free-solid-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+
+import { StatusService } from '../status.service';
+import { MiscService } from '../../../services/misc.service';
+import { Adapter, AppService } from '../../../app.service';
+import { FlowModalComponent } from './flow-modal/flow-modal.component';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { FlowDiagramComponent } from '../../../components/flow-diagram/flow-diagram.component';
 
 type FlowModel = {
   isImage: boolean;

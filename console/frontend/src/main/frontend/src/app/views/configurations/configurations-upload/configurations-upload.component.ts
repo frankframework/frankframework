@@ -1,17 +1,17 @@
 import { Component, inject, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
-import { AppService } from 'src/app/app.service';
-import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
-import { JdbcService } from '../../jdbc/jdbc.service';
-import { ConfigurationsService } from '../configurations.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-
 import { RouterLink } from '@angular/router';
-import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
+
+import { AppService } from '../../../app.service';
+import { InputFileUploadComponent } from '../../../components/input-file-upload/input-file-upload.component';
+import { JdbcService } from '../../jdbc/jdbc.service';
+import { ConfigurationsService } from '../configurations.service';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 
 type Form = {
   name: string;

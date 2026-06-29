@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { AppService } from 'src/app/app.service';
+import { AppService } from '../../app.service';
 import {
   DataTableColumn,
   DatatableComponent,

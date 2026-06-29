@@ -1,14 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { AppService } from 'src/app/app.service';
-import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
 
+import { AppService } from '../../app.service';
+import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
-import { FormsModule } from '@angular/forms';
 import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
-import { LaddaModule } from 'angular2-ladda';
 import { WebStorageService } from '../../services/web-storage.service';
 
 type AlertState = {

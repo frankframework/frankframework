@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { AppService } from 'src/app/app.service';
 import { HttpClient } from '@angular/common/http';
+import { AppService } from '../../app.service';
 
 @Component({
   template: '',

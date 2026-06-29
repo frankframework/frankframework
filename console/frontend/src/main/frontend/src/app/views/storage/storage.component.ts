@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { StorageService } from './storage.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ActivatedRoute, ActivationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
+import { StorageService } from './storage.service';
+import { SweetalertService } from '../../services/sweetalert.service';
 
 @Component({
   selector: 'app-storage',

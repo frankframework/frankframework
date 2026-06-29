@@ -3,16 +3,16 @@
 
 import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppService, ServerErrorResponse } from 'src/app/app.service';
-import { WebStorageService } from 'src/app/services/web-storage.service';
-import { JdbcQueryForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
+import { toObservable } from '@angular/core/rxjs-interop';
 
+import { AppService, ServerErrorResponse } from '../../../app.service';
+import { WebStorageService } from '../../../services/web-storage.service';
+import { JdbcQueryForm, JdbcService } from '../jdbc.service';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
-import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-jdbc-execute-query',

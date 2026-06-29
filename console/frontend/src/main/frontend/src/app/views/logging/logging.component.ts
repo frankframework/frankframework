@@ -1,19 +1,19 @@
 import { Component, inject, OnInit, QueryList, ViewChildren, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { AppService, ServerErrorResponse } from 'src/app/app.service';
-import { MiscService } from 'src/app/services/misc.service';
-import { LoggingFile, LoggingService } from './logging.service';
-import { basicTableSort, SortEvent, ThSortableDirective } from 'src/app/components/th-sortable.directive';
-import { copyToClipboard } from 'src/app/utilities';
 import { HttpErrorResponse } from '@angular/common/http';
-
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleLeft, faClipboard } from '@fortawesome/free-regular-svg-icons';
+
+import { AppService, ServerErrorResponse } from '../../app.service';
+import { MiscService } from '../../services/misc.service';
+import { LoggingFile, LoggingService } from './logging.service';
+import { basicTableSort, SortEvent, ThSortableDirective } from '../../components/th-sortable.directive';
+import { copyToClipboard } from '../../utilities';
 import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
 import { FileViewerComponent } from '../../components/file-viewer/file-viewer.component';
 import { ToDateDirective } from '../../components/to-date.directive';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faArrowAltCircleLeft, faClipboard } from '@fortawesome/free-regular-svg-icons';
 import {
   faArrowCircleRight,
   faSearch,

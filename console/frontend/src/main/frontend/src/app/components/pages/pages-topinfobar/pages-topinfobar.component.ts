@@ -1,9 +1,9 @@
 import { Component, inject, OnDestroy, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, ActivationEnd, NavigationEnd, Router } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
-import { AppService } from 'src/app/app.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faArrowCircleRight } from '@fortawesome/free-solid-svg-icons';
+import { AppService } from '../../../app.service';
 
 @Component({
   selector: 'app-pages-topinfobar',

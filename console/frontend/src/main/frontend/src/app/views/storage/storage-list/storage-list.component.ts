@@ -1,27 +1,9 @@
 import { AfterViewInit, Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Message, MessageField, MessageStore, Note, StorageService } from '../storage.service';
-import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
-import { SessionService } from 'src/app/services/session.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { getProcessStateIcon } from 'src/app/utilities';
-import { AppService } from '../../../app.service';
-import {
-  DataTableColumn,
-  DatatableComponent,
-  DataTableDataSource,
-  DataTableServerResponseInfo,
-} from '../../../components/datatable/datatable.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-import { KeyValuePipe, NgClass } from '@angular/common';
-import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
 import { RouterLink } from '@angular/router';
-import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
-import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
-import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
 import { Subscription } from 'rxjs';
-import { SortDirection } from '../../../components/th-sortable.directive';
 import {
   faChevronDown,
   faChevronUp,
@@ -32,6 +14,25 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faArrowAltCircleLeft, faArrowAltCircleDown } from '@fortawesome/free-regular-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+
+import { Message, MessageField, MessageStore, Note, StorageService } from '../storage.service';
+import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
+import { SessionService } from '../../../services/session.service';
+import { SweetalertService } from '../../../services/sweetalert.service';
+import { getProcessStateIcon } from '../../../utilities';
+import { AppService } from '../../../app.service';
+import {
+  DataTableColumn,
+  DatatableComponent,
+  DataTableDataSource,
+  DataTableServerResponseInfo,
+} from '../../../components/datatable/datatable.component';
+import { KeyValuePipe, NgClass } from '@angular/common';
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
+import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
+import { SortDirection } from '../../../components/th-sortable.directive';
 
 type FieldSearchInfo = {
   fieldName: string;

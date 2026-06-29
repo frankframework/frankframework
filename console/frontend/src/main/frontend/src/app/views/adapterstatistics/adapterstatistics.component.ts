@@ -1,17 +1,17 @@
 import { Component, inject, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toObservable } from '@angular/core/rxjs-interop';
 import type { ChartDataset } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
-import { AppConstants, AppService } from 'src/app/app.service';
-import { DebugService } from 'src/app/services/debug.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
 import { LaddaModule } from 'angular2-ladda';
+import { AppConstants, AppService } from '../../app.service';
+import { DebugService } from '../../services/debug.service';
+import { SweetalertService } from '../../services/sweetalert.service';
+import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
 import { FormatStatKeysPipe } from './format-stat-keys.pipe';
 import { FormatStatisticsPipe } from './format-statistics.pipe';
 import { ServerTimeService } from '../../services/server-time.service';
-import { toObservable } from '@angular/core/rxjs-interop';
 import {
   AdapterstatisticsChartsComponent,
   CountPerReceiverStatistics,
