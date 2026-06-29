@@ -258,8 +258,7 @@
 	</xsl:template>
 
 	<!-- The following pipes do not have a success forward, so it should not be added by default -->
-	<xsl:template match="pipe[@className=('org.frankframework.pipes.CompareStringPipe',
-										 'org.frankframework.pipes.CompareIntegerPipe')]" mode="preprocess">
+	<xsl:template match="pipe[@className=('org.frankframework.pipes.CompareStringPipe', 'org.frankframework.pipes.CompareIntegerPipe')]" mode="preprocess">
 		<xsl:copy>
 			<xsl:call-template name="defaultPipeCopyActions"/>
 		</xsl:copy>
@@ -302,8 +301,29 @@
 				<xsl:apply-templates select="forward" mode="#current"/>
 				<xsl:apply-templates select="../global-forwards/forward[not(@name = current()/forward/@name)]" mode="#current"/>
 			</xsl:variable>
+			<xsl:variable name="currentSwitchId" select="generate-id()"/>
 
 			<xsl:copy-of select="$forwards"/>
+
+			<!-- If no forwards are configured at all, assume they call later orphan pipes, like adapter2dot does for dotted inferred caller edges -->
+			<xsl:if test="empty($forwards/forward)">
+				<xsl:for-each select="following-sibling::pipe[
+					not(parent::pipeline/@firstPipe = @name)
+					and not(parent::pipeline/pipe/forward/@path = @name)
+					and not(parent::pipeline/pipe/@notFoundForwardName = @name)
+					and not(parent::pipeline/pipe/@emptyForwardName = @name)
+					and not(parent::pipeline/pipe/@thenForwardName = @name)
+					and not(parent::pipeline/pipe/@elseForwardName = @name)
+					and generate-id((preceding-sibling::pipe[
+						(@className='org.frankframework.pipes.XmlSwitch' or @className='org.frankframework.pipes.SwitchPipe') and empty(forward) and empty(../global-forwards/forward)
+					])[last()]) = $currentSwitchId
+				]">
+					<xsl:call-template name="createForward">
+						<xsl:with-param name="name" select="@name"/>
+						<xsl:with-param name="path" select="@name"/>
+					</xsl:call-template>
+				</xsl:for-each>
+			</xsl:if>
 		</xsl:copy>
 	</xsl:template>
 
@@ -540,6 +560,12 @@
 
 	<xsl:template match="pipe" mode="convertElements">
 		<xsl:call-template name="createMermaidElement"/>
+		<!-- Make sure everything in the pipeline gets rendered -->
+		<xsl:for-each select="inputValidator|inputWrapper|outputValidator|outputWrapper">
+			<xsl:if test="exists(forward[exists(key('elementsById', @targetID, root(.)))]) or exists(root(.)//forward[@targetID = current()/@elementID and parent::*/@elementID != ''])">
+				<xsl:apply-templates select="." mode="#current"/>
+			</xsl:if>
+		</xsl:for-each>
 	</xsl:template>
 
 	<xsl:template match="exit" mode="convertElements">
