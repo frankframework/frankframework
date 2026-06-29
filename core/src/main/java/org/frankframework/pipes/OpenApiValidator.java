@@ -15,7 +15,6 @@
 */
 package org.frankframework.pipes;
 
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -45,7 +44,9 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
 /**
- * Pipe that validates the input message against an OpenAPI specification.
+ * Pipe that validates a message against an OpenAPI specification. If this is uses as an Input Validator it will try to resolve the correct schema based
+ * on the operation, path and method. In case of an Output validator, it will try to resolve the correct schema based on the operation, path, method and exit
+ * code.
  *
  * @author evandongen
  */
