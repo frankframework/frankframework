@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { WebsocketTestComponent } from './websocket-test.component';
-import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('WebsocketTestComponent', () => {
   let component: WebsocketTestComponent;
@@ -11,7 +11,7 @@ describe('WebsocketTestComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [WebsocketTestComponent],
-      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WebsocketTestComponent);

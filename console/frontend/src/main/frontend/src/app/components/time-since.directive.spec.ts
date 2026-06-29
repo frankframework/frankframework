@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, DebugElement, ChangeDetectionStrategy } from '@angular/core';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { TimeSinceDirective } from './time-since.directive';
 import { By } from '@angular/platform-browser';
-import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { TimeSinceDirective } from './time-since.directive';
 
 @Component({
   template: `
@@ -26,7 +26,7 @@ describe('TimeSinceDirective', () => {
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
       imports: [TestComponent, TimeSinceDirective],
-      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).createComponent(TestComponent);
 
     fixture.detectChanges(); // initial binding

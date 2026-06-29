@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { SecurityItemsService } from './security-items.service';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('SecurityItemsService', () => {
   let service: SecurityItemsService;
@@ -10,7 +10,7 @@ describe('SecurityItemsService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [],
-      providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     });
     service = TestBed.inject(SecurityItemsService);
   });
