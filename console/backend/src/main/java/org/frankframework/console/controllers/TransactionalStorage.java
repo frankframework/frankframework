@@ -139,7 +139,6 @@ public class TransactionalStorage {
 
 		builder.addHeader("skip", params.skip);
 		builder.addHeader("max", params.max);
-
 		builder.addHeader("type", params.type);
 		builder.addHeader("host", params.host);
 		builder.addHeader("idMask", params.id);
@@ -151,6 +150,7 @@ public class TransactionalStorage {
 		builder.addHeader("startDate", params.startDateStr);
 		builder.addHeader("endDate", params.endDateStr);
 		builder.addHeader("sort", params.sort);
+
 		return frankApiService.callSyncGateway(builder);
 	}
 
