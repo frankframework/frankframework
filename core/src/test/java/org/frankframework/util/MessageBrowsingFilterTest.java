@@ -53,7 +53,7 @@ public class MessageBrowsingFilterTest {
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
-					count += filter.matchAny(item) ? 1 : 0;
+					count += filter.matchAll(item) ? 1 : 0;
 				}
 			}
 		}
@@ -149,7 +149,7 @@ public class MessageBrowsingFilterTest {
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
-					count += filter.matchAny(item) ? 1 : 0;
+					count += filter.matchAll(item) ? 1 : 0;
 				}
 			}
 		}
@@ -169,7 +169,7 @@ public class MessageBrowsingFilterTest {
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
-					count += filter.matchAny(item) ? 1 : 0;
+					count += filter.matchAll(item) ? 1 : 0;
 				}
 			}
 		}
@@ -205,7 +205,7 @@ public class MessageBrowsingFilterTest {
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
-					count += filter.matchAny(item) ? 1 : 0;
+					count += filter.matchAll(item) ? 1 : 0;
 				}
 			}
 		}

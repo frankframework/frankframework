@@ -51,24 +51,25 @@ public class BusMessageUtils {
 	@SuppressWarnings("unchecked")
 	private static @Nullable <T> T getHeader(Message<?> message, String headerName, Class<T> type) {
 		MessageHeaders headers = message.getHeaders();
-		if(contains(headers, headerName)) {
-			Object rawValue = headers.get(HEADER_PREFIX + headerName);
-			if (rawValue == null) {
-				return null;
-			}
+		if (!contains(headers, headerName)) {
+			return null;
+		}
+		Object rawValue = headers.get(HEADER_PREFIX + headerName);
+		if (rawValue == null) {
+			return null;
+		}
 
-			if (type.isAssignableFrom(rawValue.getClass())) {
-				return (T) rawValue;
+		if (type.isAssignableFrom(rawValue.getClass())) {
+			return (T) rawValue;
+		}
+		if (rawValue instanceof String) {
+			try {
+				return ClassUtils.convertToType(type, String.valueOf(rawValue));
+			} catch (IllegalArgumentException e) {// Unable to convert something, fall back to the default value
+				LOG.warn("unable to convert header to required type", e);
 			}
-			if(rawValue instanceof String) {
-				try {
-					return ClassUtils.convertToType(type, String.valueOf(rawValue));
-				} catch (IllegalArgumentException e) {// Unable to convert something, fall back to the default value
-					LOG.warn("unable to convert header to required type", e);
-				}
-			} else {
-				LOG.warn("conversion of type [{}] not implemented", rawValue::getClass);
-			}
+		} else {
+			LOG.warn("conversion of type [{}] not implemented", rawValue::getClass);
 		}
 		return null;
 	}

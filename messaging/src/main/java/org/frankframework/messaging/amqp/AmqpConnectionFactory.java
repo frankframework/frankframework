@@ -124,6 +124,10 @@ public class AmqpConnectionFactory implements DisposableBean {
 		}
 		String host = u.getHost();
 		int port = u.getPort();
+		String virtualHost = u.getPath();
+		if (StringUtils.isNotEmpty(virtualHost)) {
+			connectionOptions.virtualHost(virtualHost);
+		}
 		return client.connect(host, port, connectionOptions);
 	}
 
