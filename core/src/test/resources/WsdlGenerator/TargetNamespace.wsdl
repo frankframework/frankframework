@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ns1="http://www.egem.nl/StUF/sector/bg/0310" targetNamespace="${wsdl.EchoPipe4WsdlGeneratorTest.targetNamespace}">
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="${wsdl.EchoPipe4WsdlGeneratorTest.targetNamespace}" xmlns:ns1="http://www.egem.nl/StUF/sector/bg/0310" targetNamespace="${wsdl.EchoPipe4WsdlGeneratorTest.targetNamespace}">
 	<wsdl:documentation>Generated as EchoPipe4WsdlGeneratorTest.wsdl on DATETIME.</wsdl:documentation>
 	<wsdl:types>
 		<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310" targetNamespace="http://www.egem.nl/StUF/sector/bg/0310">
