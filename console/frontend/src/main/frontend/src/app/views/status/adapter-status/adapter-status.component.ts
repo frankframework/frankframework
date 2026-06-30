@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, ChangeDetectionStrategy } from '@angular/core';
 import { getProcessStateIcon, getProcessStateIconColor } from '../../../utilities';
 import { Adapter, Receiver } from '../../../app.service';
 import { StatusService } from '../status.service';
@@ -45,6 +45,7 @@ import { faCheckSquare as faCheckSquareO, faStopCircle as faStopCircleO } from '
     FaIconComponent,
   ],
   templateUrl: './adapter-status.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './adapter-status.component.scss',
 })
 export class AdapterStatusComponent {

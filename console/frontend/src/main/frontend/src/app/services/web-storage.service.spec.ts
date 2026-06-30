@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { WebStorageService } from './web-storage.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('WebStorageService', () => {
   let service: WebStorageService;

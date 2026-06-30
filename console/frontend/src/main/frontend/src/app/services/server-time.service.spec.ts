@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-
-import { ServerTimeService } from './server-time.service';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+
+import { ServerTimeService } from './server-time.service';
 
 describe('ServerTimeService', () => {
   let service: ServerTimeService;

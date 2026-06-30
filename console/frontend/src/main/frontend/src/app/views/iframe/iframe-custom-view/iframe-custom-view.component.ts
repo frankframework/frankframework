@@ -1,5 +1,5 @@
 import { LocationStrategy, TitleCasePipe } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseIframeComponent } from '../iframe.base';
 import { Subscription } from 'rxjs';
@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-iframe-custom-view',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [TitleCasePipe],
 })
 export class IframeCustomViewComponent extends BaseIframeComponent implements OnInit, OnDestroy {

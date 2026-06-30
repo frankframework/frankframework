@@ -1,4 +1,13 @@
-import { Component, inject, OnDestroy, OnInit, Renderer2, Signal, WritableSignal } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+  Signal,
+  WritableSignal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
   Adapter,
@@ -60,6 +69,7 @@ import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
     RouterLink,
   ],
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {

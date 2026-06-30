@@ -8,6 +8,7 @@ import {
   OnChanges,
   Output,
   Signal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { convertToParamMap, Router, RouterModule } from '@angular/router';
 import { MinimalizaSidebarComponent } from './minimaliza-sidebar.component';
@@ -46,6 +47,7 @@ type ExpandedItem = {
   selector: 'app-pages-navigation',
   templateUrl: './pages-navigation.component.html',
   styleUrls: ['./pages-navigation.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     RouterModule,
     CdkAccordionModule,

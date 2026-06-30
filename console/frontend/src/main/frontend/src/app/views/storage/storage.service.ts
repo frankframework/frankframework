@@ -1,8 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { AppService } from 'src/app/app.service';
-import { MiscService } from 'src/app/services/misc.service';
+import { AppService } from '../../app.service';
+import { MiscService } from '../../services/misc.service';
 import { Base64Service } from '../../services/base64.service';
 
 export type MessageStore = {

@@ -1,10 +1,10 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { InformationModalComponent } from './information-modal.component';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('InformationModalComponent', () => {
   let component: InformationModalComponent;
