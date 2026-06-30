@@ -168,6 +168,7 @@ class KubernetesNamedSecretProviderTest {
 		CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, "");
 		try {
 			KubernetesNamedSecretProvider freshProvider = new KubernetesNamedSecretProvider();
+			freshProvider.setKubernetesServiceHost("localhost");
 			freshProvider.setClient(client);
 			assertThrows(KubernetesClientException.class, freshProvider::initialize);
 		} finally {
