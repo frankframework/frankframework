@@ -55,10 +55,11 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 	static final String K8_PASSWORD = "credentialFactory.kubernetes.password";
 	static final String K8_MASTER_URL = "credentialFactory.kubernetes.masterUrl";
 	static final String K8_NAMESPACE_PROPERTY = "credentialFactory.kubernetes.namespace";
+	static final String DEFAULT_NAMESPACE = "default";
 
 	static final int CACHE_DURATION_MILLIS = 60_000;
 
-	public static final String DEFAULT_NAMESPACE = "default";
+	private String KUBERNETES_SERVICE_HOST = System.getenv("KUBERNETES_SERVICE_HOST");
 
 	protected String namespace;
 	protected KubernetesClient client;
@@ -66,6 +67,12 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 	@Override
 	public final void initialize() {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
+
+		// Check if we are running on kubernetes
+		if (StringUtils.isBlank(KUBERNETES_SERVICE_HOST)) {
+			throw new UnsupportedOperationException("Kubernetes service host is not set. This provider can only be used in a Kubernetes environment.");
+		}
+
 		log.info("initializing " + getClass().getSimpleName());
 
 		initializeClientIfNull();
@@ -73,6 +80,11 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 		verifyConnection();
 
 		postInitialize(appConstants);
+	}
+
+	// Only used in unit test!
+	void setKubernetesServiceHost(String kubernetesServiceHost) {
+		KUBERNETES_SERVICE_HOST = kubernetesServiceHost;
 	}
 
 	private void initializeClientIfNull() {
