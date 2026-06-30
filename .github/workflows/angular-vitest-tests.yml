@@ -45,7 +45,7 @@ jobs:
       uses: browser-actions/setup-chrome@v2
 
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm ci
 
     - name: Run Vitest tests
       run: pnpm test:ci

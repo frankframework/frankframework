@@ -181,6 +181,9 @@ importers:
       eslint-plugin-unicorn:
         specifier: ^69.0.0
         version: 69.0.0(eslint@10.6.0(jiti@2.7.0))
+      happy-dom:
+        specifier: ^20.10.6
+        version: 20.10.6
       istanbul-lib-instrument:
         specifier: ^6.0.3
         version: 6.0.3
@@ -195,7 +198,7 @@ importers:
         version: 8.62.0(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
       vitest:
         specifier: ^4.1.9
-        version: 4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
+        version: 4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(happy-dom@20.10.6)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
 
   console/frontend/src/main/frontend/cypress:
     devDependencies:
@@ -1909,6 +1912,9 @@ packages:
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
+  '@types/whatwg-mimetype@3.0.2':
+    resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
+
   '@types/which@2.0.2':
     resolution: {integrity: sha512-113D3mDkZDjo+EeUEHCFy0qniNc1ZpecGiAU7WSo7YDoSzolZIQKpYFHrPpjkB2nuyahcKfrmLXeQlh7gqJYdw==}
 
@@ -2303,6 +2309,10 @@ packages:
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
+
+  buffer-image-size@0.6.4:
+    resolution: {integrity: sha512-nEh+kZOPY1w+gcCMobZ6ETUp9WfibndnosbpwB1iJk/8Gt5ZF2bhS6+B6bPYz424KtwsR6Rflc3tCz1/ghX2dQ==}
+    engines: {node: '>=4.0'}
 
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
@@ -3093,6 +3103,10 @@ packages:
 
   grapheme-splitter@1.0.4:
     resolution: {integrity: sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==}
+
+  happy-dom@20.10.6:
+    resolution: {integrity: sha512-6QD0ilzDDt93tX44y8tbmZdAcdTRYDhUP+Asgi6pC8Pp5IA3cvaZGyoVN/EGtlq9ziT65iPuBBn3ASLr6hCgVw==}
+    engines: {node: '>=20.0.0'}
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -4628,6 +4642,10 @@ packages:
     engines: {node: '>=18'}
     deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
+  whatwg-mimetype@3.0.0:
+    resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
+    engines: {node: '>=12'}
+
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
     engines: {node: '>=18'}
@@ -4988,7 +5006,7 @@ snapshots:
       istanbul-lib-instrument: 6.0.3
       lmdb: 3.5.4
       postcss: 8.5.15
-      vitest: 4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
+      vitest: 4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(happy-dom@20.10.6)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@types/node'
       - chokidar
@@ -6259,6 +6277,8 @@ snapshots:
   '@types/trusted-types@2.0.7':
     optional: true
 
+  '@types/whatwg-mimetype@3.0.2': {}
+
   '@types/which@2.0.2': {}
 
   '@types/ws@8.18.1':
@@ -6368,7 +6388,7 @@ snapshots:
   '@vitest/browser-webdriverio@4.1.9(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))(vitest@4.1.9)(webdriverio@9.29.1)':
     dependencies:
       '@vitest/browser': 4.1.9(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))(vitest@4.1.9)
-      vitest: 4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
+      vitest: 4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(happy-dom@20.10.6)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
       webdriverio: 9.29.1
     transitivePeerDependencies:
       - bufferutil
@@ -6385,7 +6405,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
+      vitest: 4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(happy-dom@20.10.6)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
       ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
@@ -6748,6 +6768,10 @@ snapshots:
   buffer-crc32@1.0.0: {}
 
   buffer-from@1.1.2: {}
+
+  buffer-image-size@0.6.4:
+    dependencies:
+      '@types/node': 20.19.43
 
   buffer@5.7.1:
     dependencies:
@@ -7678,6 +7702,19 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   grapheme-splitter@1.0.4: {}
+
+  happy-dom@20.10.6:
+    dependencies:
+      '@types/node': 20.19.43
+      '@types/whatwg-mimetype': 3.0.2
+      '@types/ws': 8.18.1
+      buffer-image-size: 0.6.4
+      entities: 7.0.1
+      whatwg-mimetype: 3.0.0
+      ws: 8.21.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   has-flag@4.0.0: {}
 
@@ -9223,7 +9260,7 @@ snapshots:
       sass: 1.99.0
       yaml: 2.9.0
 
-  vitest@4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0)):
+  vitest@4.1.9(@types/node@20.19.43)(@vitest/browser-webdriverio@4.1.9)(happy-dom@20.10.6)(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0)):
     dependencies:
       '@vitest/expect': 4.1.9
       '@vitest/mocker': 4.1.9(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))
@@ -9248,6 +9285,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 20.19.43
       '@vitest/browser-webdriverio': 4.1.9(vite@7.3.5(@types/node@20.19.43)(jiti@2.7.0)(sass@1.99.0)(yaml@2.9.0))(vitest@4.1.9)(webdriverio@9.29.1)
+      happy-dom: 20.10.6
     transitivePeerDependencies:
       - msw
 
@@ -9334,6 +9372,8 @@ snapshots:
   whatwg-encoding@3.1.1:
     dependencies:
       iconv-lite: 0.6.3
+
+  whatwg-mimetype@3.0.0: {}
 
   whatwg-mimetype@4.0.0: {}
 
