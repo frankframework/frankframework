@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:definitions
+	xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310"
+	xmlns:w="http://schemas.xmlsoap.org/wsdl/"
+	xmlns="http://www.w3.org/2001/XMLSchema">
+	<w:types>
+		<schema>
+			<import namespace="http://www.egem.nl/StUF/sector/bg/0310"
+				schemaLocation="types.xsd" />
+		</schema>
+	</w:types>
+	<w:message name="npsLv01">
+		<w:part name="body" element="BG:npsLv01" />
+	</w:message>
+
+</w:definitions>

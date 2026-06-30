@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:ns1="http://www.egem.nl/StUF/sector/bg/0310" targetNamespace="${wsdl.EchoPipe4WsdlGeneratorTest.targetNamespace}">
+	<wsdl:documentation>Generated as EchoPipe4WsdlGeneratorTest.wsdl on DATETIME.</wsdl:documentation>
+	<wsdl:types>
+		<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310" targetNamespace="http://www.egem.nl/StUF/sector/bg/0310">
+			<import namespace="http://www.egem.nl/StUF/sector/bg/0310"/>
+
+
+			<element name="npsLv01">
+				<complexType>
+					<sequence>
+						<group ref="BG:npsVraagBody"/>
+					</sequence>
+				</complexType>
+			</element>
+
+			<group name="npsVraagBody">
+				<sequence>
+					<element minOccurs="0" name="gelijk" type="boolean"/>
+					<element minOccurs="0" name="vanaf" type="decimal"/>
+					<element minOccurs="0" name="totEnMet" type="decimal"/>
+				</sequence>
+			</group>
+		</schema>
+	</wsdl:types>
+	<wsdl:message name="Message_npsLv01">
+		<wsdl:part name="Part_npsLv01" element="ns1:npsLv01"/>
+	</wsdl:message>
+	<wsdl:portType name="PortType_EchoPipe4WsdlGeneratorTest"></wsdl:portType>
+	<!--Warning: XSD '/Validation/Wsdl/WsdlImport/WsdlXsdImport.wsdl!schema1' doesn't have a targetNamespace and addNamespaceToSchema is false-->
+</wsdl:definitions>
