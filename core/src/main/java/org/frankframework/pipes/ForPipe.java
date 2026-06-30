@@ -16,9 +16,9 @@
 
 package org.frankframework.pipes;
 
-import java.util.Optional;
-
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -117,35 +117,35 @@ public class ForPipe extends AbstractPipe {
 		return new PipeRunResult(findForward(STOP_FORWARD_NAME), message);
 	}
 
-	String getIncrementSessionKey() {
+	@NonNull String getIncrementSessionKey() {
 		return String.format("%s.%s", getName(), INCREMENT_SESSION_KEY_SUFFIX);
 	}
 
-	private Integer determineStopAtValue(Message message, PipeLineSession session) throws PipeRunException {
-		return getParameterValueList(message, session)
-				.map(this::getIntegerValue)
-				.or(() -> Optional.ofNullable(stopAt))
-				.orElseThrow(() -> new PipeRunException(this, "can't determine 'stopAt' value"));
-
+	private @NonNull Integer determineStopAtValue(Message message, PipeLineSession session) throws PipeRunException {
+		ParameterValueList pvl = getParameterValueList(message, session);
+		Integer stopAtValue = getStopAtValue(pvl);
+		if (stopAtValue == null) {
+			throw new PipeRunException(this, "can't determine 'stopAt' value");
+		}
+		return stopAtValue;
 	}
 
-	private Integer getIntegerValue(ParameterValueList list) {
+	private @Nullable Integer getStopAtValue(ParameterValueList list) {
 		int defaultValue = (stopAt != null) ? stopAt : 0;
 
-		if (list.contains(STOP_AT_PARAMETER_NAME) && !list.get(STOP_AT_PARAMETER_NAME).asStringValue().isBlank()) {
+		if (list.contains(STOP_AT_PARAMETER_NAME) && StringUtils.isNotBlank(list.get(STOP_AT_PARAMETER_NAME).asStringValue())) {
 			return list.get(STOP_AT_PARAMETER_NAME).asIntegerValue(defaultValue);
 		}
 
-		return null;
+		return stopAt;
 	}
 
-	private Optional<ParameterValueList> getParameterValueList(Message message, PipeLineSession session) throws PipeRunException {
+	private @NonNull ParameterValueList getParameterValueList(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			return Optional.of(getParameterList().getValues(message, session));
+			return getParameterList().getValues(message, session);
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
-
 	}
 
 	/**

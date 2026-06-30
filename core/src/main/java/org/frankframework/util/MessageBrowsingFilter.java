@@ -59,51 +59,51 @@ public class MessageBrowsingFilter {
 	}
 
 
-	public boolean matchAny(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
+	public boolean matchAll(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		int count = 0;
 		int matches = 0;
 
-		if(type != null) {
+		if (StringUtils.isNotEmpty(type)) {
 			count++;
-			matches += iterItem.getType().startsWith(type) ? 1 : 0;
+			matches += iterItem.getType() != null && iterItem.getType().startsWith(type) ? 1 : 0;
 		}
-		if(host != null) {
+		if (StringUtils.isNotEmpty(host)) {
 			count++;
-			matches += iterItem.getHost().startsWith(host) ? 1 : 0;
+			matches += iterItem.getHost() != null && iterItem.getHost().startsWith(host) ? 1 : 0;
 		}
-		if(id != null) {
+		if (StringUtils.isNotEmpty(id)) {
 			count++;
-			matches += iterItem.getId().startsWith(id) ? 1 : 0;
+			matches += iterItem.getId() != null && iterItem.getId().startsWith(id) ? 1 : 0;
 		}
-		if(messageId != null) {
+		if (StringUtils.isNotEmpty(messageId)) {
 			count++;
-			matches += iterItem.getOriginalId().startsWith(messageId) ? 1 : 0;
+			matches += iterItem.getOriginalId() != null && iterItem.getOriginalId().startsWith(messageId) ? 1 : 0;
 		}
-		if(correlationId != null) {
+		if (StringUtils.isNotEmpty(correlationId)) {
 			count++;
-			matches += iterItem.getCorrelationId().startsWith(correlationId) ? 1 : 0;
+			matches += iterItem.getCorrelationId() != null && iterItem.getCorrelationId().startsWith(correlationId) ? 1 : 0;
 		}
-		if(comment != null) {
+		if (StringUtils.isNotEmpty(comment)) {
 			count++;
 			matches += StringUtils.isNotEmpty(iterItem.getCommentString()) && iterItem.getCommentString().contains(comment) ? 1 : 0;
 		}
-		if(label != null) {
+		if (StringUtils.isNotEmpty(label)) {
 			count++;
 			matches += StringUtils.isNotEmpty(iterItem.getLabel()) && iterItem.getLabel().startsWith(label) ? 1 : 0;
 		}
-		if(startDate != null && endDate == null) {
+		if (startDate != null && endDate == null) {
 			count++;
-			matches += !iterItem.getInsertDate().before(startDate) ? 1 : 0;
+			matches += iterItem.getInsertDate() != null && !iterItem.getInsertDate().before(startDate) ? 1 : 0;
 		}
-		if(startDate == null && endDate != null) {
+		if (startDate == null && endDate != null) {
 			count++;
-			matches += !iterItem.getInsertDate().after(endDate) ? 1 : 0;
+			matches += iterItem.getInsertDate() != null && !iterItem.getInsertDate().after(endDate) ? 1 : 0;
 		}
-		if(startDate != null && endDate != null) {
+		if (startDate != null && endDate != null) {
 			count++;
-			matches += !iterItem.getInsertDate().before(startDate) && !iterItem.getInsertDate().after(endDate) ? 1 : 0;
+			matches += iterItem.getInsertDate() != null && !iterItem.getInsertDate().before(startDate) && !iterItem.getInsertDate().after(endDate) ? 1 : 0;
 		}
-		if(message != null) {
+		if (StringUtils.isNotEmpty(message)) {
 			count++;
 			matches += matchMessage(iterItem) ? 1 : 0;
 		}
@@ -159,7 +159,7 @@ public class MessageBrowsingFilter {
 	}
 
 	public void setMessageMask(String messageMask, IMessageBrowser<?> storage, IListener <?> listener) {
-		if(StringUtils.isNotEmpty(messageMask)) {
+		if (StringUtils.isNotEmpty(messageMask)) {
 			this.message = messageMask;
 			this.storage = storage;
 			this.listener = listener;
@@ -194,7 +194,7 @@ public class MessageBrowsingFilter {
 	}
 
 	public void setSortOrder(SortOrder sortOrder) {
-		if(sortOrder != null) {
+		if (sortOrder != null) {
 			this.sortOrder = sortOrder;
 		}
 	}

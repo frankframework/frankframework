@@ -13,6 +13,16 @@ public class ActiveMQAmqpSenderTest extends AmqpSenderTest {
 	@Container
 	private static final ActiveMQContainer container = new ActiveMQContainer(ACTIVEMQ_TAG);
 
+	@Override
+	String getQueueExchangeName() {
+		return QUEUE_EXCHANGE_NAME;
+	}
+
+	@Override
+	String getTopicExchangeName() {
+		return TOPIC_EXCHANGE_NAME;
+	}
+
 	@NonNull
 	@Override
 	protected String getResourceName() {

@@ -21,6 +21,24 @@ class RabbitMQ3AmqpListenerTest extends AmqpListenerTest {
 	@Container
 	private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(RABBIT_MQ_DOCKER_TAG);
 
+	@Override
+	@NonNull
+	String getQueueExchangeName() {
+		return QUEUE_EXCHANGE_NAME;
+	}
+
+	@Override
+	@NonNull
+	String getTopicExchangeName() {
+		return TOPIC_EXCHANGE_NAME;
+	}
+
+	@Override
+	@NonNull
+	String getDurableTopicExchangeName() {
+		return DURABLE_TOPIC_EXCHANGE_NAME;
+	}
+
 	@NonNull
 	@Override
 	protected String getResourceName() {

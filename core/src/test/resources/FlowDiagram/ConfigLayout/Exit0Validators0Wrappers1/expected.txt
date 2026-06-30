@@ -1,0 +1,28 @@
+d2e2('<text data-html-node="b">testtool-HelloLines</text><text>JavaListener</text>'):::normal
+d2e4('<text data-html-node="b">ApiListener</text><text>ApiListener</text>'):::normal
+d2e6('<text data-html-node="b">testtool-HelloLines-1</text><text>JavaListener</text>'):::normal
+d2e8('<text data-html-node="b">WebServiceListener</text><text>WebServiceListener</text>'):::normal
+d2e10('<text data-html-node="b">testtool-HelloLines-2</text><text>JavaListener</text>'):::normal
+d2e15('<text data-html-node="b">InputWrapper</text><text>SoapWrapperPipe</text>'):::normal
+d2e17('<text data-html-node="b">Remove namespaces</text><text>XsltPipe</text>'):::normal
+d2e21('<text data-html-node="b">Only one line?</text><text>XmlSwitch</text>'):::normal
+d2e27('<text data-html-node="b">Call HelloWorld</text><text>IbisLocalSender</text>'):::normal
+d2e33('<text data-html-node="b">Transform result to XML</text><text>Text2XmlPipe</text>'):::normal
+d2e45('<text data-html-node="b">Add documentation</text><text>XsltPipe</text>'):::normal
+d2e16-READY('<text data-html-node="b">OutputWrapper</text><text>SoapWrapperPipe</text>'):::normal
+d2e14('<text data-html-node="b">success</text>'):::normal
+d2e37('<text data-html-node="b">Call HelloWorld for every line</text><text>IbisLocalSender</text>'):::normal
+d2e2 --> |<text>success</text>| d2e15
+d2e4 --> |<text>success</text>| d2e15
+d2e6 --> |<text>success</text>| d2e15
+d2e8 --> |<text>success</text>| d2e15
+d2e10 --> |<text>success</text>| d2e15
+d2e15 --> |<text>success</text>| d2e17
+d2e17 --> |<text>success</text>| d2e21
+d2e21 --> |<text>true</text>| d2e27
+d2e21 --> |<text>false</text>| d2e37
+d2e27 --> |<text>success</text>| d2e33
+d2e33 --> |<text>success</text>| d2e45
+d2e45 --> |<text>success</text>| d2e16-READY
+d2e16-READY --> |<text>success</text>| d2e14
+d2e37 --> |<text>success</text>| d2e45

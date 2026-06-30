@@ -1,0 +1,45 @@
+d2e2('<text data-html-node="b">testtool-HelloLines</text><text>JavaListener</text>'):::normal
+d2e4('<text data-html-node="b">ApiListener</text><text>ApiListener</text>'):::normal
+d2e6('<text data-html-node="b">testtool-HelloLines-1</text><text>JavaListener</text>'):::normal
+d2e8('<text data-html-node="b">WebServiceListener</text><text>WebServiceListener</text>'):::normal
+d2e10('<text data-html-node="b">testtool-HelloLines-2</text><text>JavaListener</text>'):::normal
+d2e15('<text data-html-node="b">ValidateInput</text><text>SoapValidator</text>'):::normal
+d2e71('<text data-html-node="b">Create example plain text message</text><text>EchoPipe</text>'):::errorOutline
+d2e75('<text data-html-node="b">Transform plain text message to XML</text><text>Text2XmlPipe</text>'):::errorOutline
+d2e79('<text data-html-node="b">Add position to elements</text><text>XsltPipe</text>'):::errorOutline
+d2e83('<text data-html-node="b">Transform XML message to JSON message</text><text>Json2XmlValidator</text>'):::errorOutline
+d2e27('<text data-html-node="b">Remove namespaces</text><text>XsltPipe</text>'):::normal
+d2e31('<text data-html-node="b">Only one line?</text><text>XmlSwitch</text>'):::normal
+d2e37('<text data-html-node="b">Call HelloWorld</text><text>IbisLocalSender</text>'):::normal
+d2e43('<text data-html-node="b">Transform result to XML</text><text>Text2XmlPipe</text>'):::normal
+d2e55('<text data-html-node="b">Add documentation</text><text>XsltPipe</text>'):::normal
+d2e22-READY('<text data-html-node="b">OutputWrapper</text><text>SoapWrapperPipe</text>'):::normal
+d2e23-READY('<text data-html-node="b">OutputValidator</text><text>XmlValidator</text>'):::normal
+d2e87('<text data-html-node="b">resolveFailure</text><text>XsltPipe</text>'):::errorOutline
+d2e14('<text data-html-node="b">success</text>'):::normal
+d2e47('<text data-html-node="b">Call HelloWorld for every line</text><text>IbisLocalSender</text>'):::normal
+d2e21('<text data-html-node="b">InputWrapper</text><text>SoapWrapperPipe</text>'):::normal
+d2e2 --> |<text>success</text>| d2e15
+d2e4 --> |<text>success</text>| d2e15
+d2e6 --> |<text>success</text>| d2e15
+d2e8 --> |<text>success</text>| d2e15
+d2e10 --> |<text>success</text>| d2e15
+d2e15 --> |<text>failure</text>| d2e71
+d2e15 --> |<text>parserError</text>| d2e75
+d2e15 --> |<text>success</text>| d2e21
+d2e71 --> |<text>success</text>| d2e75
+d2e75 --> |<text>success</text>| d2e79
+d2e79 --> |<text>success</text>| d2e83
+d2e83 --> |<text>success</text>| d2e27
+d2e27 --> |<text>success</text>| d2e31
+d2e31 --> |<text>true</text>| d2e37
+d2e31 --> |<text>false</text>| d2e47
+d2e37 --> |<text>success</text>| d2e43
+d2e43 --> |<text>success</text>| d2e55
+d2e55 --> |<text>success</text>| d2e22-READY
+d2e22-READY --> |<text>success</text>| d2e23-READY
+d2e23-READY --> |<text>failure</text>| d2e87
+d2e23-READY --> |<text>success</text><text>READY</text>| d2e14
+d2e87 --> |<text>success</text>| d2e22-READY
+d2e47 --> |<text>success</text>| d2e55
+d2e21 --> |<text>success</text>| d2e27
