@@ -38,7 +38,7 @@
     "@fortawesome/free-regular-svg-icons": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@frankframework/frank-config-layout": "^1.4.0",
-    "@ng-bootstrap/ng-bootstrap": "^20.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^21.0.0",
     "@popperjs/core": "^2.11.8",
     "@stomp/stompjs": "^7.3.0",
     "angular2-ladda": "^5.0.0",
