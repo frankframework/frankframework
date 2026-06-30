@@ -1,5 +1,7 @@
 package org.frankframework.xslt;
 
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,11 +21,9 @@ import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
-import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.XmlParameterBuilder;
 import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.TransformerPool.OutputType;
 
 public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
@@ -120,6 +120,7 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 
 		session.put("keyXmlParameter", parameterContents);
 
+		@SuppressWarnings("removal")
 		XmlParameterBuilder parameter = XmlParameterBuilder.create()
 				.withName("parNode")
 				.withType(ParameterType.NODE);
@@ -144,6 +145,7 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 
 		session.put("keyXmlParameter", parameterContents);
 
+		@SuppressWarnings("removal")
 		XmlParameterBuilder parameter = XmlParameterBuilder.create()
 				.withName("parNode")
 				.withType(ParameterType.NODE);
@@ -193,25 +195,129 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 
 	// When reading the result the new charset needs to be known, else it will use UTF-8 and thus muck up the characters.
 	@Test
-	public void testOutputEncoding() throws Exception {
+	public void testOutputEncodingISO8859_1Input() throws Exception {
 		pipe.setStyleSheetName("/Xslt/ISO-8859-1/output-encoding.xsl");
 		pipe.configure();
 		pipe.start();
 		URL url = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/iso-8859-1.xml");
-		Message message = new UrlMessage(url, StandardCharsets.ISO_8859_1.displayName());
+		assertNotNull(url);
+		Message inputMessage = new UrlMessage(url, StandardCharsets.ISO_8859_1);
+
 		URL resultUrl = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/utf-8.xml");
 		assertNotNull(resultUrl);
 		String expected = new UrlMessage(resultUrl).asString();
 
 		// Act
-		PipeRunResult result = doPipe(message);
+		PipeRunResult result = doPipe(inputMessage);
 		assertNotNull(result);
-		MessageUtils.computeDecodingCharset(result.getResult()); // Everything breaks if this method is not called!
 
 		// Assert
 		String resultString = result.getResult().asString();
+		assertNotNull(resultString);
 		assertTrue(resultString.contains("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"));
-		MatchUtils.assertXmlEquals(expected, resultString.replaceAll("ISO-8859-1", "UTF-8"));
+		assertXmlEquals(expected, resultString);
+
+		assertEquals("ISO-8859-1", result.getResult().getCharset());
+	}
+
+	@Test
+	public void testOutputEncodingUTF8Input() throws Exception {
+		pipe.setStyleSheetName("/Xslt/ISO-8859-1/output-encoding.xsl");
+		pipe.configure();
+		pipe.start();
+
+		URL url = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/utf-8.xml");
+		assertNotNull(url);
+		Message inputMessage = new UrlMessage(url, StandardCharsets.UTF_8);
+
+		URL resultUrl = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/iso-8859-1.xml");
+		assertNotNull(resultUrl);
+		UrlMessage expectedMessage = new UrlMessage(resultUrl, StandardCharsets.ISO_8859_1);
+		byte[] expectedBytes = expectedMessage.asByteArray();
+		String expected = expectedMessage.asString();
+
+		// Act
+		PipeRunResult result = doPipe(inputMessage);
+		assertNotNull(result);
+
+		// Assert
+		byte[] resultBytes = result.getResult().asByteArray();
+		String resultString = result.getResult().asString();
+
+		assertNotNull(resultBytes);
+		assertNotNull(resultString);
+
+		assertTrue(resultString.contains("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"));
+		assertXmlEquals(expected, resultString);
+
+		assertEquals("ISO-8859-1", result.getResult().getCharset());
+
+		// Check actual bytes produced to be really sure the output is in the desired charset
+		assertArrayEquals(expectedBytes, resultBytes);
+	}
+
+	@Test
+	public void testOutputEncodingWithTextOutput_Iso8859_1_Input() throws Exception {
+		pipe.setStyleSheetName("/Xslt/ISO-8859-1/output-encoding-with-text-output.xsl");
+		pipe.configure();
+		pipe.start();
+		URL url = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/iso-8859-1.xml");
+		assertNotNull(url);
+		Message inputMessage = new UrlMessage(url, StandardCharsets.ISO_8859_1);
+
+		URL expectedUrl = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/iso-8859-1.txt");
+		assertNotNull(expectedUrl);
+		UrlMessage expectedMessage = new UrlMessage(expectedUrl, StandardCharsets.ISO_8859_1);
+		byte[] expectedBytes = expectedMessage.asByteArray();
+		String expected = expectedMessage.asString();
+
+		// Act
+		PipeRunResult result = doPipe(inputMessage);
+		assertNotNull(result);
+
+		// Assert
+
+		// Retrieve bytes before getting string, to be absolutely sure we get the raw output bytes from the XSLT conversion
+		byte[] resultBytes = result.getResult().asByteArray();
+
+		String resultString = result.getResult().asString();
+		assertEquals(expected, resultString);
+
+		// Check actual bytes produced to be really sure the output is in the desired charset
+		assertArrayEquals(expectedBytes, resultBytes);
+
+		assertEquals("ISO-8859-1", result.getResult().getCharset());
+	}
+
+	@Test
+	public void testOutputEncodingWithTextOutput_UTF8_Input() throws Exception {
+		pipe.setStyleSheetName("/Xslt/ISO-8859-1/output-encoding-with-text-output.xsl");
+		pipe.configure();
+		pipe.start();
+		URL url = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/utf-8.xml");
+		assertNotNull(url);
+		Message inputMessage = new UrlMessage(url, StandardCharsets.UTF_8);
+
+		URL expectedUrl = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/iso-8859-1.txt");
+		assertNotNull(expectedUrl);
+		UrlMessage expectedMessage = new UrlMessage(expectedUrl, StandardCharsets.ISO_8859_1);
+		byte[] expectedBytes = expectedMessage.asByteArray();
+		String expected = expectedMessage.asString();
+
+		// Act
+		PipeRunResult result = doPipe(inputMessage);
+		assertNotNull(result);
+
+		// Assert
+
+		// Retrieve bytes before getting string, to be absolutely sure we get the raw output bytes from the XSLT conversion
+		byte[] resultBytes = result.getResult().asByteArray();
+
+		String resultString = result.getResult().asString();
+		assertEquals(expected, resultString);
+
+		// Check actual bytes produced to be really sure the output is in the desired charset
+		assertArrayEquals(expectedBytes, resultBytes);
 
 		assertEquals("ISO-8859-1", result.getResult().getCharset());
 	}

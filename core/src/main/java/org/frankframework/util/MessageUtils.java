@@ -202,11 +202,11 @@ public class MessageUtils {
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static Charset computeDecodingCharset(Message message, int confidence) throws IOException {
-		if(Message.isEmpty(message) || !message.isBinary()) {
+		if (Message.isEmpty(message) || !message.isBinary()) {
 			return null;
 		}
 
-		if(StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
+		if (StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
 			return Charset.forName(message.getCharset());
 		}
 
@@ -217,7 +217,7 @@ public class MessageUtils {
 		CharsetMatch match = detector.detect();
 		String charset = match.getName();
 
-		if(match.getConfidence() > 90) {
+		if (match.getConfidence() > 90) {
 			LOG.debug("update charset for message [{}], full match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
 			return updateMessageCharset(message, charset);
 		}

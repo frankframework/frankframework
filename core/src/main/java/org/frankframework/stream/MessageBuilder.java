@@ -19,11 +19,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.output.XmlStreamWriter;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
@@ -38,10 +41,11 @@ import org.frankframework.xml.XmlWriter;
 public class MessageBuilder {
 	public static final int MAX_BUFFER_SIZE = Math.toIntExact(Message.MESSAGE_MAX_IN_MEMORY);
 
-	private final OutputStream outputStream;
-	private Path location;
-	private @Setter MimeType mimeType;
+	private final @NonNull OutputStream outputStream;
+	private @Nullable Path location;
+	private @Setter @Nullable MimeType mimeType;
 	private boolean binary = true;
+	private @Nullable Charset charset;
 
 	/**
 	 * Stores the message in the {@code temp-messages} folder.
@@ -56,26 +60,41 @@ public class MessageBuilder {
 	 * Directly stores to disk.
 	 * Mainly for legacy implementations which allows the user to choose where to save the file.
 	 */
-	public MessageBuilder(Path file) throws IOException {
-		if(Files.isDirectory(file)) throw new IOException("location ["+file+"] may not be a folder");
+	public MessageBuilder(@NonNull Path file) throws IOException {
+		if (Files.isDirectory(file)) throw new IOException("location [" + file + "] may not be a folder");
 
-		if(Files.exists(file)) {
+		if (Files.exists(file)) {
 			log.info("location [{}] already exists, overwriting file-contents", file);
 		}
 
 		location = file;
-		outputStream = Files.newOutputStream(location);
+		outputStream = Files.newOutputStream(file);
 	}
 
-	public Writer asWriter() {
+	public @NonNull MessageBuilder withCharset(@Nullable Charset charset) {
+		if (this.charset != null) {
+			throw new IllegalStateException("charset already set");
+		}
+		this.charset = charset;
+		return this;
+	}
+
+	public @NonNull Writer asWriter() {
 		binary = false;
+		charset = StandardCharsets.UTF_8;
 		return new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
 	}
 
-	public XmlWriter asXmlWriter() {
+	public @NonNull XmlWriter asXmlWriter() {
+		return asXmlWriter(null);
+	}
+
+	public @NonNull XmlWriter asXmlWriter(@Nullable Charset charset) {
 		mimeType = MediaType.APPLICATION_XML;
 		try {
-			Writer xmlWriter = XmlStreamWriter.builder().setOutputStream(asOutputStream()).get();
+			Writer xmlWriter = XmlStreamWriter.builder()
+					.setCharset(charset)
+					.setOutputStream(asOutputStream()).get();
 			return new XmlWriter(xmlWriter, true);
 		} catch (IOException e) {
 			// This really should only happen if somebody from Apache Commons dun-goofed...
@@ -84,12 +103,12 @@ public class MessageBuilder {
 		}
 	}
 
-	public JsonWriter asJsonWriter() {
+	public @NonNull JsonWriter asJsonWriter() {
 		mimeType = MediaType.APPLICATION_JSON;
 		return new JsonWriter(asWriter(), true);
 	}
 
-	public OutputStream asOutputStream() {
+	public @NonNull OutputStream asOutputStream() {
 		return outputStream;
 	}
 
@@ -102,14 +121,18 @@ public class MessageBuilder {
 	}
 	public Message build(MessageContext context) {
 		final Message result;
-		if(outputStream instanceof OverflowToDiskOutputStream odo) {
+		if (outputStream instanceof OverflowToDiskOutputStream odo) {
 			result = odo.toMessage(binary);
 		} else {
 			result = new PathMessage(location);
 		}
 
-		if(mimeType != null) {
+		if (mimeType != null) {
 			result.getContext().withMimeType(mimeType);
+		}
+
+		if (charset != null) {
+			result.getContext().withCharset(charset);
 		}
 
 		result.getContext().putAll(context.getAll());
