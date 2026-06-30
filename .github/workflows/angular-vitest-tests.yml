@@ -45,7 +45,7 @@ jobs:
       uses: browser-actions/setup-chrome@v2
 
     - name: Install dependencies
-      run: pnpm ci
+      run: pnpm install --frozen-lockfile --ignore-scripts
 
     - name: Run Vitest tests
       run: pnpm test:ci
