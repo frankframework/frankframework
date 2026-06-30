@@ -225,7 +225,6 @@ public class XsltSender extends AbstractSenderWithParameters {
 				indentXml = DEFAULT_INDENT;
 				if (log.isTraceEnabled()) log.trace("Default indentXml [{}]", indentXml);
 			}
-			messageBuilder.withCharset(poolToUse.getOutputEncoding());
 
 			if (handler == null || disableOutputEscaping) {
 				XmlWriter xmlWriter = messageBuilder.asXmlWriter(poolToUse.getOutputEncoding());

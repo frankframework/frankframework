@@ -71,14 +71,6 @@ public class MessageBuilder {
 		outputStream = Files.newOutputStream(file);
 	}
 
-	public @NonNull MessageBuilder withCharset(@Nullable Charset charset) {
-		if (this.charset != null) {
-			throw new IllegalStateException("charset already set");
-		}
-		this.charset = charset;
-		return this;
-	}
-
 	public @NonNull Writer asWriter() {
 		binary = false;
 		charset = StandardCharsets.UTF_8;
@@ -91,6 +83,7 @@ public class MessageBuilder {
 
 	public @NonNull XmlWriter asXmlWriter(@Nullable Charset charset) {
 		mimeType = MediaType.APPLICATION_XML;
+		this.charset = charset;
 		try {
 			Writer xmlWriter = XmlStreamWriter.builder()
 					.setCharset(charset)
