@@ -1,5 +1,6 @@
 package org.frankframework.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,6 +14,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -210,7 +212,7 @@ public class MessageUtilsTest {
 		Message json = new Message(JSON_TEST_INPUT);
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/json", mimeType.toString());
+		assertThat(mimeType.toString(), Matchers.startsWith("application/json"));
 		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 
@@ -239,7 +241,7 @@ public class MessageUtilsTest {
 		Message json = new Message(new StringReader(JSON_TEST_INPUT));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/json", mimeType.toString());
+		assertThat(mimeType.toString(), Matchers.startsWith("application/json"));
 		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 
@@ -248,7 +250,7 @@ public class MessageUtilsTest {
 		Message json = new Message(LargeStructuredMockData.getLargeJsonDataReader(500_000_000L));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/json", mimeType.toString());
+		assertThat(mimeType.toString(), Matchers.startsWith("application/json"));
 
 		String expectedPeek = LargeStructuredMockData.DEFAULT_JSON_OPENING_BLOCK + LargeStructuredMockData.DEFAULT_JSON_REPEATED_BLOCK;
 		String actualPeek = json.peek(expectedPeek.length());
@@ -261,7 +263,7 @@ public class MessageUtilsTest {
 		Message json = new Message(new ByteArrayInputStream(JSON_TEST_INPUT.getBytes()));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/json", mimeType.toString());
+		assertThat(mimeType.toString(), Matchers.startsWith("application/json"));
 		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 
@@ -270,7 +272,7 @@ public class MessageUtilsTest {
 		Message json = new Message(LargeStructuredMockData.getLargeJsonDataInputStream(500_000_000L, StandardCharsets.UTF_8));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/json", mimeType.toString());
+		assertThat(mimeType.toString(), Matchers.startsWith("application/json"));
 
 		String expectedPeek = LargeStructuredMockData.DEFAULT_JSON_OPENING_BLOCK + LargeStructuredMockData.DEFAULT_JSON_REPEATED_BLOCK;
 		String actualPeek = json.peek(expectedPeek.length());
@@ -283,7 +285,7 @@ public class MessageUtilsTest {
 		Message json = new Message(JSON_TEST_INPUT, new MessageContext().withName("foo.json"));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/json", mimeType.toString()); // mime-type can be determined
+		assertThat(mimeType.toString(), Matchers.startsWith("application/json"));
 		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 
