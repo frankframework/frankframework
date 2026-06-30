@@ -74,6 +74,7 @@ class KubernetesNamedSecretProviderTest {
 		CredentialConstants.getInstance().setProperty(AbstractKubernetesCredentialProvider.K8_MASTER_URL, "http://localhost:8080");
 		CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
 
+		provider.setKubernetesServiceHost("localhost");
 		provider.setClient(client);
 		provider.initialize();
 	}
