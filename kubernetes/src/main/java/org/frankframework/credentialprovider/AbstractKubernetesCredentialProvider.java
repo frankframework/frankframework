@@ -31,7 +31,8 @@ import lombok.extern.java.Log;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
- * Abstract base class for Kubernetes-backed credential providers.
+ * <p>Abstract base class for Kubernetes-backed credential providers. Checks if it's actually running on Kubernetes. If not, will throw
+ * an UnsupportedOperationException</p>
  *
  * <p>Handles shared concerns: building and configuring the {@link KubernetesClient},
  * verifying connectivity to the cluster, and validating alias names against the
