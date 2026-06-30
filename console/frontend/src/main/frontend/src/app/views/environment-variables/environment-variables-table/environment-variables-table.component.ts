@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { KeyValueProperty } from '../environment-variables.component';
 import { LiteralPipe } from '../../../pipes/literal.pipe';
@@ -7,6 +7,7 @@ import { LiteralPipe } from '../../../pipes/literal.pipe';
   selector: 'app-environment-variables-table',
   imports: [OrderByPipe, LiteralPipe],
   templateUrl: './environment-variables-table.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './environment-variables-table.component.scss',
 })
 export class EnvironmentVariablesTableComponent {

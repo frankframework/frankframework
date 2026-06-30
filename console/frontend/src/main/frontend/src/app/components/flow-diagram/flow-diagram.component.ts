@@ -8,6 +8,7 @@ import {
   OnChanges,
   OnInit,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { Dimensions, getFactoryDimensions, initFlow2Svg } from '@frankframework/frank-config-layout';
 
@@ -24,6 +25,7 @@ import { Dimensions, getFactoryDimensions, initFlow2Svg } from '@frankframework/
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class FlowDiagramComponent implements OnInit, OnChanges {

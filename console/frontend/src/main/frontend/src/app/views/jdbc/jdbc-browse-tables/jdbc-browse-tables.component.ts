@@ -1,11 +1,11 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppService, ServerErrorResponse } from 'src/app/app.service';
-import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
 
+import { AppService, ServerErrorResponse } from '../../../app.service';
+import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { WebStorageService } from '../../../services/web-storage.service';
@@ -21,6 +21,7 @@ type ColumnName = {
   selector: 'app-jdbc-browse-tables',
   imports: [FormsModule, LaddaModule, OrderByPipe, QuickSubmitFormDirective],
   templateUrl: './jdbc-browse-tables.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./jdbc-browse-tables.component.scss'],
 })
 export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {

@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, ChangeDetectionStrategy } from '@angular/core';
 import { ServerInfo } from '../../../services/server-info.service';
 import { Alert, MessageLog } from '../../../app.service';
 import { Router } from '@angular/router';
@@ -12,6 +12,7 @@ import { faInfoCircle, faTimes, faWarning } from '@fortawesome/free-solid-svg-ic
   selector: 'app-server-warnings',
   templateUrl: './server-warnings.component.html',
   styleUrl: './server-warnings.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [NgClass, HumanFileSizePipe, FaIconComponent],
 })
 export class ServerWarningsComponent {
@@ -41,5 +42,4 @@ export class ServerWarningsComponent {
   protected navigateTo(path: string): void {
     this.router.navigate([path]);
   }
-
 }
