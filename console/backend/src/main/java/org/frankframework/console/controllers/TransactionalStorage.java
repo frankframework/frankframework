@@ -151,8 +151,6 @@ public class TransactionalStorage {
 		builder.addHeader("startDate", params.startDate);
 		builder.addHeader("endDate", params.endDate);
 		builder.addHeader("sort", params.sort);
-		builder.addHeader("skip", params.skipMessages);
-		builder.addHeader("max", params.maxMessages);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -260,8 +258,6 @@ public class TransactionalStorage {
 		private String startDate;
 		private String endDate;
 		private String sort;
-		private String skipMessages;
-		private String maxMessages;
 	}
 
 	private ResponseEntity<?> getResponseForMessageIds(String messageIdsPart, RequestMessageBuilder builder) {

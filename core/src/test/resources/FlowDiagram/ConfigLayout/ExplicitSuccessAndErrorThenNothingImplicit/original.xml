@@ -1,0 +1,19 @@
+<adapter name="Update temperature">
+	<receiver name="Update temperature">
+		<listener name="Update temperature" className="org.frankframework.receivers.JavaListener" />
+	</receiver>
+	<receiver name="ApiListenerReceiver">
+		<listener name="ApiListener" uriPattern="temp"
+			className="org.frankframework.http.rest.ApiListener" />
+	</receiver>
+	<pipeline>
+		<exit name="error" state="ERROR" code="500" />
+		<exit name="our_success" state="SUCCESS" code="201" />
+		<pipe name="Get temperature from OpenWeather"
+			className="org.frankframework.pipes.SenderPipe">
+			<sender className="org.frankframework.http.HttpSender" />
+			<forward name="error" path="error" />
+			<forward name="success" path="our_success" />
+		</pipe>
+	</pipeline>
+</adapter>

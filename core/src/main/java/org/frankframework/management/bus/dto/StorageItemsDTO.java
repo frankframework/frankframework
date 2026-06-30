@@ -22,13 +22,12 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
@@ -37,12 +36,11 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.MessageBrowserField;
 import org.frankframework.core.ProcessState;
 import org.frankframework.management.bus.BusException;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageBrowsingFilter;
 
+@Log4j2
 public class StorageItemsDTO {
 
-	private final Logger log = LogUtil.getLogger(this);
 	private final @Getter int totalMessages;
 	private final @Getter int skipMessages;
 	private final @Getter int messageCount;
@@ -75,7 +73,7 @@ public class StorageItemsDTO {
 
 			for (count=0; iterator.hasNext(); ) {
 				try (IMessageBrowsingIteratorItem iterItem = iterator.next()) {
-					if(!filter.matchAny(iterItem))
+					if (!filter.matchAll(iterItem))
 						continue;
 
 					count++;
