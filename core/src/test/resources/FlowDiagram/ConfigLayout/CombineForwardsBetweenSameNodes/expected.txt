@@ -1,0 +1,10 @@
+d2e2('<text data-html-node="b">Receiver</text><text>JavaListener</text>'):::normal
+d2e7('<text data-html-node="b">callApiListener</text><text>SenderPipe</text>'):::normal
+d2e20('<text data-html-node="b">successOrException</text><text>XmlSwitch</text>'):::normal
+d2e6('<text data-html-node="b">success</text>'):::normal
+d2e28('<text data-html-node="b">FixedResultOnException</text><text>EchoPipe</text>'):::normal
+d2e2 --> |<text>success</text>| d2e7
+d2e7 --> |<text>success</text>| d2e20
+d2e20 --> |<text>200</text><text>304</text>| d2e6
+d2e20 --> |<text>500</text>| d2e28
+d2e28 --> |<text>success</text>| d2e6
