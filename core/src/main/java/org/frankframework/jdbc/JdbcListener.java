@@ -63,7 +63,8 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
- * JdbcListener base class.
+ * JdbcListener base class. Please note that you should not use this directly but use the JdbcTableListener or MessageStoreListener. Message browsing,
+ * and error and status updates are not performed and have to be done manually.
  *
  * @param <M> MessageWrapper or key. Key is also used as messageId
  *
