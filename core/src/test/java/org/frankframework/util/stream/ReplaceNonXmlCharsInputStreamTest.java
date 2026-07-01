@@ -15,14 +15,21 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class ReplaceNonXmlCharsInputStreamTest {
 
 	public static Stream<Arguments> testReplaceNonXmlCharsInputStream() {
+		StringBuilder encoded = new StringBuilder(16);
+		encoded.append("hello ");
+		encoded.appendCodePoint(0x000C); // non printable Unicode character
+		encoded.append(" world.");
+
 		return Stream.of(
 				Arguments.of("R", false, "hello \bxyz world.", "hello Rxyz world."),
 				Arguments.of("", false, "hello \bxyz world.", "hello xyz world."),
 				Arguments.of(null, false, "hello \bxyz world.", "hello xyz world."),
-				Arguments.of(null, false, "hello aaa world.", "hello 𐀀 world."),
-				Arguments.of(null, true, "hello aaa world.", "hello 𐀀 world."),
-				Arguments.of("a", false, "hello aaa world.", "hello 𐀀 world."),
-				Arguments.of("a", true, "hello aaa world.", "hello 𐀀 world.")
+				Arguments.of(null, false, encoded.toString(), "hello  world."),
+				Arguments.of("", true, encoded.toString(), "hello  world."),
+				Arguments.of("", false, encoded.toString(), "hello  world."),
+				Arguments.of(null, true, encoded.toString(), "hello  world."),
+				Arguments.of("a", false, encoded.toString(), "hello a world."),
+				Arguments.of("a", true, encoded.toString(), "hello a world.")
 		);
 	}
 
