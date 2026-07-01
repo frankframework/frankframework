@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310" targetNamespace="http://www.egem.nl/StUF/sector/bg/0310">
+	<element name="npsLv01">
+		<complexType>
+			<sequence>
+				<group ref="BG:npsVraagBody"/>
+			</sequence>
+		</complexType>
+	</element>
+
+	<group name="npsVraagBody">
+		<sequence>
+			<element name="gelijk" type="boolean" minOccurs="0"/>
+			<element name="vanaf" type="decimal" minOccurs="0"/>
+			<element name="totEnMet" type="decimal" minOccurs="0"/>
+		</sequence>
+	</group>
+</schema>

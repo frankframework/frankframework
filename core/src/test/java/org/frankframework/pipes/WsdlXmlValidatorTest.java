@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,9 +23,11 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.validation.IXSD;
 import org.frankframework.validation.ValidatorTestBase;
 import org.frankframework.validation.XmlValidatorContentHandler;
 import org.frankframework.validation.XmlValidatorException;
+import org.frankframework.validation.xsd.WsdlXsd;
 
 
 /**
@@ -32,16 +35,17 @@ import org.frankframework.validation.XmlValidatorException;
  */
 
 public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
-	private static final String SIMPLE					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple.wsdl";
-	private static final String SIMPLE_WITH_INCLUDE		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple_withinclude.wsdl";
-	private static final String SIMPLE_WITH_REFERENCE 	= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/SimpleWsdl/simple_withreference.wsdl";
-	private static final String TIBCO					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
-	private static final String DOUBLE_BODY				= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetailsDoubleBody.wsdl";
-	private static final String BASIC					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
-	private static final String SIVTR					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1.wsdl";
-	private static final String SIVTRX					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
-	private static final String MULTIPLE_OPERATIONS		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleOperations.wsdl";
-	private static final String MULTIPLE_ROOT_ELEMENTS	= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleRootElements.wsdl";
+	private static final String SIMPLE = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/SimpleWsdl/simple.wsdl";
+	private static final String SIMPLE_WITH_INCLUDE = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/SimpleWsdl/simple_withinclude.wsdl";
+	private static final String SIMPLE_WITH_REFERENCE = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/SimpleWsdl/simple_withreference.wsdl";
+	private static final String TIBCO = ValidatorTestBase.BASE_DIR_VALIDATION + "/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1.wsdl";
+	private static final String DOUBLE_BODY = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetails/GetPolicyDetailsDoubleBody.wsdl";
+	private static final String BASIC = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
+	private static final String SIVTR = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1.wsdl";
+	private static final String SIVTRX = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
+	private static final String MULTIPLE_OPERATIONS = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/multipleOperations.wsdl";
+	private static final String MULTIPLE_ROOT_ELEMENTS = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/multipleRootElements.wsdl";
+	private static final String WSDL_XSD_IMPORT = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/WsdlImport/WsdlXsdImport.wsdl";
 
 	@Override
 	public WsdlXmlValidator createPipe() {
@@ -658,5 +662,44 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		assertThat(e.getMessage(), containsString("Invalid content was found starting with element"));
 		assertThat(e.getMessage(), containsString("CountryKode"));
+	}
+
+	@Test
+	public void testImportedWsdlWithCustomSchema() throws Exception{
+		pipe.setWsdl(WSDL_XSD_IMPORT);
+		pipe.setThrowException(true);
+		pipe.addForward(new PipeForward("success", null));
+
+		configureAndStartPipe();
+
+		Set<IXSD> xsds = pipe.getXsds();
+
+		// Assert WsdlXsd implementation doesn't have a namespace
+		xsds.forEach(xsd -> {
+			if (xsd instanceof WsdlXsd wsdlXsd) {
+				assertEquals("", wsdlXsd.getNamespace());
+			}
+		});
+	}
+
+	@Test
+	public void testImportedWsdlWithCustomSchemaAndTargetNamespace() throws Exception{
+		pipe.setWsdl(WSDL_XSD_IMPORT);
+		pipe.setThrowException(true);
+		pipe.addForward(new PipeForward("success", null));
+
+		String namespace = "http://www.egem.nl/StUF/sector/bg/0310";
+		pipe.setTargetNamespace(namespace);
+
+		configureAndStartPipe();
+
+		Set<IXSD> xsds = pipe.getXsds();
+
+		// Assert WsdlXsd implementation does have a namespace
+		xsds.forEach(xsd -> {
+			if (xsd instanceof WsdlXsd wsdlXsd) {
+				assertEquals(namespace, wsdlXsd.getNamespace());
+			}
+		});
 	}
 }
