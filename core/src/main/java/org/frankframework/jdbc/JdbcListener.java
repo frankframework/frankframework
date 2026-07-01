@@ -450,7 +450,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return updateStatusQueries.get(state);
 	}
 
-	protected void setSelectQuery(String string) {
+	public void setSelectQuery(String string) {
 		selectQuery = string;
 	}
 
