@@ -85,4 +85,28 @@ public class WsdlGeneratorTest {
 		result = result.replaceAll("[0-9]{4}-.*:[0-9]{2}", "DATETIME");
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/WsdlGenerator/GeneratedHelloWorld.wsdl"), result);
 	}
+
+	@Test
+	public void testInputValidatorWithSchemaImport() throws Exception {
+		PipeLine pipeline = createPipeline();
+
+		WsdlXmlValidator inputValidator = configuration.createBean();
+		inputValidator.setWsdl(validateResource("/Validation/Wsdl/WsdlImport/WsdlXsdImport.wsdl"));
+		inputValidator.setSoapBody("npsLv01");
+		inputValidator.setTargetNamespace("http://www.egem.nl/StUF/sector/bg/0310");
+		inputValidator.setThrowException(true);
+
+		pipeline.setInputValidator(inputValidator);
+		pipeline.getAdapter().configure();
+
+		WsdlGenerator generator = new WsdlGenerator(pipeline);
+		assertNotNull(generator);
+
+		generator.init();
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		generator.wsdl(out, "dummyServlet");
+		String result = new String(out.toByteArray());
+		result = result.replaceAll("[0-9]{4}-.*:[0-9]{2}", "DATETIME");
+		TestAssertions.assertEqualsIgnoreWhitespaces(TestFileUtils.getTestFile("/WsdlGenerator/TargetNamespace.wsdl"), result);
+	}
 }
