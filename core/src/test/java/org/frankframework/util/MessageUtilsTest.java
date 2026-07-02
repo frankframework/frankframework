@@ -283,7 +283,7 @@ public class MessageUtilsTest {
 		Message json = new Message(JSON_TEST_INPUT, new MessageContext().withName("foo.json"));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/json", mimeType.toString()); // mime-type can be determined
+		assertEquals("application/json", mimeType.toString());
 		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 
