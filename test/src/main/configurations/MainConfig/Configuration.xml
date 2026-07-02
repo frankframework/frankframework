@@ -43,6 +43,7 @@
 	<Include ref="ConfigurationForEachChildElementPipe.xml"/>
 	<Include ref="ConfigurationResultSetIteratingPipe.xml"/>
 	<Include ref="ConfigurationInputOutputWrapper.xml"/>
+	<Include ref="ConfigurationInputOutputWrapperOnReceiver.xml"/>
 	<Include ref="ConfigurationOutputStreaming.xml"/>
 	<Include ref="ConfigurationEsbSoapValidator.xml"/>
 	<Include ref="ConfigurationWsdlGeneratorPipe.xml"/>

@@ -21,8 +21,9 @@
       </Action>
    </Service>
 </MessageHeader>
-</soapenv:Header><soapenv:Body><Response xmlns="http://www.nn.nl/InputOutputWrapper"
-          xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1">
+</soapenv:Header><soapenv:Body>
+	<Response xmlns="http://www.nn.nl/InputOutputWrapper"
+	>
    <Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
       <Status>ERROR</Status>
       <ErrorList>
