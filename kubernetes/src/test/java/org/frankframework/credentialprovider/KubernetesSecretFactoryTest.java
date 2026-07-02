@@ -43,6 +43,7 @@ class KubernetesSecretFactoryTest {
 	@BeforeAll
 	@SuppressWarnings("unchecked")
 	static void setUp() {
+
 		Secret secret1 = createSecret("alias1", "testUsername1", "testPassword1");
 		Secret secret2 = createSecret("alias2", "testUsername2", "testPassword2");
 		Secret secret3 = createSecret(null, "noAliasUsername", "noAliasPassword");
@@ -59,6 +60,7 @@ class KubernetesSecretFactoryTest {
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
 		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
+		credentialFactory.setKubernetesServiceHost("localhost");
 		credentialFactory.setClient(client);
 		credentialFactory.initialize();
 	}
