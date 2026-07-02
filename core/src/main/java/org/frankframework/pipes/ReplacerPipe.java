@@ -16,9 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -33,11 +31,14 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.XmlEncodingUtils;
+import org.frankframework.util.stream.ReplaceNonXmlCharsInputStream;
+import org.frankframework.util.stream.ReplacingInputStream;
+import org.frankframework.util.stream.ReplacingPropertyVariablesInputStream;
+import org.frankframework.util.stream.ReplacingParameterVariablesInputStream;
 
 /**
  * This Pipe is used to replace values in a few ways. The following steps are performed:
@@ -51,10 +52,8 @@ import org.frankframework.util.XmlEncodingUtils;
  * <li>If attribute <code>substituteVars</code> is {@code true}, then expressions <code>${...}</code> are substituted using
  * system properties, session variables and application properties. Please note that no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
- * This pipe may convert non-xml characters, but it's a text based replace. Find and replace characters should therefore match the input message directly.
  *
  * @ff.tip See {@link Parameter} to see how parameter values are determined.
- * @ff.info Special characters such as {@literal \r} are interpreted by the XML Parser and do not propagate to the FrankElement. In order to use such special characters you could create a property and refer it in the attribute. (e.g. {@code find="${special-property-name}"} ).
  *
  * @author Gerrit van Brakel
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> is substituted by the parameter's value.
@@ -83,11 +82,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 		appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 
 		if (StringUtils.isNotEmpty(getFind())) {
-			if (getReplace() == null) {
-				throw new ConfigurationException("cannot have a null replace-attribute");
-			}
 			log.debug("finds [{}] replaces with [{}]", getFind(), getReplace());
-
 			if (StringUtils.isNotEmpty(getLineSeparatorSymbol())) {
 				find = find != null ? find.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
 				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
@@ -101,20 +96,19 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			// Create a ReplacingInputStream for find/replace
-			ReplacingInputStream replacingInputStream = new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(),
-					getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters()
-			);
+			final InputStream replacingInputStream = StringUtils.isNotEmpty(getFind()) ? new ReplacingInputStream(message.asInputStream(), find, replace) : message.asInputStream();
 
-			// Replace parameters
-			ReplacingVariablesInputStream replaceParametersStream = new ReplacingVariablesInputStream(replacingInputStream, "?",
-					getKeyValueMapForParameters(message, session)
-			);
+			// Replace NonValidXmlCharacters
+			final InputStream replaceNonXmlInputStream = isReplaceNonXmlChars() ? new ReplaceNonXmlCharsInputStream(replacingInputStream, nonXmlReplacementCharacter, allowUnicodeSupplementaryCharacters) : replacingInputStream;
+
+			// Replace Parameters
+			InputStream replaceParametersStream = replaceParameters(replaceNonXmlInputStream, message, session);
 
 			// Wrap for 'substitute vars' if necessary
-			ReplacingVariablesInputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(replaceParametersStream);
+			InputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(replaceParametersStream);
 
 			Message result = new Message(inputStream);
 			return new PipeRunResult(getSuccessForward(), result);
@@ -123,31 +117,30 @@ public class ReplacerPipe extends FixedForwardPipe {
 		}
 	}
 
-	/**
-	 * If {@code subsituteVars} is true, we need to wrap the inputStream again to substitute ${} syntax variables with
-	 * system properties, session variables and application properties.
-	 */
-	private ReplacingVariablesInputStream wrapWithSubstituteVarsInputStreamIfNeeded(ReplacingVariablesInputStream replaceParametersStream) {
-		if (substituteVars) {
-			return new ReplacingVariablesInputStream(replaceParametersStream, "$", appConstants);
+	private InputStream replaceParameters(InputStream replaceNonXmlInputStream, Message message, PipeLineSession session) throws PipeRunException {
+		if (getParameterList().size() == 0) {
+			return replaceNonXmlInputStream;
 		}
 
-		return replaceParametersStream;
-	}
-
-	/**
-	 * @return the pipe's parameters as key/value map
-	 * @throws PipeRunException
-	 */
-	private Properties getKeyValueMapForParameters(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			ParameterValueList pvl = getParameterList().getValues(message, session);
-
-			return StreamSupport.stream(pvl.spliterator(), false)
-					.collect(Collectors.toMap(ParameterValue::getName, pv -> pv.asStringValue(""), (prev, next) -> next, Properties::new));
+			return new ReplacingParameterVariablesInputStream(replaceNonXmlInputStream, pvl);
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
+	}
+
+	/**
+	 * If {@code subsituteVars} is true, we need to wrap the inputStream again to substitute ${} syntax variables with
+	 * system properties, session variables and application properties.
+	 * @throws IOException 
+	 */
+	private InputStream wrapWithSubstituteVarsInputStreamIfNeeded(InputStream replaceParametersStream) throws IOException {
+		if (substituteVars) {
+			return new ReplacingPropertyVariablesInputStream(replaceParametersStream, "$", appConstants);
+		}
+
+		return replaceParametersStream;
 	}
 
 	public String getFind() {
@@ -168,23 +161,21 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	/**
 	 * Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
-	 * * by the {@link #setLineSeparatorSymbol(String)}.
+	 * by the {@link #setLineSeparatorSymbol(String)}.
+	 * If left empty, the 'find' values will be omitted, and nothing will be replaced.
 	 */
 	public void setReplace(String replace) {
-		this.replace = replace;
+		this.replace = StringUtils.defaultIfBlank(replace, null);
 	}
 
+	/**
+	 * Sets the string the representation in find and replace of the line separator.
+	 */
 	public String getLineSeparatorSymbol() {
 		return lineSeparatorSymbol;
 	}
 
-	/**
-	 * Replaces occurences of the given lineSeperatorSymbol with the host system's lineSeparator in the find and replace values.
-	 * On UNIX systems, it returns {@literal \n}; on Microsoft Windows systems it returns {@literal \r\n}.
-	 * <br/>
-	 * This may be needed when your {@link #setFind(String)} and {@link #setReplace(String)} strings must match the content exactly
-	 * and the input message's line-separator can differ. This attribute is not used for the input message.
-	 */
+	/** sets the string that will represent the line-separator in the {@link #setFind(String)} and {@link #setReplace(String)} strings. */
 	public void setLineSeparatorSymbol(String string) {
 		lineSeparatorSymbol = string;
 	}
@@ -220,8 +211,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Character that will replace each non-valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark).
-	 * Note that the find/replace actions are done based on TEXT and not XML content.
+	 * character that will replace each non-valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)
 	 *
 	 * @ff.default empty string
 	 */

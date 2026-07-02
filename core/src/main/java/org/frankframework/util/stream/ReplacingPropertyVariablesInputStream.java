@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.pipes;
+package org.frankframework.util.stream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,7 +36,7 @@ import java.util.stream.IntStream;
  *
  * @author Erik van Dongen
  */
-public class ReplacingVariablesInputStream extends InputStream {
+public class ReplacingPropertyVariablesInputStream extends InputStream {
 
 	private static final byte CLOSING_CURLY_BRACE = 125;
 	private static final byte BYTE_VALUE_END_OF_STREAM = -1;
@@ -55,7 +55,7 @@ public class ReplacingVariablesInputStream extends InputStream {
 		}
 	}
 
-	protected ReplacingVariablesInputStream(InputStream in, String variablePrefix, Properties properties) {
+	public ReplacingPropertyVariablesInputStream(InputStream in, String variablePrefix, Properties properties) {
 		this.in = in;
 		this.variablePrefix = (variablePrefix + "{").getBytes();
 		this.properties = properties;
@@ -73,8 +73,7 @@ public class ReplacingVariablesInputStream extends InputStream {
 				byte[] matchingKeyInBytes = getMatchingKey();
 				byte[] replacementValue = getReplacementValue(matchingKeyInBytes);
 
-				IntStream.range(0, inQueue.size())
-						.forEach(a -> inQueue.remove());
+				inQueue.clear();
 
 				IntStream.range(0, replacementValue.length)
 						.forEach(b -> outQueue.offer((int) replacementValue[b]));

@@ -31,11 +31,10 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	public void everythingNull() {
+	public void noReplaceShouldSucceed() throws ConfigurationException {
 		pipe.setFind("laa");
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
-		assertThat(e.getMessage(), Matchers.containsString("cannot have a null replace-attribute"));
+		configureAndStartPipe();
 	}
 
 	@Test
@@ -118,6 +117,20 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		PipeRunResult res = doPipe(pipe, "<test>?{varToSubstitute} and ?{secondVarToSubstitute}</test>)", session);
 		assertEquals("<head>substitutedValue and secondSubstitutedValue</head>)", res.getResult().asString());
+	}
+
+	@Test
+	public void testReplaceNoParameter() throws Exception {
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("varToSubstitute")
+				.withValue("substitutedValue"));
+
+		pipe.setFind("test");
+		pipe.setReplace("head");
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "<test>?{varToSubstitute1} and ?{secondVarToSubstitute2}</test>)", session);
+		assertEquals("<head>?{varToSubstitute1} and ?{secondVarToSubstitute2}</head>)", res.getResult().asString());
 	}
 
 	@Test
@@ -254,4 +267,5 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		PipeRunResult res = doPipe(pipe, "tralallaal\rlasdlfkakljsdf\nkasdfjasdf\r\niets", session);
 		assertEquals("tralallaal\rlasdlfkakljsdfkasdfjasdf\riets", res.getResult().asString());
 	}
+
 }
