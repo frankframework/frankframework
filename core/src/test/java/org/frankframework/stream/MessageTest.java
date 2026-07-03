@@ -17,6 +17,7 @@ package org.frankframework.stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -247,6 +248,51 @@ public class MessageTest {
 		// Assert
 		assertEquals(testString, actual);
 		assertEquals(testString, adapter.asString());
+	}
+
+	@Test
+	public void testStringAsInputstreamWithCharset() throws Exception {
+		// Arrange
+		String inputString = "Spécïâl";
+		Message input = Message.asMessage(inputString);
+		input.getContext().withCharset(StandardCharsets.UTF_8);
+
+		// Act
+		InputStream inputStream = input.asInputStream("ISO-8859-1");
+
+		// Assert
+		byte[] resultBytes = StreamUtil.streamToBytes(inputStream);
+		assertArrayEquals(inputString.getBytes(StandardCharsets.ISO_8859_1), resultBytes);
+	}
+
+	@Test
+	public void testByteArrayWithCharsetAsInputstreamWithDifferentCharset() throws Exception {
+		// Arrange
+		String inputString = "Spécïâl";
+		Message input = Message.asMessage(inputString.getBytes(StandardCharsets.UTF_8));
+		input.getContext().withCharset(StandardCharsets.UTF_8);
+
+		// Act
+		InputStream inputStream = input.asInputStream("ISO-8859-1");
+
+		// Assert
+		byte[] resultBytes = StreamUtil.streamToBytes(inputStream);
+		assertArrayEquals(inputString.getBytes(StandardCharsets.ISO_8859_1), resultBytes);
+	}
+
+	@Test
+	public void testByteArrayWithCharsetAutoAsInputstreamWithDifferentCharset() throws Exception {
+		// Arrange
+		String inputString = "Spécïâl";
+		Message input = Message.asMessage(inputString.getBytes(StandardCharsets.UTF_8));
+		input.getContext().withCharset("auto");
+
+		// Act
+		InputStream inputStream = input.asInputStream("ISO-8859-1");
+
+		// Assert
+		byte[] resultBytes = StreamUtil.streamToBytes(inputStream);
+		assertArrayEquals(inputString.getBytes(StandardCharsets.ISO_8859_1), resultBytes);
 	}
 
 	@Test
