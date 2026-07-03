@@ -232,13 +232,11 @@ public class Message implements Serializable {
 		return (String) context.get(MessageContext.METADATA_CHARSET);
 	}
 
-	public Message withCharset(@Nullable String charset) {
+	public void setCharset(@Nullable String charset) {
 		context.withCharset(charset);
-		return this;
 	}
-	public Message withCharset(@Nullable Charset charset) {
+	public void setCharset(@Nullable Charset charset) {
 		context.withCharset(charset);
-		return this;
 	}
 
 	/**
@@ -399,6 +397,7 @@ public class Message implements Serializable {
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
 	 */
 	public Reader asReader() throws IOException {
+		//noinspection java:S1874
 		return asReader(null);
 	}
 
@@ -513,7 +512,7 @@ public class Message implements Serializable {
 		}
 
 		if (StreamUtil.AUTO_DETECT_CHARSET.equals(getCharset())) {
-			MessageUtils.computeDecodingCharset(this); // This can update the charset, or remove it if no charset could be detected
+			MessageUtils.computeDecodingCharset(this); // This can update the charset, or remove the 'auto-detect' flag if no charset could be detected
 		}
 
 		if (StringUtils.isEmpty(getCharset()) || encodingCharset.equals(getCharset())) {
@@ -523,7 +522,8 @@ public class Message implements Serializable {
 		}
 
 		// Now we know that we have binary data with a charset that is different from the one requested, so get a Reader for the data and an input stream that recodes the data.
-		return ReaderInputStream.builder().setCharset(encodingCharset).setReader(asReader()).get();
+		Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), getCharset());
+		return ReaderInputStream.builder().setCharset(encodingCharset).setReader(reader).get();
 	}
 
 	public synchronized String peek(int readLimit) throws IOException {

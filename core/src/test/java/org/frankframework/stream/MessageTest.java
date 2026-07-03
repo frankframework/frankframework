@@ -269,7 +269,7 @@ public class MessageTest {
 		// Arrange
 		String inputString = "Spécïâl";
 		Message input = Message.asMessage(inputString.getBytes(StandardCharsets.UTF_8));
-		input.withCharset(StandardCharsets.UTF_8);
+		input.setCharset(StandardCharsets.UTF_8);
 
 		// Act
 		InputStream inputStream = input.asInputStream("ISO-8859-1");
@@ -284,7 +284,7 @@ public class MessageTest {
 		// Arrange
 		String inputString = "Spécïâl";
 		Message input = Message.asMessage(inputString.getBytes(StandardCharsets.UTF_8));
-		input.withCharset("auto");
+		input.setCharset("auto");
 
 		// Act
 		InputStream inputStream = input.asInputStream("ISO-8859-1");
@@ -767,7 +767,7 @@ public class MessageTest {
 		// NB: This test logs a serialization-wire that can be added to the array `binaryWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
 		Message in = new Message(source);
-		in.withCharset(StandardCharsets.UTF_8);
+		in.setCharset(StandardCharsets.UTF_8);
 		in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
 		in.getContext().put("TEST-KEY-INT", 1);
 

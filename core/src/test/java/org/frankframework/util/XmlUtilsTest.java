@@ -288,7 +288,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@MethodSource
 	void testReadMessageAsInputSourceWithUnspecifiedNonDefaultCharset(Message message) throws Exception {
 		// Arrange
-		message.withCharset("ISO-8859-1");
+		message.setCharset("ISO-8859-1");
 
 		ContentHandler handler = new XmlWriter();
 		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
@@ -309,7 +309,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@MethodSource
 	void testReadBOMMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
 		// Arrange
-		message.withCharset("ISO-8859-1");
+		message.setCharset("ISO-8859-1");
 		assertEquals("ISO-8859-1", message.getCharset());
 
 		ContentHandler handler = new XmlWriter();
@@ -330,7 +330,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@MethodSource
 	void testReadMessageAsInputSourceWithWrongEncodingSpecifiedExternally(Message message) throws Exception {
 		// Arrange
-		message.withCharset("ISO-8859-1");
+		message.setCharset("ISO-8859-1");
 		assertEquals("ISO-8859-1", message.getCharset());
 
 		ContentHandler handler = new XmlWriter();
