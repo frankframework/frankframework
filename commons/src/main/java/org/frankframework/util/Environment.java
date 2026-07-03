@@ -187,6 +187,6 @@ public class Environment {
 	 * @return whether the current environment is running on Kubernetes
 	 */
 	public static boolean isRunningOnKubernetes() {
-		return StringUtils.isBlank(KUBERNETES_SERVICE_HOST) || Files.exists(Path.of("/var/run/secrets/kubernetes.io/serviceaccount/token"));
+		return StringUtils.isNotBlank(KUBERNETES_SERVICE_HOST) || Files.exists(Path.of("/var/run/secrets/kubernetes.io/serviceaccount/token"));
 	}
 }
