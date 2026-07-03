@@ -34,7 +34,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	public void noReplaceShouldSucceed() throws ConfigurationException {
 		pipe.setFind("laa");
 
-		configureAndStartPipe();
+		assertDoesNotThrow(() -> configureAndStartPipe());
 	}
 
 	@Test
