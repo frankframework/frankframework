@@ -351,7 +351,7 @@ public class JdbcTableListenerTest {
 	@DatabaseTest
 	public void testGetRawMessageWithMessageFieldIsClob() throws Exception {
 		listener.setMessageField("TCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.CLOB);
 		listener.configure();
 		listener.start();
 
@@ -367,7 +367,7 @@ public class JdbcTableListenerTest {
 	@DatabaseTest
 	public void testGetRawMessageWithMessageFieldIsBlob() throws Exception {
 		listener.setMessageField("TBLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.BLOB);
+		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.BLOB);
 		listener.setBlobSmartGet(false);
 		listener.setBlobsCompressed(false);
 		listener.configure();
@@ -393,7 +393,7 @@ public class JdbcTableListenerTest {
 	@DatabaseTest
 	public void testGetRawMessageWithMessageFieldIsVarchar() throws Exception {
 		listener.setMessageField("TVARCHAR");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.STRING);
+		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.STRING);
 		listener.configure();
 		listener.start();
 
@@ -934,7 +934,7 @@ public class JdbcTableListenerTest {
 		listener.setOrderField("ORDRFLD");
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.CLOB);
 		listener.setAdditionalFields(", tBLOB, tVARCHAR,  ");
 		listener.configure();
 
@@ -948,7 +948,7 @@ public class JdbcTableListenerTest {
 	public void testGetExtraValues() throws Exception {
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.CLOB);
 		listener.setAdditionalFields("tBLOB, tVARCHAR");
 		listener.setBlobsCompressed(false);
 		listener.setBlobSmartGet(false);
@@ -983,7 +983,7 @@ public class JdbcTableListenerTest {
 	public void testGetExtraValuesSameAsOtherFields() throws Exception {
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.CLOB);
 		listener.setAdditionalFields("tBLOB, tVARCHAR, tCLOB, tINT");
 		listener.setBlobsCompressed(false);
 		listener.setBlobSmartGet(false);
@@ -1005,7 +1005,7 @@ public class JdbcTableListenerTest {
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(threadContext);
 
 		PipeLineSession session = new PipeLineSession();
-		assertTrue(rawMessage.getContext().containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain map of additional fields");
+		assertTrue(rawMessage.getContext().containsKey(AbstractJdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain map of additional fields");
 
 		// Extract message, then the additional fields should be copied to the session.
 		Message message = listener.extractMessage(rawMessage, session);

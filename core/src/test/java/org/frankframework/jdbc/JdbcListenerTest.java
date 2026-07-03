@@ -44,7 +44,7 @@ class JdbcListenerTest {
 
 		listener = spy(new JdbcListener<>());
 		listener.setReceiver(receiver);
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.STRING);
+		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.STRING);
 		listener.setKeyField("TKEY");
 		listener.setMessageField("FM");
 		listener.setMessageIdField("MID");

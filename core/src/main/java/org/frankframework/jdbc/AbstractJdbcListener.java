@@ -1,5 +1,5 @@
 /*
-   Copyright 2026 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,9 +25,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -40,10 +43,12 @@ import lombok.Lombok;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IPeekableListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.lifecycle.LifecycleException;
@@ -58,17 +63,17 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
- * JdbcListener which doesn't implement {@link org.frankframework.core.IHasProcessState} and therefore doesn't support changing the process state
- * of messages. Please note that you should use the JdbcTableListener or MessageStoreListener. Message browsing, and error and status updates are not performed
- * and have to be done manually.
+ * JdbcListener base class.
  *
  * @param <M> MessageWrapper or key. Key is also used as messageId
- * @see JdbcTableListener
- * @see MessageStoreListener
  *
+ * @author  Gerrit van Brakel
+ * @since   4.7
  */
-public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, ReceiverAware<M> {
-	public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
+@SuppressWarnings("SynchronizeOnNonFinalField")
+public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, ReceiverAware<M> {
+
+	 public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
 
 	private @Getter @Setter Receiver<M> receiver;
 
@@ -81,7 +86,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private @Getter String correlationIdField;
 	private @Getter String additionalFields;
 	private @Getter @Nonnull List<String> additionalFieldsList = List.of();
-	private @Getter AbstractJdbcListener.MessageFieldType messageFieldType= AbstractJdbcListener.MessageFieldType.STRING;
+	private @Getter MessageFieldType messageFieldType=MessageFieldType.STRING;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 
 	private @Getter String blobCharset = null;
@@ -90,6 +95,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	private @Setter @Getter boolean trace=false;
 	private @Getter boolean peekUntransacted=true;
+
+	private Map<ProcessState, String> updateStatusQueries = new EnumMap<>(ProcessState.class);
+	private Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
 
 	protected Connection connection = null;
 
@@ -112,6 +120,15 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			String convertedSelectQuery = convertQuery(getSelectQuery());
 			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, convertedSelectQuery);
 			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? convertQuery(getPeekQuery()) : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, convertedSelectQuery);
+			Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();
+			for (ProcessState state : ProcessState.values()) {
+				if(updateStatusQueries.containsKey(state)) {
+					String convertedUpdateStatusQuery = convertQuery(updateStatusQueries.get(state));
+					orderedUpdateStatusQueries.put(state, convertedUpdateStatusQuery);
+				}
+			}
+			updateStatusQueries=orderedUpdateStatusQueries;
+			targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
@@ -330,6 +347,16 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
+	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) {
+
+		Map<String, Object> mwContext = rawMessage.getContext();
+		String key = (String) mwContext.get(PipeLineSession.STORAGE_ID_KEY);
+		if (StringUtils.isNotEmpty(key)) {
+			return key;
+		}
+		throw new IllegalArgumentException("Cannot extract JDBC message key from raw message [" + rawMessage + "]");
+	}
+
 	@Override
 	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		addAdditionalQueryFieldsToSession(rawMessage, context);
@@ -349,6 +376,39 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// required action already done via ChangeProcessState()
+	}
+
+	@Override
+	public Set<ProcessState> knownProcessStates() {
+		return updateStatusQueries.keySet();
+	}
+
+	@Override
+	public Map<ProcessState,Set<ProcessState>> targetProcessStates() {
+		return targetProcessStates;
+	}
+
+	@Override
+	public RawMessageWrapper<M> changeProcessState(RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
+		if (!knownProcessStates().contains(toState)) {
+			return null; // if toState does not exist, the message can/will not be moved to it, so return null.
+		}
+		if (isConnectionsArePooled()) {
+			try (Connection conn = getConnection()) {
+				return changeProcessState(conn, rawMessage, toState, reason);
+			} catch (JdbcException|SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		synchronized (connection) {
+			return changeProcessState(connection, rawMessage, toState, reason);
+		}
+	}
+
+	protected RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
+		String query = getUpdateStatusQuery(toState);
+		String key=getKeyFromRawMessage(rawMessage);
+		return execute(connection, query, List.of(key)) ? rawMessage : null;
 	}
 
 	protected boolean execute(Connection conn, String query, List<String> parameters) throws ListenerException {
@@ -378,7 +438,19 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
 
-	public void setSelectQuery(String string) {
+	protected void setUpdateStatusQuery(ProcessState state, String query) {
+		if (StringUtils.isNotEmpty(query)) {
+			updateStatusQueries.put(state, query);
+		} else {
+			updateStatusQueries.remove(state);
+		}
+	}
+
+	public String getUpdateStatusQuery(ProcessState state) {
+		return updateStatusQueries.get(state);
+	}
+
+	protected void setSelectQuery(String string) {
 		selectQuery = string;
 	}
 
@@ -416,7 +488,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * Type of the field containing the message data
 	 * @ff.default <i>String</i>
 	 */
-	public void setMessageFieldType(AbstractJdbcListener.MessageFieldType value) {
+	public void setMessageFieldType(MessageFieldType value) {
 		messageFieldType = value;
 	}
 
