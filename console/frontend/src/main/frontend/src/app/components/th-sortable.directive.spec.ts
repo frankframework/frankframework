@@ -1,4 +1,4 @@
-import { Component, DebugElement, QueryList, ViewChildren } from '@angular/core';
+import { Component, DebugElement, QueryList, ViewChildren, ChangeDetectionStrategy } from '@angular/core';
 import { basicTableSort, SortEvent, ThSortableDirective } from './th-sortable.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -22,6 +22,7 @@ import { By } from '@angular/platform-browser';
       </tbody>
     </table>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [ThSortableDirective],
 })
 class TestComponent {

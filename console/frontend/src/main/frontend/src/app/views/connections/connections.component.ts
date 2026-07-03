@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
-import { AppService } from 'src/app/app.service';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { AppService } from '../../app.service';
 import {
   DataTableColumn,
   DatatableComponent,
@@ -23,6 +23,7 @@ type ConnectionsData = Connections['data'][number];
   selector: 'app-connections',
   imports: [DatatableComponent],
   templateUrl: './connections.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./connections.component.scss'],
 })
 export class ConnectionsComponent implements OnInit {

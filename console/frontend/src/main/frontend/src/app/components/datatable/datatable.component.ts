@@ -8,6 +8,7 @@ import {
   OnInit,
   QueryList,
   ViewChildren,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CdkTableModule, DataSource } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
@@ -62,15 +63,9 @@ export type DataTableServerResponseInfo<T> = {
 
 @Component({
   selector: 'app-datatable',
-  imports: [
-    CommonModule,
-    FormsModule,
-    CdkTableModule,
-    TruncatePipe,
-    ToDateDirective,
-    ThSortableDirective,
-  ],
+  imports: [CommonModule, FormsModule, CdkTableModule, TruncatePipe, ToDateDirective, ThSortableDirective],
   templateUrl: './datatable.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './datatable.component.scss',
 })
 export class DatatableComponent<T> implements OnInit, AfterViewInit, OnDestroy {

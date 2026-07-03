@@ -22,10 +22,7 @@
               "browser": ""
             },
             "index": "src/index.html",
-            "polyfills": [
-              "zone.js",
-              "@angular/localize/init"
-            ],
+            "polyfills": ["zone.js", "@angular/localize/init"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -47,15 +44,8 @@
               "node_modules/ladda/dist/ladda-themeless.min.css",
               "src/styles.scss"
             ],
-            "scripts": [
-              "node_modules/sockjs-client/dist/sockjs.min.js"
-            ],
-            "allowedCommonJsDependencies": [
-              "sweetalert2",
-              "pace-js",
-              "lodash.merge",
-              "tinycon"
-            ],
+            "scripts": ["node_modules/sockjs-client/dist/sockjs.min.js"],
+            "allowedCommonJsDependencies": ["sweetalert2", "pace-js", "lodash.merge", "tinycon"],
             "browser": "src/main.ts"
           },
           "configurations": {
@@ -99,6 +89,15 @@
               "statsJson": true,
               "outputHashing": "all",
               "optimization": true
+            },
+            "testing": {
+              "aot": false,
+              "optimization": false,
+              "extractLicenses": false,
+              "assets": ["src/assets"],
+              "styles": ["src/styles.scss"],
+              "scripts": [],
+              "polyfills": ["zone.js", "zone.js/testing", "@angular/localize/init"]
             }
           },
           "defaultConfiguration": "production"
@@ -131,22 +130,11 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing",
-              "@angular/localize/init"
-            ],
             "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/assets"
-            ],
-            "styles": [
-              "src/styles.scss"
-            ],
-            "scripts": []
+            "buildTarget": ":build:testing",
+            "runner": "vitest"
           }
         },
         "cypress-run": {
@@ -188,10 +176,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
@@ -200,11 +185,7 @@
   "cli": {
     "analytics": false,
     "packageManager": "pnpm",
-    "schematicCollections": [
-      "@schematics/angular",
-      "@cypress/schematic",
-      "angular-eslint"
-    ]
+    "schematicCollections": ["@schematics/angular", "@cypress/schematic", "angular-eslint"]
   },
   "schematics": {
     "@schematics/angular:component": {

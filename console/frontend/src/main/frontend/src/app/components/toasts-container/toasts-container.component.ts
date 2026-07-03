@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { NgbToast } from '@ng-bootstrap/ng-bootstrap';
-import { Toast, ToastService, ToastType } from 'src/app/services/toast.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { Toast, ToastService, ToastType } from '../../services/toast.service';
 
 @Component({
   selector: 'app-toasts-container',
@@ -16,6 +16,7 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons';
       z-index: 1200;
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [NgbToast, FaIconComponent],
 })
 export class ToastsContainerComponent {

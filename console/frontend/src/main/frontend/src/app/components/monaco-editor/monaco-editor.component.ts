@@ -13,6 +13,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { first, Observable, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,6 +23,7 @@ import { AMDRequire, AppService } from '../../app.service';
   selector: 'app-monaco-editor',
   imports: [],
   templateUrl: './monaco-editor.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./monaco-editor.component.scss'],
 })
 export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestroy {

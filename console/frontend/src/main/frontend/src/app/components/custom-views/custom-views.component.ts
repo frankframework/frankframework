@@ -1,16 +1,17 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppConstants, AppService } from 'src/app/app.service';
 import { RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faDesktop } from '@fortawesome/free-solid-svg-icons';
+import { AppConstants, AppService } from '../../app.service';
 
 @Component({
   selector: 'app-custom-views',
   templateUrl: './custom-views.component.html',
   styleUrls: ['./custom-views.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [RouterModule, NgbModule, FaIconComponent],
 })
 export class CustomViewsComponent implements OnInit, OnDestroy {

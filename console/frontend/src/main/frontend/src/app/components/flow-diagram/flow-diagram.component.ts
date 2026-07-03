@@ -8,8 +8,9 @@ import {
   OnChanges,
   OnInit,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { Dimensions, getFactoryDimensions, initFlow2Svg, flow2svg } from '@frankframework/frank-config-layout';
+import { Dimensions, getFactoryDimensions, initFlow2Svg } from '@frankframework/frank-config-layout';
 
 @Component({
   selector: 'app-flow-diagram',
@@ -24,6 +25,7 @@ import { Dimensions, getFactoryDimensions, initFlow2Svg, flow2svg } from '@frank
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class FlowDiagramComponent implements OnInit, OnChanges {
@@ -40,9 +42,9 @@ export class FlowDiagramComponent implements OnInit, OnChanges {
 
   private readonly rootElementReference: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly rootElement = this.rootElementReference.nativeElement;
+  private readonly flowLayoutService = initFlow2Svg(this.dimensions);
 
   ngOnInit(): void {
-    initFlow2Svg(this.dimensions);
     this.rootElement.textContent = 'Waiting for mermaid model...';
     this.render();
     this.initialized = true;
@@ -71,7 +73,7 @@ export class FlowDiagramComponent implements OnInit, OnChanges {
     this.timeout = globalThis.setTimeout(
       async () => {
         try {
-          this.rootElement.innerHTML = await flow2svg(this.nmModel!);
+          this.rootElement.innerHTML = await this.flowLayoutService.flow2svg(this.nmModel!);
 
           const mermaidSvg = this.rootElement.firstChild as SVGSVGElement;
           const viewBoxWidth = mermaidSvg.getAttribute('width');

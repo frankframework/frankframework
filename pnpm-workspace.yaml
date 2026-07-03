@@ -1,6 +1,16 @@
 packages:
   - 'console/frontend/src/main/frontend/'
   - 'console/frontend/src/main/frontend/cypress'
+allowBuilds:
+  '@parcel/watcher': false
+  cypress: true
+  edgedriver: false
+  esbuild: false
+  geckodriver: false
+  lmdb: false
+  msgpackr-extract: false
+minimumReleaseAgeExclude:
+  - prettier@3.9.3
 overrides:
   diff@>=6.0.0 <8.0.3: '~8.0.4'
   dompurify@<3.4.0: '>=3.4.11'

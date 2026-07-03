@@ -132,10 +132,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			log.debug("configuration [{}] found currentConfigurationVersion [{}]", this::getName, this::getVersion);
 		}
 
-		if (StringUtils.isNotEmpty(AppConstants.getInstance().getProperty("frankframework-ladybug-debugger.version"))) {
-			this.getEnvironment().addActiveProfile("aop"); // Makes this configurable depending on if the ladybug is present on the classpath.
-		}
-
 		super.afterPropertiesSet(); // Triggers a context refresh
 
 		ibisManager.addConfiguration(this); // Only if successfully refreshed, add the configuration
