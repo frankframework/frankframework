@@ -83,7 +83,7 @@ public class Amqp1Helper {
 
 	private static void copyMessageContentMetaData(org.apache.qpid.protonj2.client.@NonNull Message<?> amqpMessage, Message result) throws ClientException {
 		if (amqpMessage.contentEncoding() != null) {
-			result.getContext().withCharset(amqpMessage.contentEncoding());
+			result.withCharset(amqpMessage.contentEncoding());
 		}
 		if (amqpMessage.contentType() != null) {
 			result.getContext().withMimeType(amqpMessage.contentType());

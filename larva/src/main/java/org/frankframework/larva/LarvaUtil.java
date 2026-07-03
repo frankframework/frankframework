@@ -108,7 +108,7 @@ public class LarvaUtil {
 		} else if (name.endsWith(".xml")) {
 			message.getContext().withMimeType(MediaType.APPLICATION_XML).withCharset("auto");
 		} else {
-			message.getContext().withCharset(getEncoding(name));
+			message.withCharset(getEncoding(name));
 		}
 
 		return message;

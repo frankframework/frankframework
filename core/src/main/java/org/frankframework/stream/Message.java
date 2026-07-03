@@ -42,9 +42,11 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
+import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;
@@ -231,6 +233,15 @@ public class Message implements Serializable {
 		return (String) context.get(MessageContext.METADATA_CHARSET);
 	}
 
+	public Message withCharset(@Nullable String charset) {
+		context.withCharset(charset);
+		return this;
+	}
+	public Message withCharset(@Nullable Charset charset) {
+		context.withCharset(charset);
+		return this;
+	}
+
 	/**
 	 * If no Charset was provided when the Message object was created and
 	 * the requested Charset is <code>auto</code>, try to parse the Charset using
@@ -271,7 +282,7 @@ public class Message implements Serializable {
 
 	private String getEncodingCharset(@Nullable String defaultEncodingCharset) {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
-			defaultEncodingCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 		return defaultEncodingCharset;
 	}
@@ -396,7 +407,11 @@ public class Message implements Serializable {
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
 	 *
 	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
+	 *
+	 * @deprecated Instead of calling this method, set the charset on the Message and then call the regular {@link Message#asReader()} method.
+	 *
 	 */
+	@Deprecated(since = "10.2")
 	public Reader asReader(@Nullable String defaultDecodingCharset) throws IOException {
 		if (request == null) {
 			return Reader.nullReader();
@@ -435,26 +450,17 @@ public class Message implements Serializable {
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
 	 */
 	public InputStream asInputStream() throws IOException {
-		return asInputStream(null);
-	}
+		if (request == null) {
+			return InputStream.nullInputStream();
+		}
 
-	/**
-	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
-	 *
-	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
-	 */
-	public InputStream asInputStream(@Nullable String defaultEncodingCharset) throws IOException {
-		try {
-			if (request == null) {
-				return InputStream.nullInputStream();
-			}
-
-			if (request instanceof SerializableFileReference reference) {
-				LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
-				return reference.getInputStream();
-			}
-			if (request instanceof ThrowingSupplier) {
-				LOG.debug("returning InputStream {} from supplier", this::getObjectId);
+		if (request instanceof SerializableFileReference reference) {
+			LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
+			return reference.getInputStream();
+		}
+		if (request instanceof ThrowingSupplier) {
+			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
+			try {
 				@SuppressWarnings("unchecked")
 				InputStream is = ((ThrowingSupplier<InputStream, Exception>) request).get();
 				if (is.markSupported()) {
@@ -462,23 +468,63 @@ public class Message implements Serializable {
 				} else {
 					return new BufferedInputStream(is);
 				}
+			} catch (Exception e) {
+				if (e instanceof IOException ioe) {
+					throw ioe;
+				}
+				throw new IOException(e);
 			}
-			if (request instanceof byte[] bytes) {
-				LOG.debug("returning byte[] {} as InputStream", this::getObjectId);
-				return new ByteArrayInputStream(bytes);
-			}
-			if (request instanceof Node) {
-				LOG.debug("returning Node {} as InputStream", this::getObjectId);
-				return new ByteArrayInputStream(Objects.requireNonNull(asByteArray()));
-			}
-			String charset = getEncodingCharset(defaultEncodingCharset);
-			LOG.debug("returning String {} as InputStream", this::getObjectId);
-			return new ByteArrayInputStream(request.toString().getBytes(charset));
-		} catch (IOException e) {
-			throw e;
-		} catch (Exception e) {
-			throw Lombok.sneakyThrow(e);
 		}
+		if (request instanceof byte[] bytes) {
+			LOG.debug("returning byte[] {} as InputStream", this::getObjectId);
+			return new ByteArrayInputStream(bytes);
+		}
+		if (request instanceof Node node) {
+			LOG.debug("returning Node {} as InputStream", this::getObjectId);
+			return new ByteArrayInputStream(nodeToByteArray(node));
+		}
+		LOG.debug("returning String {} as InputStream", this::getObjectId);
+		return new ByteArrayInputStream(request.toString().getBytes());
+	}
+
+	/**
+	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
+	 *
+	 * @param encodingCharset is only used when the Message object contains character data
+	 */
+	public InputStream asInputStream(@Nullable String encodingCharset) throws IOException {
+		if (request == null) {
+			return InputStream.nullInputStream();
+		}
+		if (StringUtils.isEmpty(encodingCharset)) {
+			// No recording required so delegate to the default method
+			return asInputStream();
+		}
+
+		// Check data that has a natural String representation before checking if the Message has a charset applied to it
+		if (request instanceof String || request instanceof Number || request instanceof Boolean) {
+			return new ByteArrayInputStream(request.toString().getBytes(encodingCharset));
+		}
+		if (request instanceof Enum<?> enumValue) {
+			return new ByteArrayInputStream(enumValue.name().getBytes(encodingCharset));
+		}
+		if (request instanceof Node node) {
+			LOG.debug("returning Node {} as InputStream", this::getObjectId);
+			return new ByteArrayInputStream(nodeToString(node).getBytes(encodingCharset));
+		}
+
+		if (StreamUtil.AUTO_DETECT_CHARSET.equals(getCharset())) {
+			MessageUtils.computeDecodingCharset(this); // This can update the charset, or remove it if no charset could be detected
+		}
+
+		if (StringUtils.isEmpty(getCharset()) || encodingCharset.equals(getCharset())) {
+			// Binary data with no charset applied, cannot recode to return as-is, OR
+			// Requested charset is same as stored charset
+			return asInputStream();
+		}
+
+		// Now we know that we have binary data with a charset that is different from the one requested, so get a Reader for the data and an input stream that recodes the data.
+		return ReaderInputStream.builder().setCharset(encodingCharset).setReader(asReader()).get();
 	}
 
 	public synchronized String peek(int readLimit) throws IOException {
@@ -561,12 +607,7 @@ public class Message implements Serializable {
 			return bytes;
 		}
 		if (request instanceof Node node) {
-			try {
-				LOG.debug("returning Node {} as byte[]", this::getObjectId);
-				return XmlUtils.nodeToByteArray(node);
-			} catch (TransformerException e) {
-				throw new IOException("Could not convert Node " + getObjectId() + " to byte[]", e);
-			}
+			return nodeToByteArray(node);
 		}
 		String charset = getEncodingCharset(defaultEncodingCharset);
 		if (request instanceof String string) {
@@ -582,6 +623,15 @@ public class Message implements Serializable {
 			request = result;
 		}
 		return result;
+	}
+
+	private byte[] nodeToByteArray(Node node) throws IOException {
+		try {
+			LOG.debug("returning Node {} as byte[]", this::getObjectId);
+			return XmlUtils.nodeToByteArray(node);
+		} catch (TransformerException e) {
+			throw new IOException("Could not convert Node " + getObjectId() + " to byte[]", e);
+		}
 	}
 
 	/**
@@ -614,12 +664,7 @@ public class Message implements Serializable {
 			return enumValue.name();
 		}
 		if (request instanceof Node node) {
-			try {
-				LOG.debug("returning Node {} as String", this::getObjectId);
-				return XmlUtils.nodeToString(node);
-			} catch (TransformerException e) {
-				throw new IOException("Could not convert type Node " + getObjectId() + " to String", e);
-			}
+			return nodeToString(node);
 		}
 
 		// save the generated String as the request before returning it
@@ -636,6 +681,15 @@ public class Message implements Serializable {
 			request = result;
 		}
 		return result;
+	}
+
+	private @UnknownNullability String nodeToString(Node node) throws IOException {
+		try {
+			LOG.debug("returning Node {} as String", this::getObjectId);
+			return XmlUtils.nodeToString(node);
+		} catch (TransformerException e) {
+			throw new IOException("Could not convert type Node " + getObjectId() + " to String", e);
+		}
 	}
 
 	public boolean isNull() {

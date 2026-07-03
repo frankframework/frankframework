@@ -251,11 +251,10 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testStringAsInputstreamWithCharset() throws Exception {
+	public void testStringAsInputStreamWithCharset() throws Exception {
 		// Arrange
 		String inputString = "Spécïâl";
 		Message input = Message.asMessage(inputString);
-		input.getContext().withCharset(StandardCharsets.UTF_8);
 
 		// Act
 		InputStream inputStream = input.asInputStream("ISO-8859-1");
@@ -266,11 +265,11 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testByteArrayWithCharsetAsInputstreamWithDifferentCharset() throws Exception {
+	public void testByteArrayWithCharsetAsInputStreamWithDifferentCharset() throws Exception {
 		// Arrange
 		String inputString = "Spécïâl";
 		Message input = Message.asMessage(inputString.getBytes(StandardCharsets.UTF_8));
-		input.getContext().withCharset(StandardCharsets.UTF_8);
+		input.withCharset(StandardCharsets.UTF_8);
 
 		// Act
 		InputStream inputStream = input.asInputStream("ISO-8859-1");
@@ -281,11 +280,11 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testByteArrayWithCharsetAutoAsInputstreamWithDifferentCharset() throws Exception {
+	public void testByteArrayWithCharsetAutoAsInputStreamWithDifferentCharset() throws Exception {
 		// Arrange
 		String inputString = "Spécïâl";
 		Message input = Message.asMessage(inputString.getBytes(StandardCharsets.UTF_8));
-		input.getContext().withCharset("auto");
+		input.withCharset("auto");
 
 		// Act
 		InputStream inputStream = input.asInputStream("ISO-8859-1");
@@ -768,7 +767,7 @@ public class MessageTest {
 		// NB: This test logs a serialization-wire that can be added to the array `binaryWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
 		Message in = new Message(source);
-		in.getContext().withCharset(StandardCharsets.UTF_8);
+		in.withCharset(StandardCharsets.UTF_8);
 		in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
 		in.getContext().put("TEST-KEY-INT", 1);
 

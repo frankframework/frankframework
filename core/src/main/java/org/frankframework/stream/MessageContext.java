@@ -137,6 +137,8 @@ public class MessageContext implements Serializable {
 	public MessageContext withCharset(@Nullable String charset) {
 		if (StringUtils.isNotEmpty(charset)) {
 			put(METADATA_CHARSET, charset);
+		} else {
+			remove(METADATA_CHARSET);
 		}
 		return this;
 	}
