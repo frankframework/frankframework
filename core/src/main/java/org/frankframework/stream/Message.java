@@ -46,7 +46,6 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;
@@ -683,7 +682,7 @@ public class Message implements Serializable {
 		return result;
 	}
 
-	private @UnknownNullability String nodeToString(Node node) throws IOException {
+	private String nodeToString(Node node) throws IOException {
 		try {
 			LOG.debug("returning Node {} as String", this::getObjectId);
 			return XmlUtils.nodeToString(node);
