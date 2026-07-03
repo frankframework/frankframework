@@ -19,11 +19,6 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 
-/**
- * ReplacerPipe Tester.
- *
- * @author <Sina Sen>
- */
 public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 	@Override
@@ -32,7 +27,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	public void noReplaceShouldSucceed() throws ConfigurationException {
+	public void noReplaceShouldSucceed() {
 		pipe.setFind("laa");
 
 		assertDoesNotThrow(() -> configureAndStartPipe());

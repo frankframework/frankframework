@@ -137,7 +137,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	 * If {@code subsituteVars} is true, we need to wrap the inputStream again to substitute ${} syntax variables with
 	 * system properties, session variables and application properties.
 	 */
-	private InputStream wrapWithSubstituteVarsInputStreamIfNeeded(InputStream replaceParametersStream) throws IOException {
+	private InputStream wrapWithSubstituteVarsInputStreamIfNeeded(InputStream replaceParametersStream) {
 		if (substituteVars) {
 			return new ReplacingPropertyVariablesInputStream(replaceParametersStream, "$", appConstants);
 		}

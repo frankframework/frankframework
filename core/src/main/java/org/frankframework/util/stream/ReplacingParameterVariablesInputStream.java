@@ -50,7 +50,15 @@ public class ReplacingParameterVariablesInputStream extends FilterInputStream {
 
 	public ReplacingParameterVariablesInputStream(InputStream in, ParameterValueList paramList) {
 		super(in);
-		String longestKey = paramList.stream().map(ParameterValue::getName).max(Comparator.comparingInt(String::length)).get();
+		if (paramList.size() == 0) {
+			throw new IllegalArgumentException("no parameters provided");
+		}
+
+		String longestKey = paramList.stream()
+				.map(ParameterValue::getName)
+				.max(Comparator.comparingInt(String::length))
+				.orElseThrow(() -> new IllegalArgumentException("unable to read parameter names"));
+
 		buf = new int[longestKey.length() + 3];
 		this.paramList = paramList;
 	}
@@ -185,7 +193,7 @@ public class ReplacingParameterVariablesInputStream extends FilterInputStream {
 	private String readMatchingBuffer() {
 		byte[] result = new byte[matchedIndex-3];
 		for (int i = 2; i < matchedIndex -1; i++) {
-			result[i-2] = Integer.valueOf(buf[i]).byteValue();
+			result[i-2] = (byte) buf[i];
 		}
 		return new String(result, StandardCharsets.UTF_8);
 	}
