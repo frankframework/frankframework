@@ -52,8 +52,10 @@ import org.frankframework.util.stream.ReplacingParameterVariablesInputStream;
  * <li>If attribute <code>substituteVars</code> is {@code true}, then expressions <code>${...}</code> are substituted using
  * system properties, session variables and application properties. Please note that no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
+ * This pipe may convert non-xml characters, but it's a text based replace. Find and replace characters should therefore match the input message directly.
  *
  * @ff.tip See {@link Parameter} to see how parameter values are determined.
+ * @ff.info Special characters such as {@literal \r} are interpreted by the XML Parser and do not propagate to the FrankElement. In order to use such special characters you could create a property and refer it in the attribute. (e.g. {@code find="${special-property-name}"} ).
  *
  * @author Gerrit van Brakel
  * @ff.parameters Used for substitution. For a parameter named <code>xyz</code>, the string <code>?{xyz}</code> is substituted by the parameter's value.
@@ -83,6 +85,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 		if (StringUtils.isNotEmpty(getFind())) {
 			log.debug("finds [{}] replaces with [{}]", getFind(), getReplace());
+
 			if (StringUtils.isNotEmpty(getLineSeparatorSymbol())) {
 				find = find != null ? find.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
 				replace = replace != null ? replace.replace(lineSeparatorSymbol, System.lineSeparator()) : null;
@@ -96,7 +99,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		try {
 			// Create a ReplacingInputStream for find/replace
 			final InputStream replacingInputStream = StringUtils.isNotEmpty(getFind()) ? new ReplacingInputStream(message.asInputStream(), find, replace) : message.asInputStream();
@@ -133,7 +136,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 	/**
 	 * If {@code subsituteVars} is true, we need to wrap the inputStream again to substitute ${} syntax variables with
 	 * system properties, session variables and application properties.
-	 * @throws IOException 
 	 */
 	private InputStream wrapWithSubstituteVarsInputStreamIfNeeded(InputStream replaceParametersStream) throws IOException {
 		if (substituteVars) {
@@ -175,7 +177,13 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return lineSeparatorSymbol;
 	}
 
-	/** sets the string that will represent the line-separator in the {@link #setFind(String)} and {@link #setReplace(String)} strings. */
+	/**
+	 * Replaces occurences of the given lineSeperatorSymbol with the host system's lineSeparator in the find and replace values.
+	 * On UNIX systems, it returns {@literal \n}; on Microsoft Windows systems it returns {@literal \r\n}.
+	 * <br/>
+	 * This may be needed when your {@link #setFind(String)} and {@link #setReplace(String)} strings must match the content exactly
+	 * and the input message's line-separator can differ. This attribute is not used for the input message.
+	 */
 	public void setLineSeparatorSymbol(String string) {
 		lineSeparatorSymbol = string;
 	}
@@ -211,7 +219,8 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * character that will replace each non-valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark)
+	 * Character that will replace each non-valid xml character (empty string is also possible) (use &amp;#x00bf; for inverted question mark).
+	 * Note that the find/replace actions are done based on TEXT and not XML content.
 	 *
 	 * @ff.default empty string
 	 */
