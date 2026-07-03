@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -34,15 +36,19 @@ import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
+import org.frankframework.util.Environment;
 
 class KubernetesSecretFactoryTest {
 
 	private static final KubernetesCredentialFactory credentialFactory = new KubernetesCredentialFactory();
 	private static final KubernetesClient client = mock(KubernetesClient.class);
+	private static MockedStatic<Environment> environmentMock;
 
 	@BeforeAll
 	@SuppressWarnings("unchecked")
 	static void setUp() {
+		environmentMock = mockStatic(Environment.class);
+		environmentMock.when(Environment::isRunningOnKubernetes).thenReturn(true);
 
 		Secret secret1 = createSecret("alias1", "testUsername1", "testPassword1");
 		Secret secret2 = createSecret("alias2", "testUsername2", "testPassword2");
@@ -60,13 +66,16 @@ class KubernetesSecretFactoryTest {
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
 		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
-		credentialFactory.setKubernetesServiceHost("localhost");
+
 		credentialFactory.setClient(client);
 		credentialFactory.initialize();
 	}
 
 	@AfterAll
 	static void tearDown() {
+		if (environmentMock != null) {
+			environmentMock.close();
+		}
 		credentialFactory.close();
 	}
 

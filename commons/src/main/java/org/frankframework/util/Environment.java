@@ -23,7 +23,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.jar.JarFile;
@@ -31,6 +33,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
@@ -46,6 +49,8 @@ public class Environment {
 
 	private static final Logger log = LogManager.getLogger(Environment.class);
 	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
+
+	private static String KUBERNETES_SERVICE_HOST = System.getenv("KUBERNETES_SERVICE_HOST");
 
 	public static Properties getEnvironmentVariables() throws IOException {
 		try {
@@ -176,5 +181,12 @@ public class Environment {
 		} catch (URISyntaxException e) {
 			throw new IOException("unable to read path from URL ["+url+"]", e);
 		}
+	}
+
+	/**
+	 * @return whether the current environment is running on Kubernetes
+	 */
+	public static boolean isRunningOnKubernetes() {
+		return StringUtils.isBlank(KUBERNETES_SERVICE_HOST) || Files.exists(Path.of("/var/run/secrets/kubernetes.io/serviceaccount/token"));
 	}
 }

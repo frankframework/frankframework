@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
+import org.frankframework.util.Environment;
 
 /**
  * <p>Abstract base class for Kubernetes-backed credential providers. Checks if it's actually running on Kubernetes. If not, will throw
@@ -60,8 +61,6 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 
 	static final int CACHE_DURATION_MILLIS = 60_000;
 
-	private String KUBERNETES_SERVICE_HOST = System.getenv("KUBERNETES_SERVICE_HOST");
-
 	protected String namespace;
 	protected KubernetesClient client;
 
@@ -70,7 +69,7 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 
 		// Check if we are running on kubernetes
-		if (StringUtils.isBlank(KUBERNETES_SERVICE_HOST)) {
+		if (!Environment.isRunningOnKubernetes()) {
 			throw new UnsupportedOperationException("Kubernetes service host is not set. This provider can only be used in a Kubernetes environment.");
 		}
 
@@ -81,11 +80,6 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 		verifyConnection();
 
 		postInitialize(appConstants);
-	}
-
-	// Only used in unit test!
-	void setKubernetesServiceHost(String kubernetesServiceHost) {
-		KUBERNETES_SERVICE_HOST = kubernetesServiceHost;
 	}
 
 	private void initializeClientIfNull() {
