@@ -18,6 +18,7 @@ package org.frankframework.stream;
 import java.io.Serial;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class UrlMessage extends Message {
 		super(url::openStream, new MessageContext(context).withName(FilenameUtils.getName(url.toString())).withLocation(url.toString()), url.getClass());
 	}
 
-	public UrlMessage(URL url, String charset) {
+	public UrlMessage(URL url, Charset charset) {
 		super(url::openStream, new MessageContext().withCharset(charset), url.getClass());
 	}
 }
