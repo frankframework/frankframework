@@ -20,7 +20,7 @@
   },
   "private": true,
   "engines": {
-    "node": ">=24.16.0"
+    "node": ">=24.18.0"
   },
   "dependencies": {
     "@angular/animations": "^22.0.4",
@@ -82,7 +82,7 @@
     "eslint-plugin-unicorn": "^69.0.0",
     "happy-dom": "^20.10.6",
     "istanbul-lib-instrument": "^6.0.3",
-    "prettier": "^3.9.3",
+    "prettier": "^3.9.4",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.62.1",
     "vitest": "^4.1.9"
