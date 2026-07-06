@@ -45,7 +45,7 @@ import org.frankframework.http.AbstractHttpSession;
 /**
  * OAuth 2.0 authenticator using the {@code private_key_jwt} client authentication method, as defined in
  * <a href="https://datatracker.ietf.org/doc/html/rfc7523#section-2.2">RFC 7523</a>. Also see the <a href="https://docs.spring.io/spring-security/reference/reactive/oauth2/client/client-authentication.html#oauth2-client-authentication-jwt-bearer-private-key-jwt">
- *     Spring docuemntation</a> on this topic.
+ * Spring documentation</a> on this topic.
  *
  * <p>A signed JWT is created using the configured private key and sent to the token endpoint as the
  * {@code client_assertion} parameter. Both RSA and EC keys are supported.
