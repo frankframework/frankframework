@@ -15,7 +15,6 @@
 */
 package org.frankframework.credentialprovider.util;
 
-
 import org.jspecify.annotations.Nullable;
 
 import org.frankframework.util.PropertyLoader;

@@ -84,7 +84,7 @@ public class MessageUtils {
 	 * Fully read {@link InputStream} and create a message from it, so that the InputStream can be closed
 	 * without losing the message contents.
 	 */
-	public static Message fromInputStream(InputStream inputStream) throws IOException {
+	public static @NonNull Message fromInputStream(@NonNull InputStream inputStream) throws IOException {
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (inputStream; OutputStream outputStream = messageBuilder.asOutputStream()) {
 			inputStream.transferTo(outputStream);
@@ -96,7 +96,7 @@ public class MessageUtils {
 	 * Fully read {@link Reader} and create a Message from it, so that the Reader can be closed
 	 * without losing the message contents.
 	 */
-	public static Message fromReader(Reader reader) throws IOException {
+	public static @NonNull Message fromReader(@NonNull Reader reader) throws IOException {
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (reader; Writer writer = messageBuilder.asWriter()) {
 			reader.transferTo(writer);
@@ -107,7 +107,7 @@ public class MessageUtils {
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
 	 */
-	public static MessageContext getContext(HttpServletRequest request) {
+	public static @NonNull MessageContext getContext(@NonNull HttpServletRequest request) {
 		MessageContext result = new MessageContext();
 		result.withCharset(request.getCharacterEncoding());
 		int contentLength = request.getContentLength();
@@ -129,7 +129,7 @@ public class MessageUtils {
 		return result;
 	}
 
-	public static MessageContext getContext(Iterator<MimeHeader> mimeHeaders) {
+	public static @NonNull MessageContext getContext(@NonNull Iterator<MimeHeader> mimeHeaders) {
 		MessageContext result = new MessageContext();
 		while (mimeHeaders.hasNext()) {
 			MimeHeader header = mimeHeaders.next();
@@ -143,18 +143,18 @@ public class MessageUtils {
 		return result;
 	}
 
-	public static MessageContext getContext(HttpResponse httpResponse) {
+	public static @NonNull MessageContext getContext(@NonNull HttpResponse httpResponse) {
 		MessageContext result = new MessageContext();
 		HttpEntity entity = httpResponse.getEntity();
-		if(entity != null) {
+		if (entity != null) {
 			result.withSize(entity.getContentLength());
 			Header contentType = entity.getContentType();
-			if(contentType != null) {
+			if (contentType != null) {
 				result.withMimeType(contentType.getValue());
 			}
 		} else {
 			Header contentTypeHeader = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE);
-			if(contentTypeHeader != null) {
+			if (contentTypeHeader != null) {
 				result.withMimeType(contentTypeHeader.getValue());
 			}
 		}
@@ -175,8 +175,8 @@ public class MessageUtils {
 	 * If neither header is present, or the size is <code>0</code> a <code>nullMessage</code> will be returned.
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc7230#section-3.3">rfc7230</a>
 	 */
-	public static Message parseContentAsMessage(HttpServletRequest request) throws IOException {
-		if(request.getContentLength() > 0 || request.getHeader("transfer-encoding") != null) {
+	public static @NonNull Message parseContentAsMessage(HttpServletRequest request) throws IOException {
+		if (request.getContentLength() > 0 || request.getHeader("transfer-encoding") != null) {
 			return new Message(request.getInputStream(), getContext(request));
 		} else {
 			// We want the context because of the request headers
@@ -184,7 +184,7 @@ public class MessageUtils {
 		}
 	}
 
-	public static Message parse(AttachmentPart soapAttachment) throws SOAPException {
+	public static @NonNull Message parse(AttachmentPart soapAttachment) throws SOAPException {
 		return new Message(soapAttachment.getRawContentBytes(), getContext(soapAttachment.getAllMimeHeaders()));
 	}
 
@@ -192,7 +192,7 @@ public class MessageUtils {
 	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
-	public static Charset computeDecodingCharset(Message message) throws IOException {
+	public static @Nullable Charset computeDecodingCharset(Message message) throws IOException {
 		return computeDecodingCharset(message, CHARSET_CONFIDENCE_LEVEL);
 	}
 
@@ -201,12 +201,12 @@ public class MessageUtils {
 	 * @param confidence percentage required to successfully determine the charset.
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
-	public static Charset computeDecodingCharset(Message message, int confidence) throws IOException {
-		if(Message.isEmpty(message) || !message.isBinary()) {
+	public static @Nullable Charset computeDecodingCharset(Message message, int confidence) throws IOException {
+		if (Message.isEmpty(message) || !message.isBinary()) {
 			return null;
 		}
 
-		if(StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
+		if (StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
 			return Charset.forName(message.getCharset());
 		}
 
@@ -217,7 +217,7 @@ public class MessageUtils {
 		CharsetMatch match = detector.detect();
 		String charset = match.getName();
 
-		if(match.getConfidence() > 90) {
+		if (match.getConfidence() > 90) {
 			LOG.debug("update charset for message [{}], full match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
 			return updateMessageCharset(message, charset);
 		}
@@ -236,9 +236,9 @@ public class MessageUtils {
 	}
 
 	// Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET
-	private static Charset updateMessageCharset(Message message, String charsetName) {
+	private static @Nullable Charset updateMessageCharset(Message message, String charsetName) {
 		try {
-			if(charsetName != null) {
+			if (charsetName != null) {
 				return Charset.forName(charsetName); // Parse it first to validate the charset
 			}
 			return null;
@@ -251,18 +251,18 @@ public class MessageUtils {
 	/**
 	 * Returns the {@link MimeType} if present in the {@link MessageContext}.
 	 */
-	public static MimeType getMimeType(Message message) {
-		if(Message.isEmpty(message) || message.getContext().isEmpty()) {
+	public static @Nullable MimeType getMimeType(Message message) {
+		if (Message.isEmpty(message) || message.getContext().isEmpty()) {
 			return null;
 		}
 
 		MimeType mimeType = (MimeType)message.getContext().get(MessageContext.METADATA_MIMETYPE);
-		if(mimeType == null) {
+		if (mimeType == null) {
 			LOG.trace("no mimetype found in MessageContext");
 			return null;
 		}
 
-		if(message.getCharset() != null && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) { // And is character data?
+		if (message.getCharset() != null && !"json".equals(mimeType.getSubtype()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) { // And is character data?
 			LOG.trace("found mimetype [{}] in MessageContext with charset [{}]", ()->mimeType, message::getCharset);
 			return new MimeType(mimeType, Charset.forName(message.getCharset()));
 		}
@@ -298,20 +298,20 @@ public class MessageUtils {
 	 * @ff.note This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
 	@Nullable
-	public static MimeType computeMimeType(@Nullable Message message, String filename) {
+	public static MimeType computeMimeType(@Nullable Message message, @Nullable String filename) {
 		if(Message.isEmpty(message)) {
 			return null;
 		}
 
 		MessageContext context = message.getContext();
 		MimeType contextMimeType = getMimeType(message);
-		if(contextMimeType != null) {
+		if (contextMimeType != null) {
 			LOG.debug("returning predetermined mimetype [{}]", contextMimeType);
 			return contextMimeType;
 		}
 
 		String name = (String) context.get(MessageContext.METADATA_NAME);
-		if(StringUtils.isNotEmpty(filename)) {
+		if (StringUtils.isNotEmpty(filename)) {
 			LOG.trace("using filename from MessageContext [{}]", name);
 			name = filename;
 		}
@@ -325,7 +325,8 @@ public class MessageUtils {
 				mimeType = guessMimeType(message);
 			}
 			context.withMimeType(mimeType);
-			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
+			if ("text".equals(mimeType.getType()) || (message.getCharset() != null && !"json".equals(mimeType.getSubtype()))) { // is of type 'text' or message has charset, but is not JSON
+				// JSON should never have a charset in the mimetype
 				Charset charset = computeDecodingCharset(message);
 				if(charset != null) {
 					LOG.debug("found mimetype [{}] with charset [{}]", mimeType, charset);
@@ -350,7 +351,7 @@ public class MessageUtils {
 	 * {@literal application/xml} if the message started with {@literal '<'}, otherwise {@literal text/plain}.
 	 *
 	 */
-	private static MimeType guessMimeType(Message message) {
+	private static @NonNull MimeType guessMimeType(@NonNull Message message) {
 		// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
 		// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
 		String firstChar;
@@ -383,7 +384,7 @@ public class MessageUtils {
 	 */
 	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
 	@Nullable
-	public static String generateMD5Hash(Message message) {
+	public static String generateMD5Hash(@NonNull Message message) {
 		try {
 			try (InputStream inputStream = message.asInputStream()) {
 				return DigestUtils.md5DigestAsHex(inputStream);
@@ -398,7 +399,7 @@ public class MessageUtils {
 	 * Resource intensive operation, preserves the message and calculates an CRC32 checksum over the entire message.
 	 */
 	@Nullable
-	public static Long generateCRC32(Message message) {
+	public static Long generateCRC32(@NonNull Message message) {
 		try {
 			CRC32 checksum = new CRC32();
 			try (InputStream inputStream = new CheckedInputStream(message.asInputStream(), checksum)) {
@@ -415,7 +416,7 @@ public class MessageUtils {
 	/**
 	 * Resource intensive operation, calculates the binary size of a Message.
 	 */
-	public static long computeSize(Message message) {
+	public static long computeSize(@NonNull Message message) {
 		try {
 			long size = message.size();
 			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
