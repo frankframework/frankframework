@@ -47,18 +47,19 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public static final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
 
 	private final @Getter Writer writer;
-	private @Setter boolean includeXmlDeclaration=false;
-	private @Setter boolean newlineAfterXmlDeclaration=false;
-	private @Setter boolean includeComments=true;
-	private @Setter boolean textMode=false;
-	private boolean closeWriterOnEndDocument=false;
+	private final boolean closeWriterOnEndDocument;
 
-	private boolean outputEscaping=true;
-	private int elementLevel=0;
+	private @Setter boolean includeXmlDeclaration = false;
+	private @Setter boolean newlineAfterXmlDeclaration = false;
+	private @Setter boolean includeComments = true;
+	private @Setter boolean textMode = false;
+
+	private boolean outputEscaping = true;
+	private int elementLevel = 0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
-	private final List<PrefixMapping> newNamespaceDefinitions=new ArrayList<>();
-	private final Map<String,Stack<String>> activeNamespaceDefinitions=new HashMap<>();
+	private final List<PrefixMapping> newNamespaceDefinitions = new ArrayList<>();
+	private final Map<String, Stack<String>> activeNamespaceDefinitions = new HashMap<>();
 
 	private static class PrefixMapping {
 
