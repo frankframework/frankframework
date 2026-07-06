@@ -410,7 +410,7 @@ public class SoapWrapperTest {
 
 		// Replace the first 4 characters of the CipherValue
 		Message manipulatedMessage2 = new Message(encrypted.asString()
-				.replaceAll("<xenc:CipherValue>(.{4})(.*)</xenc:CipherValue>", "<xenc:CipherValue>L+Li$2</xenc:CipherValue>"));
+				.replaceAll("<xenc:CipherValue>(.{4})(.{4})(.*)</xenc:CipherValue>", "<xenc:CipherValue>$2$1$3</xenc:CipherValue>"));
 		assertNotEquals(encrypted.asString(), manipulatedMessage2.asString());
 
 		WSSecurityException e5 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit"));
