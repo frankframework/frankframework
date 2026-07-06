@@ -172,3 +172,26 @@ You must provide your own database drivers for production use.
 
 This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=2000` and `GID=2000` instead of `root`.
 Keep this in mind when copying or mounting files to the container, as the files need to be owned by `tomcat:tomcat` instead of `root`.
+
+### Readonly
+
+When running in readonly mode, the following directories need to be mounted as writable for the container to start:
+
+* `/usr/local/tomcat/logs`
+* `/usr/local/tomcat/conf/Catalina`
+* `/usr/local/tomcat/temp`
+* `/usr/local/tomcat/work/Catalina/localhost`
+
+In Docker compose that can be done by adding a `tmpfs` for each directory:
+
+```yaml
+services:
+  frankframework:
+    # ...
+    read_only: true
+    tmpfs:
+      - /usr/local/tomcat/logs
+      - /usr/local/tomcat/conf/Catalina
+      - /usr/local/tomcat/temp
+      - /usr/local/tomcat/work/Catalina/localhost
+```
