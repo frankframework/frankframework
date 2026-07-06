@@ -50,7 +50,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  *
  * @since   4.7
  */
-public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMessageBrowsers<M> {
+public class JdbcTableListener<M> extends AbstractJdbcListener<M> implements IProvidesMessageBrowsers<M> {
 
 	private @Getter String tableName;
 	private @Getter String tableAlias="t";

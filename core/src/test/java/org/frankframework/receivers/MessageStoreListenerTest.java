@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.JdbcListener;
+import org.frankframework.jdbc.AbstractJdbcListener;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.lifecycle.LifecycleException;
@@ -57,7 +57,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 				if (!getAdditionalFieldsList().isEmpty()) {
 					Map<String, String> additionalFields = getAdditionalFieldsList().stream()
 							.collect(Collectors.toMap(Function.identity(), Function.identity()));
-					result.getContext().put(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY, additionalFields);
+					result.getContext().put(AbstractJdbcListener.ADDITIONAL_QUERY_FIELDS_KEY, additionalFields);
 				}
 				return result;
 			}
@@ -104,7 +104,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
 
 		Message message = listener.extractMessage(rawMessage, session);
-		assertFalse(session.containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
+		assertFalse(session.containsKey(AbstractJdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
 		assertEquals(input, message.asString());
 	}
 
@@ -116,12 +116,12 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 
 		String input = "test-message";
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
-		assertTrue(rawMessage.getContext().containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain additional fields");
+		assertTrue(rawMessage.getContext().containsKey(AbstractJdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain additional fields");
 		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
 
 		Message message = listener.extractMessage(rawMessage, session);
 		assertEquals(input, message.asString());
-		assertFalse(session.containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
+		assertFalse(session.containsKey(AbstractJdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
 		assertTrue(session.containsKey("timestamp"));
 		assertEquals("timestamp", session.get("timestamp"));
 

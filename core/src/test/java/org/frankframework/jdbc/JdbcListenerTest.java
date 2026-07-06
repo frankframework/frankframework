@@ -1,3 +1,18 @@
+/*
+   Copyright 2025 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package org.frankframework.jdbc;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -18,24 +33,22 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.dbms.H2DbmsSupport;
 import org.frankframework.receivers.Receiver;
 
-@SuppressWarnings("removal")
-class JdbcQueryListenerTest {
+class JdbcListenerTest {
 
-	private JdbcQueryListener listener;
+	private JdbcListener<String> listener;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		Receiver<?> receiver = mock(Receiver.class);
+		Receiver<String> receiver = mock(Receiver.class);
 		when(receiver.isTransacted()).thenReturn(false);
 
-		listener = spy(new JdbcQueryListener());
+		listener = spy(new JdbcListener<>());
 		listener.setReceiver(receiver);
 		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.STRING);
 		listener.setKeyField("TKEY");
 		listener.setMessageField("FM");
 		listener.setMessageIdField("MID");
 		listener.setAdditionalFields("F1, F2");
-		listener.setUpdateStatusToProcessedQuery("UPDATE TEST_TABLE SET STATUS = 'PROCESSED' WHERE TKEY = ?");
 
 		DataSource ds = mock(DataSource.class);
 		doReturn(ds).when(listener).getDatasource();
