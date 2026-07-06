@@ -191,7 +191,7 @@ services:
     read_only: true
     tmpfs:
       - /usr/local/tomcat/logs
-      - /usr/local/tomcat/conf/Catalina
       - /usr/local/tomcat/temp
+      - /usr/local/tomcat/conf/Catalina/localhost
       - /usr/local/tomcat/work/Catalina/localhost
 ```
