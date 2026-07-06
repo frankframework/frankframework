@@ -1,6 +1,7 @@
 package org.frankframework.soap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -408,12 +409,13 @@ public class SoapWrapperTest {
 		WSSecurityException e4 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage, keystore, certificateName, "changeit"));
 		assertEquals("The signature or decryption was invalid", e4.getMessage());
 
-		// Replace the first 4 characters of the CipherValue
+		// Swap the first 4 characters of the CipherValue
 		Message manipulatedMessage2 = new Message(encrypted.asString()
 				.replaceAll("<xenc:CipherValue>(.{4})(.{4})(.*)</xenc:CipherValue>", "<xenc:CipherValue>$2$1$3</xenc:CipherValue>"));
 		assertNotEquals(encrypted.asString(), manipulatedMessage2.asString());
 
-		WSSecurityException e5 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit"));
+		Exception e5 = assertThrows(Exception.class, () -> wrapper.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit"));
+		assertInstanceOf(WSSecurityException.class, e5, "expected a WSSecurityException but got: (%s): %s".formatted(e5.getClass(), e5.getMessage()));
 		assertEquals("Given final block not properly padded. Such issues can arise if a bad key is used during decryption.", e5.getMessage());
 
 		Message resultMessage = wrapper.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit");
