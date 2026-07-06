@@ -43,6 +43,15 @@
                       </td>
                     </tr>
                   }
+                  @for (column of staticMessageFields; track column) {
+                    <tr>
+                      <th>{{ column.displayName }}</th>
+                      <td>&nbsp;</td>
+                      <td>
+                        <input type="text" class="full-width" [(ngModel)]="column.filter" />
+                      </td>
+                    </tr>
+                  }
                   <tr>
                     <th>&nbsp;</th>
                     <td>

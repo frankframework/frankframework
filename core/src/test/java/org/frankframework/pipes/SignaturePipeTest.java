@@ -11,14 +11,17 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.Security;
 import java.util.Arrays;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.encryption.CommonsPkiUtil;
@@ -69,7 +72,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 					alias = aliases[0];
 				}
 			} catch (Exception e) {
-				fail("unable to retreive alias from PFX file");
+				fail("unable to retrieve alias from PFX file");
 			}
 		}
 		assertNotNull(privateKey, aliases != null ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file");
@@ -202,6 +205,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 	@Test
 	void testVerifyOKPEM() throws Exception {
+		// Arrange
 		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.crt");
 		pipe.setKeystoreType(KeystoreType.PEM);
@@ -211,12 +215,36 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		PipeForward failure = new PipeForward();
 		failure.setName("failure");
 		pipe.addForward(failure);
+
+		Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+
 		configureAndStartPipe();
 
+		// Act
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
+		// Assert
 		assertEquals(testMessage, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
+		assertNotNull(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME));
 	}
 
+	@Test
+	void testAlgorithmNotFound() {
+		// Arrange
+		pipe.setAction(Action.VERIFY);
+		pipe.setAlgorithm("bad_algorithm");
+		pipe.setKeystore("/Signature/ks_multipassword.jks");
+		pipe.setKeystorePassword("geheim");
+		pipe.setKeystoreType(KeystoreType.JKS);
+
+		Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+
+		// Act
+		ConfigurationException ce = assertThrows(ConfigurationException.class, pipe::configure);
+
+		// Assert
+		assertThat(ce.getMessage(), Matchers.startsWith("Signature algorithm [bad_algorithm] not supported"));
+		assertNotNull(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME));
+	}
 }

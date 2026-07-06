@@ -603,4 +603,24 @@ class OpenApiTest extends OpenApiTestBase {
 		String expected = TestFileUtils.getTestFile("/OpenApi/multipleMethods.json");
 		MatchUtils.assertJsonEquals(expected, result);
 	}
+
+	@Test
+	@DisplayName("Prove that exotic http status codes are supported")
+	void exitCode422ShouldNotThrowNullPointerException() throws Exception {
+		String uri = "/exitCode422";
+		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
+
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+				.setListener(uri, HttpMethod.POST, null)
+				.setInputValidator("simple.xsd", null, "user", null)
+				.addExit(200)
+				.addExit(422, null, false)
+				.build(true);
+
+		assertEquals(1, dispatcher.findAllMatchingConfigsForUri(uri).size(), "more then 1 registered pattern found!");
+		String result = callOpenApi(uri);
+
+		String expected = TestFileUtils.getTestFile("/OpenApi/exitCode422.json");
+		MatchUtils.assertJsonEquals(expected, result);
+	}
 }

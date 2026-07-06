@@ -22,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 
@@ -29,6 +30,8 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import lombok.Getter;
 
@@ -96,17 +99,38 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (StringUtils.isEmpty(getKeystore())) {
 			throw new ConfigurationException("keystore must be specified");
 		}
+		if (getKeystoreType() == KeystoreType.PEM && isNoBouncyCastleLoaded()) {
+			Security.addProvider(new BouncyCastleProvider());
+		}
+
+		String signingAlgorithm = getAlgorithm();
+		if (isSigningAlgorithmMissing(signingAlgorithm) && isNoBouncyCastleLoaded()) {
+			// If the algorithm is not supported, first try if that is solved by adding the BouncyCastle provider
+			Security.addProvider(new BouncyCastleProvider());
+		}
+
+		if (isSigningAlgorithmMissing(signingAlgorithm)) {
+			throw new ConfigurationException("Signature algorithm [" + signingAlgorithm + "] not supported, supported algorithms: " + Security.getAlgorithms("Signature"));
+		}
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, null);
 		if (getAction() == Action.VERIFY) {
 			if (!getParameterList().hasParameter(PARAMETER_SIGNATURE)) {
-				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specfied for action [" + action + "]");
+				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specified for action [" + action + "]");
 			}
 			failureForward = findForward("failure");
-			if (failureForward==null)  {
+			if (failureForward == null)  {
 				throw new ConfigurationException("Forward [failure] must be specified for action [" + action + "]");
 			}
 		}
+	}
+
+	private static boolean isNoBouncyCastleLoaded() {
+		return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null;
+	}
+
+	private static boolean isSigningAlgorithmMissing(String signingAlgorithm) {
+		return !Strings.CI.equalsAny(signingAlgorithm, Security.getAlgorithms("Signature").toArray(String[]::new));
 	}
 
 	@Override
