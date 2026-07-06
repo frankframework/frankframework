@@ -25,6 +25,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -91,6 +92,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	 * The <code>configure()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetName cannot be accessed, a ConfigurationException is thrown.
 	 */
+	@SuppressWarnings("removal")
 	@Override
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
@@ -103,8 +105,8 @@ public class XsltSender extends AbstractSenderWithParameters {
 		}
 		if(StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			Boolean omitXmlDeclaration = getOmitXmlDeclaration();
-			if (omitXmlDeclaration==null) {
-				omitXmlDeclaration=true;
+			if (omitXmlDeclaration == null) {
+				omitXmlDeclaration = true;
 			}
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
 		}
@@ -112,7 +114,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 			throw new ConfigurationException("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
 		}
 
-		if (getXsltVersion()>=2) {
+		if (getXsltVersion() >= 2) {
 			ParameterList parameterList = getParameterList();
 			for (int i = 0; i < parameterList.size(); i++) {
 				IParameter parameter = parameterList.getParameter(i);
@@ -127,7 +129,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	public void start() {
 		super.start();
 
-		if (transformerPool!=null) {
+		if (transformerPool != null) {
 			try {
 				transformerPool.open();
 			} catch (Exception e) {
@@ -144,7 +146,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 			transformerPool.close();
 		}
 
-		if (dynamicTransformerPoolMap!=null && !dynamicTransformerPoolMap.isEmpty()) {
+		if (dynamicTransformerPoolMap != null && !dynamicTransformerPoolMap.isEmpty()) {
 			for(TransformerPool tp : dynamicTransformerPoolMap.values()) {
 				tp.close();
 			}
@@ -171,10 +173,10 @@ public class XsltSender extends AbstractSenderWithParameters {
 
 	protected TransformerPool getTransformerPoolToUse(PipeLineSession session) throws SenderException, ConfigurationException {
 		TransformerPool poolToUse = transformerPool;
-		if(StringUtils.isNotEmpty(styleSheetNameSessionKey)) {
+		if (StringUtils.isNotEmpty(styleSheetNameSessionKey)) {
 			String styleSheetNameToUse = session.getString(styleSheetNameSessionKey);
 			if (StringUtils.isNotEmpty(styleSheetNameToUse )) {
-				if(!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
+				if (!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
 					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(this, null, null, styleSheetNameToUse, null, true, getParameterList()));
 					poolToUse.open();
 				} else {
@@ -188,7 +190,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+	protected ContentHandler createHandler(@NonNull Message input, @NonNull PipeLineSession session, @NonNull TransformerPool poolToUse, @Nullable ContentHandler handler, @NonNull MessageBuilder messageBuilder) throws TransformerException {
 		ParameterValueList pvl;
 		try {
 			pvl = paramList.getValues(input, session);
@@ -215,17 +217,17 @@ public class XsltSender extends AbstractSenderWithParameters {
 
 			Boolean indentXml = getIndentXml();
 			if (log.isTraceEnabled()) log.trace("Configured indentXml [{}]", indentXml);
-			if (indentXml==null) {
+			if (indentXml == null) {
 				indentXml = poolToUse.getIndent();
 				if (log.isTraceEnabled()) log.trace("Detected indentXml [{}]", indentXml);
 			}
-			if (indentXml==null) {
+			if (indentXml == null) {
 				indentXml = DEFAULT_INDENT;
 				if (log.isTraceEnabled()) log.trace("Default indentXml [{}]", indentXml);
 			}
 
 			if (handler == null || disableOutputEscaping) {
-				XmlWriter xmlWriter = messageBuilder.asXmlWriter();
+				XmlWriter xmlWriter = messageBuilder.asXmlWriter(poolToUse.getOutputEncoding());
 				Boolean omitXmlDeclaration = getOmitXmlDeclaration();
 				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [{}]", omitXmlDeclaration);
 				if (outputType == TransformerPool.OutputType.XML) {
@@ -256,7 +258,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 
 			TransformerFilter mainFilter = poolToUse.getTransformerFilter(handler, isRemoveNamespaces(), isHandleLexicalEvents());
 			XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
-			handler=filterInput(mainFilter, session);
+			handler = filterInput(mainFilter, session);
 
 			return handler;
 		} catch (IOException e) {
