@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-1"?><root>
-	<veld>ø</veld>
-	<veld>
-BARNDOMSOMGIVELSERNE<b/>
+
+	ø
+	
+BARNDOMSOMGIVELSERNE
  Skønt H. C. Andersens barndomsomgivelser var meget fattige, blev de i hans rige fantasi
  solbeskinnede.
     Der findes en mandtalsliste fra nogle få år ______ H. C. Andersens fødsel. Den er ______ 1801
@@ -16,5 +16,4 @@ BARNDOMSOMGIVELSERNE<b/>
  idealisme som praktisk økonomi. For at sikre sig en soldats værgeløn. Han kom ikke
  længere end ______ Holsten. Han fik høj feber og måtte sendes hjem. Da han kom hjem,
  forværredes sygdommen og han døde.
-	</veld>
-</root>
+	
