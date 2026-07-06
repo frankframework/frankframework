@@ -56,12 +56,17 @@ import org.frankframework.http.AbstractHttpSession;
  *   <HttpSender url="..." tokenEndpoint="..."
  *     oauthAuthenticationMethod="PRIVATE_KEY_JWT"
  *     clientId="my-client-id">
- *     <keystore keystoreResource="/path/to/keystore.p12"
+ *     <Keystore keystoreResource="/path/to/keystore.p12"
  *       password="..."
  *       alias="my-key-alias"
  *       aliasPassword="..." />
  *   </HttpSender>
  * }</pre></p>
+ *
+ * <p>Please note, that with this setup you cannot have a separate key/certificate to be used for SSL. This will be addressed in the future to be able to have
+ * different certificates used for SSL and private key authentication</p>
+ *
+ * @see org.frankframework.encryption.KeystoreConfiguration
  */
 public class PrivateKeyJwtAuthenticator extends AbstractOauthAuthenticator {
 
@@ -79,8 +84,8 @@ public class PrivateKeyJwtAuthenticator extends AbstractOauthAuthenticator {
 	 */
 	private JWSAlgorithm algorithm;
 
-	public PrivateKeyJwtAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
-		super(session);
+	public PrivateKeyJwtAuthenticator(AbstractHttpSession abstractHttpSession) throws HttpAuthenticationException {
+		super(abstractHttpSession);
 	}
 
 	@Override
