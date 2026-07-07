@@ -38,7 +38,7 @@ export class ComboboxComponent implements OnInit, OnChanges {
   @Input() id = '';
   @Input() disabled = false;
   @Input() selectedOption?: string;
-  @Input() clearOnShow = true;
+  @Input() clearOnClick = false;
   @Output() selectedOptionChange: EventEmitter<string> = new EventEmitter<string>();
 
   @ViewChild('comboboxOptions') comboboxOptionsRef!: ElementRef;
@@ -49,8 +49,6 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected selectedIndex = -1;
   protected listShown = false;
   protected showError = false;
-  private focusFromClick = false;
-  private clearedForCurrentOpen = false;
 
   protected onEnter(event: Event): void {
     event.preventDefault();
@@ -83,17 +81,15 @@ export class ComboboxComponent implements OnInit, OnChanges {
     }
   }
 
-  protected onInputMousedown(): void {
-    this.focusFromClick = true;
-    this.clearSelectionWhenOpenedByClick();
-  }
-
   protected showListDisplay(): void {
     if (this.listShown) return;
-    this.clearSelectionWhenOpenedByClick();
     this.listShown = true;
     this.comboboxDropdownIcon.nativeElement.classList.add('combobox__dropdown-icon--active');
     this.onUpdateInput();
+  }
+
+  protected onMouseDown(): void {
+    this.clearOnClick && this.clearSelectedItem();
   }
 
   protected onInput(): void {
@@ -122,24 +118,8 @@ export class ComboboxComponent implements OnInit, OnChanges {
     if (!this.listShown) return;
     this.comboboxDropdownIcon.nativeElement.classList.remove('combobox__dropdown-icon--active');
     this.listShown = false;
-    this.resetClickOpenState();
     this.setSelectedOption(this.input);
     this.validateInput();
-  }
-
-  private clearSelectionWhenOpenedByClick(): void {
-    if (!this.shouldClearSelectionOnOpen()) return;
-    this.clearSelectedItem();
-    this.clearedForCurrentOpen = true;
-  }
-
-  private shouldClearSelectionOnOpen(): boolean {
-    return this.clearOnShow && this.focusFromClick && !this.clearedForCurrentOpen;
-  }
-
-  private resetClickOpenState(): void {
-    this.focusFromClick = false;
-    this.clearedForCurrentOpen = false;
   }
 
   private resetListItems(): void {
