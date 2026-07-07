@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -31,6 +33,7 @@ import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
+import org.frankframework.util.Environment;
 
 class KubernetesNamedSecretProviderTest {
 
@@ -39,10 +42,14 @@ class KubernetesNamedSecretProviderTest {
 
 	private static final KubernetesNamedSecretProvider provider = new KubernetesNamedSecretProvider();
 	private static final KubernetesClient client = mock(KubernetesClient.class);
+	private static MockedStatic<Environment> environmentMock;
 
 	@BeforeAll
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	static void setUp() {
+		environmentMock = mockStatic(Environment.class);
+		environmentMock.when(Environment::isRunningOnKubernetes).thenReturn(true);
+
 		Map<String, String> dataA = new HashMap<>();
 		dataA.put("authdatabase.username", encode("dbUser"));
 		dataA.put("authdatabase.password", encode("dbPass"));
@@ -80,6 +87,9 @@ class KubernetesNamedSecretProviderTest {
 
 	@AfterAll
 	static void tearDown() {
+		if (environmentMock != null) {
+			environmentMock.close();
+		}
 		provider.close();
 	}
 
