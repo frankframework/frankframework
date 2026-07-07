@@ -46,9 +46,8 @@ public sealed interface BinaryDataConverter extends DataConverter permits TypedB
 		if (StringUtils.isEmpty(sourceCharset)) {
 			return asInputStream();
 		}
-		try (Reader reader = asReader(sourceCharset)) {
-			return ReaderInputStream.builder().setReader(reader).setCharset(encodingCharset).get();
-		}
+		Reader reader = asReader(sourceCharset);
+		return ReaderInputStream.builder().setReader(reader).setCharset(encodingCharset).get();
 	}
 
 	default byte @Nullable [] asByteArray(@Nullable String sourceCharset, String encodingCharset) throws IOException {

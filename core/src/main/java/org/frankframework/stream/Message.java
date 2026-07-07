@@ -235,6 +235,29 @@ public class Message implements Serializable {
 	}
 
 	/**
+	 * Get the charset if set. If the charset = 'AUTO' then compute the charset from stream.
+	 */
+	private @Nullable String computeCharsetOrNull() throws IOException {
+		String providedCharset = getCharset();
+		if (StringUtils.isEmpty(providedCharset)) {
+			return null;
+		}
+		if (!StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(providedCharset)) {
+			return providedCharset;
+		}
+		if (failedToDetermineCharset || isEmpty()) {
+			return null;
+		}
+		Charset computedCharset = MessageUtils.computeDecodingCharset(this.dataConverter.asInputStream());
+		failedToDetermineCharset = (computedCharset == null);
+
+		// Remove the size, if present, when the charset changes!
+		context.remove(MessageContext.METADATA_SIZE);
+		setCharset(computedCharset);
+		return computedCharset != null ? computedCharset.name() : null;
+	}
+
+	/**
 	 * If no Charset was provided when the Message object was created and
 	 * the requested Charset is <code>auto</code>, try to parse the Charset using
 	 * {@link MessageUtils#computeDecodingCharset(Message)}.
@@ -251,23 +274,25 @@ public class Message implements Serializable {
 		}
 
 		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(providedCharset)) {
-			Charset charset = null;
+			Charset computedCharset = null;
 			if (!failedToDetermineCharset && !isEmpty()) {
-				charset = MessageUtils.computeDecodingCharset(this.dataConverter.asInputStream());
+				computedCharset = MessageUtils.computeDecodingCharset(this.dataConverter.asInputStream());
 			}
-			setCharset(charset);
 
 			// Remove the size, if present, when the charset changes!
 			context.remove(MessageContext.METADATA_SIZE);
 
-			if (charset == null) {
+			if (computedCharset == null) {
 				failedToDetermineCharset = true;
 				if (StringUtils.isNotEmpty(defaultDecodingCharset) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultDecodingCharset)) {
+					setCharset(defaultDecodingCharset);
 					return defaultDecodingCharset;
 				}
+				setCharset(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 				return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 			}
-			return charset.name();
+			setCharset(computedCharset);
+			return computedCharset.name();
 		}
 
 		return providedCharset;
@@ -427,12 +452,16 @@ public class Message implements Serializable {
 	 */
 	public InputStream asInputStream(@Nullable String defaultEncodingCharset) throws IOException {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
-			return asInputStream();
+			return dataConverter.asInputStream();
 		}
 		if (dataConverter instanceof CharacterDataConverter cdc) {
 			return cdc.asInputStream(defaultEncodingCharset);
 		} else if  (dataConverter instanceof BinaryDataConverter bdc) {
-			String charset = computeDecodingCharset(getCharset());
+			String charset = computeCharsetOrNull();
+			if (StringUtils.isEmpty(charset)) {
+				return bdc.asInputStream();
+			}
+			// Character data to be reconverted into another character set
 			return bdc.asInputStream(charset, defaultEncodingCharset);
 		} else {
 			throw new IllegalStateException("Unsupported data converter type: " + dataConverter.getClass().getName());
@@ -465,11 +494,11 @@ public class Message implements Serializable {
 			return dataConverter.asInputSource();
 
 		}
-		String charset = computeDecodingCharset(getCharset());
-		if (StringUtils.isEmpty(charset)) {
-			return dataConverter.asInputSource();
+		String charset = computeCharsetOrNull();
+		if (StringUtils.isNotEmpty(charset)) {
+			return bdc.asInputSource(charset);
 		}
-		return bdc.asInputSource(charset);
+		return dataConverter.asInputSource();
 	}
 
 	/**
@@ -495,10 +524,12 @@ public class Message implements Serializable {
 			return dataConverter.asByteArray();
 		}
 		if (dataConverter instanceof CharacterDataConverter cdc) {
-			String charset = getEncodingCharset(defaultEncodingCharset);
-			return cdc.asByteArray(charset);
+			return cdc.asByteArray(defaultEncodingCharset);
 		} else if (dataConverter instanceof BinaryDataConverter bdc && StringUtils.isNotEmpty(getCharset())) {
-			String charset = computeDecodingCharset(getCharset());
+			String charset = computeCharsetOrNull();
+			if (StringUtils.isEmpty(charset)) {
+				return bdc.asByteArray();
+			}
 			return bdc.asByteArray(charset, defaultEncodingCharset);
 		} else {
 			return dataConverter.asByteArray();
