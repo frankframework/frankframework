@@ -1,6 +1,7 @@
 package org.frankframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -18,11 +19,6 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 
-/**
- * ReplacerPipe Tester.
- *
- * @author <Sina Sen>
- */
 public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 	@Override
@@ -31,11 +27,10 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	public void everythingNull() {
+	public void noReplaceShouldSucceed() {
 		pipe.setFind("laa");
 
-		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAdapter);
-		assertThat(e.getMessage(), Matchers.containsString("cannot have a null replace-attribute"));
+		assertDoesNotThrow(() -> configureAndStartPipe());
 	}
 
 	@Test
@@ -118,6 +113,20 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 
 		PipeRunResult res = doPipe(pipe, "<test>?{varToSubstitute} and ?{secondVarToSubstitute}</test>)", session);
 		assertEquals("<head>substitutedValue and secondSubstitutedValue</head>)", res.getResult().asString());
+	}
+
+	@Test
+	public void testReplaceNoParameter() throws Exception {
+		pipe.addParameter(ParameterBuilder.create()
+				.withName("varToSubstitute")
+				.withValue("substitutedValue"));
+
+		pipe.setFind("test");
+		pipe.setReplace("head");
+		pipe.configure();
+
+		PipeRunResult res = doPipe(pipe, "<test>?{varToSubstitute1} and ?{secondVarToSubstitute2}</test>)", session);
+		assertEquals("<head>?{varToSubstitute1} and ?{secondVarToSubstitute2}</head>)", res.getResult().asString());
 	}
 
 	@Test
@@ -243,5 +252,15 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 			session.remove("prefix.value.suffix");
 			System.clearProperty("prefix.value.suffix");
 		}
+	}
+
+	@Test
+	public void testConvertingLineEndings() throws Exception {
+		pipe.setFind("\n");
+		pipe.setReplace("");
+		configureAndStartPipe();
+
+		PipeRunResult res = doPipe(pipe, "tralallaal\rlasdlfkakljsdf\nkasdfjasdf\r\niets", session);
+		assertEquals("tralallaal\rlasdlfkakljsdfkasdfjasdf\riets", res.getResult().asString());
 	}
 }
