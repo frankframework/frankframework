@@ -17,8 +17,6 @@ package org.frankframework.dataconversion;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 
 import org.jspecify.annotations.Nullable;
 
@@ -30,11 +28,6 @@ public class SerializableFileReferenceConverter implements BinaryDataConversionS
 	@Override
 	public @Nullable String asString(SerializableFileReference data, String encodingCharset) throws IOException {
 		return StreamUtil.readerToString(asReader(data, encodingCharset), null);
-	}
-
-	@Override
-	public Reader asReader(SerializableFileReference data, String encodingCharset) throws IOException {
-		return new InputStreamReader(data.getInputStream(), encodingCharset);
 	}
 
 	@Override
