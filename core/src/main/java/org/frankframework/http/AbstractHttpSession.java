@@ -93,6 +93,7 @@ import org.frankframework.http.authentication.IOauthAuthenticator;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
+import org.frankframework.http.authentication.PrivateKeyJwtAuthenticator;
 import org.frankframework.http.authentication.SamlAssertionOauth;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.statistics.FrankMeterType;
@@ -236,7 +237,15 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		 * Generates a new SAML assertion, which will be exchanged for a token by the authorization server. The {@literal accessToken} is then used
 		 * in the Authorization header to authenticate against the resource server.
 		 */
-		SAML_ASSERTION;
+		SAML_ASSERTION,
+
+		/**
+		 * Requires {@literal clientId} and a private key (configured via the keystore settings).
+		 * Implements <a href="https://datatracker.ietf.org/doc/html/rfc7523#section-2.2">RFC 7523</a> {@code private_key_jwt} client authentication.
+		 * A signed JWT is sent as the {@code client_assertion} parameter to the token endpoint. Both RSA and EC keys are supported.
+		 * The {@literal accessToken} is then used in the Authorization header to authenticate against the resource server.
+		 */
+		PRIVATE_KEY_JWT;
 
 		public IOauthAuthenticator newAuthenticator(AbstractHttpSession session) throws HttpAuthenticationException {
 			return switch (this) {
@@ -245,6 +254,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				case RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH -> new ResourceOwnerPasswordCredentialsBasicAuth(session);
 				case RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS -> new ResourceOwnerPasswordCredentialsQueryParameters(session);
 				case SAML_ASSERTION -> new SamlAssertionOauth(session);
+				case PRIVATE_KEY_JWT -> new PrivateKeyJwtAuthenticator(session);
 			};
 		}
 
