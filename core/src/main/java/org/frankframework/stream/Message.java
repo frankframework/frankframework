@@ -227,6 +227,13 @@ public class Message implements Serializable {
 		return (String) context.get(MessageContext.METADATA_CHARSET);
 	}
 
+	public void setCharset(@Nullable String charset) {
+		context.withCharset(charset);
+	}
+	public void setCharset(@Nullable Charset charset) {
+		context.withCharset(charset);
+	}
+
 	/**
 	 * If no Charset was provided when the Message object was created and
 	 * the requested Charset is <code>auto</code>, try to parse the Charset using
