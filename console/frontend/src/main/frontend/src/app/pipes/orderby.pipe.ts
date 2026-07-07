@@ -10,9 +10,15 @@ export class OrderByPipe implements PipeTransform {
       return array;
     }
 
-    // @ts-expect-error idk
-    array.sort((a, b) => a[field] - b[field]);
-
-    return array;
+    // eslint-disable-next-line unicorn/prefer-simple-sort-comparator
+    return array.toSorted((a, b) => {
+      if (a[field] < b[field]) {
+        return -1;
+      }
+      if (a[field] > b[field]) {
+        return 1;
+      }
+      return 0;
+    });
   }
 }

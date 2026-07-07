@@ -120,7 +120,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   }
 
   private removeAdapterAfterLineSelection(fragment: string | null): void {
-    if (!(this.selectedAdapter && fragment?.includes('L') && !fragment?.includes('-'))) return;
+    if (!(this.selectedAdapter && fragment?.includes('L')) || fragment?.includes('-')) return;
     this.selectedAdapter = null;
     this.skipParamsUpdate = true;
     this.updateQueryParams();

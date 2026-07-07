@@ -449,7 +449,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     const searchSession: FieldSearchInfo[] = [];
     const columns: SearchColumn[] = [...this.messageFields, ...this.staticMessageFields];
     for (const column of columns) {
-      if (!(column.filter !== '' || !column.display)) continue;
+      if (column.filter === '' && column.display) continue;
       if (onColumnUpdate) onColumnUpdate(column);
       searchSession.push({
         fieldName: column.fieldName,
