@@ -230,10 +230,9 @@ public class MessageUtils {
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static @Nullable Charset computeDecodingCharset(Message message, int confidence) throws IOException {
-		if (Message.isEmpty(message) || !message.isBinary()) {
+		if (Message.isEmpty(message)) {
 			return null;
 		}
-
 		if (StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
 			return Charset.forName(message.getCharset());
 		}
