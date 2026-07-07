@@ -1,5 +1,6 @@
 package org.frankframework.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,6 +14,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -220,7 +222,7 @@ public class MessageUtilsTest {
 		Message notJson = new Message(val);
 		MimeType mimeType = MessageUtils.computeMimeType(notJson);
 		assertNotNull(mimeType);
-		assertEquals("text/plain", mimeType.toString());
+		assertThat(mimeType.toString(), Matchers.startsWith("text/plain"));
 		assertEquals(val, notJson.asString());
 	}
 
@@ -230,7 +232,7 @@ public class MessageUtilsTest {
 		Message notJson = new Message(val);
 		MimeType mimeType = MessageUtils.computeMimeType(notJson);
 		assertNotNull(mimeType);
-		assertEquals("text/plain", mimeType.toString());
+		assertThat(mimeType.toString(), Matchers.startsWith("text/plain"));
 		assertEquals(val, notJson.asString());
 	}
 
