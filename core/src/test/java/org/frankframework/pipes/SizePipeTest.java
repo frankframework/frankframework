@@ -32,6 +32,6 @@ public class SizePipeTest extends PipeTestBase<SizePipe>{
 	@Test
 	void testDomDocumentMessage() throws Exception {
 		PipeRunResult res = doPipe(new Message(XmlUtils.buildDomDocument(new StringReader("<root/>"))));
-		assertEquals("-1", res.getResult().asString());
+		assertEquals("7", res.getResult().asString());
 	}
 }

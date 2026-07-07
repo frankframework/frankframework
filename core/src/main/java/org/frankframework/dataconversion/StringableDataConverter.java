@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 
 public abstract class StringableDataConverter<T> implements CharacterDataConversionSupport<T> {
 
@@ -35,7 +36,7 @@ public abstract class StringableDataConverter<T> implements CharacterDataConvers
 
 	@Override
 	public long size(T data) {
-		return asString(data).length();
+		return asString(data).getBytes(StandardCharsets.UTF_8).length;
 	}
 
 	@Override
