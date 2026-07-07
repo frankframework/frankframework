@@ -37,13 +37,13 @@ export class StorageViewComponent implements OnInit {
   protected readonly faTimes = faTimes;
   protected readonly faArrowAltCircleDown = faArrowAltCircleDown;
 
+  private skipProperties: string[] = ['id', 'insertDate', 'correlationId', 'comment', 'message'];
   private readonly storageService: StorageService = inject(StorageService);
   private readonly base64Service: Base64Service = inject(Base64Service);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly SweetAlert: SweetalertService = inject(SweetalertService);
   private readonly appService: AppService = inject(AppService);
-  private skipProperties: string[] = ['id', 'insertDate', 'correlationId', 'comment', 'message'];
 
   constructor() {
     this.storageParams = this.storageService.storageParams;

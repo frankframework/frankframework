@@ -3,7 +3,7 @@
     @if (view.target || view.url.startsWith('http')) {
       <li>
         <a [href]="view.url" [target]="view.target ?? '_blank'"
-        ><fa-icon [icon]="faDesktop" /> <span class="nav-label">{{ view.name }}</span></a
+          ><fa-icon [icon]="faDesktop" /> <span class="nav-label">{{ view.name }}</span></a
         >
       </li>
     } @else {

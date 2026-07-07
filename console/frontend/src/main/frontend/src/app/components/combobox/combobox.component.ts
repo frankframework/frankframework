@@ -49,6 +49,16 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected listShown = false;
   protected showError = false;
 
+  ngOnInit(): void {
+    this.resetListItems();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedOption']) {
+      this.input = changes['selectedOption'].currentValue ?? '';
+    }
+  }
+
   protected onEnter(event: Event): void {
     event.preventDefault();
     this.selectItem(this.selectedIndex);
@@ -66,16 +76,6 @@ export class ComboboxComponent implements OnInit, OnChanges {
 
   protected onArrowDown(): void {
     this.selectNext();
-  }
-
-  ngOnInit(): void {
-    this.resetListItems();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedOption']) {
-      this.input = changes['selectedOption'].currentValue ?? '';
-    }
   }
 
   protected showListDisplay(): void {
@@ -131,7 +131,7 @@ export class ComboboxComponent implements OnInit, OnChanges {
   }
 
   private validateInput(): void {
-    this.showError = !!(this.input || this.required) && !this.options.some(({ label }) => label === this.input);
+    this.showError = !!(this.input || this.required) && this.options.every(({ label }) => label !== this.input);
     if (this.showError) this.resetListItems();
   }
 
@@ -153,14 +153,14 @@ export class ComboboxComponent implements OnInit, OnChanges {
   }
 
   private selectNext(): void {
-    if (this.filteredOptions.length <= 0) {
+    if (this.filteredOptions.length === 0) {
       return;
     }
     this.selectItemInListDisplay((this.selectedIndex + 1) % this.filteredOptions.length);
   }
 
   private selectPrevious(): void {
-    if (this.filteredOptions.length <= 0) {
+    if (this.filteredOptions.length === 0) {
       return;
     }
     if (this.selectedIndex === -1) this.selectedIndex = 0;

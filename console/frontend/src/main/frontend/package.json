@@ -58,9 +58,7 @@
   },
   "devDependencies": {
     "@angular-devkit/core": "^22.0.4",
-    "@angular-eslint/eslint-plugin": "^22.0.0",
-    "@angular-eslint/eslint-plugin-template": "^22.0.0",
-    "@angular-eslint/template-parser": "^22.0.0",
+    "@angular-eslint/builder": "22.0.0",
     "@angular/build": "^22.0.4",
     "@angular/cli": "^22.0.4",
     "@angular/compiler-cli": "^22.0.4",
@@ -71,11 +69,9 @@
     "@types/markdown-it": "^14.1.2",
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.7",
-    "@typescript-eslint/eslint-plugin": "^8.62.1",
-    "@typescript-eslint/parser": "^8.62.1",
     "@vitest/browser-webdriverio": "^4.1.9",
-    "angular-eslint": "^22.0.0",
-    "eslint": "^10.6.0",
+    "angular-eslint": "22.0.0",
+    "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-sonarjs": "^4.1.0",
@@ -84,7 +80,7 @@
     "istanbul-lib-instrument": "^6.0.3",
     "prettier": "^3.9.4",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.62.1",
+    "typescript-eslint": "8.60.1",
     "vitest": "^4.1.9"
   },
   "packageManager": "pnpm@11.9.0+sha512.bd682d5d03fe525ef7c9fd6780c6884d1e756ac4c9c9fe00c538782824310dcf90e3ddc4f53835f06dfaebd5085e41855e0bcbb3b60de2ac5bbab89e5036f03b"

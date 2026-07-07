@@ -10,15 +10,8 @@ export class OrderByPipe implements PipeTransform {
       return array;
     }
 
-    array.sort((a, b) => {
-      if (a[field] < b[field]) {
-        return -1;
-      }
-      if (a[field] > b[field]) {
-        return 1;
-      }
-      return 0;
-    });
+    // @ts-expect-error idk
+    array.sort((a, b) => a[field] - b[field]);
 
     return array;
   }

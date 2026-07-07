@@ -4,7 +4,7 @@ import { Directive, ElementRef, inject } from '@angular/core';
   selector: '[appQuickSubmitForm]',
   host: {
     '(keydown.control.enter)': 'onControlEnter($event)',
-  }
+  },
 })
 export class QuickSubmitFormDirective {
   private element = inject(ElementRef<HTMLFormElement>);

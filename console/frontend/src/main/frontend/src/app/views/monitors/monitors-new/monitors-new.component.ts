@@ -26,11 +26,11 @@ export class MonitorsNewComponent implements OnInit, OnDestroy {
   );
   protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
 
+  private routeSubscription: Subscription | null = null;
   private readonly appService: AppService = inject(AppService);
   private readonly monitorsService: MonitorsService = inject(MonitorsService);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private routeSubscription: Subscription | null = null;
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap

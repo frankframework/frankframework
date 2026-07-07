@@ -45,11 +45,11 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     },
   };
 
+  private appConstantsSubscription: Subscription | null = null;
   private readonly webStorageService: WebStorageService = inject(WebStorageService);
   private readonly jdbcService: JdbcService = inject(JdbcService);
   private readonly appService: AppService = inject(AppService);
-  private appConstants$ = toObservable(this.appService.appConstants);
-  private appConstantsSubscription: Subscription | null = null;
+  private readonly appConstants$ = toObservable(this.appService.appConstants);
 
   ngOnInit(): void {
     this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
@@ -67,10 +67,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
       if (executeQueryCookie) {
         this.form = executeQueryCookie;
       } else {
-        this.form.datasource =
-          appConstants['jdbc.datasource.default'] == undefined
-            ? data.datasources[0]
-            : (appConstants['jdbc.datasource.default'] as string);
+        this.form.datasource = (appConstants['jdbc.datasource.default'] as string) ?? data.datasources[0];
         this.form.queryType = data.queryTypes[0];
         this.form.resultType = data.resultTypes[0];
       }

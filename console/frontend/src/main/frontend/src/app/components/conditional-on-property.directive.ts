@@ -10,10 +10,10 @@ export class ConditionalOnPropertyDirective implements OnInit, OnDestroy {
   @Input({ required: true }) appConditionalOnProperty!: string;
   @Input() onFalseConditionClassName = 'disabled';
 
+  private subscription: Subscription | null = null;
   private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly appService: AppService = inject(AppService);
-  private appConstants$ = toObservable(this.appService.appConstants);
-  private subscription: Subscription | null = null;
+  private readonly appConstants$ = toObservable(this.appService.appConstants);
 
   ngOnInit(): void {
     this.subscription = this.appConstants$.subscribe((appConstants) => this.checkCondition(appConstants));

@@ -14,7 +14,7 @@ export function ConfigurationFilter(
 
     if (
       (selectedConfiguration == 'All' || adapter.configuration == selectedConfiguration) &&
-      (filter === undefined || filter[adapter.status!]) &&
+      (filter === undefined || Object.hasOwn(filter, adapter.status!)) &&
       (filterQuery === undefined || filterQuery === '' || adapterName.toLowerCase().includes(filterQuery))
     )
       filteredAdapters[adapterName] = adapter;

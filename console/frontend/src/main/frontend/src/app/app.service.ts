@@ -6,13 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { computeServerPath, deepMerge } from './utilities';
 
 export type RunState =
-  | 'ERROR'
-  | 'STARTING'
-  | 'EXCEPTION_STARTING'
-  | 'STARTED'
-  | 'STOPPING'
-  | 'EXCEPTION_STOPPING'
-  | 'STOPPED';
+  'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
 export type RunStateRuntime = RunState | 'loading';
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 export type AdapterStatus = 'started' | 'warning' | 'stopped';
@@ -396,16 +390,16 @@ export class AppService {
     };
 
     for (const adapter of Object.values(this.adapters())) {
-      if (adapter.configuration == configurationName || configurationName == 'All') {
-        // Only adapters for active config
-        adapterSummary[adapter.state]++;
-        for (const index in adapter.receivers) {
-          receiverSummary[adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>]++;
-        }
-        for (const index in adapter.messages) {
-          const level = adapter.messages[+index].level.toLowerCase() as Lowercase<MessageLevel>;
-          messageSummary[level]++;
-        }
+      if (!(adapter.configuration == configurationName || configurationName == 'All')) continue;
+
+      // Only adapters for active config
+      adapterSummary[adapter.state]++;
+      for (const index in adapter.receivers) {
+        receiverSummary[adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>]++;
+      }
+      for (const index in adapter.messages) {
+        const level = adapter.messages[+index].level.toLowerCase() as Lowercase<MessageLevel>;
+        messageSummary[level]++;
       }
     }
 

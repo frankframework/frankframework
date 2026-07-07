@@ -116,8 +116,7 @@ export class TestServiceListenerComponent implements OnInit {
     this.webStorageService.set<Form>('testServiceListener', this.form);
     this.http.post<ServiceListenerResult>(`${this.appService.absoluteApiPath}test-servicelistener`, fd).subscribe({
       next: (returnData) => {
-        let warnLevel = 'success';
-        if (returnData.state == 'ERROR') warnLevel = 'danger';
+        const warnLevel = returnData.state == 'ERROR' ? 'danger' : 'success';
         this.addNote(warnLevel, returnData.state);
         this.result = returnData.result;
         this.processingMessage = false;
