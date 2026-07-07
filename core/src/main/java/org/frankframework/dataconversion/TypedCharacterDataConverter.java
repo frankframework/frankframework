@@ -19,7 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import javax.xml.transform.Source;
+
 import org.jspecify.annotations.Nullable;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public final class TypedCharacterDataConverter<T> extends AbstractTypedDataConverter<T> implements CharacterDataConverter {
 	private final CharacterDataConversionSupport<T> conversionSupport;
@@ -57,6 +61,16 @@ public final class TypedCharacterDataConverter<T> extends AbstractTypedDataConve
 	@Override
 	public InputStream asInputStream(String encodingCharset) throws IOException {
 		return conversionSupport.asInputStream(data, encodingCharset);
+	}
+
+	@Override
+	public @Nullable InputSource asInputSource() throws IOException {
+		return conversionSupport.asInputSource(data);
+	}
+
+	@Override
+	public @Nullable Source asSource() throws IOException, SAXException {
+		return conversionSupport.asSource(data);
 	}
 
 	@Override

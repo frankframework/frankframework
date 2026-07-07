@@ -19,7 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import javax.xml.transform.Source;
+
 import org.jspecify.annotations.Nullable;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public final class TypedBinaryDataConverter<T> extends AbstractTypedDataConverter<T> implements BinaryDataConverter {
 	private final BinaryDataConversionSupport<T> conversionSupport;
@@ -58,5 +62,20 @@ public final class TypedBinaryDataConverter<T> extends AbstractTypedDataConverte
 	@Override
 	public InputStream asInputStream() throws IOException {
 		return conversionSupport.asInputStream(data);
+	}
+
+	@Override
+	public @Nullable Source asSource() throws IOException, SAXException {
+		return conversionSupport.asSource(data);
+	}
+
+	@Override
+	public @Nullable InputSource asInputSource() throws IOException {
+		return conversionSupport.asInputSource(data);
+	}
+
+	@Override
+	public @Nullable InputSource asInputSource(String charset) throws IOException {
+		return conversionSupport.asInputSource(data, charset);
 	}
 }

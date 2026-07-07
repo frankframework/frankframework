@@ -64,4 +64,9 @@ public class NullDataConverter implements BinaryDataConversionSupport<NullMarker
 	public @Nullable InputSource asInputSource(NullMarker data) throws IOException {
 		return null;
 	}
+
+	@Override
+	public @Nullable InputSource asInputSource(NullMarker data, String charset) throws IOException {
+		return null;
+	}
 }

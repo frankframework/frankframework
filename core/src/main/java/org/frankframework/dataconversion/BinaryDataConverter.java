@@ -34,16 +34,10 @@ public sealed interface BinaryDataConverter extends DataConverter permits TypedB
 
 	Reader asReader(String encodingCharset) throws IOException;
 
-	default @Nullable InputSource asInputSource() throws IOException {
-		return new InputSource(asInputStream());
-	}
-
-	default @Nullable InputSource asInputSource(String charset) throws IOException {
-		return new InputSource(asReader(charset));
-	}
+	@Nullable InputSource asInputSource(String charset) throws IOException;
 
 	default InputStream asInputStream(@Nullable String sourceCharset, String encodingCharset) throws IOException {
-		if (StringUtils.isEmpty(sourceCharset)) {
+		if (StringUtils.isEmpty(sourceCharset) || isEmpty()) {
 			return asInputStream();
 		}
 		Reader reader = asReader(sourceCharset);
@@ -51,7 +45,7 @@ public sealed interface BinaryDataConverter extends DataConverter permits TypedB
 	}
 
 	default byte @Nullable [] asByteArray(@Nullable String sourceCharset, String encodingCharset) throws IOException {
-		if (StringUtils.isEmpty(sourceCharset)) {
+		if (StringUtils.isEmpty(sourceCharset) || isEmpty()) {
 			return asByteArray();
 		}
 		try (InputStream is = asInputStream(sourceCharset, encodingCharset)) {

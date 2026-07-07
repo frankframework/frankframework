@@ -24,8 +24,6 @@ import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.frankframework.util.XmlUtils;
-
 public sealed interface DataConverter permits CharacterDataConverter, BinaryDataConverter {
 	boolean isBinary();
 
@@ -37,7 +35,5 @@ public sealed interface DataConverter permits CharacterDataConverter, BinaryData
 
 	@Nullable InputSource asInputSource() throws IOException;
 
-	default @Nullable Source asSource() throws IOException, SAXException {
-		return XmlUtils.inputSourceToSAXSource(asInputSource());
-	}
+	@Nullable Source asSource() throws IOException, SAXException;
 }
