@@ -92,13 +92,15 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	void wrongCharsetShouldNotBeUsed() throws ConfigurationException, IOException, PipeRunException {
+	void differentCharsetShouldRecode() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
-		pipe.setCharset("ISO-8859-1"); // Should be ignored
+
+		//noinspection removal
+		pipe.setCharset("ISO-8859-1");
 		pipe.configure();
 		pipe.start();
 
-		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
+		String utf8Input = "Spëcïál Chäràctêrs";
 		byte[] inputBytes = utf8Input.getBytes(StandardCharsets.UTF_8); // String containing utf-8 characters
 		Message in = new Message(inputBytes, "auto"); // Saving it with a different charset
 
@@ -109,10 +111,10 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		Message result = doPipe(pipe, in, session).getResult();
 
 		// Assert
-		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", result.asString().trim()); // validate and preserve the message
+		assertEquals("U3DrY+/hbCBDaORy4GN06nJz", result.asString().trim()); // validate and preserve the message
 
 		InputStream decodedResult = new Base64InputStream(result.asInputStream(), false);
-		assertEquals(utf8Input, StreamUtil.streamToString(decodedResult));
+		assertEquals(utf8Input, StreamUtil.streamToString(decodedResult, "ISO-8859-1"));
 	}
 
 	@Test
