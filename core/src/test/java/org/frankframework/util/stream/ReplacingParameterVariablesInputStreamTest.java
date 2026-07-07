@@ -63,8 +63,9 @@ public class ReplacingParameterVariablesInputStreamTest {
 		params.configure();
 		ParameterValueList pvl = params.getValues(Message.nullMessage(), new PipeLineSession());
 
+		InputStream boas = getByteArrayInputStream("in");
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
-			new ReplacingParameterVariablesInputStream(getByteArrayInputStream("in"), pvl)
+			new ReplacingParameterVariablesInputStream(boas, pvl)
 		);
 		assertEquals("no parameters provided", e.getMessage());
 	}
