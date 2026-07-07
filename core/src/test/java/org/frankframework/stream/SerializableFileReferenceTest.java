@@ -66,7 +66,7 @@ public class SerializableFileReferenceTest {
 	private SerializableFileReference reference;
 
 	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
+	public void setUp(TestInfo testInfo) {
 		testDataEnriched = TEST_DATA + "-" + testInfo.getDisplayName();
 	}
 
@@ -312,10 +312,10 @@ public class SerializableFileReferenceTest {
 
 		// Assert
 		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
-		assertFalse(message.isBinary(), "Should not be binary, charset is set");
+		assertFalse(message.isBinary(), "Should not be binary, charset is set on message");
 
 		reference = (SerializableFileReference) message.asObject();
-		assertFalse(reference.isBinary(), "Should not be binary, charset is set");
+		assertTrue(reference.isBinary(), "Should be binary, charset is not set on SerializableFileReference");
 		Path path = reference.getPath();
 		assertEquals(tempFile.toPath(), path);
 
@@ -399,7 +399,7 @@ public class SerializableFileReferenceTest {
 		Message message = new FileMessage(tempFile);
 		message.setCharset("UTF-8");
 
-		assertTrue(message.isBinary());
+		assertFalse(message.isBinary());
 
 		SerializationTester<Message> serializationTester = new SerializationTester<>();
 
@@ -407,7 +407,7 @@ public class SerializableFileReferenceTest {
 		Message message2 = serializationTester.testSerialization(message);
 
 		// Assert
-		assertTrue(message2.isBinary());
+		assertFalse(message2.isBinary());
 		String result = message2.asString();
 		assertEquals(testDataEnriched, result);
 	}

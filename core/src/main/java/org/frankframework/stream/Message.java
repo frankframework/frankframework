@@ -255,6 +255,7 @@ public class Message implements Serializable {
 			if (!failedToDetermineCharset && !isEmpty()) {
 				charset = MessageUtils.computeDecodingCharset(this.dataConverter.asInputStream());
 			}
+			setCharset(charset);
 
 			// Remove the size, if present, when the charset changes!
 			context.remove(MessageContext.METADATA_SIZE);
