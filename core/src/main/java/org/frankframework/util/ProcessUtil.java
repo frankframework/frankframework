@@ -102,7 +102,7 @@ public class ProcessUtil {
 	@SuppressWarnings("java:S2142") // Don't re-interrupt
 	private static Path executeCommandInternal(List<String> command, int timeout) throws IOException, TimeoutException {
 		Path tempDir = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
-		Path stdoutFile = Files.createTempFile(tempDir, "msg", "dat");
+		Path stdoutFile = Files.createTempFile(tempDir, "msg-", ".dat");
 
 		final Process process;
 		try {
