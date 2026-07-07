@@ -8,6 +8,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +23,7 @@ export type Option = {
   imports: [NgClass, FormsModule],
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '(keydown.enter)': 'onEnter($event)',
     '(keydown.escape)': 'onEscape()',

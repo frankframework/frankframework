@@ -1,19 +1,17 @@
-import { Component, computed, inject, OnDestroy, OnInit, Signal, TrackByFunction } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnDestroy,
+  OnInit,
+  Signal,
+  TrackByFunction,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ConfigurationFilter, ConfigurationFilterPipe } from 'src/app/pipes/configuration-filter.pipe';
-import { StatusService } from './status.service';
-import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog } from 'src/app/app.service';
-import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
 import { KeyValue, KeyValuePipe, NgClass } from '@angular/common';
-import { ServerWarningsComponent } from './server-warnings/server-warnings.component';
-import { ConfigurationTabListComponent } from '../../components/tab-list/configuration-tab-list.component';
-import { ConfigurationSummaryComponent } from './configuration-summary/configuration-summary.component';
-import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 import { FormsModule } from '@angular/forms';
-import { ConfigurationMessagesComponent } from './configuration-messages/configuration-messages.component';
-import { AdapterStatusComponent } from './adapter-status/adapter-status.component';
-import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
   faAngleDoubleDown,
@@ -27,12 +25,25 @@ import {
   faFileImage,
 } from '@fortawesome/free-solid-svg-icons';
 
+import { ConfigurationFilter, ConfigurationFilterPipe } from '../../pipes/configuration-filter.pipe';
+import { StatusService } from './status.service';
+import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog } from '../../app.service';
+import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
+import { ServerWarningsComponent } from './server-warnings/server-warnings.component';
+import { ConfigurationTabListComponent } from '../../components/tab-list/configuration-tab-list.component';
+import { ConfigurationSummaryComponent } from './configuration-summary/configuration-summary.component';
+import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
+import { ConfigurationMessagesComponent } from './configuration-messages/configuration-messages.component';
+import { AdapterStatusComponent } from './adapter-status/adapter-status.component';
+import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
+
 type Filter = Record<AdapterStatus, boolean>;
 
 @Component({
   selector: 'app-status',
   templateUrl: './status.component.html',
   styleUrls: ['./status.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     ServerWarningsComponent,
     ConfigurationTabListComponent,

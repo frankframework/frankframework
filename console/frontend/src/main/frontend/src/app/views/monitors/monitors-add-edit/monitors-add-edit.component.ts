@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Event, MonitorsService, Trigger } from '../monitors.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { combineLatestWith } from 'rxjs';
@@ -18,6 +18,7 @@ type EventSource = {
   selector: 'app-monitors-add-edit',
   imports: [NgbAlert, RouterLink, QuickSubmitFormDirective, FormsModule, FaIconComponent],
   templateUrl: './monitors-add-edit.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./monitors-add-edit.component.scss'],
 })
 export class MonitorsAddEditComponent implements OnInit {

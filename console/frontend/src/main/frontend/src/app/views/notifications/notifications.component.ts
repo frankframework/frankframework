@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Notification, NotificationService } from 'src/app/services/notification.service';
+import { Notification, NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-notifications',
@@ -9,13 +9,7 @@ import { Notification, NotificationService } from 'src/app/services/notification
   styleUrls: ['./notifications.component.scss'],
 })
 export class NotificationsComponent implements OnInit {
-  protected notification: Notification | null = {
-    icon: '',
-    title: '',
-    message: false,
-    fn: false,
-    time: 0,
-  };
+  protected notification: Notification | null = null;
   protected text = '';
 
   private route = inject(ActivatedRoute);

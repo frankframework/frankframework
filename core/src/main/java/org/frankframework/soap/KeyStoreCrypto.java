@@ -70,14 +70,14 @@ import org.frankframework.util.AppConstants;
  * WSS4J does not come with a method to use a KeyStore.
  * There is a property based WSS4J Merlin implementation, but that does not suit the
  * configuration based approach we use in the Frank!Framework.
- * 
+ *
  * This way the {@code keystore} element can be used to provided a certificate.
- * 
+ *
  * NOTE: When no TrustStore is provided the default (CACERTS) is used.
- * 
+ *
  * The KeyStore is used for signing and encrypting SOAP Messages, the TrustStore is used to validate the CA Chains.
  * The default should suffice but it's configurable for those who have their own Certificate Authority.
- * 
+ *
  * @author Niels Meijer
  */
 @Log4j2

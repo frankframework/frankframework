@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { BaseIframeComponent } from '../iframe.base';
 import { TitleCasePipe } from '@angular/common';
 
@@ -6,6 +6,7 @@ import { TitleCasePipe } from '@angular/common';
   selector: 'app-iframe-ladybug-legacy',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [TitleCasePipe],
 })
 export class IframeLadybugLegacyComponent extends BaseIframeComponent implements OnInit {

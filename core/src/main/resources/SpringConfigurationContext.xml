@@ -13,11 +13,7 @@
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
 	">
 
-	<!-- AOP has to be enabled explicitly on a per Context basis. This allows us to programmatically enable and disable Ladybug 'point-cutting'. -->
-	<beans profile="aop">
-		<aop:config proxy-target-class="true" />
-	</beans>
-
+	<aop:config proxy-target-class="true" />
 	<beans>
 		<bean name="configurationDigester" class="org.frankframework.configuration.digester.ConfigurationDigester" />
 

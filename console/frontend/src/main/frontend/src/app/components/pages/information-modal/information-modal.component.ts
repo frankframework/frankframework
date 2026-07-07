@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { copyToClipboard } from '../../../utilities';
 import { ToastService } from '../../../services/toast.service';
@@ -19,6 +19,7 @@ import { faGithub } from '@fortawesome/free-brands-svg-icons';
   selector: 'app-information-modal',
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [TimeSinceDirective, ToDateDirective, HumanFileSizePipe, FaIconComponent],
 })
 export class InformationModalComponent implements OnInit, OnDestroy {

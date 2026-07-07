@@ -1,19 +1,21 @@
-import { Component, inject, OnDestroy, OnInit, Signal, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppService, Configuration } from 'src/app/app.service';
-import { ConfigurationsService } from '../configurations.service';
-import { copyToClipboard } from 'src/app/utilities';
-import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 import { Subscription } from 'rxjs';
-import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
 import { NgClass } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faClipboard } from '@fortawesome/free-regular-svg-icons';
+
+import { AppService, Configuration } from '../../../app.service';
+import { ConfigurationsService } from '../configurations.service';
+import { copyToClipboard } from '../../../utilities';
+import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
+import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
 
 @Component({
   selector: 'app-configurations-show',
   imports: [ConfigurationTabListComponent, NgClass, MonacoEditorComponent, FaIconComponent],
   templateUrl: './configurations-show.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./configurations-show.component.scss'],
 })
 export class ConfigurationsShowComponent implements OnInit, OnDestroy {

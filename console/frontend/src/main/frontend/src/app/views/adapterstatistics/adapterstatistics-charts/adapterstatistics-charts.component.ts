@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
 import type { ChartData, ChartOptions } from 'chart.js';
 
@@ -10,6 +10,7 @@ export type CountPerReceiverStatistics = ChartData<'doughnut', number[], string>
   selector: 'app-adapterstatistics-charts',
   imports: [BaseChartDirective],
   templateUrl: './adapterstatistics-charts.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './adapterstatistics-charts.component.scss',
 })
 export class AdapterstatisticsChartsComponent {

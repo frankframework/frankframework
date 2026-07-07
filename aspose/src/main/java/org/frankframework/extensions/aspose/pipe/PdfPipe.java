@@ -316,7 +316,7 @@ public class PdfPipe extends FixedForwardPipe {
 	 * This behavior differs from v10.0 and earlier where conversion results were persistent and always stored on disk.
 	 * In order to use the old (non-streaming) behavior, set this to {@code ${ibis.tmpdir}/Pdf}.
 	 * By setting a location the {@code convertedDocument} attribute will be used to store the PDF location.
-	 * 
+	 *
 	 * @ff.default null
 	 */
 	@Deprecated

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { JdbcService } from './jdbc.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('JdbcService', () => {
   let service: JdbcService;

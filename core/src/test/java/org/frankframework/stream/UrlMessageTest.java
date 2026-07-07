@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import org.apache.commons.codec.binary.Hex;
@@ -38,7 +39,7 @@ public class UrlMessageTest {
 		File source = File.createTempFile("junit", null, folder);
 		MessageTest.writeContentsToFile(source, testString);
 
-		Message in = new UrlMessage(source.toURL(), "UTF-8");
+		Message in = new UrlMessage(source.toURL(), StandardCharsets.UTF_8);
 
 		byte[] wire = serializationTester.serialize(in);
 		log.debug("wire "+Hex.encodeHexString(wire));

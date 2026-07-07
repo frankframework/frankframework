@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component, DebugElement } from '@angular/core';
+import { Component, DebugElement, ChangeDetectionStrategy } from '@angular/core';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { TimeSinceDirective } from './time-since.directive';
 import { By } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { TimeSinceDirective } from './time-since.directive';
 
 @Component({
   template: `
@@ -11,6 +11,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
     <span appTimeSince [time]="oneHourAgo"></span>
     <span appTimeSince [time]="oneDayAgo"></span>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [TimeSinceDirective],
 })
 class TestComponent {

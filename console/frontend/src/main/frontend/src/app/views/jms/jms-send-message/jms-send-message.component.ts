@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { JmsService } from '../jms.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ServerErrorResponse } from '../../../app.service';
@@ -26,6 +26,7 @@ type Form = {
   selector: 'app-jms-send-message',
   imports: [FormsModule, MonacoEditorComponent, InputFileUploadComponent, LaddaModule, QuickSubmitFormDirective],
   templateUrl: './jms-send-message.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./jms-send-message.component.scss'],
 })
 export class JmsSendMessageComponent implements OnInit {
