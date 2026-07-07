@@ -18,17 +18,10 @@ package org.frankframework.dataconversion;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jspecify.annotations.Nullable;
-
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.StreamUtil;
 
 public class SerializableFileReferenceConverter implements BinaryDataConversionSupport<SerializableFileReference> {
-
-	@Override
-	public @Nullable String asString(SerializableFileReference data, String encodingCharset) throws IOException {
-		return StreamUtil.readerToString(asReader(data, encodingCharset), null);
-	}
 
 	@Override
 	public long size(SerializableFileReference data) {
@@ -36,7 +29,7 @@ public class SerializableFileReferenceConverter implements BinaryDataConversionS
 	}
 
 	@Override
-	public byte @Nullable [] asByteArray(SerializableFileReference data) throws IOException {
+	public byte[] asByteArray(SerializableFileReference data) throws IOException {
 		return StreamUtil.streamToBytes(data.getInputStream());
 	}
 

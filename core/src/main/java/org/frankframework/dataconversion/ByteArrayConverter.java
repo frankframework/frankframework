@@ -19,13 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jspecify.annotations.Nullable;
-
 public class ByteArrayConverter implements BinaryDataConversionSupport<byte[]> {
-	@Override
-	public @Nullable String asString(byte[] data, String encodingCharset) throws IOException {
-		return new String(data, encodingCharset);
-	}
 
 	@Override
 	public long size(byte[] data) {
@@ -33,7 +27,7 @@ public class ByteArrayConverter implements BinaryDataConversionSupport<byte[]> {
 	}
 
 	@Override
-	public byte @Nullable [] asByteArray(byte[] data) throws IOException {
+	public byte[] asByteArray(byte[] data) throws IOException {
 		return data;
 	}
 

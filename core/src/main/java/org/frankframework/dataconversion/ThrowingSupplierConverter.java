@@ -25,10 +25,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
 public class ThrowingSupplierConverter implements BinaryDataConversionSupport<ThrowingSupplier<InputStream, Exception>> {
-	@Override
-	public String asString(ThrowingSupplier<InputStream, Exception> data, String encodingCharset) throws IOException {
-		return StreamUtil.readerToString(asReader(data, encodingCharset), null);
-	}
 
 	@Override
 	public long size(ThrowingSupplier<InputStream, Exception> data) {

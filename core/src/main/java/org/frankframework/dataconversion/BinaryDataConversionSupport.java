@@ -21,6 +21,7 @@ import java.io.Reader;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
+import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
 public interface BinaryDataConversionSupport<T> extends ConversionSupport<T> {
@@ -28,7 +29,10 @@ public interface BinaryDataConversionSupport<T> extends ConversionSupport<T> {
 		return true;
 	}
 
-	@Nullable String asString(T data, String encodingCharset) throws IOException;
+	default @Nullable String asString(T data, String encodingCharset) throws IOException {
+		long size = size(data);
+		return StreamUtil.readerToString(asReader(data, encodingCharset), null, false, size == Message.MESSAGE_SIZE_UNKNOWN ? 0 : 32 + (int) size);
+	}
 
 	default Reader asReader(T data, String encodingCharset) throws IOException {
 		return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(data), encodingCharset);
