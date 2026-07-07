@@ -208,48 +208,47 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   protected setupMessagesRequest(): void {
-    this.datasource.setServerRequest(
-      (requestInfo) =>
-        new Promise((resolve, reject) => {
-          let queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
-          this.updateSessionStorage((column) => {
-            if (column.filter !== '') {
-              queryParameters += `&${column.property}=${encodeURIComponent(column.filter)}`;
-            }
-          });
+    this.datasource.setServerRequest((requestInfo) => {
+      return new Promise((resolve, reject) => {
+        let queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
+        this.updateSessionStorage((column) => {
+          if (column.filter !== '') {
+            queryParameters += `&${column.property}=${encodeURIComponent(column.filter)}`;
+          }
+        });
 
-          this.storageService.getStorageList(queryParameters).subscribe({
-            next: (response) => {
-              this.targetStates = response.targetStates ?? {};
-              resolve({
-                data: response.messages,
-                totalEntries: response.totalMessages,
-                filteredEntries: response.recordsFiltered,
-                offset: response.skipMessages,
-                size: response.messages.length,
-              });
-              this.searching = false;
-              this.clearSearchLadda = false;
-              for (const message of response.messages) {
-                if (!(message.id in this.storageService.selectedMessages)) {
-                  this.storageService.selectedMessages[message.id] = false;
-                }
+        this.storageService.getStorageList(queryParameters).subscribe({
+          next: (response) => {
+            this.targetStates = response.targetStates ?? {};
+            resolve({
+              data: response.messages,
+              totalEntries: response.totalMessages,
+              filteredEntries: response.recordsFiltered,
+              offset: response.skipMessages,
+              size: response.messages.length,
+            });
+            this.searching = false;
+            this.clearSearchLadda = false;
+            for (const message of response.messages) {
+              if (!Object.hasOwn(this.storageService.selectedMessages, message.id)) {
+                this.storageService.selectedMessages[message.id] = false;
               }
-              for (const messageId in this.storageService.selectedMessages) {
-                const messageExists = response.messages.some((message) => message.id === messageId);
-                if (!messageExists) {
-                  delete this.storageService.selectedMessages[messageId];
-                }
+            }
+            for (const messageId in this.storageService.selectedMessages) {
+              const messageExists = response.messages.some((message) => message.id === messageId);
+              if (!messageExists) {
+                delete this.storageService.selectedMessages[messageId];
               }
-            },
-            error: (error: unknown) => {
-              this.searching = false;
-              this.clearSearchLadda = false;
-              reject(error);
-            },
-          });
-        }),
-    );
+            }
+          },
+          error: (error: unknown) => {
+            this.searching = false;
+            this.clearSearchLadda = false;
+            reject(error);
+          },
+        });
+      });
+    });
   }
 
   protected getNotes(): Note[] {
@@ -420,10 +419,10 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   private getFormData(): FormData {
     const messageIds: string[] = [];
     for (const index in this.storageService.selectedMessages) {
-      if (this.storageService.selectedMessages[index]) {
-        messageIds.push(index);
-        this.storageService.selectedMessages[index] = false; // unset the messageId
-      }
+      if (!Object.hasOwn(this.storageService.selectedMessages, index)) continue;
+
+      messageIds.push(index);
+      this.storageService.selectedMessages[index] = false; // unset the messageId
     }
 
     const fd = new FormData();
@@ -450,14 +449,13 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     const searchSession: FieldSearchInfo[] = [];
     const columns: SearchColumn[] = [...this.messageFields, ...this.staticMessageFields];
     for (const column of columns) {
-      if (column.filter !== '' || !column.display) {
-        if (onColumnUpdate) onColumnUpdate(column);
-        searchSession.push({
-          fieldName: column.fieldName,
-          filter: column.filter,
-          display: column.display,
-        });
-      }
+      if (column.filter === '' && column.display) continue;
+      if (onColumnUpdate) onColumnUpdate(column);
+      searchSession.push({
+        fieldName: column.fieldName,
+        filter: column.filter,
+        display: column.display,
+      });
     }
     this.Session.set('storageFiltering', searchSession);
   }
@@ -467,9 +465,8 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!selectedMessages || selectedMessages.length === 0) {
       this.SweetAlert.warning('No message selected!');
       return false;
-    } else {
-      return true;
     }
+    return true;
   }
 
   private setBreadcrumbs(): void {

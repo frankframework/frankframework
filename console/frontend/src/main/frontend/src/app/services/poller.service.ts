@@ -10,18 +10,18 @@ type PollerState = 'RUNNING' | 'WAITING' | 'STOPPED';
   providedIn: 'root',
 })
 export class PollerService {
+  private pollers: Record<string, Poller<unknown>> = {};
   private readonly http: HttpClient = inject(HttpClient);
   private readonly Debug: DebugService = inject(DebugService);
   private readonly appService: AppService = inject(AppService);
   // impossible to keep track of T in Poller<T>, even with a wrapper function
-  private pollers: Record<string, Poller<unknown>> = {};
 
   changeInterval(url: string, intervalTime: number): void {
     this.pollers[url].setInterval(intervalTime, true);
   }
 
   add<T>(url: string, callback: (data: T) => void, intervalTime?: number, runOnce?: boolean): Poller<T> {
-    if (url in this.pollers) {
+    if (Object.hasOwn(this.pollers, url)) {
       return this.pollers[url];
     }
 
@@ -43,10 +43,9 @@ export class PollerService {
   }
 
   remove(url: string): void {
-    if (url in this.pollers) {
-      this.pollers[url].stop();
-      delete this.pollers[url];
-    }
+    if (!Object.hasOwn(this.pollers, url)) return;
+    this.pollers[url].stop();
+    delete this.pollers[url];
   }
 
   get(url: string): Poller<unknown> {

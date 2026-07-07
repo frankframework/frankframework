@@ -21,6 +21,7 @@ export class AuthService {
   private allowedRoles: string[] = [];
   private allowedLinks: AllowedLinks[] = [];
 
+  private loadingPermissionsPromise?: Promise<void>;
   private readonly appService: AppService = inject(AppService);
   private readonly http: HttpClient = inject(HttpClient);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
@@ -55,7 +56,6 @@ export class AuthService {
       }
     }
   } */
-  private loadingPermissionsPromise?: Promise<void>;
 
   setLoggedIn(username?: string): void {
     if (this.isNotAnonymous(username)) {

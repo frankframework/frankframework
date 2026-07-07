@@ -26,16 +26,16 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   protected configurations: Signal<Configuration[]>;
   protected readonly faClipboard = faClipboard;
 
+  private configuration = '';
+  private fragment?: string;
+  private selectedAdapter: string | null = null;
+  private skipParamsUpdate = false;
+  private initialized = false;
+  private configsSubscription: Subscription | null = null;
   private readonly appService: AppService = inject(AppService);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
-  private configuration = '';
-  private fragment?: string;
-  private selectedAdapter?: string;
-  private skipParamsUpdate = false;
-  private initialized = false;
-  private configsSubscription: Subscription | null = null;
 
   constructor() {
     this.configurations = this.appService.configurations;
@@ -52,7 +52,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
         this.skipParamsUpdate = false;
         return;
       }
-      this.selectedAdapter = parameters.get('adapter') ?? undefined;
+      this.selectedAdapter = parameters.get('adapter');
       this.loadedConfiguration = parameters.get('loaded') !== 'false';
     });
   }
@@ -72,7 +72,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     if (this.initialized) {
-      this.selectedAdapter = undefined;
+      this.selectedAdapter = null;
       this.fragment = undefined; // unset hash anchor
     }
     this.getConfiguration();
@@ -112,7 +112,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
       return;
     }
     const match = this.editor.findMatchForRegex(
-      `<[aA]dapter.*? name="${this.selectedAdapter}".*?>(?:.|\\n)*?<\\/[aA]dapter>`,
+      String.raw`<[aA]dapter.*? name="${this.selectedAdapter}".*?>(?:.|\n)*?<\/[aA]dapter>`,
     )?.[0];
     if (match) {
       this.editor.setLineNumberInRoute(match.range.startLineNumber, match.range.endLineNumber);
@@ -120,10 +120,9 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   }
 
   private removeAdapterAfterLineSelection(fragment: string | null): void {
-    if (this.selectedAdapter && fragment?.includes('L') && !fragment?.includes('-')) {
-      this.selectedAdapter = undefined;
-      this.skipParamsUpdate = true;
-      this.updateQueryParams();
-    }
+    if (!(this.selectedAdapter && fragment?.includes('L')) || fragment?.includes('-')) return;
+    this.selectedAdapter = null;
+    this.skipParamsUpdate = true;
+    this.updateQueryParams();
   }
 }

@@ -17,6 +17,7 @@ package org.frankframework.stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -247,6 +248,50 @@ public class MessageTest {
 		// Assert
 		assertEquals(testString, actual);
 		assertEquals(testString, adapter.asString());
+	}
+
+	@Test
+	public void testStringAsInputStreamWithCharset() throws Exception {
+		// Arrange
+		String inputString = "Spécïâl";
+		Message input = Message.asMessage(inputString);
+
+		// Act
+		InputStream inputStream = input.asInputStream("ISO-8859-1");
+
+		// Assert
+		byte[] resultBytes = StreamUtil.streamToBytes(inputStream);
+		assertArrayEquals(inputString.getBytes(StandardCharsets.ISO_8859_1), resultBytes);
+	}
+
+	@Test
+	public void testByteArrayWithCharsetAsInputStreamWithDifferentCharset() throws Exception {
+		// Arrange
+		String inputString = "Spécïâl";
+		Message input = Message.asMessage(inputString.getBytes(StandardCharsets.UTF_8));
+		input.setCharset(StandardCharsets.UTF_8);
+
+		// Act
+		InputStream inputStream = input.asInputStream("ISO-8859-1");
+
+		// Assert
+		byte[] resultBytes = StreamUtil.streamToBytes(inputStream);
+		assertArrayEquals(inputString.getBytes(StandardCharsets.ISO_8859_1), resultBytes);
+	}
+
+	@Test
+	public void testByteArrayWithCharsetAutoAsInputStreamWithDifferentCharset() throws Exception {
+		// Arrange
+		String inputString = "Spécïâl";
+		Message input = Message.asMessage(inputString.getBytes(StandardCharsets.UTF_8));
+		input.setCharset("auto");
+
+		// Act
+		InputStream inputStream = input.asInputStream("ISO-8859-1");
+
+		// Assert
+		byte[] resultBytes = StreamUtil.streamToBytes(inputStream);
+		assertArrayEquals(inputString.getBytes(StandardCharsets.ISO_8859_1), resultBytes);
 	}
 
 	@Test
@@ -722,7 +767,7 @@ public class MessageTest {
 		// NB: This test logs a serialization-wire that can be added to the array `binaryWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
 		Message in = new Message(source);
-		in.getContext().withCharset(StandardCharsets.UTF_8);
+		in.setCharset(StandardCharsets.UTF_8);
 		in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
 		in.getContext().put("TEST-KEY-INT", 1);
 

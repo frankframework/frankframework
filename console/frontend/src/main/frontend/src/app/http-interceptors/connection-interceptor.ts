@@ -7,10 +7,10 @@ import { ToastService } from '../services/toast.service';
 
 @Injectable()
 export class ConnectionInterceptor implements HttpInterceptor {
+  private errorCount = 0;
   private readonly router: Router = inject(Router);
   private readonly appService: AppService = inject(AppService);
   private readonly toastsService: ToastService = inject(ToastService);
-  private errorCount = 0;
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(

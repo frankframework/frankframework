@@ -14,7 +14,6 @@ export class SweetalertService {
 
   defaults(title: string | SweetAlertOptions, text?: string): SweetAlertOptions {
     // let args = arguments || [];
-    const options = this.defaultSettings;
 
     // expects (String, String) or (JsonObject, Function)
     if (typeof title == 'object') {
@@ -23,7 +22,9 @@ export class SweetalertService {
       // if (typeof text == "function") {
       //   options.callback = text;
       // }
-    } else if (typeof title == 'string') {
+    }
+    const options = this.defaultSettings;
+    if (typeof title == 'string') {
       options.title = title;
       if (typeof text == 'string') {
         options.text = text;
@@ -51,26 +52,22 @@ export class SweetalertService {
   }
 
   info(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
-    let options: SweetAlertOptions = {};
-    options = { icon: 'info', ...this.defaults(title, text) };
+    const options: SweetAlertOptions = { icon: 'info', ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
   warning(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
-    let options: SweetAlertOptions = {};
-    options = { icon: 'warning', ...this.defaults(title, text) };
+    const options: SweetAlertOptions = { icon: 'warning', ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
   error(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
-    let options: SweetAlertOptions = {};
-    options = { icon: 'error', ...this.defaults(title, text) };
+    const options: SweetAlertOptions = { icon: 'error', ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
   success(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {
-    let options: SweetAlertOptions = {};
-    options = { icon: 'success', ...this.defaults(title, text) };
+    const options: SweetAlertOptions = { icon: 'success', ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 }
