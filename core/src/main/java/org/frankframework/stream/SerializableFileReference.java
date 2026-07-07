@@ -58,7 +58,6 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	private static final long customSerializationVersion = 1L;
 
 	private long size = Message.MESSAGE_SIZE_UNKNOWN;
-	@Getter private boolean binary;
 	@Nullable private String charset;
 	@Getter private transient Path path;
 	private transient Cleaner.@Nullable Cleanable cleanable;
@@ -76,7 +75,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 */
 	public static SerializableFileReference of(InputStream in) throws IOException {
 		try (in) {
-			return new SerializableFileReference(true, null, true, copyToTempFile(in, -1L));
+			return new SerializableFileReference(null, true, copyToTempFile(in, -1L));
 		}
 	}
 
@@ -109,7 +108,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 */
 	public static SerializableFileReference of(Reader in, String charset) throws IOException {
 		try (InputStream is = ReaderInputStream.builder().setReader(in).setCharset(charset).get()) {
-			return new SerializableFileReference(false, charset, true, copyToTempFile(is, -1L));
+			return new SerializableFileReference(charset, true, copyToTempFile(is, -1L));
 		}
 	}
 
@@ -136,11 +135,10 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @param deleteOnClose if the temporary file will be deleted on calling {@link SerializableFileReference#close()}.
 	 */
 	public SerializableFileReference(Path path, boolean deleteOnClose) {
-		this(true, null, deleteOnClose, path);
+		this(null, deleteOnClose, path);
 	}
 
-	private SerializableFileReference(boolean binary, @Nullable String charset, boolean isFileOwner, Path path) {
-		this.binary = binary;
+	private SerializableFileReference(@Nullable String charset, boolean isFileOwner, Path path) {
 		this.charset = charset;
 		this.path = path;
 		if (isFileOwner) {
@@ -168,6 +166,10 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 				log.warn("failed to remove file reference [{}]. Exception message: {}", fileToClean, e.getMessage());
 			}
 		}
+	}
+
+	public boolean isBinary() {
+		return charset == null;
 	}
 
 	public long getSize() {
@@ -214,8 +216,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
 		out.writeLong(customSerializationVersion);
 		out.writeLong(getSize());
-		out.writeBoolean(binary);
-		out.writeUTF(charset != null ? charset : "");
+		out.writeBoolean(StringUtils.isEmpty(charset)); // Write for compatibility
+		out.writeUTF(charset != null ? charset : ""); // May not write a NULL value
 		try (InputStream fileInputStream = getInputStream()) {
 			long bytesWritten = StreamUtil.copyStream(fileInputStream, out, 16384);
 			if (bytesWritten != this.size) {
@@ -233,8 +235,13 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	private void readObject(ObjectInputStream in) throws IOException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
 		size = in.readLong();
-		binary = in.readBoolean();
-		charset = in.readUTF();
+		boolean binary = in.readBoolean();// Skip; read for compatibility
+		String storedCharset = in.readUTF();
+		if (StringUtils.isEmpty(storedCharset)) { // Empty value is written when charset was NULL
+			charset = binary ? null : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		} else {
+			charset = storedCharset;
+		}
 		path = copyToTempFile(in, size);
 		createCleanerAction(path);
 	}

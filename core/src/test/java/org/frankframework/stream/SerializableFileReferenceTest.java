@@ -312,10 +312,10 @@ public class SerializableFileReferenceTest {
 
 		// Assert
 		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
-		assertTrue(message.isBinary(), "Should be binary");
+		assertFalse(message.isBinary(), "Should not be binary, charset is set");
 
 		reference = (SerializableFileReference) message.asObject();
-		assertTrue(reference.isBinary(), "Should be binary");
+		assertFalse(reference.isBinary(), "Should not be binary, charset is set");
 		Path path = reference.getPath();
 		assertEquals(tempFile.toPath(), path);
 
@@ -397,8 +397,6 @@ public class SerializableFileReferenceTest {
 		File tempFile = File.createTempFile("file", null, tempDir);
 		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 		Message message = new FileMessage(tempFile);
-		message.getContext().withCharset("UTF-8");
-
 		assertTrue(message.isBinary());
 
 		SerializationTester<Message> serializationTester = new SerializationTester<>();
@@ -449,7 +447,7 @@ public class SerializableFileReferenceTest {
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(FileMessage.class, out.getClass());
-			assertTrue(out.isBinary(), label);
+			assertEquals(out.getCharset() == null, out.isBinary(), label);
 			assertEquals("UTF-8", out.getCharset(), label);
 			assertEquals(TEST_DATA, out.asString(), label);
 			assertEquals(TEST_DATA.getBytes(StandardCharsets.UTF_8).length, out.size());

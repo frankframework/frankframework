@@ -1,7 +1,6 @@
 package org.frankframework.stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -62,7 +61,7 @@ public class FileMessageTest {
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(FileMessage.class, out.getClass());
-			assertTrue(out.isBinary(), label);
+			assertEquals(out.getCharset() == null, out.isBinary(), label);
 			assertEquals("UTF-8", out.getCharset(), label);
 			assertEquals(testString, out.asString(), label);
 			assertEquals(out.size(), testStringLength);
