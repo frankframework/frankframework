@@ -38,7 +38,7 @@ public class FileMessageTest {
 		MessageTest.writeContentsToFile(source, testString);
 
 		Message in = new FileMessage(source);
-		in.getContext().withCharset("UTF-8");
+		in.setCharset("UTF-8");
 
 		assertEquals(testStringLength, in.size());
 		byte[] wire = serializationTester.serialize(in);

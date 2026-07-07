@@ -205,7 +205,7 @@ public class SerializableFileReferenceTest {
 
 		Message message = new FileMessage(tempFile);
 		// Since anything can happen assume 'I want to use my own Charset'.
-		message.getContext().withCharset(StreamUtil.AUTO_DETECT_CHARSET);
+		message.setCharset(StreamUtil.AUTO_DETECT_CHARSET);
 
 		// Act
 		Message copy = message.copyMessage();
@@ -397,6 +397,8 @@ public class SerializableFileReferenceTest {
 		File tempFile = File.createTempFile("file", null, tempDir);
 		MessageTest.writeContentsToFile(tempFile, testDataEnriched);
 		Message message = new FileMessage(tempFile);
+		message.setCharset("UTF-8");
+
 		assertTrue(message.isBinary());
 
 		SerializationTester<Message> serializationTester = new SerializationTester<>();
