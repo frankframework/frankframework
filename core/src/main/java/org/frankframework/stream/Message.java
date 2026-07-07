@@ -453,7 +453,15 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public InputSource asInputSource() throws IOException {
-		return dataConverter.asInputSource();
+		if (!(dataConverter instanceof BinaryDataConverter bdc)) {
+			return dataConverter.asInputSource();
+
+		}
+		String charset = computeDecodingCharset(getCharset());
+		if (StringUtils.isEmpty(charset)) {
+			return dataConverter.asInputSource();
+		}
+		return bdc.asInputSource(charset);
 	}
 
 	/**
