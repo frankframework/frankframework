@@ -51,6 +51,7 @@ export class ToastService {
       duplicate.count += 1;
       return duplicate;
     }
+    // eslint-disable-next-line unicorn/no-return-array-push
     const newLength = this.duplicates.push({ count: 0, ...toast });
     return this.duplicates[newLength - 1];
   }

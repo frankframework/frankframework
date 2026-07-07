@@ -16,6 +16,7 @@ import { ToDateDirective } from '../../components/to-date.directive';
 })
 export class IafUpdateComponent implements OnInit {
   protected release: IAFRelease | null = null;
+  protected readonly faGithub = faGithub;
 
   private router = inject(Router);
   private sessionService = inject(SessionService);
@@ -27,6 +28,4 @@ export class IafUpdateComponent implements OnInit {
       this.router.navigate(['/status']);
     }
   }
-
-  protected readonly faGithub = faGithub;
 }

@@ -179,6 +179,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   applyFilter(filterName: keyof Filter): void {
     const filter = { ...this.filter };
+    // eslint-disable-next-line unicorn/no-computed-property-existence-check
     filter[filterName] = !filter[filterName];
     this.filter = filter;
     this.updateQueryParams();
@@ -187,15 +188,15 @@ export class StatusComponent implements OnInit, OnDestroy {
   updateQueryParams(): void {
     const filterString: string[] = [];
     let filterCount = 0;
-    for (const f in this.filter) {
-      if (this.filter[f as keyof Filter]) {
-        filterString.push(f);
-        filterCount += 1;
-      }
+    for (const filter in this.filter) {
+      if (!Object.hasOwn(this.filter, filter as keyof Filter)) continue;
+      filterString.push(filter);
+      filterCount += 1;
     }
-    const transitionObject: Record<string, string | null> = {};
-    transitionObject['filter'] = filterCount < 3 ? filterString.join('+') : null;
-    transitionObject['search'] = this.searchText;
+    const transitionObject: Record<string, string | null> = {
+      ['filter']: filterCount < 3 ? filterString.join('+') : null,
+      ['search']: this.searchText,
+    };
 
     const fragment = this.adapterName === '' ? undefined : this.adapterName;
 
@@ -303,14 +304,13 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private updateAdapterShownContent(adapters: Record<string, Adapter>): void {
     for (const adapter in adapters) {
-      if (!Object.hasOwnProperty.call(this.adapterShowContent, adapter)) {
-        this.adapterShowContent[adapter] = this.determineShowContent(adapters[adapter]);
+      if (Object.hasOwn(this.adapterShowContent, adapter)) continue;
+      this.adapterShowContent[adapter] = this.determineShowContent(adapters[adapter]);
 
-        if (this.adapterName === adapters[adapter].name) {
-          setTimeout(() => {
-            document.querySelector(`#${this.adapterName}`)?.scrollIntoView();
-          });
-        }
+      if (this.adapterName === adapters[adapter].name) {
+        setTimeout(() => {
+          document.querySelector(`#${this.adapterName}`)?.scrollIntoView();
+        });
       }
     }
   }
