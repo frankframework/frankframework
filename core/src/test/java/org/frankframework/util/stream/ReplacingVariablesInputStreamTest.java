@@ -1,4 +1,4 @@
-package org.frankframework.pipes;
+package org.frankframework.util.stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,13 +31,14 @@ public class ReplacingVariablesInputStreamTest {
 	@ParameterizedTest
 	@MethodSource
 	void testReplacingVariablesInputStream(String prefix, Properties properties, String input, String expected) throws IOException {
-		ReplacingVariablesInputStream replacingVariablesInputStreams = new ReplacingVariablesInputStream(getByteArrayInputStream(input), prefix, properties);
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try (ReplacingPropertyVariablesInputStream replacingVariablesInputStreams = new ReplacingPropertyVariablesInputStream(getByteArrayInputStream(input), prefix, properties)) {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
-		int b;
-		while (-1 != (b = replacingVariablesInputStreams.read())) {bos.write(b);}
+			int b;
+			while (-1 != (b = replacingVariablesInputStreams.read())) {bos.write(b);}
 
-		assertEquals(expected, bos.toString());
+			assertEquals(expected, bos.toString());
+		}
 	}
 
 	private ByteArrayInputStream getByteArrayInputStream(String input) {
