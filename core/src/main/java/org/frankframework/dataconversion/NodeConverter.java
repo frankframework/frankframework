@@ -33,21 +33,21 @@ public class NodeConverter extends StringableDataConverter<Node> {
 		try {
 			return XmlUtils.nodeToString(data);
 		} catch (TransformerException e) {
-			throw new RuntimeException("Could not convert type Node to String", e);
+			throw new IllegalArgumentException("Could not convert type Node to String", e);
 		}
 	}
 
 	@Override
-	public byte[] asByteArray(Node data) throws IOException {
+	public byte[] asByteArray(Node data) {
 		try {
 			return XmlUtils.nodeToByteArray(data);
 		} catch (TransformerException e) {
-			throw new RuntimeException("Could not convert type Node to byte[]", e);
+			throw new IllegalArgumentException("Could not convert type Node to byte[]", e);
 		}
 	}
 
 	@Override
-	public byte[] asByteArray(Node data, String encodingCharset) throws IOException {
+	public byte[] asByteArray(Node data, String encodingCharset) {
 		return asByteArray(data);
 	}
 

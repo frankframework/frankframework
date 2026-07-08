@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
+import java.time.temporal.TemporalAccessor;
+import java.util.Date;
 
 public abstract class StringableDataConverter<T> implements CharacterDataConversionSupport<T> {
 
@@ -30,17 +31,17 @@ public abstract class StringableDataConverter<T> implements CharacterDataConvers
 	}
 
 	@Override
-	public Reader asReader(T data) throws IOException {
+	public Reader asReader(T data) {
 		return new StringReader(asString(data));
 	}
 
 	@Override
 	public long size(T data) {
-		return asString(data).getBytes(StandardCharsets.UTF_8).length;
+		return asByteArray(data).length;
 	}
 
 	@Override
-	public byte [] asByteArray(T data) throws IOException {
+	public byte [] asByteArray(T data) {
 		return asString(data).getBytes();
 	}
 
@@ -50,7 +51,7 @@ public abstract class StringableDataConverter<T> implements CharacterDataConvers
 	}
 
 	@Override
-	public InputStream asInputStream(T data) throws IOException {
+	public InputStream asInputStream(T data) {
 		return new ByteArrayInputStream(asByteArray(data));
 	}
 
@@ -69,4 +70,6 @@ public abstract class StringableDataConverter<T> implements CharacterDataConvers
 	public static class StringConverter extends StringableDataConverter<String> { }
 	public static class BooleanConverter extends StringableDataConverter<Boolean> { }
 	public static class NumberConverter extends StringableDataConverter<Number> { }
+	public static class DateConverter extends StringableDataConverter<Date> { }
+	public static class TemporalAccessorConverter extends StringableDataConverter<TemporalAccessor> { }
 }
