@@ -55,7 +55,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	protected void add(ParameterValue pv) {
-		if (pv == null || pv.getDefinition() == null) {
+		if (pv == null) {
 			throw new IllegalStateException("No parameter defined");
 		}
 		if (StringUtils.isEmpty(pv.getDefinition().getName())) {

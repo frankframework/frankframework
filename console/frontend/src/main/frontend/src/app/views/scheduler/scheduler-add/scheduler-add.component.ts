@@ -71,7 +71,7 @@ export class SchedulerAddComponent extends SchedulerAddEditParent {
         };
       },
       error: (errorData: HttpErrorResponse) => {
-        let error = '';
+        let error;
         try {
           const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
           error = errorResponse ? errorResponse.error : errorData.message;

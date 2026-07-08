@@ -68,19 +68,20 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 	}
 
 	private static String trimMultilineString(String str) throws IOException {
-		if(str == null || str.isEmpty())
+		if (StringUtils.isBlank(str))
 			return "";
 
 		StringBuilder buffer = new StringBuilder();
 
 		BufferedReader bufReader = new BufferedReader(new StringReader(str));
 		String line;
-		while((line = bufReader.readLine()) != null) {
-			buffer.append(line.trim());
-			buffer.append("\n");
+		while ((line = bufReader.readLine()) != null) {
+			buffer
+					.append(line.trim())
+					.append("\n");
 		}
 
-		return buffer.toString();
+		return buffer.toString().trim();
 	}
 
 	public static void assertEqualsIgnoreCRLF(String expected, String actual) {

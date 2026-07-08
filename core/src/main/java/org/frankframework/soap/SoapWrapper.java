@@ -25,7 +25,6 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamSource;
 
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPConstants;
@@ -410,11 +409,16 @@ public class SoapWrapper {
 		MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL);
 		SOAPMessage msg = factory.createMessage();
 		SOAPPart part = msg.getSOAPPart();
-		part.setContent(new StreamSource(soapMessage.asInputStream()));
 
-		// Create unsigned envelope
-		SOAPEnvelope unsignedEnvelope = part.getEnvelope();
-		return unsignedEnvelope.getOwnerDocument();
+		try {
+			part.setContent(soapMessage.asSource());
+
+			// Create unsigned envelope
+			SOAPEnvelope unsignedEnvelope = part.getEnvelope();
+			return unsignedEnvelope.getOwnerDocument();
+		} catch (SAXException e) {
+			throw new IOException("unable to read document", e);
+		}
 	}
 
 	public Message encryptMessage(Message soapMessage, KeyStore keystore, String certificateName, SecretKey symmetricKey) throws WSSecurityException {

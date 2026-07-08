@@ -53,7 +53,7 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
             view: viewId,
             name: name,
             url: url,
-            ...(target ? { target } : {}),
+            ...(target && { target }),
           });
       }
     }

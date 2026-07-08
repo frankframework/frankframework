@@ -47,12 +47,12 @@ export class ConfigurationsUploadComponent implements OnInit, OnDestroy {
   };
   protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
 
+  private file: File | null = null;
+  private appConstantsSubscription: Subscription | null = null;
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
   private readonly jdbcService: JdbcService = inject(JdbcService);
   private readonly appService: AppService = inject(AppService);
-  private file: File | null = null;
-  private appConstants$ = toObservable(this.appService.appConstants);
-  private appConstantsSubscription: Subscription | null = null;
+  private readonly appConstants$ = toObservable(this.appService.appConstants);
 
   ngOnInit(): void {
     this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {

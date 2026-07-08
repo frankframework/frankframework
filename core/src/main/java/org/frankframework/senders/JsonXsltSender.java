@@ -18,6 +18,8 @@ package org.frankframework.senders;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.XMLReader;
 
@@ -56,7 +58,7 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	protected ContentHandler createHandler(Message input, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, MessageBuilder messageBuilder) throws TransformerException {
+	protected ContentHandler createHandler(@NonNull Message input, @NonNull PipeLineSession session, @NonNull TransformerPool poolToUse, @Nullable ContentHandler handler, @NonNull MessageBuilder messageBuilder) throws TransformerException {
 		if (!isJsonResult()) {
 			return super.createHandler(input, session, poolToUse, handler, messageBuilder);
 		}

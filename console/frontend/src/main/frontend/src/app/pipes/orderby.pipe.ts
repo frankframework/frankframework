@@ -10,7 +10,8 @@ export class OrderByPipe implements PipeTransform {
       return array;
     }
 
-    array.sort((a, b) => {
+    // eslint-disable-next-line unicorn/prefer-simple-sort-comparator
+    return array.toSorted((a, b) => {
       if (a[field] < b[field]) {
         return -1;
       }
@@ -19,7 +20,5 @@ export class OrderByPipe implements PipeTransform {
       }
       return 0;
     });
-
-    return array;
   }
 }
