@@ -107,7 +107,7 @@ public class TestPipeline extends BusEndpointBase {
 			threadContext.putAll(getSessionKeysFromHeader(sessionKeys));
 		}
 
-		String payload = (String) message.getPayload();
+		String payload = BusMessageUtils.getPayloadAsString(message);
 		threadContext.putAll(getSessionKeysFromPayload(payload));
 
 		return processMessage(adapter, payload, threadContext, expectsReply);
@@ -134,9 +134,11 @@ public class TestPipeline extends BusEndpointBase {
 			secLog.info("testing pipeline of adapter [{}] {}", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : ""));
 
 			try {
-				org.frankframework.stream.Message message = org.frankframework.stream.Message.nullMessage();
+				org.frankframework.stream.Message message;
 				if (StringUtils.isNotEmpty(payload)) {
 					message = new org.frankframework.stream.Message(payload);
+				} else {
+					message = org.frankframework.stream.Message.nullMessage();
 				}
 
 				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pls);
