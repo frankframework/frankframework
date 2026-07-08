@@ -138,6 +138,7 @@ public class Message implements Serializable {
 		this.requestClass = ClassUtils.nameOf(request);
 		Message temporaryMessage = MessageUtils.fromReader(request);
 		copyFromTemporaryMessage(temporaryMessage);
+		this.dataConverter = DataConverterFactory.getConverter(request);
 		if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
 			// Ensure charset is now always UTF-8 because that's what it is after converting from stream
 			this.context.withCharset(StandardCharsets.UTF_8);
@@ -179,11 +180,11 @@ public class Message implements Serializable {
 		this.requestClass = ClassUtils.nameOf(requestClass);
 		Message temporaryMessage = MessageUtils.fromInputStream(request);
 		copyFromTemporaryMessage(temporaryMessage);
+		this.dataConverter = DataConverterFactory.getConverter(request);
 	}
 
 	private void copyFromTemporaryMessage(Message temporaryMessage) {
 		this.request = temporaryMessage.request;
-		this.dataConverter = temporaryMessage.dataConverter;
 		temporaryMessage.request = null; // Prevent potential temp files being closed
 
 		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
