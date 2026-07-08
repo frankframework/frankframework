@@ -37,17 +37,21 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
@@ -57,6 +61,7 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
@@ -152,6 +157,7 @@ public class MessageTest {
 
 		byte[] actual = message.asByteArray();
 		byte[] expected = testString.getBytes(StandardCharsets.UTF_8);
+		assertNotNull(actual);
 		assertEquals(expected.length, actual.length, "lengths differ");
 		for (int i = 0; i < expected.length; i++) {
 			assertEquals(expected[i], actual[i], "byte arrays differ at position [" + i + "]");
@@ -159,20 +165,12 @@ public class MessageTest {
 	}
 
 	protected void testToString(Message adapter, Class<?> clazz) {
-		testToString(adapter, clazz, null);
-	}
-
-	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
 		String actual = adapter.toString();
 		// remove the toStringPrefix(), if it is present
 		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
 		valuePart = valuePart.replaceAll(".*Message\\[[a-fA-F0-9]+:", ""); // Strip 'Message[abcd1234:'
 		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf("]: ")));
-		if (wrapperClass == null) {
-			assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
-		} else {
-			assertEquals(wrapperClass.getSimpleName(), adapter.getRequestClass());
-		}
+		assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
 	}
 
 	@Test
@@ -1172,14 +1170,14 @@ public class MessageTest {
 	@Test
 	void testMessageAsByteArrayDoesNotCloseMessage() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
-		Message msg = new Message(new StringReader("text"));
+		Message message = new Message(new StringReader("text"));
 
 		// Act
-		byte[] content = msg.asByteArray();
+		byte[] content = message.asByteArray();
 
 		// Assert
-		Message message = msg;
 		assertEquals("text", message.asString());
+		assertNotNull(content);
 		assertEquals(4, content.length);
 	}
 
@@ -1187,15 +1185,34 @@ public class MessageTest {
 	void testMessageAsByteArrayDoesNotCloseMessageWrapper() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
 		Message msg = new Message(new StringReader("text"));
-		MessageWrapper wrapper = new MessageWrapper<Message>(msg, null, null);
+		MessageWrapper<Message> wrapper = new MessageWrapper<>(msg, null, null);
 
 		// Act
 		byte[] content = wrapper.getMessage().asByteArray();
 
 		// Assert
-		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
-		assertEquals("text", messageWrapper.getMessage().asString());
+		assertEquals("text", wrapper.getMessage().asString());
+		assertNotNull(content);
 		assertEquals(4, content.length);
+	}
+
+	static Stream<Arguments> testMessageWithBom() throws IOException, URISyntaxException {
+		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/utf8-with-bom.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	void testMessageWithBom(Message message) throws IOException {
+		// Act
+		String contents = message.asString();
+
+		// Assert
+		assertNotNull(contents);
+		assertEquals(77, contents.length());
+		assertEquals("""
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+testFile with BOM —•˜›
+</root>""", contents);
 	}
 
 	@Test

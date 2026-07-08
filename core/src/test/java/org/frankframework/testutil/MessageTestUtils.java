@@ -98,6 +98,7 @@ public class MessageTestUtils {
 		return Stream.of(
 				Arguments.of(MessageTestUtils.getBinaryMessage(resource, false)), // InputStream
 				Arguments.of(MessageTestUtils.getCharacterMessage(resource, false)), // Reader
+				Arguments.of(Message.asMessage(Message.asMessage(testFileURL).asByteArray())), // byte[]
 				Arguments.of(new UrlMessage(testFileURL)), // Supplier
 				Arguments.of(new FileMessage(new File(testFileURL.toURI()))) // SerializableFileReference
 		);

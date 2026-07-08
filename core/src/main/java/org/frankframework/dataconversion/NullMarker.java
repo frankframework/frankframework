@@ -15,7 +15,7 @@
 */
 package org.frankframework.dataconversion;
 
-public final class NullMarker {
+final class NullMarker {
 	@SuppressWarnings("InstantiationOfUtilityClass")
 	public static final NullMarker NULL = new NullMarker();
 	private NullMarker() {
