@@ -29,6 +29,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -107,7 +108,7 @@ public class TestPipeline extends BusEndpointBase {
 			threadContext.putAll(getSessionKeysFromHeader(sessionKeys));
 		}
 
-		String payload = (String) message.getPayload();
+		String payload = BusMessageUtils.getPayloadAsString(message);
 		threadContext.putAll(getSessionKeysFromPayload(payload));
 
 		return processMessage(adapter, payload, threadContext, expectsReply);
@@ -119,10 +120,7 @@ public class TestPipeline extends BusEndpointBase {
 		try (PipeLineSession pls = new PipeLineSession()) {
 			// Make sure the pipeline session has a security handler
 			pls.setSecurityHandler(new SpringSecurityHandler());
-
-			if(threadContext != null) {
-				pls.putAll(threadContext);
-			}
+			pls.putAll(threadContext);
 
 			String correlationId = null;
 			if (!pls.containsKey(PipeLineSession.CORRELATION_ID_KEY)) {
@@ -134,12 +132,8 @@ public class TestPipeline extends BusEndpointBase {
 			secLog.info("testing pipeline of adapter [{}] {}", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : ""));
 
 			try {
-				org.frankframework.stream.Message message = org.frankframework.stream.Message.nullMessage();
-				if (StringUtils.isNotEmpty(payload)) {
-					message = new org.frankframework.stream.Message(payload);
-				}
 
-				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pls);
+				PipeLineResult plr = adapter.processMessageDirect(messageId, getMessage(payload), pls);
 
 				// Only send a reply if we expect one, else it's wasted traffic...
 				return expectsReply ? convertPipelineResult(plr) : null;
@@ -147,6 +141,13 @@ public class TestPipeline extends BusEndpointBase {
 				throw new BusException("an exception occurred while processing the message", e);
 			}
 		}
+	}
+
+	private static org.frankframework.stream.@NonNull Message getMessage(@Nullable String payload) {
+		if (StringUtils.isNotEmpty(payload)) {
+			return new org.frankframework.stream.Message(payload);
+		}
+		return org.frankframework.stream.Message.nullMessage();
 	}
 
 	private MessageBase<?> convertPipelineResult(PipeLineResult plr) throws IOException {
