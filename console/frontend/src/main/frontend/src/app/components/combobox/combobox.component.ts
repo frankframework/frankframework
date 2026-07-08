@@ -50,6 +50,8 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected listShown = false;
   protected showError = false;
 
+  private selectedOptionOnShow = '';
+
   protected onEnter(event: Event): void {
     event.preventDefault();
     this.selectItem(this.selectedIndex);
@@ -84,6 +86,7 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected showListDisplay(): void {
     if (this.listShown) return;
     this.listShown = true;
+    this.selectedOptionOnShow = this.input;
     this.comboboxDropdownIcon.nativeElement.classList.add('combobox__dropdown-icon--active');
     this.onUpdateInput();
   }
@@ -133,12 +136,17 @@ export class ComboboxComponent implements OnInit, OnChanges {
   }
 
   private setSelectedOption(option: string): void {
+    if (this.selectedOptionDidNotChange(option)) return;
     this.selectedOption = option;
     this.selectedOptionChange.emit(this.selectedOption);
   }
 
   private filterListItems(): void {
     this.filteredOptions = this.options.filter(({ label }) => label.toLowerCase().includes(this.input.toLowerCase()));
+  }
+
+  private selectedOptionDidNotChange(option: string): boolean {
+    return option === this.selectedOptionOnShow;
   }
 
   private validateInput(): void {
