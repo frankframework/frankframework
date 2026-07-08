@@ -36,11 +36,11 @@ export class MiscService {
     while (pos < b.length) {
       chunks.push(b.slice(pos, (pos += 5)));
     }
-    return chunks.reverse().join('');
+    return chunks.toReversed().join('');
   }
 
   compare_version(v1: string | number, v2: string | number, operator?: string): boolean | number | null {
-    // See for more info: http://locutus.io/php/info/version_compare/
+    // See for more info: https://locutus.io/php/info/version_compare/
 
     let index,
       compare = 0;
@@ -58,7 +58,7 @@ export class MiscService {
     };
 
     const _numberVersion = function (v: string | number): number {
-      return v ? (Number.isNaN(Number(v)) ? vm[v as keyof typeof vm] || -7 : Number.parseInt(v as string, 10)) : 0;
+      return v ? (Number.isNaN(Number(v)) ? vm[v as keyof typeof vm] || -7 : Math.trunc(Number(v as string))) : 0;
     };
 
     const v1Array = this._prepVersion(v1);
@@ -73,7 +73,8 @@ export class MiscService {
       if (v1Array[index] < v2Array[index]) {
         compare = -1;
         break;
-      } else if (v1Array[index] > v2Array[index]) {
+      }
+      if (v1Array[index] > v2Array[index]) {
         compare = 1;
         break;
       }
@@ -117,7 +118,7 @@ export class MiscService {
   }
 
   private _prepVersion(v: string | number): string[] | number[] {
-    v = `${v}`.replaceAll(/[+_-]/g, '.');
+    v = String(v).replaceAll(/[+_-]/g, '.');
     v = v.replaceAll(/([^\d.]+)/g, '.$1.').replaceAll(/\.{2,}/g, '.');
     return v.length === 0 ? [-8] : v.split('.');
   }

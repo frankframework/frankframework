@@ -259,7 +259,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 */
 	private static Path copyToTempFile(InputStream in, long maxBytes) throws IOException {
 		Path tmpMessagesFolder = TemporaryDirectoryUtils.getTempDirectory(TEMP_MESSAGE_DIRECTORY);
-		Path destination = Files.createTempFile(tmpMessagesFolder, "msg", ".dat");
+		Path destination = Files.createTempFile(tmpMessagesFolder, "msg-", ".dat");
 		try (OutputStream fileOutputStream = Files.newOutputStream(destination)) {
 			StreamUtil.copyPartialStream(in, fileOutputStream, maxBytes, 16384);
 		}

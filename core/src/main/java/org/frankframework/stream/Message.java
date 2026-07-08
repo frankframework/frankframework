@@ -611,10 +611,15 @@ public class Message implements Serializable {
 		toStringPrefix(result);
 		result.append(getObjectId());
 
-		if (request != null) {
-			result.append(": [").append(request).append("]");
+		if (LOG.isDebugEnabled()) {
+			if (request != null) {
+				result.append(" content [").append(request).append("]");
+			} else {
+				result.append(" no-content");
+			}
 		}
 
+		result.append(" size [").append(size()).append("]");
 
 		return result.toString();
 	}

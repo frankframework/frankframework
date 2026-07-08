@@ -169,7 +169,7 @@ public class MessageTest {
 		// remove the toStringPrefix(), if it is present
 		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
 		valuePart = valuePart.replaceAll(".*Message\\[[a-fA-F0-9]+:", ""); // Strip 'Message[abcd1234:'
-		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf("]: ")));
+		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf("] ")));
 		assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
 	}
 

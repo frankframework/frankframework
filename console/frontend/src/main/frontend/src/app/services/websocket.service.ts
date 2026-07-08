@@ -35,14 +35,13 @@ export class WebsocketService {
   private onWebSocketErrorSubject = new Subject<Error>();
   private onMessageSubject = new Subject<ChannelMessage>();
 
-  private readonly appService: AppService = inject(AppService);
-  private readonly sweetalertService: SweetalertService = inject(SweetalertService);
-  private readonly toastsService: ToastService = inject(ToastService);
-  private baseUrl = `${globalThis.location.host}${this.appService.absoluteApiPath}`;
   private errorCount = 0;
   private httpProtocol: string = globalThis.location.protocol == 'https:' ? 'https:' : 'http:';
   private webSocketProtocol: string = this.httpProtocol == 'https:' ? 'wss:' : 'ws:';
-  private client: Client = new Client({
+  private stompSubscriptions: Map<string, StompSubscription> = new Map<string, StompSubscription>();
+  private readonly appService: AppService = inject(AppService);
+  private readonly baseUrl = `${globalThis.location.host}${this.appService.absoluteApiPath}`;
+  private readonly client: Client = new Client({
     brokerURL: `${this.webSocketProtocol}//${this.baseUrl}ws`,
     connectionTimeout: 3000,
     debug: (message) => (): void => {
@@ -68,7 +67,8 @@ export class WebsocketService {
       this.onWebSocketErrorSubject.next(event);
     },
   });
-  private stompSubscriptions: Map<string, StompSubscription> = new Map<string, StompSubscription>();
+  private readonly sweetalertService: SweetalertService = inject(SweetalertService);
+  private readonly toastsService: ToastService = inject(ToastService);
 
   constructor() {
     this.onConnected$ = this.onConnectedSubject.asObservable();
@@ -80,12 +80,11 @@ export class WebsocketService {
   }
 
   activate(): void {
-    if (!this.client.connected) {
-      if (typeof WebSocket !== 'function') {
-        this.enableSockJs();
-      }
-      this.client.activate();
+    if (this.client.connected) return;
+    if (typeof WebSocket !== 'function') {
+      this.enableSockJs();
     }
+    this.client.activate();
   }
 
   deactivate(): void {
@@ -120,13 +119,12 @@ export class WebsocketService {
 
   private enableSockJs(): void {
     setTimeout(() => {
-      if (!this.client.connected) {
-        this.sweetalertService.warning(
-          "Can't connect to Frank!Framework websocket endpoint",
-          'Please make sure the Frank!Framework is running and set up correctly! The FF! Console will be unable to retrieve updates of configuration & adapter information.',
-        );
-        this.client.deactivate();
-      }
+      if (this.client.connected) return;
+      this.sweetalertService.warning(
+        "Can't connect to Frank!Framework websocket endpoint",
+        'Please make sure the Frank!Framework is running and set up correctly! The FF! Console will be unable to retrieve updates of configuration & adapter information.',
+      );
+      this.client.deactivate();
     }, 20_000);
 
     this.toastsService.warning('Websocket Error', 'Switching to fallback');

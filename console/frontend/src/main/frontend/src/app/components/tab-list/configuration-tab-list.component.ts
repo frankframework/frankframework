@@ -38,9 +38,8 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
 
     const queryParameterSub = this.route.queryParamMap.subscribe((parameters) => {
       const tab = parameters.get(this.queryParamName);
-      if (tab == this.selectedTab) {
-        return;
-      } else if (tab) {
+      if (tab == this.selectedTab) return;
+      if (tab) {
         this.setSelectedTab(tab);
         this.appService.selectedConfigurationTab.set(tab);
       } else if (this.showAllTab) {

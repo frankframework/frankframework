@@ -15,6 +15,8 @@
 */
 package org.frankframework.management.bus;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -23,13 +25,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import org.frankframework.management.bus.message.AbstractMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StreamUtil;
 
 public class BusMessageUtils {
 	public static final String HEADER_DATASOURCE_NAME_KEY = "datasourceName";
@@ -80,6 +86,48 @@ public class BusMessageUtils {
 
 	public static boolean containsHeader(Message<?> message, String headerName) {
 		return contains(message.getHeaders(), headerName);
+	}
+
+	public static @Nullable String getPayloadAsString(Message<?> message) {
+		int status = BusMessageUtils.getIntHeader(message, AbstractMessage.STATUS_KEY, 200);
+		if (!hasPayload(status)) {
+			return null;
+		}
+
+		String mimeType = BusMessageUtils.getHeader(message, AbstractMessage.MIMETYPE_KEY, (String)null);
+		if (mimeType != null) {
+			MediaType mime = MediaType.valueOf(mimeType);
+			if (MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mime) || MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mime)) {
+				return (String) message.getPayload();
+			}
+		}
+		return convertPayload(message.getPayload());
+	}
+
+
+	@NonNull
+	public static String convertPayload(Object payload) {
+		if (payload instanceof String string) {
+			return string;
+		} else if (payload instanceof byte[] bytes) {
+			return new String(bytes);
+		} else if (payload instanceof InputStream stream) {
+			try {
+				// Convert line endings to \n to show them in the browser as real line feeds
+				return StreamUtil.streamToString(stream, "\n", false);
+			} catch (IOException e) {
+				throw new BusException("unable to read message payload", e);
+			}
+		}
+		throw new BusException("unexpected message payload type [" + payload.getClass().getCanonicalName() + "]");
+	}
+
+	/**
+	 * Extracted method so it's in one place.
+	 * See {@link EmptyMessage} for more info.
+	 */
+	public static boolean hasPayload(int status) {
+		return (status == 200 || status > 204);
 	}
 
 	public static @Nullable String getHeader(Message<?> message, String headerName) {

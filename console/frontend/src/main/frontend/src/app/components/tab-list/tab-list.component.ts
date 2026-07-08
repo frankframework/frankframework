@@ -14,7 +14,7 @@ export class TabListComponent {
   @Output() selectedTabChange = new EventEmitter<string>();
 
   protected _allTabName = 'All';
-  protected tabsList: string[] = [`${this._allTabName}`];
+  protected tabsList: string[] = [String(this._allTabName)];
 
   constructor() {
     this.selectedTab = this._allTabName;
@@ -23,7 +23,7 @@ export class TabListComponent {
   @Input()
   set tabs(tabs: string[]) {
     if (this.showAllTab) {
-      this.tabsList = [`${this._allTabName}`, ...tabs];
+      this.tabsList = [String(this._allTabName), ...tabs];
       return;
     }
     this.tabsList = tabs;

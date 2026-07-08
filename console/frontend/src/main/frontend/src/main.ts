@@ -1,4 +1,3 @@
-
 /// <reference types="@angular/localize" />
 
 import { bootstrapApplication } from '@angular/platform-browser';
@@ -39,30 +38,28 @@ function onReady(): void {
   const bodyElement = document.querySelector<HTMLElement>('body')!;
 
   globalThis.addEventListener('keydown', function (event) {
-    if (event.key == 'F' && (event.ctrlKey || event.metaKey) && event.shiftKey) {
-      const searchbar = document.querySelector('#searchbar');
-      if (searchbar) {
-        event.preventDefault();
-        searchbar.querySelectorAll('input')[0].focus();
-      }
+    if (!(event.key == 'F' && (event.ctrlKey || event.metaKey) && event.shiftKey)) return;
+    const searchbar = document.querySelector('#searchbar');
+    if (searchbar) {
+      event.preventDefault();
+      searchbar.querySelector('input')?.focus();
     }
   });
 
   // Automatically minimalize menu when screen is less than 768px
   for (const event of ['resize', 'load']) {
     globalThis.addEventListener(event, function () {
-      if (bodyElement.clientWidth < 769) {
-        bodyElement.classList.add('body-small');
-      } else {
-        bodyElement.classList.remove('body-small');
-      }
+      bodyElement.classList.toggle('body-small', bodyElement.clientWidth < 769);
     });
   }
   bodyElement.addEventListener('scroll', function (this: HTMLElement) {
+    // eslint-disable-next-line unicorn/no-this-outside-of-class
     const scroll2top = this.querySelector<HTMLElement>('.scroll-to-top');
     if (!scroll2top) return;
+    // eslint-disable-next-line unicorn/no-this-outside-of-class
     if (scroll2top.classList.contains('hidden-scroll') && this.scrollTop > 100) {
       scroll2top.classList.remove('hidden-scroll');
+      // eslint-disable-next-line unicorn/no-this-outside-of-class
     } else if (!scroll2top.classList.contains('hidden-scroll') && this.scrollTop <= 100) {
       scroll2top.classList.add('hidden-scroll');
     }

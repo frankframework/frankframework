@@ -42,13 +42,11 @@ export class FlowComponent implements OnChanges {
   private readonly modalService: NgbModal = inject(NgbModal);
 
   ngOnChanges(): void {
-    if (!!this.adapter || this.configurationFlowDiagram) {
-      const flowUrl = this.getflowUrl();
-      this.flow = { isImage: false, url: flowUrl, data: null };
-      this.flowName = this.adapter ? `${this.adapter.configuration}/${this.adapter.name}` : 'Configuration';
-
-      this.checkLoadInline();
-    }
+    if (!(this.adapter || this.configurationFlowDiagram)) return;
+    const flowUrl = this.getflowUrl();
+    this.flow = { isImage: false, url: flowUrl, data: null };
+    this.flowName = this.adapter ? `${this.adapter.configuration}/${this.adapter.name}` : 'Configuration';
+    this.checkLoadInline();
   }
 
   prepareFlowModal(): void {

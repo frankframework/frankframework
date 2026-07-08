@@ -42,11 +42,11 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   protected result: string[][] = [];
   protected query = '';
 
+  private appConstantsSubscription: Subscription | null = null;
   private readonly jdbcService: JdbcService = inject(JdbcService);
   private readonly webStorageService: WebStorageService = inject(WebStorageService);
   private readonly appService: AppService = inject(AppService);
-  private appConstants$ = toObservable(this.appService.appConstants);
-  private appConstantsSubscription: Subscription | null = null;
+  private readonly appConstants$ = toObservable(this.appService.appConstants);
 
   ngOnInit(): void {
     this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
@@ -62,10 +62,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
       if (browseTablesSession) {
         this.form = browseTablesSession;
       } else {
-        this.form.datasource =
-          appConstants['jdbc.datasource.default'] == undefined
-            ? data.datasources[0]
-            : (appConstants['jdbc.datasource.default'] as string);
+        this.form.datasource = (appConstants['jdbc.datasource.default'] as string) ?? data.datasources[0];
         this.form.datasource = data.datasources[0] ?? '';
         this.form.resultType = data.resultTypes[0] ?? '';
       }
@@ -106,19 +103,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
         }
 
         for (const row of Object.values(returnData.result)) {
-          const orderedRow: string[] = [];
-
-          for (const columnName in row) {
-            const index = columnNameArray.indexOf(columnName);
-            const value = row[columnName];
-
-            if (index === -1 && columnName.includes('LENGTH ')) {
-              const replaceIndex = columnNameArray.indexOf(columnName.replace('LENGTH ', ''));
-              orderedRow[replaceIndex] = `${value} (length)`;
-              continue;
-            }
-            orderedRow[index] = value;
-          }
+          const orderedRow = this.processRowData(row, columnNameArray);
           this.result.push(orderedRow);
         }
 
@@ -151,5 +136,21 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
       minRow: 1,
       maxRow: 100,
     };
+  }
+
+  private processRowData(row: Record<string, string>, columnNameArray: string[]): string[] {
+    const orderedRow: string[] = [];
+    for (const columnName in row) {
+      const index = columnNameArray.indexOf(columnName);
+      const value = row[columnName];
+
+      if (index === -1 && columnName.includes('LENGTH ')) {
+        const replaceIndex = columnNameArray.indexOf(columnName.replace('LENGTH ', ''));
+        orderedRow[replaceIndex] = `${value} (length)`;
+        continue;
+      }
+      orderedRow[index] = value;
+    }
+    return orderedRow;
   }
 }

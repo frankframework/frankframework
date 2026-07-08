@@ -155,7 +155,7 @@ export class LoggingComponent implements OnInit {
         }
         if (this.previousFile) {
           setTimeout(() => {
-            const element = document.querySelector(`[data-file-name="${this.previousFile}"]`);
+            const element = document.querySelector(`[data-file-name="${CSS.escape(this.previousFile ?? '')}"]`);
             if (element) {
               element.scrollIntoView({ behavior: 'instant' });
             }
