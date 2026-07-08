@@ -113,7 +113,6 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected clearSelectedItem(): void {
     this.selectedIndex = -1;
     this.input = '';
-    this.setSelectedOption('');
     this.onUpdateInput();
   }
 
@@ -141,12 +140,12 @@ export class ComboboxComponent implements OnInit, OnChanges {
     this.selectedOptionChange.emit(this.selectedOption);
   }
 
-  private filterListItems(): void {
-    this.filteredOptions = this.options.filter(({ label }) => label.toLowerCase().includes(this.input.toLowerCase()));
-  }
-
   private selectedOptionDidNotChange(option: string): boolean {
     return option === this.selectedOptionOnShow;
+  }
+
+  private filterListItems(): void {
+    this.filteredOptions = this.options.filter(({ label }) => label.toLowerCase().includes(this.input.toLowerCase()));
   }
 
   private validateInput(): void {
