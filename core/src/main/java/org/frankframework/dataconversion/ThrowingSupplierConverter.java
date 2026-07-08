@@ -15,6 +15,7 @@
 */
 package org.frankframework.dataconversion;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -39,7 +40,11 @@ public class ThrowingSupplierConverter implements BinaryDataConversionSupport<Th
 	@Override
 	public InputStream asInputStream(ThrowingSupplier<InputStream, Exception> data) throws IOException {
 		try {
-			return data.get();
+			InputStream inputStream = data.get();
+			if (inputStream.markSupported()) {
+				return inputStream;
+			}
+			return new BufferedInputStream(inputStream);
 		} catch (IOException e) {
 			throw e;
 		} catch (Exception e) {
