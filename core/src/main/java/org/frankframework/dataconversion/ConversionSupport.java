@@ -41,6 +41,10 @@ public interface ConversionSupport<T> {
 	@Nullable InputSource asInputSource(T data) throws IOException;
 
 	default @Nullable Source asSource(T data) throws IOException, SAXException {
-		return XmlUtils.inputSourceToSAXSource(asInputSource(data));
+		InputSource inputSource = asInputSource(data);
+		if (inputSource == null) {
+			return null;
+		}
+		return XmlUtils.inputSourceToSAXSource(inputSource);
 	}
 }

@@ -39,6 +39,10 @@ public class DataConverterFactory {
 	public static final StringableDataConverter.TemporalAccessorConverter temporalAccessorConverter = new StringableDataConverter.TemporalAccessorConverter();
 	public static final ByteArrayConverter byteArrayConverter = new ByteArrayConverter();
 
+	private DataConverterFactory() {
+		// Private constructor to avoid instance creation
+	}
+
 	public static DataConverter getConverter(@Nullable Object data) {
 		return switch (data) {
 			case null -> new TypedBinaryDataConverter<>(NullMarker.NULL, nullDataConverter);

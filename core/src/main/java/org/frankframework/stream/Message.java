@@ -299,13 +299,6 @@ public class Message implements Serializable {
 		return providedCharset;
 	}
 
-	private String getEncodingCharset(@Nullable String defaultEncodingCharset) {
-		if (StringUtils.isEmpty(defaultEncodingCharset)) {
-			defaultEncodingCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-		return defaultEncodingCharset;
-	}
-
 	/**
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation.
@@ -429,14 +422,10 @@ public class Message implements Serializable {
 	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
 	 */
 	public Reader asReader(@Nullable String defaultDecodingCharset) throws IOException {
-		if (dataConverter instanceof CharacterDataConverter cdc) {
-			return cdc.asReader();
-		} else if (dataConverter instanceof BinaryDataConverter bdc) {
-			String charset = computeDecodingCharset(defaultDecodingCharset);
-			return bdc.asReader(charset);
-		} else {
-			throw new IllegalStateException("Unsupported data converter type: " + dataConverter.getClass().getName());
-		}
+		return switch (dataConverter) {
+			case CharacterDataConverter cdc -> cdc.asReader();
+			case BinaryDataConverter bdc -> bdc.asReader(computeDecodingCharset(defaultDecodingCharset));
+		};
 	}
 
 	/**
@@ -455,18 +444,17 @@ public class Message implements Serializable {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
 			return dataConverter.asInputStream();
 		}
-		if (dataConverter instanceof CharacterDataConverter cdc) {
-			return cdc.asInputStream(defaultEncodingCharset);
-		} else if  (dataConverter instanceof BinaryDataConverter bdc) {
-			String charset = computeCharsetOrNull();
-			if (StringUtils.isEmpty(charset)) {
-				return bdc.asInputStream();
+		return switch (dataConverter) {
+			case CharacterDataConverter cdc -> cdc.asInputStream(defaultEncodingCharset);
+			case BinaryDataConverter bdc -> {
+				String charset = computeCharsetOrNull();
+				if (StringUtils.isEmpty(charset)) {
+					yield bdc.asInputStream();
+				}
+				// Character data to be reconverted into another character set
+				yield bdc.asInputStream(charset, defaultEncodingCharset);
 			}
-			// Character data to be reconverted into another character set
-			return bdc.asInputStream(charset, defaultEncodingCharset);
-		} else {
-			throw new IllegalStateException("Unsupported data converter type: " + dataConverter.getClass().getName());
-		}
+		};
 	}
 
 	public synchronized String peek(int readLimit) throws IOException {
@@ -524,18 +512,17 @@ public class Message implements Serializable {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
 			return dataConverter.asByteArray();
 		}
-		if (dataConverter instanceof CharacterDataConverter cdc) {
-			return cdc.asByteArray(defaultEncodingCharset);
-		} else if (dataConverter instanceof BinaryDataConverter bdc && StringUtils.isNotEmpty(getCharset())) {
-			String charset = computeCharsetOrNull();
-			if (StringUtils.isEmpty(charset)) {
-				return bdc.asByteArray();
+		return switch (dataConverter) {
+			case CharacterDataConverter cdc -> cdc.asByteArray(defaultEncodingCharset);
+			case BinaryDataConverter bdc when StringUtils.isNotEmpty(getCharset()) -> {
+				String charset = computeCharsetOrNull();
+				if (StringUtils.isEmpty(charset)) {
+					yield bdc.asByteArray();
+				}
+				yield bdc.asByteArray(charset, defaultEncodingCharset);
 			}
-			return bdc.asByteArray(charset, defaultEncodingCharset);
-		} else {
-			return dataConverter.asByteArray();
-		}
-
+			default -> dataConverter.asByteArray();
+		};
 	}
 
 	/**
@@ -555,14 +542,10 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public String asString(@Nullable String decodingCharset) throws IOException {
-		if (dataConverter instanceof CharacterDataConverter cdc) {
-			return cdc.asString();
-		} else if (dataConverter instanceof BinaryDataConverter bdc) {
-			String charset = computeDecodingCharset(decodingCharset);
-			return bdc.asString(charset);
-		} else {
-			throw new IllegalStateException("Unsupported data converter [" + dataConverter.getClass().getName() + "]");
-		}
+		return switch (dataConverter) {
+			case CharacterDataConverter cdc -> cdc.asString();
+			case BinaryDataConverter bdc -> bdc.asString(computeDecodingCharset(decodingCharset));
+		};
 	}
 
 	public boolean isNull() {
@@ -641,34 +624,18 @@ public class Message implements Serializable {
 	 */
 	@SneakyThrows(IOException.class)
 	public static Message asMessage(@Nullable Object object) {
-		switch (object) {
-			case null -> {
-				return nullMessage();
-			}
-			case Message message -> {
-				return message;
-			}
-			case Reader reader -> {
-				return MessageUtils.fromReader(reader);
-			}
-			case InputStream stream -> {
-				return MessageUtils.fromInputStream(stream);
-			}
-			case URL rL -> {
-				return new UrlMessage(rL);
-			}
-			case File file -> {
-				return new FileMessage(file);
-			}
-			case Path path -> {
-				return new PathMessage(path);
-			}
+		return switch (object) {
+			case null -> nullMessage();
+			case Message message -> message;
+			case Reader reader -> MessageUtils.fromReader(reader);
+			case InputStream stream -> MessageUtils.fromInputStream(stream);
+			case URL rL -> new UrlMessage(rL);
+			case File file -> new FileMessage(file);
+			case Path path -> new PathMessage(path);
 			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
-			default -> {
-				// Constructor will reject unsupported types
-				return new Message(new MessageContext(), object);
-			}
-		}
+			default -> // Constructor will reject unsupported types
+					new Message(new MessageContext(), object);
+		};
 	}
 
 	/**
