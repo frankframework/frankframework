@@ -659,31 +659,10 @@ public class Message implements Serializable {
 			}
 			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
 			default -> {
-				// Only allow the following types
-				if (isSupportedType(object)) {
-					return new Message(new MessageContext(), object);
-				}
-				throw new IllegalArgumentException("request object type ["+object.getClass().getSimpleName()+"] not compatible with Message");
+				// Constructor will reject unsupported types
+				return new Message(new MessageContext(), object);
 			}
 		}
-	}
-
-	public static boolean isSupportedType(@Nullable Object request) {
-		return request instanceof byte[] ||
-				request instanceof Enum ||
-				request instanceof Boolean ||
-				request instanceof String ||
-				request instanceof Date ||
-				request instanceof TemporalAccessor ||
-				request instanceof ThrowingSupplier ||
-				request instanceof Node ||
-				request instanceof SerializableFileReference ||
-				request instanceof Reader ||
-				request instanceof InputStream ||
-				request instanceof File ||
-				request instanceof Path ||
-				request instanceof URL ||
-				request instanceof Number;
 	}
 
 	/**
