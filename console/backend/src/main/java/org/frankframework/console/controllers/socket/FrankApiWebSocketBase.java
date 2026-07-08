@@ -44,8 +44,8 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.frankframework.management.gateway.HazelcastOutboundGateway;
@@ -103,7 +103,7 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 			return null;
 		}
 
-		String stringResponse = ResponseUtils.parseAsString(response);
+		String stringResponse = BusMessageUtils.getPayloadAsString(response);
 		if (stringResponse == null) {
 			throw new IllegalStateException("no response payload found");
 		}

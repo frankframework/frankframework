@@ -39,7 +39,6 @@ import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.RequestUtils;
-import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -103,7 +102,7 @@ public class TestPipeline {
 		builder.setPayload(inputMessage);
 		Message<?> response = frankApiService.sendSyncMessage(builder);
 		String state = BusMessageUtils.getHeader(response, MessageBase.STATE_KEY);
-		return testPipelineResponse(ResponseUtils.parseAsString(response), state, inputMessage);
+		return testPipelineResponse(BusMessageUtils.getPayloadAsString(response), state, inputMessage);
 	}
 
 	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload) {
