@@ -303,7 +303,7 @@ public class MessageUtils {
 	 */
 	@Nullable
 	public static MimeType computeMimeType(@Nullable Message message, @Nullable String filename) {
-		if(Message.isEmpty(message)) {
+		if (Message.isEmpty(message)) {
 			return null;
 		}
 
@@ -332,7 +332,7 @@ public class MessageUtils {
 			if ("text".equals(mimeType.getType()) || (message.getCharset() != null && !"json".equals(mimeType.getSubtype()))) { // is of type 'text' or message has charset, but is not JSON
 				// JSON should never have a charset in the mimetype
 				Charset charset = computeDecodingCharset(message);
-				if(charset != null) {
+				if (charset != null) {
 					LOG.debug("found mimetype [{}] with charset [{}]", mimeType, charset);
 					return new MimeType(mimeType, charset);
 				}
