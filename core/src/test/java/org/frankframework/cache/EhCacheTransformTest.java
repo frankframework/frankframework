@@ -44,8 +44,7 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			PipeLineSession session = new PipeLineSession();
+		try (PipeLineSession session = new PipeLineSession()) {
 			session.put("legacyKey", "legacyKeyValue");
 
 			assertEquals("resolvedKey", cache.transformKey("ignoredInput", session));
@@ -62,8 +61,7 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			PipeLineSession session = new PipeLineSession();
+		try (PipeLineSession session = new PipeLineSession()) {
 			session.put("legacyKey", "legacyKeyValue");
 
 			assertEquals("legacyKeyValue", cache.transformKey("ignoredInput", session));
@@ -88,8 +86,8 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			assertEquals("", cache.transformKey(resolvedMessage, new PipeLineSession()));
+		try (PipeLineSession session = new PipeLineSession()) {
+			assertEquals("", cache.transformKey(resolvedMessage, session));
 		} finally {
 			cache.close();
 		}
@@ -111,8 +109,8 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			assertEquals(input, cache.transformKey(resolvedMessage, new PipeLineSession()));
+		try (PipeLineSession session = new PipeLineSession()) {
+			assertEquals(input, cache.transformKey(resolvedMessage, session));
 		} finally {
 			cache.close();
 		}
@@ -127,8 +125,7 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			PipeLineSession session = new PipeLineSession();
+		try (PipeLineSession session = new PipeLineSession()) {
 			session.put("legacyValue", "legacyValueFromSession");
 
 			assertEquals("resolvedValue", cache.transformValue(new Message("ignoredInput"), session));
@@ -165,8 +162,8 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			assertEquals(input, cache.transformValue(message, new PipeLineSession()));
+		try (PipeLineSession session = new PipeLineSession()) {
+			assertEquals(input, cache.transformValue(message, session));
 		} finally {
 			cache.close();
 		}
@@ -181,8 +178,8 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			assertEquals("xpathKey", cache.transformKey("<root><key>xpathKey</key></root>", new PipeLineSession()));
+		try (PipeLineSession session = new PipeLineSession()) {
+			assertEquals("xpathKey", cache.transformKey("<root><key>xpathKey</key></root>", session));
 		} finally {
 			cache.close();
 		}
@@ -198,8 +195,8 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			assertEquals("xpathValue", cache.transformValue(new Message("<root><value>xpathValue</value></root>"), new PipeLineSession()));
+		try (PipeLineSession session = new PipeLineSession()) {
+			assertEquals("xpathValue", cache.transformValue(new Message("<root><value>xpathValue</value></root>"), session));
 		} finally {
 			cache.close();
 		}
@@ -216,8 +213,8 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			assertEquals("", cache.transformValue(new Message("<root/>"), new PipeLineSession()));
+		try (PipeLineSession session = new PipeLineSession()) {
+			assertEquals("", cache.transformValue(new Message("<root/>"), session));
 		} finally {
 			cache.close();
 		}
@@ -232,8 +229,7 @@ public class EhCacheTransformTest {
 		cache.configure();
 		cache.open();
 
-		try {
-			PipeLineSession session = new PipeLineSession();
+		try (PipeLineSession session = new PipeLineSession()) {
 			String transformedKey = cache.transformKey("ignoredInput", session);
 			String transformedValue = cache.transformValue(new Message("ignoredInput"), session);
 

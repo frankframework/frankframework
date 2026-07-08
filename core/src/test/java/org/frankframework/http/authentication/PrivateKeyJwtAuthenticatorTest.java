@@ -15,7 +15,6 @@
 */
 package org.frankframework.http.authentication;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,9 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +44,7 @@ class PrivateKeyJwtAuthenticatorTest {
 	private HttpSender httpSender;
 
 	@BeforeEach
-	void setup() throws Exception {
+	void setup() {
 		httpSender = new HttpSender();
 		httpSender.setUrl("https://dummy");
 		httpSender.setTokenEndpoint(TOKEN_ENDPOINT);
@@ -127,7 +124,7 @@ class PrivateKeyJwtAuthenticatorTest {
 	}
 
 	@Test
-	void testConfigureFailsWithoutClientId() throws Exception {
+	void testConfigureFailsWithoutClientId() {
 		httpSender.setClientId(null);
 
 		assertThrows(ConfigurationException.class, () -> httpSender.configure(),
@@ -143,7 +140,7 @@ class PrivateKeyJwtAuthenticatorTest {
 		noKeySender.setClientId(CLIENT_ID);
 		// No keystore configured — private key loading must fail
 
-		assertThrows(ConfigurationException.class, () -> noKeySender.configure(),
+		assertThrows(ConfigurationException.class, noKeySender::configure,
 				"Expected ConfigurationException when private key is missing");
 	}
 
