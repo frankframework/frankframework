@@ -91,6 +91,7 @@ export class TestPipelineComponent implements OnInit {
   };
 
   protected configurations: Signal<Configuration[]>;
+  protected configurationsLoaded: Signal<boolean>;
 
   private file: File | null = null;
 
@@ -100,6 +101,7 @@ export class TestPipelineComponent implements OnInit {
 
   constructor() {
     this.configurations = this.appService.configurations;
+    this.configurationsLoaded = this.appService.configurationsLoaded;
   }
 
   ngOnInit(): void {
