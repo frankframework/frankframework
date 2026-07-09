@@ -15,11 +15,8 @@
 */
 package org.frankframework.console.util;
 
-import java.io.IOException;
 import java.io.InputStream;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -29,11 +26,8 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import lombok.NoArgsConstructor;
 
-import org.frankframework.console.ApiException;
 import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.MessageBase;
-import org.frankframework.util.StreamUtil;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class ResponseUtils {
@@ -73,7 +67,7 @@ public class ResponseUtils {
 
 		responseEntity.headers(httpHeaders);
 
-		if (hasPayload(status)) {
+		if (BusMessageUtils.hasPayload(status)) {
 			if (response != null) {
 				return responseEntity.body(response);
 			}
@@ -81,47 +75,5 @@ public class ResponseUtils {
 		}
 
 		return responseEntity.build();
-	}
-
-	/**
-	 * Extracted method so it's in one place.
-	 * See {@link EmptyMessage} for more info.
-	 */
-	private static boolean hasPayload(int status) {
-		return (status == 200 || status > 204);
-	}
-
-	@Nullable
-	public static String parseAsString(Message<?> message) {
-		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
-		if (!hasPayload(status)) {
-			return null;
-		}
-
-		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
-		if (mimeType != null) {
-			MediaType mime = MediaType.valueOf(mimeType);
-			if (MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mime) || MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mime)) {
-				return (String) message.getPayload();
-			}
-		}
-		return convertPayload(message.getPayload());
-	}
-
-	@NonNull
-	public static String convertPayload(Object payload) {
-		if (payload instanceof String string) {
-			return string;
-		} else if (payload instanceof byte[] bytes) {
-			return new String(bytes);
-		} else if (payload instanceof InputStream stream) {
-			try {
-				// Convert line endings to \n to show them in the browser as real line feeds
-				return StreamUtil.streamToString(stream, "\n", false);
-			} catch (IOException e) {
-				throw new ApiException("unable to read response payload", e);
-			}
-		}
-		throw new ApiException("unexpected response payload type [" + payload.getClass().getCanonicalName() + "]");
 	}
 }
