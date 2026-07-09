@@ -176,8 +176,7 @@ public class UnzipPipe extends FixedForwardPipe {
 					Path targetFilePath = targetDir.normalize().resolve(FilenameUtils.normalize(entryName, true));
 
 					if (!targetFilePath.normalize().startsWith(targetDir.normalize())) {
-						log.warn("Skipping zip entry [{}] - target path escapes target directory", entryName);
-						continue; // skip the entry entirely
+						throw new PipeRunException(this, "Someone is trying to upload a zip file where the target path escapes the target directory. This is not allowed for security reasons. zipEntry.name: [" + entryName + "]. Skipping further extraction!");
 					}
 
 					if (isKeepOriginalFilePath()) {
