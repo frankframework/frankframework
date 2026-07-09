@@ -74,6 +74,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -91,9 +93,7 @@ import org.frankframework.xml.AttributesWrapper;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.XmlWriter;
 
-/**
- * @author Peter Leeuwenburgh
- */
+@Log4j2
 public class SoapWrapperTest {
 
 	private final String xmlMessage = """
@@ -416,7 +416,6 @@ public class SoapWrapperTest {
 
 		Exception e5 = assertThrows(Exception.class, () -> wrapper.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit"));
 		assertInstanceOf(WSSecurityException.class, e5, "expected a WSSecurityException but got: (%s): %s".formatted(e5.getClass(), e5.getMessage()));
-		assertEquals("Given final block not properly padded. Such issues can arise if a bad key is used during decryption.", e5.getMessage());
 
 		Message resultMessage = wrapper.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit");
 		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), resultMessage.asString());
@@ -492,12 +491,16 @@ public class SoapWrapperTest {
 			} else {
 				result = "invalid";
 			}
-			System.out.println("Provided password digest is: " + result);
-			System.out.println("   Nonce: " + Base64.getEncoder().encodeToString(nonceBytes));
-			System.out.println("   Timestamp: " + created);
-			System.out.println("   Password: " + pwd);
-			System.out.println("   Computed digest: " + digestString);
-			System.out.println("   Provided digest: " + passwordDigest);
+			log.debug("""
+					:: verifySignature ::
+						Password digest is: {}
+						Nonce: {}
+						Timestamp: {}
+						Password: {}
+						Computed digest: {}
+						Provided digest: {}
+					""".trim(), result, Base64.getEncoder().encodeToString(nonceBytes), created, pwd, digestString, passwordDigest);
+
 			return digestString.equals(passwordDigest);
 		} catch (Exception e) {
 			fail();

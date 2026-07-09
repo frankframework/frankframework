@@ -470,30 +470,35 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 
 			return new Message(encryptedDocument);
 		} catch (SOAPException | IOException e) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "Could not encrypt message");
+			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "errorMessages.IOException");
 		}
 	}
 
 	public Message decryptMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword) throws WSSecurityException {
-		try {
-			Crypto crypto = new KeyStoreCrypto(keystore);
-			RequestData requestData = new RequestData();
-			requestData.setSigVerCrypto(crypto);
-			requestData.setDecCrypto(crypto);
-			requestData.setCallbackHandler(callbacks -> {
-				for (Callback callback : callbacks) {
-					if (callback instanceof WSPasswordCallback pc) {
-						if (certificateName.equals(pc.getIdentifier())) {
-							pc.setPassword(certificatePassword);
-						}
-					} else {
-						throw new UnsupportedCallbackException(callback, "Unknown Callback");
+		Crypto crypto = new KeyStoreCrypto(keystore);
+		RequestData requestData = new RequestData();
+		requestData.setSigVerCrypto(crypto);
+		requestData.setDecCrypto(crypto);
+		requestData.setCallbackHandler(callbacks -> {
+			for (Callback callback : callbacks) {
+				if (callback instanceof WSPasswordCallback pc) {
+					if (certificateName.equals(pc.getIdentifier())) {
+						pc.setPassword(certificatePassword);
 					}
+				} else {
+					throw new UnsupportedCallbackException(callback, "Unknown Callback");
 				}
-			});
+			}
+		});
 
-			Document doc = toSoapDocument(soapMessage);
+		final Document doc;
+		try {
+			doc = toSoapDocument(soapMessage);
+		} catch (SOAPException | IOException e) {
+			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "errorMessages.IOException");
+		}
 
+		try {
 			WSSecurityEngine engine = new WSSecurityEngine();
 			WSHandlerResult result = engine.processSecurityHeader(doc, requestData);
 
@@ -509,7 +514,7 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 					.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
 
 			if (!encryptionProcessed) {
-				throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "encryption was not processed");
+				throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "stax.encryption.unprocessedReferences");
 			}
 
 			WSSecHeader secHeader = new WSSecHeader(doc);
@@ -518,8 +523,6 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 			return new Message(doc);
 		} catch (IllegalArgumentException | IllegalStateException e) {
 			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_CHECK);
-		} catch (SOAPException | IOException e) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "could not read soap-message");
 		}
 	}
 }
