@@ -44,6 +44,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.Date;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Hex;
@@ -1218,16 +1220,22 @@ testFile with BOM —•˜›
 	}
 
 	static Stream<Arguments> messageFromDifferentObjectTypes() throws Exception {
-		ThrowingSupplier<InputStream, IOException> inputStreamSupplier = () -> new ByteArrayInputStream("".getBytes());
+		ThrowingSupplier<InputStream, IOException> inputStreamSupplier = () -> new ByteArrayInputStream("<test/>".getBytes());
 		Node xmlDoc = XmlUtils.buildNode("<test/>");
 		URL testFileURL = TestFileUtils.getTestFileURL("/Util/MessageUtils/utf8-with-bom.xml");
 
+		// Create a message in different ways to touch all (major) data-converters
 		return Stream.of(
 				arguments(Message.asMessage("<test/>")),
 				arguments(Message.asMessage("<test/>".getBytes(StandardCharsets.UTF_8))),
 				arguments(Message.asMessage(inputStreamSupplier)),
 				arguments(Message.asMessage(xmlDoc)),
 				arguments(Message.nullMessage()),
+				arguments(Message.asMessage(true)),
+				arguments(Message.asMessage(1)),
+				arguments(Message.asMessage(new Date())),
+				arguments(Message.asMessage(Instant.now())),
+				arguments(Message.asMessage(TestEnum.A)),
 				arguments(Message.asMessage(new File(testFileURL.toURI())))
 		);
 	}
