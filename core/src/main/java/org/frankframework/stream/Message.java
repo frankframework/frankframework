@@ -312,53 +312,54 @@ public class Message implements Serializable {
 		if (request == null) {
 			return;
 		}
-		if (request instanceof SerializableFileReference) {
-			return;
-		}
 
 		long requestSize = size();
-		if ((requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > MESSAGE_MAX_IN_MEMORY) && !(request instanceof Date || request instanceof TemporalAccessor)) {
+		if ((requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > MESSAGE_MAX_IN_MEMORY) && !(request instanceof SerializableFileReference || request instanceof Date || request instanceof TemporalAccessor || request instanceof Boolean || request instanceof Number)) {
 			preserveToDisk(deepPreserve);
 			// Check again the size now that we know it for sure. If it fits into memory, better for performance to keep it in memory!
 			if (requestSize == MESSAGE_SIZE_UNKNOWN && size() <= MESSAGE_MAX_IN_MEMORY && request instanceof SerializableFileReference serializableFileReference) {
-				if (isBinary()) {
-					try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-						InputStream inputStream = serializableFileReference.getInputStream()) {
-						inputStream.transferTo(bos);
-						this.request = bos.toByteArray();
-						this.dataConverter = DataConverterFactory.getConverter(this.request);
-					}
-				} else {
-					try (StringWriter sw = new StringWriter(); Reader reader = serializableFileReference.getReader()) {
-						reader.transferTo(sw);
-						this.request = sw.toString();
-						this.dataConverter = DataConverterFactory.getConverter(this.request);
-					}
-				}
-				serializableFileReference.close();
+				loadSerializableFileReferenceToMemory(serializableFileReference);
 			}
 		} else {
 			preserveToMemory(deepPreserve);
 		}
 	}
 
+	private void loadSerializableFileReferenceToMemory(SerializableFileReference serializableFileReference) throws IOException {
+		if (isBinary()) {
+			try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				InputStream inputStream = serializableFileReference.getInputStream()) {
+				inputStream.transferTo(bos);
+				this.request = bos.toByteArray();
+				this.dataConverter = DataConverterFactory.getConverter(this.request);
+			}
+		} else {
+			try (StringWriter sw = new StringWriter(); Reader reader = serializableFileReference.getReader()) {
+				reader.transferTo(sw);
+				this.request = sw.toString();
+				this.dataConverter = DataConverterFactory.getConverter(this.request);
+			}
+		}
+		serializableFileReference.close();
+	}
+
 	private void preserveToMemory(boolean deepPreserve) throws IOException {
-		if (request instanceof SerializableFileReference) {
+		if (request instanceof Serializable && !(request instanceof SerializableFileReference)) {
 			// Should not happen but just in case.
 			return;
 		}
 
 		// if deepPreserve=true, File and URL are also preserved as byte array
 		// otherwise we rely on that File and URL can be repeatedly read
-		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
-			if (isBinary()) {
+		if (deepPreserve) {
+			if (request instanceof ThrowingSupplier<?, ?>) {
 				LOG.debug("deep preserving {} as byte[]", this::getObjectId);
 				request = asByteArray();
-			} else {
-				LOG.debug("deep preserving {} as String", this::getObjectId);
-				request = asString();
+				this.dataConverter = DataConverterFactory.getConverter(this.request);
+			} else if (request instanceof SerializableFileReference serializableFileReference) {
+				// Load smaller serializable files into memory for better performance.
+				loadSerializableFileReferenceToMemory(serializableFileReference);
 			}
-			this.dataConverter = DataConverterFactory.getConverter(this.request);
 		}
 	}
 
