@@ -267,7 +267,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		}
 	}
 
-	private Path getTargetDirectory(PipeLineSession session) throws PipeRunException {
+	private @NonNull Path getTargetDirectory(PipeLineSession session) throws PipeRunException {
 		File targetDirectory = this.dir;
 		if (StringUtils.isEmpty(getDirectory())) {
 			String directory = session.getString(getDirectorySessionKey());
