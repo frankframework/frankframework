@@ -191,13 +191,17 @@
 				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="largeStream"
 				allowAllParams="false"
+				allowedParameters="blockSize,blockCount"
 			/>
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit name="READY" state="success" />
 			</exits>
-			<pipe name="ManyBlocks" className="org.frankframework.pipes.LargeBlockTesterPipe" direction="produce" blockSize="10000" blockCount="20" sleepBetweenServedBlocks="100"/>
+			<pipe name="ManyBlocks" className="org.frankframework.pipes.LargeBlockTesterPipe" direction="produce" blockSize="10000" blockCount="20">
+				<NumberParam name="blockCount" sessionKey="blockCount"/>
+				<NumberParam name="blockSize" sessionKey="blockSize"/>
+			</pipe>
 		</pipeline>
 	</adapter>
 
@@ -303,6 +307,99 @@
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe" getInputFromSessionKey="headers">
 				<forward name="success" path="EXIT" />
 			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="ApiListener_LargeStreamHttpSenderTester">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ApiListener_LargeStreamHttpSenderTester" />
+		</receiver>
+		<pipeline>
+			<pipe name="callApiListener_Warmup" getInputFromFixedValue="x"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/largeStream"
+					resultStatusCodeSessionKey="statusCode"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}">
+					<Param name="blockCount" value="40"/>
+					<Param name="blockSize" value="10240"/>
+				</sender>
+			</pipe>
+			<ForPipe name="forPipe" startAt="0" stopAt="100">
+				<Forward name="stop" path="consume" />
+				<Forward name="continue" path="callApiListener_40"/>
+			</ForPipe>
+			<pipe name="callApiListener_40" getInputFromFixedValue="x"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/largeStream"
+					resultStatusCodeSessionKey="statusCode"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}">
+					<Param name="blockCount" value="40"/>
+					<Param name="blockSize" value="10240"/>
+				</sender>
+			</pipe>
+
+			<pipe name="callApiListener_400" getInputFromFixedValue="x"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/largeStream"
+					resultStatusCodeSessionKey="statusCode"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}">
+					<Param name="blockCount" value="400"/>
+					<Param name="blockSize" value="10240"/>
+				</sender>
+			</pipe>
+
+			<pipe name="callApiListener_4_000" getInputFromFixedValue="x"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/largeStream"
+					resultStatusCodeSessionKey="statusCode"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}">
+					<Param name="blockCount" value="4000"/>
+					<Param name="blockSize" value="10240"/>
+				</sender>
+			</pipe>
+
+			<pipe name="callApiListener_40_000" getInputFromFixedValue="x"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/largeStream"
+					resultStatusCodeSessionKey="statusCode"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}">
+					<Param name="blockCount" value="40000"/>
+					<Param name="blockSize" value="10240"/>
+				</sender>
+			</pipe>
+
+			<pipe name="callApiListener_400_000" getInputFromFixedValue="x"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/largeStream"
+					resultStatusCodeSessionKey="statusCode"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}">
+					<Param name="blockCount" value="400000"/>
+					<Param name="blockSize" value="10240"/>
+				</sender>
+				<Forward name="success" path="forPipe"/>
+			</pipe>
+
+			<pipe name="consume"
+				className="org.frankframework.pipes.LargeBlockTesterPipe" direction="consume" blockSize="10240" blockCount="400000"
+			/>
 		</pipeline>
 	</adapter>
 </module>

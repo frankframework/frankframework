@@ -28,14 +28,17 @@ import org.jspecify.annotations.NonNull;
 
 import lombok.Setter;
 
+import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.functional.ThrowingSupplier;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
 public class LargeBlockTesterPipe extends FixedForwardPipe {
 
-	private @Setter int blockSize = 10000;
+	private @Setter int blockSize = 10_000;
 	private @Setter int blockCount = 20;
 	private @Setter int sleepBetweenServedBlocks = 0;
 	private @Setter Direction direction = Direction.PRODUCE;
@@ -51,70 +54,22 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		Message result;
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "Cannot get parameter values", e);
+		}
+		int nrOfBlocks = getIntegerParam(pvl, "blockCount", blockCount);
+		int bytesPerBlock = getIntegerParam(pvl, "blockSize", blockSize);
 		if (direction==Direction.PRODUCE) {
-
-			final byte[] filler = buildDataBuffer();
-			final long bytesToServe = blockCount * (long) blockSize;
-			try {
-				result = new Message(new InputStream() {
-					int i;
-					long bytesLeftToServe = bytesToServe;
-
-					@Override
-					public int read(byte @NonNull [] buf, int off, int len) throws IOException {
-						if (bytesLeftToServe <= 0L) {
-							return -1;
-						}
-						final int servedSize = (int) min(len, bytesLeftToServe);
-						log.debug("serve block [{}] of size [{}]", i, servedSize);
-
-						copyToOutputBuffer(buf, off, servedSize);
-						bytesLeftToServe -= servedSize;
-						totalBlocksServed.incrementAndGet();
-
-						if (sleepBetweenServedBlocks > 0) {
-							try {
-								Thread.sleep(sleepBetweenServedBlocks);
-							} catch (InterruptedException e) {
-								Thread.currentThread().interrupt();
-								throw new IOException(e);
-							}
-						}
-						return servedSize;
-					}
-
-					private void copyToOutputBuffer(byte[] buf, int off, int servedSize) {
-						byte[] blockStart = ("[" + i + "]").getBytes(Charset.defaultCharset());
-						System.arraycopy(blockStart, 0, buf, off, min(blockStart.length, servedSize));
-						int bytesLeft = servedSize - blockStart.length;
-						int offset = off + blockStart.length;
-						while (bytesLeft > 0) {
-							int blockCopySize = min(filler.length, bytesLeft);
-							System.arraycopy(filler, 0, buf, offset, blockCopySize);
-							offset += blockCopySize;
-							bytesLeft -= blockCopySize;
-						}
-					}
-
-					@Override
-					public int read() throws IOException {
-						if (bytesLeftToServe <= 0) {
-							return -1;
-						}
-						log.debug("serve byte");
-						--bytesLeftToServe;
-						return 'x';
-					}
-
-				});
-			} catch (IOException e) {
-				throw new PipeRunException(this, "Cannot read input stream", e);
-			}
+			// Pass supplier to large stream, so that it is actually served dynamically instead of all produced on creation of the message
+			result = Message.asMessage(buildInputStreamSupplier(nrOfBlocks, bytesPerBlock));
 		} else {
 			try (Reader reader=message.asReader()) {
 				Objects.requireNonNull(reader, "Cannot read data from NULL message");
 				int blocksServedAfterFirstBlockRead=Integer.MAX_VALUE;
-				int buflen=blockSize;
+				int buflen=bytesPerBlock;
 				int displaylen=40;
 				int bytesRead=0;
 				char[] buf = new char[buflen];
@@ -130,13 +85,13 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 					}
 					bytesRead += len;
 					if (log.isDebugEnabled()) {
-						log.debug("read block [{}] of size [{}]: {}", block++, len, new String(buf, 0, len < displaylen ? len : displaylen));
+						log.debug("read block [{}] of size [{}]: {}", block++, len, new String(buf, 0, Math.min(len, displaylen)));
 					}
 				}
 				int blocksServedAtEndOfReading = totalBlocksServed.get();
 
 				int blocksServedWhileReading = blocksServedAtEndOfReading - blocksServedAfterFirstBlockRead;
-				boolean moreThanHalfOfBlocksProducedWhileReading = blocksServedWhileReading * 2 > blockCount;
+				boolean moreThanHalfOfBlocksProducedWhileReading = blocksServedWhileReading * 2 > nrOfBlocks;
 
 				result = new Message("bytesRead [" + bytesRead + "], more than half of blocks produced while reading [" + moreThanHalfOfBlocksProducedWhileReading + "]");
 			} catch (IOException e) {
@@ -147,11 +102,71 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
+	private int getIntegerParam(ParameterValueList pvl, String paramName, int defaultValue) {
+		if (!pvl.contains(paramName)) {
+			return defaultValue;
+		}
+		return pvl.get(paramName).asIntegerValue(defaultValue);
+	}
+
+	private @NonNull ThrowingSupplier<InputStream, Exception> buildInputStreamSupplier(int nrOfBlocks, int bytesPerBlock) {
+		final byte[] filler = buildDataBuffer();
+		final long bytesToServe = nrOfBlocks * (long) bytesPerBlock;
+		return () ->  new InputStream() {
+			int i;
+			long bytesLeftToServe = bytesToServe;
+
+			@Override
+			public int read(byte @NonNull [] buf, int off, int len) throws IOException {
+				if (bytesLeftToServe <= 0L) {
+					return -1;
+				}
+				final int servedSize = (int) min(len, bytesLeftToServe);
+				log.debug("serve block [{}] of size [{}]", i, servedSize);
+
+				copyToOutputBuffer(buf, off, servedSize);
+				bytesLeftToServe -= servedSize;
+				totalBlocksServed.incrementAndGet();
+
+				if (sleepBetweenServedBlocks > 0) {
+					try {
+						Thread.sleep(sleepBetweenServedBlocks);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						throw new IOException(e);
+					}
+				}
+				return servedSize;
+			}
+
+			private void copyToOutputBuffer(byte[] buf, int off, int servedSize) {
+				byte[] blockStart = ("[" + i + "]").getBytes(Charset.defaultCharset());
+				System.arraycopy(blockStart, 0, buf, off, min(blockStart.length, servedSize));
+				int bytesLeft = servedSize - blockStart.length;
+				int offset = off + blockStart.length;
+				while (bytesLeft > 0) {
+					int blockCopySize = min(filler.length, bytesLeft);
+					System.arraycopy(filler, 0, buf, offset, blockCopySize);
+					offset += blockCopySize;
+					bytesLeft -= blockCopySize;
+				}
+			}
+
+			@Override
+			public int read() {
+				if (bytesLeftToServe <= 0) {
+					return -1;
+				}
+				log.debug("serve byte");
+				--bytesLeftToServe;
+				return 'x';
+			}
+
+		};
+	}
+
 	private byte @NonNull [] buildDataBuffer() {
-		final String filler;
-		StringBuilder fillerTmp = new StringBuilder();
-		fillerTmp.append(" 123456789".repeat(Math.max(0, blockSize / 10)));
-		filler = fillerTmp.toString();
+		final String filler = " 123456789".repeat(Math.max(0, blockSize / 10));
 		return filler.getBytes(Charset.defaultCharset());
 	}
 
