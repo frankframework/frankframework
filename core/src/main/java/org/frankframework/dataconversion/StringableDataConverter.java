@@ -23,7 +23,7 @@ import java.io.StringReader;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
-public abstract class StringableDataConverter<T> implements CharacterDataConversionSupport<T> {
+abstract class StringableDataConverter<T> implements CharacterDataConversionSupport<T> {
 
 	@Override
 	public String asString(T data) {
@@ -41,12 +41,12 @@ public abstract class StringableDataConverter<T> implements CharacterDataConvers
 	}
 
 	@Override
-	public byte [] asByteArray(T data) {
+	public byte[] asByteArray(T data) {
 		return asString(data).getBytes();
 	}
 
 	@Override
-	public byte [] asByteArray(T data, String encodingCharset) throws IOException {
+	public byte[] asByteArray(T data, String encodingCharset) throws IOException {
 		return asString(data).getBytes(encodingCharset);
 	}
 
@@ -60,16 +60,15 @@ public abstract class StringableDataConverter<T> implements CharacterDataConvers
 		return new ByteArrayInputStream(asByteArray(data, encodingCharset));
 	}
 
-	public static class EnumConverter extends StringableDataConverter<Enum<?>> {
+	static class StringConverter extends StringableDataConverter<String> { }
+	static class BooleanConverter extends StringableDataConverter<Boolean> { }
+	static class NumberConverter extends StringableDataConverter<Number> { }
+	static class DateConverter extends StringableDataConverter<Date> { }
+	static class TemporalAccessorConverter extends StringableDataConverter<TemporalAccessor> { }
+	static class EnumConverter extends StringableDataConverter<Enum<?>> {
 		@Override
 		public String asString(Enum<?> data) {
 			return data.name();
 		}
 	}
-
-	public static class StringConverter extends StringableDataConverter<String> { }
-	public static class BooleanConverter extends StringableDataConverter<Boolean> { }
-	public static class NumberConverter extends StringableDataConverter<Number> { }
-	public static class DateConverter extends StringableDataConverter<Date> { }
-	public static class TemporalAccessorConverter extends StringableDataConverter<TemporalAccessor> { }
 }

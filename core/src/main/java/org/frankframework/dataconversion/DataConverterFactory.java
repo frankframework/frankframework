@@ -27,17 +27,17 @@ import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.stream.SerializableFileReference;
 
 public class DataConverterFactory {
-	public static final NullDataConverter nullDataConverter = new NullDataConverter();
-	public static final StringableDataConverter.EnumConverter enumConverter = new StringableDataConverter.EnumConverter();
-	public static final StringableDataConverter.BooleanConverter booleanConverter = new StringableDataConverter.BooleanConverter();
-	public static final StringableDataConverter.NumberConverter numberConverter = new StringableDataConverter.NumberConverter();
-	public static final StringableDataConverter.StringConverter stringConverter = new StringableDataConverter.StringConverter();
-	public static final NodeConverter nodeConverter = new NodeConverter();
-	public static final SerializableFileReferenceConverter serializableFileReferenceConverter = new SerializableFileReferenceConverter();
-	public static final ThrowingSupplierConverter throwingSupplierConverter = new ThrowingSupplierConverter();
-	public static final StringableDataConverter.DateConverter dateConverter = new StringableDataConverter.DateConverter();
-	public static final StringableDataConverter.TemporalAccessorConverter temporalAccessorConverter = new StringableDataConverter.TemporalAccessorConverter();
-	public static final ByteArrayConverter byteArrayConverter = new ByteArrayConverter();
+	static final NullDataConverter nullDataConverter = new NullDataConverter();
+	static final StringableDataConverter.EnumConverter enumConverter = new StringableDataConverter.EnumConverter();
+	static final StringableDataConverter.BooleanConverter booleanConverter = new StringableDataConverter.BooleanConverter();
+	static final StringableDataConverter.NumberConverter numberConverter = new StringableDataConverter.NumberConverter();
+	static final StringableDataConverter.StringConverter stringConverter = new StringableDataConverter.StringConverter();
+	static final NodeConverter nodeConverter = new NodeConverter();
+	static final SerializableFileReferenceConverter serializableFileReferenceConverter = new SerializableFileReferenceConverter();
+	static final ThrowingSupplierConverter throwingSupplierConverter = new ThrowingSupplierConverter();
+	static final StringableDataConverter.DateConverter dateConverter = new StringableDataConverter.DateConverter();
+	static final StringableDataConverter.TemporalAccessorConverter temporalAccessorConverter = new StringableDataConverter.TemporalAccessorConverter();
+	static final ByteArrayConverter byteArrayConverter = new ByteArrayConverter();
 
 	private DataConverterFactory() {
 		// Private constructor to avoid instance creation

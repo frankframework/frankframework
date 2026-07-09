@@ -26,7 +26,7 @@ import javax.xml.transform.Source;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
-public class NullDataConverter implements BinaryDataConversionSupport<NullMarker> {
+class NullDataConverter implements BinaryDataConversionSupport<NullMarker> {
 	@Override
 	public @Nullable String asString(NullMarker data, String encodingCharset) throws IOException {
 		return null;

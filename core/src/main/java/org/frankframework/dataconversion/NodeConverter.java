@@ -27,7 +27,7 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.util.XmlUtils;
 
-public class NodeConverter extends StringableDataConverter<Node> {
+class NodeConverter extends StringableDataConverter<Node> {
 	@Override
 	public String asString(Node data) {
 		try {

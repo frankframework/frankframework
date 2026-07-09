@@ -21,7 +21,7 @@ import java.io.InputStream;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.StreamUtil;
 
-public class SerializableFileReferenceConverter implements BinaryDataConversionSupport<SerializableFileReference> {
+class SerializableFileReferenceConverter implements BinaryDataConversionSupport<SerializableFileReference> {
 
 	@Override
 	public long size(SerializableFileReference data) {
