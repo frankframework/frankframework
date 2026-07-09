@@ -7,9 +7,8 @@ describe('Combobox', () => {
   const clearButton = '.combobox__list-item--clear';
 
   beforeEach(() => {
-    cy.intercept({ method: 'GET', url: '/iaf/api/adapters?expanded=all' }).as('getAdapters');
     cy.visit('/#/test-pipeline');
-    cy.wait('@getAdapters');
+    cy.get(comboboxInput).should('not.be.disabled');
   });
 
   it('open the suggestions, navigate and select with keyboard', () => {
@@ -81,4 +80,3 @@ describe('Combobox', () => {
     cy.get(optionLabels).should('have.length.greaterThan', 0);
   });
 });
-
