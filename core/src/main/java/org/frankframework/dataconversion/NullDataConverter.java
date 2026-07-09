@@ -15,6 +15,8 @@
 */
 package org.frankframework.dataconversion;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -32,7 +34,7 @@ public class NullDataConverter implements BinaryDataConversionSupport<NullMarker
 
 	@Override
 	public Reader asReader(NullMarker data, String encodingCharset) throws IOException {
-		return Reader.nullReader();
+		return new BufferedReader(Reader.nullReader());
 	}
 
 	@Override
@@ -52,7 +54,7 @@ public class NullDataConverter implements BinaryDataConversionSupport<NullMarker
 
 	@Override
 	public InputStream asInputStream(NullMarker data) throws IOException {
-		return InputStream.nullInputStream();
+		return new BufferedInputStream(InputStream.nullInputStream());
 	}
 
 	@Override

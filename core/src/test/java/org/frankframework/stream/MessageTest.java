@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -59,6 +60,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
@@ -1213,6 +1215,42 @@ public class MessageTest {
 <root>
 testFile with BOM —•˜›
 </root>""", contents);
+	}
+
+	static Stream<Arguments> messageFromDifferentObjectTypes() throws Exception {
+		ThrowingSupplier<InputStream, IOException> inputStreamSupplier = () -> new ByteArrayInputStream("".getBytes());
+		Node xmlDoc = XmlUtils.buildNode("<test/>");
+		URL testFileURL = TestFileUtils.getTestFileURL("/Util/MessageUtils/utf8-with-bom.xml");
+
+		return Stream.of(
+				arguments(Message.asMessage("<test/>")),
+				arguments(Message.asMessage("<test/>".getBytes(StandardCharsets.UTF_8))),
+				arguments(Message.asMessage(inputStreamSupplier)),
+				arguments(Message.asMessage(xmlDoc)),
+				arguments(Message.nullMessage()),
+				arguments(Message.asMessage(new File(testFileURL.toURI())))
+		);
+	}
+	@ParameterizedTest
+	@MethodSource("messageFromDifferentObjectTypes")
+	void testInputStreamSupportsMarkReset(Message message) throws IOException {
+		// Act
+		try (InputStream inputStream = message.asInputStream()) {
+
+			// Assert
+			assertTrue(inputStream.markSupported(), "Inputstream [" + inputStream + "] does not support not mark/reset");
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageFromDifferentObjectTypes")
+	void testReaderSupportsMarkReset(Message message) throws IOException {
+		// Act
+		try (Reader reader = message.asReader()) {
+
+			// Assert
+			assertTrue(reader.markSupported(), "Reader [" + reader + "] does not support not mark/reset");
+		}
 	}
 
 	@Test
