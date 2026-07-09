@@ -362,21 +362,27 @@ public class MessageUtils {
 	private static @NonNull MimeType guessMimeType(@NonNull Message message) {
 		// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
 		// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
-		String firstChar;
+		String head;
 		try {
-			firstChar = message.peek(1);
+			head = message.peek(1);
 		} catch (IOException e) {
 			return MediaType.TEXT_PLAIN;
 		}
-		if ("<".equals(firstChar)) {
+		if (head.isEmpty()) {
+			return MediaType.TEXT_PLAIN;
+		}
+		char firstChar = head.charAt(0);
+		if ('<' == firstChar) {
 			return MediaType.APPLICATION_XML;
 		}
-		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
+		if ('{' != firstChar && '[' != firstChar) {
 			return MediaType.TEXT_PLAIN;
 		}
 		try (InputStream inputStream = message.asInputStream(); JsonParser parser = Json.createParser(inputStream)) {
-			while (parser.hasNext()) {
+			int i = 0;
+			while (parser.hasNext() && i < 20) { // Don't validate whole file, max 20 parser-events, should be enough and improves performance.
 				parser.next(); // Throw away the parse results as we only want to validate
+				++i;
 			}
 			// If we can reach this we are JSON
 			return MediaType.APPLICATION_JSON;
@@ -393,10 +399,8 @@ public class MessageUtils {
 	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
 	@Nullable
 	public static String generateMD5Hash(@NonNull Message message) {
-		try {
-			try (InputStream inputStream = message.asInputStream()) {
-				return DigestUtils.md5DigestAsHex(inputStream);
-			}
+		try (InputStream inputStream = message.asInputStream()) {
+			return DigestUtils.md5DigestAsHex(inputStream);
 		} catch (IllegalStateException | IOException e) {
 			LOG.warn("unable to read Message or write the MD5 hash", e);
 			return null;
@@ -427,7 +431,7 @@ public class MessageUtils {
 	public static long computeSize(@NonNull Message message) {
 		try {
 			long size = message.size();
-			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
+			if (size > Message.MESSAGE_SIZE_UNKNOWN) {
 				return size;
 			}
 
