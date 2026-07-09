@@ -15,6 +15,8 @@
 */
 package org.frankframework.stream;
 
+import static org.frankframework.stream.MessageBuilder.MAX_BUFFER_SIZE;
+
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.Flushable;
@@ -63,15 +65,15 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	private int currentBufferSize = 0;
 	private final int maxBufferSize;
 
-	public OverflowToDiskOutputStream(int maxSize, Path tempDirectory) throws IOException {
+	public OverflowToDiskOutputStream(long maxSize, Path tempDirectory) throws IOException {
 		this.tempDirectory = tempDirectory;
 
 		// either the buffer or outputStream exists, but not both at the same time.
-		if (maxSize > 0) {
+		if (maxSize > 0 && maxSize <= MAX_BUFFER_SIZE) {
 			buffers = new ArrayList<>();
 			lastBlock = new ByteBufferBlock();
 			buffers.add(lastBlock);
-			this.maxBufferSize = maxSize;
+			this.maxBufferSize = Math.toIntExact(maxSize);
 		} else {
 			outputStream = createFileOnDisk();
 			this.maxBufferSize = 0;

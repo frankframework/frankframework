@@ -84,12 +84,20 @@ public class MessageUtils {
 	 * Fully read {@link InputStream} and create a message from it, so that the InputStream can be closed
 	 * without losing the message contents.
 	 */
-	public static @NonNull Message fromInputStream(@NonNull InputStream inputStream) throws IOException {
-		MessageBuilder messageBuilder = new MessageBuilder();
+	public static @NonNull Message fromInputStream(@NonNull InputStream inputStream, @NonNull MessageContext context, long expectedSize) throws IOException {
+		MessageBuilder messageBuilder = new MessageBuilder(expectedSize);
 		try (inputStream; OutputStream outputStream = messageBuilder.asOutputStream()) {
-			inputStream.transferTo(outputStream);
+			StreamUtil.copyStream(inputStream, outputStream, StreamUtil.BUFFER_SIZE);
 		}
-		return messageBuilder.build();
+		return messageBuilder.build(context);
+	}
+
+	/**
+	 * Fully read {@link InputStream} and create a message from it, so that the InputStream can be closed
+	 * without losing the message contents.
+	 */
+	public static @NonNull Message fromInputStream(@NonNull InputStream inputStream) throws IOException {
+		return fromInputStream(inputStream, new MessageContext(), Message.MESSAGE_MAX_IN_MEMORY);
 	}
 
 	/**

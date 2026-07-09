@@ -28,6 +28,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.util.EntityUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.MimeType;
 
@@ -51,41 +52,35 @@ public class HttpResponseHandler {
 				EntityUtils.consume(httpEntity);
 				responseMessage = Message.nullMessage(context);
 			} else {
-				// Wrap the contentStream in a ReleaseConnectionAfterReadInputStream so the connection is closed and returned to the pool.
-				InputStream entityStream = new ReleaseConnectionAfterReadInputStream(this, httpEntity.getContent());
-				responseMessage = new Message(entityStream, context);
+				responseMessage = MessageUtils.fromInputStream(httpEntity.getContent(), context, httpEntity.getContentLength());
+				EntityUtils.consume(httpEntity);
 			}
 		}
 	}
 
-	public StatusLine getStatusLine() {
+	public @Nullable StatusLine getStatusLine() {
 		return httpResponse.getStatusLine();
 	}
 
-	public Header[] getAllHeaders() {
+	public @NonNull Header[] getAllHeaders() {
 		return httpResponse.getAllHeaders();
 	}
 
-	/**
-	 * Returns an {@link ReleaseConnectionAfterReadInputStream InputStream} that will automatically close the HttpRequest when fully read
-	 * @return an {@link ReleaseConnectionAfterReadInputStream InputStream} retrieved from {@link HttpEntity#getContent()} or NULL when no {@link HttpEntity} is present
-	 */
-	public InputStream getResponse() throws IOException {
-		if(Message.isNull(responseMessage)) {
-			return null;
+	public @NonNull InputStream getResponse() throws IOException {
+		if (responseMessage == null) {
+			return InputStream.nullInputStream();
 		}
-
-		return responseMessage.asInputStream();// IOException cannot occur as the input and output are both InputStreams
+		return responseMessage.asInputStream();
 	}
 
-	public Message getResponseMessage() {
+	public @Nullable Message getResponseMessage() {
 		return responseMessage;
 	}
 
-	public String getHeader(String header) {
-		if(httpResponse.getFirstHeader(header) == null)
+	public @Nullable String getHeader(String header) {
+		if (httpResponse.getFirstHeader(header) == null) {
 			return null;
-
+		}
 		return httpResponse.getFirstHeader(header).getValue();
 	}
 
@@ -93,7 +88,7 @@ public class HttpResponseHandler {
 	 * Consumes the {@link HttpEntity} and will release the connection.
 	 */
 	public void close() throws IOException {
-		if(httpEntity != null) {
+		if (httpEntity != null) {
 			EntityUtils.consume(httpEntity);
 		}
 	}
@@ -101,14 +96,12 @@ public class HttpResponseHandler {
 	public Map<String, List<String>> getHeaderFields() {
 		Map<String, List<String>> headerMap = new HashMap<>();
 		Header[] headers = httpResponse.getAllHeaders();
-		for (int i = 0; i < headers.length; i++) {
-			Header header = headers[i];
+		for (Header header : headers) {
 			String name = header.getName().toLowerCase();
 			List<String> value;
-			if(headerMap.containsKey(name)) {
+			if (headerMap.containsKey(name)) {
 				value = headerMap.get(name);
-			}
-			else {
+			} else {
 				value = new ArrayList<>();
 			}
 			value.add(header.getValue());
