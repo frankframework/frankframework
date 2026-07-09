@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { PagesFooterComponent } from './pages-footer.component';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+
+import { PagesFooterComponent } from './pages-footer.component';
 
 describe('PagesFooterComponent', () => {
   let component: PagesFooterComponent;

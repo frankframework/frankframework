@@ -8,6 +8,7 @@ import {
   OnChanges,
   Output,
   Signal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { convertToParamMap, Router, RouterModule } from '@angular/router';
 import { MinimalizaSidebarComponent } from './minimaliza-sidebar.component';
@@ -46,6 +47,7 @@ type ExpandedItem = {
   selector: 'app-pages-navigation',
   templateUrl: './pages-navigation.component.html',
   styleUrls: ['./pages-navigation.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     RouterModule,
     CdkAccordionModule,
@@ -79,6 +81,7 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
   protected readonly faBook = faBook;
   protected readonly faCommenting = faCommenting;
   protected readonly faFlag = faFlag;
+  protected readonly faAngleDown = faAngleDown;
   protected frankframeworkLogoPath = 'assets/images/ff-kawaii.svg';
   protected frankExclamationPath = 'assets/images/frank-exclemation.svg';
   protected showOldLadybug: Signal<boolean> = computed(
@@ -88,14 +91,17 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
     if (!this.serverInfoService.serverInfo()) return '';
     return encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());
   });
+  protected githubIssueUrl: Signal<string> = computed(() => {
+    return `https://github.com/frankframework/frankframework/issues/new?template=1-bug.yml&environment=${this.encodedServerInfo()}`;
+  });
 
+  private expandedItem: ExpandedItem | null = null;
+  private initializing = true;
   private readonly router: Router = inject(Router);
   private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
   private readonly appService: AppService = inject(AppService);
   private readonly IMAGES_BASE_PATH = 'assets/images/';
   private readonly ANIMATION_SPEED = 250;
-  private expandedItem: ExpandedItem | null = null;
-  private initializing = true;
 
   ngOnChanges(): void {
     const uwuEnabledString = localStorage.getItem('uwu') ? 'uwu-' : '';
@@ -120,9 +126,10 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
   }
 
   getExpandedByRoute(routeState: string | string[], templateInfo?: ExpandedItem): boolean {
+    const currentUrl = this.router.url.split('?', 1)[0];
     const expanded = Array.isArray(routeState)
-      ? routeState.some((routePartial) => this.router.url.split('?')[0].includes(routePartial))
-      : this.router.url.split('?')[0].includes(routeState);
+      ? routeState.some((routePartial) => currentUrl.includes(routePartial))
+      : currentUrl.includes(routeState);
     if (this.initializing && expanded && templateInfo) {
       this.expandedItem = templateInfo;
     }
@@ -143,6 +150,7 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
     const eventElement = event.target as HTMLElement;
     const parentElement =
       eventElement.tagName === 'A' ? eventElement.parentElement! : eventElement.parentElement!.parentElement!;
+    // eslint-disable-next-line unicorn/better-dom-traversing
     const element = parentElement.children[1] as HTMLElement;
 
     if (toBeExpanded) {
@@ -164,11 +172,11 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
   }
 
   closeExpandedItem(): void {
-    if (this.expandedItem) {
-      this.collapseItem(this.expandedItem.element, this.expandedItem.accordionItem);
-      this.expandedItem = null;
+    if (!this.expandedItem) {
+      return;
     }
-  }
 
-  protected readonly faAngleDown = faAngleDown;
+    this.collapseItem(this.expandedItem.element, this.expandedItem.accordionItem);
+    this.expandedItem = null;
+  }
 }

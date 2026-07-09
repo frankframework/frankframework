@@ -24,8 +24,9 @@
               />
               <fa-icon
                 aria-hidden="true"
+                class="input-group-closeSearch"
                 [icon]="faTimes"
-                [class]="`input-group-closeSearch${search.length < 1 ? ' hidden' : ''}`"
+                [class]="{ hidden: search.length < 1 }"
                 (click)="search = ''"
               />
               <span class="input-group-addon">

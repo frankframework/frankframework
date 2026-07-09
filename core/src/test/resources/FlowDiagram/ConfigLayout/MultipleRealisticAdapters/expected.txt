@@ -1,0 +1,22 @@
+d1e9('<text>ApiListener</text>'):::listener
+d1e12('<text data-html-node="a">Document_GET</text>'):::normal
+d1e46('<text>FixedQuerySender</text>'):::sender
+d1e66('<text>IbisLocalSender</text>'):::sender
+d1e132('<text>IbisLocalSender</text>'):::sender
+d1e144('<text>FixedQuerySender</text>'):::sender
+d1e158('<text>IbisLocalSender</text>'):::sender
+d1e229('<text>JavaListener</text>'):::listener
+d1e232('<text data-html-node="a">Select_Attachments</text>'):::normal
+d1e241('<text>FixedQuerySender</text>'):::sender
+d1e253('<text>IbisLocalSender</text>'):::sender
+d1e9 --> d1e12
+d1e132 --> d1e229
+d1e12 --> d1e46
+d1e12 --> d1e66
+d1e12 --> d1e132
+d1e12 --> d1e144
+d1e12 --> d1e158
+d1e229 --> d1e232
+d1e253 --> d1e229
+d1e232 --> d1e241
+d1e232 --> d1e253

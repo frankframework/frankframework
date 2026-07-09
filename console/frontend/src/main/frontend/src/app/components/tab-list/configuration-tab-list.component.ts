@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { TabListComponent } from './tab-list.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adapter, AppService, Configuration } from '../../app.service';
@@ -10,6 +10,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
   selector: 'app-configuration-tab-list',
   imports: [NgClass],
   templateUrl: './tab-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tab-list.component.scss',
 })
 export class ConfigurationTabListComponent extends TabListComponent implements OnInit, OnChanges, OnDestroy {
@@ -37,9 +38,8 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
 
     const queryParameterSub = this.route.queryParamMap.subscribe((parameters) => {
       const tab = parameters.get(this.queryParamName);
-      if (tab == this.selectedTab) {
-        return;
-      } else if (tab) {
+      if (tab == this.selectedTab) return;
+      if (tab) {
         this.setSelectedTab(tab);
         this.appService.selectedConfigurationTab.set(tab);
       } else if (this.showAllTab) {

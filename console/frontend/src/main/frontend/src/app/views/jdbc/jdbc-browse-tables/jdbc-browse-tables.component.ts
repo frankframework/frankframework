@@ -1,11 +1,11 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppService, ServerErrorResponse } from 'src/app/app.service';
-import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
 
+import { AppService, ServerErrorResponse } from '../../../app.service';
+import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { WebStorageService } from '../../../services/web-storage.service';
@@ -21,6 +21,7 @@ type ColumnName = {
   selector: 'app-jdbc-browse-tables',
   imports: [FormsModule, LaddaModule, OrderByPipe, QuickSubmitFormDirective],
   templateUrl: './jdbc-browse-tables.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./jdbc-browse-tables.component.scss'],
 })
 export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
@@ -41,11 +42,11 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   protected result: string[][] = [];
   protected query = '';
 
+  private appConstantsSubscription: Subscription | null = null;
   private readonly jdbcService: JdbcService = inject(JdbcService);
   private readonly webStorageService: WebStorageService = inject(WebStorageService);
   private readonly appService: AppService = inject(AppService);
-  private appConstants$ = toObservable(this.appService.appConstants);
-  private appConstantsSubscription: Subscription | null = null;
+  private readonly appConstants$ = toObservable(this.appService.appConstants);
 
   ngOnInit(): void {
     this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
@@ -61,10 +62,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
       if (browseTablesSession) {
         this.form = browseTablesSession;
       } else {
-        this.form.datasource =
-          appConstants['jdbc.datasource.default'] == undefined
-            ? data.datasources[0]
-            : (appConstants['jdbc.datasource.default'] as string);
+        this.form.datasource = (appConstants['jdbc.datasource.default'] as string) ?? data.datasources[0];
         this.form.datasource = data.datasources[0] ?? '';
         this.form.resultType = data.resultTypes[0] ?? '';
       }
@@ -105,19 +103,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
         }
 
         for (const row of Object.values(returnData.result)) {
-          const orderedRow: string[] = [];
-
-          for (const columnName in row) {
-            const index = columnNameArray.indexOf(columnName);
-            const value = row[columnName];
-
-            if (index === -1 && columnName.includes('LENGTH ')) {
-              const replaceIndex = columnNameArray.indexOf(columnName.replace('LENGTH ', ''));
-              orderedRow[replaceIndex] = `${value} (length)`;
-              continue;
-            }
-            orderedRow[index] = value;
-          }
+          const orderedRow = this.processRowData(row, columnNameArray);
           this.result.push(orderedRow);
         }
 
@@ -150,5 +136,21 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
       minRow: 1,
       maxRow: 100,
     };
+  }
+
+  private processRowData(row: Record<string, string>, columnNameArray: string[]): string[] {
+    const orderedRow: string[] = [];
+    for (const columnName in row) {
+      const index = columnNameArray.indexOf(columnName);
+      const value = row[columnName];
+
+      if (index === -1 && columnName.includes('LENGTH ')) {
+        const replaceIndex = columnNameArray.indexOf(columnName.replace('LENGTH ', ''));
+        orderedRow[replaceIndex] = `${value} (length)`;
+        continue;
+      }
+      orderedRow[index] = value;
+    }
+    return orderedRow;
   }
 }

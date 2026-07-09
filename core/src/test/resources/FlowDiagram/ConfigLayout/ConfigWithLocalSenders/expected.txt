@@ -1,0 +1,18 @@
+d1e7('<text>ApiListener</text>'):::listener
+d1e9('<text>JavaListener</text>'):::listener
+d1e12('<text data-html-node="a">ConfigWithLocalSenders0</text>'):::normal
+d1e16('<text>IbisLocalSender</text>'):::sender
+d1e25('<text>JdbcListener</text>'):::listener
+d1e27('<text>JavaListener</text>'):::listener
+d1e30('<text data-html-node="a">ConfigWithLocalSenders1</text>'):::normal
+d1e36('<text>MqttSender</text>'):::sender
+d1e38('<text>IbisLocalSender</text>'):::sender
+d1e7 --> d1e12
+d1e9 --> d1e12
+d1e16 --> d1e27
+d1e12 --> d1e16
+d1e25 --> d1e30
+d1e27 --> d1e30
+d1e38 --> d1e9
+d1e30 --> d1e36
+d1e30 --> d1e38

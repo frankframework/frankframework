@@ -13,6 +13,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { first, Observable, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,6 +23,7 @@ import { AMDRequire, AppService } from '../../app.service';
   selector: 'app-monaco-editor',
   imports: [],
   templateUrl: './monaco-editor.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./monaco-editor.component.scss'],
 })
 export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
@@ -41,16 +43,15 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   editor$: Observable<monaco.editor.IStandaloneCodeEditor>;
 
+  private editor?: monaco.editor.IStandaloneCodeEditor;
+  private decorationsDelta: string[] = [];
+  private skipFragmentUpdate = false;
+  private editorSubject = new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly zone = inject(NgZone);
   private readonly appService = inject(AppService);
 
-  private editorSubject = new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
-
-  private editor?: monaco.editor.IStandaloneCodeEditor;
-  private decorationsDelta: string[] = [];
-  private skipFragmentUpdate = false;
 
   constructor() {
     this.editor$ = this.editorSubject.asObservable();
@@ -80,7 +81,7 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
     });
   }
 
-  setLineNumberInRoute(startLineNumber: number, endLineNumber: number | undefined = undefined): void {
+  setLineNumberInRoute(startLineNumber: number, endLineNumber?: number): void {
     let fragment = `L${startLineNumber}`;
     if (endLineNumber) fragment += `-${endLineNumber}`;
     this.zone.run(() => {
@@ -157,7 +158,8 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
       ctrlEnter: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
     };
     this.editor$.pipe(first()).subscribe((editor) => {
-      for (const [action, descriptor] of Object.entries(this.actions || {})) {
+      const actions = this.actions ?? {};
+      for (const [action, descriptor] of Object.entries(actions)) {
         editor.addAction({
           id: descriptor.id,
           label: descriptor.label,
@@ -178,12 +180,11 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   private handleLineNumberClick(lineNumber: number): void {
-    if (lineNumber) {
-      this.skipFragmentUpdate = true;
-      this.setLineNumberInRoute(lineNumber);
-      this.highlightLine(lineNumber);
-      this.setPosition(lineNumber);
-    }
+    if (!lineNumber) return;
+    this.skipFragmentUpdate = true;
+    this.setLineNumberInRoute(lineNumber);
+    this.highlightLine(lineNumber);
+    this.setPosition(lineNumber);
   }
 
   private highlightLine(lineNumber: number): void {

@@ -1,19 +1,21 @@
-import { Component, inject, OnDestroy, OnInit, Signal, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppService, Configuration } from 'src/app/app.service';
-import { ConfigurationsService } from '../configurations.service';
-import { copyToClipboard } from 'src/app/utilities';
-import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 import { Subscription } from 'rxjs';
-import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
 import { NgClass } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faClipboard } from '@fortawesome/free-regular-svg-icons';
+
+import { AppService, Configuration } from '../../../app.service';
+import { ConfigurationsService } from '../configurations.service';
+import { copyToClipboard } from '../../../utilities';
+import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
+import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
 
 @Component({
   selector: 'app-configurations-show',
   imports: [ConfigurationTabListComponent, NgClass, MonacoEditorComponent, FaIconComponent],
   templateUrl: './configurations-show.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./configurations-show.component.scss'],
 })
 export class ConfigurationsShowComponent implements OnInit, OnDestroy {
@@ -24,16 +26,16 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   protected configurations: Signal<Configuration[]>;
   protected readonly faClipboard = faClipboard;
 
+  private configuration = '';
+  private fragment?: string;
+  private selectedAdapter: string | null = null;
+  private skipParamsUpdate = false;
+  private initialized = false;
+  private configsSubscription: Subscription | null = null;
   private readonly appService: AppService = inject(AppService);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
-  private configuration = '';
-  private fragment?: string;
-  private selectedAdapter?: string;
-  private skipParamsUpdate = false;
-  private initialized = false;
-  private configsSubscription: Subscription | null = null;
 
   constructor() {
     this.configurations = this.appService.configurations;
@@ -50,7 +52,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
         this.skipParamsUpdate = false;
         return;
       }
-      this.selectedAdapter = parameters.get('adapter') ?? undefined;
+      this.selectedAdapter = parameters.get('adapter');
       this.loadedConfiguration = parameters.get('loaded') !== 'false';
     });
   }
@@ -70,7 +72,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
     if (this.initialized) {
-      this.selectedAdapter = undefined;
+      this.selectedAdapter = null;
       this.fragment = undefined; // unset hash anchor
     }
     this.getConfiguration();
@@ -110,7 +112,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
       return;
     }
     const match = this.editor.findMatchForRegex(
-      `<[aA]dapter.*? name="${this.selectedAdapter}".*?>(?:.|\\n)*?<\\/[aA]dapter>`,
+      String.raw`<[aA]dapter.*? name="${this.selectedAdapter}".*?>(?:.|\n)*?<\/[aA]dapter>`,
     )?.[0];
     if (match) {
       this.editor.setLineNumberInRoute(match.range.startLineNumber, match.range.endLineNumber);
@@ -118,10 +120,9 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   }
 
   private removeAdapterAfterLineSelection(fragment: string | null): void {
-    if (this.selectedAdapter && fragment?.includes('L') && !fragment?.includes('-')) {
-      this.selectedAdapter = undefined;
-      this.skipParamsUpdate = true;
-      this.updateQueryParams();
-    }
+    if (!(this.selectedAdapter && fragment?.includes('L')) || fragment?.includes('-')) return;
+    this.selectedAdapter = null;
+    this.skipParamsUpdate = true;
+    this.updateQueryParams();
   }
 }

@@ -32,44 +32,43 @@ export class ZoomPanDirective implements OnChanges, OnDestroy {
   private observer: ResizeObserver | null = null;
 
   ngOnChanges(): void {
-    if (this.appZoomPan) {
-      this.svg = this.appZoomPan!;
-      this.svg.classList.add('moveable');
-      this.contentSize = {
-        w: this.svg.viewBox.baseVal.width,
-        h: this.svg.viewBox.baseVal.height,
-      };
-      // this.initialSize();
+    if (!this.appZoomPan) return;
 
-      // Listen for resizing on this.svg on trigger, call this.resize
-      this.observer ??= new ResizeObserver(() => this.resize());
-      this.observer.observe(this.svg);
+    this.svg = this.appZoomPan!;
+    this.svg.classList.add('moveable');
+    this.contentSize = {
+      w: this.svg.viewBox.baseVal.width,
+      h: this.svg.viewBox.baseVal.height,
+    };
+    // this.initialSize();
 
-      this.svg.addEventListener('wheel', (event: WheelEvent) => {
-        event.preventDefault();
-        this.scale(event.offsetX, event.offsetY, Math.sign(event.deltaY));
-      });
+    // Listen for resizing on this.svg on trigger, call this.resize
+    this.observer ??= new ResizeObserver(() => this.resize());
+    this.observer.observe(this.svg);
 
-      this.svg.addEventListener('mousedown', (event: MouseEvent) => {
-        if (event.button === 0 && event.target === this.svg) {
-          this.isPanning = true;
-          this.startPoint = { x: event.pageX, y: event.pageY };
-          // document.body.classList.add('prevent-selection');
-        }
-      });
+    this.svg.addEventListener('wheel', (event: WheelEvent) => {
+      event.preventDefault();
+      this.scale(event.offsetX, event.offsetY, Math.sign(event.deltaY));
+    });
 
-      document.addEventListener('mousemove', (event: MouseEvent) => {
-        if (this.isPanning) this.pan(event);
-      });
+    this.svg.addEventListener('mousedown', (event: MouseEvent) => {
+      if (!(event.button === 0 && event.target === this.svg)) return;
 
-      document.addEventListener('mouseup', (event: MouseEvent) => {
-        if (this.isPanning && event.button === 0) {
-          this.viewBox = this.pan(event);
-          this.isPanning = false;
-          // document.body.classList.remove('prevent-selection');
-        }
-      });
-    }
+      this.isPanning = true;
+      this.startPoint = { x: event.pageX, y: event.pageY };
+      // document.body.classList.add('prevent-selection');
+    });
+
+    document.addEventListener('mousemove', (event: MouseEvent) => {
+      if (this.isPanning) this.pan(event);
+    });
+
+    document.addEventListener('mouseup', (event: MouseEvent) => {
+      if (!(this.isPanning && event.button === 0)) return;
+      this.viewBox = this.pan(event);
+      this.isPanning = false;
+      // document.body.classList.remove('prevent-selection');
+    });
   }
 
   ngOnDestroy(): void {

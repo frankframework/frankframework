@@ -1,19 +1,19 @@
-import { Component, inject } from '@angular/core';
-import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
-import { ServerErrorResponse } from 'src/app/app.service';
-import { SchedulerService } from '../scheduler.service';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-
 import { RouterLink } from '@angular/router';
-import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { FormsModule } from '@angular/forms';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+
+import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
+import { ServerErrorResponse } from '../../../app.service';
+import { SchedulerService } from '../scheduler.service';
+import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { ConfigurationFilterPipe } from '../../../pipes/configuration-filter.pipe';
 import { WithJavaListenerPipe } from '../../../pipes/with-java-listener.pipe';
 import { TruncatePipe } from '../../../pipes/truncate.pipe';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
-import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-scheduler-add',
@@ -29,6 +29,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     FaIconComponent,
   ],
   templateUrl: '../scheduler-add-edit-parent.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./scheduler-add.component.scss'],
 })
 export class SchedulerAddComponent extends SchedulerAddEditParent {
@@ -70,7 +71,7 @@ export class SchedulerAddComponent extends SchedulerAddEditParent {
         };
       },
       error: (errorData: HttpErrorResponse) => {
-        let error = '';
+        let error;
         try {
           const errorResponse = JSON.parse(errorData.error) as ServerErrorResponse | undefined;
           error = errorResponse ? errorResponse.error : errorData.message;

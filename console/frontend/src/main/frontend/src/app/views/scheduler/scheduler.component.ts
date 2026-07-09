@@ -1,17 +1,8 @@
-import { Component, computed, inject, OnDestroy, OnInit, Signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AppService, Message } from 'src/app/app.service';
-import { PollerService } from 'src/app/services/poller.service';
-import { SchedulerService, Trigger } from './scheduler.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { KeyValuePipe, NgClass } from '@angular/common';
-import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 import { LaddaModule } from 'angular2-ladda';
-import { ToDateDirective } from '../../components/to-date.directive';
-import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';
-import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
-import { OrderByPipe } from '../../pipes/orderby.pipe';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
   faChevronDown,
@@ -27,6 +18,16 @@ import {
   faWarning,
 } from '@fortawesome/free-solid-svg-icons';
 import { faArrowAltCircleRight } from '@fortawesome/free-regular-svg-icons';
+
+import { AppService, Message } from '../../app.service';
+import { PollerService } from '../../services/poller.service';
+import { SchedulerService, Trigger } from './scheduler.service';
+import { SweetalertService } from '../../services/sweetalert.service';
+import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
+import { ToDateDirective } from '../../components/to-date.directive';
+import { TabListComponent } from '../../components/tab-list/tab-list.component';
+import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
+import { OrderByPipe } from '../../pipes/orderby.pipe';
 
 type Scheduler = {
   name: string;
@@ -77,6 +78,7 @@ export type Job = {
     FaIconComponent,
   ],
   templateUrl: './scheduler.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./scheduler.component.scss'],
 })
 export class SchedulerComponent implements OnInit, OnDestroy {
@@ -101,7 +103,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   protected databaseSchedulesEnabled: Signal<boolean> = computed(
     () => this.appService.appConstants()['loadDatabaseSchedules.active'] === 'true',
   );
-  protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
+  protected jobShowContent: Record<string, boolean> = {};
   protected selectedJobGroup = 'All';
   protected readonly faPlus = faPlus;
   protected readonly faPlay = faPlay;

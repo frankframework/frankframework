@@ -374,9 +374,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 
 		// AOP is required for the Ladybug to function.
-		if (getEnvironment().matchesProfiles("aop")) {
-			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
-		}
+		addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 
 		// Listen to all events thrown by FrankElements.
 		addApplicationListener(new MessageKeepingEventListener(messageKeeperSize));

@@ -1,10 +1,10 @@
-import { Component, inject, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, QueryList, ViewChildren, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AppService, Configuration } from 'src/app/app.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { AppService, Configuration } from '../../../../app.service';
+import { SweetalertService } from '../../../../services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
-import { ToastService } from 'src/app/services/toast.service';
-import { basicAnyValueTableSort, SortEvent, ThSortableDirective } from 'src/app/components/th-sortable.directive';
+import { ToastService } from '../../../../services/toast.service';
+import { basicAnyValueTableSort, SortEvent, ThSortableDirective } from '../../../../components/th-sortable.directive';
 import { SearchFilterPipe } from '../../../../pipes/search-filter.pipe';
 
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,7 @@ import { faCheck, faCloudDownload, faSearch, faTimes } from '@fortawesome/free-s
   selector: 'app-configurations-manage-details',
   imports: [FormsModule, SearchFilterPipe, RouterLink, ThSortableDirective, FaIconComponent],
   templateUrl: './configurations-manage-details.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./configurations-manage-details.component.scss'],
 })
 export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
@@ -37,15 +38,15 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   protected readonly faCheck = faCheck;
   protected readonly faCloudDownload = faCloudDownload;
 
+  private promise = -1;
+  private versions: Configuration[] = [];
+  private lastSortEvent: SortEvent = { direction: 'NONE', column: '' };
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly router: Router = inject(Router);
   private readonly appService: AppService = inject(AppService);
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
   private readonly sweetalertService: SweetalertService = inject(SweetalertService);
   private readonly toastService: ToastService = inject(ToastService);
-  private promise = -1;
-  private versions: Configuration[] = [];
-  private lastSortEvent: SortEvent = { direction: 'NONE', column: '' };
 
   constructor() {
     const routeState = this.router.getCurrentNavigation()?.extras.state ?? {};

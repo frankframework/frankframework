@@ -1,27 +1,9 @@
-import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { Message, MessageField, MessageStore, Note, StorageService } from '../storage.service';
-import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
-import { SessionService } from 'src/app/services/session.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { getProcessStateIcon } from 'src/app/utilities';
-import { AppService } from '../../../app.service';
-import {
-  DataTableColumn,
-  DatatableComponent,
-  DataTableDataSource,
-  DataTableServerResponseInfo,
-} from '../../../components/datatable/datatable.component';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-import { KeyValuePipe, NgClass } from '@angular/common';
-import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
 import { RouterLink } from '@angular/router';
-import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
-import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
-import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
 import { Subscription } from 'rxjs';
-import { SortDirection } from '../../../components/th-sortable.directive';
 import {
   faChevronDown,
   faChevronUp,
@@ -32,6 +14,25 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faArrowAltCircleLeft, faArrowAltCircleDown } from '@fortawesome/free-regular-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+
+import { Message, MessageField, MessageStore, Note, StorageService } from '../storage.service';
+import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
+import { SessionService } from '../../../services/session.service';
+import { SweetalertService } from '../../../services/sweetalert.service';
+import { getProcessStateIcon } from '../../../utilities';
+import { AppService } from '../../../app.service';
+import {
+  DataTableColumn,
+  DatatableComponent,
+  DataTableDataSource,
+  DataTableServerResponseInfo,
+} from '../../../components/datatable/datatable.component';
+import { KeyValuePipe, NgClass } from '@angular/common';
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
+import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
+import { SortDirection } from '../../../components/th-sortable.directive';
 
 type FieldSearchInfo = {
   fieldName: string;
@@ -87,6 +88,7 @@ const TEST_API_RESPONSE: DataTableServerResponseInfo<Message> = {
   selector: 'app-storage-list',
   templateUrl: './storage-list.component.html',
   styleUrls: ['./storage-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     NgbAlert,
     OrderByPipe,
@@ -206,48 +208,47 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   protected setupMessagesRequest(): void {
-    this.datasource.setServerRequest(
-      (requestInfo) =>
-        new Promise((resolve, reject) => {
-          let queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
-          this.updateSessionStorage((column) => {
-            if (column.filter !== '') {
-              queryParameters += `&${column.property}=${encodeURIComponent(column.filter)}`;
-            }
-          });
+    this.datasource.setServerRequest((requestInfo) => {
+      return new Promise((resolve, reject) => {
+        let queryParameters = `?max=${requestInfo.size}&skip=${requestInfo.offset}&sort=${requestInfo.sort}`;
+        this.updateSessionStorage((column) => {
+          if (column.filter !== '') {
+            queryParameters += `&${column.property}=${encodeURIComponent(column.filter)}`;
+          }
+        });
 
-          this.storageService.getStorageList(queryParameters).subscribe({
-            next: (response) => {
-              this.targetStates = response.targetStates ?? {};
-              resolve({
-                data: response.messages,
-                totalEntries: response.totalMessages,
-                filteredEntries: response.recordsFiltered,
-                offset: response.skipMessages,
-                size: response.messages.length,
-              });
-              this.searching = false;
-              this.clearSearchLadda = false;
-              for (const message of response.messages) {
-                if (!(message.id in this.storageService.selectedMessages)) {
-                  this.storageService.selectedMessages[message.id] = false;
-                }
+        this.storageService.getStorageList(queryParameters).subscribe({
+          next: (response) => {
+            this.targetStates = response.targetStates ?? {};
+            resolve({
+              data: response.messages,
+              totalEntries: response.totalMessages,
+              filteredEntries: response.recordsFiltered,
+              offset: response.skipMessages,
+              size: response.messages.length,
+            });
+            this.searching = false;
+            this.clearSearchLadda = false;
+            for (const message of response.messages) {
+              if (!Object.hasOwn(this.storageService.selectedMessages, message.id)) {
+                this.storageService.selectedMessages[message.id] = false;
               }
-              for (const messageId in this.storageService.selectedMessages) {
-                const messageExists = response.messages.some((message) => message.id === messageId);
-                if (!messageExists) {
-                  delete this.storageService.selectedMessages[messageId];
-                }
+            }
+            for (const messageId in this.storageService.selectedMessages) {
+              const messageExists = response.messages.some((message) => message.id === messageId);
+              if (!messageExists) {
+                delete this.storageService.selectedMessages[messageId];
               }
-            },
-            error: (error: unknown) => {
-              this.searching = false;
-              this.clearSearchLadda = false;
-              reject(error);
-            },
-          });
-        }),
-    );
+            }
+          },
+          error: (error: unknown) => {
+            this.searching = false;
+            this.clearSearchLadda = false;
+            reject(error);
+          },
+        });
+      });
+    });
   }
 
   protected getNotes(): Note[] {
@@ -418,10 +419,10 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   private getFormData(): FormData {
     const messageIds: string[] = [];
     for (const index in this.storageService.selectedMessages) {
-      if (this.storageService.selectedMessages[index]) {
-        messageIds.push(index);
-        this.storageService.selectedMessages[index] = false; // unset the messageId
-      }
+      if (!Object.hasOwn(this.storageService.selectedMessages, index)) continue;
+
+      messageIds.push(index);
+      this.storageService.selectedMessages[index] = false; // unset the messageId
     }
 
     const fd = new FormData();
@@ -448,14 +449,13 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     const searchSession: FieldSearchInfo[] = [];
     const columns: SearchColumn[] = [...this.messageFields, ...this.staticMessageFields];
     for (const column of columns) {
-      if (column.filter !== '' || !column.display) {
-        if (onColumnUpdate) onColumnUpdate(column);
-        searchSession.push({
-          fieldName: column.fieldName,
-          filter: column.filter,
-          display: column.display,
-        });
-      }
+      if (column.filter === '' && column.display) continue;
+      if (onColumnUpdate) onColumnUpdate(column);
+      searchSession.push({
+        fieldName: column.fieldName,
+        filter: column.filter,
+        display: column.display,
+      });
     }
     this.Session.set('storageFiltering', searchSession);
   }
@@ -465,9 +465,8 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!selectedMessages || selectedMessages.length === 0) {
       this.SweetAlert.warning('No message selected!');
       return false;
-    } else {
-      return true;
     }
+    return true;
   }
 
   private setBreadcrumbs(): void {

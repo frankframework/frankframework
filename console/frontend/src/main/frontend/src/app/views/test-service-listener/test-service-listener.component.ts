@@ -1,14 +1,14 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
-import { AppService } from 'src/app/app.service';
-import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule } from '@angular/forms';
+import { LaddaModule } from 'angular2-ladda';
 
+import { AppService } from '../../app.service';
+import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { InputFileUploadComponent } from '../../components/input-file-upload/input-file-upload.component';
-import { FormsModule } from '@angular/forms';
 import { MonacoEditorComponent } from '../../components/monaco-editor/monaco-editor.component';
-import { LaddaModule } from 'angular2-ladda';
 import { WebStorageService } from '../../services/web-storage.service';
 
 type AlertState = {
@@ -31,6 +31,7 @@ type Form = {
   selector: 'app-test-service-listener',
   templateUrl: './test-service-listener.component.html',
   styleUrls: ['./test-service-listener.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     NgbAlert,
     QuickSubmitFormDirective,
@@ -115,8 +116,7 @@ export class TestServiceListenerComponent implements OnInit {
     this.webStorageService.set<Form>('testServiceListener', this.form);
     this.http.post<ServiceListenerResult>(`${this.appService.absoluteApiPath}test-servicelistener`, fd).subscribe({
       next: (returnData) => {
-        let warnLevel = 'success';
-        if (returnData.state == 'ERROR') warnLevel = 'danger';
+        const warnLevel = returnData.state == 'ERROR' ? 'danger' : 'success';
         this.addNote(warnLevel, returnData.state);
         this.result = returnData.result;
         this.processingMessage = false;

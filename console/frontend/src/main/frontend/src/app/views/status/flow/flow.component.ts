@@ -1,15 +1,15 @@
-import { Component, inject, Input, OnChanges } from '@angular/core';
-import { StatusService } from '../status.service';
-import { MiscService } from 'src/app/services/misc.service';
-import { Adapter, AppService } from 'src/app/app.service';
+import { Component, inject, Input, OnChanges, ChangeDetectionStrategy } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { FlowModalComponent } from './flow-modal/flow-modal.component';
-
-import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
-import { FlowDiagramComponent } from '../../../components/flow-diagram/flow-diagram.component';
 import { HttpResponse } from '@angular/common/http';
 import { faShareAltSquare } from '@fortawesome/free-solid-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+
+import { StatusService } from '../status.service';
+import { MiscService } from '../../../services/misc.service';
+import { Adapter, AppService } from '../../../app.service';
+import { FlowModalComponent } from './flow-modal/flow-modal.component';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+import { FlowDiagramComponent } from '../../../components/flow-diagram/flow-diagram.component';
 
 type FlowModel = {
   isImage: boolean;
@@ -21,6 +21,7 @@ type FlowModel = {
   selector: 'app-flow',
   templateUrl: './flow.component.html',
   styleUrls: ['./flow.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [HasAccessToLinkDirective, FlowDiagramComponent, FaIconComponent],
 })
 export class FlowComponent implements OnChanges {
@@ -41,13 +42,11 @@ export class FlowComponent implements OnChanges {
   private readonly modalService: NgbModal = inject(NgbModal);
 
   ngOnChanges(): void {
-    if (!!this.adapter || this.configurationFlowDiagram) {
-      const flowUrl = this.getflowUrl();
-      this.flow = { isImage: false, url: flowUrl, data: null };
-      this.flowName = this.adapter ? `${this.adapter.configuration}/${this.adapter.name}` : 'Configuration';
-
-      this.checkLoadInline();
-    }
+    if (!(this.adapter || this.configurationFlowDiagram)) return;
+    const flowUrl = this.getflowUrl();
+    this.flow = { isImage: false, url: flowUrl, data: null };
+    this.flowName = this.adapter ? `${this.adapter.configuration}/${this.adapter.name}` : 'Configuration';
+    this.checkLoadInline();
   }
 
   prepareFlowModal(): void {

@@ -22,7 +22,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
-import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -89,6 +88,6 @@ class PluginTest {
 		Message<Object> response = gateway.sendSyncMessage(builder.build(null));
 
 		assertEquals("SUCCESS", BusMessageUtils.getHeader(response, AbstractMessage.STATE_KEY));
-		assertEquals("Niels was here!", ResponseUtils.parseAsString(response));
+		assertEquals("Niels was here!", BusMessageUtils.getPayloadAsString(response));
 	}
 }

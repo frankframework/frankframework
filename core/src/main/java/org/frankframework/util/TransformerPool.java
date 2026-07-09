@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -506,14 +507,14 @@ public class TransformerPool {
 			MessageContext context = new MessageContext();
 			for(Entry<String, String> entry : getConfigMap().entrySet()) {
 				String name = entry.getKey();
-				if("output-method".equals(name) && "xml".equals(entry.getValue())) {
+				if ("output-method".equals(name) && "xml".equals(entry.getValue())) {
 					context.withMimeType(MediaType.APPLICATION_XML);
 				} else if ("output-media-type".equals(name)) {
 					context.withMimeType(MediaType.parseMediaType(entry.getValue()));
 				}
 				context.put("Xslt."+name, entry.getValue());
 			}
-
+			context.withCharset(getOutputEncoding());
 			return context;
 		} catch (TransformerException | IOException e) {
 			// ignore errors
@@ -632,5 +633,13 @@ public class TransformerPool {
 			return null;
 		}
 		return "yes".equals(setting);
+	}
+
+	public @Nullable Charset getOutputEncoding() throws TransformerException, IOException {
+		String setting = getConfigMap().get("output-encoding");
+		if (setting == null) {
+			return null;
+		}
+		return Charset.forName(setting);
 	}
 }

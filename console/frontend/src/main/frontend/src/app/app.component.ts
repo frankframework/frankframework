@@ -1,4 +1,13 @@
-import { Component, inject, OnDestroy, OnInit, Renderer2, Signal, WritableSignal } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+  Signal,
+  WritableSignal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
   Adapter,
@@ -60,6 +69,7 @@ import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
     RouterLink,
   ],
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
@@ -74,6 +84,9 @@ export class AppComponent implements OnInit, OnDestroy {
   protected selectedClusterMember: ClusterMember | null = null;
   protected startupError: Signal<string | null>;
 
+  private serverInfo: ServerInfo | null = null;
+  private reloadSubscription = new Subscription();
+  private messageKeeperSize = 10; // see Adapter.java#messageKeeperSize
   private readonly http: HttpClient = inject(HttpClient);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
@@ -91,16 +104,11 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly websocketService: WebsocketService = inject(WebsocketService);
   private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   private readonly appService: AppService = inject(AppService);
-
-  private serverInfo: ServerInfo | null = null;
-  private reloadSubscription = new Subscription();
   private readonly consoleState: WritableSignal<AppInitState> = this.appService.consoleState;
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
     modalDialogClass: 'animated fadeInDown',
     windowClass: 'animated fadeIn',
   };
-
-  private messageKeeperSize = 10; // see Adapter.java#messageKeeperSize
 
   constructor() {
     this.startupError = this.appService.startupError;
@@ -205,7 +213,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.userName = data['userName'];
         this.appService.instanceName.set(data.instance.name);
         this.authService.setLoggedIn(this.userName);
-        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
+        this.appService.updateTitle(this.title.getTitle().split(' | ', 2)[1]);
 
         if (!this.router.url.includes('login')) {
           this.renderer.removeClass(document.body, 'gray-bg');
@@ -243,10 +251,9 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
-      if (data['Application Constants']) {
-        const appConstants = { ...this.appService.appConstants(), ...data['Application Constants']['Global'] };
-        this.appService.updateAppConstants(appConstants);
-      }
+      if (!data['Application Constants']) return;
+      const appConstants = { ...this.appService.appConstants(), ...data['Application Constants']['Global'] };
+      this.appService.updateAppConstants(appConstants);
     });
   }
 
@@ -331,7 +338,8 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     if (configurations['warnings']) {
-      for (const warning of configurations['warnings'] as unknown as string[]) {
+      const configWarnings = configurations['warnings'] as string[];
+      for (const warning of configWarnings) {
         this.appService.addWarning('', warning);
       }
     }
@@ -342,7 +350,8 @@ export class AppComponent implements OnInit, OnDestroy {
       if (configuration === null) {
         this.appService.removeAlerts(configuration);
         continue;
-      } else if (Array.isArray(configuration) || typeof configuration !== 'object') {
+      }
+      if (Array.isArray(configuration) || typeof configuration !== 'object') {
         delete configurations[index];
         continue;
       }
@@ -368,7 +377,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
       configuration.messageLevel = existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
-        configuration.messages = configuration.messages.sort(
+        configuration.messages = configuration.messages.toSorted(
           (a: ConfigurationMessage, b: ConfigurationMessage) => b.date - a.date,
         );
         for (const x in configuration.messages) {
@@ -554,15 +563,14 @@ export class AppComponent implements OnInit, OnDestroy {
             confirmButtonText: 'Reload',
           })
           .then((result) => {
-            if (result.isConfirmed) {
-              if (this.clusterMembers.length > 0) {
-                this.appService.updateSelectedClusterMember(this.clusterMembers[0].id).subscribe(() => {
-                  this.appService.triggerReload();
-                });
-                return;
-              }
-              this.appService.triggerReload();
+            if (!result.isConfirmed) return;
+            if (this.clusterMembers.length > 0) {
+              this.appService.updateSelectedClusterMember(this.clusterMembers[0].id).subscribe(() => {
+                this.appService.triggerReload();
+              });
+              return;
             }
+            this.appService.triggerReload();
           });
       }
     }

@@ -1,5 +1,5 @@
 import { LocationStrategy, TitleCasePipe } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseIframeComponent } from '../iframe.base';
 import { Subscription } from 'rxjs';
@@ -8,14 +8,15 @@ import { Subscription } from 'rxjs';
   selector: 'app-iframe-custom-view',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [TitleCasePipe],
 })
 export class IframeCustomViewComponent extends BaseIframeComponent implements OnInit, OnDestroy {
+  private routeSubscription: Subscription | null = null;
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly location: LocationStrategy = inject(LocationStrategy);
   private readonly window: Window = inject(Window);
-  private routeSubscription: Subscription | null = null;
 
   override ngOnInit(): void {
     super.ngOnInit();
@@ -40,11 +41,7 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
 
     const view = routeState['view'];
 
-    if (view['url'].startsWith('/')) {
-      this.url = view['url'];
-    } else {
-      this.url = this.appService.getServerPath() + view['url'];
-    }
+    this.url = view['url'].startsWith('/') ? view['url'] : this.appService.getServerPath() + view['url'];
 
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
     setTimeout(() => {

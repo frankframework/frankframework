@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnDestroy, OnInit, Signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MonitorsService } from '../monitors.service';
 import { AppService } from '../../../app.service';
@@ -14,6 +14,7 @@ import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
   selector: 'app-monitors-new',
   imports: [RouterLink, FormsModule, LaddaModule, ComboboxComponent, QuickSubmitFormDirective, FaIconComponent],
   templateUrl: './monitors-new.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './monitors-new.component.scss',
 })
 export class MonitorsNewComponent implements OnInit, OnDestroy {
@@ -25,11 +26,11 @@ export class MonitorsNewComponent implements OnInit, OnDestroy {
   );
   protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
 
+  private routeSubscription: Subscription | null = null;
   private readonly appService: AppService = inject(AppService);
   private readonly monitorsService: MonitorsService = inject(MonitorsService);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private routeSubscription: Subscription | null = null;
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap

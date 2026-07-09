@@ -1,21 +1,22 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { first, Subscription } from 'rxjs';
-import { AppService, ServerErrorResponse } from 'src/app/app.service';
-import { JdbcService, JdbcSummary, JdbcSummaryForm } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
-import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { FormsModule } from '@angular/forms';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { AppService, ServerErrorResponse } from '../../app.service';
+import { JdbcService, JdbcSummary, JdbcSummaryForm } from '../jdbc/jdbc.service';
 import { faDatabase, faSignIn, faSignOut, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
+import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 
 @Component({
   selector: 'app-ibisstore-summary',
   imports: [RouterLink, NgClass, HasAccessToLinkDirective, QuickSubmitFormDirective, FormsModule, FaIconComponent],
   templateUrl: './ibisstore-summary.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./ibisstore-summary.component.scss'],
 })
 export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
@@ -28,12 +29,12 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
   protected readonly faSignOut = faSignOut;
   protected readonly faDatabase = faDatabase;
 
+  private appConstantsSubscription: Subscription | null = null;
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly jdbcService: JdbcService = inject(JdbcService);
   private readonly appService: AppService = inject(AppService);
-  private appConstants$ = toObservable(this.appService.appConstants);
-  private appConstantsSubscription: Subscription | null = null;
+  private readonly appConstants$ = toObservable(this.appService.appConstants);
 
   ngOnInit(): void {
     this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {

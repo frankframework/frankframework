@@ -1,0 +1,7 @@
+d2e2('<text data-html-node="b">Update temperature</text><text>JavaListener</text>'):::normal
+d2e4('<text data-html-node="b">ApiListenerReceiver</text><text>ApiListener</text>'):::normal
+d2e9('<text data-html-node="b">Get temperature from OpenWeather</text><text>SenderPipe</text>'):::normal
+d2e8('<text data-html-node="b">SUCCESS</text><text>201</text>'):::normal
+d2e2 --> |<text>success</text>| d2e9
+d2e4 --> |<text>success</text>| d2e9
+d2e9 --> |<text>success</text>| d2e8

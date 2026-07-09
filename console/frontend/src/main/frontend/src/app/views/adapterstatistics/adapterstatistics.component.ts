@@ -1,17 +1,17 @@
-import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toObservable } from '@angular/core/rxjs-interop';
 import type { ChartDataset } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
-import { AppConstants, AppService } from 'src/app/app.service';
-import { DebugService } from 'src/app/services/debug.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
 import { LaddaModule } from 'angular2-ladda';
+import { AppConstants, AppService } from '../../app.service';
+import { DebugService } from '../../services/debug.service';
+import { SweetalertService } from '../../services/sweetalert.service';
+import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
 import { FormatStatKeysPipe } from './format-stat-keys.pipe';
 import { FormatStatisticsPipe } from './format-statistics.pipe';
 import { ServerTimeService } from '../../services/server-time.service';
-import { toObservable } from '@angular/core/rxjs-interop';
 import {
   AdapterstatisticsChartsComponent,
   CountPerReceiverStatistics,
@@ -33,6 +33,7 @@ import { faChevronDown, faChevronUp, faRefresh } from '@fortawesome/free-solid-s
     FaIconComponent,
   ],
   templateUrl: './adapterstatistics.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./adapterstatistics.component.scss'],
 })
 export class AdapterstatisticsComponent implements OnInit, OnDestroy {
@@ -79,13 +80,6 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   protected statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
   protected statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
 
-  private readonly appService: AppService = inject(AppService);
-  private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private readonly statisticsService: AdapterstatisticsService = inject(AdapterstatisticsService);
-  private readonly SweetAlert: SweetalertService = inject(SweetalertService);
-  private readonly Debug: DebugService = inject(DebugService);
-  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
-  private appConstants$ = toObservable(this.appService.appConstants);
   private appConstantsSubscription: Subscription | null = null;
   private datasetDefaults: Partial<ChartDataset<'line', number[]>> = {
     backgroundColor: 'rgba(47, 64, 80, 0.2)',
@@ -119,6 +113,13 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     'rgb(153, 102, 255)', // purple
     'rgb(201, 203, 207)', // grey
   ];
+  private readonly appService: AppService = inject(AppService);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly statisticsService: AdapterstatisticsService = inject(AdapterstatisticsService);
+  private readonly SweetAlert: SweetalertService = inject(SweetalertService);
+  private readonly Debug: DebugService = inject(DebugService);
+  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  private readonly appConstants$ = toObservable(this.appService.appConstants);
 
   constructor() {
     this.statisticsTimeBoundaries = { ...this.defaults };
@@ -141,7 +142,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
     globalThis.setTimeout(() => {
       this.refresh();
-    });
+    }, 0);
   }
 
   ngOnDestroy(): void {
@@ -160,16 +161,17 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
       globalThis.setTimeout(() => {
         this.refreshing = false;
-      });
+      }, 0);
     });
   }
 
   collapseExpand(key: keyof typeof this.iboxExpanded): void {
+    // eslint-disable-next-line unicorn/no-computed-property-existence-check
     this.iboxExpanded[key] = !this.iboxExpanded[key];
   }
 
   getSortedProcessingThreads(receiver: Statistics['receivers'][0]): StatisticsKeeper[] {
-    return receiver.processing.sort((a: StatisticsKeeper, b: StatisticsKeeper) => a.name.localeCompare(b.name));
+    return receiver.processing.toSorted((a: StatisticsKeeper, b: StatisticsKeeper) => a.name.localeCompare(b.name));
   }
 
   private setHourlyStatisticsData(data: Statistics): void {
@@ -193,14 +195,13 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   }
 
   private setSLOStatisticsData(data: Statistics): void {
-    const chartData: number[] = [];
-    for (const key of Object.keys(this.statisticsTimeSLOLabels)) {
-      chartData.push(
+    const chartData: number[] = Array.from(
+      Object.keys(this.statisticsTimeSLOLabels),
+      (key) =>
         ((data.totalMessageProccessingTime[key as keyof Statistics['totalMessageProccessingTime']] as number) /
           data.totalMessageProccessingTime.count) *
-          100,
-      );
-    }
+        100,
+    );
     this.sloStatistics = {
       labels: Object.values(this.statisticsTimeSLOLabels),
       datasets: [
@@ -282,7 +283,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   }
 
   private rotateHourlyData<T>(items: T[], amount: number): T[] {
-    amount = amount % items.length;
+    amount %= items.length;
     return [...items.slice(amount), ...items.slice(0, amount)];
   }
 }

@@ -1,10 +1,10 @@
-name: Angular Karma Tests
+name: Angular Vitest Tests
 
 on:
   push:
     paths:
       - 'console/frontend/**'
-      - '.github/workflows/angular-karma-tests.yml'
+      - '.github/workflows/angular-vitest-tests.yml'
     branches:
       - master
       - '[0-9]+.[0-9]+-release'
@@ -17,14 +17,14 @@ on:
 
 jobs:
   run-karma-tests:
-    name: Karma Unit tests
+    name: Vitest Unit tests
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: console/frontend/src/main/frontend/
     steps:
     - name: Checkout code
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
     - name: Set timezone
       run: sudo timedatectl set-timezone Europe/Amsterdam
@@ -32,17 +32,17 @@ jobs:
     - name: Install pnpm
       uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       with:
-        version: 10.28.2
+        version: 11.9.0
 
     - name: Set up Node.js
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
       with:
-        node-version: 24.16.0
+        node-version: 24.18.0
         cache: pnpm
         cache-dependency-path: '**/pnpm-lock.yaml'
 
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --frozen-lockfile --ignore-scripts
 
-    - name: Run Karma tests
-      run: npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
+    - name: Run Vitest tests
+      run: pnpm test:ci

@@ -1,15 +1,25 @@
-import { AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IMessage } from '@stomp/stompjs';
 import { Subscription } from 'rxjs';
-import { WebsocketService } from 'src/app/services/websocket.service';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { WebsocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-websocket-test',
   imports: [RouterModule, FormsModule, QuickSubmitFormDirective],
   templateUrl: './websocket-test.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './websocket-test.component.scss',
 })
 export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -34,10 +44,12 @@ export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   ngAfterViewInit(): void {
-    if (this.websocketService.connected()) {
-      this.printToHtml('Connected');
-      this.onConnected();
+    if (!this.websocketService.connected()) {
+      return;
     }
+
+    this.printToHtml('Connected');
+    this.onConnected();
   }
 
   ngOnDestroy(): void {

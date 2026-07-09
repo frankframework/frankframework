@@ -242,8 +242,8 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 	@Override
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
 		Connection conn;
-		PreparedStatement stmt=null;
-		IMessageBrowsingIterator result=null;
+		PreparedStatement stmt = null;
+		IMessageBrowsingIterator result = null;
 		try {
 			conn = getConnection();
 		} catch (JdbcException e) {
@@ -266,13 +266,14 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 					stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
 				}
 			}
+			stmt.setFetchSize(100);
 			ResultSet rs =  stmt.executeQuery();
-			result = new ResultSetIterator(conn,rs);
+			result = new ResultSetIterator(conn, rs);
 			return result;
 		} catch (SQLException e) {
 			throw new ListenerException(e);
 		} finally {
-			if (result==null) {
+			if (result == null) {
 				// in happy flow IMessageBrowsingIterator will close resources.
 				// If it has not been created, we'll have to close them here.
 				JdbcUtil.fullClose(conn, stmt);

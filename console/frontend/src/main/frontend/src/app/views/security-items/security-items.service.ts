@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, WritableSignal, signal, Signal } from '@angular/core';
 import { Observable, of, tap } from 'rxjs';
-import { AppService, Certificate } from 'src/app/app.service';
+import { AppService, Certificate } from '../../app.service';
 
 export type CertificateList = {
   adapter: string;
@@ -57,15 +57,7 @@ export type SecurityItems = {
 };
 
 export type HttpRequestMethodType =
-  | 'GET'
-  | 'HEAD'
-  | 'POST'
-  | 'PUT'
-  | 'DELETE'
-  | 'CONNECT'
-  | 'OPTIONS'
-  | 'TRACE'
-  | 'PATCH';
+  'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
 
 export type LinkName =
   | 'changeMessagesProcessState'

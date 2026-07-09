@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { FileViewerComponent } from './file-viewer.component';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('FileViewerComponent', () => {
   let component: FileViewerComponent;

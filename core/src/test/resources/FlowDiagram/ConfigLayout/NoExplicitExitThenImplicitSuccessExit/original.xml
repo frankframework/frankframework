@@ -1,0 +1,15 @@
+<adapter name="Update temperature">
+	<receiver name="Update temperature">
+		<listener name="Update temperature" className="org.frankframework.receivers.JavaListener" />
+	</receiver>
+	<receiver name="ApiListenerReceiver">
+		<listener name="ApiListener" uriPattern="temp"
+			className="org.frankframework.http.rest.ApiListener" />
+	</receiver>
+	<pipeline>
+		<pipe name="Get temperature from OpenWeather"
+			className="org.frankframework.pipes.SenderPipe">
+			<sender className="org.frankframework.http.HttpSender" />
+		</pipe>
+	</pipeline>
+</adapter>

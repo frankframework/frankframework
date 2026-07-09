@@ -15,16 +15,20 @@
 */
 package org.frankframework.metrics;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.micrometer.cloudwatch2.CloudWatchConfig;
 import io.micrometer.cloudwatch2.CloudWatchMeterRegistry;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 
 import org.frankframework.aws.AwsUtil;
 
 public class CloudWatchRegistryConfigurator extends AbstractMetricsRegistryConfigurator<CloudWatchConfig> {
+	private static final Region DEFAULT_REGION = Region.EU_WEST_1;
 
 	private class Config extends AbstractMeterRegistryConfig implements CloudWatchConfig {}
 
@@ -37,8 +41,12 @@ public class CloudWatchRegistryConfigurator extends AbstractMetricsRegistryConfi
 	protected MeterRegistry createRegistry(CloudWatchConfig config) {
 		AwsCredentialsProvider credentialProvider = AwsUtil.createCredentialProviderChain(getCredentialFactory());
 
+		String regionValue = getProperty(config.prefix()+"."+"region"); // management.metrics.export.cloudwatch.region
+		Region region = StringUtils.isNotBlank(regionValue) ? Region.of(regionValue) : DEFAULT_REGION;
+
 		CloudWatchAsyncClient client = CloudWatchAsyncClient.builder()
 				.credentialsProvider(credentialProvider)
+				.region(region)
 				.build();
 		return new CloudWatchMeterRegistry(config, Clock.SYSTEM, client);
 	}

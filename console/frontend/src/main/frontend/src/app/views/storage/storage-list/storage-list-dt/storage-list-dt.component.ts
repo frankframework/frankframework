@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core';
 import { PartialMessage, StorageService } from '../../storage.service';
 
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,7 @@ import { faExclamationTriangle, faRepeat, faTimes, faFileText } from '@fortaweso
   selector: 'app-storage-list-dt',
   templateUrl: './storage-list-dt.component.html',
   styleUrls: ['./storage-list-dt.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [FormsModule, RouterLink, HasAccessToLinkDirective, LaddaModule, FaIconComponent],
 })
 export class StorageListDtComponent {

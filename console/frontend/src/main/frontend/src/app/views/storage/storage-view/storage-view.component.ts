@@ -1,24 +1,25 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { Message, Note, PartialMessage, StorageService } from '../storage.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppService } from 'src/app/app.service';
-import { Base64Service } from '../../../services/base64.service';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
-
-import { OrderByPipe } from '../../../pipes/orderby.pipe';
-import { ToDateDirective } from '../../../components/to-date.directive';
-import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { LaddaModule } from 'angular2-ladda';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faArrowAltCircleDown, faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 import { faRepeat, faTimes } from '@fortawesome/free-solid-svg-icons';
 
+import { Message, Note, PartialMessage, StorageService } from '../storage.service';
+import { SweetalertService } from '../../../services/sweetalert.service';
+import { AppService } from '../../../app.service';
+import { Base64Service } from '../../../services/base64.service';
+import { OrderByPipe } from '../../../pipes/orderby.pipe';
+import { ToDateDirective } from '../../../components/to-date.directive';
+import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
+
 @Component({
   selector: 'app-storage-view',
   templateUrl: './storage-view.component.html',
   styleUrls: ['./storage-view.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [NgbAlert, OrderByPipe, ToDateDirective, HasAccessToLinkDirective, LaddaModule, FaIconComponent],
 })
 export class StorageViewComponent implements OnInit {
@@ -36,13 +37,13 @@ export class StorageViewComponent implements OnInit {
   protected readonly faTimes = faTimes;
   protected readonly faArrowAltCircleDown = faArrowAltCircleDown;
 
+  private skipProperties: string[] = ['id', 'insertDate', 'correlationId', 'comment', 'message'];
   private readonly storageService: StorageService = inject(StorageService);
   private readonly base64Service: Base64Service = inject(Base64Service);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly SweetAlert: SweetalertService = inject(SweetalertService);
   private readonly appService: AppService = inject(AppService);
-  private skipProperties: string[] = ['id', 'insertDate', 'correlationId', 'comment', 'message'];
 
   constructor() {
     this.storageParams = this.storageService.storageParams;

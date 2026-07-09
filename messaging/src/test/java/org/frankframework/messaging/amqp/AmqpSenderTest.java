@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.context.ApplicationContext;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -49,22 +51,28 @@ import org.frankframework.util.UUIDUtil;
 @Log4j2
 @Tag("slow")
 public abstract class AmqpSenderTest {
-	private static final String QUEUE_EXCHANGE_NAME = "test:testQueueExchange";
-	private static final String TOPIC_EXCHANGE_NAME = "test:testTopicExchange";
+	static final String QUEUE_EXCHANGE_NAME = "test:testQueueExchange";
+	static final String TOPIC_EXCHANGE_NAME = "test:testTopicExchange";
+
 	private AmqpConnectionFactoryFactory factory;
 	private AmqpSender sender;
 	private PipeLineSession session;
+	private ApplicationContext applicationContext;
+
+	abstract String getQueueExchangeName();
+	abstract String getTopicExchangeName();
 
 	@BeforeEach
 	void setUp() throws Exception {
 		factory = createAmqpConnectionFactory();
 		sender = new AmqpSender();
-		sender.setAddress(AmqpSenderTest.QUEUE_EXCHANGE_NAME);
+		sender.setAddress(getQueueExchangeName());
 		sender.setConnectionName(getResourceName());
 		sender.setAmqpConnectionFactoryFactory(factory);
 		sender.setDeliveryMode(DeliveryMode.AT_LEAST_ONCE);
 
 		session = new PipeLineSession();
+		applicationContext = mock();
 	}
 
 	protected AmqpConnectionFactoryFactory createAmqpConnectionFactory() throws Exception {
@@ -107,6 +115,17 @@ public abstract class AmqpSenderTest {
 		System.clearProperty("amqp.port");
 	}
 
+	/**
+	 * Creates receiver options for a QUEUE type receiver.
+	 * Override in subclasses for server-specific capability requirements
+	 * (e.g., RabbitMQ 4 v2 addresses do not use capabilities).
+	 */
+	protected ReceiverOptions createQueueReceiverOptions() {
+		ReceiverOptions options = new ReceiverOptions();
+		options.sourceOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+		return options;
+	}
+
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
 	void sendMessageToQueueNoReply(boolean sendStreaming) throws Exception {
@@ -126,7 +145,7 @@ public abstract class AmqpSenderTest {
 		assertTrue(senderResult.isSuccess());
 
 		// Check message on queue
-		Message result = getMessage(AmqpSenderTest.QUEUE_EXCHANGE_NAME, AddressType.QUEUE);
+		Message result = getMessage(getQueueExchangeName(), AddressType.QUEUE);
 
 		assertNotNull(result);
 		log.info(result);
@@ -156,7 +175,7 @@ public abstract class AmqpSenderTest {
 		assertTrue(senderResult.isSuccess());
 
 		// Check for a message on queue
-		Message result = getStreamingMessage(AmqpSenderTest.QUEUE_EXCHANGE_NAME, AddressType.QUEUE);
+		Message result = getStreamingMessage(getQueueExchangeName(), AddressType.QUEUE);
 
 		assertNotNull(result);
 		log.info(result);
@@ -169,13 +188,14 @@ public abstract class AmqpSenderTest {
 		// Arrange
 		sender.setStreamingMessages(false);
 		sender.setMessageProtocol(MessageProtocol.RR);
+		sender.setApplicationContext(applicationContext);
 		sender.configure();
 		sender.start();
 
 		String testData = "test-" + UUIDUtil.createRandomUUID();
 		Message message = new Message(testData);
 
-		CompletableFuture<Message> receivedRequest = startBackgroundRRReceiver(QUEUE_EXCHANGE_NAME, "my reply");
+		CompletableFuture<Message> receivedRequest = startBackgroundRRReceiver(getQueueExchangeName(), "my reply");
 
 		// Act
 		SenderResult senderResult = assertDoesNotThrow(() -> sender.sendMessage(message, session));
@@ -201,8 +221,7 @@ public abstract class AmqpSenderTest {
 		CompletableFuture<Message> future = new CompletableFuture<>();
 
 		return future.completeAsync(() -> {
-			ReceiverOptions receiverOptions = new ReceiverOptions();
-			receiverOptions.sourceOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+			ReceiverOptions receiverOptions = createQueueReceiverOptions();
 			try (Connection connection = factory.getConnectionFactory(getResourceName()).getConnection();
 				 Receiver receiver = connection.openReceiver(rrQueue, receiverOptions)) {
 				Delivery request = receiver.receive(60, TimeUnit.SECONDS);
@@ -235,7 +254,7 @@ public abstract class AmqpSenderTest {
 		// Arrange
 		sender.setMessageProtocol(MessageProtocol.FF);
 		sender.setAddressType(AddressType.TOPIC);
-		sender.setAddress(TOPIC_EXCHANGE_NAME);
+		sender.setAddress(getTopicExchangeName());
 		sender.setDurable(true);
 
 		sender.configure();
@@ -247,7 +266,7 @@ public abstract class AmqpSenderTest {
 		int nrOfReceivers = 3;
 		Phaser syncPoint = new Phaser(nrOfReceivers + 1);
 		List<Map.Entry<Integer, CompletableFuture<Message>>> futureResults = IntStream.range(0, nrOfReceivers)
-				.mapToObj(i -> Map.entry(i, startBackgroundFFReceiver(syncPoint, i, AddressType.TOPIC, TOPIC_EXCHANGE_NAME)))
+				.mapToObj(i -> Map.entry(i, startBackgroundFFReceiver(syncPoint, i, AddressType.TOPIC, getTopicExchangeName())))
 				.toList();
 
 		// Wait until all receivers are open before sending the message
@@ -333,7 +352,7 @@ public abstract class AmqpSenderTest {
 		// Try to read all messages
 		List<String> resultMessages;
 		try (Session amqpSession = factory.getConnectionFactory(getResourceName()).getSession(new SessionOptions());
-			Receiver receiver = amqpSession.openReceiver(QUEUE_EXCHANGE_NAME)
+			Receiver receiver = amqpSession.openReceiver(getQueueExchangeName())
 		) {
 			resultMessages = IntStream.range(0, nrOfMessagesToSend)
 					.mapToObj(i -> {

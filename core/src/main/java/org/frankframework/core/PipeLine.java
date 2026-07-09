@@ -182,9 +182,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		}
 
 		// AOP is required for the Ladybug to function.
-		if (getEnvironment().matchesProfiles("aop")) {
-			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
-		}
+		addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 
 		super.afterPropertiesSet();
 	}

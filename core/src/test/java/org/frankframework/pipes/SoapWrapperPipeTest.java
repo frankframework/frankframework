@@ -358,7 +358,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 
 		// Get non xml ISO 8859-1 file with same content
 		Message originalIso88591 = MessageTestUtils.getMessage("/Util/MessageUtils/iso-8859-1.txt");
-		originalIso88591.getContext().withCharset("ISO-8859-1");
+		originalIso88591.setCharset("ISO-8859-1");
 		String originalIso88591String = originalIso88591.asString();
 
 		assertTrue(actual1.contains(originalIso88591String));

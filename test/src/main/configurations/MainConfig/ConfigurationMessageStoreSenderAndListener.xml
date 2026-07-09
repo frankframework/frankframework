@@ -126,4 +126,30 @@
 		</Pipeline>
 	</Adapter>
 
+	<!-- This Adapter is for testing with message stores that have lots of messages. Call this pipeline from the page "Test a Pipeline" to instantly fill up the message store with multiple pages -->
+	<Adapter name="log-many-messages">
+		<Receiver name="log-many-messages-Receiver">
+			<JavaListener name="log-many-messages-Listener" serviceName="ibis4test-log-many-messages"/>
+			<JdbcErrorStorage slotId="log-many-messages-WriteErrors"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
+			</Exits>
+
+			<ForPipe name="loop" startAt="0" stopAt="550">
+				<Forward name="stop" path="EXIT"/>
+				<Forward name="continue" path="sendMessagePipe"/>
+			</ForPipe>
+			<SenderPipe name="sendMessagePipe">
+				<JdbcMessageLog slotId="log-many-messages-WriteLog"/>
+				<MessageStoreSender
+					slotId="log-many-messages-queue">
+					<Param name="messageId" pattern="{uuid}"/>
+					<Param name="correlationId" sessionKey="loop.iteration"/>
+				</MessageStoreSender>
+				<Forward name="success" path="loop"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
 </Module>

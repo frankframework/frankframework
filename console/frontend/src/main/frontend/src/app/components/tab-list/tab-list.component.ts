@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-tab-list',
   imports: [NgClass],
   templateUrl: './tab-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tab-list.component.scss',
 })
 export class TabListComponent {
@@ -13,7 +14,7 @@ export class TabListComponent {
   @Output() selectedTabChange = new EventEmitter<string>();
 
   protected _allTabName = 'All';
-  protected tabsList: string[] = [`${this._allTabName}`];
+  protected tabsList: string[] = [String(this._allTabName)];
 
   constructor() {
     this.selectedTab = this._allTabName;
@@ -22,7 +23,7 @@ export class TabListComponent {
   @Input()
   set tabs(tabs: string[]) {
     if (this.showAllTab) {
-      this.tabsList = [`${this._allTabName}`, ...tabs];
+      this.tabsList = [String(this._allTabName), ...tabs];
       return;
     }
     this.tabsList = tabs;

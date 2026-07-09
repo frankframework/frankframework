@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { QuickSubmitFormDirective } from './quick-submit-form.directive';
 
 @Component({
-  template: `<form (submit)="changeTrigger()" appQuickSubmitForm>
+  template: `<form appQuickSubmitForm (submit)="changeTrigger()">
     <input type="text" />
   </form>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [QuickSubmitFormDirective],
 })
 class TestComponent {

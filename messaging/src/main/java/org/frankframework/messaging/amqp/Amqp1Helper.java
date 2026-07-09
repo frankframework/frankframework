@@ -83,22 +83,24 @@ public class Amqp1Helper {
 
 	private static void copyMessageContentMetaData(org.apache.qpid.protonj2.client.@NonNull Message<?> amqpMessage, Message result) throws ClientException {
 		if (amqpMessage.contentEncoding() != null) {
-			result.getContext().withCharset(amqpMessage.contentEncoding());
+			result.setCharset(amqpMessage.contentEncoding());
 		}
 		if (amqpMessage.contentType() != null) {
 			result.getContext().withMimeType(amqpMessage.contentType());
 		}
 	}
 
-	public static @Nullable Message getMessage(@NonNull AmqpConnectionFactoryFactory connectionFactory, @NonNull String connectionName, @NonNull String address, @NonNull AddressType addressType) throws ClientException, IOException {
+	public static @Nullable Message getMessage(@NonNull AmqpConnectionFactoryFactory connectionFactory, @NonNull String connectionName, @NonNull String address,
+											   @NonNull AddressType addressType) throws ClientException, IOException {
 		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
 			return getMessage(connection, address, addressType);
 		}
 	}
 
-	public static @Nullable Message getMessage(@NonNull Connection connection, @NonNull String address, @NonNull AddressType addressType) throws ClientException, IOException {
+	public static @Nullable Message getMessage(@NonNull Connection connection, @NonNull String address, @NonNull AddressType addressType)
+			throws ClientException, IOException {
 		ReceiverOptions receiverOptions = new ReceiverOptions();
-		receiverOptions.sourceOptions().capabilities(addressType.getCapabilityName());
+			receiverOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 		try (Receiver receiver = connection.openReceiver(address, receiverOptions)) {
 			Delivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {
@@ -111,15 +113,17 @@ public class Amqp1Helper {
 		return null;
 	}
 
-	public static @Nullable String sendFFMessage(@NonNull AmqpConnectionFactoryFactory connectionFactory, @NonNull String connectionName, @NonNull String address, @NonNull AddressType addressType, @NonNull Message message) throws ClientException, IOException {
+	public static @Nullable String sendFFMessage(@NonNull AmqpConnectionFactoryFactory connectionFactory, @NonNull String connectionName, @NonNull String address,
+												 @NonNull AddressType addressType, @NonNull Message message) throws ClientException, IOException {
 		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
 			return sendFFMessage(connection, address, addressType, message);
 		}
 	}
 
-	private static @Nullable String sendFFMessage(Connection connection, String address, @NonNull AddressType addressType, Message message) throws ClientException, IOException {
+	private static @Nullable String sendFFMessage(Connection connection, String address, @NonNull AddressType addressType, Message message)
+			throws ClientException, IOException {
 		SenderOptions options = new SenderOptions();
-		options.targetOptions().capabilities(addressType.getCapabilityName());
+			options.targetOptions().capabilities(addressType.getCapabilityName());
 
 		try (Sender sender = connection.openSender(address, options)) {
 			org.apache.qpid.protonj2.client.Message<?> amqpMessage;

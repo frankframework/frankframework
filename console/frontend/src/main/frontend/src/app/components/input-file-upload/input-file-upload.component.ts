@@ -1,9 +1,10 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-input-file-upload',
   templateUrl: './input-file-upload.component.html',
   styleUrls: ['./input-file-upload.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [],
 })
 export class InputFileUploadComponent {
