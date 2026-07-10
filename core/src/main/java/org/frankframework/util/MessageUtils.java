@@ -183,16 +183,16 @@ public class MessageUtils {
 	 * If neither header is present, or the size is <code>0</code> a <code>nullMessage</code> will be returned.
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc7230#section-3.3">rfc7230</a>
 	 */
-	public static @NonNull Message parseContentAsMessage(HttpServletRequest request) throws IOException {
+	public static @NonNull Message parseContentAsMessage(@NonNull HttpServletRequest request) throws IOException {
 		if (request.getContentLength() > 0 || request.getHeader("transfer-encoding") != null) {
-			return new Message(request.getInputStream(), getContext(request));
+			return fromInputStream(request.getInputStream(), getContext(request), request.getContentLength());
 		} else {
 			// We want the context because of the request headers
 			return Message.nullMessage(getContext(request));
 		}
 	}
 
-	public static @NonNull Message parse(AttachmentPart soapAttachment) throws SOAPException {
+	public static @NonNull Message parse(@NonNull AttachmentPart soapAttachment) throws SOAPException {
 		return new Message(soapAttachment.getRawContentBytes(), getContext(soapAttachment.getAllMimeHeaders()));
 	}
 
@@ -200,7 +200,7 @@ public class MessageUtils {
 	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
-	public static @Nullable Charset computeDecodingCharset(Message message) throws IOException {
+	public static @Nullable Charset computeDecodingCharset(@NonNull Message message) throws IOException {
 		return computeDecodingCharset(message, CHARSET_CONFIDENCE_LEVEL);
 	}
 
@@ -209,7 +209,7 @@ public class MessageUtils {
 	 * @param confidence percentage required to successfully determine the charset.
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
-	public static @Nullable Charset computeDecodingCharset(Message message, int confidence) throws IOException {
+	public static @Nullable Charset computeDecodingCharset(@NonNull Message message, int confidence) throws IOException {
 		if (Message.isEmpty(message) || !message.isBinary()) {
 			return null;
 		}
