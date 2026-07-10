@@ -148,8 +148,8 @@ public class TransactionalStorage {
 		builder.addHeader("comment", params.comment);
 		builder.addHeader("message", params.message);
 		builder.addHeader("label", params.label);
-		builder.addHeader("startDate", params.startDateStr);
-		builder.addHeader("endDate", params.endDateStr);
+		builder.addHeader("startDate", params.startDate);
+		builder.addHeader("endDate", params.endDate);
 		builder.addHeader("sort", params.sort);
 		return frankApiService.callSyncGateway(builder);
 	}
@@ -255,8 +255,8 @@ public class TransactionalStorage {
 		private String comment;
 		private String message;
 		private String label;
-		private String startDateStr;
-		private String endDateStr;
+		private String startDate;
+		private String endDate;
 		private String sort;
 	}
 
