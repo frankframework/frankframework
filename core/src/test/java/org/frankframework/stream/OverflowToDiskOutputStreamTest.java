@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -153,7 +152,6 @@ public class OverflowToDiskOutputStreamTest {
 	}
 
 	@Test
-	@Disabled("Temporarily disabled because limits are now applied differently and that makes this test fail, for now")
 	public void testLargeFile() throws Exception {
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(5_000_000, tmpDir);
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();

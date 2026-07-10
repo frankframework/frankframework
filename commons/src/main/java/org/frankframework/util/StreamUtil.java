@@ -45,7 +45,7 @@ public class StreamUtil {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING = DEFAULT_CHARSET.displayName();
 	public static final String AUTO_DETECT_CHARSET = "auto";
-	public static final int BUFFER_SIZE = 256 * 1024;
+	public static final int BUFFER_SIZE = 128 * 1024;
 
 	private StreamUtil() {
 		// Private constructor so that the utility-class cannot be instantiated.
