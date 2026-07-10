@@ -401,7 +401,7 @@ public class SoapWrapperTest {
 		assertThat(e1.getMessage(), anyOf(containsString("The private key for the supplied alias does not exist in the keystore"), containsString("No message with ID \"noPrivateKey\" found")));
 
 		WSSecurityException e2 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, "wrong-cert", "changeit"));
-		assertThat(e1.getMessage(), anyOf(containsString("The private key for the supplied alias does not exist in the keystore"), containsString("No message with ID \"noPrivateKey\" found")));
+		assertThat(e2.getMessage(), anyOf(containsString("The private key for the supplied alias does not exist in the keystore"), containsString("No message with ID \"noPrivateKey\" found")));
 
 		KeyStore differentStoreSameCertname = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
 		WSSecurityException e3 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, differentStoreSameCertname, certificateName, "changeit"));
