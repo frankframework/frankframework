@@ -60,23 +60,22 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "Cannot get parameter values", e);
 		}
-		int nrOfBlocks = getIntegerParam(pvl, "blockCount", blockCount);
-		int bytesPerBlock = getIntegerParam(pvl, "blockSize", blockSize);
+		int nrOfBlocks = getIntegerParameter(pvl, "blockCount", blockCount);
+		int bytesPerBlock = getIntegerParameter(pvl, "blockSize", blockSize);
 		if (direction==Direction.PRODUCE) {
 			// Pass supplier to large stream, so that it is actually served dynamically instead of all produced on creation of the message
 			result = Message.asMessage(buildInputStreamSupplier(nrOfBlocks, bytesPerBlock));
 		} else {
 			try (Reader reader=message.asReader()) {
 				Objects.requireNonNull(reader, "Cannot read data from NULL message");
-				int blocksServedAfterFirstBlockRead=Integer.MAX_VALUE;
-				int buflen=bytesPerBlock;
-				int displaylen=40;
-				int bytesRead=0;
-				char[] buf = new char[buflen];
+				int blocksServedAfterFirstBlockRead = Integer.MAX_VALUE;
+				int displaylen = 40;
+				int bytesRead = 0;
+				char[] buf = new char[bytesPerBlock];
 				int block=0;
 
 				while (true) {
-					int len = reader.read(buf, 0, buflen);
+					int len = reader.read(buf, 0, bytesPerBlock);
 					if (block==0) {
 						blocksServedAfterFirstBlockRead = totalBlocksServed.get();
 					}
@@ -100,13 +99,6 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 
 		}
 		return new PipeRunResult(getSuccessForward(), result);
-	}
-
-	private int getIntegerParam(ParameterValueList pvl, String paramName, int defaultValue) {
-		if (!pvl.contains(paramName)) {
-			return defaultValue;
-		}
-		return pvl.get(paramName).asIntegerValue(defaultValue);
 	}
 
 	private @NonNull ThrowingSupplier<InputStream, Exception> buildInputStreamSupplier(int nrOfBlocks, int bytesPerBlock) {

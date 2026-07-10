@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -50,6 +52,7 @@ import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -216,6 +219,20 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 
 		return forwards.stream().map(Forward::name).toList();
+	}
+
+	protected int getIntegerParameter(@NonNull ParameterValueList pvl, @Nonnull String parameterName, int defaultValue) {
+		if (!pvl.contains(parameterName)) {
+			return defaultValue;
+		}
+		return pvl.get(parameterName).asIntegerValue(defaultValue);
+	}
+
+	protected @Nullable String getParameterValue(@NonNull ParameterValueList pvl, String parameterName) {
+		if (!pvl.contains(parameterName)) {
+			return null;
+		}
+		return pvl.get(parameterName).asStringValue(null);
 	}
 
 	/**
