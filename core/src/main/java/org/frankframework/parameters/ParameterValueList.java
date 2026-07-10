@@ -82,8 +82,6 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 
 	/**
 	 * Check if the parameter exists, case sensitive.
-	 * @param name
-	 * @return
 	 */
 	public boolean contains(@NonNull String name) {
 		return map.containsKey(name);
