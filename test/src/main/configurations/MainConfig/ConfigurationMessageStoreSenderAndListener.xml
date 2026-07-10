@@ -1,7 +1,7 @@
 <Module>
 	<Adapter name="writeIbisstore">
 		<Receiver name="writeIbisstoreReceiver">
-			<JavaListener name="writeIbisstoreListener" serviceName="ibis4test-WriteToMessageStore"  />
+			<JavaListener name="writeIbisstoreListener" serviceName="ibis4test-WriteToMessageStore" />
 			<JdbcErrorStorage slotId="TestMessageStoreSenderAndListener-WriteErrors" />
 		</Receiver>
 		<Pipeline>
@@ -81,6 +81,51 @@
 			<ExceptionPipe name="error" />
 		</Pipeline>
 	</Adapter>
+
+	<Adapter name="writeIbisstoreWithCidXsl">
+		<Receiver name="writeIbisstoreReceiverWithCidXsl">
+			<JavaListener name="writeIbisstoreListenerWithCidXsl" serviceName="ibis4test-WriteToMessageStoreWithCidXsl"/>
+			<JdbcErrorStorage slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
+			</Exits>
+
+			<SenderPipe name="sendMessagePipe">
+				<JdbcMessageLog slotId="TestMessageStoreSenderAndListener-WriteLog"/>
+				<MessageStoreSender
+					slotId="TestMessageStoreSenderAndListener-Queue"
+					sessionKeys="key1,key2">
+					<Param name="correlationId" styleSheetName="MessageStoreSenderAndListener/extractCorrelationId.xsl"/>
+				</MessageStoreSender>
+				<Forward name="success" path="EXIT"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="writeIbisstoreWithCid">
+		<Receiver name="writeIbisstoreReceiverWithCid">
+			<JavaListener name="writeIbisstoreListenerWithCid" serviceName="ibis4test-WriteToMessageStoreWithCid"/>
+			<JdbcErrorStorage slotId="TestMessageStoreSenderAndListener-WriteErrors"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
+			</Exits>
+
+			<SenderPipe name="sendMessagePipe">
+				<JdbcMessageLog slotId="TestMessageStoreSenderAndListener-WriteLog"/>
+				<MessageStoreSender
+					slotId="TestMessageStoreSenderAndListener-Queue"
+					sessionKeys="key1,key2">
+					<Param name="correlationId" xpathExpression="/Envelope/Header/CorrelationID"/>
+				</MessageStoreSender>
+				<Forward name="success" path="EXIT"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
 
 	<!-- This Adapter is for testing with message stores that have lots of messages. Call this pipeline from the page "Test a Pipeline" to instantly fill up the message store with multiple pages -->
 	<Adapter name="log-many-messages">
