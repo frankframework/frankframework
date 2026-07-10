@@ -252,6 +252,7 @@ export class AppService {
 
   private _adapters: WritableSignal<Record<string, Adapter>> = signal({});
   private _configurations: WritableSignal<Configuration[]> = signal([]);
+  private _configurationsLoaded: WritableSignal<boolean> = signal(false);
   private _messageLog: WritableSignal<Record<string, MessageLog>> = signal({});
   private _adapterSummary: WritableSignal<Summary> = signal({
     started: 0,
@@ -301,6 +302,9 @@ export class AppService {
   get configurations(): Signal<Configuration[]> {
     return this._configurations.asReadonly();
   }
+  get configurationsLoaded(): Signal<boolean> {
+    return this._configurationsLoaded.asReadonly();
+  }
   get messageLog(): Signal<Record<string, MessageLog>> {
     return this._messageLog.asReadonly();
   }
@@ -339,6 +343,7 @@ export class AppService {
       else updatedConfigurations.push(config);
     }
     this._configurations.set(updatedConfigurations);
+    this._configurationsLoaded.set(true);
   }
 
   updateMessageLog(messageLog: Record<string, Partial<MessageLog>>): void {

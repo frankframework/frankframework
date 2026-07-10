@@ -10,10 +10,11 @@
       [disabled]="disabled"
       [ngClass]="{ 'combobox__input--error': showError }"
       [(ngModel)]="input"
-      (ngModelChange)="onUpdateInput()"
+      (ngModelChange)="onInput()"
       (blur)="hideListDisplay()"
-      (focus)="showListDisplay()"
+      (mousedown)="onMouseDown()"
       (click)="showListDisplay()"
+      (focus)="showListDisplay()"
     />
     <div #comboboxDropdownIcon class="combobox__dropdown-icon">&#9660;</div>
   </div>
