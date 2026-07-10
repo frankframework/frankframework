@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -221,7 +219,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		return forwards.stream().map(Forward::name).toList();
 	}
 
-	protected int getIntegerParameter(@NonNull ParameterValueList pvl, @Nonnull String parameterName, int defaultValue) {
+	protected int getIntegerParameter(@NonNull ParameterValueList pvl, @NonNull String parameterName, int defaultValue) {
 		if (!pvl.contains(parameterName)) {
 			return defaultValue;
 		}
