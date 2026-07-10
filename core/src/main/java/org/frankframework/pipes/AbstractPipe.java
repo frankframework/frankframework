@@ -220,17 +220,19 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	protected int getIntegerParameter(@NonNull ParameterValueList pvl, @NonNull String parameterName, int defaultValue) {
-		if (!pvl.contains(parameterName)) {
+		ParameterValue pv = pvl.findParameterValue(parameterName);
+		if (pv == null) {
 			return defaultValue;
 		}
-		return pvl.get(parameterName).asIntegerValue(defaultValue);
+		return pv.asIntegerValue(defaultValue);
 	}
 
 	protected @Nullable String getParameterValue(@NonNull ParameterValueList pvl, String parameterName) {
-		if (!pvl.contains(parameterName)) {
+		ParameterValue pv = pvl.findParameterValue(parameterName);
+		if (pv == null) {
 			return null;
 		}
-		return pvl.get(parameterName).asStringValue(null);
+		return pv.asStringValue(null);
 	}
 
 	/**

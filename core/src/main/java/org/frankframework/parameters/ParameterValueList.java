@@ -65,13 +65,13 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		map.put(pv.getDefinition().getName(), pv);
 	}
 
-	/** Get a specific {@link ParameterValue} */
-	public ParameterValue get(String name) {
+	/** Get a specific {@link ParameterValue}, case sensitive */
+	public @Nullable ParameterValue get(String name) {
 		return map.get(name);
 	}
 
 	/** Find a (case insensitive) {@link ParameterValue} */
-	public ParameterValue findParameterValue(String name) {
+	public @Nullable ParameterValue findParameterValue(@NonNull String name) {
 		for(Map.Entry<String, ParameterValue> entry : map.entrySet()) {
 			if(entry.getKey().equalsIgnoreCase(name)) {
 				return entry.getValue();
@@ -80,7 +80,12 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return null;
 	}
 
-	public boolean contains(String name) {
+	/**
+	 * Check if the parameter exists, case sensitive.
+	 * @param name
+	 * @return
+	 */
+	public boolean contains(@NonNull String name) {
 		return map.containsKey(name);
 	}
 
