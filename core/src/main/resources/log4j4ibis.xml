@@ -124,8 +124,13 @@
 		<!-- Suppress `implements ApplicationListener interface but is not reachable for event multicasting` -->
 		<Logger name="org.springframework.context.support.ApplicationListenerDetector" level="ERROR" />
 
-		<Logger name="liquibase.util.ShowSummaryUtil" level="INFO">
+		<!--
+		Special config so it's logged (and limited by) both File and STDOUT.
+		The 'additivity' attribute prevents it from propagating to other loggers.
+		-->
+		<Logger name="liquibase.util.ShowSummaryUtil" level="INFO" additivity="false">
 			<AppenderRef ref="application-log-appender"/>
+			<AppenderRef ref="file"/>
 		</Logger>
 
 		<Logger name="MSG" additivity="false" level="INFO">
