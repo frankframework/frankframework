@@ -421,19 +421,18 @@ public class SoapWrapper {
 		}
 	}
 
-	public Message encryptMessage(Message soapMessage, KeyStore keystore, String certificateName, SecretKey symmetricKey) throws WSSecurityException {
-		try {
-			Document doc = toSoapDocument(soapMessage);
+	public Message encryptMessage(Message soapMessage, KeyStore keystore, String certificateName, SecretKey symmetricKey) throws SOAPException, IOException, WSSecurityException {
+		Document doc = toSoapDocument(soapMessage);
 
-			// create security header and insert it into unsigned envelope
-			WSSecHeader secHeader = new WSSecHeader(doc);
-			secHeader.insertSecurityHeader();
-			secHeader.setMustUnderstand(true);
+		// create security header and insert it into unsigned envelope
+		WSSecHeader secHeader = new WSSecHeader(doc);
+		secHeader.insertSecurityHeader();
+		secHeader.setMustUnderstand(true);
 
-			Crypto crypto = new KeyStoreCrypto(keystore);
+		Crypto crypto = new KeyStoreCrypto(keystore);
 
-			WSSecEncrypt encrypt = new WSSecEncrypt(secHeader);
-			encrypt.setUserInfo(certificateName);
+		WSSecEncrypt encrypt = new WSSecEncrypt(secHeader);
+		encrypt.setUserInfo(certificateName);
 /*
 	// Encrypt a specific element in the header by namespace + localname
 	List<WSEncryptionPart> parts = new ArrayList<>();
@@ -451,30 +450,26 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 
 	encrypt.getParts().addAll(parts);
 */
+		encrypt.setKeyEncAlgo(WSS4JConstants.KEYTRANSPORT_RSAOAEP); // Key EncryptionMethod (rsa-oaep-mgf1p)
+		encrypt.setEncryptSymmKey(true);
 
-			encrypt.setKeyEncAlgo(WSS4JConstants.KEYTRANSPORT_RSAOAEP); // Key EncryptionMethod (rsa-oaep-mgf1p)
-			encrypt.setEncryptSymmKey(true);
+		encrypt.setKeyIdentifierType(WSConstants.THUMBPRINT_IDENTIFIER); // embeds KeyInfo with BinarySecurityToken ref
+		encrypt.setSymmetricEncAlgorithm(WSS4JConstants.AES_256); // Data EncryptionMethod (aes256-cbc)
+		encrypt.setDigestAlgorithm(WSS4JConstants.SHA1); // DigestMethod
+		encrypt.setIncludeEncryptionToken(true);
 
-			encrypt.setKeyIdentifierType(WSConstants.THUMBPRINT_IDENTIFIER); // embeds KeyInfo with BinarySecurityToken ref
-			encrypt.setSymmetricEncAlgorithm(WSS4JConstants.AES_256); // Data EncryptionMethod (aes256-cbc)
-			encrypt.setDigestAlgorithm(WSS4JConstants.SHA1); // DigestMethod
-			encrypt.setIncludeEncryptionToken(true);
+		// Add a Timestamp
+		WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
+		timestampBuilder.setTimeToLive(300);
+		timestampBuilder.setIdAllocator(idAllocator);
+		timestampBuilder.build();
 
-			// Add a Timestamp
-			WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
-			timestampBuilder.setTimeToLive(300);
-			timestampBuilder.setIdAllocator(idAllocator);
-			timestampBuilder.build();
+		Document encryptedDocument = encrypt.build(crypto, symmetricKey);
 
-			Document encryptedDocument = encrypt.build(crypto, symmetricKey);
-
-			return new Message(encryptedDocument);
-		} catch (SOAPException | IOException e) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "errorMessages.IOException");
-		}
+		return new Message(encryptedDocument);
 	}
 
-	public Message decryptMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword) throws WSSecurityException {
+	public Message decryptMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword) throws SOAPException, IOException, WSSecurityException {
 		Crypto crypto = new KeyStoreCrypto(keystore);
 		RequestData requestData = new RequestData();
 		requestData.setSigVerCrypto(crypto);
@@ -491,38 +486,33 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 			}
 		});
 
-		final Document doc;
-		try {
-			doc = toSoapDocument(soapMessage);
-		} catch (SOAPException | IOException e) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, e, "errorMessages.IOException");
-		}
-
+		final Document doc = toSoapDocument(soapMessage);
+		final WSHandlerResult result;
 		try {
 			WSSecurityEngine engine = new WSSecurityEngine();
-			WSHandlerResult result = engine.processSecurityHeader(doc, requestData);
-
-			if (result == null || result.getResults().isEmpty()) {
-				// Return message as-is. It appears to not be encrypted/signed.
-				return new Message(doc);
-			}
-
-			boolean encryptionProcessed = result.getResults().stream()
-					.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
-					.filter(Objects::nonNull)
-					.map(Integer.class::cast)
-					.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
-
-			if (!encryptionProcessed) {
-				throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "stax.encryption.unprocessedReferences");
-			}
-
-			WSSecHeader secHeader = new WSSecHeader(doc);
-			secHeader.removeSecurityHeader();
-
-			return new Message(doc);
+			result = engine.processSecurityHeader(doc, requestData);
 		} catch (IllegalArgumentException | IllegalStateException e) {
 			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_CHECK);
 		}
+
+		if (result == null || result.getResults().isEmpty()) {
+			// Return message as-is. It appears to not be encrypted/signed.
+			return new Message(doc);
+		}
+
+		boolean encryptionProcessed = result.getResults().stream()
+				.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
+				.filter(Objects::nonNull)
+				.map(Integer.class::cast)
+				.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
+
+		if (!encryptionProcessed) {
+			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "stax.encryption.unprocessedReferences");
+		}
+
+		WSSecHeader secHeader = new WSSecHeader(doc);
+		secHeader.removeSecurityHeader();
+
+		return new Message(doc);
 	}
 }
