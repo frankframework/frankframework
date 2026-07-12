@@ -70,8 +70,8 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	public void configure() throws ConfigurationException {
 		long startTime = System.currentTimeMillis();
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
-			if (log.isDebugEnabled()) log.debug("configuring all ConfigurableLifecycle beans: {}", this::getConfigurableLifecycleBeanNames);
-			else log.info("configuring {}", () -> StringUtil.ucFirst(className));
+			if (log.isTraceEnabled()) log.trace("configuring all ConfigurableLifecycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.debug("configuring {}", () -> StringUtil.ucFirst(className));
 
 			doConfigure();
 			log.info("configured {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
@@ -79,16 +79,22 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	}
 
 	// This triggers an internal startBeans method, and does not call #start().
-	// NOTE: the name/id has not been set yet (as this point), so it uses the hashcode instead. At the moment this is useful for the partent's context.
 	@Override
 	public void onRefresh() {
-		long startTime = System.currentTimeMillis();
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
-			if (log.isDebugEnabled()) log.debug("refresh (start) all 'autostart' LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
-			else log.info("refreshing {}", () -> StringUtil.ucFirst(className));
+		// The name/id has not been set yet (as this point), so it uses the hashcode instead.
+		// At the moment this is useful for the partent's context, but only log it when DEBUG is enabled, or it has a name.
+		// Else it may clutter the log with redundant information, refresh is for Spring and not the Frank.
+		if (log.isDebugEnabled()) {
+			long startTime = System.currentTimeMillis();
+			try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+				if (log.isTraceEnabled()) log.trace("refresh (start) all 'autostart' Lifecycle beans: {}", this::getConfigurableLifecycleBeanNames);
+				else log.debug("refreshing {}", () -> StringUtil.ucFirst(className));
 
+				super.onRefresh();
+				log.info("refreshed {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
+			}
+		} else {
 			super.onRefresh();
-			log.info("refreshed {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
 		}
 	}
 
@@ -103,8 +109,8 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	public void start() {
 		long startTime = System.currentTimeMillis();
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
-			if (log.isDebugEnabled()) log.debug("starting all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
-			else log.info("starting {}", () -> StringUtil.ucFirst(className));
+			if (log.isTraceEnabled()) log.trace("starting all Lifecycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.debug("starting {}", () -> StringUtil.ucFirst(className));
 
 			try {
 				onlySmartAutostartAndNormalLifeLycleBeans.set(true);
@@ -120,8 +126,8 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	public void stop() {
 		long startTime = System.currentTimeMillis();
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
-			if (log.isDebugEnabled()) log.debug("stopping all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
-			else log.info("stopping {}", () -> StringUtil.ucFirst(className));
+			if (log.isTraceEnabled()) log.trace("stopping all Lifecycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.debug("stopping {}", () -> StringUtil.ucFirst(className));
 
 			super.stop();
 			log.info("stopped {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));

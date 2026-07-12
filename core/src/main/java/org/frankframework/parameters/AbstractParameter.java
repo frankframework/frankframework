@@ -208,7 +208,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT, false, null);
 		}
 		if (getType() == null) {
-			log.info("parameter [{}] has no type. Setting the type to [{}]", this::getName, ()->ParameterType.STRING);
+			log.debug("parameter [{}] has no type. Setting the type to [{}]", this::getName, ()->ParameterType.STRING);
 			setType(ParameterType.STRING);
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
