@@ -79,7 +79,7 @@
     "happy-dom": "^20.10.6",
     "istanbul-lib-instrument": "^6.0.3",
     "prettier": "^3.9.4",
-    "typescript": "~6.0.3",
+    "typescript": "~7.0.2",
     "typescript-eslint": "8.63.0",
     "vitest": "^4.1.10"
   },
