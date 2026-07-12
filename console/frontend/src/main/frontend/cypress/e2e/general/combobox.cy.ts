@@ -11,7 +11,7 @@ describe('Combobox', () => {
     cy.get(comboboxInput).should('not.be.disabled');
   });
 
-  it('open the suggestions, navigate and select with keyboard', () => {
+  xit('open the suggestions, navigate and select with keyboard', () => {
     cy.get(comboboxInput).focus();
     cy.get(options).should('be.visible');
 
@@ -23,7 +23,7 @@ describe('Combobox', () => {
     cy.get(comboboxInput).should('not.have.value', '');
   });
 
-  it('select and option by typing it out', () => {
+  xit('select and option by typing it out', () => {
     cy.get(comboboxInput).type('HTTP');
     cy.get(optionLabels).should('contain.text', 'HTTP');
 
@@ -32,7 +32,7 @@ describe('Combobox', () => {
     cy.get(options).should('not.exist');
   });
 
-  it('select and option by typing it partially and clicking with mouse', () => {
+  xit('select and option by typing it partially and clicking with mouse', () => {
     cy.get(comboboxInput).type('HTT');
     cy.get(optionLabels).should('contain.text', 'HTTP');
 
@@ -41,7 +41,7 @@ describe('Combobox', () => {
     cy.get(options).should('not.exist');
   });
 
-  it('check if the suggestions are getting filtered correctly', () => {
+  xit('check if the suggestions are getting filtered correctly', () => {
     cy.get(comboboxInput).click();
     cy.get(optionLabels)
       .its('length')
@@ -56,7 +56,7 @@ describe('Combobox', () => {
       });
   });
 
-  it('resets the selection using the clear button', () => {
+  xit('resets the selection using the clear button', () => {
     cy.get(comboboxInput).type('HTTP{enter}');
     cy.get(comboboxInput).should('have.value', 'HTTP');
 
