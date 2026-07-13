@@ -128,20 +128,6 @@
             "enabled": false
         },
         {
-            "description": "Ignore specific Maven dependencies for ... <= 8.0",
-            "matchManagers": [
-                "maven"
-            ],
-            "matchBaseBranches": [
-                "/^release\\/8\\.0$/"
-            ],
-            "ignoreDeps": [
-                "org.apache.tika:tika-parsers",
-                "org.springframework.boot:spring-boot-loader",
-                "org.springframework:"
-            ]
-        },
-        {
             "description": "All NPM dependencies - weekly schedule, ignore major updates",
             "matchManagers": [
                 "npm"
@@ -250,9 +236,11 @@
             "minimumReleaseAge": "7 days"
         },
         {
-          "description": "Disable JBOSS Docker image update",
-          "matchFiles": ["docker/JBoss/Dockerfile"],
-          "enabled": false
+            "description": "Disable JBOSS Docker image update",
+            "matchFiles": [
+                "docker/JBoss/Dockerfile"
+            ],
+            "enabled": false
         }
     ],
     "lockFileMaintenance": {
