@@ -112,7 +112,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 	 * <ul>
 	 *     <li>Port 465 means implicit ssl</li>
 	 *     <li>Port 587 means no ssl/upgradeable to ssl by using startTls</li>
-	 * </ul></u>
+	 * </ul>
 	 *
 	 * @ff.default false
 	 */
