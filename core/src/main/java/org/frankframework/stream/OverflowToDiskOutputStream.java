@@ -42,7 +42,7 @@ import org.frankframework.util.StreamUtil;
  */
 @Log4j2
 public class OverflowToDiskOutputStream extends OutputStream implements AutoCloseable, Flushable {
-	private static final long MAX_MEM_BUFFER_SIZE = Math.max(Message.MESSAGE_MAX_IN_MEMORY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
+	private static final long MAX_MEM_BUFFER_SIZE = Math.max(Message.MESSAGE_MAX_IN_MEMORY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT); // Needs to default to at least the default in-mem buffer size otherwise some unit tests will fail.
 
 	private List<ByteBufferBlock> buffers; // temporary buffer, once full, write to disk
 	private ByteBufferBlock lastBlock;
@@ -69,7 +69,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		this.tempDirectory = tempDirectory;
 
 		// either the buffer or outputStream exists, but not both at the same time.
-		if (maxSize > 0 && maxSize <= MAX_MEM_BUFFER_SIZE) {
+		if (maxSize > 0 && maxSize <= MAX_MEM_BUFFER_SIZE) { // Don't allow arbitrarily large memory buffer allocations
 			buffers = new ArrayList<>();
 			lastBlock = new ByteBufferBlock();
 			buffers.add(lastBlock);

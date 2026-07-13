@@ -43,18 +43,17 @@ public class HttpResponseHandler {
 
 	public HttpResponseHandler(HttpResponse resp) throws IOException {
 		httpResponse = resp;
-		if(httpResponse.getEntity() != null) {
+		if (httpResponse.getEntity() != null) {
 			httpEntity = httpResponse.getEntity();
 
 			MessageContext context = MessageUtils.getContext(httpResponse);
-			if (httpEntity.getContent() instanceof EmptyInputStream) {
-				// No content was returned, immediately close the stream to free up resources.
-				EntityUtils.consume(httpEntity);
+			if (httpEntity.getContent() instanceof EmptyInputStream || httpEntity.getContentLength() == 0) { // EmptyInputStream is a quick check that might not work in all future implementations so check both
+				// No content was returned
 				responseMessage = Message.nullMessage(context);
 			} else {
 				responseMessage = MessageUtils.fromInputStream(httpEntity.getContent(), context, httpEntity.getContentLength());
-				EntityUtils.consume(httpEntity);
 			}
+			EntityUtils.consume(httpEntity); // Close entity to free up resources
 		}
 	}
 
