@@ -97,7 +97,7 @@ import org.frankframework.util.XmlUtils;
  * or when the value of the attachment element is used. If {@code base64=true} then the value will be decoded before it's used.
  * </p><p>
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
- * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
+ * Otherwise, errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
  * </p>
  * @author Johan Verrips
  * @author Gerrit van Brakel
