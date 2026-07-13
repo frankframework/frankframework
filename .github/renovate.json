@@ -10,7 +10,7 @@
     "baseBranchPatterns": [
         "master",
         "/^release\\/(9\\.0|9\\.4)$/",
-        "/^release\\/10\\.[0-4]$/"
+        "/^release\\/10\\./"
     ],
     "labels": [
         "Dependencies"
