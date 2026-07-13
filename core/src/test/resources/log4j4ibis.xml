@@ -11,7 +11,7 @@
 			<Policies>
 				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 			</Policies>
-			<DefaultRolloverStrategy max="${ff:log.maxBackupIndex}" fileIndex="min"  />
+			<DefaultRolloverStrategy max="${ff:log.maxBackupIndex}" fileIndex="min" />
 		</RollingFile>
 	</Appenders>
 

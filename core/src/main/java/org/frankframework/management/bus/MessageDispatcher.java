@@ -86,7 +86,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		scanner.setBeanNameGenerator(beanNameGenerator);
 
 		int numberOfBeans = scanner.scan(packageName);
-		log.info("found [{}] BusAware beans", numberOfBeans);
+		log.debug("found [{}] BusAware beans", numberOfBeans);
 		if(numberOfBeans < 1) {
 			throw new IllegalStateException("did not find any BusAware beans");
 		}
@@ -148,7 +148,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		chain.setComponentName(componentName);
 		initializeBean(chain);
 		if(channel.subscribe(chain)) {
-			log.info("registered new ServiceActivator [{}] on topic [{}] with action [{}] requires-reply [{}]", componentName, topic, (action != null?action.value():"*"), method.getReturnType() != void.class);
+			log.debug("registered new ServiceActivator [{}] on topic [{}] with action [{}] requires-reply [{}]", componentName, topic, (action != null?action.value():"*"), method.getReturnType() != void.class);
 		} else {
 			log.error("unable to register ServiceActivator [{}]", componentName);
 		}
