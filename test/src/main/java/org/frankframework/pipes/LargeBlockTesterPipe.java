@@ -36,6 +36,12 @@ import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
+/**
+ * Test pipe to produce or consume large volumes of data
+ *
+ * @ff.parameter blockCount number of blocks to produce/consume
+ * @ff.parameter blockSize size of each block, in bytes
+ */
 public class LargeBlockTesterPipe extends FixedForwardPipe {
 
 	private @Setter int blockSize = 10_000;
