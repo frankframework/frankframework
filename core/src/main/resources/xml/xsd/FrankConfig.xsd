@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.2">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.3">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -1958,7 +1958,9 @@ Provides functions for jms connections, queues and topics and acts as a facade
       </xs:element>
       <xs:element name="JdbcListener">
         <xs:annotation>
-          <xs:documentation>JdbcListener base class.</xs:documentation>
+          <xs:documentation>JdbcListener which doesn't implement org.frankframework.core.IHasProcessState and therefore doesn't support changing the process state
+ of messages. Please note that you should use the JdbcTableListener or MessageStoreListener. Message browsing, and error and status updates are not performed
+ and have to be done manually.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3701,8 +3703,17 @@ Provides functions for jms connections, queues and topics and acts as a facade
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcListenerDeclaredAttributeGroup">
-    <xs:attribute ref="peekUntransacted" />
-    <xs:attribute ref="peekQuery" />
+    <xs:attribute name="selectQuery" type="xs:string" />
+    <xs:attribute name="peekUntransacted" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="peekQuery" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="keyField" type="xs:string">
       <xs:annotation>
         <xs:documentation>Primary key field of the table, used to identify and differentiate messages.
@@ -3749,8 +3760,13 @@ Provides functions for jms connections, queues and topics and acts as a facade
         <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="additionalFields" />
-    <xs:attribute ref="trace" />
+    <xs:attribute name="additionalFields" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
+ be added to the session as session-variables.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trace" type="frankBoolean" />
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="JdbcListenerDeclaredAttributeGroup" />
@@ -3856,7 +3872,63 @@ Provides functions for jms connections, queues and topics and acts as a facade
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcTableListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="JdbcTableListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcListenerCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractJdbcListenerCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractJdbcListenerDeclaredAttributeGroup">
+    <xs:attribute ref="peekUntransacted" />
+    <xs:attribute ref="peekQuery" />
+    <xs:attribute name="keyField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Primary key field of the table, used to identify and differentiate messages.
+ &lt;b&gt;NB: there should be an index on this field!&lt;/b&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageFieldType">
+      <xs:annotation>
+        <xs:documentation>Type of the field containing the message data Default: &lt;i&gt;String&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageFieldTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="messageIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the &lt;code&gt;messageId&lt;/code&gt;.
+ &lt;b&gt;NB: If this column is not set the default (primary key) keyField will be used as messageId!&lt;/b&gt; Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="correlationIdField" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Field containing the &lt;code&gt;correlationId&lt;/code&gt;.
+ &lt;b&gt;NB: If this column is not set, the &lt;code&gt;messageId&lt;/code&gt; and &lt;code&gt;correlationId&lt;/code&gt; will be the same!&lt;/b&gt; Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sqlDialect" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobsCompressed" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="blobSmartGet" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="additionalFields" />
+    <xs:attribute ref="trace" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractJdbcListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractJdbcListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JmsListenerType">
     <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
@@ -11360,7 +11432,8 @@ Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&g
   <xs:attributeGroup name="MessageStoreSenderDeclaredAttributeGroup">
     <xs:attribute name="sessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the same value for this attribute.</xs:documentation>
+        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the
+ same value for this attribute.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="onlyStoreWhenMessageIdUnique" type="frankBoolean">
@@ -13867,9 +13940,8 @@ Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&g
       </xs:element>
       <xs:element name="FixedResultPipe">
         <xs:annotation>
-          <xs:documentation>This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
- provide this by using the &lt;code&gt;filename&lt;/code&gt; attribute or with a &lt;code&gt;param&lt;/code&gt; element to be able to
- use a sessionKey for instance.
+          <xs:documentation>This Pipe opens and returns a file from the classpath. You can provide this by using the
+ &lt;code&gt;filenameSessionKey&lt;/code&gt; attribute or with the &lt;code&gt;filename&lt;/code&gt; attribute.
 
  &lt;h2&gt;Migrating from deprecated features&lt;/h2&gt;
  The FixedResultPipe was a jack of all trades. You could use it to read a file (only text) and/or use
@@ -16143,6 +16215,11 @@ Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&g
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the file containing the result message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="filenameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the session key containing the file name of the file that contains the result message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -21514,23 +21591,6 @@ Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&g
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="jndiProperties" type="xs:string" />
-  <xs:attribute name="peekUntransacted" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="peekQuery" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="additionalFields" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
- be added to the session as session-variables.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="trace" type="frankBoolean" />
   <xs:attribute name="datasourceName" type="xs:string">
     <xs:annotation>
       <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
@@ -21561,6 +21621,23 @@ Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&g
       <xs:documentation>Additional condition for a row to belong to this TableListener. Impacts all process states</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="peekUntransacted" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="peekQuery" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>(only used when &lt;code&gt;peekUntransacted&lt;/code&gt;=&lt;code&gt;true&lt;/code&gt;) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock Default: selectQuery</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="additionalFields" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
+ be added to the session as session-variables.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="trace" type="frankBoolean" />
   <xs:attribute name="bootstrapServers" type="xs:string">
     <xs:annotation>
       <xs:documentation>The bootstrap servers to connect to, as a comma separated list.</xs:documentation>
