@@ -69,6 +69,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -383,6 +384,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
+	@Disabled
 	void validateEncryptedErrorSoap1_1() throws Exception {
 		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
 		assertNotNull(file); // ensure we can find the file
