@@ -159,10 +159,10 @@ importers:
         version: 0.6.7
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.50.1
-        version: 8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(supports-color@8.1.1)(typescript@5.9.3))(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)
+        version: 8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3))(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: ^8.50.1
-        version: 8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(supports-color@8.1.1)(typescript@5.9.3)
+        version: 8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)
       angular-eslint:
         specifier: ^20.7.0
         version: 20.7.0(chokidar@4.0.3)(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.50.1(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3))(typescript@5.9.3)
@@ -5753,10 +5753,10 @@ snapshots:
       '@types/node': 24.5.1
     optional: true
 
-  '@typescript-eslint/eslint-plugin@8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(supports-color@8.1.1)(typescript@5.9.3))(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)':
+  '@typescript-eslint/eslint-plugin@8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3))(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(supports-color@8.1.1)(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 8.50.1
       '@typescript-eslint/type-utils': 8.50.1(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)
       '@typescript-eslint/utils': 8.50.1(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)
@@ -5769,7 +5769,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(supports-color@8.1.1)(typescript@5.9.3)':
+  '@typescript-eslint/parser@8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.50.1
       '@typescript-eslint/types': 8.50.1
@@ -8574,9 +8574,9 @@ snapshots:
 
   typescript-eslint@8.50.1(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(supports-color@8.1.1)(typescript@5.9.3))(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(supports-color@8.1.1)(typescript@5.9.3)
-      '@typescript-eslint/typescript-estree': 8.50.1(supports-color@8.1.1)(supports-color@8.1.1)(typescript@5.9.3)
+      '@typescript-eslint/eslint-plugin': 8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3))(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.50.1(eslint@9.39.2(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)
+      '@typescript-eslint/typescript-estree': 8.50.1(supports-color@8.1.1)(typescript@5.9.3)
       '@typescript-eslint/utils': 8.50.1(eslint@9.39.2(supports-color@8.1.1))(typescript@5.9.3)
       eslint: 9.39.2(supports-color@8.1.1)
       typescript: 5.9.3
