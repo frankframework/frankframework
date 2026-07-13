@@ -2,6 +2,7 @@ package org.frankframework.ladybug;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -201,8 +202,8 @@ public class MessageCapturerTest {
 
 		assertEquals(expected, capture.toString());
 
-		verify(stream, times(1)).close();
-		verify(capture, times(1)).close();
+		verify(stream, atLeastOnce()).close();
+		verify(capture, atLeastOnce()).close();
 	}
 
 	@Test

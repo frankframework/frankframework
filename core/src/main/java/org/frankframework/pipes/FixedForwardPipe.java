@@ -15,16 +15,11 @@
 */
 package org.frankframework.pipes;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.doc.Forward;
-import org.frankframework.parameters.ParameterValue;
-import org.frankframework.parameters.ParameterValueList;
 
 /**
  * Provides a base class for a Pipe that always has the same forward.
@@ -47,14 +42,6 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		if (successForward == null) {
 			throw new ConfigurationException("has no forward with name [" + PipeForward.SUCCESS_FORWARD_NAME + "]");
 		}
-	}
-
-	protected @Nullable String getParameterValue(@NonNull ParameterValueList pvl, String parameterName) {
-		ParameterValue pv = pvl.findParameterValue(parameterName);
-		if(pv != null) {
-			return pv.asStringValue(null);
-		}
-		return null;
 	}
 
 }

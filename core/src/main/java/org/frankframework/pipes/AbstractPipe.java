@@ -50,6 +50,7 @@ import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -216,6 +217,22 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 
 		return forwards.stream().map(Forward::name).toList();
+	}
+
+	protected int getIntegerParameter(@NonNull ParameterValueList pvl, @NonNull String parameterName, int defaultValue) {
+		ParameterValue pv = pvl.findParameterValue(parameterName);
+		if (pv == null) {
+			return defaultValue;
+		}
+		return pv.asIntegerValue(defaultValue);
+	}
+
+	protected @Nullable String getParameterValue(@NonNull ParameterValueList pvl, String parameterName) {
+		ParameterValue pv = pvl.findParameterValue(parameterName);
+		if (pv == null) {
+			return null;
+		}
+		return pv.asStringValue(null);
 	}
 
 	/**

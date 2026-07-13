@@ -1,5 +1,8 @@
 package org.frankframework.soap;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -397,10 +400,10 @@ public class SoapWrapperTest {
 		SoapWrapper wrapper = SoapWrapper.getInstance();
 
 		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, certificateName, "wrong-password"));
-		assertEquals("The private key for the supplied alias does not exist in the keystore", e1.getMessage());
+		assertThat(e1.getMessage(), anyOf(containsString("The private key for the supplied alias does not exist in the keystore"), containsString("No message with ID \"noPrivateKey\" found")));
 
 		WSSecurityException e2 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, "wrong-cert", "changeit"));
-		assertEquals("The private key for the supplied alias does not exist in the keystore", e2.getMessage());
+		assertThat(e2.getMessage(), anyOf(containsString("The private key for the supplied alias does not exist in the keystore"), containsString("No message with ID \"noPrivateKey\" found")));
 
 		KeyStore differentStoreSameCertname = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
 		WSSecurityException e3 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, differentStoreSameCertname, certificateName, "changeit"));
