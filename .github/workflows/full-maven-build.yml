@@ -100,7 +100,7 @@ jobs:
       if: needs.check-changes.outputs.relevant == 'true'
       uses: pnpm/action-setup@739bfe42ca9233c5e6aca07c1a25a9d34aca49b0 # v6
       with:
-        version: 11.12.0
+        version: 11.10.0
 
     - name: Set up Node.js
       if: needs.check-changes.outputs.relevant == 'true'
