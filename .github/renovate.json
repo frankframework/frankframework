@@ -249,7 +249,7 @@
     "vulnerabilityAlerts": {
         "enabled": true,
         "vulnerabilityFixStrategy": "highest",
-        "dependencyDashboardApproval": true,
+        "dependencyDashboardApproval": false,
         "commitMessageSuffix": "",
         "labels": [
             "Security",
