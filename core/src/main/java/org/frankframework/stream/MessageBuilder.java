@@ -52,8 +52,16 @@ public class MessageBuilder {
 	 * Attempts to store the result in memory and automatically overflows to disk.
 	 */
 	public MessageBuilder() throws IOException {
+		this(MAX_BUFFER_SIZE);
+	}
+
+	/**
+	 * Stores the message in the {@code temp-messages} folder.
+	 * Attempts to store the result in memory and automatically overflows to disk.
+	 */
+	public MessageBuilder(long maxBufferSize) throws IOException {
 		Path tempDir = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
-		outputStream = new OverflowToDiskOutputStream(MAX_BUFFER_SIZE, tempDir);
+		outputStream = new OverflowToDiskOutputStream(maxBufferSize, tempDir);
 	}
 
 	/**

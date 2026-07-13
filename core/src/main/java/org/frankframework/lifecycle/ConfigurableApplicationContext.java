@@ -35,6 +35,10 @@ import org.frankframework.configuration.ConfigurationAwareBeanPostProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.util.RunState;
 
+/**
+ * Log files are set to TRACE as they are for debugging purposes.
+ * Events are published through the {@link ConfiguringLifecycleProcessor} and don't need to be logged twice.
+ */
 @Log4j2
 public class ConfigurableApplicationContext extends GenericApplicationContext implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware, ConfigurationAware {
 
@@ -113,7 +117,7 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 		if (!isActive()) {
 			throw new LifecycleException(className + " is not active");
 		}
-		log.info("configuring {} [{}]", () -> className, this::getId);
+		log.trace("configuring {} [{}]", () -> className, this::getId);
 
 		state = RunState.STARTING;
 
@@ -132,7 +136,7 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 	 */
 	@Override
 	public void start() {
-		log.info("starting {} [{}]", () -> className, this::getDisplayName);
+		log.trace("starting {} [{}]", () -> className, this::getDisplayName);
 		if (!isConfigured()) {
 			throw new IllegalStateException("cannot start " + className + " that's not configured");
 		}
@@ -148,7 +152,7 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 	 */
 	@Override
 	public void stop() {
-		log.info("stopping {} [{}]", () -> className, this::getDisplayName);
+		log.trace("stopping {} [{}]", () -> className, this::getDisplayName);
 		state = RunState.STOPPING;
 		try {
 			super.stop();
@@ -172,7 +176,7 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 
 	@Override
 	public void close() {
-		log.info("closing {} [{}]", () -> className, this::getId);
+		log.trace("closing {} [{}]", () -> className, this::getId);
 		try {
 			state = RunState.STOPPING;
 			super.close();

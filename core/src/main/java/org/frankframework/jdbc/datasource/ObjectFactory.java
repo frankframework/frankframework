@@ -92,6 +92,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	@NonNull
 	protected final O get(@NonNull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
 		String nameWithResourcePrefix = Strings.CS.prependIfMissing(name, resourcePrefix + "/");
+		log.trace("fetch resource [{}]", nameWithResourcePrefix);
 		return objects.computeIfAbsent(nameWithResourcePrefix, k -> compute(k, environment));
 	}
 
@@ -115,11 +116,12 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 */
 	@NonNull
 	private O compute(@NonNull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
+		log.trace("looking up resource [{}]", name);
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
 				P object = objectLocator.lookup(name, environment, lookupClass);
 				if(object != null) {
-					log.debug("located Object [{}] in objectLocator [{}]", name, objectLocator);
+					log.debug("located resource [{}] in objectLocator [{}]", name, objectLocator);
 					return augment(object, name);
 				}
 			} catch (Exception e) { // If an exception occurred, assume we were able to find the Object but unable to create it.

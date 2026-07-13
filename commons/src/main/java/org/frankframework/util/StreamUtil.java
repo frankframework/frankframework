@@ -45,7 +45,7 @@ public class StreamUtil {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING = DEFAULT_CHARSET.displayName();
 	public static final String AUTO_DETECT_CHARSET = "auto";
-	public static final int BUFFER_SIZE = 64 * 1024;
+	public static final int BUFFER_SIZE = 128 * 1024;
 
 	private StreamUtil() {
 		// Private constructor so that the utility-class cannot be instantiated.
@@ -98,18 +98,20 @@ public class StreamUtil {
 		if (in == null) {
 			return 0L;
 		}
+		if (in instanceof ByteArrayInputStream bis) {
+			// Optimise the from-memory reading case
+			try (bis) {
+				return bis.transferTo(out);
+			}
+		}
 		byte[] buffer = new byte[chunkSize];
 		long totalBytesCopied = 0L;
 		int bytesRead=1;
-		try (InputStream is = in){
-			if (is instanceof ByteArrayInputStream bis) {
-				// Optimise the from-memory reading case
-				return bis.transferTo(out);
-			}
+		try (in) {
 			// Could also use `is.transferTo(Out);` here but that uses small default buffer size
-			while (bytesRead>0) {
-				bytesRead=is.read(buffer,0,chunkSize);
-				if (bytesRead>0) {
+			while (bytesRead > 0) {
+				bytesRead = in.read(buffer,0,chunkSize);
+				if (bytesRead > 0) {
 					out.write(buffer,0,bytesRead);
 					totalBytesCopied += bytesRead;
 				}

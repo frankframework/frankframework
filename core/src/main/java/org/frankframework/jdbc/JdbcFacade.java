@@ -62,7 +62,9 @@ import org.frankframework.util.LogUtil;
  */
 @DestinationType(DestinationType.Type.JDBC)
 public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, ConfigurableLifecycle, FrankElement, NameAware {
+	// Unused here, uses 'this' lookup so subclasses use the correct implementation class.
 	protected Logger log = LogUtil.getLogger(this);
+
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -134,9 +136,6 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 			} catch (IllegalStateException | NoSuchElementException e) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]", e);
 			}
-
-			String dsinfo = datasource.toString();
-			log.info("{}looked up Datasource [{}]: [{}]", getLogPrefix(), dsName, dsinfo);
 		}
 		return datasource;
 	}

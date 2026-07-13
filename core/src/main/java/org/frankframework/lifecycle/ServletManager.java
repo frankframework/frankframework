@@ -221,7 +221,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 			throw new IllegalArgumentException("unable to instantiate servlet ["+servletName+"], servlet name must be unique");
 		}
 
-		log.info("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, config.getServlet());
+		log.debug("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, config.getServlet());
 
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, config.getServlet());
 

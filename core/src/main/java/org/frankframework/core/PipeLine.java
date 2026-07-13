@@ -486,7 +486,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 
 	@Override
 	public void start() {
-		log.info("starting pipeline");
+		log.trace("starting pipeline");
 
 		if (cache != null) {
 			log.debug("starting cache");
@@ -497,7 +497,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 		pipes.forEach(pipe -> startPipe("Pipe", pipe));
 
 		super.start();
-		log.info("successfully started pipeline");
+		log.debug("successfully started pipeline");
 	}
 
 	@Override

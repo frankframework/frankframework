@@ -71,9 +71,13 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 		return true;
 	}
 
+	/**
+	 * {@code isStreaming} basically means: true if not repeatable. All our messages are now repeatable, so never require streaming.
+	 * @return {@code false} because all Messages are now repeatable.
+	 */
 	@Override
 	public boolean isStreaming() {
-		return message.requiresStream();
+		return false;
 	}
 
 	@Override

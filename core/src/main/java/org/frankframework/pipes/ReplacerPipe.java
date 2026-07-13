@@ -37,8 +37,8 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.stream.ReplaceNonXmlCharsInputStream;
 import org.frankframework.util.stream.ReplacingInputStream;
-import org.frankframework.util.stream.ReplacingPropertyVariablesInputStream;
 import org.frankframework.util.stream.ReplacingParameterVariablesInputStream;
+import org.frankframework.util.stream.ReplacingPropertyVariablesInputStream;
 
 /**
  * This Pipe is used to replace values in a few ways. The following steps are performed:
