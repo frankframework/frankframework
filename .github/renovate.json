@@ -248,6 +248,11 @@
             "groupName": "github-actions",
             "separateMajorMinor": false,
             "minimumReleaseAge": "7 days"
+        },
+        {
+          "description": "Disable JBOSS Docker image update",
+          "matchFiles": ["docker/JBoss/Dockerfile"],
+          "enabled": false
         }
     ],
     "lockFileMaintenance": {
