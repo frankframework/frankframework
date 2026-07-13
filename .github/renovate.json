@@ -10,7 +10,6 @@
     "baseBranchPatterns": [
         "master",
         "/^release\\/(9\\.0|9\\.4)$/",
-        "/^release\\/8\\.0$/",
         "/^release\\/10\\./"
     ],
     "labels": [
@@ -129,20 +128,6 @@
             "enabled": false
         },
         {
-            "description": "Ignore specific Maven dependencies for ... <= 8.0",
-            "matchManagers": [
-                "maven"
-            ],
-            "matchBaseBranches": [
-                "/^release\\/8\\.0$/"
-            ],
-            "ignoreDeps": [
-                "org.apache.tika:tika-parsers",
-                "org.springframework.boot:spring-boot-loader",
-                "org.springframework:"
-            ]
-        },
-        {
             "description": "All NPM dependencies - weekly schedule, ignore major updates",
             "matchManagers": [
                 "npm"
@@ -249,6 +234,13 @@
             "groupName": "github-actions",
             "separateMajorMinor": false,
             "minimumReleaseAge": "7 days"
+        },
+        {
+            "description": "Disable JBOSS Docker image update",
+            "matchFiles": [
+                "docker/JBoss/Dockerfile"
+            ],
+            "enabled": false
         }
     ],
     "lockFileMaintenance": {
@@ -257,7 +249,7 @@
     "vulnerabilityAlerts": {
         "enabled": true,
         "vulnerabilityFixStrategy": "highest",
-        "dependencyDashboardApproval": true,
+        "dependencyDashboardApproval": false,
         "commitMessageSuffix": "",
         "labels": [
             "Security",
