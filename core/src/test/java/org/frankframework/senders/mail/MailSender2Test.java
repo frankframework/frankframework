@@ -86,14 +86,14 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 	}
 
 	@Test
-	void testGetPropertyWhenSslEnabled() throws Exception {
+	void testGetStartTlsPropertyWhenSslEnabled() throws Exception {
 		sender.setUseSsl(true);
+		sender.setSmtpPort(587);
 
 		sender.configure();
 		sender.start();
 
 		assertTrue(Boolean.parseBoolean(sender.getProperties().getProperty("mail.smtp.starttls.enable")));
-
 	}
 
 	@Test
