@@ -97,14 +97,8 @@ public class HttpResponseHandler {
 		Header[] headers = httpResponse.getAllHeaders();
 		for (Header header : headers) {
 			String name = header.getName().toLowerCase();
-			List<String> value;
-			if (headerMap.containsKey(name)) {
-				value = headerMap.get(name);
-			} else {
-				value = new ArrayList<>();
-			}
+			List<String> value = headerMap.computeIfAbsent(name, k -> new ArrayList<>());
 			value.add(header.getValue());
-			headerMap.put(name, value);
 		}
 		return headerMap;
 	}
