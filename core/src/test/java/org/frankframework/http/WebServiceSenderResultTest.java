@@ -15,6 +15,8 @@
 */
 package org.frankframework.http;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,6 +69,7 @@ public class WebServiceSenderResultTest {
 			when(httpEntity.getContentType()).thenReturn(contentTypeHeader);
 		}
 		when(httpEntity.getContent()).thenReturn(responseStream);
+		when(httpEntity.getContentLength()).thenReturn(-1L);
 		when(httpResponse.getEntity()).thenReturn(httpEntity);
 
 		// Mock all requests
@@ -172,7 +175,7 @@ public class WebServiceSenderResultTest {
 		try (PipeLineSession pls = new PipeLineSession()) {
 			Message message = new Message("tralala");
 			Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(message, pls));
-			assertTrue(exception.getMessage().contains("SOAP fault [soapenv:Client]: much error"));
+			assertThat(exception.getMessage(), containsString("SOAP fault [soapenv:Client]: much error"));
 		}
 	}
 

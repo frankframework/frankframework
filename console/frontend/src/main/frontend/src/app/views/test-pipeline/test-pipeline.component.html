@@ -24,6 +24,7 @@
                   id="configuration"
                   data-cy-test-pipeline="selectConfig"
                   data-cy="test-pipeline__config__input"
+                  [disabled]="!configurationsLoaded()"
                   [options]="configurationOptions()"
                   [(selectedOption)]="selectedConfiguration"
                   (selectedOptionChange)="setSelectedConfiguration()"

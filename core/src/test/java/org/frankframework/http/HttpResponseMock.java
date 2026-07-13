@@ -49,7 +49,7 @@ import org.frankframework.http.mime.MultipartEntity;
 
 public class HttpResponseMock extends Mockito implements Answer<CloseableHttpResponse> {
 
-	private final String lineSeparator = System.getProperty("line.separator");
+	private final String lineSeparator = System.lineSeparator();
 	private final int statusCode;
 
 	public HttpResponseMock() {
@@ -68,6 +68,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
 
 		when(httpEntity.getContent()).thenReturn(content);
+		when(httpEntity.getContentLength()).thenReturn(-1L);
 		when(httpResponse.getEntity()).thenReturn(httpEntity);
 		when(httpResponse.getAllHeaders()).thenReturn(generateResponseHeaders());
 		return httpResponse;
@@ -81,8 +82,8 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 	}
 
 	private static class HeaderImpl implements Header {
-		private @Getter String name;
-		private @Getter String value;
+		private final @Getter String name;
+		private final @Getter String value;
 		public HeaderImpl(String name, String value) {
 			this.name = name;
 			this.value = value;
@@ -99,21 +100,15 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 		HttpRequestBase request = (HttpRequestBase) invocation.getArguments()[1];
 		HttpContext context = (HttpContext) invocation.getArguments()[2];
 
-		InputStream response = null;
-		if(request instanceof HttpGet get)
-			response = doGet(host, get, context);
-		else if(request instanceof HttpPost post)
-			response = doPost(host, post, context);
-		else if(request instanceof HttpPut put)
-			response = doPut(host, put, context);
-		else if(request instanceof HttpPatch patch)
-			response = doPatch(host, patch, context);
-		else if(request instanceof HttpDelete delete)
-			response = doDelete(host, delete, context);
-		else if(request instanceof HttpHead head)
-			response = doHead(host, head, context);
-		else
-			throw new Exception("mock method not implemented");
+		InputStream response = switch (request) {
+			case HttpGet get -> doGet(host, get, context);
+			case HttpPost post -> doPost(host, post, context);
+			case HttpPut put -> doPut(host, put, context);
+			case HttpPatch patch -> doPatch(host, patch, context);
+			case HttpDelete delete -> doDelete(host, delete, context);
+			case HttpHead head -> doHead(host, head, context);
+			case null, default -> throw new Exception("mock method not implemented");
+		};
 
 		return buildResponse(response);
 	}
@@ -170,14 +165,14 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 			response.append("Content-Type: ").append(contentType).append(lineSeparator);
 
 			response.append(lineSeparator);
-			String content = new String(baos.toByteArray());
+			String content = baos.toString();
 			content = content.replaceAll(boundary, "IGNORE");
 			response.append(content);
 		}
 		else if(entity != null) {
 			Header contentTypeHeader = request.getEntity().getContentType();
 			if(contentTypeHeader != null && !foundContentType) {
-				response.append(contentTypeHeader.getName() + ": ").append(contentTypeHeader.getValue()).append(lineSeparator);
+				response.append(contentTypeHeader.getName()).append(": ").append(contentTypeHeader.getValue()).append(lineSeparator);
 			}
 
 			response.append(lineSeparator);
@@ -195,14 +190,14 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 	private InputStream doPut(HttpHost host, HttpPut request, HttpContext context) throws IOException {
 		assertEquals("PUT", request.getMethod());
 		StringBuilder response = new StringBuilder();
-		response.append(request.toString()).append(lineSeparator);
+		response.append(request).append(lineSeparator);
 
 		appendHeaders(request, response);
 
 		if(request.getEntity() != null) { // If an entity is present
 			Header contentTypeHeader = request.getEntity().getContentType();
 			if(contentTypeHeader != null) {
-				response.append(contentTypeHeader.getName() + ": ").append(contentTypeHeader.getValue()).append(lineSeparator);
+				response.append(contentTypeHeader.getName()).append(": ").append(contentTypeHeader.getValue()).append(lineSeparator);
 			}
 
 			response.append(lineSeparator);

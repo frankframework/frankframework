@@ -29,7 +29,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.parameters.ParameterList;
-import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
@@ -205,16 +204,6 @@ public class CompareStringPipe extends AbstractPipe {
 		}
 		buffer.append(sourceArray, srcPos, sourceArray.length - srcPos);
 		return buffer.toString();
-	}
-
-	private String getParameterValue(ParameterValueList pvl, String parameterName) {
-		if (pvl != null) {
-			ParameterValue pv = pvl.findParameterValue(parameterName);
-			if(pv != null) {
-				return pv.asStringValue(null);
-			}
-		}
-		return null;
 	}
 
 	public boolean isXml() {
