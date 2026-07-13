@@ -1,7 +1,19 @@
 packages:
   - 'console/frontend/src/main/frontend/'
   - 'console/frontend/src/main/frontend/cypress'
+allowBuilds:
+  '@parcel/watcher': false
+  cypress: true
+  edgedriver: false
+  esbuild: false
+  geckodriver: false
+  lmdb: false
+  msgpackr-extract: false
+minimumReleaseAgeExclude:
+  - prettier@3.9.3
 overrides:
-  diff@>=6.0.0 <8.0.3: '~8.0.3'
-  dompurify@<3.3.2: '~3.3.2'
-  serialize-javascript@<7.0.5: '~7.0.5'
+  diff@>=6.0.0 <8.0.3: '~8.0.4'
+  dompurify@<3.4.0: '>=3.4.11'
+  serialize-javascript@<7.0.5: '~7.0.7'
+  uuid@<14.0.0: '>=14.0.1'
+  ws@<8.20.1: '~8.21.0'
