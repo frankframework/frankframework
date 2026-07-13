@@ -81,8 +81,8 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	// This triggers an internal startBeans method, and does not call #start().
 	@Override
 	public void onRefresh() {
-		// The name/id has not been set yet (as this point), so it uses the hashcode instead.
-		// At the moment this is useful for the partent's context, but only log it when DEBUG is enabled, or it has a name.
+		// The name/id has not been set yet (at this point), so it uses the hashcode instead.
+		// At the moment this is useful for the parent's context, but only log it when DEBUG is enabled, or it has a name.
 		// Else it may clutter the log with redundant information, refresh is for Spring and not the Frank.
 		if (log.isDebugEnabled()) {
 			long startTime = System.currentTimeMillis();
@@ -91,7 +91,7 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 				else log.debug("refreshing {}", () -> StringUtil.ucFirst(className));
 
 				super.onRefresh();
-				log.info("refreshed {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
+				log.debug("refreshed {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
 			}
 		} else {
 			super.onRefresh();

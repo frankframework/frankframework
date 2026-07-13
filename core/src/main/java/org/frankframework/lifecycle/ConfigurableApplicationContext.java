@@ -37,7 +37,7 @@ import org.frankframework.util.RunState;
 
 /**
  * Log files are set to TRACE as they are for debugging purposes.
- * Events are published through the {@link ConfiguringLifecycleProcessor} and don't need to logged twice.
+ * Events are published through the {@link ConfiguringLifecycleProcessor} and don't need to be logged twice.
  */
 @Log4j2
 public class ConfigurableApplicationContext extends GenericApplicationContext implements ConfigurableLifecycle, InitializingBean, ApplicationContextAware, ConfigurationAware {
