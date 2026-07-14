@@ -1769,9 +1769,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
-	public void increaseBackoffIntervalAndWait(@Nullable Throwable t, @Nullable String description) {
+	public void increaseBackoffIntervalAndWait(@Nullable Throwable t, @NonNull String description) {
 		// Only delay if there are multiple consecutive errors
-		if (consecutiveErrors.get() < CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY) {
+		if (consecutiveErrors.get() < CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY || maxBackoffDelay == 0) {
+			error(description, t);
 			return;
 		}
 		int currentDelay;
