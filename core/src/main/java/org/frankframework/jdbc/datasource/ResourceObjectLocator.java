@@ -117,7 +117,8 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 		FrankResource resource = findFrankResource(name);
 		if(resource == null) {
 			log.debug("no resource found for name [{}]", name);
-			return null; // If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
+			// If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
+			return null;
 		}
 
 		if (lookupClass == null) {
@@ -125,5 +126,13 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 		}
 
 		return objectCreator.instantiateResource(resource, environment, lookupClass);
+	}
+
+	/**
+	 * Custom toString implementation for logging purposes. It will print the hashcode of this object and the resource file used for lookups.
+	 */
+	@Override
+	public String toString() {
+		return "ResourceLocator@%s [%s]".formatted(Integer.toHexString(hashCode()), resourceFile);
 	}
 }
