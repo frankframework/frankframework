@@ -7,9 +7,9 @@ describe('Combobox', () => {
   const clearButton = '.combobox__list-item--clear';
 
   beforeEach(() => {
-    cy.intercept('GET', '/iaf/api/adapters?*').as('getAdapters');
+    cy.intercept('GET', '**/api/adapters*').as('getAdapters');
     cy.visit('/#/test-pipeline');
-    cy.wait('@getAdapters');
+    cy.wait('@getAdapters', { timeout: 30_000 });
     cy.get(comboboxInput).should('not.be.disabled');
   });
 
