@@ -22,7 +22,10 @@ public class EmptyMessage extends StringMessage {
 	private static final String EMPTY_RESPONSE = "no-content";
 
 	public EmptyMessage(int statuscode) {
-		super(getErrorMessage(statuscode));
+		this(statuscode, getErrorMessage(statuscode));
+	}
+	public EmptyMessage(int statuscode, String errorMessage) {
+		super(errorMessage);
 		setStatus(statuscode);
 	}
 
@@ -32,7 +35,7 @@ public class EmptyMessage extends StringMessage {
 	}
 
 	private static EmptyMessage createNoContentResponse(int statuscode) {
-		return new EmptyMessage(statuscode);
+		return new EmptyMessage(statuscode, EMPTY_RESPONSE);
 	}
 
 	public static EmptyMessage created() {
