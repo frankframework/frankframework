@@ -78,7 +78,7 @@ public class RunCypressE2eTest {
 	}
 
 	private static void startCypressInitializer() throws IOException {
-ah		frankApplication = CypressInitializer.configureApplication();
+		frankApplication = CypressInitializer.configureApplication();
 		frankApplication.run();
 
 		await().pollInterval(5, TimeUnit.SECONDS)
