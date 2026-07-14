@@ -237,7 +237,7 @@
         },
         {
             "description": "Disable JBOSS Docker image update",
-            "matchFiles": [
+            "matchFileNames": [
                 "docker/JBoss/Dockerfile"
             ],
             "enabled": false
