@@ -78,7 +78,7 @@
     "eslint-plugin-unicorn": "^71.1.0",
     "happy-dom": "^20.10.6",
     "istanbul-lib-instrument": "^6.0.3",
-    "prettier": "^3.9.4",
+    "prettier": "^3.9.5",
     "typescript": "~6.0.3",
     "typescript-eslint": "8.63.0",
     "vitest": "^4.1.10"
