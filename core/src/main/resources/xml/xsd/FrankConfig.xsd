@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.0.1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.0.2">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -8578,7 +8578,7 @@ The &lt;code&gt;base64&lt;/code&gt; attribute is only used when the value of the
 or when the value of the attachment element is used. If &lt;code&gt;base64=true&lt;/code&gt; then the value will be decoded before it's used.
 &lt;/p&gt;&lt;p&gt;
 &lt;b&gt;Compilation and Deployment Note:&lt;/b&gt; mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
-Otherwise errors like the following might occur: &lt;code&gt;NoClassDefFoundException: com/sun/mail/util/MailDateFormat&lt;/code&gt;
+Otherwise, errors like the following might occur: &lt;code&gt;NoClassDefFoundException: com/sun/mail/util/MailDateFormat&lt;/code&gt;
 &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -11312,17 +11312,22 @@ When the root is left unspecified, absolute paths to files and folders can be us
   <xs:attributeGroup name="MailSenderDeclaredAttributeGroup">
     <xs:attribute name="smtpHost" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the SMTP-host by which the messages are to be send</xs:documentation>
+        <xs:documentation>Name of the SMTP-host by which the messages are to be sent</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="smtpPort" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Port of the SMTP-host by which the messages are to be send Default: 25</xs:documentation>
+        <xs:documentation>Port of the SMTP-host by which the messages are to be sent. Port 465 means implicit SSL, port 587 means no ssl by default, but the connection
+is upgraded to ssl by using startTls if #useSsl is true Default: 25</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useSsl" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure TLS is being used Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure the correct SSL/TLS settings are applied for the given port number. Please note that:
+&lt;ul&gt;
+    &lt;li&gt;Port 465 means implicit ssl&lt;/li&gt;
+    &lt;li&gt;Port 587 means no ssl/upgradeable to ssl by using startTls&lt;/li&gt;
+&lt;/ul&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -11378,7 +11383,8 @@ When the root is left unspecified, absolute paths to files and folders can be us
   <xs:attributeGroup name="MessageStoreSenderDeclaredAttributeGroup">
     <xs:attribute name="sessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the same value for this attribute.</xs:documentation>
+        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the
+same value for this attribute.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="onlyStoreWhenMessageIdUnique" type="frankBoolean">
@@ -13888,9 +13894,8 @@ The &lt;pre&gt;success&lt;/pre&gt; forward is only used when the (deprecated) at
       </xs:element>
       <xs:element name="FixedResultPipe">
         <xs:annotation>
-          <xs:documentation>This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
-provide this by using the &lt;code&gt;filename&lt;/code&gt; attribute or with a &lt;code&gt;param&lt;/code&gt; element to be able to
-use a sessionKey for instance.
+          <xs:documentation>This Pipe opens and returns a file from the classpath. You can provide this by using the
+&lt;code&gt;filenameSessionKey&lt;/code&gt; attribute or with the &lt;code&gt;filename&lt;/code&gt; attribute.
 
 &lt;h2&gt;Migrating from deprecated features&lt;/h2&gt;
 The FixedResultPipe was a jack of all trades. You could use it to read a file (only text) and/or use
@@ -16180,6 +16185,11 @@ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_sepa
         <xs:documentation>Name of the file containing the result message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="filenameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the session key containing the file name of the file that contains the result message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FixedResultPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="FixedResultPipeDeclaredAttributeGroup" />
@@ -17577,7 +17587,8 @@ by the #setLineSeparatorSymbol(String).</xs:documentation>
     <xs:attribute name="replace" type="xs:string">
       <xs:annotation>
         <xs:documentation>Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
-* by the #setLineSeparatorSymbol(String).</xs:documentation>
+by the #setLineSeparatorSymbol(String).
+If left empty, the 'find' values will be omitted, and nothing will be replaced.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lineSeparatorSymbol" type="xs:string">

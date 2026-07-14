@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.0.1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.0.2">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -4657,17 +4657,22 @@ When the root is left unspecified, absolute paths to files and folders can be us
   <xs:attributeGroup name="MailSenderDeclaredAttributeGroup">
     <xs:attribute name="smtpHost" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the SMTP-host by which the messages are to be send</xs:documentation>
+        <xs:documentation>Name of the SMTP-host by which the messages are to be sent</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="smtpPort" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Port of the SMTP-host by which the messages are to be send Default: 25</xs:documentation>
+        <xs:documentation>Port of the SMTP-host by which the messages are to be sent. Port 465 means implicit SSL, port 587 means no ssl by default, but the connection
+is upgraded to ssl by using startTls if #useSsl is true Default: 25</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useSsl" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure TLS is being used Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure the correct SSL/TLS settings are applied for the given port number. Please note that:
+&lt;ul&gt;
+    &lt;li&gt;Port 465 means implicit ssl&lt;/li&gt;
+    &lt;li&gt;Port 587 means no ssl/upgradeable to ssl by using startTls&lt;/li&gt;
+&lt;/ul&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4727,7 +4732,8 @@ When the root is left unspecified, absolute paths to files and folders can be us
   <xs:attributeGroup name="MessageStoreSenderDeclaredAttributeGroup">
     <xs:attribute name="sessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the same value for this attribute.</xs:documentation>
+        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the
+same value for this attribute.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="onlyStoreWhenMessageIdUnique" type="frankBoolean">
@@ -15128,7 +15134,8 @@ by the #setLineSeparatorSymbol(String).</xs:documentation>
     <xs:attribute name="replace" type="xs:string">
       <xs:annotation>
         <xs:documentation>Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
-* by the #setLineSeparatorSymbol(String).</xs:documentation>
+by the #setLineSeparatorSymbol(String).
+If left empty, the 'find' values will be omitted, and nothing will be replaced.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lineSeparatorSymbol" type="xs:string">
