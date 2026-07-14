@@ -45,6 +45,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IPeekableListener;
+import org.frankframework.core.IRedeliveringListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -71,7 +72,7 @@ import org.frankframework.util.StringUtil;
  * @since   4.7
  */
 @SuppressWarnings("SynchronizeOnNonFinalField")
-public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, ReceiverAware<M> {
+public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, IRedeliveringListener<M>, ReceiverAware<M> {
 
 	public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
 
@@ -182,6 +183,11 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	@Override
 	public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		// nothing special
+	}
+
+	@Override
+	public boolean messageWillBeRedeliveredOnExitStateError() {
+		return true;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package org.frankframework.receivers;
 
+import org.jspecify.annotations.NonNull;
+
 import lombok.Setter;
 
 import org.frankframework.core.IKnowsDeliveryCount;
@@ -33,7 +35,7 @@ public class MockPushingListener extends MockListenerBase implements IPushingLis
 	}
 
 	@Override
-	public int getDeliveryCount(RawMessageWrapper<String> rawMessage) {
+	public int getDeliveryCount(@NonNull RawMessageWrapper<String> rawMessage) {
 		return mockedDeliveryCount;
 	}
 }

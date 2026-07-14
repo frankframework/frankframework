@@ -53,6 +53,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
@@ -232,6 +233,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	public static final String RCV_MESSAGE_LOG_COMMENTS = "log";
 
+	public static final int CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY = AppConstants.getInstance().getInt("receiver.consecutiveErrorsBeforeBackoffDelay", 2);
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
 	public static final String DEFAULT_MAX_BACKOFF_DELAY_KEY = "receiver.defaultMaxBackoffDelay";
 	/**
@@ -240,6 +242,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	public static final int DEFAULT_MAX_BACKOFF_DELAY = 60;
 	public static final String RETRY_FLAG_SESSION_KEY = "retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
+	private final AtomicInteger consecutiveErrors = new AtomicInteger(0);
 
 	public enum OnError {
 		/** Don't stop the receiver when an error occurs.*/
@@ -306,7 +309,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
-	private int currentBackoffDelay =1;
+	private int currentBackoffDelay = 1;
 
 	private boolean suspensionMessagePending=false;
 	private @Getter boolean isConfigured = false;
@@ -319,9 +322,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private long lastMessageDate = 0;
 
 	// number of messages received
-	private io.micrometer.core.instrument.Counter numReceived;
-	private io.micrometer.core.instrument.Counter numRetried;
-	private io.micrometer.core.instrument.Counter numRejected;
+	private Counter numReceived;
+	private Counter numRetried;
+	private Counter numRejected;
 
 	private final List<DistributionSummary> processStatistics = new ArrayList<>();
 
@@ -1374,13 +1377,17 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 							throw new ListenerException(logPrefix +msg);
 						}
 					} finally {
+						if (messageInError) {
+							consecutiveErrors.incrementAndGet();
+						} else {
+							consecutiveErrors.set(0);
+							resetBackoffDelay();
+						}
 						getAdapter().logToMessageLogWithMessageContentsOrSize(Level.INFO, "Adapter "+(!messageInError ? "Success" : "Error"), "result", result);
 						if (messageInError && !retryStatusAlreadyChecked && !isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
-							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in procesing: [" + statusMessage + "]");
-						} else if (!messageInError) {
-							resetBackoffDelay();
+							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in processing: [" + statusMessage + "]");
 						}
 					}
 				}
@@ -1636,6 +1643,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * @return {@code true} if message should no longer be retried, {@code false} if it should.
 	 */
 	protected boolean isDeliveryRetryLimitExceededAfterMessageProcessed(@NonNull final RawMessageWrapper<M> messageWrapper) {
+		if (!(getListener() instanceof IRedeliveringListener<M>))
+			return true; // No redelivery supported by listener so always treat as if the limit has already been exceeded.
 		if (getMaxRetries() < 0) {
 			log.debug("{} Receiver has no retry limit so message will be retried", this::getLogPrefix);
 			return false;
@@ -1760,7 +1769,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
-	public void increaseBackoffIntervalAndWait(Throwable t, String description) {
+	public void increaseBackoffIntervalAndWait(@Nullable Throwable t, @Nullable String description) {
+		// Only delay if there are multiple consecutive errors
+		if (consecutiveErrors.get() < CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY) {
+			return;
+		}
 		int currentDelay;
 		synchronized (this) {
 			currentDelay = currentBackoffDelay;
@@ -1775,7 +1788,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			log.info("{}, will continue retrieving messages in [{}] seconds. Details: {}", description, currentDelay, t != null ? t.getMessage() : "NA");
 		}
 		synchronized (this) {
-			if (currentDelay*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
+			if (currentDelay* 2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
 				suspensionMessagePending=true;
 				throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
 			}
@@ -1812,7 +1825,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				Thread.sleep(1000L);
 			} catch (Exception e2) {
 				error("sleep interrupted", e2);
-				stop();
+//				stop();?????????????
 				Thread.currentThread().interrupt();
 			}
 		}
