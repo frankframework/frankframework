@@ -4,8 +4,9 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>frankframework-parent</artifactId>
+		<artifactId>frankframework-bundle-minimal</artifactId>
 		<version>${revision}</version>
+		<relativePath>../bundle-minimal/pom.xml</relativePath>
 	</parent>
 
 	<artifactId>frankframework-cypress</artifactId>
@@ -28,15 +29,6 @@
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>credentialprovider</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-webapp</artifactId>
-			<type>war</type>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-console-backend</artifactId>
 		</dependency>
 
 		<dependency>
