@@ -46,7 +46,11 @@ import org.frankframework.util.StringUtil;
 @Log4j2
 public class ClassLoaderManager {
 
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(); // Cannot make this static final because of tests
+	// Suppress 'fieldname should not be uppercase unless FINAL'
+	// Cannot make this static final because of tests
+	@SuppressWarnings("java:S116")
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+
 	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
 	private final Map<String, ClassLoader> classLoaders = new TreeMap<>();
 	private final ClassLoader classPathClassLoader;
