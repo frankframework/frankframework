@@ -1,24 +1,22 @@
 /*
-   Copyright 2025-2026 WeAreFrank!
+  Copyright 2026 WeAreFrank!
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+      http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 
 package org.frankframework.runner;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,7 +28,9 @@ import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
@@ -54,9 +54,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration")
+@Disabled // TODO enable this when the cypress tests are ported
 public class RunCypressE2eTest {
 	@SuppressWarnings("NullAway.Init")
 	private static CypressContainer container;
+
 	@SuppressWarnings("NullAway.Init")
 	private static FrankApplication frankApplication;
 
@@ -65,19 +67,18 @@ public class RunCypressE2eTest {
 
 	@BeforeAll
 	static void setUp() throws IOException {
-		// Pollers for WebSockets have a enormous delay for larger applications.
+		// Pollers for WebSockets have an enormous delay for larger applications.
 		System.setProperty("console.socket.poller.startDelay", "15");
 		System.setProperty("console.socket.poller.warnings", "5");
 		System.setProperty("console.socket.poller.adapters", "5");
 		System.setProperty("console.socket.poller.messages", "5");
 
-		startIafTestInitializer();
+		startCypressInitializer();
 		startTestContainer();
 	}
 
-	private static void startIafTestInitializer() throws IOException {
-		// Use IafTestInitializer because the iaf-test classpath is used
-		frankApplication = IafTestInitializer.configureApplication();
+	private static void startCypressInitializer() throws IOException {
+ah		frankApplication = CypressInitializer.configureApplication();
 		frankApplication.run();
 
 		await().pollInterval(5, TimeUnit.SECONDS)
@@ -89,6 +90,8 @@ public class RunCypressE2eTest {
 		org.testcontainers.Testcontainers.exposeHostPorts(8080);
 
 		container = new CypressContainer();
+
+		// TODO figure out the correct url based on /e2e
 		container.withBaseUrl(TEST_CONTAINER_BASE_URL + "/iaf-test/iaf/gui");
 		container.withMochawesomeReportsAt(MOCHAWESOME_REPORTS_DIR);
 		container.withClasspathResourcePath("e2e");
@@ -97,7 +100,7 @@ public class RunCypressE2eTest {
 
 		container.start();
 
-		assertTrue(container.isRunning());
+		Assertions.assertTrue(container.isRunning());
 	}
 
 	@AfterAll
@@ -106,10 +109,10 @@ public class RunCypressE2eTest {
 
 		if (container != null) {
 			container.stop();
-			assertFalse(container.isRunning());
+			Assertions.assertFalse(container.isRunning());
 		}
 
-		assertFalse(frankApplication.isRunning());
+		Assertions.assertFalse(frankApplication.isRunning());
 	}
 
 	@TestFactory
@@ -130,9 +133,9 @@ public class RunCypressE2eTest {
 						test.getDescription(), () -> {
 							if (!test.isSuccess()) {
 								log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
-								assertTrue(frankApplication.hasStarted(), "!! application not reachable !!");
+								Assertions.assertTrue(frankApplication.hasStarted(), "!! application not reachable !!");
 							}
-							assertTrue(test.isSuccess(), test::getErrorMessage);
+							Assertions.assertTrue(test.isSuccess(), test::getErrorMessage);
 						}
 				));
 
