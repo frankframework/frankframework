@@ -16,6 +16,7 @@
 package org.frankframework.senders;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -96,7 +97,7 @@ import org.frankframework.util.XmlUtils;
  * or when the value of the attachment element is used. If {@code base64=true} then the value will be decoded before it's used.
  * </p><p>
  * <b>Compilation and Deployment Note:</b> mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
- * Otherwise errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
+ * Otherwise, errors like the following might occur: <code>NoClassDefFoundException: com/sun/mail/util/MailDateFormat</code>
  * </p>
  * @author Johan Verrips
  * @author Gerrit van Brakel
@@ -107,7 +108,11 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
 	/**
-	 * If {@code true}, we ensure TLS is being used
+	 * If {@code true}, we ensure the correct SSL/TLS settings are applied for the given port number. Please note that:
+	 * <ul>
+	 *     <li>Port 465 means implicit ssl</li>
+	 *     <li>Port 587 means no ssl/upgradeable to ssl by using startTls</li>
+	 * </ul>
 	 *
 	 * @ff.default false
 	 */
@@ -139,7 +144,12 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 		}
 
 		if (useSsl) {
-			properties.put("mail.smtp.starttls.enable", "true");
+			if (getSmtpPort() == 465) {
+				properties.put("mail.smtp.ssl.enable", "true");
+			} else if (getSmtpPort() == 587) {
+				properties.put("mail.smtp.starttls.enable", "true");
+				properties.put("mail.smtp.starttls.required", "true");
+			}
 		}
 	}
 
@@ -348,7 +358,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 		if (charset == null) {
 			charset = System.getProperty("mail.mime.charset");
 			if (charset == null) {
-				charset = System.getProperty("file.encoding");
+				charset = Charset.defaultCharset().displayName();
 			}
 		}
 		if (charset != null) {
@@ -362,32 +372,24 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 
 	private void putOnTransport(Session session, Message msg) throws SenderException {
 		// connect to the transport
-		Transport transport = null;
-		try {
-			transport = session.getTransport("smtp");
+		try (Transport transport = session.getTransport("smtp")) {
 			transport.connect(getSmtpHost(), getCredentialFactory().getUsername(), getCredentialFactory().getPassword());
 			log.debug("MailSender [{}] connected transport to URL [{}]", getName(), transport.getURLName());
 			transport.sendMessage(msg, msg.getAllRecipients());
 		} catch (Exception e) {
 			throw new SenderException("MailSender [" + getName() + "] cannot connect send message to smtpHost [" + getSmtpHost() + "]", e);
-		} finally {
-			if (transport != null) {
-				try {
-					transport.close();
-				} catch (MessagingException e1) {
-					log.warn("MailSender [{}] got exception closing connection", getName(), e1);
-				}
-			}
 		}
 	}
 
-	/** Name of the SMTP-host by which the messages are to be send */
+	/** Name of the SMTP-host by which the messages are to be sent */
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
 	}
 
 	/**
-	 * Port of the SMTP-host by which the messages are to be send
+	 * Port of the SMTP-host by which the messages are to be sent. Port 465 means implicit SSL, port 587 means no ssl by default, but the connection
+	 * is upgraded to ssl by using startTls if #useSsl is true
+	 *
 	 * @ff.default 25
 	 */
 	public void setSmtpPort(int newSmtpPort) {
