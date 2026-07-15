@@ -678,7 +678,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				}
 			}
 
-			if (maxRetries == null) {
+			if (!(getListener() instanceof IRedeliveringListener<M>)) {
+				log.debug("Listener [{}:{}] does not support message redelivery, maxRetries set to 0", () -> getListener().getClass().getSimpleName(), () -> getListener().getName());
+				maxRetries = 0;
+			} else if (maxRetries == null) {
 				if (getListener() instanceof IKnowsDeliveryCount<M>) {
 					maxRetries = 3;
 				} else {
@@ -1391,7 +1394,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						} else if (messageInError && !retryStatusAlreadyChecked) {
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
-							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] is in status error: [" + statusMessage + "]");
+							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] is in status error, no (more) retries: [" + statusMessage + "]");
 						}
 					}
 				}
