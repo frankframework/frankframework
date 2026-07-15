@@ -74,7 +74,8 @@ public class MessageTestUtils {
 		if(type == MessageType.BINARY) {
 			return new Message(new FilterInputStream(message.asInputStream()) {}, message.getContext());
 		}
-		return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());
+		message.setCharset(StreamUtil.AUTO_DETECT_CHARSET);
+		return new Message(new FilterReader(message.asReader()) {}, message.getContext());
 	}
 
 	public static Message getBinaryMessage(String resource, boolean repeatable) throws IOException {
@@ -88,7 +89,8 @@ public class MessageTestUtils {
 	public static Message getCharacterMessage(String resource, boolean repeatable) throws IOException {
 		Message message = getMessage(resource);
 		if(!repeatable) {
-			return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());
+			message.setCharset(StreamUtil.AUTO_DETECT_CHARSET);
+			return new Message(new FilterReader(message.asReader()) {}, message.getContext());
 		}
 		return message;
 	}

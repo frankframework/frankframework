@@ -414,18 +414,9 @@ public class Message implements Serializable {
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
 	 */
 	public Reader asReader() throws IOException {
-		return asReader(null);
-	}
-
-	/**
-	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
-	 *
-	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
-	 */
-	public Reader asReader(@Nullable String defaultDecodingCharset) throws IOException {
 		return switch (dataConverter) {
 			case CharacterDataConverter cdc -> cdc.asReader();
-			case BinaryDataConverter bdc -> bdc.asReader(computeDecodingCharset(defaultDecodingCharset));
+			case BinaryDataConverter bdc -> bdc.asReader(computeDecodingCharset(null));
 		};
 	}
 
@@ -537,9 +528,7 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * return the request object as a String. This may have the side effect of preserving the input as a String, thus
-	 * modifying the state of the Message object.
-	 * This operation is not thread-safe.
+	 * return the request object as a String.
 	 */
 	@Nullable
 	public String asString(@Nullable String decodingCharset) throws IOException {

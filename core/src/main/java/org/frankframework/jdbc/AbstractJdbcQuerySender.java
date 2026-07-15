@@ -521,16 +521,20 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, rs, result);
 	}
 
-	protected Message executeUpdateBlobQuery(PreparedStatement statement, Message contents) throws SenderException{
-		BlobOutputStream blobOutputStream=null;
+	protected Message executeUpdateBlobQuery(@NonNull PreparedStatement statement, @Nullable Message contents) throws SenderException{
+		BlobOutputStream blobOutputStream;
 		try {
+			blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
 			try {
-				blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-				if (contents!=null) {
+				if (contents != null) {
+					InputStream inputStream;
 					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						contents = new Message(contents.asReader(getStreamCharset()));
+						Message copy = contents.copyMessage();
+						copy.setCharset(getStreamCharset());
+						inputStream = copy.asInputStream(getBlobCharset());
+					} else {
+						inputStream = contents.asInputStream(getBlobCharset());
 					}
-					InputStream inputStream = contents.asInputStream(getBlobCharset());
 					StreamUtil.streamToStream(inputStream, blobOutputStream);
 				}
 			} finally {
@@ -553,13 +557,20 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, rs, result);
 	}
 
-	protected Message executeUpdateClobQuery(PreparedStatement statement, Message contents) throws SenderException{
-		ClobWriter clobWriter = null;
+	protected Message executeUpdateClobQuery(@NonNull PreparedStatement statement, @Nullable Message contents) throws SenderException{
+		ClobWriter clobWriter;
 		try {
+			clobWriter = getClobWriter(statement, getClobColumn());
 			try {
-				clobWriter = getClobWriter(statement, getClobColumn());
 				if (contents != null) {
-					Reader reader = contents.asReader(getStreamCharset());
+					Reader reader;
+					if (StringUtils.isNotEmpty(getStreamCharset())) {
+						Message copy = contents.copyMessage();
+						copy.setCharset(getStreamCharset());
+						reader = copy.asReader();
+					} else {
+						reader = contents.asReader();
+					}
 					StreamUtil.readerToWriter(reader, clobWriter);
 				}
 			} finally {
