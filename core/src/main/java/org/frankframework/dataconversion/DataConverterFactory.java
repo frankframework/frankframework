@@ -45,7 +45,8 @@ public class DataConverterFactory {
 
 	public static DataConverter getConverter(@Nullable Object data) {
 		return switch (data) {
-			case null -> new TypedBinaryDataConverter<>(NullMarker.NULL, nullDataConverter);
+			case null -> //noinspection DataFlowIssue
+					new TypedBinaryDataConverter<>(null, nullDataConverter);
 			case Enum<?> anEnum -> new TypedCharacterDataConverter<>(anEnum, enumConverter);
 			case Boolean bool -> new TypedCharacterDataConverter<>(bool, booleanConverter);
 			case Number number -> new TypedCharacterDataConverter<>(number, numberConverter);

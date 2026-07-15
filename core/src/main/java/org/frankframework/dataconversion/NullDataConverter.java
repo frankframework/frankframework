@@ -26,49 +26,49 @@ import javax.xml.transform.Source;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
-class NullDataConverter implements BinaryDataConversionSupport<NullMarker> {
+class NullDataConverter implements BinaryDataConversionSupport<Void> {
 	@Override
-	public @Nullable String asString(NullMarker data, String encodingCharset) throws IOException {
+	public @Nullable String asString(Void data, String encodingCharset) throws IOException {
 		return null;
 	}
 
 	@Override
-	public Reader asReader(NullMarker data, String encodingCharset) throws IOException {
+	public Reader asReader(Void data, String encodingCharset) throws IOException {
 		return new BufferedReader(Reader.nullReader());
 	}
 
 	@Override
-	public boolean isEmpty(NullMarker data) {
+	public boolean isEmpty(Void data) {
 		return true;
 	}
 
 	@Override
-	public long size(NullMarker data) {
+	public long size(Void data) {
 		return 0;
 	}
 
 	@Override
-	public byte @Nullable[] asByteArray(NullMarker data) throws IOException {
+	public byte @Nullable[] asByteArray(Void data) throws IOException {
 		return null	;
 	}
 
 	@Override
-	public InputStream asInputStream(NullMarker data) throws IOException {
+	public InputStream asInputStream(Void data) throws IOException {
 		return new BufferedInputStream(InputStream.nullInputStream());
 	}
 
 	@Override
-	public @Nullable Source asSource(NullMarker data) throws IOException {
+	public @Nullable Source asSource(Void data) throws IOException {
 		return null;
 	}
 
 	@Override
-	public @Nullable InputSource asInputSource(NullMarker data) throws IOException {
+	public @Nullable InputSource asInputSource(Void data) throws IOException {
 		return null;
 	}
 
 	@Override
-	public @Nullable InputSource asInputSource(NullMarker data, String charset) throws IOException {
+	public @Nullable InputSource asInputSource(Void data, String charset) throws IOException {
 		return null;
 	}
 }
