@@ -31,9 +31,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -42,6 +43,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -120,6 +122,7 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.mock.DataSourceFactoryMock;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
@@ -175,7 +178,7 @@ public class ReceiverTest {
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
 		// To speed up test, we don't actually sleep
-		doNothing().when(receiver).suspendReceiverThread(anyInt());
+		doNothing().when(receiver).suspendReceiverThread(anyLong());
 		DummySender sender = SpringUtils.createBean(adapter);
 		receiver.setSender(sender);
 
@@ -183,11 +186,11 @@ public class ReceiverTest {
 		return receiver;
 	}
 
-	public <M> Adapter setupAdapter() throws Exception {
+	public Adapter setupAdapter() throws Exception {
 		return setupAdapter(ExitState.SUCCESS);
 	}
 
-	public <M> Adapter setupAdapter(ExitState exitState) throws Exception {
+	public Adapter setupAdapter(ExitState exitState) throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
@@ -214,7 +217,7 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public Receiver<Serializable> setupReceiverWithListener(Adapter adapter, IListener listener, ITransactionalStorage<Serializable> errorStorage) {
+	public Receiver<Serializable> setupReceiverWithListener(Adapter adapter, IListener<Serializable> listener, ITransactionalStorage<Serializable> errorStorage) {
 		@SuppressWarnings("unchecked")
 		Receiver<Serializable> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
 		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
@@ -225,7 +228,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 		receiver.setNumThreads(2);
 		// To speed up test, we don't actually sleep
-		doNothing().when(receiver).suspendReceiverThread(anyInt());
+		doNothing().when(receiver).suspendReceiverThread(anyLong());
 		adapter.addReceiver(receiver);
 		return receiver;
 	}
@@ -246,8 +249,8 @@ public class ReceiverTest {
 		return listener;
 	}
 
-	public JavaListener setupJavaListener() throws Exception {
-		JavaListener listener = spy(new JavaListener());
+	public JavaListener<Serializable> setupJavaListener() throws Exception {
+		JavaListener<Serializable> listener = spy(new JavaListener<>());
 		listener.setName("javaListener");
 
 		doReturn("dummy-destination").when(listener).getPhysicalDestinationName();
@@ -1152,7 +1155,7 @@ public class ReceiverTest {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		JavaListener listener = setupJavaListener();
+		JavaListener<Serializable> listener = setupJavaListener();
 		Adapter adapter = setupAdapter();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
@@ -1188,11 +1191,11 @@ public class ReceiverTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"500, 50, true",
-			"50, 50, false",
-			"40, 40, false"
+			"500, 50000, true",
+			" 50, 50000, false",
+			" 40, 40000, false"
 	})
-	public void testMaxBackoffDelayAdjustment(Integer maxBackoffDelay, int expectedBackoffDelay, boolean expectConfigWarning) {
+	public void testMaxBackoffDelayAdjustment(Long maxBackoffDelaySeconds, int expectedBackoffDelayMs, boolean expectConfigWarning) {
 		// Arrange
 		configuration = buildDataSourceTransactionManagerConfiguration();
 		Adapter adapter = configuration.createBean();
@@ -1201,20 +1204,89 @@ public class ReceiverTest {
 
 		Receiver<String> receiver = SpringUtils.createBean(adapter);
 
-		receiver.setMaxBackoffDelay(maxBackoffDelay);
+		receiver.setMaxBackoffDelay(maxBackoffDelaySeconds);
 		receiver.setTransactionTimeout(100);
 
 		// Act
-		int actualBackoffDelay = receiver.calculateAdjustedMaxBackoffDelay(maxBackoffDelay);
+		long actualBackoffDelay = receiver.calculateAdjustedMaxBackoffDelay(receiver.getMaxBackoffDelayMs());
 
 		// Assert
-		assertEquals(expectedBackoffDelay, actualBackoffDelay);
+		assertEquals(expectedBackoffDelayMs, actualBackoffDelay);
 		if (expectConfigWarning) {
 			assertEquals(1, configWarnings.size(), "There should have been exactly 1 config warning");
 			assertThat(configWarnings.get(0), containsString("Maximum backoff delay reduced"));
 		} else {
 			assertTrue(configWarnings.isEmpty(), "There should not have been any config warnings");
 		}
+	}
+
+	@Test
+	void testMessageDeliveryDelay() throws Exception {
+		// Arrange
+		configuration = buildDataSourceTransactionManagerConfiguration();
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		JavaListener<Serializable> listener = setupJavaListener();
+		Adapter adapter = setupAdapter();
+		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
+
+		receiver.setMaxBackoffDelay(5L);
+
+		// Don't actually delay, but should be possible to verify
+		doNothing().when(receiver).suspendReceiverThread(anyLong());
+
+		doThrow(new ListenerException("forced error")).when(adapter).processMessageWithExceptions(startsWith("error-"), any(), any());
+		PipeLineResult successResult = new PipeLineResult();
+		successResult.setState(ExitState.SUCCESS);
+		doReturn(successResult).when(adapter).processMessageWithExceptions(startsWith("success-"), any(), any());
+
+		configuration.configure();
+		configuration.start();
+		waitForState(receiver, RunState.STARTED);
+
+		// Act
+		for (int i = 0; i < 20; ++i) {
+			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("error-"), MessageUtils.generateMessageId()), new PipeLineSession()));
+		}
+
+		// Assert
+		assertEquals(5_000L, receiver.getMaxBackoffDelayMs());
+		assertEquals(5_000L, receiver.getCurrentBackoffDelayMs());
+		verify(receiver, times(10)).suspendReceiverThread(anyLong());
+		verify(receiver, times(1)).suspendReceiverThread(125L);
+		verify(receiver, times(1)).suspendReceiverThread(250L);
+		verify(receiver, times(1)).suspendReceiverThread(500L);
+		verify(receiver, times(1)).suspendReceiverThread(1_000L);
+		verify(receiver, times(1)).suspendReceiverThread(2_000L);
+		verify(receiver, times(1)).suspendReceiverThread(4_000L);
+		verify(receiver, times(4)).suspendReceiverThread(5_000L);
+
+		reset(receiver);
+
+		// Act
+		receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("success-"), MessageUtils.generateMessageId()), new PipeLineSession());
+
+		// Assert
+		// Verify that the backoff-delay has been reset after a successful request
+		assertEquals(125L, receiver.getCurrentBackoffDelayMs());
+		verify(receiver, never()).suspendReceiverThread(anyLong());
+
+		// Repeat the errors and verify error behaviour occurs again after errors
+		// Act
+		for (int i = 0; i < 20; ++i) {
+			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("error-"), MessageUtils.generateMessageId()), new PipeLineSession()));
+		}
+
+		// Assert
+		assertEquals(5_000L, receiver.getMaxBackoffDelayMs());
+		assertEquals(5_000L, receiver.getCurrentBackoffDelayMs());
+		verify(receiver, times(10)).suspendReceiverThread(anyLong());
+		verify(receiver, times(1)).suspendReceiverThread(125L);
+		verify(receiver, times(1)).suspendReceiverThread(250L);
+		verify(receiver, times(1)).suspendReceiverThread(500L);
+		verify(receiver, times(1)).suspendReceiverThread(1_000L);
+		verify(receiver, times(1)).suspendReceiverThread(2_000L);
+		verify(receiver, times(1)).suspendReceiverThread(4_000L);
+		verify(receiver, times(4)).suspendReceiverThread(5_000L);
 	}
 
 	@ParameterizedTest

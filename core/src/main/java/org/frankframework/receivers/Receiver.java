@@ -233,16 +233,17 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	public static final String RCV_MESSAGE_LOG_COMMENTS = "log";
 
+	public static final long START_BACKOFF_DELAY_MS = 125L;
 	public static final int CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY = AppConstants.getInstance().getInt("receiver.consecutiveErrorsBeforeBackoffDelay", 10);
-	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
+	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD = 60;
 	public static final String DEFAULT_MAX_BACKOFF_DELAY_KEY = "receiver.defaultMaxBackoffDelay";
 	/**
 	 * Should be smaller than the transaction timeout as the delay takes place
 	 * within the transaction. WebSphere default transaction timeout is 120.
 	 */
-	public static final int DEFAULT_MAX_BACKOFF_DELAY = 60;
+	public static final int DEFAULT_MAX_BACKOFF_DELAY_SECONDS = 60;
 	public static final String RETRY_FLAG_SESSION_KEY = "retry"; // a session variable with this key will be set "true" if the message is manually retried, is redelivered, or it's messageid has been seen before
-	private final AtomicInteger consecutiveErrors = new AtomicInteger(0);
+	private final @NonNull AtomicInteger consecutiveErrors = new AtomicInteger(0);
 
 	public enum OnError {
 		/** Don't stop the receiver when an error occurs.*/
@@ -266,17 +267,17 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private @Getter int numThreads = 1;
 	// the number of threads that are actively polling for messages (concurrently, only for pulling listeners)
 	private @Getter int numThreadsPolling = 1;
-	private @Getter int pollInterval=10;
-	private @Getter int startTimeout=60;
-	private @Getter int stopTimeout=60;
+	private @Getter int pollInterval = 10;
+	private @Getter int startTimeout = 60;
+	private @Getter int stopTimeout = 60;
 
 	private @Getter boolean forceRetryFlag = false;
-	private @Getter boolean checkForDuplicates=false;
+	private @Getter boolean checkForDuplicates = false;
 	public enum CheckForDuplicatesMethod { MESSAGEID, CORRELATIONID }
 
-	private @Getter CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
-	private @Getter Integer maxRetries = null;
-	private Integer maxBackoffDelay = null;
+	private @Getter @NonNull CheckForDuplicatesMethod checkForDuplicatesMethod=CheckForDuplicatesMethod.MESSAGEID;
+	private @Getter @Nullable Integer maxRetries = null;
+	private @Getter @Nullable Long maxBackoffDelayMs = null;
 	private @Getter int processResultCacheSize = 100;
 
 	/**
@@ -284,34 +285,34 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * configured with process state {@link ProcessState#INPROCESS}.
 	 * In all other circumstances, it is {@code false}.
 	 */
-	private @Getter boolean supportProgrammaticRetry=false;
+	private @Getter boolean supportProgrammaticRetry = false;
 
-	private @Getter String correlationIDXPath;
-	private @Getter String correlationIDNamespaceDefs;
-	private @Getter String correlationIDStyleSheet;
+	private @Getter @Nullable String correlationIDXPath;
+	private @Getter @Nullable String correlationIDNamespaceDefs;
+	private @Getter @Nullable String correlationIDStyleSheet;
 
-	private @Getter String labelXPath;
-	private @Getter String labelNamespaceDefs;
-	private @Getter String labelStyleSheet;
+	private @Getter @Nullable String labelXPath;
+	private @Getter @Nullable String labelNamespaceDefs;
+	private @Getter @Nullable String labelStyleSheet;
 
-	private @Getter String chompCharSize = null;
-	private @Getter String elementToMove = null;
-	private @Getter String elementToMoveSessionKey = null;
-	private @Getter String elementToMoveChain = null;
+	private @Getter @Nullable String chompCharSize = null;
+	private @Getter @Nullable String elementToMove = null;
+	private @Getter @Nullable String elementToMoveSessionKey = null;
+	private @Getter @Nullable String elementToMoveChain = null;
 	private @Getter boolean removeCompactMsgNamespaces = true;
 
-	private @Getter String hideRegex = null;
-	private Pattern hideRegexPattern = null;
-	private @Getter HideMethod hideMethod = HideMethod.ALL;
-	private @Getter String hiddenInputSessionKeys=null;
+	private @Getter @Nullable String hideRegex = null;
+	private @Nullable Pattern hideRegexPattern = null;
+	private @Getter @NonNull HideMethod hideMethod = HideMethod.ALL;
+	private @Getter @Nullable String hiddenInputSessionKeys = null;
 
-	private final AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
+	private final @NonNull AtomicInteger numberOfExceptionsCaughtWithoutMessageBeingReceived = new AtomicInteger();
 	private int numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold = 5;
 	private @Getter boolean numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
 
-	private int currentBackoffDelay = 1;
+	private @Getter long currentBackoffDelayMs = START_BACKOFF_DELAY_MS;
 
-	private boolean suspensionMessagePending=false;
+	private boolean suspensionMessagePending = false;
 	private @Getter boolean isConfigured = false;
 
 	protected final RunStateManager runState = new RunStateManager();
@@ -339,8 +340,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private @Getter ICorrelatedSender sender = null; // reply-sender
 	private final Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new EnumMap<>(ProcessState.class);
 
-	private TransformerPool correlationIDTp=null;
-	private TransformerPool labelTp=null;
+	private @Nullable TransformerPool correlationIDTp = null;
+	private @Nullable TransformerPool labelTp = null;
 
 	private @Setter MetricsInitializer configurationMetrics;
 
@@ -688,7 +689,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					maxRetries = 1;
 				}
 			}
-			maxBackoffDelay = calculateAdjustedMaxBackoffDelay(maxBackoffDelay);
+			maxBackoffDelayMs = calculateAdjustedMaxBackoffDelay(maxBackoffDelayMs);
 		} catch (Throwable t) {
 			ConfigurationException e;
 			if (t instanceof ConfigurationException exception) {
@@ -705,14 +706,14 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
 		isConfigured = true;
 
-		if(isInRunState(RunState.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
+		if (isInRunState(RunState.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
 	}
 
-	protected int calculateAdjustedMaxBackoffDelay(Integer configuredMaxBackoffDelay) {
-		int backoffDelay = configuredMaxBackoffDelay != null ? configuredMaxBackoffDelay : AppConstants.getInstance(configurationClassLoader).getInt(DEFAULT_MAX_BACKOFF_DELAY_KEY, DEFAULT_MAX_BACKOFF_DELAY);
-		int transactionTimeoutCap = getActualTransactionTimeout() / 2;
+	protected long calculateAdjustedMaxBackoffDelay(Long configuredMaxBackoffDelay) {
+		long backoffDelay = configuredMaxBackoffDelay != null ? configuredMaxBackoffDelay : (1000L * AppConstants.getInstance(configurationClassLoader).getLong(DEFAULT_MAX_BACKOFF_DELAY_KEY, DEFAULT_MAX_BACKOFF_DELAY_SECONDS));
+		long transactionTimeoutCap = (getActualTransactionTimeout() / 2) * 1000L;
 		if (backoffDelay > transactionTimeoutCap) {
 			ConfigurationWarnings.add(this.getAdapter(), log, "Maximum backoff delay reduced to %d from %d to avoid the delay causing transaction timeouts".formatted(transactionTimeoutCap, backoffDelay), SuppressKeys.CONFIGURATION_VALIDATION);
 			return transactionTimeoutCap;
@@ -1731,7 +1732,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	public void exceptionThrown(String errorMessage, Throwable t) {
 		switch (getOnError()) {
 			case CONTINUE:
-				if(numberOfExceptionsCaughtWithoutMessageBeingReceived.incrementAndGet() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
+				if (numberOfExceptionsCaughtWithoutMessageBeingReceived.incrementAndGet() > numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold) {
 					numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=true;
 					log.warn("number of exceptions caught without message being received threshold is reached; changing the adapter status to 'warning'");
 				}
@@ -1769,31 +1770,31 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				suspensionMessagePending=false;
 				throwEvent(RCV_RESUMED_MONITOR_EVENT);
 			}
-			if (currentBackoffDelay > 1) {
-				log.info("Resetting retry-delay from {} seconds to 1 second", currentBackoffDelay);
-				currentBackoffDelay = 1;
+			if (currentBackoffDelayMs > 1) {
+				log.info("Resetting retry-delay from {} seconds to 125 milliseconds", currentBackoffDelayMs);
+				currentBackoffDelayMs = START_BACKOFF_DELAY_MS;
 			}
 		}
 	}
 
 	public void increaseBackoffIntervalAndWait(@Nullable Throwable t, @NonNull String description) {
 		// Only delay if there are multiple consecutive errors
-		if (consecutiveErrors.get() < CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY || maxBackoffDelay == 0) {
+		if (consecutiveErrors.get() <= CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY || maxBackoffDelayMs == 0L) {
 			error(description, t);
 			return;
 		}
-		int currentDelay;
+		long currentDelay;
 		synchronized (this) {
-			currentDelay = currentBackoffDelay;
-			currentBackoffDelay = currentBackoffDelay * 2;
-			if (currentBackoffDelay > maxBackoffDelay) {
-				currentBackoffDelay = maxBackoffDelay;
+			currentDelay = currentBackoffDelayMs;
+			currentBackoffDelayMs = currentBackoffDelayMs * 2;
+			if (currentBackoffDelayMs > maxBackoffDelayMs) {
+				currentBackoffDelayMs = maxBackoffDelayMs;
 			}
 		}
-		if (currentDelay > 1) {
-			error(description+", will continue retrieving messages in [" + currentDelay + "] seconds", t);
+		if (currentDelay > 1L) {
+			error(description+", will continue retrieving messages in [" + currentDelay + "] milliseconds", t);
 		} else {
-			log.info("{}, no delay in retrieving messages. Details: {}", description, currentDelay, t != null ? t.getMessage() : "NA");
+			log.info("{}, no delay in retrieving messages. Details: {}", description, t != null ? t.getMessage() : "NA");
 		}
 		synchronized (this) {
 			if (currentDelay * 2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
@@ -1823,19 +1824,16 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	/**
-	 * Suspend the receiver for {@code delayTimeInSeconds} seconds
-	 * @param delayTimeInSeconds Number of seconds the receiver thread should be suspended from processing new messages.
+	 * Suspend the receiver for {@code delayTimeInMs} milliseconds
+	 * @param delayTimeInMs Number of milliseconds the receiver thread should be suspended from processing new messages.
 	 */
-	public void suspendReceiverThread(int delayTimeInSeconds) {
-		int currentInterval = delayTimeInSeconds;
-		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
+	public void suspendReceiverThread(long delayTimeInMs) {
+		if (isInRunState(RunState.STARTED) && delayTimeInMs > 0) {
 			try {
-				Thread.sleep(1000L);
+				Thread.sleep(delayTimeInMs);
 			} catch (InterruptedException e) {
 				error("sleep interrupted", e);
-//				stop();?????????????
 				Thread.currentThread().interrupt();
-				break;
 			}
 		}
 	}
@@ -2026,9 +2024,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
-		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
+		if (log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
 		numberOfExceptionsCaughtWithoutMessageBeingReceived.set(0);
-		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached=false;
+		numberOfExceptionsCaughtWithoutMessageBeingReceivedThresholdReached = false;
 	}
 
 	/**
@@ -2298,7 +2296,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * </p>
 	 * @param maxBackoffDelaySeconds Maximum backoff-time in seconds before retrying a message, after an error occurred during processing.
 	 */
-	public void setMaxBackoffDelay(Integer maxBackoffDelaySeconds) {
-		this.maxBackoffDelay = maxBackoffDelaySeconds;
+	public void setMaxBackoffDelay(Long maxBackoffDelaySeconds) {
+		this.maxBackoffDelayMs = maxBackoffDelaySeconds == null ? null : maxBackoffDelaySeconds * 1000L;
 	}
 }
