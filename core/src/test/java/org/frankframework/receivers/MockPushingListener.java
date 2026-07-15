@@ -35,6 +35,11 @@ public class MockPushingListener extends MockListenerBase implements IPushingLis
 	}
 
 	@Override
+	public boolean messageWillBeRedeliveredOnExitStateError() {
+		return true;
+	}
+
+	@Override
 	public int getDeliveryCount(@NonNull RawMessageWrapper<String> rawMessage) {
 		return mockedDeliveryCount;
 	}

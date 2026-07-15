@@ -26,7 +26,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  * @author  Gerrit van Brakel
  * @since	4.9
  */
-public interface IKnowsDeliveryCount<M> extends IListener<M> {
+public interface IKnowsDeliveryCount<M> extends IListener<M>, IRedeliveringListener<M> {
 
 	int getDeliveryCount(@NonNull RawMessageWrapper<M> rawMessage);
 
