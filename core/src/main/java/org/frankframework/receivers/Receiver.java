@@ -233,7 +233,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	public static final String RCV_MESSAGE_LOG_COMMENTS = "log";
 
-	public static final int CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY = AppConstants.getInstance().getInt("receiver.consecutiveErrorsBeforeBackoffDelay", 2);
+	public static final int CONSECUTIVE_ERRORS_BEFORE_BACKOFF_DELAY = AppConstants.getInstance().getInt("receiver.consecutiveErrorsBeforeBackoffDelay", 10);
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
 	public static final String DEFAULT_MAX_BACKOFF_DELAY_KEY = "receiver.defaultMaxBackoffDelay";
 	/**
