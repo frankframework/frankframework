@@ -1388,6 +1388,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in processing: [" + statusMessage + "]");
+						} else if (messageInError) {
+							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] is in status error: [" + statusMessage + "]");
 						}
 					}
 				}
@@ -1783,13 +1785,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				currentBackoffDelay = maxBackoffDelay;
 			}
 		}
-		if (currentDelay>1) {
+		if (currentDelay > 1) {
 			error(description+", will continue retrieving messages in [" + currentDelay + "] seconds", t);
 		} else {
-			log.info("{}, will continue retrieving messages in [{}] seconds. Details: {}", description, currentDelay, t != null ? t.getMessage() : "NA");
+			log.info("{}, no delay in retrieving messages. Details: {}", description, currentDelay, t != null ? t.getMessage() : "NA");
 		}
 		synchronized (this) {
-			if (currentDelay* 2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
+			if (currentDelay * 2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
 				suspensionMessagePending=true;
 				throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
 			}
@@ -1824,10 +1826,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		while (isInRunState(RunState.STARTED) && currentInterval-- > 0) {
 			try {
 				Thread.sleep(1000L);
-			} catch (Exception e2) {
-				error("sleep interrupted", e2);
+			} catch (InterruptedException e) {
+				error("sleep interrupted", e);
 //				stop();?????????????
 				Thread.currentThread().interrupt();
+				break;
 			}
 		}
 	}
