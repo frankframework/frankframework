@@ -1388,7 +1388,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 							// Only do this if history has not already been checked previously by the caller.
 							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] has already been received [" + prci.receiveCount + "] times; maxRetries=[" + getMaxRetries() + "]; error in processing: [" + statusMessage + "]");
-						} else if (messageInError) {
+						} else if (messageInError && !retryStatusAlreadyChecked) {
+							// Only do this if history has not already been checked previously by the caller.
+							// If it has, then the caller is also responsible for handling the retry-interval.
 							increaseBackoffIntervalAndWait(null, getLogPrefix() + "message with messageId [" + messageId + "] is in status error: [" + statusMessage + "]");
 						}
 					}
