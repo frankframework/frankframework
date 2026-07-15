@@ -34,11 +34,10 @@ class FrankApplicationTest {
 	}
 
 	@Test
-	@DisplayName("Wait max. 1 minute and verify the Frank!Application has started succesfully.")
+	@DisplayName("Wait max. 1 minute and verify the Frank!Application has started successfully.")
 	void contextLoads() {
 		await().pollInterval(5, TimeUnit.SECONDS)
 				.atMost(Duration.ofMinutes(1))
 				.until(frankApplication::hasStarted);
 	}
-
 }

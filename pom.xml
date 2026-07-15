@@ -96,7 +96,7 @@
 		<spring-integration.version>7.1.0</spring-integration.version>
 		<spring.boot.version>4.1.0</spring.boot.version>
 		<tomcat.version>11.0.24</tomcat.version>
-		<bouncycastle.version>1.84</bouncycastle.version>
+		<bouncycastle.version>1.85</bouncycastle.version>
 		<tika.version>3.3.1</tika.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
@@ -1627,6 +1627,7 @@
 				<module>webapp</module>
 				<module>test</module>
 				<module>example</module>
+				<module>cypress</module>
 
 				<module>bootable-runner</module>
 				<module>build-templates</module>

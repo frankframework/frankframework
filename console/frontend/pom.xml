@@ -161,6 +161,10 @@
 								<argument>i</argument>
 								<argument>--frozen-lockfile</argument>
 							</arguments>
+							<!-- needed for newer pnpm version -->
+							<environmentVariables>
+								<CI>true</CI>
+							</environmentVariables>
 						</configuration>
 					</execution>
 					<execution>
