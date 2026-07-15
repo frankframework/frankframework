@@ -25,6 +25,7 @@ import org.w3c.dom.Node;
 
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.stream.SerializableFileReference;
+import org.frankframework.util.ClassUtils;
 
 public class DataConverterFactory {
 	static final NullDataConverter nullDataConverter = new NullDataConverter();
@@ -45,8 +46,7 @@ public class DataConverterFactory {
 
 	public static DataConverter getConverter(@Nullable Object data) {
 		return switch (data) {
-			case null -> //noinspection DataFlowIssue
-					new TypedBinaryDataConverter<>(null, nullDataConverter);
+			case null -> nullDataConverter;
 			case Enum<?> anEnum -> new TypedCharacterDataConverter<>(anEnum, enumConverter);
 			case Boolean bool -> new TypedCharacterDataConverter<>(bool, booleanConverter);
 			case Number number -> new TypedCharacterDataConverter<>(number, numberConverter);
@@ -58,7 +58,7 @@ public class DataConverterFactory {
 					new TypedBinaryDataConverter<>((ThrowingSupplier<InputStream, Exception>) throwingSupplier, throwingSupplierConverter);
 			case Date date -> new TypedCharacterDataConverter<>(date, dateConverter);
 			case TemporalAccessor temporalAccessor -> new TypedCharacterDataConverter<>(temporalAccessor, temporalAccessorConverter);
-			default -> throw new IllegalArgumentException("Unsupported data type: " + data.getClass().getName());
+			default -> throw new IllegalArgumentException("Unsupported data type: " + ClassUtils.classNameOf(data));
 		};
 	}
 }

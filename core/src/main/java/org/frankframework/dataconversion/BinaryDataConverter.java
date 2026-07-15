@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
-public sealed interface BinaryDataConverter extends DataConverter permits TypedBinaryDataConverter {
+public sealed interface BinaryDataConverter extends DataConverter permits TypedBinaryDataConverter, NullDataConverter {
 	default boolean isBinary() {
 		return true;
 	}

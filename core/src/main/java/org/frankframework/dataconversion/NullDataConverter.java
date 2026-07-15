@@ -26,49 +26,49 @@ import javax.xml.transform.Source;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
-class NullDataConverter implements BinaryDataConversionSupport<Void> {
+final class NullDataConverter implements BinaryDataConverter {
 	@Override
-	public @Nullable String asString(Void data, String encodingCharset) throws IOException {
+	public @Nullable String asString(String encodingCharset) {
 		return null;
 	}
 
 	@Override
-	public Reader asReader(Void data, String encodingCharset) throws IOException {
+	public Reader asReader(String encodingCharset) {
 		return new BufferedReader(Reader.nullReader());
 	}
 
 	@Override
-	public boolean isEmpty(Void data) {
+	public @Nullable InputSource asInputSource(String charset) {
+		return null;
+	}
+
+	@Override
+	public long size() {
+		return 0L;
+	}
+
+	@Override
+	public boolean isEmpty() {
 		return true;
 	}
 
 	@Override
-	public long size(Void data) {
-		return 0;
+	public byte @Nullable [] asByteArray() {
+		return null;
 	}
 
 	@Override
-	public byte @Nullable[] asByteArray(Void data) throws IOException {
-		return null	;
-	}
-
-	@Override
-	public InputStream asInputStream(Void data) throws IOException {
+	public InputStream asInputStream() throws IOException {
 		return new BufferedInputStream(InputStream.nullInputStream());
 	}
 
 	@Override
-	public @Nullable Source asSource(Void data) throws IOException {
+	public @Nullable InputSource asInputSource() {
 		return null;
 	}
 
 	@Override
-	public @Nullable InputSource asInputSource(Void data) throws IOException {
-		return null;
-	}
-
-	@Override
-	public @Nullable InputSource asInputSource(Void data, String charset) throws IOException {
+	public @Nullable Source asSource() {
 		return null;
 	}
 }
