@@ -10,7 +10,7 @@
 		</Appender>
 		<Appender name="application-log-appender" type="Console">
 			<Layout type="PatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%ex{short}</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%rEx{1}</Pattern>
 			</Layout>
 		</Appender>
 		<Async name="log-all-errors-to-application-log">
