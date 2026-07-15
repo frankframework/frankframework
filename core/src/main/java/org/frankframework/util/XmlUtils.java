@@ -514,6 +514,7 @@ public class XmlUtils {
 	 * @param xsltVersion Version of XSLT for which to generate the stylesheet. Can be 0, 1, or 2. If 0, then {@link #DEFAULT_XSLT_VERSION} is used.
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
+	@SuppressWarnings("java:S107") // Suppress 'Method has 8 parameters, which is greater than 7 authorized.' for now this is accepted.
 	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, String xPathExpression, TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
@@ -542,6 +543,7 @@ public class XmlUtils {
 	 * @param xsltVersion Version of XSLT for which to generate the stylesheet. Can be 0, 1, or 2. If 0, then {@link #DEFAULT_XSLT_VERSION} is used.
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
+	@SuppressWarnings("java:S107") // Suppress 'Method has 8 parameters, which is greater than 7 authorized.' for now this is accepted.
 	public static String createXPathEvaluatorSource(UnaryOperator<String> xpathContainerSupplier, String xPathExpression, TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		if (StringUtils.isEmpty(xPathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");

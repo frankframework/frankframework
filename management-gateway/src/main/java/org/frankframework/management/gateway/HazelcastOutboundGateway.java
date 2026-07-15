@@ -116,7 +116,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 			return replyMessage;
 		}
 
-		throw new BusException("no reponse found on temporary reply-queue [" + tempReplyChannelName + "] within receiveTimeout [" + receiveTimeout + "]");
+		throw new BusException("no response found on temporary reply-queue [" + tempReplyChannelName + "] within receiveTimeout [" + receiveTimeout + "]");
 	}
 
 	private void silentlyRemoveQueue(IQueue<?> responseQueue) {
