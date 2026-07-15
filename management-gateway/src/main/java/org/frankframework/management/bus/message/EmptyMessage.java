@@ -15,17 +15,27 @@
 */
 package org.frankframework.management.bus.message;
 
+import org.springframework.http.HttpStatus;
+
 public class EmptyMessage extends StringMessage {
 
 	private static final String EMPTY_RESPONSE = "no-content";
 
 	public EmptyMessage(int statuscode) {
-		super(EMPTY_RESPONSE);
+		this(statuscode, getErrorMessage(statuscode));
+	}
+	public EmptyMessage(int statuscode, String errorMessage) {
+		super(errorMessage);
 		setStatus(statuscode);
 	}
 
+	private static String getErrorMessage(int statuscode) {
+		HttpStatus status = HttpStatus.resolve(statuscode);
+		return status != null ? status.getReasonPhrase() : EMPTY_RESPONSE;
+	}
+
 	private static EmptyMessage createNoContentResponse(int statuscode) {
-		return new EmptyMessage(statuscode);
+		return new EmptyMessage(statuscode, EMPTY_RESPONSE);
 	}
 
 	public static EmptyMessage created() {

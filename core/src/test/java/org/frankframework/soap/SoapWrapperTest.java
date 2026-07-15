@@ -384,7 +384,7 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	@Disabled
+	@Disabled("Disabled because it is a flaky test, exceptions in KeyStoreCrypto should be changed to a more specific exception type, and the test should be updated accordingly.")
 	void validateEncryptedErrorSoap1_1() throws Exception {
 		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
 		assertNotNull(file); // ensure we can find the file
