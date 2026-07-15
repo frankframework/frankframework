@@ -66,8 +66,10 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 		JndiTemplate locator = getJndiTemplate(jndiEnvironment);
 		try {
 			return locator.lookup(prefixedJndiName, lookupClass);
-		} catch (NameNotFoundException | NoInitialContextException e) { // Fallback and search again but this time without prefix
-			if (!jndiName.equals(prefixedJndiName)) { // But only if a prefix was used during the first lookup.
+		} catch (NameNotFoundException | NoInitialContextException e) {
+			// Fallback and search again but this time without prefix
+			if (!jndiName.equals(prefixedJndiName)) {
+				// But only if a prefix was used during the first lookup.
 				log.debug("prefixed JNDI name [{}] not found - trying original name [{}], exception: ({}): {}", ()->prefixedJndiName, ()->jndiName, ()->ClassUtils.nameOf(e), e::getMessage);
 				try {
 					return locator.lookup(jndiName, lookupClass);
@@ -75,6 +77,7 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 					log.debug("non-prefixed JNDI name [{}] not found, exception: ({}): {}", ()->jndiName, ()->ClassUtils.nameOf(e2), e2::getMessage);
 				}
 			}
+
 			// Neither lookup returned an (unexpected) exception, assume the object cannot be found in this IObjectLocator.
 			return null;
 		}
