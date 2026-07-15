@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-bundle-minimal</artifactId>
+		<version>${revision}</version>
+		<relativePath>../bundle-minimal/pom.xml</relativePath>
+	</parent>
+
+	<artifactId>frankframework-cypress</artifactId>
+	<packaging>war</packaging>
+	<name>Frank!Framework Cypress</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-commons</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-management-gateway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>credentialprovider</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-core</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-el</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-tomcat</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-websocket</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>${h2.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-frontend</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Test Scoped Dependencies -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.wimdeblauwe</groupId>
+			<artifactId>testcontainers-cypress</artifactId>
+			<version>1.9.1</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>bootable-runner</artifactId>
+			<scope>optional</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>cypress</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-frontend-to-TestClasses</id>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<phase>process-test-resources</phase>
+						<configuration>
+							<outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+							<resources>
+								<!-- Copy the Cypress tests and configuration to the test output directory -->
+								<testResource>
+									<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>tsconfig.json</include>
+										<include>cypress/**</include>
+									</includes>
+									<excludes>
+										<exclude>cypress/node_modules/**</exclude>
+										<exclude>cypress/test-results/**</exclude>
+									</excludes>
+									<targetPath>e2e</targetPath>
+								</testResource>
+								<!-- Copy scenarios -->
+								<testResource>
+									<directory>${project.basedir}/src/test/testtool</directory>
+									<targetPath>${project.build.directory}/src/test/testtool</targetPath>
+								</testResource>
+								<!-- Copy Configurations -->
+								<testResource>
+									<directory>${project.basedir}/src/main/configurations</directory>
+									<targetPath>${project.build.directory}/configurations</targetPath>
+								</testResource>
+							</resources>
+							<!-- A bit hacky way to prevent this execution from running when tests execution is skipped. -->
+							<skip>${maven.test.skip}</skip>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-resources-and-configurations</id>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<phase>prepare-package</phase>
+						<configuration>
+							<outputDirectory>${project.build.directory}/full-configuration</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/src/main/configurations</directory>
+									<filtering>false</filtering>
+									<targetPath>configurations</targetPath>
+								</resource>
+								<resource>
+									<directory>${project.build.outputDirectory}</directory>
+									<filtering>false</filtering>
+								</resource>
+								<resource>
+									<directory>${project.build.sourceDirectory}</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
