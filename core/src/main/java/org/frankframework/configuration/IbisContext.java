@@ -153,16 +153,16 @@ public class IbisContext extends IbisApplicationContext {
 			APPLICATION_LOG.info("Application [{}] startup in {} ms", this::getApplicationName, ()-> startupTime);
 		}
 		catch (Exception e) {
+			LOG.fatal("Failed to initialize FrankApplication", e);
 			// Catch all exceptions, the IBIS failed to startup...
 			if(reconnect) {
-				APPLICATION_LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
+				APPLICATION_LOG.error("Failed to initialize FrankApplication, retrying in 1 minute!");
 
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
-				ibisContextReconnectThread.setName("IbisContext-ReconnectThread"); // Give the thread a somewhat descriptive name
+				ibisContextReconnectThread.setName("FrankApplication-ReconnectThread"); // Give the thread a somewhat descriptive name
 				ibisContextReconnectThread.start();
 			}
 			else {
-				APPLICATION_LOG.fatal("Failed to initialize IbisContext", e);
 				throw e;
 			}
 		}

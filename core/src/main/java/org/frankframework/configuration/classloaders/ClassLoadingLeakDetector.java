@@ -59,7 +59,9 @@ public class ClassLoadingLeakDetector {
 		@Override
 		public void run() {
 			CLASS_LOADERS.remove(classLoaderId);
-			LEAK_LOG.info("Cleaning [{}] for configuration [{}], classes not unloaded: [{}]", className, configurationName, resourceLeakTracker);
+			if (!resourceLeakTracker.isEmpty()) {
+				LEAK_LOG.info("Cleaning [{}] for configuration [{}], classes not unloaded: [{}]", className, configurationName, resourceLeakTracker);
+			}
 		}
 
 		@Override

@@ -1,6 +1,6 @@
 package org.frankframework.jndi;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,13 +11,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.NoInitialContextException;
 import javax.naming.ServiceUnavailableException;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.jndi.JndiTemplate;
 
@@ -36,8 +37,8 @@ public class TestJmsConnectionFactoryFactory {
 		doReturn(template).when(locator).getJndiTemplate(any(Properties.class));
 		factory.setObjectLocators(List.of(locator));
 
-		IllegalStateException e = assertThrows(IllegalStateException.class, () -> factory.getConnectionFactory("dummyName"));
-		assertInstanceOf(NoInitialContextException.class, e.getCause());
+		NoSuchElementException e = assertThrows(NoSuchElementException.class, () -> factory.getConnectionFactory("dummyName"));
+		assertThat(e.getMessage(), Matchers.startsWith("unable to find resource [jms/dummyName] using locators"));
 		assertTrue(factory.getObjectInfo().isEmpty());
 	}
 }
