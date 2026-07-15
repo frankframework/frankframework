@@ -131,7 +131,8 @@ public class BusMessageUtilsTest {
 
 	@Test
 	public void getWrongPayloadTypeAsString() {
-		BusException ex = assertThrows(BusException.class, () -> BusMessageUtils.getPayloadAsString(new GenericMessage<>(new Object())));
+		GenericMessage<Object> message = new GenericMessage<>(new Object());
+		BusException ex = assertThrows(BusException.class, () -> BusMessageUtils.getPayloadAsString(message));
 		assertEquals("unexpected message payload type [java.lang.Object]", ex.getMessage());
 	}
 }
