@@ -48,17 +48,17 @@ public class DataConverterFactory {
 	public static DataConverter getConverter(@Nullable Object data, ThrowingSupplier<@Nullable String, IOException> charsetSupplier) {
 		return switch (data) {
 			case null -> nullDataConverter;
-			case Enum<?> anEnum -> new TypedCharacterDataConverter<>(anEnum, enumConverter);
-			case Boolean bool -> new TypedCharacterDataConverter<>(bool, booleanConverter);
-			case Number number -> new TypedCharacterDataConverter<>(number, numberConverter);
-			case String string -> new TypedCharacterDataConverter<>(string, stringConverter);
-			case Node node -> new TypedCharacterDataConverter<>(node, nodeConverter);
-			case byte[] bytes -> new TypedBinaryDataConverter<>(bytes, byteArrayConverter, charsetSupplier);
-			case SerializableFileReference serializableFileReference -> new TypedBinaryDataConverter<>(serializableFileReference, serializableFileReferenceConverter, charsetSupplier);
+			case Enum<?> anEnum -> new CharacterDataConverter<>(anEnum, enumConverter);
+			case Boolean bool -> new CharacterDataConverter<>(bool, booleanConverter);
+			case Number number -> new CharacterDataConverter<>(number, numberConverter);
+			case String string -> new CharacterDataConverter<>(string, stringConverter);
+			case Node node -> new CharacterDataConverter<>(node, nodeConverter);
+			case byte[] bytes -> new BinaryDataConverter<>(bytes, byteArrayConverter, charsetSupplier);
+			case SerializableFileReference serializableFileReference -> new BinaryDataConverter<>(serializableFileReference, serializableFileReferenceConverter, charsetSupplier);
 			case ThrowingSupplier<?, ?> throwingSupplier -> //noinspection unchecked
-					new TypedBinaryDataConverter<>((ThrowingSupplier<InputStream, Exception>) throwingSupplier, throwingSupplierConverter, charsetSupplier);
-			case Date date -> new TypedCharacterDataConverter<>(date, dateConverter);
-			case TemporalAccessor temporalAccessor -> new TypedCharacterDataConverter<>(temporalAccessor, temporalAccessorConverter);
+					new BinaryDataConverter<>((ThrowingSupplier<InputStream, Exception>) throwingSupplier, throwingSupplierConverter, charsetSupplier);
+			case Date date -> new CharacterDataConverter<>(date, dateConverter);
+			case TemporalAccessor temporalAccessor -> new CharacterDataConverter<>(temporalAccessor, temporalAccessorConverter);
 			default -> throw new IllegalArgumentException("Unsupported data type: " + ClassUtils.classNameOf(data));
 		};
 	}

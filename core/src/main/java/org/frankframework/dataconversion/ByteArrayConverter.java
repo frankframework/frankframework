@@ -19,7 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-class ByteArrayConverter implements BinaryDataConversionSupport<byte[]> {
+class ByteArrayConverter implements TypedBinaryDataConverter<byte[]> {
 
 	@Override
 	public long size(byte[] data) {

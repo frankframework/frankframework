@@ -15,10 +15,10 @@
 */
 package org.frankframework.dataconversion;
 
-abstract sealed class AbstractTypedDataConverter<T> permits TypedBinaryDataConverter, TypedCharacterDataConverter {
+abstract class AbstractDataConverter<T> {
 	protected final T data;
 
-	protected AbstractTypedDataConverter(T data) {
+	protected AbstractDataConverter(T data) {
 		this.data = data;
 	}
 }

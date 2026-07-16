@@ -15,19 +15,15 @@
 */
 package org.frankframework.dataconversion;
 
-import java.io.IOException;
-
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
-import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 import org.frankframework.util.XmlUtils;
 
-class NodeConverter extends StringableDataConverter<Node> {
+final class NodeConverter extends StringableDataConverter<Node> {
 	@Override
 	public String asString(Node data) {
 		try {
@@ -52,7 +48,7 @@ class NodeConverter extends StringableDataConverter<Node> {
 	}
 
 	@Override
-	public @Nullable Source asSource(Node data) throws IOException, SAXException {
+	public Source asSource(Node data) {
 		return new DOMSource(data);
 	}
 }

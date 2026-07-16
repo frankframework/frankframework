@@ -19,72 +19,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import javax.xml.transform.Source;
-
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
-public final class TypedCharacterDataConverter<T> extends AbstractTypedDataConverter<T> implements DataConverter {
-	private final CharacterDataConversionSupport<T> conversionSupport;
-
-	public TypedCharacterDataConverter(T data, CharacterDataConversionSupport<T> conversionSupport) {
-		super(data);
-		this.conversionSupport = conversionSupport;
-	}
-
-	@Override
-	public boolean isBinary() {
+interface TypedCharacterDataConverter<T> extends TypedConverter<T> {
+	default boolean isBinary(T data) {
 		return false;
 	}
 
-	@Override
-	public @Nullable String asString() throws IOException {
-		return conversionSupport.asString(data);
-	}
+	@Nullable String asString(T data) throws IOException;
 
-	@Override
-	public Reader asReader() throws IOException {
-		return conversionSupport.asReader(data);
-	}
+	Reader asReader(T data) throws IOException;
 
-	@Override
-	public byte @Nullable [] asByteArray(String encodingCharset) throws IOException {
-		return conversionSupport.asByteArray(data, encodingCharset);
-	}
+	byte @Nullable [] asByteArray(T data, String encodingCharset) throws IOException;
 
-	@Override
-	public byte @Nullable [] asByteArray() throws IOException {
-		return conversionSupport.asByteArray(data);
-	}
+	InputStream asInputStream(T data, String encodingCharset) throws IOException;
 
-	@Override
-	public InputStream asInputStream() throws IOException {
-		return conversionSupport.asInputStream(data);
-	}
-
-	@Override
-	public InputStream asInputStream(String encodingCharset) throws IOException {
-		return conversionSupport.asInputStream(data, encodingCharset);
-	}
-
-	@Override
-	public @Nullable InputSource asInputSource() throws IOException {
-		return conversionSupport.asInputSource(data);
-	}
-
-	@Override
-	public @Nullable Source asSource() throws IOException, SAXException {
-		return conversionSupport.asSource(data);
-	}
-
-	@Override
-	public long size() {
-		return conversionSupport.size(data);
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return conversionSupport.isEmpty(data);
+	default @Nullable InputSource asInputSource(T data) throws IOException {
+		return new InputSource(asReader(data));
 	}
 }

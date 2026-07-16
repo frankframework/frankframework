@@ -25,7 +25,7 @@ import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
-public class ThrowingSupplierConverter implements BinaryDataConversionSupport<ThrowingSupplier<InputStream, Exception>> {
+final class ThrowingSupplierConverter implements TypedBinaryDataConverter<ThrowingSupplier<InputStream, Exception>> {
 
 	@Override
 	public long size(ThrowingSupplier<InputStream, Exception> data) {

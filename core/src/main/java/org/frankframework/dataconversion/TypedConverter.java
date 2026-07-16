@@ -17,25 +17,34 @@ package org.frankframework.dataconversion;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
+
+import javax.xml.transform.Source;
 
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
-public interface CharacterDataConversionSupport<T> extends ConversionSupport<T> {
-	default boolean isBinary(T data) {
-		return false;
+import org.frankframework.util.XmlUtils;
+
+public interface TypedConverter<T> {
+
+	boolean isBinary(T data);
+
+	long size(T data);
+	default boolean isEmpty(T data) {
+		return size(data) == 0;
 	}
 
-	@Nullable String asString(T data) throws IOException;
+	byte @Nullable[] asByteArray(T data) throws IOException;
+	InputStream asInputStream(T data) throws IOException;
 
-	Reader asReader(T data) throws IOException;
+	@Nullable InputSource asInputSource(T data) throws IOException;
 
-	byte @Nullable [] asByteArray(T data, String encodingCharset) throws IOException;
-
-	InputStream asInputStream(T data, String encodingCharset) throws IOException;
-
-	default @Nullable InputSource asInputSource(T data) throws IOException {
-		return new InputSource(asReader(data));
+	default @Nullable Source asSource(T data) throws IOException, SAXException {
+		InputSource inputSource = asInputSource(data);
+		if (inputSource == null) {
+			return null;
+		}
+		return XmlUtils.inputSourceToSAXSource(inputSource);
 	}
 }

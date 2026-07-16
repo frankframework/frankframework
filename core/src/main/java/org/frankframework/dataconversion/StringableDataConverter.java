@@ -23,7 +23,7 @@ import java.io.StringReader;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
-abstract class StringableDataConverter<T> implements CharacterDataConversionSupport<T> {
+abstract class StringableDataConverter<T> implements TypedCharacterDataConverter<T> {
 
 	@Override
 	public String asString(T data) {

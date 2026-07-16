@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public sealed interface DataConverter permits TypedBinaryDataConverter, TypedCharacterDataConverter, NullDataConverter {
+public interface DataConverter {
 	boolean isBinary();
 
 	long size();
