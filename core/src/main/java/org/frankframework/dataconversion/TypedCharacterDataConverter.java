@@ -19,23 +19,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
 interface TypedCharacterDataConverter<T> extends TypedConverter<T> {
-	default boolean isBinary(T data) {
-		return false;
-	}
 
-	@Nullable String asString(T data) throws IOException;
+	String asString(T data) throws IOException;
 
 	Reader asReader(T data) throws IOException;
 
-	byte @Nullable [] asByteArray(T data, String encodingCharset) throws IOException;
+	byte[] asByteArray(T data, String encodingCharset) throws IOException;
 
 	InputStream asInputStream(T data, String encodingCharset) throws IOException;
 
-	default @Nullable InputSource asInputSource(T data) throws IOException {
+	default InputSource asInputSource(T data) throws IOException {
 		return new InputSource(asReader(data));
 	}
 }

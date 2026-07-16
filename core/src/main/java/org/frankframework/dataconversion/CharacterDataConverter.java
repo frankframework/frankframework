@@ -21,7 +21,6 @@ import java.io.Reader;
 
 import javax.xml.transform.Source;
 
-import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -44,7 +43,7 @@ final class CharacterDataConverter<T> extends AbstractDataConverter<T> implement
 	}
 
 	@Override
-	public @Nullable String asString() throws IOException {
+	public String asString() throws IOException {
 		return converter.asString(data);
 	}
 
@@ -54,12 +53,7 @@ final class CharacterDataConverter<T> extends AbstractDataConverter<T> implement
 	}
 
 	@Override
-	public byte @Nullable [] asByteArray(String encodingCharset) throws IOException {
-		return converter.asByteArray(data, encodingCharset);
-	}
-
-	@Override
-	public byte @Nullable [] asByteArray() throws IOException {
+	public byte[] asByteArray() throws IOException {
 		return converter.asByteArray(data);
 	}
 
@@ -74,12 +68,12 @@ final class CharacterDataConverter<T> extends AbstractDataConverter<T> implement
 	}
 
 	@Override
-	public @Nullable InputSource asInputSource() throws IOException {
+	public InputSource asInputSource() throws IOException {
 		return converter.asInputSource(data);
 	}
 
 	@Override
-	public @Nullable Source asSource() throws IOException, SAXException {
+	public Source asSource() throws IOException, SAXException {
 		return converter.asSource(data);
 	}
 

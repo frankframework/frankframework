@@ -20,7 +20,6 @@ import java.io.InputStream;
 
 import javax.xml.transform.Source;
 
-import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -28,7 +27,6 @@ import org.frankframework.util.XmlUtils;
 
 public interface TypedConverter<T> {
 
-	boolean isBinary(T data);
 	default boolean prefersStreaming() {
 		return false;
 	}
@@ -38,16 +36,12 @@ public interface TypedConverter<T> {
 		return size(data) == 0;
 	}
 
-	byte @Nullable[] asByteArray(T data) throws IOException;
+	byte[] asByteArray(T data) throws IOException;
 	InputStream asInputStream(T data) throws IOException;
 
-	@Nullable InputSource asInputSource(T data) throws IOException;
+	InputSource asInputSource(T data) throws IOException;
 
-	default @Nullable Source asSource(T data) throws IOException, SAXException {
-		InputSource inputSource = asInputSource(data);
-		if (inputSource == null) {
-			return null;
-		}
-		return XmlUtils.inputSourceToSAXSource(inputSource);
+	default Source asSource(T data) throws IOException, SAXException {
+		return XmlUtils.inputSourceToSAXSource(asInputSource(data));
 	}
 }

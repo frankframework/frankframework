@@ -477,13 +477,11 @@ public class Message implements Serializable {
 	}
 
 	/**
-	 * Return the request object as a byte array.
+	 * Return the request object as a byte array with the specified character encoding.
 	 */
 	public byte @Nullable[] asByteArray(@Nullable String defaultEncodingCharset) throws IOException {
-		if (StringUtils.isEmpty(defaultEncodingCharset)) {
-			return dataConverter.asByteArray();
-		}
-		return dataConverter.asByteArray(defaultEncodingCharset);
+		if (isNull()) return null;
+		return StreamUtil.streamToBytes(asInputStream(defaultEncodingCharset));
 	}
 
 	/**

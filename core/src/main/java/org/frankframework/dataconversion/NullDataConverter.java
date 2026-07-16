@@ -69,11 +69,6 @@ final class NullDataConverter implements DataConverter {
 	}
 
 	@Override
-	public byte @Nullable [] asByteArray(String encodingCharset) throws IOException {
-		return null;
-	}
-
-	@Override
 	public InputStream asInputStream() throws IOException {
 		return new BufferedInputStream(InputStream.nullInputStream());
 	}

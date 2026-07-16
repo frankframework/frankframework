@@ -60,7 +60,7 @@ final class BinaryDataConverter<T> extends AbstractDataConverter<T> implements D
 	}
 
 	@Override
-	public @Nullable String asString() throws IOException {
+	public String asString() throws IOException {
 		return converter.asString(data, getCharsetOrDefault());
 	}
 
@@ -80,19 +80,8 @@ final class BinaryDataConverter<T> extends AbstractDataConverter<T> implements D
 	}
 
 	@Override
-	public byte @Nullable [] asByteArray() throws IOException {
+	public byte[] asByteArray() throws IOException {
 		return converter.asByteArray(data);
-	}
-
-	@Override
-	public byte @Nullable [] asByteArray(String encodingCharset) throws IOException {
-		String sourceCharset = getCharsetOrNull();
-		if (StringUtils.isEmpty(sourceCharset) || isEmpty()) {
-			return asByteArray();
-		}
-		try (InputStream is = asInputStream(sourceCharset, encodingCharset)) {
-			return is.readAllBytes();
-		}
 	}
 
 	@Override
@@ -115,12 +104,12 @@ final class BinaryDataConverter<T> extends AbstractDataConverter<T> implements D
 	}
 
 	@Override
-	public @Nullable Source asSource() throws IOException, SAXException {
+	public Source asSource() throws IOException, SAXException {
 		return converter.asSource(data);
 	}
 
 	@Override
-	public @Nullable InputSource asInputSource() throws IOException {
+	public InputSource asInputSource() throws IOException {
 		String charset = getCharsetOrNull();
 		if (StringUtils.isEmpty(charset)) {
 			return converter.asInputSource(data);

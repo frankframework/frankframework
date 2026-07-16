@@ -19,8 +19,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jspecify.annotations.Nullable;
-
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
@@ -38,7 +36,7 @@ final class ThrowingSupplierConverter implements TypedBinaryDataConverter<Throwi
 	}
 
 	@Override
-	public byte @Nullable [] asByteArray(ThrowingSupplier<InputStream, Exception> data) throws IOException {
+	public byte[] asByteArray(ThrowingSupplier<InputStream, Exception> data) throws IOException {
 		return StreamUtil.streamToBytes(asInputStream(data));
 	}
 

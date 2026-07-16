@@ -18,18 +18,14 @@ package org.frankframework.dataconversion;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
 interface TypedBinaryDataConverter<T> extends TypedConverter<T> {
-	default boolean isBinary(T data) {
-		return true;
-	}
 
-	default @Nullable String asString(T data, String encodingCharset) throws IOException {
+	default String asString(T data, String encodingCharset) throws IOException {
 		long size = size(data);
 		return StreamUtil.readerToString(asReader(data, encodingCharset), null, false, size == Message.MESSAGE_SIZE_UNKNOWN ? 0 : 32 + (int) size);
 	}
@@ -38,11 +34,11 @@ interface TypedBinaryDataConverter<T> extends TypedConverter<T> {
 		return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(data), encodingCharset);
 	}
 
-	default @Nullable InputSource asInputSource(T data) throws IOException {
+	default InputSource asInputSource(T data) throws IOException {
 		return new InputSource(asInputStream(data));
 	}
 
-	default @Nullable InputSource asInputSource(T data, String charset) throws IOException {
+	default InputSource asInputSource(T data, String charset) throws IOException {
 		return new InputSource(asReader(data, charset));
 	}
 }

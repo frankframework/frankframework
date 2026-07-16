@@ -37,8 +37,6 @@ public interface DataConverter {
 
 	byte @Nullable [] asByteArray() throws IOException;
 
-	byte @Nullable [] asByteArray(String encodingCharset) throws IOException;
-
 	Reader asReader() throws IOException;
 
 	InputStream asInputStream() throws IOException;
