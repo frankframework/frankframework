@@ -97,6 +97,7 @@ public class DateFormatUtils {
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\w+$"), FULL_ISO_FORMATTER),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm:ss")),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm")),
 				Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm:ss")),
 				Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy/MM/dd HH:mm:ss")),
 				Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd MMM yyyy HH:mm:ss")),
