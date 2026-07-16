@@ -759,7 +759,6 @@
 		<dependency>
 			<groupId>com.icegreen</groupId>
 			<artifactId>greenmail-junit5</artifactId>
-			<version>2.1.9</version>
 			<scope>test</scope>
 		</dependency>
 

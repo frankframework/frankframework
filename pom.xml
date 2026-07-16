@@ -125,14 +125,14 @@
 		<activemq.driver.version>6.2.7</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
-		<rabbitmq.driver.version>5.33.1</rabbitmq.driver.version>
+		<rabbitmq.driver.version>5.34.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.7.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.39.2</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.23.0</mockito.version>
-		<junit.version>6.1.1</junit.version>
+		<junit.version>6.1.2</junit.version>
 	</properties>
 
 	<dependencyManagement>
@@ -729,6 +729,12 @@
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-junit-jupiter</artifactId>
 				<version>${mockito.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.icegreen</groupId>
+				<artifactId>greenmail-junit5</artifactId>
+				<version>2.1.10</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
