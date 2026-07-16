@@ -495,7 +495,7 @@ public class Message implements Serializable {
 	}
 
 	public boolean isNull() {
-		return dataConverter.asRawObject() == null;
+		return dataConverter.isNull();
 	}
 
 	/** @return true if the request is or extends of the specified type at parameter clazz */

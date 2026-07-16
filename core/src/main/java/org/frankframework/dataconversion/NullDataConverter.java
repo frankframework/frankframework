@@ -39,6 +39,11 @@ final class NullDataConverter implements DataConverter {
 	}
 
 	@Override
+	public boolean isNull() {
+		return true;
+	}
+
+	@Override
 	public boolean prefersStreaming() {
 		return false;
 	}

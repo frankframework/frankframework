@@ -27,9 +27,12 @@ import org.xml.sax.SAXException;
 
 public interface DataConverter {
 	boolean isBinary();
+	boolean isEmpty();
+	default boolean isNull()  {
+		return false;
+	}
 	boolean prefersStreaming();
 	long size();
-	boolean isEmpty();
 
 	@Nullable Object asRawObject();
 
