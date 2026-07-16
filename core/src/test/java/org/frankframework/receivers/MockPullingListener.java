@@ -9,9 +9,10 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IPullingListener;
+import org.frankframework.core.IRedeliveringListener;
 import org.frankframework.core.ListenerException;
 
-public class MockPullingListener extends MockListenerBase implements IPullingListener<String> {
+public class MockPullingListener extends MockListenerBase implements IPullingListener<String>, IRedeliveringListener<String> {
 	private final BlockingQueue<String> value = new ArrayBlockingQueue<>(5);
 
 	@NonNull
@@ -42,4 +43,8 @@ public class MockPullingListener extends MockListenerBase implements IPullingLis
 		return null;
 	}
 
+	@Override
+	public boolean messageWillBeRedeliveredOnExitStateError() {
+		return true;
+	}
 }
