@@ -29,6 +29,9 @@ import org.frankframework.util.XmlUtils;
 public interface TypedConverter<T> {
 
 	boolean isBinary(T data);
+	default boolean prefersStreaming() {
+		return false;
+	}
 
 	long size(T data);
 	default boolean isEmpty(T data) {

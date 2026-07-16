@@ -28,6 +28,11 @@ import org.frankframework.util.StreamUtil;
 final class ThrowingSupplierConverter implements TypedBinaryDataConverter<ThrowingSupplier<InputStream, Exception>> {
 
 	@Override
+	public boolean prefersStreaming() {
+		return true;
+	}
+
+	@Override
 	public long size(ThrowingSupplier<InputStream, Exception> data) {
 		return Message.MESSAGE_SIZE_UNKNOWN;
 	}

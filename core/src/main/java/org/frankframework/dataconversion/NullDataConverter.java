@@ -27,9 +27,20 @@ import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
 final class NullDataConverter implements DataConverter {
+
+	@Override
+	public @Nullable Object asRawObject() {
+		return null;
+	}
+
 	@Override
 	public boolean isBinary() {
 		return true;
+	}
+
+	@Override
+	public boolean prefersStreaming() {
+		return false;
 	}
 
 	@Override

@@ -24,6 +24,11 @@ import org.frankframework.util.StreamUtil;
 final class SerializableFileReferenceConverter implements TypedBinaryDataConverter<SerializableFileReference> {
 
 	@Override
+	public boolean prefersStreaming() {
+		return true;
+	}
+
+	@Override
 	public long size(SerializableFileReference data) {
 		return data.getSize();
 	}

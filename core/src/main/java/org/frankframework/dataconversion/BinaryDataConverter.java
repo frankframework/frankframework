@@ -41,22 +41,27 @@ final class BinaryDataConverter<T> extends AbstractDataConverter<T> implements D
 		this.charsetSupplier = charsetSupplier;
 	}
 
-	@Override
-	public boolean isBinary() {
-		return true;
-	}
-
-	@Override
-	public @Nullable String asString() throws IOException {
-		return converter.asString(data, getCharsetOrDefault());
-	}
-
 	private @Nullable String getCharsetOrNull() throws IOException {
 		return charsetSupplier.get();
 	}
 
 	private String getCharsetOrDefault() throws IOException {
 		return Optional.ofNullable(charsetSupplier.get()).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+
+	@Override
+	public boolean isBinary() {
+		return true;
+	}
+
+	@Override
+	public boolean prefersStreaming() {
+		return converter.prefersStreaming();
+	}
+
+	@Override
+	public @Nullable String asString() throws IOException {
+		return converter.asString(data, getCharsetOrDefault());
 	}
 
 	@Override

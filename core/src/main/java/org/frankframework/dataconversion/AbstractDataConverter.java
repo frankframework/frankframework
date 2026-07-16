@@ -15,10 +15,17 @@
 */
 package org.frankframework.dataconversion;
 
-abstract class AbstractDataConverter<T> {
+import org.jspecify.annotations.Nullable;
+
+abstract class AbstractDataConverter<T> implements DataConverter {
 	protected final T data;
 
 	protected AbstractDataConverter(T data) {
 		this.data = data;
+	}
+
+	@Override
+	public @Nullable Object asRawObject() {
+		return data;
 	}
 }

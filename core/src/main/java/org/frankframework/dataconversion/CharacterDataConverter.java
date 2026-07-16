@@ -39,6 +39,11 @@ final class CharacterDataConverter<T> extends AbstractDataConverter<T> implement
 	}
 
 	@Override
+	public boolean prefersStreaming() {
+		return converter.prefersStreaming();
+	}
+
+	@Override
 	public @Nullable String asString() throws IOException {
 		return converter.asString(data);
 	}
