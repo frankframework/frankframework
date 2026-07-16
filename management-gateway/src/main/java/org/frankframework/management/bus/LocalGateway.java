@@ -53,7 +53,7 @@ public class LocalGateway extends MessagingGatewaySupport implements OutboundGat
 		}
 
 		long timeout = getSendTimeout(requestMessage) + getReceiveTimeout(requestMessage);
-		throw new BusException("no reponse found on reply-queue within receiveTimeout ["+timeout+"]");
+		throw new BusException("no response found on reply-queue within receiveTimeout ["+timeout+"]");
 	}
 
 	private long getSendTimeout(Message<?> requestMessage) {
