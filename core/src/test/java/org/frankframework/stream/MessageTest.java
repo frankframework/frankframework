@@ -1028,7 +1028,8 @@ public class MessageTest {
 		assertEquals(utf8Input, binaryMessage.asString()); // Default must be used
 
 		Message characterMessage = new Message(utf8Input);
-		assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); // This should not be used as there is no binary conversion
+		characterMessage.setCharset("ISO-8859-1"); // This should not be used as there is no binary conversion
+		assertEquals(utf8Input, characterMessage.asString());
 	}
 
 	@Test
@@ -1037,7 +1038,7 @@ public class MessageTest {
 		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes(StandardCharsets.UTF_8));
 		Message message = new Message(source, "auto"); // Set the MessageContext charset
 
-		String stringResult = message.asString("ISO-8859-ik-besta-niet"); // use MessageContext charset
+		String stringResult = message.asString();
 		assertEquals(utf8Input, stringResult);
 	}
 
@@ -1047,7 +1048,8 @@ public class MessageTest {
 		assertNotNull(isoInputFile, "unable to find isoInputFile");
 
 		Message message = new UrlMessage(isoInputFile); // repeatable stream, detect charset
-		String stringResult = message.asString("auto"); // detect when reading
+		message.setCharset(StreamUtil.AUTO_DETECT_CHARSET);
+		String stringResult = message.asString(); // detect when reading
 		assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
 	}
 
@@ -1090,13 +1092,13 @@ public class MessageTest {
 		};
 
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
-			message.asString("auto"); // calls asReader();
 			message.asString(); // calls asReader();
-			message.asString("auto"); // calls asReader();
 			message.asString(); // calls asReader();
-			message.asString("auto"); // calls asReader();
 			message.asString(); // calls asReader();
-			message.asString("auto"); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString(); // calls asReader();
 			message.asString(); // calls asReader();
 			int i = 0;
 			for (String logLine : appender.getLogLines()) {

@@ -46,7 +46,8 @@ class MessageUtilsCharsetDetectionTest {
 		assertEquals(expectedCharset, computedCharset, "charset mismatch");
 
 		if(fileContent != null) {
-			String asString = message.asString(computedCharset == null ? null : computedCharset.name());
+			message.setCharset(computedCharset == null ? null : computedCharset.name());
+			String asString = message.asString();
 
 			assertEquals(fileContent, asString, "fileContent mismatch");
 		}
@@ -61,7 +62,8 @@ class MessageUtilsCharsetDetectionTest {
 		assertNotNull(url, "cannot find test file ["+testFile+"]");
 
 		Message message = spy(new UrlMessage(url));
-		String result = message.asString("auto");
+		message.setCharset(StreamUtil.AUTO_DETECT_CHARSET);
+		String result = message.asString();
 
 		assertEquals(expectedCharset.name(), message.getCharset(), "charset mismatch");
 

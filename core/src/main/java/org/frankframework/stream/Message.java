@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.xml.transform.Source;
 
@@ -258,6 +259,10 @@ public class Message implements Serializable {
 		return computedCharset != null ? computedCharset.name() : null;
 	}
 
+	private String computeCharsetOrDefault() throws IOException {
+		return Optional.ofNullable(computeCharsetOrNull()).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+
 	/**
 	 * If no Charset was provided when the Message object was created and
 	 * the requested Charset is <code>auto</code>, try to parse the Charset using
@@ -265,6 +270,7 @@ public class Message implements Serializable {
 	 *
 	 * If unsuccessful return the default Charset: {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING UTF_8}.
 	 *
+	 * TODO: I'm sure we still need this method somewhere, and not only in tests?
 	 * @param defaultDecodingCharset The 'I know better' Charset, only used when no Charset is provided when the Message was created.
 	 */
 	protected String computeDecodingCharset(@Nullable String defaultDecodingCharset) throws IOException {
@@ -374,7 +380,7 @@ public class Message implements Serializable {
 			return;
 		}
 		if (request instanceof String string) {
-			request = SerializableFileReference.of(string, computeDecodingCharset(null));
+			request = SerializableFileReference.of(string, computeCharsetOrDefault());
 		} else if (request instanceof byte[] bytes) {
 			request = SerializableFileReference.of(bytes);
 		} else if (deepPreserve) {
@@ -383,7 +389,7 @@ public class Message implements Serializable {
 				request = SerializableFileReference.of(asInputStream());
 			} else {
 				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
-				request = SerializableFileReference.of(asReader(), computeDecodingCharset(null));
+				request = SerializableFileReference.of(asReader(), computeCharsetOrDefault());
 			}
 		}
 		this.dataConverter = DataConverterFactory.getConverter(this.request);
@@ -416,7 +422,7 @@ public class Message implements Serializable {
 	public Reader asReader() throws IOException {
 		return switch (dataConverter) {
 			case CharacterDataConverter cdc -> cdc.asReader();
-			case BinaryDataConverter bdc -> bdc.asReader(computeDecodingCharset(null));
+			case BinaryDataConverter bdc -> bdc.asReader(computeCharsetOrDefault());
 		};
 	}
 
@@ -524,17 +530,9 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public String asString() throws IOException {
-		return asString(null);
-	}
-
-	/**
-	 * return the request object as a String.
-	 */
-	@Nullable
-	public String asString(@Nullable String decodingCharset) throws IOException {
 		return switch (dataConverter) {
 			case CharacterDataConverter cdc -> cdc.asString();
-			case BinaryDataConverter bdc -> bdc.asString(computeDecodingCharset(decodingCharset));
+			case BinaryDataConverter bdc -> bdc.asString(computeCharsetOrDefault());
 		};
 	}
 

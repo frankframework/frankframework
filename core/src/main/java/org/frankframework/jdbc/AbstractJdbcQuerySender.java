@@ -528,7 +528,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			try {
 				if (contents != null) {
 					InputStream inputStream;
-					if (StringUtils.isNotEmpty(getStreamCharset())) {
+					if (StringUtils.isNotEmpty(getStreamCharset()) && StringUtils.isEmpty(contents.getCharset())) {
 						Message copy = contents.copyMessage();
 						copy.setCharset(getStreamCharset());
 						inputStream = copy.asInputStream(getBlobCharset());
@@ -564,7 +564,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			try {
 				if (contents != null) {
 					Reader reader;
-					if (StringUtils.isNotEmpty(getStreamCharset())) {
+					if (StringUtils.isNotEmpty(getStreamCharset()) && StringUtils.isEmpty(contents.getCharset())) {
 						Message copy = contents.copyMessage();
 						copy.setCharset(getStreamCharset());
 						reader = copy.asReader();
