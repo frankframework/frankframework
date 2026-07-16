@@ -21,6 +21,7 @@ import jakarta.jms.Destination;
 import jakarta.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -189,7 +190,7 @@ public class PushingJmsListener extends AbstractJmsListener implements IPortConn
 	}
 
 	@Override
-	public int getDeliveryCount(RawMessageWrapper<Message> rawMessage) {
+	public int getDeliveryCount(@NonNull RawMessageWrapper<Message> rawMessage) {
 		try {
 			Message message=rawMessage.getRawMessage();
 			// Note: Tibco doesn't set the JMSXDeliveryCount for messages

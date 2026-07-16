@@ -19,6 +19,8 @@ import java.lang.reflect.Field;
 
 import jakarta.jms.Message;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.extensions.esb.EsbJmsListener;
 import org.frankframework.jta.narayana.NarayanaTransactionHelper;
@@ -51,7 +53,7 @@ public class CustomHighDeliveryCountEsbJmsListener extends EsbJmsListener {
 	}
 
 	@Override
-	public int getDeliveryCount(RawMessageWrapper<Message> rawMessage) {
+	public int getDeliveryCount(@NonNull RawMessageWrapper<Message> rawMessage) {
 		return 100;
 	}
 }
