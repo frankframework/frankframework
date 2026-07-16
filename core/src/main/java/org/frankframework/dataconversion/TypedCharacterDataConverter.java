@@ -25,12 +25,17 @@ import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public final class TypedCharacterDataConverter<T> extends AbstractTypedDataConverter<T> implements CharacterDataConverter {
+public final class TypedCharacterDataConverter<T> extends AbstractTypedDataConverter<T> implements DataConverter {
 	private final CharacterDataConversionSupport<T> conversionSupport;
 
 	public TypedCharacterDataConverter(T data, CharacterDataConversionSupport<T> conversionSupport) {
 		super(data);
 		this.conversionSupport = conversionSupport;
+	}
+
+	@Override
+	public boolean isBinary() {
+		return false;
 	}
 
 	@Override

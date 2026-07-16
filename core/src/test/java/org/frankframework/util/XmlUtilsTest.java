@@ -1,6 +1,8 @@
 package org.frankframework.util;
 
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreWhitespaces;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -361,8 +363,9 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		xmlReader.parse(source);
 
 		// Assert
-		assertTrue(handler.toString().contains("håndværkere"));
-		assertTrue(handler.toString().contains("værgeløn"));
+		String result = handler.toString();
+		assertThat(result, containsString("håndværkere"));
+		assertThat(result, containsString("værgeløn"));
 	}
 
 	static Stream<Arguments> testRemoveNamespaces() {

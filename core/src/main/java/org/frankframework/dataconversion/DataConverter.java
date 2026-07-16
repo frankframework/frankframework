@@ -17,6 +17,7 @@ package org.frankframework.dataconversion;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 
 import javax.xml.transform.Source;
 
@@ -24,14 +25,23 @@ import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public sealed interface DataConverter permits CharacterDataConverter, BinaryDataConverter {
+public sealed interface DataConverter permits TypedBinaryDataConverter, TypedCharacterDataConverter, NullDataConverter {
 	boolean isBinary();
 
 	long size();
 	boolean isEmpty();
 
+	@Nullable String asString() throws IOException;
+
 	byte @Nullable [] asByteArray() throws IOException;
+
+	byte @Nullable [] asByteArray(String encodingCharset) throws IOException;
+
+	Reader asReader() throws IOException;
+
 	InputStream asInputStream() throws IOException;
+
+	InputStream asInputStream(String encodingCharset) throws IOException;
 
 	@Nullable InputSource asInputSource() throws IOException;
 

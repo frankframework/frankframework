@@ -32,7 +32,6 @@ import java.nio.file.Path;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 import javax.xml.transform.Source;
 
@@ -48,8 +47,6 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
-import org.frankframework.dataconversion.BinaryDataConverter;
-import org.frankframework.dataconversion.CharacterDataConverter;
 import org.frankframework.dataconversion.DataConverter;
 import org.frankframework.dataconversion.DataConverterFactory;
 import org.frankframework.functional.ThrowingSupplier;
@@ -105,7 +102,7 @@ public class Message implements Serializable {
 		} else {
 			this.request = request;
 		}
-		this.dataConverter = DataConverterFactory.getConverter(request);
+		this.dataConverter = DataConverterFactory.getConverter(request, this::computeCharsetOrNull);
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
@@ -139,7 +136,7 @@ public class Message implements Serializable {
 		this.requestClass = ClassUtils.nameOf(request);
 		Message temporaryMessage = MessageUtils.fromReader(request);
 		copyFromTemporaryMessage(temporaryMessage);
-		this.dataConverter = DataConverterFactory.getConverter(this.request);
+		this.dataConverter = DataConverterFactory.getConverter(this.request, this::computeCharsetOrNull);
 		if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
 			// Ensure charset is now always UTF-8 because that's what it is after converting from stream
 			this.context.withCharset(StandardCharsets.UTF_8);
@@ -181,7 +178,7 @@ public class Message implements Serializable {
 		this.requestClass = ClassUtils.nameOf(requestClass);
 		Message temporaryMessage = MessageUtils.fromInputStream(request);
 		copyFromTemporaryMessage(temporaryMessage);
-		this.dataConverter = DataConverterFactory.getConverter(this.request);
+		this.dataConverter = DataConverterFactory.getConverter(this.request, this::computeCharsetOrNull);
 	}
 
 	private void copyFromTemporaryMessage(Message temporaryMessage) {
@@ -260,7 +257,12 @@ public class Message implements Serializable {
 	}
 
 	private String computeCharsetOrDefault() throws IOException {
-		return Optional.ofNullable(computeCharsetOrNull()).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		String charset = computeCharsetOrNull();
+		if (StringUtils.isNotEmpty(charset)) {
+			return charset;
+		}
+		setCharset(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	}
 
 	/**
@@ -337,15 +339,14 @@ public class Message implements Serializable {
 				InputStream inputStream = serializableFileReference.getInputStream()) {
 				inputStream.transferTo(bos);
 				this.request = bos.toByteArray();
-				this.dataConverter = DataConverterFactory.getConverter(this.request);
 			}
 		} else {
 			try (StringWriter sw = new StringWriter(); Reader reader = serializableFileReference.getReader()) {
 				reader.transferTo(sw);
 				this.request = sw.toString();
-				this.dataConverter = DataConverterFactory.getConverter(this.request);
 			}
 		}
+		this.dataConverter = DataConverterFactory.getConverter(this.request, this::computeCharsetOrNull);
 		serializableFileReference.close();
 	}
 
@@ -361,7 +362,7 @@ public class Message implements Serializable {
 			if (request instanceof ThrowingSupplier<?, ?>) {
 				LOG.debug("deep preserving {} as byte[]", this::getObjectId);
 				request = asByteArray();
-				this.dataConverter = DataConverterFactory.getConverter(this.request);
+				this.dataConverter = DataConverterFactory.getConverter(this.request, this::computeCharsetOrNull);
 			} else if (request instanceof SerializableFileReference serializableFileReference) {
 				// Load smaller serializable files into memory for better performance.
 				loadSerializableFileReferenceToMemory(serializableFileReference);
@@ -392,7 +393,7 @@ public class Message implements Serializable {
 				request = SerializableFileReference.of(asReader(), computeCharsetOrDefault());
 			}
 		}
-		this.dataConverter = DataConverterFactory.getConverter(this.request);
+		this.dataConverter = DataConverterFactory.getConverter(this.request, this::computeCharsetOrNull);
 	}
 
 	/**
@@ -420,10 +421,7 @@ public class Message implements Serializable {
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
 	 */
 	public Reader asReader() throws IOException {
-		return switch (dataConverter) {
-			case CharacterDataConverter cdc -> cdc.asReader();
-			case BinaryDataConverter bdc -> bdc.asReader(computeCharsetOrDefault());
-		};
+		return dataConverter.asReader();
 	}
 
 	/**
@@ -442,17 +440,7 @@ public class Message implements Serializable {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
 			return dataConverter.asInputStream();
 		}
-		return switch (dataConverter) {
-			case CharacterDataConverter cdc -> cdc.asInputStream(defaultEncodingCharset);
-			case BinaryDataConverter bdc -> {
-				String charset = computeCharsetOrNull();
-				if (StringUtils.isEmpty(charset)) {
-					yield bdc.asInputStream();
-				}
-				// Character data to be reconverted into another character set
-				yield bdc.asInputStream(charset, defaultEncodingCharset);
-			}
-		};
+		return dataConverter.asInputStream(defaultEncodingCharset);
 	}
 
 	public synchronized String peek(int readLimit) throws IOException {
@@ -477,14 +465,6 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public InputSource asInputSource() throws IOException {
-		if (!(dataConverter instanceof BinaryDataConverter bdc)) {
-			return dataConverter.asInputSource();
-
-		}
-		String charset = computeCharsetOrNull();
-		if (StringUtils.isNotEmpty(charset)) {
-			return bdc.asInputSource(charset);
-		}
 		return dataConverter.asInputSource();
 	}
 
@@ -510,17 +490,7 @@ public class Message implements Serializable {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
 			return dataConverter.asByteArray();
 		}
-		return switch (dataConverter) {
-			case CharacterDataConverter cdc -> cdc.asByteArray(defaultEncodingCharset);
-			case BinaryDataConverter bdc when StringUtils.isNotEmpty(getCharset()) -> {
-				String charset = computeCharsetOrNull();
-				if (StringUtils.isEmpty(charset)) {
-					yield bdc.asByteArray();
-				}
-				yield bdc.asByteArray(charset, defaultEncodingCharset);
-			}
-			default -> dataConverter.asByteArray();
-		};
+		return dataConverter.asByteArray(defaultEncodingCharset);
 	}
 
 	/**
@@ -530,10 +500,7 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public String asString() throws IOException {
-		return switch (dataConverter) {
-			case CharacterDataConverter cdc -> cdc.asString();
-			case BinaryDataConverter bdc -> bdc.asString(computeCharsetOrDefault());
-		};
+		return dataConverter.asString();
 	}
 
 	public boolean isNull() {
@@ -694,7 +661,7 @@ public class Message implements Serializable {
 			contextFromStream = new MessageContext().withCharset(charset);
 		}
 		context = contextFromStream;
-		dataConverter = DataConverterFactory.getConverter(request);
+		dataConverter = DataConverterFactory.getConverter(request, this::computeCharsetOrNull);
 	}
 
 	/**

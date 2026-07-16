@@ -18,30 +18,50 @@ package org.frankframework.dataconversion;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Optional;
 
 import javax.xml.transform.Source;
 
+import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public final class TypedBinaryDataConverter<T> extends AbstractTypedDataConverter<T> implements BinaryDataConverter {
+import org.frankframework.functional.ThrowingSupplier;
+import org.frankframework.util.StreamUtil;
+
+public final class TypedBinaryDataConverter<T> extends AbstractTypedDataConverter<T> implements DataConverter {
 	private final BinaryDataConversionSupport<T> conversionSupport;
+	private final ThrowingSupplier<@Nullable String, IOException> charsetSupplier;
 
-
-	public TypedBinaryDataConverter(T data, BinaryDataConversionSupport<T> conversionSupport) {
+	public TypedBinaryDataConverter(T data, BinaryDataConversionSupport<T> conversionSupport, ThrowingSupplier<@Nullable String, IOException> charsetSupplier) {
 		super(data);
 		this.conversionSupport = conversionSupport;
+		this.charsetSupplier = charsetSupplier;
 	}
 
 	@Override
-	public @Nullable String asString(String encodingCharset) throws IOException {
-		return conversionSupport.asString(data, encodingCharset);
+	public boolean isBinary() {
+		return true;
 	}
 
 	@Override
-	public Reader asReader(String encodingCharset) throws IOException {
-		return conversionSupport.asReader(data, encodingCharset);
+	public @Nullable String asString() throws IOException {
+		return conversionSupport.asString(data, getCharsetOrDefault());
+	}
+
+	private @Nullable String getCharsetOrNull() throws IOException {
+		return charsetSupplier.get();
+	}
+
+	private String getCharsetOrDefault() throws IOException {
+		return Optional.ofNullable(charsetSupplier.get()).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+	}
+
+	@Override
+	public Reader asReader() throws IOException {
+		return conversionSupport.asReader(data, getCharsetOrDefault());
 	}
 
 	@Override
@@ -60,8 +80,33 @@ public final class TypedBinaryDataConverter<T> extends AbstractTypedDataConverte
 	}
 
 	@Override
+	public byte @Nullable [] asByteArray(String encodingCharset) throws IOException {
+		String sourceCharset = getCharsetOrNull();
+		if (StringUtils.isEmpty(sourceCharset) || isEmpty()) {
+			return asByteArray();
+		}
+		try (InputStream is = asInputStream(sourceCharset, encodingCharset)) {
+			return is.readAllBytes();
+		}
+	}
+
+	@Override
 	public InputStream asInputStream() throws IOException {
 		return conversionSupport.asInputStream(data);
+	}
+
+	@Override
+	public InputStream asInputStream(String encodingCharset) throws IOException {
+		String sourceCharset = getCharsetOrNull();
+		if (StringUtils.isEmpty(sourceCharset) || isEmpty()) {
+			return asInputStream();
+		}
+		return asInputStream(encodingCharset, sourceCharset);
+	}
+
+	private ReaderInputStream asInputStream(String encodingCharset, String sourceCharset) throws IOException {
+		Reader reader = conversionSupport.asReader(data, sourceCharset);
+		return ReaderInputStream.builder().setReader(reader).setCharset(encodingCharset).get();
 	}
 
 	@Override
@@ -71,11 +116,10 @@ public final class TypedBinaryDataConverter<T> extends AbstractTypedDataConverte
 
 	@Override
 	public @Nullable InputSource asInputSource() throws IOException {
-		return conversionSupport.asInputSource(data);
-	}
-
-	@Override
-	public @Nullable InputSource asInputSource(String charset) throws IOException {
+		String charset = getCharsetOrNull();
+		if (StringUtils.isEmpty(charset)) {
+			return conversionSupport.asInputSource(data);
+		}
 		return conversionSupport.asInputSource(data, charset);
 	}
 }

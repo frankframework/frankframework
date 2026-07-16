@@ -16,6 +16,7 @@
 package org.frankframework.dataconversion;
 
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
@@ -44,7 +45,7 @@ public class DataConverterFactory {
 		// Private constructor to avoid instance creation
 	}
 
-	public static DataConverter getConverter(@Nullable Object data) {
+	public static DataConverter getConverter(@Nullable Object data, ThrowingSupplier<@Nullable String, IOException> charsetSupplier) {
 		return switch (data) {
 			case null -> nullDataConverter;
 			case Enum<?> anEnum -> new TypedCharacterDataConverter<>(anEnum, enumConverter);
@@ -52,10 +53,10 @@ public class DataConverterFactory {
 			case Number number -> new TypedCharacterDataConverter<>(number, numberConverter);
 			case String string -> new TypedCharacterDataConverter<>(string, stringConverter);
 			case Node node -> new TypedCharacterDataConverter<>(node, nodeConverter);
-			case byte[] bytes -> new TypedBinaryDataConverter<>(bytes, byteArrayConverter);
-			case SerializableFileReference serializableFileReference -> new TypedBinaryDataConverter<>(serializableFileReference, serializableFileReferenceConverter);
+			case byte[] bytes -> new TypedBinaryDataConverter<>(bytes, byteArrayConverter, charsetSupplier);
+			case SerializableFileReference serializableFileReference -> new TypedBinaryDataConverter<>(serializableFileReference, serializableFileReferenceConverter, charsetSupplier);
 			case ThrowingSupplier<?, ?> throwingSupplier -> //noinspection unchecked
-					new TypedBinaryDataConverter<>((ThrowingSupplier<InputStream, Exception>) throwingSupplier, throwingSupplierConverter);
+					new TypedBinaryDataConverter<>((ThrowingSupplier<InputStream, Exception>) throwingSupplier, throwingSupplierConverter, charsetSupplier);
 			case Date date -> new TypedCharacterDataConverter<>(date, dateConverter);
 			case TemporalAccessor temporalAccessor -> new TypedCharacterDataConverter<>(temporalAccessor, temporalAccessorConverter);
 			default -> throw new IllegalArgumentException("Unsupported data type: " + ClassUtils.classNameOf(data));

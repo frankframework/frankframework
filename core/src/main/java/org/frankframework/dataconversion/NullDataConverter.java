@@ -26,20 +26,20 @@ import javax.xml.transform.Source;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
-final class NullDataConverter implements BinaryDataConverter {
+final class NullDataConverter implements DataConverter {
 	@Override
-	public @Nullable String asString(String encodingCharset) {
+	public boolean isBinary() {
+		return true;
+	}
+
+	@Override
+	public @Nullable String asString() {
 		return null;
 	}
 
 	@Override
-	public Reader asReader(String encodingCharset) {
+	public Reader asReader() {
 		return new BufferedReader(Reader.nullReader());
-	}
-
-	@Override
-	public @Nullable InputSource asInputSource(String charset) {
-		return null;
 	}
 
 	@Override
@@ -58,7 +58,17 @@ final class NullDataConverter implements BinaryDataConverter {
 	}
 
 	@Override
+	public byte @Nullable [] asByteArray(String encodingCharset) throws IOException {
+		return null;
+	}
+
+	@Override
 	public InputStream asInputStream() throws IOException {
+		return new BufferedInputStream(InputStream.nullInputStream());
+	}
+
+	@Override
+	public InputStream asInputStream(String encodingCharset) throws IOException {
 		return new BufferedInputStream(InputStream.nullInputStream());
 	}
 
