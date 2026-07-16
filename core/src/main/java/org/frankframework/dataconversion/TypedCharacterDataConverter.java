@@ -27,8 +27,6 @@ interface TypedCharacterDataConverter<T> extends TypedConverter<T> {
 
 	Reader asReader(T data) throws IOException;
 
-	byte[] asByteArray(T data, String encodingCharset) throws IOException;
-
 	InputStream asInputStream(T data, String encodingCharset) throws IOException;
 
 	default InputSource asInputSource(T data) throws IOException {

@@ -57,9 +57,9 @@ final class ThrowingSupplierConverter implements TypedBinaryDataConverter<Throwi
 
 	@Override
 	public boolean isEmpty(ThrowingSupplier<InputStream, Exception> data) {
-		try (InputStream is = asInputStream(data)) {
+		try (InputStream is = data.get()) {
 			return is.read() == -1;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// On any exception, consider empty
 			return true;
 		}

@@ -32,11 +32,13 @@ public interface TypedConverter<T> {
 	}
 
 	long size(T data);
+
 	default boolean isEmpty(T data) {
 		return size(data) == 0;
 	}
 
 	byte[] asByteArray(T data) throws IOException;
+
 	InputStream asInputStream(T data) throws IOException;
 
 	InputSource asInputSource(T data) throws IOException;

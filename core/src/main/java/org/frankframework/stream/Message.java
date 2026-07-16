@@ -400,7 +400,7 @@ public class Message implements Serializable {
 	}
 
 	public boolean isBinary() {
-		return !context.containsKey(MessageContext.METADATA_CHARSET) && dataConverter.isBinary();
+		return dataConverter.isBinary() && !context.containsKey(MessageContext.METADATA_CHARSET);
 	}
 
 	/**

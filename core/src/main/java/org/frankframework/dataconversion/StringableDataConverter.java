@@ -45,8 +45,7 @@ abstract class StringableDataConverter<T> implements TypedCharacterDataConverter
 		return asString(data).getBytes();
 	}
 
-	@Override
-	public byte[] asByteArray(T data, String encodingCharset) throws IOException {
+	private byte[] asByteArray(T data, String encodingCharset) throws IOException {
 		return asString(data).getBytes(encodingCharset);
 	}
 

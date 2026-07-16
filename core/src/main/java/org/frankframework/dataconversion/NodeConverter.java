@@ -43,11 +43,6 @@ final class NodeConverter extends StringableDataConverter<Node> {
 	}
 
 	@Override
-	public byte[] asByteArray(Node data, String encodingCharset) {
-		return asByteArray(data);
-	}
-
-	@Override
 	public Source asSource(Node data) {
 		return new DOMSource(data);
 	}
