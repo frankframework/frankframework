@@ -187,7 +187,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public boolean messageWillBeRedeliveredOnExitStateError() {
-		return true;
+		return knownProcessStates().contains(ProcessState.INPROCESS);
 	}
 
 	@Override

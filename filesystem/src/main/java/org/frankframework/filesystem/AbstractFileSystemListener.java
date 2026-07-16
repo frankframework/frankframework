@@ -169,7 +169,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	@Override
 	public boolean messageWillBeRedeliveredOnExitStateError() {
-		return true;
+		return knownProcessStates().contains(ProcessState.INPROCESS);
 	}
 
 	@Override
