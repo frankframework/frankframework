@@ -1234,10 +1234,10 @@ public class ReceiverTest {
 		// Don't actually delay, but should be possible to verify
 		doNothing().when(receiver).suspendReceiverThread(anyLong());
 
-		doThrow(new ListenerException("forced error")).when(adapter).processMessageWithExceptions(startsWith("error-"), any(), any());
+		doThrow(new ListenerException("forced error")).when(adapter).processMessageWithExceptions(any(), startsWith("error-"), any(), any());
 		PipeLineResult successResult = new PipeLineResult();
 		successResult.setState(ExitState.SUCCESS);
-		doReturn(successResult).when(adapter).processMessageWithExceptions(startsWith("success-"), any(), any());
+		doReturn(successResult).when(adapter).processMessageWithExceptions(any(), startsWith("success-"), any(), any());
 
 		configuration.configure();
 		configuration.start();
