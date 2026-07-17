@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.0">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -508,6 +508,122 @@ This is so that errors coming from external systems so not overload those extern
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Receiver" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="receiver" use="prohibited" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:complexType name="KeystoreType">
+    <xs:annotation>
+      <xs:documentation>Container for Keystore data</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="keystoreResource" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.encryption.KeystoreConfiguration" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="keystore" use="prohibited" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:complexType name="TruststoreType">
+    <xs:attribute name="truststoreResource" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore or certificate. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore Default: JKS</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate in truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate indicated by &lt;code&gt;truststoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate indicated by &lt;code&gt;truststoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.encryption.TruststoreConfiguration" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="truststore" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="PipelineType">
@@ -1220,7 +1336,9 @@ Configure/start/stop lifecycles are managed by Spring.</xs:documentation>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+              <xs:element name="Keystore" type="KeystoreType" />
               <xs:group ref="ParamElementGroup" />
+              <xs:element name="Truststore" type="TruststoreType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -2597,6 +2715,11 @@ values will be ignored. Default: UTF-8</xs:documentation>
         <xs:documentation>Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. &lt;code&gt;IbisTester,IbisObserver&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="responseHeaderSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>An optional list of session keys to be used to set response-headers. Session key names should be separated with a &lt;pre&gt;,&lt;/pre&gt; or &lt;pre&gt;;&lt;/pre&gt;.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="multipartBodyName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Specify the form-part you wish to enter the pipeline.
@@ -3299,7 +3422,7 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="truststoreType">
       <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+        <xs:documentation>Type of truststore Default: JKS</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -3322,12 +3445,12 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
@@ -3397,10 +3520,22 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="FtpFileSystemListenerType">
-    <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+    <xs:group ref="FtpFileSystemListenerCumulativeChildGroup" />
     <xs:attributeGroup ref="FtpFileSystemListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.FtpFileSystemListener" use="prohibited" />
   </xs:complexType>
+  <xs:group name="FtpFileSystemListenerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="FtpFileSystemListenerCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="FtpFileSystemListenerDeclaredChildGroup" />
+      <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="FtpFileSystemListenerDeclaredAttributeGroup">
     <xs:attribute name="messageType">
       <xs:annotation>
@@ -3476,92 +3611,6 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
         <xs:union memberTypes="TransportTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="keystore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType">
-      <xs:annotation>
-        <xs:documentation>(ftps) Type of keystore Default: pkcs12</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keystoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias used to obtain keystore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to access keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Alias to obtain specific certificate or key in keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType">
-      <xs:annotation>
-        <xs:documentation>(ftps) Type of truststore Default: jks</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to access truststore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="prot">
       <xs:annotation>
         <xs:documentation>Sets the &lt;code&gt;Data Channel Protection Level&lt;/code&gt;. Default: C</xs:documentation>
@@ -3569,6 +3618,92 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
       <xs:simpleType>
         <xs:union memberTypes="ProtAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore Default: JKS</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FtpFileSystemListenerCumulativeAttributeGroup">
@@ -5509,7 +5644,9 @@ the StartTransfer WSDL (ESB service provided by Tibco).</xs:documentation>
       </xs:element>
       <xs:element name="OpenApiInputValidator">
         <xs:annotation>
-          <xs:documentation>Pipe that validates the input message against an OpenAPI specification.</xs:documentation>
+          <xs:documentation>Pipe that validates a message against an OpenAPI specification. If this is uses as an Input Validator it will try to resolve the correct schema based
+on the operation, path and method. In case of an Output validator, it will try to resolve the correct schema based on the operation, path, method and exit
+code.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -6329,7 +6466,9 @@ the StartTransfer WSDL (ESB service provided by Tibco).</xs:documentation>
       </xs:element>
       <xs:element name="OpenApiOutputValidator">
         <xs:annotation>
-          <xs:documentation>Pipe that validates the input message against an OpenAPI specification.</xs:documentation>
+          <xs:documentation>Pipe that validates a message against an OpenAPI specification. If this is uses as an Input Validator it will try to resolve the correct schema based
+on the operation, path and method. In case of an Output validator, it will try to resolve the correct schema based on the operation, path, method and exit
+code.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -7395,6 +7534,7 @@ N.B. the default values shown can be overridden using properties in appConstants
               <xs:element name="Forward" type="ForwardType" />
               <xs:group ref="InputValidatorElementGroup" />
               <xs:group ref="InputWrapperElementGroup" />
+              <xs:element name="Keystore" type="KeystoreType" />
               <xs:group ref="ListenerElementGroup_2" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ManagerElementGroup" />
@@ -7673,8 +7813,10 @@ The manager decides which handlers to be used for a specific record.</xs:documen
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="CacheElementGroup" />
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+              <xs:element name="Keystore" type="KeystoreType" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup_2" />
+              <xs:element name="Truststore" type="TruststoreType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -8641,7 +8783,7 @@ The &lt;code&gt;base64&lt;/code&gt; attribute is only used when the value of the
 or when the value of the attachment element is used. If &lt;code&gt;base64=true&lt;/code&gt; then the value will be decoded before it's used.
 &lt;/p&gt;&lt;p&gt;
 &lt;b&gt;Compilation and Deployment Note:&lt;/b&gt; mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
-Otherwise errors like the following might occur: &lt;code&gt;NoClassDefFoundException: com/sun/mail/util/MailDateFormat&lt;/code&gt;
+Otherwise, errors like the following might occur: &lt;code&gt;NoClassDefFoundException: com/sun/mail/util/MailDateFormat&lt;/code&gt;
 &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -9499,10 +9641,22 @@ always sent as binary messages, with an AMQP &lt;code&gt;Body&lt;/code&gt; secti
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CmisSenderType">
-    <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    <xs:group ref="CmisSenderCumulativeChildGroup" />
     <xs:attributeGroup ref="CmisSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.cmis.CmisSender" use="prohibited" />
   </xs:complexType>
+  <xs:group name="CmisSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="CmisSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="CmisSenderDeclaredChildGroup" />
+      <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="CmisSenderDeclaredAttributeGroup">
     <xs:attribute name="action" use="required">
       <xs:annotation>
@@ -9596,92 +9750,6 @@ Defaults to 10000, inherited from HttpSender#setTimeout. Default: 10000</xs:docu
         <xs:documentation>Override entrypoint WSDL by reading it from the classpath, overrides url attribute</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="keystore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType">
-      <xs:annotation>
-        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keystoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default password to access keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType">
-      <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default password to access truststore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
       <xs:annotation>
         <xs:documentation>Proxy host url</xs:documentation>
@@ -9705,6 +9773,92 @@ Defaults to 10000, inherited from HttpSender#setTimeout. Default: 10000</xs:docu
     <xs:attribute name="proxyPassword" type="xs:string">
       <xs:annotation>
         <xs:documentation>Proxy Password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore Default: JKS</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -10030,7 +10184,7 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="truststoreType">
       <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+        <xs:documentation>Type of truststore Default: JKS</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -10053,12 +10207,12 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
@@ -10166,10 +10320,22 @@ The set of available sessionKeys to be returned might be limited by the returned
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FtpFileSystemSenderType">
-    <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    <xs:group ref="FtpFileSystemSenderCumulativeChildGroup" />
     <xs:attributeGroup ref="FtpFileSystemSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.FtpFileSystemSender" use="prohibited" />
   </xs:complexType>
+  <xs:group name="FtpFileSystemSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="FtpFileSystemSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="FtpFileSystemSenderDeclaredChildGroup" />
+      <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="FtpFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
@@ -10237,92 +10403,6 @@ The set of available sessionKeys to be returned might be limited by the returned
         <xs:union memberTypes="TransportTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="keystore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType">
-      <xs:annotation>
-        <xs:documentation>(ftps) Type of keystore Default: pkcs12</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keystoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias used to obtain keystore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to access keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Alias to obtain specific certificate or key in keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType">
-      <xs:annotation>
-        <xs:documentation>(ftps) Type of truststore Default: jks</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to access truststore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="prot">
       <xs:annotation>
         <xs:documentation>Sets the &lt;code&gt;Data Channel Protection Level&lt;/code&gt;. Default: C</xs:documentation>
@@ -10330,6 +10410,92 @@ The set of available sessionKeys to be returned might be limited by the returned
       <xs:simpleType>
         <xs:union memberTypes="ProtAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore Default: JKS</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FtpFileSystemSenderCumulativeAttributeGroup">
@@ -10452,6 +10618,14 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
     <xs:attribute ref="keystoreAuthAlias" />
@@ -10461,21 +10635,13 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="keystoreAliasAuthAlias" />
     <xs:attribute ref="keystoreAliasPassword" />
     <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="truststoreAuthAlias" />
     <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="trustManagerAlgorithm" />
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -10559,6 +10725,14 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
     <xs:attribute ref="keystoreAuthAlias" />
@@ -10568,27 +10742,21 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="keystoreAliasAuthAlias" />
     <xs:attribute ref="keystoreAliasPassword" />
     <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="truststoreAuthAlias" />
     <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="trustManagerAlgorithm" />
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:group name="AbstractHttpSessionDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractHttpSessionDeclaredAttributeGroup">
@@ -10637,22 +10805,6 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
-    <xs:attribute ref="keystore" />
-    <xs:attribute ref="keystoreType" />
-    <xs:attribute ref="keystoreAuthAlias" />
-    <xs:attribute ref="keystorePassword" />
-    <xs:attribute ref="keyManagerAlgorithm" />
-    <xs:attribute ref="keystoreAlias" />
-    <xs:attribute ref="keystoreAliasAuthAlias" />
-    <xs:attribute ref="keystoreAliasPassword" />
-    <xs:attribute ref="truststore" />
-    <xs:attribute ref="truststoreAuthAlias" />
-    <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
-    <xs:attribute ref="trustManagerAlgorithm" />
-    <xs:attribute ref="verifyHostname" />
-    <xs:attribute ref="allowSelfSignedCertificates" />
-    <xs:attribute ref="ignoreCertificateExpiredException" />
     <xs:attribute ref="followRedirects" />
     <xs:attribute ref="ignoreRedirects" />
     <xs:attribute ref="staleChecking" />
@@ -10662,6 +10814,22 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="protocol" />
     <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute name="name" type="xs:string" />
+    <xs:attribute ref="keystore" />
+    <xs:attribute ref="keystoreType" />
+    <xs:attribute ref="keystoreAuthAlias" />
+    <xs:attribute ref="keystorePassword" />
+    <xs:attribute ref="keyManagerAlgorithm" />
+    <xs:attribute ref="keystoreAlias" />
+    <xs:attribute ref="keystoreAliasAuthAlias" />
+    <xs:attribute ref="keystoreAliasPassword" />
+    <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
+    <xs:attribute ref="truststoreAuthAlias" />
+    <xs:attribute ref="truststorePassword" />
+    <xs:attribute ref="trustManagerAlgorithm" />
+    <xs:attribute ref="verifyHostname" />
+    <xs:attribute ref="allowSelfSignedCertificates" />
+    <xs:attribute ref="ignoreCertificateExpiredException" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -11399,17 +11567,22 @@ When the root is left unspecified, absolute paths to files and folders can be us
   <xs:attributeGroup name="MailSenderDeclaredAttributeGroup">
     <xs:attribute name="smtpHost" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the SMTP-host by which the messages are to be send</xs:documentation>
+        <xs:documentation>Name of the SMTP-host by which the messages are to be sent</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="smtpPort" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Port of the SMTP-host by which the messages are to be send Default: 25</xs:documentation>
+        <xs:documentation>Port of the SMTP-host by which the messages are to be sent. Port 465 means implicit SSL, port 587 means no ssl by default, but the connection
+is upgraded to ssl by using startTls if #useSsl is true Default: 25</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useSsl" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure TLS is being used Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure the correct SSL/TLS settings are applied for the given port number. Please note that:
+&lt;ul&gt;
+    &lt;li&gt;Port 465 means implicit ssl&lt;/li&gt;
+    &lt;li&gt;Port 587 means no ssl/upgradeable to ssl by using startTls&lt;/li&gt;
+&lt;/ul&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -11465,7 +11638,8 @@ When the root is left unspecified, absolute paths to files and folders can be us
   <xs:attributeGroup name="MessageStoreSenderDeclaredAttributeGroup">
     <xs:attribute name="sessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the same value for this attribute.</xs:documentation>
+        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the
+same value for this attribute.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="onlyStoreWhenMessageIdUnique" type="frankBoolean">
@@ -11732,6 +11906,14 @@ Can be dynamically set using the &lt;code&gt;topic&lt;/code&gt; parameter.</xs:d
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
     <xs:attribute ref="keystoreAuthAlias" />
@@ -11741,21 +11923,13 @@ Can be dynamically set using the &lt;code&gt;topic&lt;/code&gt; parameter.</xs:d
     <xs:attribute ref="keystoreAliasAuthAlias" />
     <xs:attribute ref="keystoreAliasPassword" />
     <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="truststoreAuthAlias" />
     <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="trustManagerAlgorithm" />
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -11993,10 +12167,22 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SendGridSenderType">
-    <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    <xs:group ref="SendGridSenderCumulativeChildGroup" />
     <xs:attributeGroup ref="SendGridSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.SendGridSender" use="prohibited" />
   </xs:complexType>
+  <xs:group name="SendGridSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="SendGridSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="SendGridSenderDeclaredChildGroup" />
+      <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="SendGridSenderDeclaredAttributeGroup">
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
@@ -12043,9 +12229,29 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>Proxy realm</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="followRedirects" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="staleChecking" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether connections checked to be stale, i.e. appear open, but are not. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="staleTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="protocol" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>resource URL to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreType">
@@ -12066,6 +12272,11 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>Default password to access keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="keystoreAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
@@ -12081,19 +12292,14 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststoreType">
       <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+        <xs:documentation>Type of truststore Default: JKS</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -12116,37 +12322,17 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="followRedirects" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="staleChecking" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Controls whether connections checked to be stale, i.e. appear open, but are not. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="staleTimeout" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="protocol" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -12505,6 +12691,14 @@ Using any other value will be rejected.
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
     <xs:attribute ref="keystoreAuthAlias" />
@@ -12514,21 +12708,13 @@ Using any other value will be rejected.
     <xs:attribute ref="keystoreAliasAuthAlias" />
     <xs:attribute ref="keystoreAliasPassword" />
     <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="truststoreAuthAlias" />
     <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="trustManagerAlgorithm" />
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -13667,7 +13853,7 @@ results in &lt;code&gt;[{&amp;quot;number&amp;quot;:&amp;quot;1&amp;quot;},{&amp
       </xs:element>
       <xs:element name="DelayPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that sleeps for a specified time, which defaults to 5000 msecs. The pipe echos back its input message.
+          <xs:documentation>Pipe that sleeps for a specified time, which defaults to 5000 msecs. The pipe echoes back its input message.
 It is useful for testing purposes.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -13978,9 +14164,8 @@ The &lt;pre&gt;success&lt;/pre&gt; forward is only used when the (deprecated) at
       </xs:element>
       <xs:element name="FixedResultPipe">
         <xs:annotation>
-          <xs:documentation>This Pipe opens and returns a file from the classpath. The filename is a mandatory parameter to use. You can
-provide this by using the &lt;code&gt;filename&lt;/code&gt; attribute or with a &lt;code&gt;param&lt;/code&gt; element to be able to
-use a sessionKey for instance.
+          <xs:documentation>This Pipe opens and returns a file from the classpath. You can provide this by using the
+&lt;code&gt;filenameSessionKey&lt;/code&gt; attribute or with the &lt;code&gt;filename&lt;/code&gt; attribute.
 
 &lt;h2&gt;Migrating from deprecated features&lt;/h2&gt;
 The FixedResultPipe was a jack of all trades. You could use it to read a file (only text) and/or use
@@ -14742,7 +14927,9 @@ example:&lt;br/&gt;
       </xs:element>
       <xs:element name="OpenApiValidatorPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that validates the input message against an OpenAPI specification.</xs:documentation>
+          <xs:documentation>Pipe that validates a message against an OpenAPI specification. If this is uses as an Input Validator it will try to resolve the correct schema based
+on the operation, path and method. In case of an Output validator, it will try to resolve the correct schema based on the operation, path, method and exit
+code.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -15134,7 +15321,7 @@ Each line will be handled by this recordHandler and resultHandler.</xs:documenta
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on either the content of the input message, by means
 of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.
-This pipes returns it's input.&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;When using a jPath, the pipe input message will be set to the JSON object called &lt;code&gt;$&lt;/code&gt;, so if you wish to switch on field 'key' in: &lt;code&gt;{ key:'forwardname'}&lt;/code&gt; use &lt;code&gt;$.key&lt;/code&gt;.&lt;/p&gt;</xs:documentation>
+This pipe returns its input.&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;When using a jPath, the pipe input message will be set to the JSON object called &lt;code&gt;$&lt;/code&gt;, so if you wish to switch on field 'key' in: &lt;code&gt;{ key:'forwardname'}&lt;/code&gt; use &lt;code&gt;$.key&lt;/code&gt;.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -16365,6 +16552,11 @@ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_sepa
     <xs:attribute name="filename" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the file containing the result message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="filenameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the session key containing the file name of the file that contains the result message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -17632,7 +17824,7 @@ separately.
         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles2&lt;/code&gt;&lt;/li&gt;
         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles3&lt;/code&gt;&lt;/li&gt;
     &lt;/ol&gt;
-    Each session key will contain a FileMessage referencing the contents of that PDF.
+    Each session key will contain a Message referencing the contents of that PDF.
 &lt;/p&gt; Default: pdfConversionResultFiles</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -17655,11 +17847,6 @@ separately.
     <xs:attribute name="saveSeparate" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>when sets to false, converts the file including the attachments attached to the main file. when it is true, saves each attachment separately Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="pdfOutputLocation" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="loadExternalResources" type="frankBoolean">
@@ -17930,7 +18117,8 @@ by the #setLineSeparatorSymbol(String).</xs:documentation>
     <xs:attribute name="replace" type="xs:string">
       <xs:annotation>
         <xs:documentation>Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
-* by the #setLineSeparatorSymbol(String).</xs:documentation>
+by the #setLineSeparatorSymbol(String).
+If left empty, the 'find' values will be omitted, and nothing will be replaced.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lineSeparatorSymbol" type="xs:string">
@@ -18176,10 +18364,21 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:sequence>
   </xs:group>
   <xs:complexType name="SignaturePipeType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    <xs:group ref="SignaturePipeCumulativeChildGroup" />
     <xs:attributeGroup ref="SignaturePipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SignaturePipe" use="prohibited" />
   </xs:complexType>
+  <xs:group name="SignaturePipeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="SignaturePipeCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="SignaturePipeDeclaredChildGroup" />
+      <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="SignaturePipeDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
@@ -18204,14 +18403,14 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the signature is (expected to be) base64 encoded Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="keystore" type="xs:string" use="required">
+    <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Keystore to obtain signing key</xs:documentation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreType">
       <xs:annotation>
-        <xs:documentation>Type of keystore, can be pkcs12 or pem Default: pkcs12</xs:documentation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -18219,32 +18418,32 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="keystoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Alias used to obtain keystore password</xs:documentation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Keystore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias in keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias used to obtain keystoreAlias password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>KeystoreAlias password</xs:documentation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyManagerAlgorithm" type="xs:string">
       <xs:annotation>
         <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -20423,6 +20622,8 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+              <xs:element name="Keystore" type="KeystoreType" />
+              <xs:element name="Truststore" type="TruststoreType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -20474,6 +20675,18 @@ The DisplayName will always be updated, which is purely used for logging purpose
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:simpleType name="KeystoreTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PEM">
+        <xs:annotation>
+          <xs:documentation>Currently only used by the SignaturePipe to use a PEM certificate directly as a truststore.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="PKCS12" />
+      <xs:enumeration value="JKS" />
+      <xs:enumeration value="JCEKS" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="ParameterModeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="INPUT" />
@@ -20830,18 +21043,6 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
       <xs:enumeration value="CACHE_CONNECTION" />
       <xs:enumeration value="CACHE_SESSION" />
       <xs:enumeration value="CACHE_CONSUMER" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="KeystoreTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="PEM">
-        <xs:annotation>
-          <xs:documentation>Currently only used by the SignaturePipe to use a PEM certificate directly as a truststore.</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="PKCS12" />
-      <xs:enumeration value="JKS" />
-      <xs:enumeration value="JCEKS" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MessageTypeAttributeValuesType_2">
@@ -21362,6 +21563,14 @@ The &lt;pre&gt;accessToken&lt;/pre&gt; is then used in the Authorization header 
           <xs:documentation>Requires &lt;pre&gt;samlNameId&lt;/pre&gt;, &lt;pre&gt;samlIssuer&lt;/pre&gt;, &lt;pre&gt;samlAudience&lt;/pre&gt;, &lt;pre&gt;samlAssertionExpiry&lt;/pre&gt;, and a certificate and private key.
 Generates a new SAML assertion, which will be exchanged for a token by the authorization server. The &lt;pre&gt;accessToken&lt;/pre&gt; is then used
 in the Authorization header to authenticate against the resource server.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="PRIVATE_KEY_JWT">
+        <xs:annotation>
+          <xs:documentation>Requires &lt;pre&gt;clientId&lt;/pre&gt; and a private key (configured via the keystore settings).
+Implements &lt;a href="https://datatracker.ietf.org/doc/html/rfc7523#section-2.2"&gt;RFC 7523&lt;/a&gt; &lt;code&gt;private_key_jwt&lt;/code&gt; client authentication.
+A signed JWT is sent as the &lt;code&gt;client_assertion&lt;/code&gt; parameter to the token endpoint. Both RSA and EC keys are supported.
+The &lt;pre&gt;accessToken&lt;/pre&gt; is then used in the Authorization header to authenticate against the resource server.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
@@ -22725,9 +22934,50 @@ If not specified, and the accessTokens lifetime is not found in the token respon
       <xs:documentation>Disables the use of cookies, making the sender completely stateless Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="followRedirects" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="ignoreRedirects" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="staleChecking" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Controls whether connections checked to be stale, i.e. appear open, but are not. Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="staleTimeout" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="connectionTimeToLive" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value. Default: 900 s</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="connectionIdleTimeout" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool Default: 10 s</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="protocol" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="supportedCipherSuites" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with &lt;code&gt;protocol&lt;/code&gt; as the provided Suite may not be valid for the provided Protocol
+See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="keystore" type="xs:string">
     <xs:annotation>
-      <xs:documentation>resource URL to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="keystoreType">
@@ -22770,8 +23020,16 @@ If not specified, and the accessTokens lifetime is not found in the token respon
   </xs:attribute>
   <xs:attribute name="truststore" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
     </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="truststoreType">
+    <xs:annotation>
+      <xs:documentation>Type of truststore Default: JKS</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+    </xs:simpleType>
   </xs:attribute>
   <xs:attribute name="truststoreAuthAlias" type="xs:string">
     <xs:annotation>
@@ -22783,14 +23041,6 @@ If not specified, and the accessTokens lifetime is not found in the token respon
       <xs:documentation>Default password to access truststore</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="truststoreType">
-    <xs:annotation>
-      <xs:documentation>Type of truststore Default: jks</xs:documentation>
-    </xs:annotation>
-    <xs:simpleType>
-      <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-    </xs:simpleType>
-  </xs:attribute>
   <xs:attribute name="trustManagerAlgorithm" type="xs:string">
     <xs:annotation>
       <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
@@ -22798,58 +23048,17 @@ If not specified, and the accessTokens lifetime is not found in the token respon
   </xs:attribute>
   <xs:attribute name="verifyHostname" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="followRedirects" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="ignoreRedirects" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="staleChecking" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>Controls whether connections checked to be stale, i.e. appear open, but are not. Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="staleTimeout" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="connectionTimeToLive" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value. Default: 900 s</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="connectionIdleTimeout" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool Default: 10 s</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="protocol" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="supportedCipherSuites" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with &lt;code&gt;protocol&lt;/code&gt; as the provided Suite may not be valid for the provided Protocol
-See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="contentType" type="xs:string">
