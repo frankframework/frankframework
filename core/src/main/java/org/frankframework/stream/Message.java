@@ -29,8 +29,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.temporal.TemporalAccessor;
-import java.util.Date;
 import java.util.Map.Entry;
 
 import javax.xml.transform.Source;
@@ -71,7 +69,7 @@ import org.frankframework.util.StringUtil;
  *     value is {@value MESSAGE_MAX_IN_MEMORY_DEFAULT}.
  * </p>
  * <p>
- *     Operations on a Message that change state, such as {@link #preserve(boolean)} (and implicitly serializing the Message) are
+ *     Operations on a Message that change state, such as serializing the Message are
  *     not thread-safe. If there is a chance that these operations are simultaneously executed from multiple threads, they need to be
  *     wrapped in a {@code synchronized} block that synchronizes on the message instance.
  * </p>
@@ -245,15 +243,6 @@ public class Message implements Serializable {
 		return computedCharset != null ? computedCharset.name() : null;
 	}
 
-	private String computeCharsetOrDefault() throws IOException {
-		String charset = computeCharsetOrNull();
-		if (StringUtils.isNotEmpty(charset)) {
-			return charset;
-		}
-		setCharset(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	}
-
 	/**
 	 * If no Charset was provided when the Message object was created and
 	 * the requested Charset is <code>auto</code>, try to parse the Charset using
@@ -296,34 +285,6 @@ public class Message implements Serializable {
 		return providedCharset;
 	}
 
-	/**
-	 * Notify the message object that the request object will be used multiple times.
-	 * If the request object can only be read one time, it can turn it into a less volatile representation.
-	 * <p>
-	 *     This operation can potentially modify the contents of the Message object. This is not thread-safe.
-	 * </p>
-	 *
-	 * @throws IOException Throws IOException if the Message cannot be read or writing fails.
-	 */
-	private void preserve(boolean deepPreserve) throws IOException {
-		if (isNull()) {
-			return;
-		}
-
-		long requestSize = size();
-		// TODO: Only place where we still check instanceof; figure out a cleaner way to do the check if we should preserve our data to disk, or not
-		Object data = dataConverter.asRawObject();
-		if ((requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > MESSAGE_MAX_IN_MEMORY) && !(data instanceof SerializableFileReference || data instanceof Date || data instanceof TemporalAccessor || data instanceof Boolean || data instanceof Number)) {
-			preserveToDisk(deepPreserve);
-			// Check again the size now that we know it for sure. If it fits into memory, better for performance to keep it in memory!
-			if (requestSize == MESSAGE_SIZE_UNKNOWN && size() <= MESSAGE_MAX_IN_MEMORY && dataConverter.asRawObject() instanceof SerializableFileReference serializableFileReference) {
-				loadSerializableFileReferenceToMemory(serializableFileReference);
-			}
-		} else {
-			preserveToMemory(deepPreserve);
-		}
-	}
-
 	private void loadSerializableFileReferenceToMemory(SerializableFileReference serializableFileReference) throws IOException {
 		Object data;
 		if (isBinary()) {
@@ -340,53 +301,6 @@ public class Message implements Serializable {
 		}
 		this.dataConverter = DataConverterFactory.getConverter(data, this::computeCharsetOrNull);
 		serializableFileReference.close();
-	}
-
-	private void preserveToMemory(boolean deepPreserve) throws IOException {
-		Object data = dataConverter.asRawObject();
-		if (data instanceof Serializable && !(data instanceof SerializableFileReference)) {
-			// Should not happen but just in case.
-			return;
-		}
-
-		// if deepPreserve=true, File and URL are also preserved as byte array
-		// otherwise we rely on that File and URL can be repeatedly read
-		if (deepPreserve) {
-			if (data instanceof ThrowingSupplier<?, ?>) {
-				LOG.debug("deep preserving {} as byte[]", this::getObjectId);
-				this.dataConverter = DataConverterFactory.getConverter(asByteArray(), this::computeCharsetOrNull);
-			} else if (data instanceof SerializableFileReference serializableFileReference) {
-				// Load smaller serializable files into memory for better performance.
-				loadSerializableFileReferenceToMemory(serializableFileReference);
-			}
-		}
-	}
-
-	/**
-	 * Preserve message to disk.
-	 *
-	 * @throws IOException Throws {@link IOException} if the Message cannot be read, or no temporary file can be written to.
-	 */
-	private void preserveToDisk(boolean deepPreserve) throws IOException {
-		Object data = dataConverter.asRawObject();
-		if (data instanceof SerializableFileReference) {
-			// Should not happen but just in case.
-			return;
-		}
-		if (data instanceof String string) {
-			data = SerializableFileReference.of(string, computeCharsetOrDefault());
-		} else if (data instanceof byte[] bytes) {
-			data = SerializableFileReference.of(bytes);
-		} else if (deepPreserve) {
-			if (isBinary()) {
-				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
-				data = SerializableFileReference.of(asInputStream());
-			} else {
-				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
-				data = SerializableFileReference.of(asReader(), computeCharsetOrDefault());
-			}
-		}
-		this.dataConverter = DataConverterFactory.getConverter(data, this::computeCharsetOrNull);
 	}
 
 	/**
@@ -604,20 +518,18 @@ public class Message implements Serializable {
 	 */
 	@Serial
 	private void writeObject(ObjectOutputStream stream) throws IOException {
-		preserve(true);
 
-		// Safeguard that "preserve()" did its work well
-		// Also, this makes Sonar happy that we're not
-		// serializing an incompatible type of object.
-		Object data = dataConverter.asRawObject();
-		if (data != null && !(data instanceof Serializable)) {
-			throw new IllegalArgumentException("This message contains a non-serializable request-object of type " + data.getClass().getName());
-		}
+		Object originalData = dataConverter.asRawObject();
+		Serializable serializableData = dataConverter.asSerializable();
 
 		stream.writeObject(getCharset());
-		stream.writeObject(data);
+		stream.writeObject(serializableData);
 		stream.writeObject(requestClass);
 		stream.writeObject(context);
+
+		if (serializableData != originalData) {
+			dataConverter = DataConverterFactory.getConverter(serializableData, this::computeCharsetOrNull);
+		}
 	}
 
 	/*

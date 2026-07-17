@@ -18,6 +18,7 @@ package org.frankframework.dataconversion;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.util.Optional;
 
 import javax.xml.transform.Source;
@@ -57,6 +58,11 @@ final class BinaryDataConverter<T> extends AbstractDataConverter<T> implements D
 	@Override
 	public boolean prefersStreaming() {
 		return converter.prefersStreaming();
+	}
+
+	@Override
+	public Serializable asSerializable() throws IOException {
+		return converter.asSerializable(data);
 	}
 
 	@Override

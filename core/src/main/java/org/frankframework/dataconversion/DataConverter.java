@@ -18,6 +18,7 @@ package org.frankframework.dataconversion;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Serializable;
 
 import javax.xml.transform.Source;
 
@@ -35,6 +36,8 @@ public interface DataConverter {
 	long size();
 
 	@Nullable Object asRawObject();
+
+	@Nullable Serializable asSerializable() throws IOException;
 
 	@Nullable String asString() throws IOException;
 

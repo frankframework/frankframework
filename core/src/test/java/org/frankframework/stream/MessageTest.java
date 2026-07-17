@@ -32,6 +32,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -40,11 +43,15 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.stream.Stream;
 
@@ -64,6 +71,7 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.SerializationTester;
@@ -1223,6 +1231,8 @@ testFile with BOM —•˜›
 
 	static Stream<Arguments> messageFromDifferentObjectTypes() throws Exception {
 		ThrowingSupplier<InputStream, IOException> inputStreamSupplier = () -> new ByteArrayInputStream("<test/>".getBytes());
+		ThrowingSupplier<InputStream, IOException> veryLargeInputStreamSupplier = () -> LargeStructuredMockData.getLargeJsonDataInputStream(Message.MESSAGE_MAX_IN_MEMORY * 2, Charset.defaultCharset());
+
 		Node xmlDoc = XmlUtils.buildNode("<test/>");
 		URL testFileURL = TestFileUtils.getTestFileURL("/Util/MessageUtils/utf8-with-bom.xml");
 
@@ -1231,12 +1241,15 @@ testFile with BOM —•˜›
 				arguments(Message.asMessage("<test/>")),
 				arguments(Message.asMessage("<test/>".getBytes(StandardCharsets.UTF_8))),
 				arguments(Message.asMessage(inputStreamSupplier)),
+				arguments(Message.asMessage(veryLargeInputStreamSupplier)),
 				arguments(Message.asMessage(xmlDoc)),
 				arguments(Message.nullMessage()),
 				arguments(Message.asMessage(true)),
 				arguments(Message.asMessage(1)),
 				arguments(Message.asMessage(new Date())),
 				arguments(Message.asMessage(Instant.now())),
+				arguments(Message.asMessage(ZonedDateTime.now())),
+				arguments(Message.asMessage(LocalDateTime.now())),
 				arguments(Message.asMessage(TestEnum.A)),
 				arguments(Message.asMessage(new File(testFileURL.toURI())))
 		);
@@ -1261,6 +1274,48 @@ testFile with BOM —•˜›
 			// Assert
 			assertTrue(reader.markSupported(), "Reader [" + reader + "] does not support not mark/reset");
 		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageFromDifferentObjectTypes")
+	void testSerializeMessageWithDifferentContentTypes(Message message, @TempDir Path tmpDir) throws IOException, ClassNotFoundException {
+		// Arrange
+		Path tempFile = Files.createTempFile(tmpDir, "serialized-data-", ".bin");
+		OutputStream outputStream = Files.newOutputStream(tempFile);
+		ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+		// Act
+		objectOutputStream.writeObject(message);
+		objectOutputStream.close();
+
+		ObjectInputStream objectInputStream = new ObjectInputStream(Files.newInputStream(tempFile));
+		Message result = (Message) objectInputStream.readObject();
+		objectInputStream.close();
+
+		// Assert
+		assertEquals(message.size(), result.size());
+		assertEquals(message.isBinary(), result.isBinary());
+		assertEquals(message.asString(), result.asString());
+		assertArrayEquals(message.asByteArray(), result.asByteArray());
+		assertEquals(message.getCharset(), result.getCharset());
+		assertEquals(message.getContext().entrySet(), result.getContext().entrySet());
+		assertEquals(message.isEmpty(), result.isEmpty());
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageFromDifferentObjectTypes")
+	void testCopyWithDifferentContentTypes(Message message) throws IOException {
+		// Act
+		Message result = message.copyMessage();
+
+		// Assert
+		assertEquals(message.size(), result.size());
+		assertEquals(message.isBinary(), result.isBinary());
+		assertEquals(message.asString(), result.asString());
+		assertArrayEquals(message.asByteArray(), result.asByteArray());
+		assertEquals(message.getCharset(), result.getCharset());
+		assertEquals(message.getContext().entrySet(), result.getContext().entrySet());
+		assertEquals(message.isEmpty(), result.isEmpty());
 	}
 
 	@Test

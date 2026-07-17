@@ -17,6 +17,7 @@ package org.frankframework.dataconversion;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import javax.xml.transform.Source;
 
@@ -35,6 +36,10 @@ public interface TypedConverter<T> {
 
 	default boolean isEmpty(T data) {
 		return size(data) == 0;
+	}
+
+	default Serializable asSerializable(T data) throws IOException {
+		return (Serializable) data;
 	}
 
 	byte[] asByteArray(T data) throws IOException;

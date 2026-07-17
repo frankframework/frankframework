@@ -15,6 +15,8 @@
 */
 package org.frankframework.dataconversion;
 
+import java.io.Serializable;
+
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
@@ -24,6 +26,12 @@ import org.w3c.dom.Node;
 import org.frankframework.util.XmlUtils;
 
 final class NodeConverter extends StringableDataConverter<Node> {
+
+	@Override
+	public Serializable asSerializable(Node data) {
+		return asString(data);
+	}
+
 	@Override
 	public String asString(Node data) {
 		try {

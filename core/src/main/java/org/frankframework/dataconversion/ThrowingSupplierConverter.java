@@ -18,9 +18,11 @@ package org.frankframework.dataconversion;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.StreamUtil;
 
 final class ThrowingSupplierConverter implements TypedBinaryDataConverter<ThrowingSupplier<InputStream, Exception>> {
@@ -62,6 +64,24 @@ final class ThrowingSupplierConverter implements TypedBinaryDataConverter<Throwi
 		} catch (Exception e) {
 			// On any exception, consider empty
 			return true;
+		}
+	}
+
+	@Override
+	public Serializable asSerializable(ThrowingSupplier<InputStream, Exception> data) throws IOException {
+		try {
+			SerializableFileReference sfr = SerializableFileReference.of(data.get());
+			if (sfr.getSize() > Message.MESSAGE_MAX_IN_MEMORY) {
+				return sfr;
+			}
+			// Load back into memory for performance
+			try (sfr) {
+				return StreamUtil.streamToBytes(sfr.getInputStream());
+			}
+		} catch (IOException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IOException(e);
 		}
 	}
 }
