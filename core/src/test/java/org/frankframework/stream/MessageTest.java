@@ -1062,34 +1062,6 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testCharsetDeterminationAndFallbackToDefault() throws Exception {
-		Message messageNullCharset = new Message((byte[]) null) { // NullMessage, charset cannot be determined
-			@Override
-			public String getCharset() {
-				return null;
-			}
-		};
-		Message messageAutoCharset = new Message((byte[]) null) { // NullMessage, charset cannot be determined
-			@Override
-			public String getCharset() {
-				return "AUTO";
-			}
-		};
-
-		// getCharset()==null && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
-		assertEquals(StandardCharsets.UTF_8.name(), messageNullCharset.computeDecodingCharset("AUTO"));
-
-		// getCharset()==AUTO && defaultDecodingCharset==xyz ==> decodingCharset = xyz
-		assertEquals("ISO-8559-15", messageAutoCharset.computeDecodingCharset("ISO-8559-15"));
-
-		// getCharset()==AUTO && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
-		assertEquals(StandardCharsets.UTF_8.name(), messageAutoCharset.computeDecodingCharset("AUTO"));
-
-		// getCharset()==AUTO && defaultDecodingCharset==null ==> decodingCharset = UTF-8
-		assertEquals(StandardCharsets.UTF_8.name(), messageAutoCharset.computeDecodingCharset(null));
-	}
-
-	@Test
 	public void shouldOnlyDetectCharsetOnce() throws Exception {
 		Message message = new Message("’•†™".getBytes("cp-1252")) { // NullMessage, charset cannot be determined
 			@Override

@@ -15,7 +15,6 @@
 */
 package org.frankframework.stream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +23,6 @@ import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.Serial;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -241,66 +239,6 @@ public class Message implements Serializable {
 		context.remove(MessageContext.METADATA_SIZE);
 		setCharset(computedCharset);
 		return computedCharset != null ? computedCharset.name() : null;
-	}
-
-	/**
-	 * If no Charset was provided when the Message object was created and
-	 * the requested Charset is <code>auto</code>, try to parse the Charset using
-	 * {@link MessageUtils#computeDecodingCharset(Message)}.
-	 *
-	 * If unsuccessful return the default Charset: {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING UTF_8}.
-	 *
-	 * TODO: I'm sure we still need this method somewhere, and not only in tests?
-	 * @param defaultDecodingCharset The 'I know better' Charset, only used when no Charset is provided when the Message was created.
-	 */
-	protected String computeDecodingCharset(@Nullable String defaultDecodingCharset) throws IOException {
-		String providedCharset = getCharset();
-
-		if (StringUtils.isEmpty(providedCharset)) {
-			providedCharset = StringUtils.isNotEmpty(defaultDecodingCharset) ? defaultDecodingCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-
-		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(providedCharset)) {
-			Charset computedCharset = null;
-			if (!failedToDetermineCharset && !isEmpty()) {
-				computedCharset = MessageUtils.computeDecodingCharset(this.dataConverter.asInputStream());
-			}
-
-			// Remove the size, if present, when the charset changes!
-			context.remove(MessageContext.METADATA_SIZE);
-
-			if (computedCharset == null) {
-				failedToDetermineCharset = true;
-				if (StringUtils.isNotEmpty(defaultDecodingCharset) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultDecodingCharset)) {
-					setCharset(defaultDecodingCharset);
-					return defaultDecodingCharset;
-				}
-				setCharset(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-				return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			}
-			setCharset(computedCharset);
-			return computedCharset.name();
-		}
-
-		return providedCharset;
-	}
-
-	private void loadSerializableFileReferenceToMemory(SerializableFileReference serializableFileReference) throws IOException {
-		Object data;
-		if (isBinary()) {
-			try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				InputStream inputStream = serializableFileReference.getInputStream()) {
-				inputStream.transferTo(bos);
-				data = bos.toByteArray();
-			}
-		} else {
-			try (StringWriter sw = new StringWriter(); Reader reader = serializableFileReference.getReader()) {
-				reader.transferTo(sw);
-				data = sw.toString();
-			}
-		}
-		this.dataConverter = DataConverterFactory.getConverter(data, this::computeCharsetOrNull);
-		serializableFileReference.close();
 	}
 
 	/**
