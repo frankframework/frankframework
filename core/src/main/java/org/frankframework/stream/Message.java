@@ -476,7 +476,7 @@ public class Message implements Serializable {
 	@Serial
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		var charset = (String) stream.readObject();
-		Object request = stream.readObject();
+		Object data = stream.readObject();
 		try {
 			Object requestClassFromStream = stream.readObject();
 			if (requestClassFromStream != null) {
@@ -486,10 +486,10 @@ public class Message implements Serializable {
 					requestClass = requestClassFromStream.toString();
 				}
 			} else {
-				requestClass = ClassUtils.nameOf(request);
+				requestClass = ClassUtils.nameOf(data);
 			}
 		} catch (Exception e) {
-			requestClass = ClassUtils.nameOf(request);
+			requestClass = ClassUtils.nameOf(data);
 			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", () -> requestClass, () -> ClassUtils.nameOf(e), e::getMessage);
 		}
 		MessageContext contextFromStream;
@@ -504,7 +504,7 @@ public class Message implements Serializable {
 			contextFromStream = new MessageContext().withCharset(charset);
 		}
 		context = contextFromStream;
-		dataConverter = DataConverterFactory.getConverter(request, this::computeCharsetOrNull);
+		dataConverter = DataConverterFactory.getConverter(data, this::computeCharsetOrNull);
 	}
 
 	/**
@@ -534,9 +534,9 @@ public class Message implements Serializable {
 	 * @throws IOException If an I/O error occurs during the copying process.
 	 */
 	public Message copyMessage() throws IOException {
-		Object request = dataConverter.asRawObject();
-		if (!(request instanceof SerializableFileReference)) {
-			return new Message(copyContext(), request);
+		Object data = dataConverter.asRawObject();
+		if (!(data instanceof SerializableFileReference)) {
+			return new Message(copyContext(), data);
 		}
 		final SerializableFileReference newRef;
 		if (isBinary() || StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(getCharset())) {
