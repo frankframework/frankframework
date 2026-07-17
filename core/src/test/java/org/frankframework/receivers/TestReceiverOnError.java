@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -86,7 +86,7 @@ public class TestReceiverOnError {
 		@SuppressWarnings("unchecked")
 		Receiver<String> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
 		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
-		doNothing().when(receiver).suspendReceiverThread(anyInt());
+		doNothing().when(receiver).suspendReceiverThread(anyLong());
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);

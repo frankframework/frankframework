@@ -53,7 +53,7 @@
     "sweetalert2": "^11.26.25",
     "tinycon": "0.6.8",
     "tslib": "^2.8.1",
-    "ws": "^8.21.0",
+    "ws": "^8.21.1",
     "zone.js": "0.16.2"
   },
   "devDependencies": {
@@ -71,14 +71,14 @@
     "@types/tinycon": "^0.6.7",
     "@vitest/browser-webdriverio": "^4.1.10",
     "angular-eslint": "22.0.0",
-    "eslint": "^10.6.0",
+    "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-sonarjs": "^4.1.0",
-    "eslint-plugin-unicorn": "^71.1.0",
+    "eslint-plugin-unicorn": "^72.0.0",
     "happy-dom": "^20.10.6",
     "istanbul-lib-instrument": "^6.0.3",
-    "prettier": "^3.9.4",
+    "prettier": "^3.9.5",
     "typescript": "~6.0.3",
     "typescript-eslint": "8.63.0",
     "vitest": "^4.1.10"

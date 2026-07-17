@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
@@ -106,7 +106,7 @@ public class PushingJmsListenerTest {
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
 		// To speed up test, we don't actually sleep
-		doNothing().when(receiver).suspendReceiverThread(anyInt());
+		doNothing().when(receiver).suspendReceiverThread(anyLong());
 		adapter.addReceiver(receiver);
 		return receiver;
 	}

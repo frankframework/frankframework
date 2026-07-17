@@ -51,7 +51,7 @@
                       <td>&nbsp;</td>
                       <td>
                         @if (column.type === 'date') {
-                          <input type="date" class="full-width" [(ngModel)]="column.filter" />
+                          <input type="datetime-local" class="full-width" [(ngModel)]="column.filter" />
                         } @else {
                           <input type="text" class="full-width" [(ngModel)]="column.filter" />
                         }

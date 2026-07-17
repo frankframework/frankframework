@@ -119,8 +119,10 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 			log.info("found default datasource [{}]", dataSource);
 			return dataSource;
 		} catch (Exception e) {
-			log.fatal("NOTE: when using JMS the framework requires a database to be present, else you can influence this by setting property [jdbc.required=false]");
-			throw new IllegalStateException("default datasource ["+defaultDatasource+"] found or configured", e);
+			// Some exceptions may occur when JMS is enabled but no DataSource has been provided.
+			// To 'always' give people a hint, this informative note is logged as warning.
+			log.warn("NOTE: when using JMS the framework requires a database to be present, else you can influence this by setting property [jdbc.required=false]");
+			throw new IllegalStateException("no default datasource ["+defaultDatasource+"] found or configured", e);
 		}
 	}
 

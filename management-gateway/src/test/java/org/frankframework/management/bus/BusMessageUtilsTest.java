@@ -4,12 +4,20 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.messaging.support.GenericMessage;
 
+import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.management.bus.message.StringMessage;
 
 public class BusMessageUtilsTest {
 	private static JsonMessage TEST_MESSAGE;
@@ -97,5 +105,34 @@ public class BusMessageUtilsTest {
 				() -> assertNull(BusMessageUtils.getEnumHeader(TEST_MESSAGE, "doesNotExist", BusAction.class)),
 				() -> assertEquals(BusTopic.APPLICATION, BusMessageUtils.getEnumHeader(TEST_MESSAGE, "doesNotExist", BusTopic.class, BusTopic.APPLICATION))
 		);
+	}
+
+	@Test
+	public void getPayload() {
+		assertAll(
+				() -> assertEquals("\"payload\"", BusMessageUtils.getPayloadAsString(TEST_MESSAGE)),
+				() -> assertEquals("payload", BusMessageUtils.getPayloadAsString(new StringMessage("payload"))),
+				() -> assertEquals("payload", BusMessageUtils.getPayloadAsString(new GenericMessage<>("payload"))),
+				() -> assertEquals("payload", BusMessageUtils.getPayloadAsString(new BinaryMessage("payload".getBytes(StandardCharsets.UTF_8)))),
+				() -> assertEquals("payload", BusMessageUtils.getPayloadAsString(new BinaryMessage(new ByteArrayInputStream("payload".getBytes(StandardCharsets.UTF_8))))),
+				() -> assertEquals("Not Found", BusMessageUtils.getPayloadAsString(new EmptyMessage(404))),
+				() -> assertEquals("no-content", BusMessageUtils.getPayloadAsString(new EmptyMessage(234))),
+				() -> assertEquals(null, BusMessageUtils.getPayloadAsString(EmptyMessage.created())),
+				() -> assertEquals(null, BusMessageUtils.getPayloadAsString(EmptyMessage.accepted())),
+				() -> assertEquals(null, BusMessageUtils.getPayloadAsString(EmptyMessage.noContent()))
+		);
+	}
+
+	@Test
+	public void emptyMessageWithWrongStatus() {
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> new EmptyMessage(123));
+		assertEquals("Status code [123] must be between 200 and 599", ex.getMessage());
+	}
+
+	@Test
+	public void getWrongPayloadTypeAsString() {
+		GenericMessage<Object> message = new GenericMessage<>(new Object());
+		BusException ex = assertThrows(BusException.class, () -> BusMessageUtils.getPayloadAsString(message));
+		assertEquals("unexpected message payload type [java.lang.Object]", ex.getMessage());
 	}
 }
