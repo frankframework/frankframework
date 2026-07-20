@@ -72,7 +72,7 @@
 	</scm>
 
 	<properties>
-		<revision>10.2.0-SNAPSHOT</revision>
+		<revision>10.3.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- NB: We need to stay on target JDK21 as long as the JBoss / WildFly images we build for our Larva tests do not support JDK25 -->
 		<maven.compiler.target>21</maven.compiler.target>
