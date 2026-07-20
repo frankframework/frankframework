@@ -83,14 +83,14 @@ public class Message implements Serializable {
 
 	private static final @Serial long serialVersionUID = 437863352486501445L;
 
-	private transient DataConverter dataConverter;
+	private transient DataConverter request;
 	private @Getter String requestClass;
 
 	private @Getter MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
 	private Message(final MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
-		this.dataConverter = DataConverterFactory.getConverter(request, this::computeCharsetOrNull);
+		this.request = createRequestWrapper(request);
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
@@ -124,7 +124,7 @@ public class Message implements Serializable {
 		this.requestClass = ClassUtils.nameOf(request);
 		Message temporaryMessage = MessageUtils.fromReader(request);
 		copyFromTemporaryMessage(temporaryMessage);
-		this.dataConverter = DataConverterFactory.getConverter(temporaryMessage.dataConverter.asRawObject(), this::computeCharsetOrNull);
+		this.request = createRequestWrapper(temporaryMessage.request.asRawObject());
 		if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
 			// Ensure charset is now always UTF-8 because that's what it is after converting from stream
 			this.context.withCharset(StandardCharsets.UTF_8);
@@ -166,15 +166,7 @@ public class Message implements Serializable {
 		this.requestClass = ClassUtils.nameOf(requestClass);
 		Message temporaryMessage = MessageUtils.fromInputStream(request);
 		copyFromTemporaryMessage(temporaryMessage);
-		this.dataConverter = DataConverterFactory.getConverter(temporaryMessage.dataConverter.asRawObject(), this::computeCharsetOrNull);
-	}
-
-	private void copyFromTemporaryMessage(Message temporaryMessage) {
-		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
-		temporaryMessage.context.getAll().keySet()
-				.stream()
-				.filter(key -> !key.equals(MessageContext.METADATA_NAME))
-				.forEachOrdered(key -> this.context.put(key, temporaryMessage.context.get(key)));
+		this.request = createRequestWrapper(temporaryMessage.request.asRawObject());
 	}
 
 	public Message(InputStream request) throws IOException {
@@ -218,6 +210,18 @@ public class Message implements Serializable {
 		context.withCharset(charset);
 	}
 
+	private void copyFromTemporaryMessage(Message temporaryMessage) {
+		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
+		temporaryMessage.context.getAll().keySet()
+				.stream()
+				.filter(key -> !key.equals(MessageContext.METADATA_NAME))
+				.forEachOrdered(key -> this.context.put(key, temporaryMessage.context.get(key)));
+	}
+
+	private DataConverter createRequestWrapper(@Nullable Object request) {
+		return DataConverterFactory.getConverter(request, this::computeCharsetOrNull);
+	}
+
 	/**
 	 * Get the charset if set. If the charset = 'AUTO' then compute the charset from stream.
 	 */
@@ -232,7 +236,7 @@ public class Message implements Serializable {
 		if (failedToDetermineCharset || isEmpty()) {
 			return null;
 		}
-		Charset computedCharset = MessageUtils.computeDecodingCharset(this.dataConverter.asInputStream());
+		Charset computedCharset = MessageUtils.computeDecodingCharset(this.request.asInputStream());
 		failedToDetermineCharset = (computedCharset == null);
 
 		// Remove the size, if present, when the charset changes!
@@ -248,32 +252,32 @@ public class Message implements Serializable {
 	@SuppressWarnings("java:S1133")
 	@Nullable
 	public Object asObject() {
-		return dataConverter.asRawObject();
+		return request.asRawObject();
 	}
 
 	public boolean isBinary() {
-		return dataConverter.isBinary() && !context.containsKey(MessageContext.METADATA_CHARSET);
+		return request.isBinary() && !context.containsKey(MessageContext.METADATA_CHARSET);
 	}
 
 	/**
 	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
 	 */
 	public boolean requiresStream() {
-		return dataConverter.prefersStreaming();
+		return request.prefersStreaming();
 	}
 
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
 	 */
 	public Reader asReader() throws IOException {
-		return dataConverter.asReader();
+		return request.asReader();
 	}
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
 	 */
 	public InputStream asInputStream() throws IOException {
-		return dataConverter.asInputStream();
+		return request.asInputStream();
 	}
 
 	/**
@@ -283,16 +287,16 @@ public class Message implements Serializable {
 	 */
 	public InputStream asInputStream(@Nullable String defaultEncodingCharset) throws IOException {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
-			return dataConverter.asInputStream();
+			return request.asInputStream();
 		}
-		return dataConverter.asInputStream(defaultEncodingCharset);
+		return request.asInputStream(defaultEncodingCharset);
 	}
 
 	public synchronized String peek(int readLimit) throws IOException {
 		if (isEmpty()) {
 			return "";
 		}
-		if (dataConverter.asRawObject() instanceof String string) {
+		if (request.asRawObject() instanceof String string) {
 			return StringUtils.truncate(string, readLimit);
 		}
 		try (Reader r = asReader()) {
@@ -310,7 +314,7 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public InputSource asInputSource() throws IOException {
-		return dataConverter.asInputSource();
+		return request.asInputSource();
 	}
 
 	/**
@@ -318,14 +322,14 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public Source asSource() throws IOException, SAXException {
-		return dataConverter.asSource();
+		return request.asSource();
 	}
 
 	/**
 	 * Return the request object as a byte array.
 	 */
 	public byte @Nullable[] asByteArray() throws IOException {
-		return dataConverter.asByteArray();
+		return request.asByteArray();
 	}
 
 	/**
@@ -343,16 +347,16 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public String asString() throws IOException {
-		return dataConverter.asString();
+		return request.asString();
 	}
 
 	public boolean isNull() {
-		return dataConverter.isNull();
+		return request.isNull();
 	}
 
 	/** @return true if the request is or extends of the specified type at parameter clazz */
 	public boolean isRequestOfType(Class<?> clazz) {
-		Object data = dataConverter.asRawObject();
+		Object data = request.asRawObject();
 		if (data == null) {
 			return false;
 		}
@@ -365,7 +369,7 @@ public class Message implements Serializable {
 	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size if larger than 0 or data can be read from it.
 	 */
 	public boolean isEmpty() {
-		return dataConverter.isEmpty();
+		return request.isEmpty();
 	}
 
 	private void toStringPrefix(StringBuilder writer) {
@@ -394,8 +398,8 @@ public class Message implements Serializable {
 		result.append(getObjectId());
 
 		if (LOG.isDebugEnabled()) {
-			if (dataConverter.asRawObject() != null) {
-				result.append(" content [").append(dataConverter.asRawObject()).append("]");
+			if (request.asRawObject() != null) {
+				result.append(" content [").append(request.asRawObject()).append("]");
 			} else {
 				result.append(" no-content");
 			}
@@ -457,8 +461,8 @@ public class Message implements Serializable {
 	@Serial
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 
-		Object originalData = dataConverter.asRawObject();
-		Serializable serializableData = dataConverter.asSerializable();
+		Object originalData = request.asRawObject();
+		Serializable serializableData = request.asSerializable();
 
 		stream.writeObject(getCharset());
 		stream.writeObject(serializableData);
@@ -466,7 +470,7 @@ public class Message implements Serializable {
 		stream.writeObject(context);
 
 		if (serializableData != originalData) {
-			dataConverter = DataConverterFactory.getConverter(serializableData, this::computeCharsetOrNull);
+			request = createRequestWrapper(serializableData);
 		}
 	}
 
@@ -504,7 +508,7 @@ public class Message implements Serializable {
 			contextFromStream = new MessageContext().withCharset(charset);
 		}
 		context = contextFromStream;
-		dataConverter = DataConverterFactory.getConverter(data, this::computeCharsetOrNull);
+		request = createRequestWrapper(data);
 	}
 
 	/**
@@ -515,7 +519,7 @@ public class Message implements Serializable {
 		if (sz != null) {
 			return sz;
 		}
-		long size = dataConverter.size();
+		long size = request.size();
 		if (size != MESSAGE_SIZE_UNKNOWN) {
 			context.withSize(size);
 		}
@@ -534,7 +538,7 @@ public class Message implements Serializable {
 	 * @throws IOException If an I/O error occurs during the copying process.
 	 */
 	public Message copyMessage() throws IOException {
-		Object data = dataConverter.asRawObject();
+		Object data = request.asRawObject();
 		if (!(data instanceof SerializableFileReference)) {
 			return new Message(copyContext(), data);
 		}
