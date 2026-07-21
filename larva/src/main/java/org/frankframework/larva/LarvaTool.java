@@ -45,6 +45,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
+import javax.xml.transform.TransformerException;
+
 import jakarta.json.JsonException;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,11 +61,13 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
 import org.frankframework.larva.output.LarvaHtmlWriter;
@@ -78,6 +82,7 @@ import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.ProcessUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
+import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 
@@ -380,14 +385,56 @@ public class LarvaTool {
 	}
 
 	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, Step step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
+		ComparisonResult comparison = computeComparison(scenario, step, fileName, expectedResultMessage, actualResultMessage);
+		if (comparison == null) {
+			return RESULT_ERROR;
+		}
+		if (comparison.identical()) {
+			testExecutionObserver.stepMessageSuccess(scenario, step, "Result", comparison.printableActualResult(), comparison.preparedActualResult());
+			return RESULT_OK;
+		}
+		if (comparison.diffException() != null) {
+			errorMessage("Exception during XML diff: ", comparison.diffException());
+		}
+		return reportFailedCompare(testExecutionObserver, scenario, step, comparison.message(), comparison.printableExpectedResult(), comparison.preparedExpectedResult(),
+				comparison.printableActualResult(), comparison.preparedActualResult(), comparison.actualResult(), RESULT_ERROR);
+	}
+
+	/**
+	 * Silently checks whether {@code actualResultMessage} matches {@code expectedResultMessage}, without reporting
+	 * anything to the {@link TestExecutionObserver} and without triggering autosave-diff side effects. Used to poll
+	 * for a match while waiting for a {@code waitfor.*} condition to become true; the final outcome should still be
+	 * reported exactly once via {@link #compareResult}.
+	 */
+	public boolean isResultEqual(Scenario scenario, Step step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
+		ComparisonResult comparison = computeComparison(scenario, step, fileName, expectedResultMessage, actualResultMessage);
+		return comparison != null && comparison.identical();
+	}
+
+	/**
+	 * Evaluates an XPath expression (e.g. a {@code waitfor.xPath} step property) against a message, mirroring
+	 * {@link org.frankframework.pipes.IfPipe}'s match semantics: a blank or {@code "false"} (case-insensitive)
+	 * transform result means no match, anything else means a match.
+	 */
+	public boolean evaluateWaitForExpression(String xPathExpression, Message actualResultMessage) {
+		try {
+			TransformerPool transformerPool = TransformerPool.configureTransformer0(null, null, xPathExpression, null,
+					TransformerPool.OutputType.XML, false, null, XmlUtils.DEFAULT_XSLT_VERSION);
+			String transformed = transformerPool.transformToString(actualResultMessage, null, false);
+			return StringUtils.isNotEmpty(transformed) && !"false".equalsIgnoreCase(transformed);
+		} catch (ConfigurationException | TransformerException | IOException | SAXException e) {
+			throw new LarvaException("Could not evaluate waitfor.xPath expression '" + xPathExpression + "'", e);
+		}
+	}
+
+	private @Nullable ComparisonResult computeComparison(Scenario scenario, Step step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
 		Properties properties = scenario.getProperties();
 		String expectedResult = messageToString(expectedResultMessage);
 		String actualResult = messageToString(actualResultMessage);
 		if (expectedResult == null || actualResult == null) {
-			return RESULT_ERROR;
+			return null;
 		}
 
-		int ok = RESULT_ERROR;
 		String printableExpectedResult;
 		String printableActualResult;
 		String diffType = properties.getProperty(step + ".diffType");
@@ -428,60 +475,57 @@ public class LarvaTool {
 				diffException = e;
 			}
 			if (identical) {
-				ok = RESULT_OK;
-				testExecutionObserver.stepMessageSuccess(scenario, step, "Result", printableActualResult, preparedActualResult);
-			} else {
-				String message;
-				if (diffException == null) {
-					message = diff.toString();
-				} else {
-					message = "Exception during XML diff: " + diffException.getMessage();
-					errorMessage("Exception during XML diff: ", diffException);
-				}
-				ok = reportFailedCompare(testExecutionObserver, scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
+				return new ComparisonResult(true, null, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
 			}
+			String message = diffException == null ? diff.toString() : "Exception during XML diff: " + diffException.getMessage();
+			return new ComparisonResult(false, message, diffException, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
 		} else {
 			// txt diff
 			String formattedPreparedExpectedResult = formatString(preparedExpectedResult);
 			String formattedPreparedActualResult = formatString(preparedActualResult);
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
-				ok = RESULT_OK;
-				testExecutionObserver.stepMessageSuccess(scenario, step, "Result", printableActualResult, preparedActualResult);
-			} else {
-				String message = null;
-				StringBuilder diffActual = new StringBuilder();
-				StringBuilder diffExcpected = new StringBuilder();
-				int j = formattedPreparedActualResult.length();
-				if (formattedPreparedExpectedResult.length() > j) {
-					j = formattedPreparedExpectedResult.length();
+				return new ComparisonResult(true, null, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
+			}
+			String message = buildTextDiffMessage(formattedPreparedExpectedResult, formattedPreparedActualResult);
+			return new ComparisonResult(false, message, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
+		}
+	}
+
+	private static String buildTextDiffMessage(String formattedPreparedExpectedResult, String formattedPreparedActualResult) {
+		String message = null;
+		StringBuilder diffActual = new StringBuilder();
+		StringBuilder diffExcpected = new StringBuilder();
+		int j = formattedPreparedActualResult.length();
+		if (formattedPreparedExpectedResult.length() > j) {
+			j = formattedPreparedExpectedResult.length();
+		}
+		for (int i = 0; i < j; i++) {
+			if (i >= formattedPreparedActualResult.length() || i >= formattedPreparedExpectedResult.length()
+					|| formattedPreparedActualResult.charAt(i) != formattedPreparedExpectedResult.charAt(i)) {
+				if (message == null) {
+					message = "Starting at char " + (i + 1);
 				}
-				for (int i = 0; i < j; i++) {
-					if (i >= formattedPreparedActualResult.length() || i >= formattedPreparedExpectedResult.length()
-							|| formattedPreparedActualResult.charAt(i) != formattedPreparedExpectedResult.charAt(i)) {
-						if (message == null) {
-							message = "Starting at char " + (i + 1);
-						}
-						if (i < formattedPreparedActualResult.length()) {
-							diffActual.append(formattedPreparedActualResult.charAt(i));
-						}
-						if (i < formattedPreparedExpectedResult.length()) {
-							diffExcpected.append(formattedPreparedExpectedResult.charAt(i));
-						}
-					}
+				if (i < formattedPreparedActualResult.length()) {
+					diffActual.append(formattedPreparedActualResult.charAt(i));
 				}
-				if (diffActual.length() > 250) {
-					diffActual.delete(250, diffActual.length());
-					diffActual.append(" ...");
+				if (i < formattedPreparedExpectedResult.length()) {
+					diffExcpected.append(formattedPreparedExpectedResult.charAt(i));
 				}
-				if (diffExcpected.length() > 250) {
-					diffExcpected.delete(250, diffExcpected.length());
-					diffExcpected.append(" ...");
-				}
-				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				ok = reportFailedCompare(testExecutionObserver, scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
 			}
 		}
-		return ok;
+		if (diffActual.length() > 250) {
+			diffActual.delete(250, diffActual.length());
+			diffActual.append(" ...");
+		}
+		if (diffExcpected.length() > 250) {
+			diffExcpected.delete(250, diffExcpected.length());
+			diffExcpected.append(" ...");
+		}
+		return message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
+	}
+
+	private record ComparisonResult(boolean identical, @Nullable String message, @Nullable Exception diffException, String printableExpectedResult,
+			String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult) {
 	}
 
 	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, Step step, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
