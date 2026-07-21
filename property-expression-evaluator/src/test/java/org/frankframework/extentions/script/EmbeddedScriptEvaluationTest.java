@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.shadow.de.siegmar.fastcsv.util.Nullable;
 
 import org.frankframework.util.StringResolver;
 
@@ -116,7 +117,7 @@ class EmbeddedScriptEvaluationTest {
 			"false, , false",
 			"true, example.com, false"
 	})
-	void booleanLikeEvaluation(boolean isActive, String hostName, boolean expected) {
+	void booleanLikeEvaluation(boolean isActive, @Nullable String hostName, boolean expected) {
 		// Arrange
 		EmbeddedScriptEvaluation embeddedScriptEvaluation = new EmbeddedScriptEvaluation();
 		Map<String, Object> map = new HashMap<>();
