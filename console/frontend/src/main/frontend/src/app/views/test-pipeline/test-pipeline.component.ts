@@ -91,6 +91,7 @@ export class TestPipelineComponent implements OnInit {
   };
 
   protected configurations: Signal<Configuration[]>;
+  protected configurationsLoaded: Signal<boolean>;
 
   private file: File | null = null;
 
@@ -100,6 +101,7 @@ export class TestPipelineComponent implements OnInit {
 
   constructor() {
     this.configurations = this.appService.configurations;
+    this.configurationsLoaded = this.appService.configurationsLoaded;
   }
 
   ngOnInit(): void {
@@ -108,7 +110,7 @@ export class TestPipelineComponent implements OnInit {
 
   protected addNewSessionKey(): void {
     const { key, value } = this.newSessionKey;
-    if (key in this.formSessionKeys) {
+    if (Object.hasOwn(this.formSessionKeys, key)) {
       this.addNote('warning', 'Session keys cannot have the same name!');
     } else if (key != '') {
       this.formSessionKeys[key] = value;
@@ -128,7 +130,8 @@ export class TestPipelineComponent implements OnInit {
       if (newKey === '') {
         delete this.formSessionKeys[key];
         return;
-      } else if (this.formSessionKeys[newKey]) {
+      }
+      if (Object.hasOwn(this.formSessionKeys, newKey)) {
         this.addNote('warning', 'Session keys cannot have the same name!');
         return;
       }
@@ -187,8 +190,7 @@ export class TestPipelineComponent implements OnInit {
     });
     this.http.post<PipelineResult>(`${this.appService.absoluteApiPath}test-pipeline`, fd).subscribe({
       next: (returnData) => {
-        let warnLevel = 'success';
-        if (returnData.state == 'ERROR') warnLevel = 'danger';
+        const warnLevel = returnData.state == 'ERROR' ? 'danger' : 'success';
         this.addNote(warnLevel, returnData.state);
         this.result = returnData.result;
         this.processingMessage = false;

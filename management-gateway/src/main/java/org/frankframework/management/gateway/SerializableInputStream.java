@@ -62,7 +62,7 @@ public class SerializableInputStream extends InputStream implements Externalizab
 				Files.createDirectory(tmpDir);
 			}
 
-			tmpFile = Files.createTempFile(tmpDir, "msg", ".dat");
+			tmpFile = Files.createTempFile(tmpDir, "msg-", ".dat");
 			LOG.trace("determined temporary file location [{}]", tmpFile);
 		} catch (IOException e) {
 			throw new IllegalStateException("unable to create temp file to de-serialize stream", e);

@@ -31,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -46,7 +45,7 @@ public class StreamUtil {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING = DEFAULT_CHARSET.displayName();
 	public static final String AUTO_DETECT_CHARSET = "auto";
-	public static final int BUFFER_SIZE = 64 * 1024;
+	public static final int BUFFER_SIZE = 128 * 1024;
 
 	private StreamUtil() {
 		// Private constructor so that the utility-class cannot be instantiated.
@@ -70,7 +69,7 @@ public class StreamUtil {
 	/**
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, a default character set is used.
 	 */
-	public static BufferedReader getCharsetDetectingInputStreamReader(InputStream inputStream, String defaultCharset) throws IOException {
+	public static BufferedReader getCharsetDetectingInputStreamReader(InputStream inputStream, @Nullable String defaultCharset) throws IOException {
 		BOMInputStream bomInputStream = BOMInputStream.builder()
 				.setInputStream(inputStream)
 				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
@@ -95,22 +94,24 @@ public class StreamUtil {
 	 * @return The number of bytes copied.
 	 * @throws IOException Thrown if any exception occurs while reading or writing from either stream.
 	 */
-	public static long copyStream(InputStream in, OutputStream out, int chunkSize) throws IOException {
+	public static long copyStream(@Nullable InputStream in, OutputStream out, int chunkSize) throws IOException {
 		if (in == null) {
 			return 0L;
+		}
+		if (in instanceof ByteArrayInputStream bis) {
+			// Optimise the from-memory reading case
+			try (bis) {
+				return bis.transferTo(out);
+			}
 		}
 		byte[] buffer = new byte[chunkSize];
 		long totalBytesCopied = 0L;
 		int bytesRead=1;
-		try (InputStream is = in){
-			if (is instanceof ByteArrayInputStream bis) {
-				// Optimise the from-memory reading case
-				return bis.transferTo(out);
-			}
+		try (in) {
 			// Could also use `is.transferTo(Out);` here but that uses small default buffer size
-			while (bytesRead>0) {
-				bytesRead=is.read(buffer,0,chunkSize);
-				if (bytesRead>0) {
+			while (bytesRead > 0) {
+				bytesRead = in.read(buffer,0,chunkSize);
+				if (bytesRead > 0) {
 					out.write(buffer,0,bytesRead);
 					totalBytesCopied += bytesRead;
 				}
@@ -130,7 +131,7 @@ public class StreamUtil {
 	 * @param chunkSize      The size of the buffer used for copying.
 	 * @throws IOException Thrown if any exception occurs while reading or writing from either stream.
 	 */
-	public static long copyPartialStream(InputStream in, OutputStream out, long maxBytesToCopy, int chunkSize) throws IOException {
+	public static long copyPartialStream(@Nullable InputStream in, OutputStream out, long maxBytesToCopy, int chunkSize) throws IOException {
 		if (in == null || maxBytesToCopy == 0L) {
 			return 0L;
 		}
@@ -156,7 +157,7 @@ public class StreamUtil {
 		return totalBytesCopied;
 	}
 
-	public static void copyReaderToWriter(Reader reader, Writer writer, int chunkSize) throws IOException {
+	public static void copyReaderToWriter(@Nullable Reader reader, Writer writer, int chunkSize) throws IOException {
 		if (reader == null) {
 			return;
 		}
@@ -180,7 +181,7 @@ public class StreamUtil {
 		}
 	}
 
-	public static long copyPartialReader(Reader in, Writer out, long maxCharsToCopy, int chunkSize) throws IOException {
+	public static long copyPartialReader(@Nullable Reader in, Writer out, long maxCharsToCopy, int chunkSize) throws IOException {
 		if (in == null || maxCharsToCopy == 0L) {
 			return 0L;
 		}
@@ -206,7 +207,7 @@ public class StreamUtil {
 		return totalCharsCopied;
 	}
 
-	public static void streamToStream(@Nullable InputStream input, @NonNull OutputStream output) throws IOException {
+	public static void streamToStream(@Nullable InputStream input, OutputStream output) throws IOException {
 		streamToStream(input, output, null);
 	}
 
@@ -274,7 +275,7 @@ public class StreamUtil {
 	}
 
 	/**
-	 * Copies the content of a reader into a string, adds specified string to the end of the line, if specified.
+	 * Copies the content of a reader into a string, adds specified string to the end of the line, if specified. Closes the reader after finishing.
 	 * <p>
 	 * Example:
 	 * <pre>
@@ -291,11 +292,14 @@ public class StreamUtil {
 		return readerToString(reader, endOfLineString, xmlEncode, 0);
 	}
 
+	/**
+	 * Copy reader to string and closes the reader when it's finished.
+	 */
 	public static String readerToString(Reader reader, @Nullable String endOfLineString, boolean xmlEncode, int initialCapacity) throws IOException {
 		StringBuilder sb = new StringBuilder(initialCapacity > 0 ? initialCapacity + 32 : 8192);
-		int curChar = -1;
+		int curChar;
 		int prevChar = -1;
-		try {
+		try (reader) {
 			while ((curChar = reader.read()) != -1 || prevChar == '\r') {
 				if (prevChar == '\r' || curChar == '\n') {
 					if (endOfLineString == null) {
@@ -317,8 +321,6 @@ public class StreamUtil {
 				prevChar = curChar;
 			}
 			return sb.toString();
-		} finally {
-			reader.close();
 		}
 	}
 

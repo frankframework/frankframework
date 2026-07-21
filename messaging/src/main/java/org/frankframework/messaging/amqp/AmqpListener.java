@@ -134,13 +134,12 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 		AmqpConnectionFactory connectionFactory = amqpConnectionFactoryFactory.getConnectionFactory(connectionName);
 
 		try (Connection connection = connectionFactory.getConnection()) {
-			if (RabbitMqHelper.isRabbitMq4(connection.properties())) {
-				// RabbitMQ 4.x AMQP 1.0 v2 addresses (/queues/<name>, /exchanges/<name>) require a slash prefix and are valid.
-				// Only warn when using RabbitMQ4 with addresses that contain slashes but do not follow the v2 pattern.
-				if (RabbitMqHelper.isAddressUsingV1Format(this.address) || RabbitMqHelper.isReplyUsingV1Format(this.replyAddress)) {
-					ConfigurationWarnings.add(this, log, "RabbitMQ 4+ detected which only supports AMQP 1.0 v2 address format by default. " +
-							"Please update the address to follow the v2 format, e.g. prefix with '/queues/' or '/exchanges/'");
-				}
+			// RabbitMQ 4.x AMQP 1.0 v2 addresses (/queues/<name>, /exchanges/<name>) require a slash prefix and are valid.
+			// Only warn when using RabbitMQ4 with addresses that contain slashes but do not follow the v2 pattern.
+			if (RabbitMqHelper.isRabbitMq4(connection.properties())
+					&& (RabbitMqHelper.isAddressUsingV1Format(this.address) || RabbitMqHelper.isReplyUsingV1Format(this.replyAddress))) {
+				ConfigurationWarnings.add(this, log, "RabbitMQ 4+ detected which only supports AMQP 1.0 v2 address format by default. " +
+						"Please update the address to follow the v2 format, e.g. prefix with '/queues/' or '/exchanges/'");
 			}
 		} catch (ClientException e) {
 			throw new ConfigurationException("Cannot connection to the AMQP broker", e);

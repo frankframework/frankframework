@@ -19,6 +19,7 @@ import java.util.Properties;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import javax.naming.NoInitialContextException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -65,16 +66,20 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 		JndiTemplate locator = getJndiTemplate(jndiEnvironment);
 		try {
 			return locator.lookup(prefixedJndiName, lookupClass);
-		} catch (NameNotFoundException e) { // Fallback and search again but this time without prefix
-			if (!jndiName.equals(prefixedJndiName)) { // But only if a prefix was used during the first lookup.
+		} catch (NameNotFoundException | NoInitialContextException e) {
+			// Fallback and search again but this time without prefix
+			if (!jndiName.equals(prefixedJndiName)) {
+				// But only if a prefix was used during the first lookup.
 				log.debug("prefixed JNDI name [{}] not found - trying original name [{}], exception: ({}): {}", ()->prefixedJndiName, ()->jndiName, ()->ClassUtils.nameOf(e), e::getMessage);
 				try {
 					return locator.lookup(jndiName, lookupClass);
-				} catch (NameNotFoundException e2) {
+				} catch (NameNotFoundException | NoInitialContextException e2) {
 					log.debug("non-prefixed JNDI name [{}] not found, exception: ({}): {}", ()->jndiName, ()->ClassUtils.nameOf(e2), e2::getMessage);
 				}
 			}
-			return null; // Neither lookup returned an (unexpected) exception, assume the object cannot be found in this IObjectLocator.
+
+			// Neither lookup returned an (unexpected) exception, assume the object cannot be found in this IObjectLocator.
+			return null;
 		}
 	}
 
@@ -88,5 +93,13 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 		if(jndiContextPrefix == null) { // setJndiContextPrefix is called before setApplicationContext. If explicitly set (ie prefix is not null), don't override this value.
 			setJndiContextPrefix(jndiContextFactory.getContextPrefix());
 		}
+	}
+
+	/**
+	 * Custom toString() implementation for logging purposes. It will print the hashcode of this object and the JNDI prefix used for lookups.
+	 */
+	@Override
+	public String toString() {
+		return "JNDILocator@%s [%s]".formatted(Integer.toHexString(hashCode()), jndiContextPrefix);
 	}
 }

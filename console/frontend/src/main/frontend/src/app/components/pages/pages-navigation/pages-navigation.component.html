@@ -239,7 +239,7 @@
           >
         </li>
         <li style="border-top: 1px solid #19aa8d">
-          <a target="_blank" href="http://frank-manual.readthedocs.io/" title="Frank!Manual" rel="noopener noreferrer"
+          <a target="_blank" href="https://frank-manual.readthedocs.io/" title="Frank!Manual" rel="noopener noreferrer"
             ><fa-icon [icon]="faBook" /> <span class="nav-label">Frank!Manual</span></a
           >
         </li>
@@ -260,14 +260,7 @@
           </a>
         </li>
         <li>
-          <a
-            class="pointer"
-            target="_blank"
-            title="Report a Bug"
-            [href]="
-              `https://github.com/frankframework/frankframework/issues/new?template=1-bug.yml&environment=${encodedServerInfo()}`
-            "
-          >
+          <a class="pointer" target="_blank" title="Report a Bug" [href]="githubIssueUrl()">
             <fa-icon [icon]="faFlag" />
             <span class="nav-label">Report a Bug</span>
           </a>

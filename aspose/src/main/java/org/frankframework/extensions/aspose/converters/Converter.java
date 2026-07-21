@@ -36,6 +36,7 @@ public interface Converter {
 	 * @param charset
 	 *
 	 */
+	@SuppressWarnings("java:S112") // generic exceptions
 	void convertToPdf(CisConversionResult result, MediaType mediaType, Message message) throws Exception;
 
 }

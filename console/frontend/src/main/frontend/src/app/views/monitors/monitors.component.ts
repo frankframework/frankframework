@@ -132,7 +132,7 @@ export class MonitorsComponent implements OnInit, OnDestroy {
     const destinations = [];
 
     for (const destination in monitor.activeDestinations) {
-      if (monitor.activeDestinations[destination]) {
+      if (Object.hasOwn(monitor.activeDestinations, destination)) {
         destinations.push(destination);
       }
     }

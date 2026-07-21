@@ -104,9 +104,10 @@ abstract class AbstractConverter implements Converter {
 
 	/**
 	 * Converts the given file to a PDF. MediaType is the detected media type of the
- 	 * file. The convertor should support the given mediaType (otherwise it is a
- 	 * programming error).
+	 * file. The convertor should support the given mediaType (otherwise it is a
+	 * programming error).
 	 */
+	@SuppressWarnings("java:S112") // generic exceptions
 	protected abstract Message convert(MediaType mediaType, Message file) throws Exception;
 
 	protected abstract boolean isPasswordException(Exception e);

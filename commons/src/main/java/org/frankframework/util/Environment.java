@@ -50,7 +50,7 @@ public class Environment {
 	private static final Logger log = LogManager.getLogger(Environment.class);
 	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
 
-	private static String KUBERNETES_SERVICE_HOST = System.getenv("KUBERNETES_SERVICE_HOST");
+	private static final String KUBERNETES_SERVICE_HOST = System.getenv("KUBERNETES_SERVICE_HOST");
 
 	public static Properties getEnvironmentVariables() throws IOException {
 		try {

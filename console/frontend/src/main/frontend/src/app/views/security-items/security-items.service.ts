@@ -57,15 +57,7 @@ export type SecurityItems = {
 };
 
 export type HttpRequestMethodType =
-  | 'GET'
-  | 'HEAD'
-  | 'POST'
-  | 'PUT'
-  | 'DELETE'
-  | 'CONNECT'
-  | 'OPTIONS'
-  | 'TRACE'
-  | 'PATCH';
+  'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
 
 export type LinkName =
   | 'changeMessagesProcessState'

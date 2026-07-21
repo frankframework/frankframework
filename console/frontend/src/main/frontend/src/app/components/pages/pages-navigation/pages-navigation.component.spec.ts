@@ -15,11 +15,7 @@ describe('PagesNavigationComponent', () => {
     await TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
       imports: [PagesNavigationComponent],
-      providers: [
-        provideRouter(routes),
-        provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting(),
-      ],
+      providers: [provideRouter(routes), provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PagesNavigationComponent);

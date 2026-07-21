@@ -221,7 +221,7 @@ public class MultipartUtils {
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 				final String fieldName = getFieldName(bodyPart);
-				if(StringUtils.isEmpty(fieldName)) {
+				if (StringUtils.isEmpty(fieldName)) {
 					log.info("unable to determine fieldname skipping part");
 					continue;
 				}

@@ -70,7 +70,7 @@ export class MonitorsAddEditComponent implements OnInit {
 
     this.monitorsService.getTrigger(this.selectedConfiguration, this.monitor, this.triggerId).subscribe({
       next: (data) => {
-        this.eventsOptions = Object.keys(data.events).sort();
+        this.eventsOptions = Object.keys(data.events).toSorted((a, b) => a.localeCompare(b));
         this.events = data.events;
         this.severities = data.severities;
         if (data.trigger) this.trigger = data.trigger;
@@ -108,10 +108,9 @@ export class MonitorsAddEditComponent implements OnInit {
     let adapters: string[] = [];
 
     for (const item in this.events) {
-      if (events.includes(item)) {
-        const sourceList = this.events[item].sources;
-        adapters = [...adapters, ...Object.keys(sourceList)];
-      }
+      if (!events.includes(item)) continue;
+      const sourceList = this.events[item].sources;
+      adapters = [...adapters, ...Object.keys(sourceList)];
     }
 
     return [...new Set(adapters)];
@@ -165,7 +164,7 @@ export class MonitorsAddEditComponent implements OnInit {
         const s = item.split('$$');
         // const adapter = s[0];
         const source = s[1];
-        if (!trigger.sources[item]) trigger.sources[item] = [];
+        if (!Object.hasOwn(trigger.sources, item)) trigger.sources[item] = [];
         trigger.sources[item] = [source];
       }
     }

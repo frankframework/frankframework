@@ -38,15 +38,15 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   protected readonly faCheck = faCheck;
   protected readonly faCloudDownload = faCloudDownload;
 
+  private promise = -1;
+  private versions: Configuration[] = [];
+  private lastSortEvent: SortEvent = { direction: 'NONE', column: '' };
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly router: Router = inject(Router);
   private readonly appService: AppService = inject(AppService);
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
   private readonly sweetalertService: SweetalertService = inject(SweetalertService);
   private readonly toastService: ToastService = inject(ToastService);
-  private promise = -1;
-  private versions: Configuration[] = [];
-  private lastSortEvent: SortEvent = { direction: 'NONE', column: '' };
 
   constructor() {
     const routeState = this.router.getCurrentNavigation()?.extras.state ?? {};

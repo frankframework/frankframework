@@ -6,13 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { computeServerPath, deepMerge } from './utilities';
 
 export type RunState =
-  | 'ERROR'
-  | 'STARTING'
-  | 'EXCEPTION_STARTING'
-  | 'STARTED'
-  | 'STOPPING'
-  | 'EXCEPTION_STOPPING'
-  | 'STOPPED';
+  'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
 export type RunStateRuntime = RunState | 'loading';
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 export type AdapterStatus = 'started' | 'warning' | 'stopped';
@@ -258,6 +252,7 @@ export class AppService {
 
   private _adapters: WritableSignal<Record<string, Adapter>> = signal({});
   private _configurations: WritableSignal<Configuration[]> = signal([]);
+  private _configurationsLoaded: WritableSignal<boolean> = signal(false);
   private _messageLog: WritableSignal<Record<string, MessageLog>> = signal({});
   private _adapterSummary: WritableSignal<Summary> = signal({
     started: 0,
@@ -307,6 +302,9 @@ export class AppService {
   get configurations(): Signal<Configuration[]> {
     return this._configurations.asReadonly();
   }
+  get configurationsLoaded(): Signal<boolean> {
+    return this._configurationsLoaded.asReadonly();
+  }
   get messageLog(): Signal<Record<string, MessageLog>> {
     return this._messageLog.asReadonly();
   }
@@ -345,6 +343,7 @@ export class AppService {
       else updatedConfigurations.push(config);
     }
     this._configurations.set(updatedConfigurations);
+    this._configurationsLoaded.set(true);
   }
 
   updateMessageLog(messageLog: Record<string, Partial<MessageLog>>): void {
@@ -396,16 +395,16 @@ export class AppService {
     };
 
     for (const adapter of Object.values(this.adapters())) {
-      if (adapter.configuration == configurationName || configurationName == 'All') {
-        // Only adapters for active config
-        adapterSummary[adapter.state]++;
-        for (const index in adapter.receivers) {
-          receiverSummary[adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>]++;
-        }
-        for (const index in adapter.messages) {
-          const level = adapter.messages[+index].level.toLowerCase() as Lowercase<MessageLevel>;
-          messageSummary[level]++;
-        }
+      if (!(adapter.configuration == configurationName || configurationName == 'All')) continue;
+
+      // Only adapters for active config
+      adapterSummary[adapter.state]++;
+      for (const index in adapter.receivers) {
+        receiverSummary[adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>]++;
+      }
+      for (const index in adapter.messages) {
+        const level = adapter.messages[+index].level.toLowerCase() as Lowercase<MessageLevel>;
+        messageSummary[level]++;
       }
     }
 

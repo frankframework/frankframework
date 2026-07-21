@@ -40,7 +40,7 @@ import org.frankframework.util.AppConstants;
  */
 @Log4j2
 public class DebuggerActive implements ApplicationEventPublisherAware, ApplicationListener<DebuggerStatusChangedEvent>, InitializingBean, BooleanSupplier {
-	private AtomicBoolean IS_LADYBUG_ACTIVE = new AtomicBoolean(false);
+	private static final AtomicBoolean IS_LADYBUG_ACTIVE = new AtomicBoolean(false);
 	private static final String TESTTOOL_ENABLED_PROPERTY = "testtool.enabled";
 
 	private ApplicationEventPublisher applicationEventPublisher;

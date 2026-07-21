@@ -15,11 +15,11 @@
 		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->
 		<!-- Latest versions and what libraries need the classifier can be checked on the -->
 		<!-- AsposeJava Maven repository: https://releases.aspose.com/java/repo/com/aspose/ -->
-		<aspose.cells.version>26.6</aspose.cells.version>
+		<aspose.cells.version>26.7</aspose.cells.version>
 		<aspose.email.version>26.5</aspose.email.version>
-		<aspose.imaging.version>26.6</aspose.imaging.version>
+		<aspose.imaging.version>26.7</aspose.imaging.version>
 		<aspose.pdf.version>26.6</aspose.pdf.version>
-		<aspose.slides.version>26.6</aspose.slides.version>
+		<aspose.slides.version>26.7</aspose.slides.version>
 		<aspose.words.version>26.6</aspose.words.version>
 	</properties>
 
@@ -115,13 +115,13 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>3.0.7</version>
+			<version>3.0.8</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox-tools</artifactId>
-			<version>3.0.7</version>
+			<version>3.0.8</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

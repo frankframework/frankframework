@@ -38,6 +38,7 @@ export class ComboboxComponent implements OnInit, OnChanges {
   @Input() id = '';
   @Input() disabled = false;
   @Input() selectedOption?: string;
+  @Input() clearOnClick = false;
   @Output() selectedOptionChange: EventEmitter<string> = new EventEmitter<string>();
 
   @ViewChild('comboboxOptions') comboboxOptionsRef!: ElementRef;
@@ -48,6 +49,18 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected selectedIndex = -1;
   protected listShown = false;
   protected showError = false;
+
+  private selectedOptionOnShow = '';
+
+  ngOnInit(): void {
+    this.resetListItems();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedOption']) {
+      this.input = changes['selectedOption'].currentValue ?? '';
+    }
+  }
 
   protected onEnter(event: Event): void {
     event.preventDefault();
@@ -61,29 +74,30 @@ export class ComboboxComponent implements OnInit, OnChanges {
   }
 
   protected onArrowUp(): void {
+    this.showListDisplay();
     this.selectPrevious();
   }
 
   protected onArrowDown(): void {
+    this.showListDisplay();
     this.selectNext();
-  }
-
-  ngOnInit(): void {
-    this.resetListItems();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedOption']) {
-      this.input = changes['selectedOption'].currentValue ?? '';
-    }
   }
 
   protected showListDisplay(): void {
     if (this.listShown) return;
     this.listShown = true;
+    this.selectedOptionOnShow = this.input;
     this.comboboxDropdownIcon.nativeElement.classList.add('combobox__dropdown-icon--active');
-    this.filterListItems();
-    this.highlightItemMatchingInput();
+    this.onUpdateInput();
+  }
+
+  protected onMouseDown(): void {
+    this.clearOnClick && this.clearSelectedItem();
+  }
+
+  protected onInput(): void {
+    this.showListDisplay();
+    this.onUpdateInput();
   }
 
   protected onUpdateInput(): void {
@@ -99,8 +113,7 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected clearSelectedItem(): void {
     this.selectedIndex = -1;
     this.input = '';
-    this.setSelectedOption('');
-    this.hideListDisplay();
+    this.onUpdateInput();
   }
 
   protected hideListDisplay(): void {
@@ -122,16 +135,21 @@ export class ComboboxComponent implements OnInit, OnChanges {
   }
 
   private setSelectedOption(option: string): void {
+    if (this.selectedOptionDidNotChange(option)) return;
     this.selectedOption = option;
     this.selectedOptionChange.emit(this.selectedOption);
   }
 
+  private selectedOptionDidNotChange(option: string): boolean {
+    return option === this.selectedOptionOnShow;
+  }
+
   private filterListItems(): void {
-    this.filteredOptions = this.options.filter(({ label }) => label.toLowerCase().startsWith(this.input.toLowerCase()));
+    this.filteredOptions = this.options.filter(({ label }) => label.toLowerCase().includes(this.input.toLowerCase()));
   }
 
   private validateInput(): void {
-    this.showError = !!(this.input || this.required) && !this.options.some(({ label }) => label === this.input);
+    this.showError = !!(this.input || this.required) && this.options.every(({ label }) => label !== this.input);
     if (this.showError) this.resetListItems();
   }
 
@@ -153,14 +171,14 @@ export class ComboboxComponent implements OnInit, OnChanges {
   }
 
   private selectNext(): void {
-    if (this.filteredOptions.length <= 0) {
+    if (this.filteredOptions.length === 0) {
       return;
     }
     this.selectItemInListDisplay((this.selectedIndex + 1) % this.filteredOptions.length);
   }
 
   private selectPrevious(): void {
-    if (this.filteredOptions.length <= 0) {
+    if (this.filteredOptions.length === 0) {
       return;
     }
     if (this.selectedIndex === -1) this.selectedIndex = 0;

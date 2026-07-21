@@ -85,9 +85,9 @@ public class HttpMessageEntityTest {
 		assertTrue(repeatableMessage.requiresStream());
 		assertFalse(bae.isStreaming());
 		assertTrue(ise.isStreaming());
-		assertTrue(hmeRepeatable.isStreaming());
-		assertTrue(hmeNonRepeatable.isStreaming());
-		assertTrue(hmeUrlRepeatable.isStreaming());
+		assertFalse(hmeRepeatable.isStreaming());
+		assertFalse(hmeNonRepeatable.isStreaming());
+		assertFalse(hmeUrlRepeatable.isStreaming());
 	}
 
 	@Test

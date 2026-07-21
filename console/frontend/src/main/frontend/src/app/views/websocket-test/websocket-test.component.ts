@@ -44,10 +44,12 @@ export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   ngAfterViewInit(): void {
-    if (this.websocketService.connected()) {
-      this.printToHtml('Connected');
-      this.onConnected();
+    if (!this.websocketService.connected()) {
+      return;
     }
+
+    this.printToHtml('Connected');
+    this.onConnected();
   }
 
   ngOnDestroy(): void {

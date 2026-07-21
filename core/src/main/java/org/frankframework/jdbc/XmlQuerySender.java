@@ -415,41 +415,43 @@ public class XmlQuerySender extends DirectQuerySender {
 			Object columnValue = column.getParameter();
 			switch (columnValue) {
 				case Integer i -> {
-					log.debug("parm [{}] is an Integer with value [{}]", pos, i);
+					log.debug("param [{}] is an Integer with value [{}]", pos, i);
 					statement.setInt(pos, i);
 					++pos;
 				}
 				case Boolean b -> {
-					log.debug("parm [{}] is an Boolean with value [{}]", pos, b);
+					log.debug("param [{}] is an Boolean with value [{}]", pos, b);
 					statement.setBoolean(pos, b);
 					++pos;
 				}
 				case Double d -> {
-					log.debug("parm [{}] is a Double with value [{}]", pos, d);
+					log.debug("param [{}] is a Double with value [{}]", pos, d);
 					statement.setDouble(pos, d);
 					++pos;
 				}
 				case Float f -> {
-					log.debug("parm [{}] is a Float with value [{}]", pos, f);
+					log.debug("param [{}] is a Float with value [{}]", pos, f);
 					statement.setFloat(pos, f);
 					++pos;
 				}
 				case Timestamp ts -> {
-					log.debug("parm [{}] is a Timestamp with value [{}]", pos, ts);
+					log.debug("param [{}] is a Timestamp with value [{}]", pos, ts);
 					statement.setTimestamp(pos, ts);
 					++pos;
 				}
 				case byte[] bytes -> {
-					log.debug("parm [{}] is a byte array with value [{}] = [{}]", pos, bytes, new String(bytes));
+					if (log.isDebugEnabled()) log.debug("param [{}] is a byte array with value [{}] = [{}]", pos, bytes, new String(bytes));
 					statement.setBytes(pos, bytes);
 					++pos;
 				}
-				case null -> {} // Skip null values
+				case null -> {
+					// NO-OP: Skip null values
+				}
 				default -> {
 					if (parameterMetaData == null && parameterTypeMatchRequired) {
 						parameterMetaData = statement.getParameterMetaData();
 					}
-					log.debug("parm [{}] is a {} with value [{}]", pos, columnValue.getClass().getSimpleName(), columnValue);
+					log.debug("param [{}] is a {} with value [{}]", pos, columnValue.getClass().getSimpleName(), columnValue);
 					JdbcUtil.setParameter(statement, pos, columnValue.toString(), parameterTypeMatchRequired, parameterMetaData);
 					++pos;
 				}

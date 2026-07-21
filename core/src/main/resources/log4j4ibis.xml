@@ -10,17 +10,15 @@
 		</Appender>
 		<Appender name="application-log-appender" type="Console">
 			<Layout type="PatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%ex{short}</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%rEx{1}</Pattern>
 			</Layout>
 		</Appender>
-		<Appender name="log-all-errors-to-application-log" type="Routing">
+		<Async name="log-all-errors-to-application-log">
 			<Filters>
 				<ThresholdFilter level="ERROR" onMatch="ACCEPT" />
 			</Filters>
-			<Routes>
-				<Route ref="application-log-appender" />
-			</Routes>
-		</Appender>
+			<AppenderRef ref="application-log-appender"/>
+		</Async>
 		<Appender name="leak-log-appender" createOnDemand="true" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-leaks.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}-leaks.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n%xEx"/>
 			<Policies>
@@ -126,8 +124,13 @@
 		<!-- Suppress `implements ApplicationListener interface but is not reachable for event multicasting` -->
 		<Logger name="org.springframework.context.support.ApplicationListenerDetector" level="ERROR" />
 
-		<Logger name="liquibase.util.ShowSummaryUtil" level="INFO">
+		<!--
+		Special config so it's logged (and limited by) both File and STDOUT.
+		The 'additivity' attribute prevents it from propagating to other loggers.
+		-->
+		<Logger name="liquibase.util.ShowSummaryUtil" level="INFO" additivity="false">
 			<AppenderRef ref="application-log-appender"/>
+			<AppenderRef ref="file"/>
 		</Logger>
 
 		<Logger name="MSG" additivity="false" level="INFO">

@@ -43,6 +43,7 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.IPullingListener;
+import org.frankframework.core.IRedeliveringListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -75,7 +76,7 @@ import org.frankframework.xml.XmlWriter;
  */
 @Log4j2
 @DestinationType(DestinationType.Type.FILE_SYSTEM)
-public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
+public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F>, IRedeliveringListener<F> {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -164,6 +165,11 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		if (!knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) {
 			ConfigurationWarnings.add(this, log, "Configuring 'fileTimeSensitive' has no effect when no 'In Process' folder is configured.");
 		}
+	}
+
+	@Override
+	public boolean messageWillBeRedeliveredOnExitStateError() {
+		return knownProcessStates().contains(ProcessState.INPROCESS);
 	}
 
 	@Override

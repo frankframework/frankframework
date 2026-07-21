@@ -103,7 +103,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   protected databaseSchedulesEnabled: Signal<boolean> = computed(
     () => this.appService.appConstants()['loadDatabaseSchedules.active'] === 'true',
   );
-  protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
+  protected jobShowContent: Record<string, boolean> = {};
   protected selectedJobGroup = 'All';
   protected readonly faPlus = faPlus;
   protected readonly faPlay = faPlay;
