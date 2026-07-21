@@ -360,25 +360,23 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	@Nullable
-	private Path legacyBlobOrClobFilename(PipeLineSession session) throws IOException {
+	private Path legacyBlobOrClobFilename(PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-			Message blobSessionValue = session.getMessage(getBlobSessionKey());
-			if (blobSessionValue.isRequestOfType(String.class)) {
-				return Paths.get(blobSessionValue.asString());
+			String blobSessionValue = session.getString(getBlobSessionKey());
+			if (StringUtils.isNotEmpty(blobSessionValue)) {
+				return Paths.get(blobSessionValue);
 			}
-			throw new IllegalStateException("blobSessionKey is not of type [String]");
 		}
 		if (StringUtils.isNotEmpty(getClobSessionKey())) {
-			Message blobSessionValue = session.getMessage(getClobSessionKey());
-			if (blobSessionValue.isRequestOfType(String.class)) {
-				return Paths.get(blobSessionValue.asString());
+			String clobSessionValue = session.getString(getClobSessionKey());
+			if (StringUtils.isNotEmpty(clobSessionValue)) {
+				return Paths.get(clobSessionValue);
 			}
-			throw new IllegalStateException("clobSessionKey is not of type [String]");
 		}
 		return null;
 	}
 
-	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) {
+	protected String adjustQueryAndParameterListForNamedParameters(@NonNull ParameterList parameterList, String query) {
 		if (log.isDebugEnabled()) {
 			log.debug("Adjusting list of parameters [{}]", ()->parameterListToString(parameterList));
 		}
