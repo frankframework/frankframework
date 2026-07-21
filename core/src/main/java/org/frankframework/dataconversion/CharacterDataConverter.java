@@ -25,6 +25,12 @@ import javax.xml.transform.Source;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+/**
+ * Implementation of {@link DataConverter} that wraps character-based data of type {@code T}, and an implementation of {@link TypedCharacterDataConverter}
+ * for the same type {@code T}.
+ *
+ * @param <T> Type of the character data.
+ */
 final class CharacterDataConverter<T> extends AbstractDataConverter<T> implements DataConverter {
 	private final TypedCharacterDataConverter<T> converter;
 

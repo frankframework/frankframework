@@ -32,6 +32,19 @@ import org.xml.sax.SAXException;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.util.StreamUtil;
 
+/**
+ * Implementation of {@link DataConverter} that wraps binary data of type {@code T}, and an implementation of {@link TypedBinaryDataConverter}
+ * for the same type {@code T}.
+ *
+ * <p>
+ *     The interface methods do not pass a character set, which is required by several methods in the wrapped {@link TypedBinaryDataConverter}. In
+ *     order to determine the character set, the instance is created with a callback-function to retrieve character set information, the
+ *     {@code charsetSupplier} of type {@code ThrowingSupplier<@Nullable String, IOException>}. The return value of the {@code charsetSupplier}
+ *     may be {@code NULL} if no charset can be determined for the data.
+ * </p>
+ *
+ * @param <T> Type of the binary data.
+ */
 final class BinaryDataConverter<T> extends AbstractDataConverter<T> implements DataConverter {
 	private final TypedBinaryDataConverter<T> converter;
 	private final ThrowingSupplier<@Nullable String, IOException> charsetSupplier;

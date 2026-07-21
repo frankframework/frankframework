@@ -17,6 +17,9 @@ package org.frankframework.dataconversion;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Abstract class with common data and operations for concrete implementations of {@link DataConverter}.
+ */
 abstract class AbstractDataConverter<T> implements DataConverter {
 	protected final T data;
 

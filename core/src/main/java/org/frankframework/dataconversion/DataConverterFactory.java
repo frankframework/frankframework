@@ -29,6 +29,7 @@ import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.util.ClassUtils;
 
 public class DataConverterFactory {
+	// Static singleton definitions of all converters
 	static final NullDataConverter nullDataConverter = new NullDataConverter();
 	static final StringableDataConverter.EnumConverter enumConverter = new StringableDataConverter.EnumConverter();
 	static final StringableDataConverter.BooleanConverter booleanConverter = new StringableDataConverter.BooleanConverter();
@@ -45,6 +46,12 @@ public class DataConverterFactory {
 		// Private constructor to avoid instance creation
 	}
 
+	/**
+	 * Factory method to create a {@literal DataConverter} to wrap the data that is passed
+	 * @param data Data to be wrapped, or NULL.
+	 * @param charsetSupplier Supplier of a character-set for the data. The supplier may return a NULL value if no charset can be detected. Only used for binary data.
+	 * @return Instance implementing the {@literal DataConverter} interface
+	 */
 	public static DataConverter getConverter(@Nullable Object data, ThrowingSupplier<@Nullable String, IOException> charsetSupplier) {
 		return switch (data) {
 			case null -> nullDataConverter;

@@ -26,6 +26,15 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.util.XmlUtils;
 
+/**
+ * Interface describing the strongly typed operations to represent data as various other types
+ * that can be needed for operations in the Frank!Framework.
+ * Concrete implementations should specify the concrete type of {@code <T>} upon which they operate.
+ * The sub-interfaces {@link TypedCharacterDataConverter<T>} and {@link TypedBinaryDataConverter<T>} add
+ * operations that have require different parameters for binary vs character data.
+ *
+ * @param <T> Type of the data that is operated on.
+ */
 public interface TypedConverter<T> {
 
 	default boolean prefersStreaming() {

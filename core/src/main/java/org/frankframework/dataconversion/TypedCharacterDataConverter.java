@@ -21,6 +21,18 @@ import java.io.Reader;
 
 import org.xml.sax.InputSource;
 
+/**
+ * Interface describing the strongly typed operations to represent character-based data as various other types
+ * that can be needed for operations in the Frank!Framework.
+ * Concrete implementations should specify the concrete type of {@code <T>} upon which they operate.
+ *
+ * <p>
+ *     Character data is any data that has a native {@code toString()} representation and does not need to
+ *     have an additional character set specified in order to represent it as a {@link String} or {@link Reader}.
+ * </p>
+ *
+ * @param <T> Type of the data that is operated on.
+ */
 interface TypedCharacterDataConverter<T> extends TypedConverter<T> {
 
 	String asString(T data) throws IOException;

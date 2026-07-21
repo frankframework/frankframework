@@ -23,6 +23,19 @@ import org.xml.sax.InputSource;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
+/**
+ * Interface describing the strongly typed operations to represent binary data as various other types
+ * that can be needed for operations in the Frank!Framework.
+ * Concrete implementations should specify the concrete type of {@code <T>} upon which they operate.
+ *
+ * <p>
+ *     Binary data is any data that is natively represented as bytes (in memory or on disk), and needs
+ *     to be supplied with a character set in order to be represented as a {@link String} or {@link Reader}.
+ *     The character set should then be passed in via the interface.
+ * </p>
+ *
+ * @param <T> Type of the data that is operated on.
+ */
 interface TypedBinaryDataConverter<T> extends TypedConverter<T> {
 
 	default String asString(T data, String encodingCharset) throws IOException {
