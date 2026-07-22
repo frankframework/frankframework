@@ -435,26 +435,10 @@ public class LarvaTool {
 			return null;
 		}
 
-		String printableExpectedResult;
-		String printableActualResult;
 		String diffType = properties.getProperty(step + ".diffType");
-		if (".json".equals(diffType) || (diffType == null && fileName.endsWith(".json"))) {
-			try {
-				printableExpectedResult = JsonUtil.jsonPretty(expectedResult);
-			} catch (JsonException e) {
-				debugMessage("Could not prettify Json: "+e.getMessage());
-				printableExpectedResult = expectedResult;
-			}
-			try {
-				printableActualResult = JsonUtil.jsonPretty(actualResult);
-			} catch (JsonException e) {
-				debugMessage("Could not prettify Json: "+e.getMessage());
-				printableActualResult = actualResult;
-			}
-		} else {
-			printableExpectedResult = XmlEncodingUtils.replaceNonValidXmlCharacters(expectedResult);
-			printableActualResult = XmlEncodingUtils.replaceNonValidXmlCharacters(actualResult);
-		}
+		boolean isJson = ".json".equals(diffType) || (diffType == null && fileName.endsWith(".json"));
+		String printableExpectedResult = isJson ? jsonPrettyOrOriginal(expectedResult) : XmlEncodingUtils.replaceNonValidXmlCharacters(expectedResult);
+		String printableActualResult = isJson ? jsonPrettyOrOriginal(actualResult) : XmlEncodingUtils.replaceNonValidXmlCharacters(actualResult);
 
 		// Map all identifier based properties once
 		Map<String, Map<String, Map<String, String>>> ignoreMap = scenario.getIgnoreMap();
@@ -462,33 +446,47 @@ public class LarvaTool {
 		String preparedExpectedResult = prepareResultForCompare(printableExpectedResult, properties, ignoreMap);
 		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap);
 
-		if (".xml".equals(diffType) || ".wsdl".equals(diffType)
-				|| diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl"))) {
-			// xml diff
-			Diff diff = null;
-			boolean identical = false;
-			Exception diffException = null;
-			try {
-				diff = new Diff(preparedExpectedResult, preparedActualResult);
-				identical = diff.identical();
-			} catch(Exception e) {
-				diffException = e;
-			}
-			if (identical) {
-				return new ComparisonResult(true, null, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
-			}
-			String message = diffException == null ? diff.toString() : "Exception during XML diff: " + diffException.getMessage();
-			return new ComparisonResult(false, message, diffException, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
-		} else {
-			// txt diff
-			String formattedPreparedExpectedResult = formatString(preparedExpectedResult);
-			String formattedPreparedActualResult = formatString(preparedActualResult);
-			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
-				return new ComparisonResult(true, null, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
-			}
-			String message = buildTextDiffMessage(formattedPreparedExpectedResult, formattedPreparedActualResult);
-			return new ComparisonResult(false, message, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
+		boolean isXml = ".xml".equals(diffType) || ".wsdl".equals(diffType) || diffType == null && (fileName.endsWith(".xml") || fileName.endsWith(".wsdl"));
+		if (isXml) {
+			return compareXml(preparedExpectedResult, preparedActualResult, printableExpectedResult, printableActualResult, actualResult);
 		}
+		return compareText(preparedExpectedResult, preparedActualResult, printableExpectedResult, printableActualResult, actualResult);
+	}
+
+	private String jsonPrettyOrOriginal(String result) {
+		try {
+			return JsonUtil.jsonPretty(result);
+		} catch (JsonException e) {
+			debugMessage("Could not prettify Json: " + e.getMessage());
+			return result;
+		}
+	}
+
+	private ComparisonResult compareXml(String preparedExpectedResult, String preparedActualResult, String printableExpectedResult, String printableActualResult, String actualResult) {
+		Diff diff = null;
+		boolean identical = false;
+		Exception diffException = null;
+		try {
+			diff = new Diff(preparedExpectedResult, preparedActualResult);
+			identical = diff.identical();
+		} catch(Exception e) {
+			diffException = e;
+		}
+		if (identical) {
+			return new ComparisonResult(true, null, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
+		}
+		String message = diffException == null ? diff.toString() : "Exception during XML diff: " + diffException.getMessage();
+		return new ComparisonResult(false, message, diffException, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
+	}
+
+	private ComparisonResult compareText(String preparedExpectedResult, String preparedActualResult, String printableExpectedResult, String printableActualResult, String actualResult) {
+		String formattedPreparedExpectedResult = formatString(preparedExpectedResult);
+		String formattedPreparedActualResult = formatString(preparedActualResult);
+		if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
+			return new ComparisonResult(true, null, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
+		}
+		String message = buildTextDiffMessage(formattedPreparedExpectedResult, formattedPreparedActualResult);
+		return new ComparisonResult(false, message, null, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult);
 	}
 
 	private static String buildTextDiffMessage(String formattedPreparedExpectedResult, String formattedPreparedActualResult) {
