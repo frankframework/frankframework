@@ -206,7 +206,7 @@ public class CompressPipe extends FixedForwardPipe {
 
 	private String getZipEntryName(String input, PipeLineSession session) throws ParameterException {
 		ParameterValueList pvl = getParameterList().getValues(new Message(input), session);
-		String value = ParameterValueList.getValue(pvl, "zipEntryPattern", (String) null);
+		String value = pvl.getValue("zipEntryPattern", (String) null);
 		if (value != null) {
 			return value;
 		}

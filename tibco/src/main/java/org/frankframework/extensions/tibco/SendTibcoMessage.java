@@ -129,37 +129,37 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 
-		urlWork = getParameterValue(pvl, "url");
+		urlWork = pvl.getValue("url");
 		if (urlWork == null) {
 			urlWork = getUrl();
 		}
-		authAliasWork = getParameterValue(pvl, "authAlias");
+		authAliasWork = pvl.getValue("authAlias");
 		if (authAliasWork == null) {
 			authAliasWork = getAuthAlias();
 		}
-		userNameWork = pvl.contains("username") ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
+		userNameWork = pvl.contains("username") ? pvl.getValue("username") : pvl.getValue("userName");
 		if (userNameWork == null) {
 			userNameWork = getUsername();
 		}
-		passwordWork = getParameterValue(pvl, "password");
+		passwordWork = pvl.getValue("password");
 		if (passwordWork == null) {
 			passwordWork = getPassword();
 		}
-		queueNameWork = getParameterValue(pvl, "queueName");
+		queueNameWork = pvl.getValue("queueName");
 		if (queueNameWork == null) {
 			queueNameWork = getQueueName();
 		}
-		String protocolParam = getParameterValue(pvl, "messageProtocol");
+		String protocolParam = pvl.getValue("messageProtocol");
 		if (protocolParam != null) {
 			protocol = EnumUtils.parse(MessageProtocol.class, protocolParam);
 		}
-		String replyTimeoutStr = getParameterValue(pvl, "replyTimeout");
+		String replyTimeoutStr = pvl.getValue("replyTimeout");
 		if (replyTimeoutStr == null) {
 			replyTimeoutWork = getReplyTimeout();
 		} else {
 			replyTimeoutWork = Integer.parseInt(replyTimeoutStr);
 		}
-		soapActionWork = getParameterValue(pvl, "soapAction");
+		soapActionWork = pvl.getValue("soapAction");
 		if (soapActionWork == null)
 			soapActionWork = getSoapAction();
 

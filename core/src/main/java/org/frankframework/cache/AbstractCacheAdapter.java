@@ -213,7 +213,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 		if (getParameterList().hasParameter(parameterName)) {
 			try {
 				ParameterValueList parameterValueList = getParameterList().getValues(input, session);
-				ParameterValue parameterValue = parameterValueList.findParameterValue(parameterName);
+				ParameterValue parameterValue = parameterValueList.get(parameterName);
 
 				if (parameterValue != null) {
 					return parameterValue.asMessage();

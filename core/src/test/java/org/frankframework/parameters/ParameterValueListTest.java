@@ -28,21 +28,22 @@ public class ParameterValueListTest {
 		assertTrue(list.contains("key2"));
 		assertFalse(list.contains("doesnt-exist"));
 		assertEquals(4, list.size());
-		assertEquals("[value1, value2, value4, value3]", list.getValueMap().values().toString());
+		assertEquals("[value1, value2, value4, value3]", list.getValueList().toString()); // Preserves order of definition
+		assertEquals("[value1, value2, value3, value4]", list.getValueMap().values().toString()); // Alphabetical order of keys, case-insensitive
 
-		List<String> sortedList2 = new ArrayList<>();
+		List<String> listOfKeys = new ArrayList<>();
 		for (ParameterValue param : list) {
-			sortedList2.add(param.getName());
+			listOfKeys.add(param.getName());
 		}
-		assertEquals("[key1, key2, key4, key3]", sortedList2.toString());
+		assertEquals("[key1, key2, key4, key3]", listOfKeys.toString());
 
 		assertSame(key2, list.remove("key2"));
 		assertNull(list.remove("doesnt-exist"));
 
 		assertEquals("value3", list.get("key3").getValue());
-		assertEquals("value1", list.getParameterValue(0).getValue());
-		assertEquals("value4", list.getParameterValue(1).getValue());
-		assertEquals("value3", list.getParameterValue(2).getValue());
+		assertEquals("value1", list.getValue(0).getValue());
+		assertEquals("value4", list.getValue(1).getValue());
+		assertEquals("value3", list.getValue(2).getValue());
 	}
 
 	public static class ResolvedParameterValue extends ParameterValue {

@@ -22,8 +22,8 @@ public class ParameterValueTestPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 
-		String param1 = getParameterValue(pvl, "param1");
-		String param2 = pvl.contains("param2") ? getParameterValue(pvl, "param2") : getParameterValue(pvl, "param1");
+		String param1 = pvl.getValue("param1");
+		String param2 = pvl.contains("param2") ? pvl.getValue("param2") : pvl.getValue("param1");
 
 		if(StringUtils.isNotEmpty(param1)) {
 			return new PipeRunResult(getSuccessForward(), param1);
