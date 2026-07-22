@@ -10,11 +10,11 @@
 		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
 	">
 
-	<bean name="whiteBoxView" class="org.wearefrank.ladybug.filter.View" autowire="byName">
+	<bean name="whiteBoxView" class="org.wearefrank.ladybug.filter.View">
 		<property name="name" value="White box"/>
 	</bean>
 
-	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName">
+	<bean name="grayBoxView" parent="whiteBoxView">
 		<property name="name" value="Gray box"/>
 		<property name="checkpointMatchers">
 			<list>
@@ -23,7 +23,7 @@
 		</property>
 	</bean>
 
-	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName">
+	<bean name="blackBoxView" parent="whiteBoxView">
 		<property name="name" value="Black box"/>
 		<property name="checkpointMatchers">
 			<list>
