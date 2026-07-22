@@ -22,6 +22,7 @@ import jakarta.xml.soap.SOAPConstants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -52,7 +53,7 @@ public class ValidateSoapMessageHandler extends FullXmlFilter {
 	private boolean seenHeader = false;
 	private boolean seenBody = false;
 
-	public ValidateSoapMessageHandler(ContentHandler contentHandler) {
+	public ValidateSoapMessageHandler(@Nullable ContentHandler contentHandler) {
 		super(contentHandler);
 	}
 

@@ -33,14 +33,14 @@ import org.frankframework.util.MessageUtils;
  * Wrapper calls that holds everything related to a SOAPMessage.
  */
 public class SoapMessage {
-	private final SoapContext context;
-	private final MultipartMessages parts;
+	private final @NonNull SoapContext context;
+	private final @NonNull MultipartMessages parts;
 
-	private SoapMessage(Message message) throws SOAPException {
+	private SoapMessage(@NonNull Message message) throws SOAPException {
 		this(new MultipartMessages(message));
 	}
 
-	private SoapMessage(MultipartMessages parts) throws SOAPException {
+	private SoapMessage(@NonNull MultipartMessages parts) throws SOAPException {
 		this.parts = parts;
 		Message body = parts.body();
 		if (Message.isEmpty(body)) {
@@ -50,7 +50,7 @@ public class SoapMessage {
 		context = new SoapContext(body);
 	}
 
-	public static SoapMessage from(HttpServletRequest request) throws SOAPException {
+	public static SoapMessage from(@NonNull HttpServletRequest request) throws SOAPException {
 		try {
 			if (!MultipartUtils.isMultipart(request)) {
 				return new SoapMessage(MessageUtils.parseContentAsMessage(request));

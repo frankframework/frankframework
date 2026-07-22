@@ -19,6 +19,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -39,7 +40,7 @@ public class SoapNamespaceUriExtractor extends FullXmlFilter {
 
 	private final Deque<String> elementStack = new ArrayDeque<>();
 
-	public SoapNamespaceUriExtractor(ContentHandler contentHandler) {
+	public SoapNamespaceUriExtractor(@Nullable ContentHandler contentHandler) {
 		super(contentHandler);
 	}
 

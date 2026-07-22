@@ -279,10 +279,8 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 		createSoapFault(response, string, null);
 	}
 
-	private void createSoapFault(HttpServletResponse response, String message, Exception e) {
+	private void createSoapFault(HttpServletResponse response, String faultString, Exception e) {
 		response.resetBuffer();
-
-		String faultString = e != null ? message + ": " + e.getMessage() : message;
 
 		String msg = """
 				<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">

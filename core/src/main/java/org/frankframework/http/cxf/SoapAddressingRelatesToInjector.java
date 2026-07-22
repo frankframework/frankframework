@@ -20,6 +20,7 @@ import java.util.Deque;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -52,7 +53,7 @@ public class SoapAddressingRelatesToInjector extends FullXmlFilter {
 	private boolean writtenRelatesTo = false;
 	private String messageId;
 
-	public SoapAddressingRelatesToInjector(@NonNull ContentHandler contentHandler) {
+	public SoapAddressingRelatesToInjector(@Nullable ContentHandler contentHandler) {
 		super(contentHandler);
 	}
 
@@ -118,6 +119,7 @@ public class SoapAddressingRelatesToInjector extends FullXmlFilter {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		if (foundRelatesTo && length > 0) {
 			// We may have found a RelatesTo element, but if it has no content, we still need to write the messageId to it.
+			// StAX automatically removes all whitespace characters.
 			writtenRelatesTo = true;
 		}
 		super.characters(ch, start, length);
@@ -133,7 +135,7 @@ public class SoapAddressingRelatesToInjector extends FullXmlFilter {
 			// Unless no data was written to it (empty element).
 			writeRelatesToId();
 		}
-		if (!foundRelatesTo && elementStack.size() == 1 && ENVELOPE.equals(elementStack.peek())) {
+		if (!writtenRelatesTo && HEADER.equals(name) && elementStack.size() == 1 && ENVELOPE.equals(elementStack.peek())) {
 			// We're about to close the SOAP:Header and we didn't find a RelatesTo element, so we need to inject it.
 			writeRelatesToElement();
 		}

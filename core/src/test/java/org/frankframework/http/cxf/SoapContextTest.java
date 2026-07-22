@@ -1,5 +1,6 @@
 package org.frankframework.http.cxf;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -9,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
@@ -36,8 +36,8 @@ import org.frankframework.util.MessageUtils;
 
 public class SoapContextTest {
 
-	private Message getFile(String file) throws IOException {
-		URL url = this.getClass().getResource("/Soap/"+file);
+	private Message getFile(String file) {
+		URL url = this.getClass().getResource(file);
 		if (url == null) {
 			fail("file not found");
 		}
@@ -46,7 +46,7 @@ public class SoapContextTest {
 
 	private SoapContext createContextFromRawMessage(String filename) throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest("POST", "/address/test123");
-		Message rawContent = getFile(filename);
+		Message rawContent = getFile("/Soap/"+filename);
 
 		try (BufferedReader reader = new BufferedReader(rawContent.asReader())) {
 			for (String line; null != (line = reader.readLine()); ) {
@@ -68,7 +68,7 @@ public class SoapContextTest {
 
 	@Test
 	public void testGetNamespaceURI() throws Exception {
-		SoapContext context = new SoapContext(getFile("VrijeBerichten_PipelineRequest.xml"));
+		SoapContext context = new SoapContext(getFile("/Soap/VrijeBerichten_PipelineRequest.xml"));
 		assertEquals("http://www.egem.nl/StUF/sector/zkn/0310", context.getNamespaceURI());
 	}
 
@@ -78,7 +78,7 @@ public class SoapContextTest {
 			"1, '/raw/soap1_1_with_action_in_contenttype.txt'",
 			"2, '/raw/soap1_2.txt'",
 			"2, '/raw/soap1_2_with_soapaction_header.txt'"
-			})
+	})
 	public void testFindSoapAction(int version, String file) throws Exception {
 		SoapContext context = createContextFromRawMessage(file);
 
@@ -87,7 +87,7 @@ public class SoapContextTest {
 	}
 
 	@Test
-	public void validXmlinvalidSoap() throws Exception {
+	public void validXmlInvalidSoap() {
 		SOAPException e = assertThrows(SOAPException.class, () -> new SoapContext(new Message("""
 				<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 					<soapenv:Boody>
@@ -99,7 +99,28 @@ public class SoapContextTest {
 	}
 
 	@Test
-	public void invalidXml() throws Exception {
+	public void validXmlInvalidSoap2() {
+		SOAPException e = assertThrows(SOAPException.class, () -> new SoapContext(new Message("""
+				<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+					<soapenv:Body>
+						<hallo/>
+					</soapenv:Body>
+					<soapenv:Header />
+				</soapenv:Envelope>
+				""")));
+		assertEquals("invalid SOAP message", e.getMessage());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"/Validation/EB-XML/Soap/valid-soap-with-must-understand-attrib.xml"
+	})
+	public void validSoap(String resource) {
+		assertDoesNotThrow(() -> new SoapContext(getFile(resource)));
+	}
+
+	@Test
+	public void invalidXml() {
 		SOAPException e = assertThrows(SOAPException.class, () -> new SoapContext(new Message("""
 				<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 					<soapenv:Body>
@@ -112,11 +133,11 @@ public class SoapContextTest {
 
 	@ParameterizedTest
 	@CsvSource({
-		"text/xml;action=tralala, tralala",
-		"application/soap+xml;charset=UTF-8;action=0310, 0310",
-		"application/soap+xml;charset=UTF-8;action=\"0310\", 0310",
-		"application/soap+xml;charset=UTF-8;action='0310', 0310",
-		"application/soap+xml;charset=UTF-8;action=\"http://www.egem.nl/StUF/sector/zkn/0310\", http://www.egem.nl/StUF/sector/zkn/0310"
+			"text/xml;action=tralala, tralala",
+			"application/soap+xml;charset=UTF-8;action=0310, 0310",
+			"application/soap+xml;charset=UTF-8;action=\"0310\", 0310",
+			"application/soap+xml;charset=UTF-8;action='0310', 0310",
+			"application/soap+xml;charset=UTF-8;action=\"http://www.egem.nl/StUF/sector/zkn/0310\", http://www.egem.nl/StUF/sector/zkn/0310"
 	})
 	public void findAction(String contentType, String action) {
 		MediaType mediaType = MediaType.parseMediaType(contentType);
@@ -125,8 +146,8 @@ public class SoapContextTest {
 
 	@ParameterizedTest
 	@CsvSource({
-		"application/soap+xml;charset=UTF-8;action=\"\"",
-		"application/soap+xml;charset=UTF-8;action=''",
+			"application/soap+xml;charset=UTF-8;action=\"\"",
+			"application/soap+xml;charset=UTF-8;action=''",
 	})
 	public void emptyAction(String contentType) {
 		MediaType mediaType = MediaType.parseMediaType(contentType);
@@ -140,14 +161,21 @@ public class SoapContextTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"soap-addressing.xml", "soap-addressing-ns.xml", "soap-addressing-minimal.xml", "soap-addressing-ns-on-header.xml"})
+	@ValueSource(strings = {
+			"soap-addressing.xml",
+			"soap-addressing-ns.xml",
+			"soap-addressing-minimal.xml",
+			"soap-addressing-ns-on-header.xml",
+			"soap-addressing-with-selfclosing-relatesto.xml",
+			"soap-addressing-with-empty-relatesto.xml"
+		})
 	public void soapAddressing(String input) throws Throwable {
-		SoapContext context = new SoapContext(getFile(input));
+		SoapContext context = new SoapContext(getFile("/Soap/" + input));
 
 		assertEquals("6B29FC40-CA47-1067-B31D-00DD010662DA", context.getMessageId());
 
 		Message responseMessage = new Message("""
-				<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+			<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 				<soapenv:Body>
 					<hallo/>
 				</soapenv:Body>
@@ -171,25 +199,25 @@ public class SoapContextTest {
 
 	@Test
 	public void soapAddressNoMid() throws Throwable {
-		SoapContext context = new SoapContext(getFile("soap-addressing-ns-but-no-mid.xml"));
+		SoapContext context = new SoapContext(getFile("/Soap/soap-addressing-ns-but-no-mid.xml"));
 
 		String mid = context.getMessageId();
 		assertNotNull(mid);
 		assertTrue(mid.startsWith(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX));
 
-		Message responseWithId = context.setMessageId(getFile("soapmsg1_2.xml"));
+		Message responseWithId = context.setMessageId(getFile("/Soap/soapmsg1_2.xml"));
 
 		assertFalse(responseWithId.asString().contains("RelatesTo"), "response should not contain the <RelatesTo../> element.");
 	}
 
 	@Test
 	/**
-	 * We want to ensure that when somebody has manually set a relatesTo (although I cannot imaging why) we don't overwrite it.
+	 * We want to ensure that when somebody has manually set a relatesTo (although I cannot imagine why) we don't overwrite it.
 	 */
 	public void soapWithManualRelatesTo() throws Throwable {
-		SoapContext context = new SoapContext(getFile("soap-addressing-with-relatesto.xml"));
+		SoapContext context = new SoapContext(getFile("/Soap/soap-addressing-with-relatesto.xml"));
 
-		Message response = getFile("soap-addressing-with-relatesto.xml");
+		Message response = getFile("/Soap/soap-addressing-with-relatesto.xml");
 		Message responseWithId = context.setMessageId(response);
 
 		MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL);
