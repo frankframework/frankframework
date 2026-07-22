@@ -72,7 +72,7 @@
 		</property>
 	</bean>
 
-	<bean name="oldSchoolView" parent="whiteBoxView" autowire="byName">
+	<bean name="oldSchoolView" parent="whiteBoxView">
 		<property name="name" value="Old school"/>
 		<property name="metadataNames">
 			<list>
