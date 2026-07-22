@@ -25,7 +25,9 @@ public class ParameterValueListTest {
 		list.add(new ResolvedParameterValue("key3", "value3"));
 
 		assertTrue(list.contains("key1"));
+		assertTrue(list.contains("KEY1")); // Test case-insensitive presence
 		assertTrue(list.contains("key2"));
+		assertTrue(list.contains("Key2")); // Test case-insensitive presence
 		assertFalse(list.contains("doesnt-exist"));
 		assertEquals(4, list.size());
 		assertEquals("[value1, value2, value4, value3]", list.getValueList().toString()); // Preserves order of definition
@@ -41,6 +43,7 @@ public class ParameterValueListTest {
 		assertNull(list.remove("doesnt-exist"));
 
 		assertEquals("value3", list.get("key3").getValue());
+		assertEquals("value3", list.get("KEY3").getValue()); // Test case-insensitive retrieval
 		assertEquals("value1", list.getValue(0).getValue());
 		assertEquals("value4", list.getValue(1).getValue());
 		assertEquals("value3", list.getValue(2).getValue());
