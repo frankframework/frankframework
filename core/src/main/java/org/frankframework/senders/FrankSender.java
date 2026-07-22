@@ -545,8 +545,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	Scope determineActualScope(@Nullable ParameterValueList pvl) {
-		ParameterValue scopeParam;
-		scopeParam = pvl != null ? pvl.get(SCOPE_PARAM_NAME) : null;
+		ParameterValue scopeParam = pvl != null ? pvl.get(SCOPE_PARAM_NAME) : null;
 		if (scopeParam != null) {
 			return Scope.valueOf(scopeParam.asStringValue(getScope().name()));
 		}
@@ -554,8 +553,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	String determineActualTarget(@Nullable ParameterValueList pvl) {
-		ParameterValue targetParam;
-		targetParam = pvl != null ? pvl.get(TARGET_PARAM_NAME) : null;
+		ParameterValue targetParam = pvl != null ? pvl.get(TARGET_PARAM_NAME) : null;
 		if (targetParam != null) {
 			return targetParam.asStringValue(getTarget());
 		}
