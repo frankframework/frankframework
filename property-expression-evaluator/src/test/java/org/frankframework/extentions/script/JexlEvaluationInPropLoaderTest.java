@@ -2,12 +2,12 @@ package org.frankframework.extentions.script;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.jupiter.params.shadow.de.siegmar.fastcsv.util.Nullable;
 
 import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.StringResolver;
