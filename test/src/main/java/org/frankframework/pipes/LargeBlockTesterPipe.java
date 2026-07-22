@@ -66,8 +66,8 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "Cannot get parameter values", e);
 		}
-		int nrOfBlocks = getIntegerParameter(pvl, "blockCount", blockCount);
-		int bytesPerBlock = getIntegerParameter(pvl, "blockSize", blockSize);
+		int nrOfBlocks = pvl.getValue("blockCount", blockCount);
+		int bytesPerBlock = pvl.getValue("blockSize", blockSize);
 		if (direction==Direction.PRODUCE) {
 			// Pass supplier to large stream, so that it is actually served dynamically instead of all produced on creation of the message
 			result = Message.asMessage(buildInputStreamSupplier(nrOfBlocks, bytesPerBlock));

@@ -50,9 +50,9 @@ public class DirectWrapperPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
 
-		String destination = getParameterValue(pvl, DESTINATION);
-		String cmhVersion = getParameterValue(pvl, CMHVERSION);
-		String addOutputNamespace = getParameterValue(pvl, ADDOUTPUTNAMESPACE);
+		String destination = pvl.getValue(DESTINATION);
+		String cmhVersion = pvl.getValue(CMHVERSION);
+		String addOutputNamespace = pvl.getValue(ADDOUTPUTNAMESPACE);
 
 		EsbSoapWrapperPipe eswPipe = SpringUtils.createBean(getApplicationContext());
 		if (addOutputNamespace != null && "on".equalsIgnoreCase(addOutputNamespace)) {

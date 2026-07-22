@@ -149,7 +149,7 @@ public class ReplacingParameterVariablesInputStream extends FilterInputStream {
 				if (next == CLOSING_CURLY_BRACE) {
 					// We've fully matched the pattern '?{...}' and are returning bytes from the replacement
 					String key = readMatchingBuffer();
-					ParameterValue value = paramList.findParameterValue(key);
+					ParameterValue value = paramList.get(key);
 					if (value != null) {
 						Message paramValue = value.asMessage();
 						log.info("replaceing [{}] with value from [{}]", key, paramValue);
