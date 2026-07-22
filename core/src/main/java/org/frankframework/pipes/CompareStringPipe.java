@@ -100,7 +100,7 @@ public class CompareStringPipe extends AbstractPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
-		String operand1 = getParameterValue(pvl, OPERAND1);
+		String operand1 = pvl.getValue(OPERAND1);
 		try {
 			if (operand1 == null) {
 				operand1 = message.asString();
@@ -108,7 +108,7 @@ public class CompareStringPipe extends AbstractPipe {
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on getting operand1 from input message", e);
 		}
-		String operand2 = getParameterValue(pvl, OPERAND2);
+		String operand2 = pvl.getValue(OPERAND2);
 		try {
 			if (operand2 == null) {
 				operand2 = message.asString();
@@ -125,7 +125,7 @@ public class CompareStringPipe extends AbstractPipe {
 			}
 		}
 
-		String ip = getParameterValue(pvl, IGNOREPATTERNS);
+		String ip = pvl.getValue(IGNOREPATTERNS);
 		if (ip != null) {
 			try {
 				Node n = XmlUtils.buildNode(ip);
