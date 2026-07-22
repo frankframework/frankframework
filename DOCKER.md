@@ -140,7 +140,7 @@ provided images.
 ### HTTPS and authentication
 
 The Frank!Framework runs on HTTP by default. It can be secured with a reverse proxy or by overriding the `application.security.http.transportGuarantee` property with a system property.
-Tomcat should be configured through the `server.xml` file, which needs to be mounted en overwritten in the container.
+Tomcat should be configured through the `server.xml` file, which needs to be mounted and overwritten in the container.
 
 ### Secrets
 

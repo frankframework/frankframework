@@ -2,6 +2,7 @@ package org.frankframework.extentions.script;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,6 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.StringResolver;
 
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public class JexlEvaluationInPropLoaderTest {
 
 	@AfterEach
@@ -71,17 +73,46 @@ public class JexlEvaluationInPropLoaderTest {
 		assertEquals("We Use IBIS Adapter Framework", value);
 	}
 
-	@Test
-	public void testJexlStringTest3() {
+	@ParameterizedTest
+	@ValueSource(strings = {"str.transform1", "str.transform2"})
+	public void testJexlStringTest3(String propertyName) {
 		// Arrange
 		PropertyLoader props = new PropertyLoader("test.properties");
 		System.setProperty("str.switch", "5");
 
 		// Act
-		String value = props.getProperty("str.transform1");
+		String value = props.getProperty(propertyName);
 
 		// Assert
 		assertEquals("we, use, iBIS, adapter, framework", value);
+	}
+
+	@Test
+	public void testJexlStringTestUnsupportedMethodRefLambda() {
+		// Arrange
+		PropertyLoader props = new PropertyLoader("test.properties");
+		System.setProperty("str.switch", "5");
+
+		// Act
+		String value = props.getProperty("str.transform3");
+
+		// Assert
+		// This expression uses an unsupported syntax so the output is empty
+		assertEquals("", value);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"remote1", "remote2", "remote3"})
+	public void testJexlStringTestComplexExpression(String propertyBase) {
+		// Arrange
+		PropertyLoader props = new PropertyLoader("test.properties");
+
+		// Act
+		String value = props.getProperty(propertyBase + ".url");
+
+		// Assert
+		String expected = props.getProperty(propertyBase + ".expected");
+		assertEquals(expected, value);
 	}
 
 	@Test
@@ -105,7 +136,7 @@ public class JexlEvaluationInPropLoaderTest {
 			"true, example.com, false",
 			"false, example.com, false"
 	})
-	void booleanLikeEvaluation(boolean isActive, String hostName, boolean shouldGiveWarning) {
+	void booleanLikeEvaluation(boolean isActive, @Nullable String hostName, boolean shouldGiveWarning) {
 		// Arrange
 		PropertyLoader map = new PropertyLoader("test.properties");
 		map.setProperty("mail.active", Boolean.toString(isActive));
