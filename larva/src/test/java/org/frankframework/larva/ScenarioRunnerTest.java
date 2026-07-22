@@ -166,8 +166,9 @@ class ScenarioRunnerTest {
 	@Test
 	void testRetriesUntilXPathExpressionMatches() throws Exception {
 		// Arrange
+		// Timeout generous enough to absorb first-time TransformerPool/XSLT-engine classloading cost
 		Properties waitFor = new Properties();
-		waitFor.setProperty("waitfor.timeout", "2000");
+		waitFor.setProperty("waitfor.timeout", "10000");
 		waitFor.setProperty("waitfor.interval", "10");
 		waitFor.setProperty("waitfor.xPath", "count(/results/result[@type='E']) > 0");
 		ScenarioRunner scenarioRunner = createScenarioRunner();
@@ -188,8 +189,9 @@ class ScenarioRunnerTest {
 	void testXPathMatchStopsPollingButFullCompareStillDecidesOutcome() throws Exception {
 		// Arrange: the 2nd read satisfies the xPath condition (stops polling) but does not
 		// byte-for-byte match the expected file, so the final compareResult() must still fail.
+		// Timeout generous enough to absorb first-time TransformerPool/XSLT-engine classloading cost
 		Properties waitFor = new Properties();
-		waitFor.setProperty("waitfor.timeout", "2000");
+		waitFor.setProperty("waitfor.timeout", "10000");
 		waitFor.setProperty("waitfor.interval", "10");
 		waitFor.setProperty("waitfor.xPath", "count(/results/result[@type='E']) > 0");
 		ScenarioRunner scenarioRunner = createScenarioRunner();
