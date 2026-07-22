@@ -254,7 +254,7 @@ public class JdbcTransactionalStorageTest {
 		}
 
 		TransactionStatus tx = storage.getTxManager().getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
-		String result = storage.consumeMessage(key).getRawMessage();
+		String result = storage.consumeMessage(key, session).getRawMessage();
 		assertEquals(message, result);
 		storage.getTxManager().commit(tx);
 	}
@@ -279,7 +279,7 @@ public class JdbcTransactionalStorageTest {
 		}
 
 		TransactionStatus tx = storage.getTxManager().getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
-		String result = storage.consumeMessage(key).getRawMessage();
+		String result = storage.consumeMessage(key, session).getRawMessage();
 		assertEquals(message, result);
 		storage.getTxManager().commit(tx);
 	}

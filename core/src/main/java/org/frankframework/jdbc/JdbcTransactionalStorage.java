@@ -662,7 +662,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * This method should always run in an existing transaction.
 	 */
 	@Override
-	public RawMessageWrapper<S> consumeMessage(String storageKey) throws ListenerException {
+	public @NonNull RawMessageWrapper<S> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		IbisTransaction itx = new IbisTransaction(txManager, txMandatory, ClassUtils.nameOf(this));
 		try {
 			RawMessageWrapper<S> result = browseMessage(storageKey);

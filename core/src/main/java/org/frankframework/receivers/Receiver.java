@@ -1160,7 +1160,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				IbisTransaction itx = new IbisTransaction(txManager, txNewWithTimeout, "receiver [" + getName() + "]");
 				try {
 					// This deletes the message from the error store! Because that's the way JMS works and so it works that way for all TransactionStorage implementations
-					msg = errorStorage.consumeMessage(storageKey);
+					msg = errorStorage.consumeMessage(storageKey, session);
 					// noinspection unchecked
 					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
 				} catch (ListenerException e) {
