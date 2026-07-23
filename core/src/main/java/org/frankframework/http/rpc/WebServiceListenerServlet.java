@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.http.cxf;
+package org.frankframework.http.rpc;
 
 import java.io.IOException;
 import java.util.Map.Entry;
@@ -216,10 +216,11 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 		return xmlMimeHeaders;
 	}
 
-	private static String cleanseURL(String uri) {
-		if (uri == null) {
+	private static String cleanseURL(String pathInfo) {
+		if (pathInfo == null) {
 			return null;
 		}
+		String uri = pathInfo;
 
 		if (uri.endsWith("/")) {
 			uri = uri.substring(0, uri.length()-1);
@@ -301,11 +302,6 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 	@Override
 	public String[] getAccessGrantingRoles() {
 		return IBIS_FULL_SERVICE_ACCESS_ROLES;
-	}
-
-	@Override
-	public void destroy() {
-		super.destroy();
 	}
 
 	@Override

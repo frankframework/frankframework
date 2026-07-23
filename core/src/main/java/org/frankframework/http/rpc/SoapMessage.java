@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.http.cxf;
+package org.frankframework.http.rpc;
 
 import java.io.IOException;
 import java.util.Map;

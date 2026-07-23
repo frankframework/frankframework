@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.http.cxf;
+package org.frankframework.http.rpc;
 
 import java.io.IOException;
 
@@ -21,6 +21,10 @@ import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.soap.filters.SoapAddressingMessageIdExtractor;
+import org.frankframework.soap.filters.SoapAddressingRelatesToInjector;
+import org.frankframework.soap.filters.SoapNamespaceUriExtractor;
+import org.frankframework.soap.filters.ValidateSoapMessageHandler;
 import org.springframework.util.MimeType;
 import org.xml.sax.SAXException;
 
