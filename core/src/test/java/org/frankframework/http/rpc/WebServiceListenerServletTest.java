@@ -1,61 +1,49 @@
 package org.frankframework.http.rpc;
 
-import jakarta.servlet.ServletConfig;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
+import java.io.IOException;
+import java.net.URL;
+
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.core.IMessageHandler;
-import org.frankframework.core.PipeLineResult;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.http.WebServiceListener;
-import org.frankframework.http.cxf.NamespaceUriProvider;
-import org.frankframework.http.rest.ApiListenerServletTest;
-import org.frankframework.receivers.MessageWrapper;
-import org.frankframework.receivers.ServiceClient;
-import org.frankframework.receivers.ServiceDispatcher;
-import org.frankframework.stream.Message;
-
-import org.frankframework.stream.UrlMessage;
-
-import org.frankframework.testutil.MatchUtils;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import java.io.BufferedReader;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.WebServiceListener;
+import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.receivers.ServiceClient;
+import org.frankframework.receivers.ServiceDispatcher;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.UrlMessage;
+import org.frankframework.testutil.MatchUtils;
 
 class WebServiceListenerServletTest {
-	private ServiceDispatcher dispatcher = ServiceDispatcher.getInstance();
+	private static final ServiceDispatcher DISPATCHER = ServiceDispatcher.getInstance();
 	private WebServiceListenerServlet servlet;
 
 	@BeforeEach
 	public void setup() throws ServletException {
 		servlet = new WebServiceListenerServlet();
 		servlet.init(mock(ServletConfig.class));
-		dispatcher.getRegisteredListenerNames().forEach(dispatcher::unregisterServiceClient);
+		DISPATCHER.getRegisteredListenerNames().forEach(DISPATCHER::unregisterServiceClient);
 	}
 
 	@AfterEach
 	public void tearDown() {
-		dispatcher.getRegisteredListenerNames().forEach(dispatcher::unregisterServiceClient);
+		DISPATCHER.getRegisteredListenerNames().forEach(DISPATCHER::unregisterServiceClient);
 	}
 
 	private String doPost(String filename, String requestUri) throws Exception {
@@ -85,7 +73,7 @@ class WebServiceListenerServletTest {
 	@Test
 	public void testCanFindNamespaceButServiceClientOfWrongType() throws Exception {
 		ServiceClient service = mock(ServiceClient.class);
-		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", service);
+		DISPATCHER.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", service);
 		String response = doPost("VrijeBerichten_PipelineRequest.xml", "services/rpcrouter");
 
 		assertEquals("""
