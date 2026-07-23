@@ -52,6 +52,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
@@ -82,6 +83,8 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	public void afterPropertiesSet() {
 		if(applicationContext.containsBean(LADYBUG_TESTTOOL_NAME)) {
 			testtool = applicationContext.getBean(LADYBUG_TESTTOOL_NAME, TestTool.class);
+			String instanceName = AppConstants.getInstance().getProperty("instance.name");
+			testtool.setApplication(instanceName);
 			testtool.setDebugger(this);
 			log.info("configuring debugger on TestTool [{}]", testtool);
 		} else {
