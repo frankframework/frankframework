@@ -16,6 +16,7 @@
 package org.frankframework.jms;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 
 import jakarta.jms.JMSException;
@@ -123,7 +124,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 			@SuppressWarnings("unchecked")
 			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
 			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
-			pipeLineSession.put(PipeLineSession.TS_RECEIVED_KEY, new Date(msg.getLongProperty(FIELD_RECEIVED_DATE)));
+			pipeLineSession.put(PipeLineSession.TS_RECEIVED_KEY, Instant.ofEpochMilli(msg.getLongProperty(FIELD_RECEIVED_DATE)));
 			pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, msg.getStringProperty(FIELD_ORIGINAL_ID));
 			pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, msg.getJMSCorrelationID());
 			return messageWrapper;
