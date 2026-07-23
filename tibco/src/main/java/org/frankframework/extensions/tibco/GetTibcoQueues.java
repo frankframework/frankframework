@@ -136,19 +136,19 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 
-		urlWork = getParameterValue(pvl, "url");
+		urlWork = pvl.getValue("url");
 		if (urlWork == null) {
 			urlWork = getUrl();
 		}
-		authAliasWork = getParameterValue(pvl, "authAlias");
+		authAliasWork = pvl.getValue("authAlias");
 		if (authAliasWork == null) {
 			authAliasWork = getAuthAlias();
 		}
-		userNameWork = pvl.contains("username") ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
+		userNameWork = pvl.contains("username") ? pvl.getValue("username") : pvl.getValue("userName");
 		if (userNameWork == null) {
 			userNameWork = getUsername();
 		}
-		passwordWork = getParameterValue(pvl, "password");
+		passwordWork = pvl.getValue("password");
 		if (passwordWork == null) {
 			passwordWork = getPassword();
 		}
@@ -162,15 +162,15 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				throw new PipeRunException(this, "could not find an active server");
 			}
 
-			String ldapUrl = getParameterValue(pvl, "ldapUrl");
+			String ldapUrl = pvl.getValue("ldapUrl");
 			LdapSender ldapSender = null;
 			if (StringUtils.isNotEmpty(ldapUrl)) {
 				ldapSender = retrieveLdapSender(ldapUrl, cf);
 			}
 
-			queueNameWork = getParameterValue(pvl, "queueName");
+			queueNameWork = pvl.getValue("queueName");
 			if (StringUtils.isNotEmpty(queueNameWork)) {
-				String countOnlyStr = getParameterValue(pvl, "countOnly");
+				String countOnlyStr = pvl.getValue("countOnly");
 				boolean countOnly = "true".equalsIgnoreCase(countOnlyStr);
 				if (countOnly) {
 					return new PipeRunResult(getSuccessForward(), getQueueMessageCountOnly(admin, queueNameWork));
@@ -182,7 +182,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				 Session jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
 
 				if (StringUtils.isNotEmpty(queueNameWork)) {
-					String queueItemStr = getParameterValue(pvl, "queueItem");
+					String queueItemStr = pvl.getValue("queueItem");
 					int qi;
 					if (StringUtils.isNumeric(queueItemStr)) {
 						qi = Integer.parseInt(queueItemStr);
@@ -191,7 +191,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 					}
 					result = getQueueMessage(jSession, admin, queueNameWork, qi, ldapSender);
 				} else {
-					String showAgeStr = getParameterValue(pvl, "showAge");
+					String showAgeStr = pvl.getValue("showAge");
 					boolean showAge = "true".equalsIgnoreCase(showAgeStr);
 					result = getQueuesInfo(jSession, admin, showAge, ldapSender);
 				}

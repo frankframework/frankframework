@@ -653,7 +653,8 @@ public class ApiListenerServletTest {
 		assertEquals(200, result.getStatus());
 		assertTrue(result.getContentType().contains("text/plain"), "Content-Type header does not contain [text/plain]");
 		assertTrue(result.getContentType().contains("charset=ISO-8859-1"), "Content-Type header does not contain correct [charset]");
-		assertEquals(message.asString("ISO-8859-1"), result.getContentAsString());
+		message.setCharset("iso-8859-1");
+		assertEquals(message.asString(), result.getContentAsString());
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}

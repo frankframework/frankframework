@@ -126,7 +126,9 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 				.loops(false)
 				.sideEffectGlobal(true)
 				.sideEffect(true)
+				.structuredLiteral(true)
 				.annotation(false)
+				.register(true)
 				.lambda(true)
 				.arrayReferenceExpr(true)
 				.methodCall(true)
@@ -142,7 +144,8 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		jexl = new JexlBuilder()
 				.features(features)
 				.permissions(jexlPermissions)
-				.antish(true)
+				.safe(true)
+				.antish(true) // This flag is what enables the lookup of dotted variables in the context
 				.debug(true)
 				.create();
 	}
@@ -197,12 +200,14 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		return context;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static void addClasses(JexlContext context, Class<?>... classes) {
 		for (Class<?> clazz : classes) {
 			addClass(context, clazz);
 		}
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static void tryAddClassesDynamically(JexlContext context, String... classNames) {
 		for (String className : classNames) {
 			tryAddClassDynamically(context, className);

@@ -1,9 +1,9 @@
 package org.frankframework.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -147,7 +147,7 @@ public class PartMessageTest {
 		MessageTest.writeContentsToFile(source, "fakeContentAsReplacementOfThePrevious");
 		Message out = serializationTester.deserialize(wire);
 
-		assertTrue(out.isBinary());
+		assertFalse(out.isBinary());
 		assertEquals(testString, out.asString());
 		assertEquals(testStringLength, out.size());
 	}
@@ -162,7 +162,7 @@ public class PartMessageTest {
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(PartMessage.class, out.getClass());
-			assertTrue(out.isBinary(), label);
+			assertEquals(out.getCharset() == null, out.isBinary(), label);
 			assertEquals("UTF-8", out.getCharset(), label);
 			assertEquals(testString, out.asString(), label);
 			assertEquals(testStringLength, out.size());

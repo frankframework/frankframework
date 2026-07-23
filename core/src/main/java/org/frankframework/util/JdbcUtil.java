@@ -479,7 +479,7 @@ public class JdbcUtil {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
 		if (parameters != null) {
 			for (int i = 0; i < parameters.size(); i++) {
-				ParameterValue parameterValue = parameters.getParameterValue(i);
+				ParameterValue parameterValue = parameters.getValue(i);
 				if (parameterValue.getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
 					continue;
 				}

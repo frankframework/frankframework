@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -48,7 +46,8 @@ class MessageUtilsCharsetDetectionTest {
 		assertEquals(expectedCharset, computedCharset, "charset mismatch");
 
 		if(fileContent != null) {
-			String asString = message.asString(computedCharset == null ? null : computedCharset.name());
+			message.setCharset(computedCharset == null ? null : computedCharset.name());
+			String asString = message.asString();
 
 			assertEquals(fileContent, asString, "fileContent mismatch");
 		}
@@ -63,9 +62,9 @@ class MessageUtilsCharsetDetectionTest {
 		assertNotNull(url, "cannot find test file ["+testFile+"]");
 
 		Message message = spy(new UrlMessage(url));
-		String result = message.asString("auto"); // calls asReader();
+		message.setCharset(StreamUtil.AUTO_DETECT_CHARSET);
+		String result = message.asString();
 
-		verify(message, times(1)).asReader("auto");
 		assertEquals(expectedCharset.name(), message.getCharset(), "charset mismatch");
 
 		if(fileContent != null) {

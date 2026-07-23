@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -31,23 +32,36 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
@@ -55,8 +69,11 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
@@ -152,6 +169,7 @@ public class MessageTest {
 
 		byte[] actual = message.asByteArray();
 		byte[] expected = testString.getBytes(StandardCharsets.UTF_8);
+		assertNotNull(actual);
 		assertEquals(expected.length, actual.length, "lengths differ");
 		for (int i = 0; i < expected.length; i++) {
 			assertEquals(expected[i], actual[i], "byte arrays differ at position [" + i + "]");
@@ -159,20 +177,12 @@ public class MessageTest {
 	}
 
 	protected void testToString(Message adapter, Class<?> clazz) {
-		testToString(adapter, clazz, null);
-	}
-
-	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
 		String actual = adapter.toString();
 		// remove the toStringPrefix(), if it is present
 		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
 		valuePart = valuePart.replaceAll(".*Message\\[[a-fA-F0-9]+:", ""); // Strip 'Message[abcd1234:'
 		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf("] ")));
-		if (wrapperClass == null) {
-			assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
-		} else {
-			assertEquals(wrapperClass.getSimpleName(), adapter.getRequestClass());
-		}
+		assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
 	}
 
 	@Test
@@ -732,7 +742,6 @@ public class MessageTest {
 
 		assertNotNull(wire);
 		Message out = serializationTester.deserialize(wire);
-		assertTrue(out.isBinary());
 		assertEquals("12345", out.asString());
 		assertEquals(5L, out.size()); // For Number, derived from length of "asString"
 		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
@@ -753,7 +762,7 @@ public class MessageTest {
 
 		assertNotNull(wire);
 		Message out = serializationTester.deserialize(wire);
-		assertTrue(out.isBinary());
+		assertFalse(out.isBinary());
 		assertEquals("false", out.asString());
 		assertEquals(5L, out.size()); // For Boolean, derived from the length of "asString"
 		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
@@ -777,7 +786,7 @@ public class MessageTest {
 		assertNotNull(wire);
 		Message out = serializationTester.deserialize(wire);
 
-		assertTrue(out.isBinary());
+		assertFalse(out.isBinary());
 		assertEquals(testString, out.asString());
 		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
 		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
@@ -867,7 +876,6 @@ public class MessageTest {
 		byte[] wire = Hex.decodeHex(binaryWire76);
 		Message out = serializationTester.deserialize(wire);
 
-		assertTrue(out.isBinary());
 		assertEquals(StandardCharsets.UTF_8.name(), out.getCharset());
 		assertEquals(testString, out.asString());
 	}
@@ -896,7 +904,6 @@ public class MessageTest {
 		byte[] wire = Hex.decodeHex(binaryWire77);
 		Message out = serializationTester.deserialize(wire);
 
-		assertTrue(out.isBinary());
 		assertEquals(StandardCharsets.UTF_8.name(), out.getCharset());
 		assertEquals(testString, out.asString());
 	}
@@ -924,7 +931,6 @@ public class MessageTest {
 			byte[] wire = Hex.decodeHex(binaryWire[1]);
 			Message out = serializationTester.deserialize(wire);
 
-			assertTrue(out.isBinary(), label);
 			assertEquals(StandardCharsets.UTF_8.name(), out.getCharset(), label);
 			assertEquals(testString, out.asString(), label);
 		}
@@ -994,7 +1000,7 @@ public class MessageTest {
 	public void testMessageSizeReader() throws IOException {
 		Message message = new Message(new StringReader("string"));
 		assertEquals(6L, message.size(), "size differs or could not be determined");
-		assertDoesNotThrow(() -> message.asString());
+		assertDoesNotThrow(message::asString);
 		assertEquals(6L, message.size(), "size differs or could not be determined");
 	}
 
@@ -1026,7 +1032,8 @@ public class MessageTest {
 		assertEquals(utf8Input, binaryMessage.asString()); // Default must be used
 
 		Message characterMessage = new Message(utf8Input);
-		assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); // This should not be used as there is no binary conversion
+		characterMessage.setCharset("ISO-8859-1"); // This should not be used as there is no binary conversion
+		assertEquals(utf8Input, characterMessage.asString());
 	}
 
 	@Test
@@ -1035,7 +1042,7 @@ public class MessageTest {
 		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes(StandardCharsets.UTF_8));
 		Message message = new Message(source, "auto"); // Set the MessageContext charset
 
-		String stringResult = message.asString("ISO-8859-ik-besta-niet"); // use MessageContext charset
+		String stringResult = message.asString();
 		assertEquals(utf8Input, stringResult);
 	}
 
@@ -1045,36 +1052,9 @@ public class MessageTest {
 		assertNotNull(isoInputFile, "unable to find isoInputFile");
 
 		Message message = new UrlMessage(isoInputFile); // repeatable stream, detect charset
-		String stringResult = message.asString("auto"); // detect when reading
+		message.setCharset(StreamUtil.AUTO_DETECT_CHARSET);
+		String stringResult = message.asString(); // detect when reading
 		assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
-	}
-
-	@Test
-	public void testCharsetDeterminationAndFallbackToDefault() throws Exception {
-		Message messageNullCharset = new Message((byte[]) null) { // NullMessage, charset cannot be determined
-			@Override
-			public String getCharset() {
-				return null;
-			}
-		};
-		Message messageAutoCharset = new Message((byte[]) null) { // NullMessage, charset cannot be determined
-			@Override
-			public String getCharset() {
-				return "AUTO";
-			}
-		};
-
-		// getCharset()==null && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
-		assertEquals(StandardCharsets.UTF_8.name(), messageNullCharset.computeDecodingCharset("AUTO"));
-
-		// getCharset()==AUTO && defaultDecodingCharset==xyz ==> decodingCharset = xyz
-		assertEquals("ISO-8559-15", messageAutoCharset.computeDecodingCharset("ISO-8559-15"));
-
-		// getCharset()==AUTO && defaultDecodingCharset==AUTO ==> decodingCharset = UTF-8
-		assertEquals(StandardCharsets.UTF_8.name(), messageAutoCharset.computeDecodingCharset("AUTO"));
-
-		// getCharset()==AUTO && defaultDecodingCharset==null ==> decodingCharset = UTF-8
-		assertEquals(StandardCharsets.UTF_8.name(), messageAutoCharset.computeDecodingCharset(null));
 	}
 
 	@Test
@@ -1088,17 +1068,17 @@ public class MessageTest {
 		};
 
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
-			message.asString("auto"); // calls asReader();
 			message.asString(); // calls asReader();
-			message.asString("auto"); // calls asReader();
 			message.asString(); // calls asReader();
-			message.asString("auto"); // calls asReader();
 			message.asString(); // calls asReader();
-			message.asString("auto"); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString(); // calls asReader();
 			message.asString(); // calls asReader();
 			int i = 0;
 			for (String logLine : appender.getLogLines()) {
-				if (logLine.contains("unable to detect charset for message")) {
+				if (logLine.contains("unable to detect charset")) {
 					i++;
 				}
 			}
@@ -1172,14 +1152,14 @@ public class MessageTest {
 	@Test
 	void testMessageAsByteArrayDoesNotCloseMessage() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
-		Message msg = new Message(new StringReader("text"));
+		Message message = new Message(new StringReader("text"));
 
 		// Act
-		byte[] content = msg.asByteArray();
+		byte[] content = message.asByteArray();
 
 		// Assert
-		Message message = msg;
 		assertEquals("text", message.asString());
+		assertNotNull(content);
 		assertEquals(4, content.length);
 	}
 
@@ -1187,15 +1167,123 @@ public class MessageTest {
 	void testMessageAsByteArrayDoesNotCloseMessageWrapper() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
 		Message msg = new Message(new StringReader("text"));
-		MessageWrapper wrapper = new MessageWrapper<Message>(msg, null, null);
+		MessageWrapper<Message> wrapper = new MessageWrapper<>(msg, null, null);
 
 		// Act
 		byte[] content = wrapper.getMessage().asByteArray();
 
 		// Assert
-		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
-		assertEquals("text", messageWrapper.getMessage().asString());
+		assertEquals("text", wrapper.getMessage().asString());
+		assertNotNull(content);
 		assertEquals(4, content.length);
+	}
+
+	static Stream<Arguments> testMessageWithBom() throws IOException, URISyntaxException {
+		return MessageTestUtils.readFileInDifferentWays("/Util/MessageUtils/utf8-with-bom.xml");
+	}
+	@ParameterizedTest
+	@MethodSource
+	void testMessageWithBom(Message message) throws IOException {
+		// Act
+		String contents = message.asString();
+
+		// Assert
+		assertNotNull(contents);
+		assertEquals(77, contents.length());
+		assertEquals("""
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+testFile with BOM —•˜›
+</root>""", contents);
+	}
+
+	static Stream<Arguments> messageFromDifferentObjectTypes() throws Exception {
+		ThrowingSupplier<InputStream, IOException> inputStreamSupplier = () -> new ByteArrayInputStream("<test/>".getBytes());
+		ThrowingSupplier<InputStream, IOException> veryLargeInputStreamSupplier = () -> LargeStructuredMockData.getLargeJsonDataInputStream(Message.MESSAGE_MAX_IN_MEMORY * 2, Charset.defaultCharset());
+
+		Node xmlDoc = XmlUtils.buildNode("<test/>");
+		URL testFileURL = TestFileUtils.getTestFileURL("/Util/MessageUtils/utf8-with-bom.xml");
+
+		// Create a message in different ways to touch all (major) data-converters
+		return Stream.of(
+				arguments(Message.asMessage("<test/>")),
+				arguments(Message.asMessage("<test/>".getBytes(StandardCharsets.UTF_8))),
+				arguments(Message.asMessage(inputStreamSupplier)),
+				arguments(Message.asMessage(veryLargeInputStreamSupplier)),
+				arguments(Message.asMessage(xmlDoc)),
+				arguments(Message.nullMessage()),
+				arguments(Message.asMessage(true)),
+				arguments(Message.asMessage(1)),
+				arguments(Message.asMessage(new Date())),
+				arguments(Message.asMessage(Instant.now())),
+				arguments(Message.asMessage(ZonedDateTime.now())),
+				arguments(Message.asMessage(LocalDateTime.now())),
+				arguments(Message.asMessage(TestEnum.A)),
+				arguments(Message.asMessage(new File(testFileURL.toURI())))
+		);
+	}
+	@ParameterizedTest
+	@MethodSource("messageFromDifferentObjectTypes")
+	void testInputStreamSupportsMarkReset(Message message) throws IOException {
+		// Act
+		try (InputStream inputStream = message.asInputStream()) {
+
+			// Assert
+			assertTrue(inputStream.markSupported(), "Inputstream [" + inputStream + "] does not support not mark/reset");
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageFromDifferentObjectTypes")
+	void testReaderSupportsMarkReset(Message message) throws IOException {
+		// Act
+		try (Reader reader = message.asReader()) {
+
+			// Assert
+			assertTrue(reader.markSupported(), "Reader [" + reader + "] does not support not mark/reset");
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageFromDifferentObjectTypes")
+	void testSerializeMessageWithDifferentContentTypes(Message message, @TempDir Path tmpDir) throws IOException, ClassNotFoundException {
+		// Arrange
+		Path tempFile = Files.createTempFile(tmpDir, "serialized-data-", ".bin");
+		OutputStream outputStream = Files.newOutputStream(tempFile);
+		ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+		// Act
+		objectOutputStream.writeObject(message);
+		objectOutputStream.close();
+
+		ObjectInputStream objectInputStream = new ObjectInputStream(Files.newInputStream(tempFile));
+		Message result = (Message) objectInputStream.readObject();
+		objectInputStream.close();
+
+		// Assert
+		assertEquals(message.size(), result.size());
+		assertEquals(message.isBinary(), result.isBinary());
+		assertEquals(message.asString(), result.asString());
+		assertArrayEquals(message.asByteArray(), result.asByteArray());
+		assertEquals(message.getCharset(), result.getCharset());
+		assertEquals(message.getContext().entrySet(), result.getContext().entrySet());
+		assertEquals(message.isEmpty(), result.isEmpty());
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageFromDifferentObjectTypes")
+	void testCopyWithDifferentContentTypes(Message message) throws IOException {
+		// Act
+		Message result = message.copyMessage();
+
+		// Assert
+		assertEquals(message.size(), result.size());
+		assertEquals(message.isBinary(), result.isBinary());
+		assertEquals(message.asString(), result.asString());
+		assertArrayEquals(message.asByteArray(), result.asByteArray());
+		assertEquals(message.getCharset(), result.getCharset());
+		assertEquals(message.getContext().entrySet(), result.getContext().entrySet());
+		assertEquals(message.isEmpty(), result.isEmpty());
 	}
 
 	@Test

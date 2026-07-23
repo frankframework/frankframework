@@ -360,25 +360,23 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	@Nullable
-	private Path legacyBlobOrClobFilename(PipeLineSession session) throws IOException {
+	private Path legacyBlobOrClobFilename(PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-			Message blobSessionValue = session.getMessage(getBlobSessionKey());
-			if (blobSessionValue.isRequestOfType(String.class)) {
-				return Paths.get(blobSessionValue.asString());
+			String blobSessionValue = session.getString(getBlobSessionKey());
+			if (StringUtils.isNotEmpty(blobSessionValue)) {
+				return Paths.get(blobSessionValue);
 			}
-			throw new IllegalStateException("blobSessionKey is not of type [String]");
 		}
 		if (StringUtils.isNotEmpty(getClobSessionKey())) {
-			Message blobSessionValue = session.getMessage(getClobSessionKey());
-			if (blobSessionValue.isRequestOfType(String.class)) {
-				return Paths.get(blobSessionValue.asString());
+			String clobSessionValue = session.getString(getClobSessionKey());
+			if (StringUtils.isNotEmpty(clobSessionValue)) {
+				return Paths.get(clobSessionValue);
 			}
-			throw new IllegalStateException("clobSessionKey is not of type [String]");
 		}
 		return null;
 	}
 
-	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) {
+	protected String adjustQueryAndParameterListForNamedParameters(@NonNull ParameterList parameterList, String query) {
 		if (log.isDebugEnabled()) {
 			log.debug("Adjusting list of parameters [{}]", ()->parameterListToString(parameterList));
 		}
@@ -521,16 +519,20 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, rs, result);
 	}
 
-	protected Message executeUpdateBlobQuery(PreparedStatement statement, Message contents) throws SenderException{
-		BlobOutputStream blobOutputStream=null;
+	protected Message executeUpdateBlobQuery(@NonNull PreparedStatement statement, @Nullable Message contents) throws SenderException{
+		BlobOutputStream blobOutputStream;
 		try {
+			blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
 			try {
-				blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-				if (contents!=null) {
-					if (StringUtils.isNotEmpty(getStreamCharset())) {
-						contents = new Message(contents.asReader(getStreamCharset()));
+				if (contents != null) {
+					InputStream inputStream;
+					if (StringUtils.isNotEmpty(getStreamCharset()) && StringUtils.isEmpty(contents.getCharset())) {
+						Message copy = contents.copyMessage();
+						copy.setCharset(getStreamCharset());
+						inputStream = copy.asInputStream(getBlobCharset());
+					} else {
+						inputStream = contents.asInputStream(getBlobCharset());
 					}
-					InputStream inputStream = contents.asInputStream(getBlobCharset());
 					StreamUtil.streamToStream(inputStream, blobOutputStream);
 				}
 			} finally {
@@ -553,13 +555,20 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		return new ClobWriter(getDbmsSupport(), clobUpdateHandle, clobColumn, dbmsWriter, rs, result);
 	}
 
-	protected Message executeUpdateClobQuery(PreparedStatement statement, Message contents) throws SenderException{
-		ClobWriter clobWriter = null;
+	protected Message executeUpdateClobQuery(@NonNull PreparedStatement statement, @Nullable Message contents) throws SenderException{
+		ClobWriter clobWriter;
 		try {
+			clobWriter = getClobWriter(statement, getClobColumn());
 			try {
-				clobWriter = getClobWriter(statement, getClobColumn());
 				if (contents != null) {
-					Reader reader = contents.asReader(getStreamCharset());
+					Reader reader;
+					if (StringUtils.isNotEmpty(getStreamCharset()) && StringUtils.isEmpty(contents.getCharset())) {
+						Message copy = contents.copyMessage();
+						copy.setCharset(getStreamCharset());
+						reader = copy.asReader();
+					} else {
+						reader = contents.asReader();
+					}
 					StreamUtil.readerToWriter(reader, clobWriter);
 				}
 			} finally {

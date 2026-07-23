@@ -165,7 +165,7 @@ public class JavascriptSender extends SenderSeries {
 		// This array will contain the parameters given in the configuration
 		Object[] jsParameters = new Object[numberOfParameters];
 		for (int i = 0; i < numberOfParameters; i++) {
-			ParameterValue pv = pvl.getParameterValue(i);
+			ParameterValue pv = pvl.getValue(i);
 			Object value = pv.getValue();
 			try {
 				jsParameters[i] = value instanceof Message m ? m.asString() : value;

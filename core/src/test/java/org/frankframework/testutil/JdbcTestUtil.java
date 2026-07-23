@@ -108,7 +108,7 @@ public class JdbcTestUtil {
 		for (int i = 0; i < parameterValues.size(); i++) {
 			sb.append("param").append(i)
 					.append(" [")
-					.append(parameterValues.getParameterValue(i).getValue())
+					.append(parameterValues.getValue(i).getValue())
 					.append("]");
 		}
 		return sb.toString();
