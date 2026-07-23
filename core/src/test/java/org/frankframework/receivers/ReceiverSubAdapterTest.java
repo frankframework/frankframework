@@ -177,7 +177,7 @@ public class ReceiverSubAdapterTest {
 			storedMessages.put(msgId, message);
 			return msgId;
 		});
-		when(errorStorage.consumeMessage(any(), session)).thenAnswer(params -> {
+		when(errorStorage.consumeMessage(any(), any())).thenAnswer(params -> {
 			String msgId = params.getArgument(0);
 			Serializable message = storedMessages.get(msgId);
 			if (message instanceof MessageWrapper<?> messageWrapper) {

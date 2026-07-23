@@ -254,7 +254,8 @@ public class JdbcTransactionalStorageTest {
 		}
 
 		TransactionStatus tx = storage.getTxManager().getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
-		String result = storage.consumeMessage(key, session).getRawMessage();
+		PipeLineSession pipeLineSession = new PipeLineSession();
+		String result = storage.consumeMessage(key, pipeLineSession).getRawMessage();
 		assertEquals(message, result);
 		storage.getTxManager().commit(tx);
 	}
@@ -279,8 +280,10 @@ public class JdbcTransactionalStorageTest {
 		}
 
 		TransactionStatus tx = storage.getTxManager().getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
+		PipeLineSession session = new PipeLineSession();
 		String result = storage.consumeMessage(key, session).getRawMessage();
 		assertEquals(message, result);
+		assertEquals("correlationId", session.getCorrelationId());
 		storage.getTxManager().commit(tx);
 	}
 }
