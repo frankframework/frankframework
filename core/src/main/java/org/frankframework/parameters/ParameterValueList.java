@@ -18,9 +18,9 @@ package org.frankframework.parameters;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +44,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	public ParameterValueList() {
 		super();
 		list = new ArrayList<>();
-		map  = new LinkedHashMap<>();
+		map  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	}
 
 	public static ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
@@ -66,22 +66,12 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	}
 
 	/** Get a specific {@link ParameterValue}, case sensitive */
-	public @Nullable ParameterValue get(String name) {
+	public @Nullable ParameterValue get(@NonNull String name) {
 		return map.get(name);
 	}
 
-	/** Find a (case insensitive) {@link ParameterValue} */
-	public @Nullable ParameterValue findParameterValue(@NonNull String name) {
-		for(Map.Entry<String, ParameterValue> entry : map.entrySet()) {
-			if(entry.getKey().equalsIgnoreCase(name)) {
-				return entry.getValue();
-			}
-		}
-		return null;
-	}
-
 	/**
-	 * Check if the parameter exists, case sensitive.
+	 * Check if the parameter exists, case-insensitive.
 	 */
 	public boolean contains(@NonNull String name) {
 		return map.containsKey(name);
@@ -113,30 +103,49 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
 		// convert map with parameterValue to map with value
-		Map<String, Object> result = LinkedHashMap.newLinkedHashMap(paramValuesMap.size());
+		Map<String, Object> result = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
 		return result;
 	}
 
-	public static Message getValue(ParameterValueList pvl, String name, Message defaultValue) {
-		if (pvl!=null) {
-			ParameterValue pv = pvl.get(name);
-			Message value = pv!=null ? pv.asMessage() : null;
-			if (!Message.isNull(value)) {
-				return value;
-			}
+	/**
+	 * Get the list of resolved parameter values
+	 */
+	@NonNull
+	public List<Object> getValueList() {
+		return list.stream()
+				.map(ParameterValue::getValue)
+				.toList();
+	}
+
+	public int getValue(@NonNull String parameterName, int defaultValue) {
+		ParameterValue pv = get(parameterName);
+		if (pv != null) {
+			return pv.asIntegerValue(defaultValue);
 		}
 		return defaultValue;
 	}
 
-	public static String getValue(ParameterValueList pvl, String name, String defaultValue) {
-		if (pvl != null) {
-			ParameterValue pv = pvl.get(name);
-			if (pv != null) {
-				return pv.asStringValue(defaultValue);
-			}
+	@Nullable
+	public String getValue(@NonNull String parameterName) {
+		return getValue(parameterName, (String) null);
+	}
+
+	public String getValue(@NonNull String name, @Nullable String defaultValue) {
+		ParameterValue pv = get(name);
+		if (pv != null) {
+			return pv.asStringValue(defaultValue);
+		}
+		return defaultValue;
+	}
+
+	public Message getValue(@NonNull String name, @Nullable Message defaultValue) {
+		ParameterValue pv = get(name);
+		Message value = pv!=null ? pv.asMessage() : null;
+		if (!Message.isNull(value)) {
+			return value;
 		}
 		return defaultValue;
 	}
@@ -153,7 +162,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	/**
 	 * @return The corresponding {@link ParameterValue}, should only be used in combination with {@link ParameterValueList#iterator()}!
 	 */
-	public ParameterValue getParameterValue(int i) {
+	public ParameterValue getValue(int i) {
 		return list.get(i);
 	}
 

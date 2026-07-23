@@ -82,9 +82,9 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 
 	@Override
 	public MessageZipEntry createPart(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
-		String filename = ParameterValueList.getValue(pvl, PARAMETER_FILENAME, "");
+		String filename = pvl.getValue(PARAMETER_FILENAME, "");
 		try {
-			Message contents = ParameterValueList.getValue(pvl, PARAMETER_CONTENTS, input);
+			Message contents = pvl.getValue(PARAMETER_CONTENTS, input);
 			if (StringUtils.isEmpty(filename) && contents != input) {
 				filename = input.asString();
 			}
