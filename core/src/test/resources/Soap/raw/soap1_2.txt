@@ -1,0 +1,8 @@
+SOAPAction: http://www.egem.nl/StUF/sector/zkn/0310
+Content-Type: application/soap+xml;charset=UTF-8;action="http://www.egem.nl/StUF/sector/zkn/0310"
+
+<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
+  <soapenv:Body>
+    <hallo/>
+  </soapenv:Body>
+</soapenv:Envelope>

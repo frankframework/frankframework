@@ -655,21 +655,13 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		Message body = null;
 		final String multipartBodyName = listener.getMultipartBodyName();
 		try {
-			MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType());
+			MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType(), multipartBodyName);
+			body = parts.body();
 			for (Entry<String, Message> entry : parts.messages().entrySet()) {
 				String fieldName = entry.getKey();
 				if (!listener.isParameterAllowed(fieldName)) {
 					LOG.warn("Request contains multipart field [{}] which is not allowed", fieldName);
 					continue;
-				}
-				if ((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
-					body = entry.getValue();
-
-					Enumeration<String> names = request.getHeaderNames();
-					while (names.hasMoreElements()) {
-						String name = names.nextElement();
-						body.getContext().put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
-					}
 				}
 				pipelineSession.put(fieldName, entry.getValue());
 			}
