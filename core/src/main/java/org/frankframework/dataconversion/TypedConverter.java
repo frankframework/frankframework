@@ -1,0 +1,63 @@
+/*
+   Copyright 2026 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package org.frankframework.dataconversion;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+
+import javax.xml.transform.Source;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import org.frankframework.util.XmlUtils;
+
+/**
+ * Interface describing the strongly typed operations to represent data as various other types
+ * that can be needed for operations in the Frank!Framework.
+ * Concrete implementations should specify the concrete type of {@code <T>} upon which they operate.
+ * The sub-interfaces {@link TypedCharacterDataConverter<T>} and {@link TypedBinaryDataConverter<T>} add
+ * operations that have require different parameters for binary vs character data.
+ *
+ * @param <T> Type of the data that is operated on.
+ */
+public interface TypedConverter<T> {
+
+	default boolean prefersStreaming() {
+		return false;
+	}
+
+	long size(T data);
+
+	default boolean isEmpty(T data) {
+		return size(data) == 0;
+	}
+
+	default Serializable asSerializable(T data) throws IOException {
+		return (Serializable) data;
+	}
+
+	byte[] asByteArray(T data) throws IOException;
+
+	InputStream asInputStream(T data) throws IOException;
+
+	InputSource asInputSource(T data) throws IOException;
+
+	default Source asSource(T data) throws IOException, SAXException {
+		return XmlUtils.inputSourceToSAXSource(asInputSource(data));
+	}
+}

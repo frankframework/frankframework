@@ -1,7 +1,7 @@
 package org.frankframework.stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -46,21 +46,21 @@ public class UrlMessageTest {
 		MessageTest.writeContentsToFile(source, "fakeContentAsReplacementOfThePrevious");
 		Message out = serializationTester.deserialize(wire);
 
-		assertTrue(out.isBinary());
+		assertFalse(out.isBinary());
 		assertEquals(testString, out.asString());
 	}
 
 	@Test
 	public void testDeserializationCompatibility() throws Exception {
 
-		for (int i=0; i< wires.length; i++) {
+		for (int i=0; i < wires.length; i++) {
 			String label = wires[i][0];
 			log.debug("testDeserializationCompatibility() "+label);
 			byte[] wire = Hex.decodeHex(wires[i][1]);
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(UrlMessage.class, out.getClass());
-			assertTrue(out.isBinary(), label);
+			assertEquals(out.getCharset() == null, out.isBinary(), label);
 			assertEquals("UTF-8", out.getCharset(), label);
 			assertEquals(testString, out.asString(), label);
 		}

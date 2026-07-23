@@ -56,11 +56,11 @@ public class LdapFindMemberPipe extends AbstractLdapQueryPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
-		dnSearchIn_work = getParameterValue(pvl, "dnSearchIn");
+		dnSearchIn_work = pvl.getValue("dnSearchIn");
 		if (dnSearchIn_work == null) {
 			dnSearchIn_work = getDnSearchIn();
 		}
-		dnFind_work = getParameterValue(pvl, "dnFind");
+		dnFind_work = pvl.getValue("dnFind");
 		if (dnFind_work == null) {
 			dnFind_work = getDnFind();
 		}

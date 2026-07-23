@@ -19,6 +19,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 
 
+@SuppressWarnings("removal")
 public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
 	@Override

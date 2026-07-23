@@ -18,6 +18,7 @@ package org.frankframework.stream;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -66,7 +67,7 @@ public class SerializableFileReferenceTest {
 	private SerializableFileReference reference;
 
 	@BeforeEach
-	public void setUp(TestInfo testInfo) throws Exception {
+	public void setUp(TestInfo testInfo) {
 		testDataEnriched = TEST_DATA + "-" + testInfo.getDisplayName();
 	}
 
@@ -312,10 +313,11 @@ public class SerializableFileReferenceTest {
 
 		// Assert
 		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
-		assertTrue(message.isBinary(), "Should be binary");
+		assertFalse(message.isBinary(), "Should not be binary, charset is set on message");
 
-		reference = (SerializableFileReference) message.asObject();
-		assertTrue(reference.isBinary(), "Should be binary");
+		//noinspection deprecation
+		reference = assertInstanceOf(SerializableFileReference.class, message.asObject());
+		assertTrue(reference.isBinary(), "Should be binary, charset is not set on SerializableFileReference");
 		Path path = reference.getPath();
 		assertEquals(tempFile.toPath(), path);
 
@@ -342,7 +344,8 @@ public class SerializableFileReferenceTest {
 		String result = message.asString();
 		assertEquals(testDataEnriched, result);
 
-		reference = (SerializableFileReference) message.asObject();
+		//noinspection deprecation
+		reference = assertInstanceOf(SerializableFileReference.class, message.asObject());
 		assertTrue(reference.isBinary(), "Should be binary");
 		Path path = reference.getPath();
 		assertEquals(tempFilePath, path);
@@ -399,7 +402,7 @@ public class SerializableFileReferenceTest {
 		Message message = new FileMessage(tempFile);
 		message.setCharset("UTF-8");
 
-		assertTrue(message.isBinary());
+		assertFalse(message.isBinary());
 
 		SerializationTester<Message> serializationTester = new SerializationTester<>();
 
@@ -407,7 +410,7 @@ public class SerializableFileReferenceTest {
 		Message message2 = serializationTester.testSerialization(message);
 
 		// Assert
-		assertTrue(message2.isBinary());
+		assertFalse(message2.isBinary());
 		String result = message2.asString();
 		assertEquals(testDataEnriched, result);
 	}
@@ -449,7 +452,7 @@ public class SerializableFileReferenceTest {
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(FileMessage.class, out.getClass());
-			assertTrue(out.isBinary(), label);
+			assertEquals(out.getCharset() == null, out.isBinary(), label);
 			assertEquals("UTF-8", out.getCharset(), label);
 			assertEquals(TEST_DATA, out.asString(), label);
 			assertEquals(TEST_DATA.getBytes(StandardCharsets.UTF_8).length, out.size());

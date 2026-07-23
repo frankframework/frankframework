@@ -178,7 +178,9 @@ public class HttpMessageEntityTest {
 			assertNotEquals(-1L, entity.getContentLength());
 		}
 		String boasString = type == MessageType.BINARY ? boas.toString(): boas.toString(message.getCharset());
-		assertEquals(type.getMessage().asString(StreamUtil.AUTO_DETECT_CHARSET), boasString);
+		Message msg2 = type.getMessage();
+		msg2.setCharset(StreamUtil.AUTO_DETECT_CHARSET);
+		assertEquals(msg2.asString(), boasString);
 	}
 
 	private String toString(HttpEntity entity) throws IOException {

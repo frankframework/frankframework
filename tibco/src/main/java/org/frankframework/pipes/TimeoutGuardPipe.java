@@ -48,7 +48,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
-		String paramValue = getParameterValue(pvl, "timeout");
+		String paramValue = pvl.getValue("timeout");
 		int guardTimeout = paramValue == null ? getTimeout() : Integer.valueOf(paramValue);
 		log.debug("setting timeout of [{}] s", guardTimeout);
 

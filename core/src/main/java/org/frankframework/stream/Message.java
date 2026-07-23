@@ -15,10 +15,6 @@
 */
 package org.frankframework.stream;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,22 +23,14 @@ import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.Serial;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.temporal.TemporalAccessor;
-import java.util.Date;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.dom.DOMSource;
 
-import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,18 +41,17 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
-import lombok.Lombok;
 import lombok.SneakyThrows;
 
+import org.frankframework.dataconversion.DataConverter;
+import org.frankframework.dataconversion.DataConverterFactory;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
-import org.frankframework.util.XmlUtils;
 
 /**
  * A {@link Serializable} wrapper around data passed to the Frank!Framework and between pipes in the
@@ -80,7 +67,7 @@ import org.frankframework.util.XmlUtils;
  *     value is {@value MESSAGE_MAX_IN_MEMORY_DEFAULT}.
  * </p>
  * <p>
- *     Operations on a Message that change state, such as {@link #preserve(boolean)} (and implicitly serializing the Message) are
+ *     Operations on a Message that change state, such as serializing the Message are
  *     not thread-safe. If there is a chance that these operations are simultaneously executed from multiple threads, they need to be
  *     wrapped in a {@code synchronized} block that synchronizes on the message instance.
  * </p>
@@ -96,21 +83,14 @@ public class Message implements Serializable {
 
 	private static final @Serial long serialVersionUID = 437863352486501445L;
 
-	private @Nullable Object request;
+	private transient DataConverter request;
 	private @Getter String requestClass;
 
 	private @Getter MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
 	private Message(final MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
-		if (request instanceof Message || (request instanceof AutoCloseable && !(request instanceof SerializableFileReference))) {
-			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
-			// e.g. new Message(pipeRunResult.getResult());
-			throw new IllegalArgumentException("Cannot pass object of type %s to Message constructor".formatted(ClassUtils.classNameOf(request)));
-		} else {
-			this.request = request;
-		}
-
+		this.request = createRequestWrapper(request);
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
@@ -144,6 +124,7 @@ public class Message implements Serializable {
 		this.requestClass = ClassUtils.nameOf(request);
 		Message temporaryMessage = MessageUtils.fromReader(request);
 		copyFromTemporaryMessage(temporaryMessage);
+		this.request = createRequestWrapper(temporaryMessage.request.asRawObject());
 		if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
 			// Ensure charset is now always UTF-8 because that's what it is after converting from stream
 			this.context.withCharset(StandardCharsets.UTF_8);
@@ -185,17 +166,7 @@ public class Message implements Serializable {
 		this.requestClass = ClassUtils.nameOf(requestClass);
 		Message temporaryMessage = MessageUtils.fromInputStream(request);
 		copyFromTemporaryMessage(temporaryMessage);
-
-	}
-
-	private void copyFromTemporaryMessage(Message temporaryMessage) {
-		this.request = temporaryMessage.request;
-		temporaryMessage.request = null; // Prevent potential temp files being closed
-		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
-		temporaryMessage.context.getAll().keySet()
-				.stream()
-				.filter(key -> !key.equals(MessageContext.METADATA_NAME))
-				.forEachOrdered(key -> this.context.put(key, temporaryMessage.context.get(key)));
+		this.request = createRequestWrapper(temporaryMessage.request.asRawObject());
 	}
 
 	public Message(InputStream request) throws IOException {
@@ -239,298 +210,93 @@ public class Message implements Serializable {
 		context.withCharset(charset);
 	}
 
+	private void copyFromTemporaryMessage(Message temporaryMessage) {
+		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
+		temporaryMessage.context.getAll().keySet()
+				.stream()
+				.filter(key -> !key.equals(MessageContext.METADATA_NAME))
+				.forEachOrdered(key -> this.context.put(key, temporaryMessage.context.get(key)));
+	}
+
+	private DataConverter createRequestWrapper(@Nullable Object request) {
+		return DataConverterFactory.getConverter(request, this::computeCharsetOrNull);
+	}
+
 	/**
-	 * If no Charset was provided when the Message object was created and
-	 * the requested Charset is <code>auto</code>, try to parse the Charset using
-	 * {@link MessageUtils#computeDecodingCharset(Message)}.
-	 *
-	 * If unsuccessful return the default Charset: {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING UTF_8}.
-	 *
-	 * @param defaultDecodingCharset The 'I know better' Charset, only used when no Charset is provided when the Message was created.
+	 * Get the charset if set. If the charset = 'AUTO' then compute the charset from stream.
 	 */
-	protected String computeDecodingCharset(@Nullable String defaultDecodingCharset) throws IOException {
+	private @Nullable String computeCharsetOrNull() throws IOException {
 		String providedCharset = getCharset();
-
 		if (StringUtils.isEmpty(providedCharset)) {
-			providedCharset = StringUtils.isNotEmpty(defaultDecodingCharset) ? defaultDecodingCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+			return null;
 		}
-
-		if (StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(providedCharset)) {
-			Charset charset = null;
-			if (!failedToDetermineCharset) {
-				charset = MessageUtils.computeDecodingCharset(this);
-			}
-
-			// Remove the size, if present, when the charset changes!
-			context.remove(MessageContext.METADATA_SIZE);
-
-			if (charset == null) {
-				failedToDetermineCharset = true;
-				if (StringUtils.isNotEmpty(defaultDecodingCharset) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(defaultDecodingCharset)) {
-					return defaultDecodingCharset;
-				}
-				return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			}
-			return charset.name();
+		if (!StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(providedCharset)) {
+			return providedCharset;
 		}
-
-		return providedCharset;
-	}
-
-	private String getEncodingCharset(@Nullable String defaultEncodingCharset) {
-		if (StringUtils.isEmpty(defaultEncodingCharset)) {
-			return StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		if (failedToDetermineCharset || isEmpty()) {
+			return null;
 		}
-		return defaultEncodingCharset;
+		Charset computedCharset = MessageUtils.computeDecodingCharset(this.request.asInputStream());
+		failedToDetermineCharset = (computedCharset == null);
+
+		// Remove the size, if present, when the charset changes!
+		context.remove(MessageContext.METADATA_SIZE);
+		setCharset(computedCharset);
+		return computedCharset != null ? computedCharset.name() : null;
 	}
 
 	/**
-	 * Notify the message object that the request object will be used multiple times.
-	 * If the request object can only be read one time, it can turn it into a less volatile representation.
-	 * <p>
-	 *     This operation can potentially modify the contents of the Message object. This is not thread-safe.
-	 * </p>
-	 *
-	 * @throws IOException Throws IOException if the Message cannot be read or writing fails.
+	 * @deprecated Please avoid the use of the raw object wherever possible and if you must, annotate why.
 	 */
-	private void preserve(boolean deepPreserve) throws IOException {
-		if (request == null) {
-			return;
-		}
-		if (request instanceof SerializableFileReference) {
-			return;
-		}
-
-		long requestSize = size();
-		if ((requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > MESSAGE_MAX_IN_MEMORY) && !(request instanceof Date || request instanceof TemporalAccessor)) {
-			preserveToDisk(deepPreserve);
-			// Check again the size now that we know it for sure. If it fits into memory, better for performance to keep it in memory!
-			if (requestSize == MESSAGE_SIZE_UNKNOWN && size() <= MESSAGE_MAX_IN_MEMORY && request instanceof SerializableFileReference serializableFileReference) {
-				if (isBinary()) {
-					try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-						InputStream inputStream = serializableFileReference.getInputStream()) {
-						inputStream.transferTo(bos);
-						this.request = bos.toByteArray();
-					}
-				} else {
-					try (StringWriter sw = new StringWriter(); Reader reader = serializableFileReference.getReader()) {
-						reader.transferTo(sw);
-						this.request = sw.toString();
-					}
-				}
-				serializableFileReference.close();
-			}
-		} else {
-			preserveToMemory(deepPreserve);
-		}
-	}
-
-	private void preserveToMemory(boolean deepPreserve) throws IOException {
-		if (request instanceof SerializableFileReference) {
-			// Should not happen but just in case.
-			return;
-		}
-
-		// if deepPreserve=true, File and URL are also preserved as byte array
-		// otherwise we rely on that File and URL can be repeatedly read
-		if (deepPreserve && !(request instanceof String || request instanceof byte[])) {
-			if (isBinary()) {
-				LOG.debug("deep preserving {} as byte[]", this::getObjectId);
-				request = asByteArray();
-			} else {
-				LOG.debug("deep preserving {} as String", this::getObjectId);
-				request = asString();
-			}
-		}
-	}
-
-	/**
-	 * Preserve message to disk.
-	 *
-	 * @throws IOException Throws {@link IOException} if the Message cannot be read, or no temporary file can be written to.
-	 */
-	private void preserveToDisk(boolean deepPreserve) throws IOException {
-		if (request instanceof SerializableFileReference) {
-			// Should not happen but just in case.
-			return;
-		}
-		if (request instanceof String string) {
-			request = SerializableFileReference.of(string, computeDecodingCharset(null));
-		} else if (request instanceof byte[] bytes) {
-			request = SerializableFileReference.of(bytes);
-		} else if (deepPreserve) {
-			if (isBinary()) {
-				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
-				request = SerializableFileReference.of(asInputStream());
-			} else {
-				LOG.debug("preserving {} as SerializableFileReference", this::getObjectId);
-				request = SerializableFileReference.of(asReader(), computeDecodingCharset(null));
-			}
-		}
-	}
-
-	/**
-	 * @deprecated Please avoid the use of the raw object.
-	 */
-	@Deprecated
+	@Deprecated(since = "8")
+	@SuppressWarnings("java:S1133")
 	@Nullable
 	public Object asObject() {
-		return request;
+		return request.asRawObject();
 	}
 
 	public boolean isBinary() {
-		if (request instanceof SerializableFileReference reference) {
-			return reference.isBinary();
-		}
-
-		return request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Number || request instanceof Boolean;
+		return request.isBinary() && !context.containsKey(MessageContext.METADATA_CHARSET);
 	}
 
 	/**
 	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
 	 */
 	public boolean requiresStream() {
-		return request instanceof ThrowingSupplier || request instanceof SerializableFileReference;
+		return request.prefersStreaming();
 	}
 
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
 	 */
 	public Reader asReader() throws IOException {
-		//noinspection java:S1874
-		return asReader(null);
-	}
-
-	/**
-	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
-	 *
-	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
-	 *
-	 * @deprecated Instead of calling this method, set the charset on the Message and then call the regular {@link Message#asReader()} method.
-	 *
-	 */
-	@Deprecated(since = "10.2")
-	public Reader asReader(@Nullable String defaultDecodingCharset) throws IOException {
-		if (request == null) {
-			return Reader.nullReader();
-		}
-
-		if (request instanceof SerializableFileReference reference && !reference.isBinary()) {
-			LOG.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
-			// The Message was saved with a Charset (see PreserveToDisk), so read it with the Charset
-			return reference.getReader();
-		}
-
-		if (isBinary()) {
-			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
-
-			LOG.debug("returning InputStream {} as Reader", this::getObjectId);
-			InputStream inputStream = asInputStream();
-			try {
-				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
-			} catch (IOException e) {
-				CloseUtils.closeSilently(inputStream);
-				throw e;
-			} catch (Exception e) {
-				CloseUtils.closeSilently(inputStream);
-				throw Lombok.sneakyThrow(e);
-			}
-		}
-		if (request instanceof Node) {
-			LOG.debug("returning Node {} as Reader", this::getObjectId);
-			return new StringReader(Objects.requireNonNull(asString()));
-		}
-		LOG.debug("returning String {} as Reader", this::getObjectId);
-		return new StringReader(request.toString());
+		return request.asReader();
 	}
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
 	 */
 	public InputStream asInputStream() throws IOException {
-		if (request == null) {
-			return InputStream.nullInputStream();
-		}
-
-		if (request instanceof SerializableFileReference reference) {
-			LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
-			return reference.getInputStream();
-		}
-		if (request instanceof ThrowingSupplier) {
-			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
-			try {
-				@SuppressWarnings("unchecked")
-				InputStream is = ((ThrowingSupplier<InputStream, Exception>) request).get();
-				if (is.markSupported()) {
-					return is;
-				} else {
-					return new BufferedInputStream(is);
-				}
-			} catch (Exception e) {
-				if (e instanceof IOException ioe) {
-					throw ioe;
-				}
-				throw new IOException(e);
-			}
-		}
-		if (request instanceof byte[] bytes) {
-			LOG.debug("returning byte[] {} as InputStream", this::getObjectId);
-			return new ByteArrayInputStream(bytes);
-		}
-		if (request instanceof Node node) {
-			LOG.debug("returning Node {} as InputStream", this::getObjectId);
-			return new ByteArrayInputStream(nodeToByteArray(node));
-		}
-		LOG.debug("returning String {} as InputStream", this::getObjectId);
-		return new ByteArrayInputStream(request.toString().getBytes());
+		return request.asInputStream();
 	}
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
 	 *
-	 * @param encodingCharset is only used when the Message object contains character data
+	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
-	public InputStream asInputStream(@Nullable String encodingCharset) throws IOException {
-		if (request == null) {
-			return InputStream.nullInputStream();
+	public InputStream asInputStream(@Nullable String defaultEncodingCharset) throws IOException {
+		if (StringUtils.isEmpty(defaultEncodingCharset)) {
+			return request.asInputStream();
 		}
-		if (StringUtils.isEmpty(encodingCharset)) {
-			// No recording required so delegate to the default method
-			return asInputStream();
-		}
-
-		// Check data that has a natural String representation before checking if the Message has a charset applied to it
-		if (request instanceof String || request instanceof Number || request instanceof Boolean) {
-			return new ByteArrayInputStream(request.toString().getBytes(encodingCharset));
-		}
-		if (request instanceof Enum<?> enumValue) {
-			return new ByteArrayInputStream(enumValue.name().getBytes(encodingCharset));
-		}
-		if (request instanceof Node node) {
-			LOG.debug("returning Node {} as InputStream", this::getObjectId);
-			return new ByteArrayInputStream(nodeToString(node).getBytes(encodingCharset));
-		}
-
-		if (StreamUtil.AUTO_DETECT_CHARSET.equals(getCharset())) {
-			MessageUtils.computeDecodingCharset(this); // This can update the charset, or remove the 'auto-detect' flag if no charset could be detected
-		}
-
-		if (StringUtils.isEmpty(getCharset()) || encodingCharset.equals(getCharset())) {
-			// Binary data with no charset applied, cannot recode to return as-is, OR
-			// Requested charset is same as stored charset
-			return asInputStream();
-		}
-
-		// Now we know that we have binary data with a charset that is different from the one requested, so get a Reader for the data and an input stream that recodes the data.
-		Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), getCharset());
-		return ReaderInputStream.builder().setCharset(encodingCharset).setReader(reader).get();
+		return request.asInputStream(defaultEncodingCharset);
 	}
 
 	public synchronized String peek(int readLimit) throws IOException {
 		if (isEmpty()) {
 			return "";
 		}
-		if (request instanceof String string) {
+		if (request.asRawObject() instanceof String string) {
 			return StringUtils.truncate(string, readLimit);
 		}
 		try (Reader r = asReader()) {
@@ -548,22 +314,7 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public InputSource asInputSource() throws IOException {
-		if (request == null) {
-			return null;
-		}
-		if (request instanceof InputSource source) {
-			LOG.debug("returning InputSource {} as InputSource", this::getObjectId);
-			return source;
-		}
-		if (request instanceof String string) {
-			LOG.debug("returning String {} as InputSource", this::getObjectId);
-			return new InputSource(new StringReader(string));
-		}
-		LOG.debug("returning {} as InputSource", this::getObjectId);
-		if (isBinary() && getCharset() == null) { // When a charset is present it should be used.
-			return new InputSource(asInputStream());
-		}
-		return new InputSource(asReader());
+		return request.asInputSource();
 	}
 
 	/**
@@ -571,66 +322,22 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public Source asSource() throws IOException, SAXException {
-		if (request == null) {
-			return null;
-		}
-		if (request instanceof Source source) {
-			LOG.debug("returning Source {} as Source", this::getObjectId);
-			return source;
-		}
-		if (request instanceof Node node) {
-			LOG.debug("returning Node {} as DOMSource", this::getObjectId);
-			return new DOMSource(node);
-		}
-		LOG.debug("returning {} as Source", this::getObjectId);
-		return XmlUtils.inputSourceToSAXSource(asInputSource());
+		return request.asSource();
 	}
 
 	/**
-	 * Return the request object as a byte array. This may have the side effect of preserving the input as byte array.
-	 * This operation is not thread-safe.
+	 * Return the request object as a byte array.
 	 */
 	public byte @Nullable[] asByteArray() throws IOException {
-		return asByteArray(null);
+		return request.asByteArray();
 	}
 
 	/**
-	 * Return the request object as a byte array. This may have the side effect of preserving the input as byte array.
-	 * This operation is not thread-safe.
+	 * Return the request object as a byte array with the specified character encoding.
 	 */
 	public byte @Nullable[] asByteArray(@Nullable String defaultEncodingCharset) throws IOException {
-		if (request == null) {
-			return null;
-		}
-		if (request instanceof byte[] bytes) {
-			return bytes;
-		}
-		if (request instanceof Node node) {
-			return nodeToByteArray(node);
-		}
-		String charset = getEncodingCharset(defaultEncodingCharset);
-		if (request instanceof String string) {
-			return string.getBytes(charset);
-		}
-		if (request instanceof ThrowingSupplier || request instanceof SerializableFileReference) {
-			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
-			return StreamUtil.streamToBytes(asInputStream());
-		}
-		// save the generated byte array as the request before returning it, unless it's too big
-		byte[] result = StreamUtil.streamToBytes(asInputStream(charset));
-		if (result.length < MESSAGE_MAX_IN_MEMORY) {
-			request = result;
-		}
-		return result;
-	}
-
-	private byte[] nodeToByteArray(Node node) throws IOException {
-		try {
-			LOG.debug("returning Node {} as byte[]", this::getObjectId);
-			return XmlUtils.nodeToByteArray(node);
-		} catch (TransformerException e) {
-			throw new IOException("Could not convert Node " + getObjectId() + " to byte[]", e);
-		}
+		if (isNull()) return null;
+		return StreamUtil.streamToBytes(asInputStream(defaultEncodingCharset));
 	}
 
 	/**
@@ -640,67 +347,20 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public String asString() throws IOException {
-		return asString(null);
-	}
-
-	/**
-	 * return the request object as a String. This may have the side effect of preserving the input as a String, thus
-	 * modifying the state of the Message object.
-	 * This operation is not thread-safe.
-	 */
-	@Nullable
-	public String asString(@Nullable String decodingCharset) throws IOException {
-		if (request == null) {
-			return null;
-		}
-		if (request instanceof String string) {
-			return string;
-		}
-		if (request instanceof Number || request instanceof Boolean) {
-			return request.toString();
-		}
-		if (request instanceof Enum<?> enumValue) {
-			return enumValue.name();
-		}
-		if (request instanceof Node node) {
-			return nodeToString(node);
-		}
-
-		// save the generated String as the request before returning it
-		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
-		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
-		if (!(request instanceof SerializableFileReference) && !isBinary() && result.length() < MESSAGE_MAX_IN_MEMORY) {
-			if (request instanceof AutoCloseable closeable) {
-				try {
-					closeable.close();
-				} catch (Exception e) {
-					LOG.info("could not close request of type [{}], inside message {}. Message: {}", requestClass, this, e.getMessage());
-				}
-			}
-			request = result;
-		}
-		return result;
-	}
-
-	private String nodeToString(Node node) throws IOException {
-		try {
-			LOG.debug("returning Node {} as String", this::getObjectId);
-			return XmlUtils.nodeToString(node);
-		} catch (TransformerException e) {
-			throw new IOException("Could not convert type Node " + getObjectId() + " to String", e);
-		}
+		return request.asString();
 	}
 
 	public boolean isNull() {
-		return request == null;
+		return request.isNull();
 	}
 
 	/** @return true if the request is or extends of the specified type at parameter clazz */
 	public boolean isRequestOfType(Class<?> clazz) {
-		if (request == null) {
+		Object data = request.asRawObject();
+		if (data == null) {
 			return false;
 		}
-		return clazz.equals(request.getClass()) || clazz.isAssignableFrom(request.getClass());
+		return clazz.equals(data.getClass()) || clazz.isAssignableFrom(data.getClass());
 	}
 
 	/**
@@ -709,7 +369,7 @@ public class Message implements Serializable {
 	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size if larger than 0 or data can be read from it.
 	 */
 	public boolean isEmpty() {
-		return !hasDataAvailable();
+		return request.isEmpty();
 	}
 
 	private void toStringPrefix(StringBuilder writer) {
@@ -738,8 +398,8 @@ public class Message implements Serializable {
 		result.append(getObjectId());
 
 		if (LOG.isDebugEnabled()) {
-			if (request != null) {
-				result.append(" content [").append(request).append("]");
+			if (request.asRawObject() != null) {
+				result.append(" content [").append(request.asRawObject()).append("]");
 			} else {
 				result.append(" no-content");
 			}
@@ -767,57 +427,18 @@ public class Message implements Serializable {
 	 */
 	@SneakyThrows(IOException.class)
 	public static Message asMessage(@Nullable Object object) {
-		switch (object) {
-			case null -> {
-				return nullMessage();
-			}
-			case Message message -> {
-				return message;
-			}
-			case Reader reader -> {
-				return MessageUtils.fromReader(reader);
-			}
-			case InputStream stream -> {
-				return MessageUtils.fromInputStream(stream);
-			}
-			case URL rL -> {
-				return new UrlMessage(rL);
-			}
-			case File file -> {
-				return new FileMessage(file);
-			}
-			case Path path -> {
-				return new PathMessage(path);
-			}
+		return switch (object) {
+			case null -> nullMessage();
+			case Message message -> message;
+			case Reader reader -> MessageUtils.fromReader(reader);
+			case InputStream stream -> MessageUtils.fromInputStream(stream);
+			case URL rL -> new UrlMessage(rL);
+			case File file -> new FileMessage(file);
+			case Path path -> new PathMessage(path);
 			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
-			default -> {
-				// Only allow the following types
-				if (isSupportedType(object)) {
-					return new Message(new MessageContext(), object);
-				}
-				throw new IllegalArgumentException("request object type ["+object.getClass().getSimpleName()+"] not compatible with Message");
-			}
-		}
-	}
-
-	public static boolean isSupportedType(@Nullable Object request) {
-		return request instanceof byte[] ||
-				request instanceof Enum ||
-				request instanceof Boolean ||
-				request instanceof String ||
-				request instanceof Date ||
-				request instanceof TemporalAccessor ||
-				request instanceof ThrowingSupplier ||
-				request instanceof Node ||
-				request instanceof SerializableFileReference ||
-				request instanceof Reader ||
-				request instanceof InputStream ||
-				request instanceof File ||
-				request instanceof Path ||
-				request instanceof Source ||
-				request instanceof URL ||
-				request instanceof InputSource ||
-				request instanceof Number;
+			default -> // Constructor will reject unsupported types
+					new Message(new MessageContext(), object);
+		};
 	}
 
 	/**
@@ -830,56 +451,6 @@ public class Message implements Serializable {
 		return message == null || message.isEmpty();
 	}
 
-	/**
-	 * Check if a message has any data available. This will correctly return {@code true} or {@code false} even
-	 * when the message size cannot be determined.
-	 * <p/>
-	 * However, to do so, some I/O may have to be performed on the message thus making this a
-	 * potentially expensive operation which may throw an {@link IOException}.
-	 * <p/>
-	 * All I/O is done in such a way that no message data is lost.
-	 *
-	 * @return Returns {@code false} if the message is {@code null} or of {@link Message#size()} returns 0.
-	 * 		Returns {@code true} if {@link Message#size()} returns a positive value.
-	 * 		If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
-	 * 		be read. Data read is pushed back onto the stream.
-	 */
-	private boolean hasDataAvailable() {
-		if (request == null) {
-			return false;
-		}
-		long size = size();
-		if (size != MESSAGE_SIZE_UNKNOWN) {
-			return size != 0;
-		}
-		try {
-			if (isBinary()) {
-				return checkIfStreamHasData(asInputStream());
-			} else {
-				return checkIfReaderHasData(asReader());
-			}
-		} catch (IOException e) {
-			LOG.debug("Cannot read message data, treating as empty message", e);
-			return false;
-		}
-	}
-
-	private static boolean checkIfReaderHasData(Reader r) throws IOException {
-		try (r) {
-			return r.read() != -1;
-		} catch (EOFException e) {
-			return false;
-		}
-	}
-
-	private static boolean checkIfStreamHasData(InputStream is) throws IOException {
-		try (is){
-			return is.read() != -1;
-		} catch (EOFException e) {
-			return false;
-		}
-	}
-
 	public static boolean isNull(@Nullable Message message) {
 		return message == null || message.isNull();
 	}
@@ -889,19 +460,18 @@ public class Message implements Serializable {
 	 */
 	@Serial
 	private void writeObject(ObjectOutputStream stream) throws IOException {
-		preserve(true);
 
-		// Safeguard that "preserve()" did its work well
-		// Also, this makes Sonar happy that we're not
-		// serializing an incompatible type of object.
-		if (request != null && !(request instanceof Serializable)) {
-			throw new IllegalArgumentException("This message contains a non-serializable request-object of type " + request.getClass().getName());
-		}
+		Object originalData = request.asRawObject();
+		Serializable serializableData = request.asSerializable();
 
 		stream.writeObject(getCharset());
-		stream.writeObject(request);
+		stream.writeObject(serializableData);
 		stream.writeObject(requestClass);
 		stream.writeObject(context);
+
+		if (serializableData != originalData) {
+			request = createRequestWrapper(serializableData);
+		}
 	}
 
 	/*
@@ -910,7 +480,7 @@ public class Message implements Serializable {
 	@Serial
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		var charset = (String) stream.readObject();
-		request = stream.readObject();
+		Object data = stream.readObject();
 		try {
 			Object requestClassFromStream = stream.readObject();
 			if (requestClassFromStream != null) {
@@ -920,10 +490,10 @@ public class Message implements Serializable {
 					requestClass = requestClassFromStream.toString();
 				}
 			} else {
-				requestClass = ClassUtils.nameOf(request);
+				requestClass = ClassUtils.nameOf(data);
 			}
 		} catch (Exception e) {
-			requestClass = ClassUtils.nameOf(request);
+			requestClass = ClassUtils.nameOf(data);
 			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", () -> requestClass, () -> ClassUtils.nameOf(e), e::getMessage);
 		}
 		MessageContext contextFromStream;
@@ -938,36 +508,22 @@ public class Message implements Serializable {
 			contextFromStream = new MessageContext().withCharset(charset);
 		}
 		context = contextFromStream;
+		request = createRequestWrapper(data);
 	}
 
 	/**
 	 * @return Message size or -1 if it can't determine the size.
 	 */
 	public long size() {
-		if (request == null) {
-			return 0L;
+		Long sz = (Long) context.get(MessageContext.METADATA_SIZE);
+		if (sz != null) {
+			return sz;
 		}
-
-		if (context.containsKey(MessageContext.METADATA_SIZE)) {
-			return (long) context.get(MessageContext.METADATA_SIZE);
+		long size = request.size();
+		if (size != MESSAGE_SIZE_UNKNOWN) {
+			context.withSize(size);
 		}
-
-		if (request instanceof String || request instanceof Number || request instanceof Boolean) {
-			long size = request.toString().getBytes(StreamUtil.DEFAULT_CHARSET).length;
-			getContext().put(MessageContext.METADATA_SIZE, size);
-			return size;
-		}
-
-		if (request instanceof byte[] bytes) {
-			return bytes.length;
-		}
-
-		if (request instanceof SerializableFileReference reference) {
-			return reference.getSize();
-		}
-
-		LOG.debug("unable to determine size of Message [{}]", () -> ClassUtils.nameOf(request));
-		return MESSAGE_SIZE_UNKNOWN;
+		return size;
 	}
 
 	/**
@@ -982,11 +538,12 @@ public class Message implements Serializable {
 	 * @throws IOException If an I/O error occurs during the copying process.
 	 */
 	public Message copyMessage() throws IOException {
-		if (!(request instanceof SerializableFileReference)) {
-			return new Message(copyContext(), request);
+		Object data = request.asRawObject();
+		if (!(data instanceof SerializableFileReference)) {
+			return new Message(copyContext(), data);
 		}
 		final SerializableFileReference newRef;
-		if (isBinary()) {
+		if (isBinary() || StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(getCharset())) {
 			newRef = SerializableFileReference.of(asInputStream());
 		} else {
 			newRef = SerializableFileReference.of(asReader(), getCharset());

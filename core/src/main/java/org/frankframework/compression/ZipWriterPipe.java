@@ -21,7 +21,6 @@ import org.frankframework.collection.AbstractCollectorPipe;
 import org.frankframework.collection.CollectionException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
 /**
@@ -54,7 +53,7 @@ public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEn
 
 	@Override
 	protected ZipWriter createCollector(Message input, PipeLineSession session) throws CollectionException {
-		String filename = ParameterValueList.getValue(getParameterValueList(input, session), ZipWriter.PARAMETER_FILENAME, "");
+		String filename = getParameterValueList(input, session).getValue(ZipWriter.PARAMETER_FILENAME, "");
 		return new ZipWriter(includeFileHeaders, filename);
 	}
 
