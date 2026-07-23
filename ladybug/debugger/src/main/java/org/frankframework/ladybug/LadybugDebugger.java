@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.util.AppConstants;
+
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +84,8 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	@Override
 	public void afterPropertiesSet() {
 		if(applicationContext.containsBean(LADYBUG_TESTTOOL_NAME)) {
+			String instanceName = AppConstants.getInstance().getProperty("instance.name");
+			testtool.setApplication(instanceName);
 			testtool = applicationContext.getBean(LADYBUG_TESTTOOL_NAME, TestTool.class);
 			testtool.setDebugger(this);
 			log.info("configuring debugger on TestTool [{}]", testtool);
