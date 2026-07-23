@@ -536,7 +536,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				fileSystem.createFolder(determinedFolderName);
 			} else {
 				F file = fileSystem.toFile(determinedFolderName);
-				if (file!=null && fileSystem.exists(file)) {
+				if (fileSystem.exists(file)) {
 					throw new FileNotFoundException("folder ["+determinedFolderName+"], does not exist as a folder, but is a file");
 				}
 				throw new FolderNotFoundException("folder ["+determinedFolderName+"], does not exist");
@@ -554,7 +554,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 
 		InputStream is = message.asInputStream(charset);
-		if(isWriteLineSeparator()) {
+		if (isWriteLineSeparator()) {
 			return new SequenceInputStream(is, new ByteArrayInputStream(eolArray));
 		}
 		return is;

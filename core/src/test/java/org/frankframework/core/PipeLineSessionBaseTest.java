@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,7 +70,7 @@ public class PipeLineSessionBaseTest {
 		assertFalse(session.get("string4", true));
 		assertTrue(session.get("string5", true));
 
-		assertThrows(IOException.class, () -> session.get("object1", true));
+		assertThrows(IllegalArgumentException.class, () -> session.get("object1", true));
 	}
 
 	@Test
@@ -133,6 +131,6 @@ public class PipeLineSessionBaseTest {
 	@Test
 	public void testObject() {
 		assertEquals(TEST_OBJECT, session.get("object1"));
-		assertThrows(IOException.class, () -> session.get("object1", "dummy"));
+		assertThrows(IllegalArgumentException.class, () -> session.get("object1", "dummy"));
 	}
 }

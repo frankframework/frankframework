@@ -196,6 +196,34 @@ public class MessageUtils {
 		return new Message(soapAttachment.getRawContentBytes(), getContext(soapAttachment.getAllMimeHeaders()));
 	}
 
+	public static @Nullable Charset computeDecodingCharset(InputStream inputStream) throws IOException {
+		return computeDecodingCharset(inputStream, CHARSET_CONFIDENCE_LEVEL);
+	}
+
+	private static @Nullable Charset computeDecodingCharset(InputStream inputStream, int confidence) throws IOException {
+		CharsetDetector detector = new CharsetDetector();
+		detector.setText(inputStream);
+		CharsetMatch match = detector.detect();
+		String charset = match.getName();
+
+		if(match.getConfidence() > 90) {
+			LOG.debug("Detected charset {} with confidence level [{}/{}]", charset, match.getConfidence(), confidence);
+			return Charset.forName(charset);
+		}
+
+		// Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
+		if(charset.startsWith("windows-125")) {
+			charset = "windows-1252"; // 1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
+		}
+		if(match.getConfidence() >= confidence) {
+			LOG.debug("Detected potential match [{}] with confidence level [{}/{}]", charset, match.getConfidence(), confidence);
+			return Charset.forName(charset);
+		}
+
+		LOG.info("unable to detect charset, closest match [{}] did not meet confidence level [{}/{}]", charset, match.getConfidence(), confidence);
+		return null; // Return NULL so calling method can fall back to the default charset.
+	}
+
 	/**
 	 * Reads the first 10k bytes of (binary) messages to determine the charset when not present in the {@link MessageContext}.
 	 * @throws IOException when it cannot read the first 10k bytes.
@@ -210,50 +238,26 @@ public class MessageUtils {
 	 * @throws IOException when it cannot read the first 10k bytes.
 	 */
 	public static @Nullable Charset computeDecodingCharset(@NonNull Message message, int confidence) throws IOException {
-		if (Message.isEmpty(message) || !message.isBinary()) {
+		if (Message.isEmpty(message)) {
 			return null;
 		}
-
 		if (StringUtils.isNotEmpty(message.getCharset()) && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) {
 			return Charset.forName(message.getCharset());
 		}
-
-		CharsetDetector detector = new CharsetDetector();
-		try (InputStream inputStream = message.asInputStream()) {
-			detector.setText(inputStream);
+		Charset charset = computeDecodingCharset(message.asInputStream(), confidence);
+		if (charset == null) {
+			LOG.debug("Unable to determine charset for message [{}]", message);
+		} else {
+			LOG.debug("update charset to message [{}] to [{}]", message, charset);
 		}
-		CharsetMatch match = detector.detect();
-		String charset = match.getName();
-
-		if (match.getConfidence() > 90) {
-			LOG.debug("update charset for message [{}], full match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
-			return updateMessageCharset(message, charset);
-		}
-
-		// Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
-		if(charset.startsWith("windows-125")) {
-			charset = "windows-1252"; // 1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
-		}
-		if(match.getConfidence() >= confidence) {
-			LOG.debug("update charset for message [{}], potential match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
-			return updateMessageCharset(message, charset);
-		}
-
-		LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
-		return updateMessageCharset(message, null); // Return NULL so calling method can fall back to the default charset.
+		return updateMessageCharset(message, charset);
 	}
 
 	// Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET
-	private static @Nullable Charset updateMessageCharset(Message message, String charsetName) {
-		try {
-			if (charsetName != null) {
-				return Charset.forName(charsetName); // Parse it first to validate the charset
-			}
-			return null;
-		} finally {
-			MessageContext context = message.getContext();
-			context.withCharset(charsetName);
-		}
+	private static @Nullable Charset updateMessageCharset(@NonNull Message message, @Nullable Charset charset) {
+		MessageContext context = message.getContext();
+		context.withCharset(charset);
+		return charset;
 	}
 
 	/**
@@ -307,7 +311,7 @@ public class MessageUtils {
 	 */
 	@Nullable
 	public static MimeType computeMimeType(@Nullable Message message, @Nullable String filename) {
-		if(Message.isEmpty(message)) {
+		if (Message.isEmpty(message)) {
 			return null;
 		}
 
@@ -336,7 +340,7 @@ public class MessageUtils {
 			if ("text".equals(mimeType.getType()) || (message.getCharset() != null && !"json".equals(mimeType.getSubtype()))) { // is of type 'text' or message has charset, but is not JSON
 				// JSON should never have a charset in the mimetype
 				Charset charset = computeDecodingCharset(message);
-				if(charset != null) {
+				if (charset != null) {
 					LOG.debug("found mimetype [{}] with charset [{}]", mimeType, charset);
 					return new MimeType(mimeType, charset);
 				}
