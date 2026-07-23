@@ -18,6 +18,7 @@ package org.frankframework.stream;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -314,7 +315,8 @@ public class SerializableFileReferenceTest {
 		assertTrue(message.isRequestOfType(SerializableFileReference.class), "Message request should be instance of SerializableFileReference");
 		assertFalse(message.isBinary(), "Should not be binary, charset is set on message");
 
-		reference = (SerializableFileReference) message.asObject();
+		//noinspection deprecation
+		reference = assertInstanceOf(SerializableFileReference.class, message.asObject());
 		assertTrue(reference.isBinary(), "Should be binary, charset is not set on SerializableFileReference");
 		Path path = reference.getPath();
 		assertEquals(tempFile.toPath(), path);
@@ -342,7 +344,8 @@ public class SerializableFileReferenceTest {
 		String result = message.asString();
 		assertEquals(testDataEnriched, result);
 
-		reference = (SerializableFileReference) message.asObject();
+		//noinspection deprecation
+		reference = assertInstanceOf(SerializableFileReference.class, message.asObject());
 		assertTrue(reference.isBinary(), "Should be binary");
 		Path path = reference.getPath();
 		assertEquals(tempFilePath, path);

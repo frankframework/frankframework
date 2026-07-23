@@ -742,7 +742,6 @@ public class MessageTest {
 
 		assertNotNull(wire);
 		Message out = serializationTester.deserialize(wire);
-//		assertTrue(out.isBinary());
 		assertEquals("12345", out.asString());
 		assertEquals(5L, out.size()); // For Number, derived from length of "asString"
 		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
@@ -877,7 +876,6 @@ public class MessageTest {
 		byte[] wire = Hex.decodeHex(binaryWire76);
 		Message out = serializationTester.deserialize(wire);
 
-//		assertTrue(out.isBinary());
 		assertEquals(StandardCharsets.UTF_8.name(), out.getCharset());
 		assertEquals(testString, out.asString());
 	}
@@ -906,7 +904,6 @@ public class MessageTest {
 		byte[] wire = Hex.decodeHex(binaryWire77);
 		Message out = serializationTester.deserialize(wire);
 
-//		assertTrue(out.isBinary());
 		assertEquals(StandardCharsets.UTF_8.name(), out.getCharset());
 		assertEquals(testString, out.asString());
 	}
@@ -934,7 +931,6 @@ public class MessageTest {
 			byte[] wire = Hex.decodeHex(binaryWire[1]);
 			Message out = serializationTester.deserialize(wire);
 
-//			assertTrue(out.isBinary(), label);
 			assertEquals(StandardCharsets.UTF_8.name(), out.getCharset(), label);
 			assertEquals(testString, out.asString(), label);
 		}
@@ -1004,7 +1000,7 @@ public class MessageTest {
 	public void testMessageSizeReader() throws IOException {
 		Message message = new Message(new StringReader("string"));
 		assertEquals(6L, message.size(), "size differs or could not be determined");
-		assertDoesNotThrow(() -> message.asString());
+		assertDoesNotThrow(message::asString);
 		assertEquals(6L, message.size(), "size differs or could not be determined");
 	}
 
