@@ -109,7 +109,7 @@ class WebServiceListenerServletTest {
 						<soap:Body><soap:Fault>
 						<faultcode>soap:Server</faultcode>
 						<faultstring>Could not process SOAP message</faultstring>
-				        </soap:Fault></soap:Body></soap:Envelope>""", response);
+						</soap:Fault></soap:Body></soap:Envelope>""", response);
 	}
 
 	@Test
