@@ -116,7 +116,7 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 	public void testLogContextPipeWithContinueOnException2() throws Exception {
 		Parameter mockParam = mock(Parameter.class);
 		when(mockParam.getName()).thenReturn("mock-param");
-		when(mockParam.getValue(any(), any(), any(), anyBoolean())).thenThrow(new ParameterException("mock-param", "this is my message"));
+		when(mockParam.getValue(any(), any(), any(), anyBoolean())).thenThrow(new ParameterException(mockParam, "this is my message"));
 		pipe.addParameter(mockParam);
 		pipe.setContinueOnError(true);
 		configureAndStartPipe();

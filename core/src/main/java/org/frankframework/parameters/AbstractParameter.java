@@ -273,7 +273,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		Object result = null;
 		log.debug("Calculating value for Parameter [{}]", this::getName);
 		if (!configured) {
-			throw new ParameterException(getName(), "Parameter ["+getName()+"] not configured");
+			throw new ParameterException(this, "Parameter ["+getName()+"] not configured");
 		}
 
 		String requestedSessionKey;
@@ -281,13 +281,13 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			try {
 				requestedSessionKey = tpDynamicSessionKey.transformToString(message);
 			} catch (Exception e) {
-				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on XML transformation to get name", e);
+				throw new ParameterException(this, "SessionKey for parameter [" + getName() + "] exception on XML transformation to get name", e);
 			}
 		} else if (sessionKeyJsonPath != null) {
 			try {
 				requestedSessionKey = JsonUtil.evaluateJsonPathToSingleValue(sessionKeyJsonPath, message);
 			} catch (JsonException e) {
-				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on JSON Path Evaluation to get name", e);
+				throw new ParameterException(this, "SessionKey for parameter [" + getName() + "] exception on JSON Path Evaluation to get name", e);
 			}
 		} else {
 			requestedSessionKey = getSessionKey();
@@ -381,7 +381,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 					}
 				}
 			} catch (Exception e) {
-				throw new ParameterException(getName(), "Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
+				throw new ParameterException(this, "Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
 		} else if (jsonPath != null) {
 			/*
@@ -411,7 +411,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 				} catch (JsonPathNotFoundException e) {
 					log.debug("Parameter [{}] jsonpath exception, cannot find path in input [{}]:", jsonPathExpression, input, e);
 				} catch (JsonException e) {
-					throw new ParameterException(getName(), e);
+					throw new ParameterException(this, e);
 				}
 			}
 		} else {
@@ -468,7 +468,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 						try {
 							valueByDefault=message.asString();
 						} catch (IOException e) {
-							throw new ParameterException(getName(), e);
+							throw new ParameterException(this, e);
 						}
 						break;
 					default:
@@ -493,7 +493,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			} catch (IllegalArgumentException e) {
 				return result; // oh no, we cannot convert to message! Return raw value.
 			} catch (IOException e) {
-				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to type ["+getType()+"]", e);
+				throw new ParameterException(this, "Could not convert parameter ["+getName()+"] to type ["+getType()+"]", e);
 			}
 		}
 
@@ -510,7 +510,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			}
 			return messageBuilder.build();
 		} catch (IOException e) {
-			throw new ParameterException(getName(), e);
+			throw new ParameterException(this, e);
 		}
 	}
 
@@ -536,7 +536,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 				}
 			}
 		} catch (SAXException | IOException e) {
-			throw new ParameterException(getName(), e);
+			throw new ParameterException(this, e);
 		}
 	}
 
@@ -559,7 +559,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 				}
 			}
 		} catch (SAXException | IOException e) {
-			throw new ParameterException(getName(), e);
+			throw new ParameterException(this, e);
 		}
 	}
 
@@ -643,7 +643,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			}
 			endNdx = pattern.indexOf("}", startNdx);
 			if (endNdx == -1) {
-				throw new ParameterException(getName(), new ParseException("Bracket is not closed", startNdx));
+				throw new ParameterException(this, new ParseException("Bracket is not closed", startNdx));
 			}
 			findNextFrom = endNdx + 1;
 			ParameterPatternSubstitution substitutionPattern = ParameterPatternSubstitution.of(pattern.substring(startNdx + 1, endNdx));
@@ -654,7 +654,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 				try {
 					params.add(substitutionMessage.asString());
 				} catch (IOException e) {
-					throw new ParameterException(getName(), "Cannot convert substitution pattern ["+ substitutionPattern +"] from message to string", e);
+					throw new ParameterException(this, "Cannot convert substitution pattern ["+ substitutionPattern +"] from message to string", e);
 				}
 			} else {
 				params.add(substitutionValue);
@@ -664,7 +664,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		try {
 			return MessageFormat.format(formatPattern.toString(), params.toArray());
 		} catch (Exception e) {
-			throw new ParameterException(getName(), "Cannot format ["+ formatPattern +"] with arguments [" + paramsToString(params) + "]", e);
+			throw new ParameterException(this, "Cannot format ["+ formatPattern +"] with arguments [" + paramsToString(params) + "]", e);
 		}
 	}
 
@@ -695,7 +695,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		try {
 			return df.parse(rawValue);
 		} catch (ParseException e) {
-			throw new ParameterException(getName(), "Cannot parse [" + rawValue + "] as date", e);
+			throw new ParameterException(this, "Cannot parse [" + rawValue + "] as date", e);
 		}
 	}
 
@@ -764,7 +764,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 				yield principal.getName();
 			case "fixeddate":
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
+					throw new ParameterException(this, "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
 				}
 
 				// Parameter can be provided as a Date or a String. If using session.getString on a Date parameter, it will be formatted incorrectly
@@ -784,12 +784,12 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 				}
 			case "fixeduid":
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
+					throw new ParameterException(this, "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
 				}
 				yield FIXEDUID;
 			case "fixedhostname":
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
+					throw new ParameterException(this, "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
 				}
 				yield FIXEDHOSTNAME;
 			case "username":
@@ -805,7 +805,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		if (isIgnoreUnresolvablePatternElements()) {
 			return "";
 		} else {
-			throw new ParameterException(getName(), "Parameter or session variable with name [" + substitutionPattern.name + "] in pattern [" + getPattern() + "] cannot be resolved");
+			throw new ParameterException(this, "Parameter or session variable with name [" + substitutionPattern.name + "] in pattern [" + getPattern() + "] cannot be resolved");
 		}
 	}
 
@@ -822,7 +822,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			String substitutionString = session.getString(substitutionPattern.name);
 			if (substitutionString == null) {
 				// The session had a non-null value for this key but could only get a NULL String from it? Throw exception.
-				throw new ParameterException(getName(), "Cannot get substitution value as String from session key: " + substitutionPattern.name);
+				throw new ParameterException(this, "Cannot get substitution value as String from session key: " + substitutionPattern.name);
 			}
 			return substitutionString;
 		}

@@ -197,7 +197,7 @@ public class ParameterList implements Iterable<IParameter> {
 			try {
 				newParm.configure();
 			} catch (ConfigurationException e) {
-				throw new ParameterException(sessionKey, e);
+				throw new ParameterException(newParm, e);
 			}
 			result.add(getValue(result, newParm, message, session, namespaceAware));
 		}

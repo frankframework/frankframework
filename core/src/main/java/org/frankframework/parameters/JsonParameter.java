@@ -42,7 +42,7 @@ public class JsonParameter extends AbstractParameter<Message> {
 		try {
 			return MessageUtils.convertToJsonMessage(request, getName());
 		} catch (XmlException e) {
-			throw new ParameterException("Cannot convert value to JSON", e);
+			throw new ParameterException(this, "Cannot convert value to JSON", e);
 		}
 	}
 }
