@@ -16,6 +16,7 @@
 package org.frankframework.jms;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 
 import jakarta.jms.JMSException;
@@ -23,6 +24,7 @@ import jakarta.jms.ObjectMessage;
 import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.ListenerException;
@@ -106,6 +108,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 	public RawMessageWrapper<S> browseMessage(String storageKey) throws ListenerException {
 		try {
 			ObjectMessage msg=browseJmsMessage(storageKey);
+			@SuppressWarnings("unchecked")
 			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
 			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 			return messageWrapper;
@@ -115,11 +118,15 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 	}
 
 	@Override
-	public RawMessageWrapper<S> consumeMessage(String storageKey) throws ListenerException {
+	public @NonNull RawMessageWrapper<S> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		try {
 			ObjectMessage msg=getJmsMessage(storageKey);
+			@SuppressWarnings("unchecked")
 			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
 			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
+			pipeLineSession.put(PipeLineSession.TS_RECEIVED_KEY, Instant.ofEpochMilli(msg.getLongProperty(FIELD_RECEIVED_DATE)));
+			pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, msg.getStringProperty(FIELD_ORIGINAL_ID));
+			pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, msg.getJMSCorrelationID());
 			return messageWrapper;
 		} catch (JMSException e) {
 			throw new ListenerException(e);

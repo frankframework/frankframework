@@ -48,6 +48,7 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.ListenerException;
@@ -662,10 +663,16 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * This method should always run in an existing transaction.
 	 */
 	@Override
-	public RawMessageWrapper<S> consumeMessage(String storageKey) throws ListenerException {
+	public @NonNull RawMessageWrapper<S> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		IbisTransaction itx = new IbisTransaction(txManager, txMandatory, ClassUtils.nameOf(this));
 		try {
 			RawMessageWrapper<S> result = browseMessage(storageKey);
+			// This is a bit of a kludge but this is the easiest way to get this extra info with the message without a huge rewrite of the code
+			try (IMessageBrowsingIteratorItem item = getContext(storageKey)) {
+				pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, item.getOriginalId());
+				pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, item.getCorrelationId());
+				pipeLineSession.put(PipeLineSession.TS_RECEIVED_KEY, item.getInsertDate());
+			}
 			deleteMessage(storageKey);
 			return result;
 		} finally {
