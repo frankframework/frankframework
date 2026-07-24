@@ -1145,10 +1145,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	private void manualRetryWithErrorStorage(String storageKey, ITransactionalStorage<Serializable> errorStorage, PipeLineSession session) throws ListenerException {
-		PlatformTransactionManager txManager = getTxManager();
+		PlatformTransactionManager transactionManager = getTxManager();
 		RawMessageWrapper<Serializable> msg = null;
 		try {
-			IbisTransaction itx = new IbisTransaction(txManager, txNewWithTimeout, "receiver [" + getName() + "]");
+			IbisTransaction itx = new IbisTransaction(transactionManager, txNewWithTimeout, "receiver [" + getName() + "]");
 			try {
 				// This deletes the message from the error store! Because that's the way JMS works and so it works that way for all TransactionStorage implementations
 				msg = errorStorage.consumeMessage(storageKey, session);
@@ -1164,7 +1164,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				itx.complete();
 			}
 		} catch (ListenerException e) {
-			IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
+			IbisTransaction itxErrorStorage = new IbisTransaction(transactionManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
 			try {
 				String messageId = session.getMessageId();
 				String correlationId = session.getCorrelationId();
@@ -1188,8 +1188,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private void manualRetryWithMessageBrowser(String storageKey, PipeLineSession session) throws ListenerException {
 		// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
 		// then the management of the errorStorage is left to the listener.
-		PlatformTransactionManager txManager = getTxManager();
-		IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
+		PlatformTransactionManager transactionManager = getTxManager();
+		IbisTransaction itx = new IbisTransaction(transactionManager, getTxDef(), "receiver [" + getName() + "]");
 		try {
 			RawMessageWrapper<M> msg = getMessageToRetryFromErrorBrowser(storageKey);
 			processRawMessage(msg, session, true, false);

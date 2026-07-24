@@ -260,8 +260,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		Object tsReceived = context.get(PipeLineSession.TS_RECEIVED_KEY);
 		if (tsReceived instanceof Instant instant) {
 			return instant;
-		} else if (tsReceived instanceof Date) {
-			return ((Date)tsReceived).toInstant();
+		} else if (tsReceived instanceof Date date) {
+			return date.toInstant();
 		} else if (tsReceived instanceof String string) {
 			return DateFormatUtils.parseToInstant(string, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}

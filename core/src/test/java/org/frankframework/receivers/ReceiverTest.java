@@ -848,8 +848,8 @@ public class ReceiverTest {
 
 		// Assert
 		verify(errorStorage, times(1)).consumeMessage(eq("1"), any());
-		verify(errorStorage, times(1)).deleteMessage(eq("1"));
-		verify(errorStorage, times(1)).storeMessage(eq("1"), any(), eq(new Date(0L)), any(), any(), any());
+		verify(errorStorage, times(1)).deleteMessage("1");
+		verify(errorStorage, times(1)).storeMessage(eq("1"), any(), eq(new Date(0L)), startsWith("after retry:"), any(), any());
 
 		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}
