@@ -1135,64 +1135,72 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.MANUAL_RETRY_KEY, true);
 
-			PlatformTransactionManager txManager = getTxManager();
 			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
 			if (errorStorage == null) {
-				// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
-				// then the management of the errorStorage is left to the listener.
-				IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
-				try {
-					RawMessageWrapper<M> msg = getMessageToRetryFromErrorBrowser(storageKey);
-					processRawMessage(msg, session, true, false);
-				} catch (ListenerException e) {
-					itx.setRollbackOnly();
-					throw e;
-				} catch (Throwable t) {
-					itx.setRollbackOnly();
-					throw new ListenerException(t);
-				} finally {
-					itx.complete();
-				}
+				manualRetryWithMessageBrowser(storageKey, session);
 				return;
 			}
-			RawMessageWrapper<Serializable> msg = null;
+			manualRetryWithErrorStorage(storageKey, errorStorage, session);
+		}
+	}
+
+	private void manualRetryWithErrorStorage(String storageKey, ITransactionalStorage<Serializable> errorStorage, PipeLineSession session) throws ListenerException {
+		PlatformTransactionManager txManager = getTxManager();
+		RawMessageWrapper<Serializable> msg = null;
+		try {
+			IbisTransaction itx = new IbisTransaction(txManager, txNewWithTimeout, "receiver [" + getName() + "]");
 			try {
-				IbisTransaction itx = new IbisTransaction(txManager, txNewWithTimeout, "receiver [" + getName() + "]");
-				try {
-					// This deletes the message from the error store! Because that's the way JMS works and so it works that way for all TransactionStorage implementations
-					msg = errorStorage.consumeMessage(storageKey, session);
-					// noinspection unchecked
-					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
-				} catch (ListenerException e) {
-					itx.setRollbackOnly();
-					throw e;
-				} catch (Throwable t) {
-					itx.setRollbackOnly();
-					throw new ListenerException(t);
-				} finally {
-					itx.complete();
-				}
+				// This deletes the message from the error store! Because that's the way JMS works and so it works that way for all TransactionStorage implementations
+				msg = errorStorage.consumeMessage(storageKey, session);
+				// noinspection unchecked
+				processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
 			} catch (ListenerException e) {
-				IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
-				try {
-					// TODO: I don't see how we can get a received-date in this place to update the existing message, but clearly we do want to. Need to fix that in message-retrieval.
-					String messageId = session.getMessageId();
-					String correlationId = session.getCorrelationId();
-					Instant receivedDate = session.getTsReceived();
-					if (receivedDate == null) {
-						log.warn("{} {} is unknown, cannot update comments", this::getLogPrefix, logValue(PipeLineSession.TS_RECEIVED_KEY));
-					} else {
-						errorStorage.deleteMessage(storageKey);
-						errorStorage.storeMessage(messageId, correlationId,Date.from(receivedDate),"after retry: "+e.getMessage(),null, msg.rawMessage);
-					}
-				} catch (SenderException e1) {
-					itxErrorStorage.setRollbackOnly();
-					log.warn("{} could not update comments in errorStorage", supplier(this::getLogPrefix), e1);
-				} finally {
-					itxErrorStorage.complete();
-				}
+				itx.setRollbackOnly();
 				throw e;
+			} catch (Throwable t) {
+				itx.setRollbackOnly();
+				throw new ListenerException(t);
+			} finally {
+				itx.complete();
 			}
+		} catch (ListenerException e) {
+			IbisTransaction itxErrorStorage = new IbisTransaction(txManager, TXNEW_CTRL, "errorStorage of receiver [" + getName() + "]");
+			try {
+				String messageId = session.getMessageId();
+				String correlationId = session.getCorrelationId();
+				Instant receivedDate = session.getTsReceived();
+				if (receivedDate == null) {
+					log.warn("{} {} is unknown, cannot update comments", this::getLogPrefix, logValue(PipeLineSession.TS_RECEIVED_KEY));
+				} else {
+					errorStorage.deleteMessage(storageKey);
+					errorStorage.storeMessage(messageId, correlationId,Date.from(receivedDate),"after retry: "+e.getMessage(),null, msg.rawMessage);
+				}
+			} catch (SenderException e1) {
+				itxErrorStorage.setRollbackOnly();
+				log.warn("{} could not update comments in errorStorage", supplier(this::getLogPrefix), e1);
+			} finally {
+				itxErrorStorage.complete();
+			}
+			throw e;
+		}
+	}
+
+	private void manualRetryWithMessageBrowser(String storageKey, PipeLineSession session) throws ListenerException {
+		// if there is only a errorStorageBrowser, and no separate and transactional errorStorage,
+		// then the management of the errorStorage is left to the listener.
+		PlatformTransactionManager txManager = getTxManager();
+		IbisTransaction itx = new IbisTransaction(txManager, getTxDef(), "receiver [" + getName() + "]");
+		try {
+			RawMessageWrapper<M> msg = getMessageToRetryFromErrorBrowser(storageKey);
+			processRawMessage(msg, session, true, false);
+		} catch (ListenerException e) {
+			itx.setRollbackOnly();
+			throw e;
+		} catch (Throwable t) {
+			itx.setRollbackOnly();
+			throw new ListenerException(t);
+		} finally {
+			itx.complete();
 		}
 	}
 

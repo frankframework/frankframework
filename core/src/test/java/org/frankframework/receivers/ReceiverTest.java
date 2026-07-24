@@ -50,6 +50,8 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -269,8 +271,8 @@ public class ReceiverTest {
 
 	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
-			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration)),
-			Arguments.of(supplier(ReceiverTest::buildDataSourceTransactionManagerConfiguration))
+				Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration)),
+				Arguments.of(supplier(ReceiverTest::buildDataSourceTransactionManagerConfiguration))
 		);
 	}
 
@@ -311,7 +313,7 @@ public class ReceiverTest {
 		receiver.setErrorStorage(errorStorage);
 
 		final PlatformTransactionManager txManager = configuration.getBean("txManagerReal", PlatformTransactionManager.class);
-		((AbstractPlatformTransactionManager)txManager).setDefaultTimeout(1);
+		((AbstractPlatformTransactionManager) txManager).setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
 
@@ -347,14 +349,14 @@ public class ReceiverTest {
 						// noinspection unchecked
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any()))
-							.thenAnswer(invocation -> {
-								if (tx.isRollbackOnly()) {
-									txRollbackOnlyInErrorStorage.incrementAndGet();
-									throw new SQLException("TX is rollback-only. Getting out!");
-								}
-								int count = movedToErrorStorage.incrementAndGet();
-								return String.valueOf(count);
-							});
+								.thenAnswer(invocation -> {
+									if (tx.isRollbackOnly()) {
+										txRollbackOnlyInErrorStorage.incrementAndGet();
+										throw new SQLException("TX is rollback-only. Getting out!");
+									}
+									int count = movedToErrorStorage.incrementAndGet();
+									return String.valueOf(count);
+								});
 						try (PipeLineSession session = new PipeLineSession()) {
 							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
@@ -389,13 +391,13 @@ public class ReceiverTest {
 
 		// Assert
 		assertAll(
-			() -> assertEquals(3, receiver.getMaxRetries()),
-			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
-			() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
-			() -> assertEquals(0, exceptionsFromReceiver.get(), "exceptionsFromReceiver: Mismatch in nr of exceptions from Receiver method"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
-			() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
+				() -> assertEquals(3, receiver.getMaxRetries()),
+				() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
+				() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
+				() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
+				() -> assertEquals(0, exceptionsFromReceiver.get(), "exceptionsFromReceiver: Mismatch in nr of exceptions from Receiver method"),
+				() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
+				() -> assertEquals(NR_TIMES_MESSAGE_OFFERED, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
 		);
 	}
 
@@ -417,7 +419,7 @@ public class ReceiverTest {
 		receiver.setMessageLog(messageLog);
 
 		final PlatformTransactionManager txManager = configuration.getBean("txManagerReal", PlatformTransactionManager.class);
-		((AbstractPlatformTransactionManager)txManager).setDefaultTimeout(10);
+		((AbstractPlatformTransactionManager) txManager).setDefaultTimeout(10);
 //		txManager.setDefaultTimeout(1000000); // Long timeout for debug, do not commit this timeout!! Should be 10
 
 		receiver.setTxManager(txManager);
@@ -467,13 +469,13 @@ public class ReceiverTest {
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(messageIdCaptor.capture(), correlationIdCaptor.capture(), any(), any(), any(), messageCaptor.capture()))
 								.thenAnswer(invocation -> {
-								if (tx.isRollbackOnly()) {
-									txRollbackOnlyInErrorStorage.incrementAndGet();
-									throw new SQLException("TX is rollback-only. Getting out!");
-								}
-								int count = movedToErrorStorage.incrementAndGet();
-								return String.valueOf(count);
-							});
+									if (tx.isRollbackOnly()) {
+										txRollbackOnlyInErrorStorage.incrementAndGet();
+										throw new SQLException("TX is rollback-only. Getting out!");
+									}
+									int count = movedToErrorStorage.incrementAndGet();
+									return String.valueOf(count);
+								});
 						try (PipeLineSession session = new PipeLineSession()) {
 							receiver.processRawMessage(listener, messageWrapper, session, false);
 							processedNoException.incrementAndGet();
@@ -509,15 +511,15 @@ public class ReceiverTest {
 		// Assert
 		int expectedNrTimesMessageActuallyOffered = receiver.getMaxRetries() + 2;
 		assertAll(
-			() -> assertEquals("dummy-message-id", messageIdCaptor.getValue(), "Message ID does not match"),
-			() -> assertEquals("dummy-cid", correlationIdCaptor.getValue(), "Correlation ID does not match"),
-			() -> assertEquals("message", ((MessageWrapper<?>)messageCaptor.getValue()).getMessage().asString(), "Message contents do not match"),
-			() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
-			() -> assertEquals(expectedNrTimesMessageActuallyOffered, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
-			() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
-			() -> assertEquals(0, exceptionsFromReceiver.get(), "exceptionsFromReceiver: Mismatch in nr of exceptions from Receiver method"),
-			() -> assertEquals(1, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
-			() -> assertEquals(expectedNrTimesMessageActuallyOffered, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
+				() -> assertEquals("dummy-message-id", messageIdCaptor.getValue(), "Message ID does not match"),
+				() -> assertEquals("dummy-cid", correlationIdCaptor.getValue(), "Correlation ID does not match"),
+				() -> assertEquals("message", ((MessageWrapper<?>) messageCaptor.getValue()).getMessage().asString(), "Message contents do not match"),
+				() -> assertEquals(0, rolledBackTXCounter.get(), "rolledBackTXCounter: Mismatch in nr of messages marked for rollback by TX manager"),
+				() -> assertEquals(expectedNrTimesMessageActuallyOffered, processedNoException.get(), "processedNoException: Mismatch in nr of messages processed without exception from receiver"),
+				() -> assertEquals(0, txRollbackOnlyInErrorStorage.get(), "txRollbackOnlyInErrorStorage: Mismatch in nr of transactions already marked rollback-only while moving to error storage."),
+				() -> assertEquals(0, exceptionsFromReceiver.get(), "exceptionsFromReceiver: Mismatch in nr of exceptions from Receiver method"),
+				() -> assertEquals(1, movedToErrorStorage.get(), "movedToErrorStorage: Mismatch in nr of messages moved to error storage"),
+				() -> assertEquals(expectedNrTimesMessageActuallyOffered, txNotCompletedAfterReceiverEnds.get(), "txNotCompletedAfterReceiverEnds: Mismatch in nr of transactions not completed after receiver finishes")
 		);
 	}
 
@@ -608,41 +610,41 @@ public class ReceiverTest {
 
 		// Act / Assert
 		assertAll(
-				()-> assertEquals(5, receiver.getDeliveryCount(rawMessage)),
-				()-> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
-				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
+				() -> assertEquals(5, receiver.getDeliveryCount(rawMessage)),
+				() -> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
+				() -> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
 		);
 
 		listener.setMockedDeliveryCount(receiver.getMaxRetries());
 		receiver.updateMessageReceiveCount(messageWrapper);
 
 		assertAll(
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
+				() -> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
+				() -> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
 		);
 
 		listener.setMockedDeliveryCount(receiver.getMaxRetries() - 1);
 		receiver.updateMessageReceiveCount(messageWrapper);
 
 		assertAll(
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
+				() -> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
+				() -> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
 		);
 
 		listener.setMockedDeliveryCount(receiver.getMaxRetries() + 1);
 		receiver.updateMessageReceiveCount(messageWrapper);
 
 		assertAll(
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
-				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
+				() -> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
+				() -> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper))
 		);
 
 		listener.setMockedDeliveryCount(receiver.getMaxRetries() + 2);
 		receiver.updateMessageReceiveCount(messageWrapper);
 
 		assertAll(
-				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
-				()-> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false))
+				() -> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
+				() -> assertTrue(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false))
 		);
 	}
 
@@ -687,10 +689,10 @@ public class ReceiverTest {
 
 		// Assert
 		assertAll(
-				()-> assertEquals(1, result),
-				()-> assertEquals(1, receiver.getMaxRetries()),
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
-				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessageWrapper, new PipeLineSession(), false))
+				() -> assertEquals(1, result),
+				() -> assertEquals(1, receiver.getMaxRetries()),
+				() -> assertFalse(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
+				() -> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessageWrapper, new PipeLineSession(), false))
 		);
 	}
 
@@ -744,7 +746,12 @@ public class ReceiverTest {
 		MessageStoreListener listener = setupMessageStoreListener();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
-		when(errorStorage.consumeMessage(eq("1"), any())).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
+		when(errorStorage.consumeMessage(eq("1"), any())).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> {
+			PipeLineSession session = invocation.getArgument(1);
+			session.put(PipeLineSession.MESSAGE_ID_KEY, "1");
+			session.put(PipeLineSession.TS_RECEIVED_KEY, Instant.ofEpochMilli(0L));
+			return new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null);
+		});
 
 		// start adapter
 		configuration.configure();
@@ -766,6 +773,7 @@ public class ReceiverTest {
 		assertEquals("<msg attr=\"an attribute\"/>", message.asString());
 		assertTrue(pipeLineSession.containsKey("ANY-KEY"));
 		assertEquals("ANY-KEY-VALUE", pipeLineSession.get("ANY-KEY"));
+		verify(errorStorage, times(1)).consumeMessage(eq("1"), any());
 
 		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}
@@ -821,7 +829,12 @@ public class ReceiverTest {
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
 		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
-		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(errorStorage).consumeMessage(eq("1"), any());
+		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> {
+			PipeLineSession session = invocation.getArgument(1);
+			session.put(PipeLineSession.MESSAGE_ID_KEY, "1");
+			session.put(PipeLineSession.TS_RECEIVED_KEY, Instant.ofEpochMilli(0L));
+			return new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null);}).when(errorStorage)
+				.consumeMessage(eq("1"), any());
 		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
 
 		doReturn(false).when(listener).hasRawMessageAvailable();
@@ -831,12 +844,13 @@ public class ReceiverTest {
 		configuration.configure();
 
 		// Act
-		assertThrows(ListenerException.class, ()-> receiver.retryMessage("1"));
+		assertThrows(ListenerException.class, () -> receiver.retryMessage("1"));
 
 		// Assert
-		// TODO: Figure out how to trigger the branch in code that would trigger these lines
-//		verify(errorStorage).deleteMessage("1");
-//		verify(errorStorage).storeMessage(eq("1"), any(), any(), any(), any(), any());
+		verify(errorStorage, times(1)).consumeMessage(eq("1"), any());
+		verify(errorStorage, times(1)).deleteMessage(eq("1"));
+		verify(errorStorage, times(1)).storeMessage(eq("1"), any(), eq(new Date(0L)), any(), any(), any());
+
 		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}
 
@@ -853,7 +867,8 @@ public class ReceiverTest {
 		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
 
 		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
-		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(messageBrowser).browseMessage(any());
+		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(messageBrowser)
+				.browseMessage(any());
 		doReturn(messageBrowser).when(listener).getMessageBrowser(ProcessState.ERROR);
 		doReturn(Set.of(ProcessState.ERROR)).when(listener).knownProcessStates();
 
@@ -864,7 +879,7 @@ public class ReceiverTest {
 		configuration.configure();
 
 		// Act
-		assertThrows(ListenerException.class, ()-> receiver.retryMessage("1"));
+		assertThrows(ListenerException.class, () -> receiver.retryMessage("1"));
 
 		// Assert
 		verify(listener, never()).changeProcessState(any(), eq(ProcessState.DONE), any());
@@ -946,7 +961,7 @@ public class ReceiverTest {
 		log.info("Receiver RunState: {}", receiver.getRunState());
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState(), "Receiver should be in state [EXCEPTION_STARTING]");
 		await().atMost(500, TimeUnit.MILLISECONDS)
-						.until(()-> receiver.getSender().isSynchronous());
+				.until(() -> receiver.getSender().isSynchronous());
 		assertTrue(receiver.getSender().isSynchronous(), "Close has not been called on the Receiver's sender!"); // isSynchronous ==> isClosed
 
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
@@ -1055,12 +1070,14 @@ public class ReceiverTest {
 		assertEquals(RunState.STARTED, adapter.getRunState());
 
 		new Thread(
-				()-> configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true),
-				"Stopping Adapter Async")
+				() -> configuration.getIbisManager()
+						.handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true),
+				"Stopping Adapter Async"
+		)
 				.start();
 		await()
 				.atMost(10, TimeUnit.SECONDS)
-				.until(()-> adapter.getRunState() == RunState.STOPPED);
+				.until(() -> adapter.getRunState() == RunState.STOPPED);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
@@ -1119,7 +1136,7 @@ public class ReceiverTest {
 		// stop receiver then start
 		Semaphore semaphore = new Semaphore(0);
 		TaskExecutor taskExecutor = configuration.getApplicationContext().getBean("taskExecutor", TaskExecutor.class);
-		taskExecutor.execute(()-> {
+		taskExecutor.execute(() -> {
 			try {
 				log.debug("Stopping receiver [{}] from executor-thread.", receiver.getName());
 				configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
@@ -1165,7 +1182,7 @@ public class ReceiverTest {
 		// a StringIndexOutOfBoundsException. (Issue #5752).
 		// Here we force the issue by specifically crafting such a message; in practice the difference will be less extreme.
 		Message result = new Message("a short message");
-		result.getContext().put(MessageContext.METADATA_SIZE, (long)ITransactionalStorage.MAXCOMMENTLEN + 100);
+		result.getContext().put(MessageContext.METADATA_SIZE, (long) ITransactionalStorage.MAXCOMMENTLEN + 100);
 		PipeLineResult plr = new PipeLineResult();
 		plr.setResult(result);
 		plr.setState(ExitState.SUCCESS);
