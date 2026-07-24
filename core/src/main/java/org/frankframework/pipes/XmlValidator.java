@@ -30,6 +30,7 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -197,7 +198,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	@Override
-	public ConfigurationException getConfigurationException() {
+	public @Nullable ConfigurationException getConfigurationException() {
 		return configurationException;
 	}
 
@@ -312,8 +313,8 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	@Override
-	protected boolean isConfiguredForMixedValidation() {
-		return responseRootValidations!=null;
+	public boolean isConfiguredForMixedValidation() {
+		return responseRootValidations != null;
 	}
 
 	public String getMessageRoot(boolean responseMode) {
@@ -401,7 +402,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	@Override
-	public IValidator getResponseValidator() {
+	public @Nullable IValidator getResponseValidator() {
 		if (isConfiguredForMixedValidation()) {
 			return new ResponseValidatorWrapper(this);
 		}
@@ -418,7 +419,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		}
 
 		@Override
-		public ConfigurationException getConfigurationException() {
+		public @Nullable ConfigurationException getConfigurationException() {
 			return null;
 		}
 
@@ -443,7 +444,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		}
 
 		@Override
-		public String getDocumentation() {
+		public @Nullable String getDocumentation() {
 			return null;
 		}
 	}
@@ -538,7 +539,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	@Override
-	public String getDocumentation() {
+	public @Nullable String getDocumentation() {
 		return null;
 	}
 

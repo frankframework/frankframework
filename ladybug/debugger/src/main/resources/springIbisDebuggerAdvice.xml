@@ -27,14 +27,19 @@
 					execution(
 						*
 						org.frankframework.processors.CorePipeLineProcessor.processPipeLine(
-							..
+							org.frankframework.receivers.Receiver,
+							org.frankframework.core.PipeLine,
+							java.lang.String,
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession,
+							java.lang.String
 						)
 					)
 					and
-					args(pipeLine, messageId, message, pipeLineSession, ..)
+					args(receiver, pipeLine, messageId, message, pipeLineSession, ..)
 					"
 				method="debugPipeLineInputOutputAbort"
-				arg-names="proceedingJoinPoint, pipeLine, messageId, message, pipeLineSession"
+				arg-names="proceedingJoinPoint, receiver, pipeLine, messageId, message, pipeLineSession"
 			/>
 			<aop:around
 				pointcut=

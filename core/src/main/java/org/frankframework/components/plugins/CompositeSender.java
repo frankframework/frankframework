@@ -133,7 +133,7 @@ public class CompositeSender extends AbstractSenderWithParameters implements Ini
 		}
 
 		try (PipeLineSession childSession = createChildSession(pvl, parentSession)) {
-			PipeLineResult pipelineResult = frankPlugin.process(MessageUtils.generateMessageId(), message, childSession);
+			PipeLineResult pipelineResult = frankPlugin.process(null, MessageUtils.generateMessageId(), message, childSession);
 
 			Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 			String forwardName = Objects.toString(exitCode, null); // ToString the value

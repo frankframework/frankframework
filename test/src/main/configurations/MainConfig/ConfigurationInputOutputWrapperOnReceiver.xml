@@ -1,0 +1,89 @@
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+	<Adapter name="InputOutputWrapperOnReceiver"
+		description="Test the functioning of the InputWrapper and OutputWrapper configured on a Receiver">
+		<Receiver>
+			<JavaListener name="ibis4test-InputOutputWrapperOnReceiver"
+				serviceName="ibis4test-InputOutputWrapperOnReceiver" onException="FORMAT_AND_RETURN" />
+			<InputValidator className="org.frankframework.pipes.XmlValidator"
+				schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
+				root="Request">
+				<Forward name="failure" path="InputValidateFailure" />
+				<Forward name="parserError" path="InputValidateError" />
+			</InputValidator>
+			<OutputValidator className="org.frankframework.pipes.XmlValidator"
+				schemaLocation="http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd"
+				root="Response">
+				<Forward name="failure" path="InternalXsdFailure" />
+				<Forward name="parserError" path="InternalXsdError" />
+			</OutputValidator>
+			<InputWrapper
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
+				direction="unwrap">
+			</InputWrapper>
+			<OutputWrapper
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe">
+				<Param name="errorCode" sessionKey="errorCode" />
+				<Param name="errorDetailCode" sessionKey="errorDetailCode" />
+				<Param name="errorDetailText" sessionKey="errorDetailText" />
+				<Param name="destination" value="ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response" />
+			</OutputWrapper>
+		</Receiver>
+		<SoapErrorMessageFormatter />
+		<Pipeline firstPipe="switchAction">
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+				<Exit name="400" state="ERROR" code="400" />
+				<Exit name="500" state="ERROR" code="500" />
+			</Exits>
+			<SwitchPipe name="switchAction" xpathExpression="Request/@action"/>
+			<FixedResultPipe name="validResponse" filename="InputOutputWrapper/validResponse.xml">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+			<FixedResultPipe name="invalidResponse" filename="InputOutputWrapper/invalidResponse.xml">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+			<FixedResultPipe name="notWellFormedResponse" filename="InputOutputWrapper/notWellFormedResponse.txt">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+
+			<!-- ERRORS -->
+			<PutInSessionPipe name="InputValidateError">
+				<Param name="errorCode" value="NOT_WELL_FORMED_XML"/>
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="InputValidateFailure">
+				<Param name="errorCode" value="INVALID_XML" />
+				<Param name="errorDetailCode" sessionKey="failureReason" />
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="InternalXsdError">
+				<Param name="errorCode" value="INTERNAL_XSD_ERROR:NOT_WELL_FORMED_XML"/>
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="InternalXsdFailure">
+				<Param name="errorCode" value="INTERNAL_XSD_ERROR" />
+				<Param name="errorDetailCode" sessionKey="failureReason" />
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="SendXsdError">
+				<Param name="errorCode" value="SEND_XSD_ERROR:NOT_WELL_FORMED_XML"/>
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<PutInSessionPipe name="SendXsdFailure">
+				<Param name="errorCode" value="SEND_XSD_ERROR" />
+				<Param name="errorDetailCode" sessionKey="failureReason" />
+				<Forward name="success" path="ErrorExit" />
+			</PutInSessionPipe>
+			<!-- -->
+			<FixedResultPipe name="ErrorExit"
+				filename="InputOutputWrapper/emptyErrorResponse.xml">
+				<Forward name="success" path="EXIT" />
+			</FixedResultPipe>
+		</Pipeline>
+	</Adapter>
+</Module>

@@ -1,0 +1,36 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<soapenv:Header>
+		<MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
+			<From>
+				<Id>INSTANCE_NAME</Id>
+			</From>
+			<To>
+				<Location>ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response</Location>
+			</To>
+			<HeaderFields>
+				<CPAId>n/a</CPAId>
+				<ConversationId>IGNORE</ConversationId>
+				<MessageId>IGNORE</MessageId>
+				<Timestamp>IGNORE</Timestamp>
+			</HeaderFields>
+			<Service>
+				<Name>Policy</Name>
+				<Context>PolicyPropertyAndCasualtyRetail</Context>
+				<Action>
+					<Paradigm>Response</Paradigm>
+					<Name>WrapMessage</Name>
+					<Version>1</Version>
+				</Action>
+			</Service>
+		</MessageHeader>
+	</soapenv:Header>
+	<soapenv:Body>
+		<Response xmlns="http://www.nn.nl/InputOutputWrapper"
+			xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1">
+			<Body>text</Body>
+			<cmh:Result>
+				<cmh:Status>OK</cmh:Status>
+			</cmh:Result>
+		</Response>
+	</soapenv:Body>
+</soapenv:Envelope>
