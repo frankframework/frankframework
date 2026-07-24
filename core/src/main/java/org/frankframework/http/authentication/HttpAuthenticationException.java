@@ -19,10 +19,6 @@ import org.frankframework.core.IbisException;
 
 public class HttpAuthenticationException extends IbisException {
 
-	public HttpAuthenticationException() {
-		super();
-	}
-
 	public HttpAuthenticationException(String message) {
 		super(message);
 	}

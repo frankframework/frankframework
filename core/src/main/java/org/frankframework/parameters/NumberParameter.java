@@ -142,7 +142,7 @@ public class NumberParameter extends AbstractParameter<Number> {
 				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to integer", e);
 			}
 		}
-		throw new ParameterException("unexpected type");
+		throw new ParameterException(getName(), "unexpected type");
 	}
 
 	/**

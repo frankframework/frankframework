@@ -19,10 +19,6 @@ import org.frankframework.core.IbisException;
 
 public class EncryptionException extends IbisException {
 
-	public EncryptionException() {
-		super();
-	}
-
 	public EncryptionException(String message, Throwable cause) {
 		super(message, cause);
 	}

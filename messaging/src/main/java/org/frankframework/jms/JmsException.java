@@ -24,9 +24,7 @@ import org.frankframework.core.IbisException;
  * @since   4.4
  */
 public class JmsException extends IbisException {
-	public JmsException() {
-		super();
-	}
+
 	public JmsException(String msg) {
 		super(msg);
 	}
