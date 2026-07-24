@@ -32,7 +32,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.xml.FullXmlFilter;
 
-/** 
+/**
  * SAX filter that validates that the SOAP message is well-formed and follows the SOAP specification.
  */
 @Log4j2

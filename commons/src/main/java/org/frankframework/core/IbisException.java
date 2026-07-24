@@ -39,22 +39,23 @@ import org.frankframework.util.StringUtil;
 @NullMarked
 public class IbisException extends Exception {
 
-	private @Nullable String expandedMessage = null;
-
-	public IbisException() {
-		super();
-	}
+	// Traverses the stack, filters out certain classes and aggregates messages.
+	@Nullable private final String expandedMessage;
 
 	public IbisException(String message) {
-		super(message);
-	}
-
-	public IbisException(String message, Throwable cause) {
-		super(message, cause);
+		this(message, null);
 	}
 
 	public IbisException(Throwable cause) {
 		super(cause);
+
+		expandedMessage = expandMessage(super.getMessage(), this);
+	}
+
+	public IbisException(String message, @Nullable Throwable cause) {
+		super(message, cause);
+
+		expandedMessage = expandMessage(super.getMessage(), this);
 	}
 
 	@Nullable
@@ -122,7 +123,7 @@ public class IbisException extends Exception {
 		return locationInfo;
 	}
 
-	public static String expandMessage(@Nullable String msg, Throwable e) {
+	protected String expandMessage(@Nullable String msg, Throwable e) {
 		return expandMessage(msg, e, IbisException.class::isInstance);
 	}
 
@@ -225,9 +226,6 @@ public class IbisException extends Exception {
 
 	@Override
 	public String getMessage() {
-		if (expandedMessage == null) {
-			expandedMessage = expandMessage(super.getMessage(), this);
-		}
 		return expandedMessage;
 	}
 
