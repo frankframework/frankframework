@@ -60,7 +60,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 	private transient ServiceDispatcher sd;
 
 	private static final boolean BACKWARDS_COMPATIBILITY_MODE = AppConstants.getInstance().getBoolean("WebServiceListener.backwardsCompatibleMultipartNotation", false);
-	private static final boolean USE_CXF = AppConstants.getInstance().getBoolean("WebServiceListener.cxfServlet", false);
+	private static final boolean USE_CXF = AppConstants.getInstance().getBoolean("WebServiceListener.cxfServlet", true);
 
 	private static final String SOAP_PROTOCOL_KEY = "soapProtocol";
 	private static final String SOAP_ACTION = "SOAPAction";

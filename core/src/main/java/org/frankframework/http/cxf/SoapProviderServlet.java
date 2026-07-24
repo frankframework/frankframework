@@ -32,7 +32,7 @@ import org.frankframework.util.AppConstants;
 @IbisInitializer
 public class SoapProviderServlet extends AbstractHttpServlet implements DynamicRegistration.ServletWithParameters {
 	private transient FrankCXFServlet servlet;
-	private static final boolean USE_CXF = AppConstants.getInstance().getBoolean("WebServiceListener.cxfServlet", false);
+	private static final boolean USE_CXF = AppConstants.getInstance().getBoolean("WebServiceListener.cxfServlet", true);
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
