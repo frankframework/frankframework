@@ -1,6 +1,8 @@
 package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -285,8 +287,14 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithErrors.txt");
 
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
-		String message = e.getMessage();
-		assertEquals("caught exception: an error occurred during parallel execution: [key 2 error]", message.substring(message.length() - 76));
+		assertEquals("Pipe ["+pipe.getClass().getSimpleName()+" under test] caught exception: an error occurred during parallel execution", e.getMessage());
+		SenderException cause = assertInstanceOf(SenderException.class, e.getCause());
+		assertNotNull(cause.getSuppressed());
+		Throwable[] suppressed = cause.getSuppressed();
+		assertEquals(3, suppressed.length);
+		assertEquals("[key 2 error]", suppressed[0].getMessage());
+		assertEquals("[key 3 error]", suppressed[1].getMessage());
+
 	}
 
 	@Test
@@ -343,8 +351,8 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithExceptions.txt");
 
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
-		String actual = e.getMessage();
-		assertEquals("an error occurred during parallel execution: Exception triggered", actual.substring(actual.length() - 64));
+		SenderException cause = assertInstanceOf(SenderException.class, e.getCause());
+		assertEquals("an error occurred during parallel execution", cause.getMessage());
 	}
 
 	@Test
