@@ -65,8 +65,8 @@ public class FileUtils {
 
 		// construct the parameterlist
 		ParameterList pl = new ParameterList(definedParameters);
+		Parameter p = new Parameter();
 		try {
-			Parameter p = new Parameter();
 			p.setName("file");
 			p.setDefaultValue(name);
 			p.configure();
@@ -82,7 +82,7 @@ public class FileUtils {
 			p.configure();
 			pl.add(p);
 		} catch(ConfigurationException e) {
-			throw new ParameterException("file", e);
+			throw new ParameterException(p, e);
 		}
 
 		// resolve the parameters

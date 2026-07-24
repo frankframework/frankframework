@@ -128,7 +128,7 @@ public class NumberParameter extends AbstractParameter<Number> {
 			try {
 				return decimalFormat.parse(request.asString());
 			} catch (ParseException e) {
-				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
+				throw new ParameterException(this, "Parameter [" + getName() + "] could not parse result [" + request + "] to number decimalSeparator [" + decimalFormatSymbols.getDecimalSeparator() + "] groupingSeparator [" + decimalFormatSymbols.getGroupingSeparator() + "]", e);
 			}
 		}
 		if(getType() == ParameterType.INTEGER) {
@@ -139,10 +139,10 @@ public class NumberParameter extends AbstractParameter<Number> {
 			try {
 				return Integer.parseInt(Objects.requireNonNull(request.asString()).trim());
 			} catch (NumberFormatException e) {
-				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to integer", e);
+				throw new ParameterException(this, "Parameter [" + getName() + "] could not parse result [" + request + "] to integer", e);
 			}
 		}
-		throw new ParameterException(getName(), "unexpected type");
+		throw new ParameterException(this, "unexpected type");
 	}
 
 	/**

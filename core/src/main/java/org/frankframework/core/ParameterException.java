@@ -15,7 +15,11 @@
 */
 package org.frankframework.core;
 
+import org.jspecify.annotations.NonNull;
+
 import lombok.Getter;
+
+import org.frankframework.parameters.IParameter;
 
 /**
  * Exception thrown by the ISender (implementation) to notify
@@ -26,16 +30,16 @@ import lombok.Getter;
 public class ParameterException extends IbisException {
 	private final @Getter String parameterName;
 
-	public ParameterException(String parameterName, String errMsg) {
+	public ParameterException(@NonNull IParameter parameterDef, @NonNull String errMsg) {
 		super(errMsg);
-		this.parameterName = parameterName;
+		this.parameterName = parameterDef.getName();
 	}
-	public ParameterException(String parameterName, String errMsg, Throwable t) {
+	public ParameterException(@NonNull IParameter parameterDef, @NonNull String errMsg, @NonNull Throwable t) {
 		super(errMsg, t);
-		this.parameterName = parameterName;
+		this.parameterName = parameterDef.getName();
 	}
-	public ParameterException(String parameterName, Throwable t) {
+	public ParameterException(@NonNull IParameter parameterDef, @NonNull Throwable t) {
 		super(t);
-		this.parameterName = parameterName;
+		this.parameterName = parameterDef.getName();
 	}
 }
