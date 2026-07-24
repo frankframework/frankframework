@@ -21,10 +21,6 @@ public class CmisSessionException extends IbisException {
 
 	private static final long serialVersionUID = 1L;
 
-	public CmisSessionException() {
-		super();
-	}
-
 	public CmisSessionException(String errMsg) {
 		super(errMsg);
 	}

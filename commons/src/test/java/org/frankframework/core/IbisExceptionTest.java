@@ -61,7 +61,7 @@ public class IbisExceptionTest {
 
 	@Test
 	public void noMessageInException() {
-		IbisException exception = new IbisException(new IbisException());
+		IbisException exception = new IbisException(new IbisException(""));
 		String result = exception.getMessage();
 
 		assertTrue(result.contains("no message in exception: org.frankframework.core.IbisException"));

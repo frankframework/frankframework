@@ -29,10 +29,6 @@ public class SapException extends IbisException {
 
 	private static final long serialVersionUID = 1L;
 
-	public SapException() {
-		super();
-	}
-
 	public SapException(String errMsg) {
 		super(errMsg);
 	}

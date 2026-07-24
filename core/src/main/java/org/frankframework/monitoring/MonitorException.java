@@ -23,9 +23,6 @@ import org.frankframework.core.IbisException;
  */
 public class MonitorException extends IbisException {
 
-	public MonitorException() {
-		super();
-	}
 	public MonitorException(String message) {
 		super(message);
 	}

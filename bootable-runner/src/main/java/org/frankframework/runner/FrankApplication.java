@@ -135,7 +135,7 @@ public class FrankApplication {
 	 * Configure a CredentialProvider
 	 * @throws FileNotFoundException If the properties file cannot be found
 	 */
-	public void configureCredentialProvider(String credentialPropertiesFile) throws IOException {
+	public void configureCredentialProvider(@Nullable String credentialPropertiesFile) throws IOException {
 		// If a CredentialFactory has already been set, abort.
 		if (configuredCredentialProvider || StringUtils.isNotBlank(System.getProperty("credentialFactory.class"))) {
 			// skip!
@@ -229,7 +229,7 @@ public class FrankApplication {
 		}
 	}
 
-	public static synchronized void exit(ApplicationContext applicationContext) {
+	public static synchronized void exit(@Nullable ApplicationContext applicationContext) {
 		if (applicationContext != null) {
 			SpringApplication.exit(applicationContext);
 		}
@@ -306,11 +306,7 @@ public class FrankApplication {
 	 */
 	private static @NonNull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
 		if(Files.exists(runFromDir.resolve(".github"))) { // this folder exists in the project ROOT directory
-			Path module = runFromDir.resolve("test");
-			if(Files.exists(module)) {
-				return module;
-			}
-			throw new IOException("assuming we're using IntelliJ but cannot find the FF! Test module");
+			throw new IOException("assuming we're using IntelliJ, go to 'run options' and enable [Use classpath of module].");
 		}
 
 		return runFromDir;

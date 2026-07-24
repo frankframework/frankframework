@@ -167,8 +167,6 @@ public class IdinSenderTest {
 	/**
 	 * Previously, this relied on (invalid) use of CredentialFactory, which is now changed and results in unexpected exceptions. All these
 	 * setters should work without any exceptions.
-	 *
-	 * @throws ConfigurationException
 	 */
 	@Test
 	void testCertificateSettingsCanBeSet() throws ConfigurationException {

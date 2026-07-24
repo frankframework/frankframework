@@ -29,7 +29,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.xml.FullXmlFilter;
 
-/** 
+/**
  * SAX filter that injects a SOAP:Header with a RelatesTo element containing the
  * reply messageId if it is not already present in the SOAP message.
  */

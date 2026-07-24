@@ -100,7 +100,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			Thread.currentThread().interrupt();
 		}
 
-		throw new TimeoutException();
+		throw new TimeoutException("no message found within ["+timeout+"] ms");
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */

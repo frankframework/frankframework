@@ -21,16 +21,17 @@ import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.soap.filters.SoapAddressingMessageIdExtractor;
-import org.frankframework.soap.filters.SoapAddressingRelatesToInjector;
-import org.frankframework.soap.filters.SoapNamespaceUriExtractor;
-import org.frankframework.soap.filters.ValidateSoapMessageHandler;
 import org.springframework.util.MimeType;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.soap.filters.SoapAddressingMessageIdExtractor;
+import org.frankframework.soap.filters.SoapAddressingRelatesToInjector;
+import org.frankframework.soap.filters.SoapNamespaceUriExtractor;
+import org.frankframework.soap.filters.ValidateSoapMessageHandler;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
@@ -68,7 +69,12 @@ public class SoapContext {
 		SoapAddressingMessageIdExtractor messageIdExtractor = new SoapAddressingMessageIdExtractor(nsUriHandler);
 		ValidateSoapMessageHandler validateSoap = new ValidateSoapMessageHandler(messageIdExtractor);
 		try {
-			XmlUtils.parseXml(body.asInputSource(), validateSoap);
+			InputSource inputSource = body.asInputSource();
+			if (inputSource == null) {
+				throw new SOAPException("no SOAP message");
+			}
+
+			XmlUtils.parseXml(inputSource, validateSoap);
 		} catch (IOException | SAXException e) {
 			throw new SOAPException("invalid SOAP message", e);
 		}
@@ -102,7 +108,12 @@ public class SoapContext {
 			SoapAddressingRelatesToInjector soapAddr = new SoapAddressingRelatesToInjector(validateSoap);
 			soapAddr.setMessageId(messageId);
 
-			XmlUtils.parseXml(output.asInputSource(), soapAddr);
+			InputSource inputSource = output.asInputSource();
+			if (inputSource == null) {
+				throw new SOAPException("no SOAP message");
+			}
+
+			XmlUtils.parseXml(inputSource, soapAddr);
 
 			return builder.build();
 		} catch (IOException | SAXException e) {

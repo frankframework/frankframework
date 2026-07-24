@@ -19,10 +19,6 @@ import org.frankframework.core.IbisException;
 
 public class DomBuilderException extends IbisException {
 
-	public DomBuilderException() {
-		super();
-	}
-
 	public DomBuilderException(String msg) {
 		super(msg);
 	}

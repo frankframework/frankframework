@@ -23,9 +23,6 @@ package org.frankframework.core;
  */
 public class ManagedStateException extends IbisException {
 
-	public ManagedStateException() {
-		super();
-	}
 	public ManagedStateException(String msg) {
 		super(msg);
 	}

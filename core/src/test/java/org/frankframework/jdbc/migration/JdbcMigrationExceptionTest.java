@@ -10,7 +10,7 @@ public class JdbcMigrationExceptionTest {
 
 	@Test
 	public void testJdbcException() {
-		IbisException ex = new JdbcMigrationException();
+		IbisException ex = new JdbcMigrationException("");
 		assertEquals("no message in exception: org.frankframework.jdbc.migration.JdbcMigrationException", ex.getMessage());
 	}
 

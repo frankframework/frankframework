@@ -25,10 +25,6 @@ import org.frankframework.core.IbisException;
  */
 public class JdbcException extends IbisException {
 
-	public JdbcException() {
-		super();
-	}
-
 	public JdbcException(String message) {
 		super(message);
 	}

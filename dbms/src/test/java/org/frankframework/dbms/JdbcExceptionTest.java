@@ -10,7 +10,7 @@ public class JdbcExceptionTest {
 
 	@Test
 	public void testJdbcException() {
-		IbisException ex = new JdbcException();
+		IbisException ex = new JdbcException("");
 		assertEquals("no message in exception: org.frankframework.dbms.JdbcException", ex.getMessage());
 	}
 

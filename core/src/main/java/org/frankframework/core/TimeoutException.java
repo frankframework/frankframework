@@ -20,10 +20,6 @@ package org.frankframework.core;
  */
 public class TimeoutException extends IbisException {
 
-	public TimeoutException() {
-		super();
-	}
-
 	public TimeoutException(String message) {
 		super(message);
 	}

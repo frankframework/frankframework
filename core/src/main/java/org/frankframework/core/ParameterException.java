@@ -26,10 +26,6 @@ import lombok.Getter;
 public class ParameterException extends IbisException {
 	private final @Getter String parameterName;
 
-	public ParameterException(String parameterName) {
-		super();
-		this.parameterName = parameterName;
-	}
 	public ParameterException(String parameterName, String errMsg) {
 		super(errMsg);
 		this.parameterName = parameterName;

@@ -15,6 +15,7 @@
 */
 package org.frankframework.console;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,10 +33,13 @@ import org.frankframework.core.IbisException;
 
 public class ApiException extends RuntimeException implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 2L;
 	private final transient Logger log = LogManager.getLogger(this);
 	private final HttpStatus status;
 	private final String expandedMessage;
+
+	@SuppressWarnings("java:S1165") // non-final. State may not change but the format may differ.
 	private transient ResponseEntity<Object> response;
 
 	public ApiException(String msg) {
