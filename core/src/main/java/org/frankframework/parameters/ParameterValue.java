@@ -170,7 +170,7 @@ public class ParameterValue {
 			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
-			throw new ParameterException(getDefinition().getName(), "IParameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
+			throw new ParameterException(getDefinition(), "IParameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
 		}
 	}
 }

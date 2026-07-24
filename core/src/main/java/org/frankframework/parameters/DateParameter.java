@@ -128,7 +128,7 @@ public class DateParameter extends AbstractParameter<Date> {
 				log.warn("Date parameter formatType was inferred to be UNIX, but should be manually set to avoid possible parsing errors");
 				return parseUnixTimestamp(value);
 			}
-			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + value + "] to Date using formatString [" + getFormatString() + "]", e);
+			throw new ParameterException(this, "Parameter [" + getName() + "] could not parse result [" + value + "] to Date using formatString [" + getFormatString() + "]", e);
 		}
 	}
 
@@ -145,7 +145,7 @@ public class DateParameter extends AbstractParameter<Date> {
 			}
 			return new Date(epoch);
 		} catch (NumberFormatException e) {
-			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse UNIX timestamp from [" + value + "]", e);
+			throw new ParameterException(this, "Parameter [" + getName() + "] could not parse UNIX timestamp from [" + value + "]", e);
 		}
 	}
 
