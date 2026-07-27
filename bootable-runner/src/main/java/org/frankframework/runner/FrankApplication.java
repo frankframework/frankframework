@@ -306,7 +306,7 @@ public class FrankApplication {
 	 */
 	private static @NonNull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
 		if(Files.exists(runFromDir.resolve(".github"))) { // this folder exists in the project ROOT directory
-			throw new IOException("assuming we're using IntelliJ, go to 'run options' and enable [Use classpath of module].");
+			throw new IOException("assuming we're using IntelliJ, go to 'run options' enable [Use classpath of module] and set the working directory to [$MODULE_WORKING_DIR$].");
 		}
 
 		return runFromDir;
