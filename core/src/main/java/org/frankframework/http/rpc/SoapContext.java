@@ -21,16 +21,16 @@ import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.soap.filters.SoapAddressingMessageIdExtractor;
-import org.frankframework.soap.filters.SoapAddressingRelatesToInjector;
-import org.frankframework.soap.filters.SoapNamespaceUriExtractor;
-import org.frankframework.soap.filters.ValidateSoapMessageHandler;
 import org.springframework.util.MimeType;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.soap.filters.SoapAddressingMessageIdExtractor;
+import org.frankframework.soap.filters.SoapAddressingRelatesToInjector;
+import org.frankframework.soap.filters.SoapNamespaceUriExtractor;
+import org.frankframework.soap.filters.ValidateSoapMessageHandler;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
@@ -112,7 +112,7 @@ public class SoapContext {
 
 	private String getSoapAction(MessageContext context) {
 		if(SOAPConstants.SOAP_1_1_PROTOCOL.equals(soapProtocol)) {
-			return (String) context.get("Header.SOAPAction");
+			return unquote((String) context.get("Header.SOAPAction"));
 		} else {
 			MimeType contentType = context.getMimeType();
 			if(contentType != null) {

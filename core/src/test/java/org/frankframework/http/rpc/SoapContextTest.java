@@ -21,7 +21,6 @@ import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPMessage;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -76,6 +75,7 @@ public class SoapContextTest {
 	@ParameterizedTest
 	@CsvSource({
 			"1, '/raw/soap1_1.txt'",
+			"1, '/raw/soap1_1_with_quotes.txt'",
 			"1, '/raw/soap1_1_with_action_in_contenttype.txt'",
 			"2, '/raw/soap1_2.txt'",
 			"2, '/raw/soap1_2_with_soapaction_header.txt'"
