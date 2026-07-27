@@ -75,6 +75,7 @@ public class SoapContextTest {
 	@ParameterizedTest
 	@CsvSource({
 			"1, '/raw/soap1_1.txt'",
+			"1, '/raw/soap1_1_with_quotes.txt'",
 			"1, '/raw/soap1_1_with_action_in_contenttype.txt'",
 			"2, '/raw/soap1_2.txt'",
 			"2, '/raw/soap1_2_with_soapaction_header.txt'"
