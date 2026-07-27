@@ -143,7 +143,7 @@ public class WebServiceSender extends HttpSender {
 		try {
 			httpResult = super.extractResult(responseHandler, session);
 		} catch (SenderException e) {
-			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e, session);
+			soapWrapper.checkForSoapFault(responseHandler.getResponseMessage(), e, session);
 			throw e;
 		}
 
@@ -151,13 +151,17 @@ public class WebServiceSender extends HttpSender {
 			soapWrapper.checkForSoapFault(httpResult, null, session);
 		}
 		try {
-			if (isSoap()) {
+			if (isSoap(httpResult)) {
 				return soapWrapper.getBody(httpResult, false, session);
 			}
 			return httpResult;
 		} catch (Exception e) {
-			throw new SenderException("cannot retrieve result message",e);
+			throw new SenderException("cannot parse result message", e);
 		}
+	}
+
+	private boolean isSoap(Message message) {
+		return isSoap() && "xml".equals(message.getContext().getMimeType().getSubtype());
 	}
 
 	/**
