@@ -28,7 +28,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.xml.FullXmlFilter;
 
-/** 
+/**
  * SAX filter that extracts the MessageID from a SOAP message.
  */
 @Log4j2
