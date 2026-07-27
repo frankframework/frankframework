@@ -11,6 +11,10 @@ import { TitleCasePipe } from '@angular/common';
 export class IframeLadybugComponent extends BaseIframeComponent implements OnInit, OnDestroy {
   override ngOnInit(): void {
     super.ngOnInit();
-    this.setFFIframeSource('ladybug');
+
+    const instanceName = this.appService.instanceName();
+    const ladybugIframeSource =
+      instanceName === '-' ? 'ladybug' : `ladybug?filter-application=${encodeURIComponent(instanceName)}`;
+    this.setFFIframeSource(ladybugIframeSource);
   }
 }
