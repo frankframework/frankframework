@@ -21,6 +21,7 @@ import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.jspecify.annotations.NonNull;
+import org.springframework.util.MimeType;
 
 import lombok.Getter;
 
@@ -143,7 +144,7 @@ public class WebServiceSender extends HttpSender {
 		try {
 			httpResult = super.extractResult(responseHandler, session);
 		} catch (SenderException e) {
-			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e, session);
+			soapWrapper.checkForSoapFault(responseHandler.getResponseMessage(), e, session);
 			throw e;
 		}
 
@@ -151,13 +152,18 @@ public class WebServiceSender extends HttpSender {
 			soapWrapper.checkForSoapFault(httpResult, null, session);
 		}
 		try {
-			if (isSoap()) {
+			if (isSoap(httpResult)) {
 				return soapWrapper.getBody(httpResult, false, session);
 			}
 			return httpResult;
 		} catch (Exception e) {
-			throw new SenderException("cannot retrieve result message",e);
+			throw new SenderException("cannot parse result message", e);
 		}
+	}
+
+	private boolean isSoap(Message message) {
+		MimeType mimeType = message.getContext().getMimeType();
+		return isSoap() && ("xml".equals(mimeType.getSubtype()) || "xml".equals(mimeType.getSubtypeSuffix()));
 	}
 
 	/**
