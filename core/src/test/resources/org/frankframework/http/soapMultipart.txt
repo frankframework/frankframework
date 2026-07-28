@@ -11,6 +11,7 @@ Content-Length: 554
 
 -----------------------------9051914041544843365972754266
 Content-Disposition: form-data; name="text"
+Content-Type: application/xop+xml; charset=UTF-8; type="text/xml";
 
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 	<soapenv:Header/>

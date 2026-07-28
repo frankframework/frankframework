@@ -21,6 +21,7 @@ import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.jspecify.annotations.NonNull;
+import org.springframework.util.MimeType;
 
 import lombok.Getter;
 
@@ -161,7 +162,8 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	private boolean isSoap(Message message) {
-		return isSoap() && "xml".equals(message.getContext().getMimeType().getSubtype());
+		MimeType mimeType = message.getContext().getMimeType();
+		return isSoap() && ("xml".equals(mimeType.getSubtype()) || "xml".equals(mimeType.getSubtypeSuffix()));
 	}
 
 	/**
