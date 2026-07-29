@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.3">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.4">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -8638,7 +8638,7 @@ Provides functions for jms connections, queues and topics and acts as a facade
  or when the value of the attachment element is used. If &lt;code&gt;base64=true&lt;/code&gt; then the value will be decoded before it's used.
  &lt;/p&gt;&lt;p&gt;
  &lt;b&gt;Compilation and Deployment Note:&lt;/b&gt; mail.jar (v1.2) and activation.jar must appear BEFORE j2ee.jar.
- Otherwise errors like the following might occur: &lt;code&gt;NoClassDefFoundException: com/sun/mail/util/MailDateFormat&lt;/code&gt;
+ Otherwise, errors like the following might occur: &lt;code&gt;NoClassDefFoundException: com/sun/mail/util/MailDateFormat&lt;/code&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -11366,17 +11366,22 @@ Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&g
   <xs:attributeGroup name="MailSenderDeclaredAttributeGroup">
     <xs:attribute name="smtpHost" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the SMTP-host by which the messages are to be send</xs:documentation>
+        <xs:documentation>Name of the SMTP-host by which the messages are to be sent</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="smtpPort" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Port of the SMTP-host by which the messages are to be send Default: 25</xs:documentation>
+        <xs:documentation>Port of the SMTP-host by which the messages are to be sent. Port 465 means implicit SSL, port 587 means no ssl by default, but the connection
+ is upgraded to ssl by using startTls if #useSsl is true Default: 25</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useSsl" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure TLS is being used Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure the correct SSL/TLS settings are applied for the given port number. Please note that:
+ &lt;ul&gt;
+     &lt;li&gt;Port 465 means implicit ssl&lt;/li&gt;
+     &lt;li&gt;Port 587 means no ssl/upgradeable to ssl by using startTls&lt;/li&gt;
+ &lt;/ul&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
