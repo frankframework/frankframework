@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.core;
+package org.frankframework.jndi;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;

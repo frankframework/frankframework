@@ -33,7 +33,6 @@ import org.springframework.jndi.JndiTemplate;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.JndiContextPrefixFactory;
 import org.frankframework.resourcelocator.IObjectLocator;
 import org.frankframework.util.ClassUtils;
 

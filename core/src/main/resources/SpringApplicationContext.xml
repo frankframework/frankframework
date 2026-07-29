@@ -24,10 +24,10 @@
 	</bean>
 
 	<bean id="jndiContextPrefix" factory-bean="jndiContextPrefixFactory" factory-method="getContextPrefix" />
-	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
+	<bean id="jndiContextPrefixFactory" class="org.frankframework.jndi.JndiContextPrefixFactory" />
 
 	<!-- Find DataSources in resources.yml and JNDI -->
-	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.factory.ResourceObjectLocator" />
+	<bean id="ResourceObjectLocator" class="org.frankframework.resourcelocator.ResourceObjectLocator" />
 	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
 
 	<bean id="dataSourceFactory" class="org.frankframework.jdbc.factory.DataSourceFactory" autowire="byType" primary="true"/>
