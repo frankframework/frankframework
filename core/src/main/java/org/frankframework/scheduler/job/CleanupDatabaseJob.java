@@ -64,7 +64,7 @@ import org.frankframework.util.TimeProvider;
 public class CleanupDatabaseJob extends AbstractJobDef {
 	private @Getter int queryTimeout;
 
-	private static class MessageLogObject {
+	protected static class MessageLogObject {
 		private final String datasourceName;
 		private final String tableName;
 		private final String expiryDateField;
@@ -81,9 +81,8 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 
 		@Override
 		public boolean equals(Object o) {
-			if (!(o instanceof MessageLogObject)) return false;
+			if (!(o instanceof MessageLogObject mlo)) return false;
 
-			MessageLogObject mlo = (MessageLogObject) o;
 			return mlo.getDatasourceName().equals(datasourceName) &&
 					mlo.getTableName().equals(tableName) &&
 					mlo.expiryDateField.equals(expiryDateField);
@@ -274,8 +273,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 					collectMessageLogs(messageLogs, receiver.getMessageLog());
 				}
 				PipeLine pipeline = adapter.getPipeLine();
-				for (int i = 0; i < pipeline.getPipes().size(); i++) {
-					IPipe pipe = pipeline.getPipe(i);
+				for (IPipe pipe : pipeline.getPipes()) {
 					if (pipe instanceof MessageSendingPipe msp) {
 						collectMessageLogs(messageLogs, msp.getMessageLog());
 					}

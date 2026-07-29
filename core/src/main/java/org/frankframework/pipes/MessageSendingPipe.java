@@ -520,7 +520,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	@SneakyThrows({PipeRunException.class}) // SneakyThrows because it's used in a Lambda
-	@SuppressWarnings("java:S1181")
+	@SuppressWarnings({"java:S1181"}) // Ignore warnings for catching Throwable
 	private Message loadMessageFromClasspathResource(final String stubFileName) {
 		Message result;
 		try {
@@ -821,13 +821,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 
 	/** specification of Pipe to validate request messages, or request and response message if configured as mixed mode validator */
 	public void setInputValidator(IValidator inputValidator) {
-		inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
+		if (inputValidator != null) {
+			inputValidator.setName(INPUT_VALIDATOR_NAME_PREFIX+getName()+INPUT_VALIDATOR_NAME_SUFFIX);
+		}
 		this.inputValidator = inputValidator;
 	}
 
 	/** specification of Pipe to validate response messages */
 	public void setOutputValidator(IValidator outputValidator) {
-		if (outputValidator!=null) {
+		if (outputValidator != null) {
 			outputValidator.setName(OUTPUT_VALIDATOR_NAME_PREFIX+getName()+OUTPUT_VALIDATOR_NAME_SUFFIX);
 		}
 		this.outputValidator = outputValidator;
@@ -835,13 +837,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 
 	/** specification of Pipe to wrap or unwrap request messages */
 	public void setInputWrapper(IWrapperPipe inputWrapper) {
-		inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
+		if (inputWrapper != null) {
+			inputWrapper.setName(INPUT_WRAPPER_NAME_PREFIX+getName()+INPUT_WRAPPER_NAME_SUFFIX);
+		}
 		this.inputWrapper = inputWrapper;
 	}
 
 	/** specification of Pipe to wrap or unwrap response messages */
 	public void setOutputWrapper(IWrapperPipe outputWrapper) {
-		outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
+		if (outputWrapper != null) {
+			outputWrapper.setName(OUTPUT_WRAPPER_NAME_PREFIX+getName()+OUTPUT_WRAPPER_NAME_SUFFIX);
+		}
 		this.outputWrapper = outputWrapper;
 	}
 
