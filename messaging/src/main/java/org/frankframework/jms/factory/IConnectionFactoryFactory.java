@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jms;
+package org.frankframework.jms.factory;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -40,7 +40,7 @@ public interface IConnectionFactoryFactory {
 
 	/**
 	 * Lookup a JMS {@link ConnectionFactory} by name, with optional JNDI environment or other additional properties to be used for the lookup of the datasource.
-	 * @see org.frankframework.jdbc.datasource.ObjectFactory#get(String, Properties)
+	 * @see org.frankframework.resourcelocator.ObjectFactory#get(String, Properties)
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 *
 	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources

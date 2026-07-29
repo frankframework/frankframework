@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;

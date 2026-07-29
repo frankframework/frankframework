@@ -96,7 +96,7 @@
 		<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
 		<!-- Find DataSources in resources.yml and JNDI -->
-		<bean id="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator">
+		<bean id="resourceObjectLocator" class="org.frankframework.jdbc.factory.ResourceObjectLocator">
 			<property name="resourceFile" value="${ladybug.jdbc.resourceFile:resources.yml}"/>
 		</bean>
 		<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />

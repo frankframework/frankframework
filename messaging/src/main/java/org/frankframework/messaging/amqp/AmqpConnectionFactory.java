@@ -35,7 +35,7 @@ import org.springframework.beans.factory.DisposableBean;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.jdbc.datasource.FrankResource;
+import org.frankframework.resourcelocator.FrankResource;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.CredentialFactory;

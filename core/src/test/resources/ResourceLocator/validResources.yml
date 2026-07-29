@@ -12,7 +12,7 @@ jdbc:
     password: "fake_pwd"
 
   - name: "properties"
-    type: "org.frankframework.jdbc.datasource.MockDataSource"
+    type: "org.frankframework.jdbc.factory.MockDataSource"
     url: "unused:url:mem:test"
     properties:
       one: 1

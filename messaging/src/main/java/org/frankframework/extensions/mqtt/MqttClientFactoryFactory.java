@@ -17,8 +17,8 @@ package org.frankframework.extensions.mqtt;
 
 import org.jspecify.annotations.NonNull;
 
-import org.frankframework.jdbc.datasource.FrankResource;
-import org.frankframework.jdbc.datasource.ObjectFactory;
+import org.frankframework.resourcelocator.FrankResource;
+import org.frankframework.resourcelocator.ObjectFactory;
 
 public class MqttClientFactoryFactory extends ObjectFactory<MqttClientFactory, Object> {
 

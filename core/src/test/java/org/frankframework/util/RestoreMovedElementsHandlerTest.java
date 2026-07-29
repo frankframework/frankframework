@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.jdbc.datasource.TestBlobs;
+import org.frankframework.jdbc.factory.TestBlobs;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.xml.XmlWriter;
 

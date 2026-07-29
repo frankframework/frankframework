@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jdbc.datasource;
+package org.frankframework.jdbc.factory;
 
 import javax.sql.DataSource;
 import javax.sql.XADataSource;

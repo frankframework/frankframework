@@ -44,7 +44,7 @@ public interface IDataSourceFactory {
 
 	/**
 	 * Look up a {@link DataSource} by name with optional JNDI Environment or other additional properties to be used for the lookup of the datasource.
-	 * @see org.frankframework.jdbc.datasource.ObjectFactory#get(String, Properties)
+	 * @see org.frankframework.resourcelocator.ObjectFactory#get(String, Properties)
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 *
 	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources

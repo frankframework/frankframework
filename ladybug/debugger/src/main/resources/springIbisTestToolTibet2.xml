@@ -104,7 +104,7 @@
 	<!-- START: These beans are no longer automatically present, and are only there when the database profile is used. -->
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
-	<bean id="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator">
+	<bean id="resourceObjectLocator" class="org.frankframework.jdbc.factory.ResourceObjectLocator">
 		<property name="resourceFile" value="${ladybug.jdbc.resourceFile:resources.yml}"/>
 	</bean>
 	<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />

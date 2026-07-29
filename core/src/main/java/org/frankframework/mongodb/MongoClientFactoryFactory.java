@@ -17,8 +17,8 @@ package org.frankframework.mongodb;
 
 import org.jspecify.annotations.NonNull;
 
-import org.frankframework.jdbc.datasource.FrankResource;
-import org.frankframework.jdbc.datasource.ObjectFactory;
+import org.frankframework.resourcelocator.FrankResource;
+import org.frankframework.resourcelocator.ObjectFactory;
 import org.frankframework.util.AppConstants;
 
 /**

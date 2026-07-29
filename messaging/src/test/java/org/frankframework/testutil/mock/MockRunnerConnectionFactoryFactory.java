@@ -24,7 +24,7 @@ import com.mockrunner.mock.jms.MockSession;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.jms.IConnectionFactoryFactory;
+import org.frankframework.jms.factory.IConnectionFactoryFactory;
 
 @Log4j2
 public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFactory {

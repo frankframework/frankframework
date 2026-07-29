@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jdbc.datasource;
+package org.frankframework.jdbc.factory;
 
 import java.util.List;
 import java.util.Properties;
@@ -25,6 +25,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.resourcelocator.ObjectFactory;
 
 /**
  * Factory through which <em>NON-TRANSACTIONAL</em> DataSources can be retrieved.
