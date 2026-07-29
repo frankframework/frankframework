@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Log to stderr only. When the MCP server uses the stdio transport, stdout is
+	reserved for the JSON-RPC protocol, so anything logged to stdout would corrupt it.
+-->
+<Configuration status="WARN">
+	<Appenders>
+		<Console name="stderr" target="SYSTEM_ERR">
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1} - %m%n"/>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="org.frankframework.mcp" level="INFO"/>
+		<Logger name="org.frankframework.management.gateway" level="INFO"/>
+		<Root level="WARN">
+			<AppenderRef ref="stderr"/>
+		</Root>
+	</Loggers>
+</Configuration>
