@@ -26,7 +26,7 @@ import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.frankframework.jdbc.datasource.IObjectLocator;
+import org.frankframework.resourcelocator.IObjectLocator;
 
 /**
  * {@link MessagingSource} for JMS connections.

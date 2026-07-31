@@ -14,8 +14,8 @@ import org.jspecify.annotations.NonNull;
 import org.mockito.Mockito;
 
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.datasource.OpenPoolingDataSource;
-import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
+import org.frankframework.jdbc.factory.OpenPoolingDataSource;
+import org.frankframework.jdbc.factory.TransactionalDbmsSupportAwareDataSourceProxy;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {
 	private final Map<String, DataSource> objects = new HashMap<>();

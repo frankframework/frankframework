@@ -21,6 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -738,6 +739,7 @@ public class ApiListenerServletTest {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody("string1", "<hallo>€ è</hallo>", ContentType.create("text/plain"));
 		builder.addTextBody("string2", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));// explicitly sent as UTF-8
+		builder.addTextBody("string3", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));// explicitly sent as UTF-8
 
 		URL url1 = ClassLoaderUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
@@ -755,8 +757,8 @@ public class ApiListenerServletTest {
 		assertNotNull(multipartXml);
 		MatchUtils.assertXmlEquals("""
 				<parts>
-					<part name="string1" type="text" value="&lt;hallo&gt;? ?&lt;/hallo&gt;" />
-					<part name="string2" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
+					<part name="string1" sessionKey="string1" type="text" value="&lt;hallo&gt;? ?&lt;/hallo&gt;" />
+					<part name="string3" sessionKey="string3" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
 					<part name="file1" type="file" filename="file1" size="1006" sessionKey="file1" mimeType="application/xml"/>
 				</parts>\
 				""", multipartXml);
@@ -789,11 +791,10 @@ public class ApiListenerServletTest {
 		assertNotNull(multipartXml);
 		MatchUtils.assertXmlEquals("""
 				<parts>
-					<part name="string1" type="text" value="&lt;hello&gt;€ è&lt;/hello&gt;" />
-					<part name="file1" type="file" filename="file1" size="1006" sessionKey="file1" mimeType="application/xml"/>
+					<part name="file1" type="file" filename="file1" size="1006" sessionKey="attachment1" mimeType="application/xml"/>
 				</parts>\
 				""", multipartXml);
-		Message file = (Message) session.get("file1");
+		Message file = assertInstanceOf(Message.class, session.get("attachment1"));
 		assertEquals("ISO-8859-1", file.getCharset());
 	}
 

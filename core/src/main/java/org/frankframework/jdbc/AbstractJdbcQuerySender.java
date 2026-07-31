@@ -231,12 +231,11 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			return prepareQueryWithColumnsReturned(con, adaptedQuery, columnsReturned);
 		}
 		boolean resultSetUpdatable = isLockRows() || queryType == QueryType.UPDATEBLOB || queryType == QueryType.UPDATECLOB;
-		int resultSetConcurrency = resultSetUpdatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY;
-		return prepareQueryWithResultSet(con, adaptedQuery, resultSetConcurrency);
+		return prepareQueryWithResultSet(con, adaptedQuery, resultSetUpdatable);
 	}
 
-	protected PreparedStatement prepareQueryWithResultSet(final Connection con, final String query, final int resultSetConcurrency) throws SQLException {
-		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
+	protected PreparedStatement prepareQueryWithResultSet(final Connection con, final String query, final boolean resultSetUpdatable) throws SQLException {
+		return con.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, resultSetUpdatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
 	}
 
 	protected PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
@@ -308,7 +307,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			log.warn("got exception closing SQL statement", e);
 		}
 		// noinspection EmptyTryBlock
-		try (Statement statement = queryExecutionContext.getResultQueryStatement()) {
+		try (Statement ignored = queryExecutionContext.getResultQueryStatement()) {
 			// only close statement
 		} catch (SQLException e) {
 			log.warn("got exception closing result SQL statement", e);

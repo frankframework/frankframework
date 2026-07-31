@@ -28,6 +28,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IbisException;
+import org.frankframework.jms.factory.IConnectionFactoryFactory;
 
 /**
  * Factory for {@link MessagingSource}s, to share them for JMS Objects that can use the same.

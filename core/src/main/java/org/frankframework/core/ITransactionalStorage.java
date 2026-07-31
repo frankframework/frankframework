@@ -18,6 +18,9 @@ package org.frankframework.core;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -57,7 +60,7 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	/**
 	 * Retrieves and deletes the message.
 	 */
-	RawMessageWrapper<S> consumeMessage(String storageKey) throws ListenerException;
+	@NonNull RawMessageWrapper<@Nullable S> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException;
 
 	/** Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes. */
 	void setSlotId(String string);

@@ -20,10 +20,6 @@ package org.frankframework.core;
  */
 public class MessageBrowseException extends IbisException {
 
-	public MessageBrowseException() {
-		super();
-	}
-
 	public MessageBrowseException(String arg1) {
 		super(arg1);
 	}

@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
+//NOSONAR
 public class ImageUtil {
 
 	static Logger logger = Logger.getLogger(ImageUtil.class.getName());

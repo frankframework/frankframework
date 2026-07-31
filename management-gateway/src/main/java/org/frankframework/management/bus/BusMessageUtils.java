@@ -54,6 +54,10 @@ public class BusMessageUtils {
 
 	public static final String ALL_CONFIGS_KEY = "*ALL*";
 
+	private BusMessageUtils() {
+		// NO OP
+	}
+
 	@SuppressWarnings("unchecked")
 	private static @Nullable <T> T getHeader(Message<?> message, String headerName, Class<T> type) {
 		MessageHeaders headers = message.getHeaders();
@@ -134,7 +138,7 @@ public class BusMessageUtils {
 		return getHeader(message, headerName, String.class);
 	}
 
-	public static String getHeader(Message<?> message, String headerName, String defaultValue) {
+	public static String getHeader(Message<?> message, String headerName, @Nullable String defaultValue) {
 		String headerValue = getHeader(message, headerName, String.class);
 		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
 	}

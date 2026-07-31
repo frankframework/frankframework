@@ -25,7 +25,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
-import org.frankframework.jdbc.datasource.FrankResource;
+import org.frankframework.resourcelocator.FrankResource;
 import org.frankframework.util.CredentialFactory;
 
 public class MongoClientFactory {

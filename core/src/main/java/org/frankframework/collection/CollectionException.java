@@ -19,10 +19,6 @@ import org.frankframework.core.IbisException;
 
 public class CollectionException extends IbisException {
 
-	public CollectionException() {
-		super();
-	}
-
 	public CollectionException(String message, Throwable cause) {
 		super(message, cause);
 	}

@@ -93,8 +93,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	private final String corsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); // Defaults to everything
 	private final String corsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
-	private ApiServiceDispatcher dispatcher = null;
-	private IApiCache cache = null;
+	private transient ApiServiceDispatcher dispatcher = null;
+	private transient IApiCache cache = null;
 
 	@Override
 	public void init() throws ServletException {
@@ -173,7 +173,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 			/*
 			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
-			 * @Deprecated This is here to support old urls
+			 * @Deprecated This is here to support old URLs
 			 */
 			if(uri.endsWith("openapi.json")) {
 				generatePartialOpenApiSpec(uri, request, response);
@@ -241,7 +241,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		 */
 		ApiListener listener = config.getApiListener(method);
 		if (listener == null) {
-			LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
+			LOG.warn("{} method [{}] not found", ()-> createAbortMessage(remoteUser, 405), ()-> method);
 			response.setStatus(405);
 			return;
 		}
@@ -396,7 +396,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				}
 
 				/*
-				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
+				 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
 				 */
 				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if (statusCode > 0) {
@@ -652,24 +652,17 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				return null;
 			}
 		}
-		Message body = null;
+
+		final Message body;
 		final String multipartBodyName = listener.getMultipartBodyName();
 		try {
-			MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType());
+			MultipartMessages parts = MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType(), multipartBodyName);
+			body = parts.body();
 			for (Entry<String, Message> entry : parts.messages().entrySet()) {
 				String fieldName = entry.getKey();
 				if (!listener.isParameterAllowed(fieldName)) {
 					LOG.warn("Request contains multipart field [{}] which is not allowed", fieldName);
 					continue;
-				}
-				if ((body == null && multipartBodyName == null) || fieldName.equalsIgnoreCase(multipartBodyName)) {
-					body = entry.getValue();
-
-					Enumeration<String> names = request.getHeaderNames();
-					while (names.hasMoreElements()) {
-						String name = names.nextElement();
-						body.getContext().put(MessageContext.HEADER_PREFIX + name, request.getHeader(name));
-					}
 				}
 				pipelineSession.put(fieldName, entry.getValue());
 			}
@@ -746,8 +739,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			if(StringUtils.isNotEmpty(contentType)) {
 				try {
 					return MimeType.valueOf(contentType);
-				} catch (InvalidMimeTypeException imte) {
-					LOG.warn("unable to parse mimetype from SessionKey [contentType] value [{}]", contentType, imte);
+				} catch (InvalidMimeTypeException e) {
+					LOG.warn("unable to parse mimetype from SessionKey [contentType] value [{}]", contentType, e);
 				}
 			}
 			MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
@@ -796,7 +789,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			response.setContentLengthLong(contentLength);
 		}
 
-		// Content-type might not be same as set before if we have a form. However it might also not be set.
+		// Content-type might not be same as set before if we have a form. However, it might also not be set.
 		if (entity.getContentType() != null) {
 			response.setContentType(entity.getContentType().getValue());
 		}

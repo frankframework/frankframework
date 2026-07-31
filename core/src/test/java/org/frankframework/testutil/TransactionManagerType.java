@@ -21,7 +21,7 @@ import org.springframework.core.env.StandardEnvironment;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.datasource.DataSourceFactory;
+import org.frankframework.jdbc.factory.DataSourceFactory;
 
 @Log4j2
 public enum TransactionManagerType {

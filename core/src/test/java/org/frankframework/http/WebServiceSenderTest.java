@@ -16,11 +16,28 @@
 package org.frankframework.http;
 
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.message.BasicHeader;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -35,6 +52,33 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		WebServiceSender sender = spy(new WebServiceSender());
 		sender.setSoap(false);
 		return sender;
+	}
+
+	private HttpResponse buildResponse(Message content, Map<String, String> headers, int statusCode) throws UnsupportedOperationException, IOException {
+		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
+		StatusLine statusLine = mock(StatusLine.class);
+		HttpEntity httpEntity = mock(HttpEntity.class);
+
+		when(statusLine.getStatusCode()).thenReturn(statusCode);
+		when(httpResponse.getStatusLine()).thenReturn(statusLine);
+
+		when(httpEntity.getContent()).thenReturn(content.asInputStream());
+		when(httpEntity.getContentLength()).thenReturn(content.size());
+		when(httpResponse.getEntity()).thenReturn(httpEntity);
+
+		Header[] responseHeaders = headers
+				.entrySet()
+				.stream()
+				.map(e -> new BasicHeader(e.getKey(), e.getValue()))
+				.toArray(BasicHeader[]::new);
+
+		Header contentType = Arrays.stream(responseHeaders)
+				.filter(e -> "content-type".equalsIgnoreCase(e.getName()))
+				.findFirst().orElse(new BasicHeader("Content-Type", "text/xml"));
+
+		when(httpEntity.getContentType()).thenReturn(contentType);
+		when(httpResponse.getAllHeaders()).thenReturn(responseHeaders);
+		return httpResponse;
 	}
 
 	@Test
@@ -53,6 +97,38 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 		} catch (SenderException e) {
 			throw e.getCause();
 		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"text/xml", "application/xml"})
+	void testIsSoapExceptionFlow(String contentType) throws Throwable {
+		WebServiceSender sender = getSender();
+		sender.setSoap(true);
+		sender.configure();
+		sender.start();
+
+		Message input = new Message("not xml");
+		HttpResponse response = buildResponse(input, Map.of("content-type", contentType), 200);
+
+		HttpResponseHandler responseHandler = new HttpResponseHandler(response);
+		SenderException e = assertThrows(SenderException.class, () -> sender.extractResult(responseHandler, session));
+
+		assertThat(e.getMessage(), Matchers.startsWith("cannot parse result message"));
+	}
+
+	@Test
+	void testIsNotSoapExceptionFlow() throws Throwable {
+		WebServiceSender sender = getSender();
+		sender.setSoap(true);
+		sender.configure();
+		sender.start();
+
+		Message input = new Message("not xml");
+		HttpResponse response = buildResponse(input, Map.of("content-type", "text/html"), 200);
+
+		HttpResponseHandler responseHandler = new HttpResponseHandler(response);
+		Message result = sender.extractResult(responseHandler, session);
+		assertEquals("not xml", result.asString());
 	}
 
 	@Test

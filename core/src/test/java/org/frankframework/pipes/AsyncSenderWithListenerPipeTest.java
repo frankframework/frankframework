@@ -8,6 +8,7 @@ import static org.mockito.Mockito.spy;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -54,17 +55,17 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		private @Setter @Getter String name;
 
 		@Override
-		public Map<String, Object> openThread() throws ListenerException {
+		public @NonNull Map<String, Object> openThread() throws ListenerException {
 			return new HashMap<String, Object>();
 		}
 
 		@Override
-		public void closeThread(Map<String, Object> threadContext) throws ListenerException {
+		public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
 			// NO OP
 		}
 
 		@Override
-		public RawMessageWrapper<String> getRawMessage(Map<String, Object> threadContext) throws ListenerException {
+		public RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
 			return null;
 		}
 

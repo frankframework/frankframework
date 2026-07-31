@@ -21,9 +21,6 @@ import org.frankframework.core.IbisException;
  * Exception class for errors during XML processing
  */
 public class XmlException extends IbisException {
-	public XmlException() {
-		super();
-	}
 
 	public XmlException(String message) {
 		super(message);

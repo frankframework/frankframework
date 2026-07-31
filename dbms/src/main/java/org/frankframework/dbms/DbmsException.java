@@ -16,9 +16,6 @@
 package org.frankframework.dbms;
 
 public class DbmsException extends JdbcException {
-	public DbmsException() {
-		super();
-	}
 
 	public DbmsException(String message) {
 		super(message);

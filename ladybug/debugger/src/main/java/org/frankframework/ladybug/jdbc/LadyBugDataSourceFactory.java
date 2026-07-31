@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 
 import org.jspecify.annotations.NonNull;
 
-import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
+import org.frankframework.jdbc.factory.PoolingDataSourceFactory;
 
 public class LadyBugDataSourceFactory extends PoolingDataSourceFactory {
 

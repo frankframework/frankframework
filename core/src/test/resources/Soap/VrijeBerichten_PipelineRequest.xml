@@ -1,11 +1,21 @@
 <soapenv:Envelope
 	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-	<soapenv:Header />
-	<soapenv:Body>
-		<ZKN:geefZaakdocumentbewerken_Di02
+	<soapenv:Header>
+		<ZKN2:geefZaakdocumentbewerken_Di02
+			xmlns:ZKN2="http://www.egem2.nl/StUF/sector/zkn/0310"
 			xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310"
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:schemaLocation="http://www.egem.nl/StUF/sector/zkn/0310 zkn0310_msg_zs-dms.xsd">
+			xsi:schemaLocation="http://www.egem2.nl/StUF/sector/zkn/0310 zkn0310_msg_zs-dms.xsd
+			http://www.egem.nl/StUF/sector/zkn/0310 zkn0310_msg_zs-dms.xsd">
+		</ZKN2:geefZaakdocumentbewerken_Di02>
+	</soapenv:Header>
+	<soapenv:Body>
+		<ZKN:geefZaakdocumentbewerken_Di02
+			xmlns:ZKN2="http://www.egem2.nl/StUF/sector/zkn/0310"
+			xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://www.egem2.nl/StUF/sector/zkn/0310 zkn0310_msg_zs-dms.xsd
+			http://www.egem.nl/StUF/sector/zkn/0310 zkn0310_msg_zs-dms.xsd">
 			<ZKN:stuurgegevens>
 				<StUF:berichtcode
 					xmlns:StUF="http://www.egem.nl/StUF/StUF0301">Di02</StUF:berichtcode>

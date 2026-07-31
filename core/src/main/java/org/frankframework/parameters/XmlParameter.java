@@ -65,7 +65,7 @@ public class XmlParameter extends AbstractParameter<Node> {
 
 			return isTypeNode ? document.getDocumentElement() : document;
 		} catch (DomBuilderException | IOException | XmlException e) {
-			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to XML document", e);
+			throw new ParameterException(this, "Parameter [" + getName() + "] could not parse result [" + request + "] to XML document", e);
 		}
 	}
 

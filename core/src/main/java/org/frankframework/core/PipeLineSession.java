@@ -258,9 +258,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Nullable
 	public static Instant getTsReceived(Map<String, Object> context) {
 		Object tsReceived = context.get(PipeLineSession.TS_RECEIVED_KEY);
-		if(tsReceived instanceof Instant instant) {
+		if (tsReceived instanceof Instant instant) {
 			return instant;
-		} else if(tsReceived instanceof String string) {
+		} else if (tsReceived instanceof Date date) {
+			return date.toInstant();
+		} else if (tsReceived instanceof String string) {
 			return DateFormatUtils.parseToInstant(string, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}
 		return null;

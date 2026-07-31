@@ -35,7 +35,7 @@ import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcListener;
 import org.frankframework.jdbc.MessageStoreListener;
-import org.frankframework.jdbc.datasource.DataSourceFactory;
+import org.frankframework.jdbc.factory.DataSourceFactory;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 

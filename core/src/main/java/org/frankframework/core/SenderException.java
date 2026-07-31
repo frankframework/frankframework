@@ -23,10 +23,6 @@ package org.frankframework.core;
  */
 public class SenderException extends IbisException {
 
-	public SenderException() {
-		super();
-	}
-
 	public SenderException(String errMsg) {
 		super(errMsg);
 	}

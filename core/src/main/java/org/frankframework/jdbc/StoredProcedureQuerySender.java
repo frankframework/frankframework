@@ -224,8 +224,8 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	}
 
 	@Override
-	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, int resultSetConcurrency) throws SQLException {
-		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency);
+	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, boolean resultSetUpdatable) throws SQLException {
+		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetUpdatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
 		ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
 		for (Map.Entry<Integer, IParameter> entry : outputParameters.entrySet()) {
 			final int position = entry.getKey();

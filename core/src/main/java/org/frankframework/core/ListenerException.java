@@ -22,9 +22,6 @@ package org.frankframework.core;
  */
 public class ListenerException extends IbisException {
 
-	public ListenerException() {
-		super();
-	}
 	public ListenerException(String errMsg) {
 		super(errMsg);
 	}

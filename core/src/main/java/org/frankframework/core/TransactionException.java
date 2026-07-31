@@ -23,9 +23,6 @@ package org.frankframework.core;
  */
 public class TransactionException extends IbisException {
 
-	public TransactionException() {
-		super();
-	}
 	public TransactionException(String errMsg) {
 		super(errMsg);
 	}

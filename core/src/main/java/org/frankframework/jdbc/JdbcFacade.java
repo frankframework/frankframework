@@ -39,7 +39,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
+import org.frankframework.jdbc.factory.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;

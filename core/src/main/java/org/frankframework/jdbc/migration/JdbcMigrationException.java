@@ -26,11 +26,6 @@ import org.frankframework.core.IbisException;
 public class JdbcMigrationException extends IbisException {
 	private final String originalMessage;
 
-	public JdbcMigrationException() {
-		super();
-		originalMessage = null;
-	}
-
 	public JdbcMigrationException(String message) {
 		super(message);
 		originalMessage = message;

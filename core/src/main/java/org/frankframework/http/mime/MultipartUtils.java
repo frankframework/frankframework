@@ -209,14 +209,20 @@ public class MultipartUtils {
 		return null;
 	}
 
-	public record MultipartMessages(Message multipartXml, Map<String, Message> messages) {}
+	public record MultipartMessages(Message multipartXml, Message body, Map<String, Message> messages) {
+		public MultipartMessages(Message body) {
+			this(null, body, Map.of());
+		}
+	}
 
-	public static MultipartMessages parseMultipart(InputStream inputStream, String contentType) throws IOException {
+	public static MultipartMessages parseMultipart(InputStream inputStream, String contentType, String bodyName) throws IOException {
 		try (InputStream ignored = inputStream) {
 			final InputStreamDataSource dataSource = new InputStreamDataSource(contentType, inputStream); // The entire InputStream will be read here!
 			final MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			final XmlBuilder attachments = new XmlBuilder("parts");
 			final Map<String, Message> parts = new LinkedHashMap<>();
+
+			Message body = null;
 
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
@@ -226,10 +232,20 @@ public class MultipartUtils {
 					continue;
 				}
 
+				PartMessage message = new PartMessage(bodyPart);
+				if ((body == null && bodyName == null) || fieldName.equalsIgnoreCase(bodyName)) {
+					body = message;
+					continue;
+				}
+
+				// If MTOM use attachment, else fieldName. MTOM may use the same name twice.
+				String partName = bodyPart.getHeader("Content-ID") != null ? ("attachment" + i) : fieldName;
+
 				final XmlBuilder attachment = new XmlBuilder("part");
 				attachment.addAttribute("name", fieldName);
-				PartMessage message = new PartMessage(bodyPart);
-				parts.put(fieldName, message);
+				attachment.addAttribute("sessionKey", partName);
+				parts.put(partName, message);
+
 				if (!isBinary(bodyPart)) {
 					// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
 					log.trace("setting multipart formField [{}] to [{}]", fieldName, message);
@@ -243,13 +259,12 @@ public class MultipartUtils {
 					attachment.addAttribute("type", "file");
 					attachment.addAttribute("filename", fileName);
 					attachment.addAttribute("size", message.size());
-					attachment.addAttribute("sessionKey", fieldName);
 					attachment.addAttribute("mimeType", extractMimeType(bodyPart.getContentType()));
 				}
 				attachments.addSubElement(attachment);
 			}
 
-			return new MultipartMessages(attachments.asMessage(), parts);
+			return new MultipartMessages(attachments.asMessage(), body, parts);
 		} catch(MessagingException e) {
 			throw new IOException("could not read mime multipart request", e);
 		}
@@ -288,7 +303,7 @@ public class MultipartUtils {
 			}
 		}
 
-		return new MultipartMessages(attachments.asMessage(), parts);
+		return new MultipartMessages(attachments.asMessage(), null, parts);
 	}
 
 	private static String extractMimeType(String contentType) {
