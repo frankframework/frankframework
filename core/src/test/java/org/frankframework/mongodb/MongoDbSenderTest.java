@@ -30,9 +30,9 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.documentbuilder.DocumentFormat;
-import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.mongodb.MongoDbSender.MongoAction;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.resourcelocator.ResourceObjectLocator;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 

@@ -1,4 +1,4 @@
-package org.frankframework.jdbc.datasource;
+package org.frankframework.jdbc.factory;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -7,6 +7,8 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.resourcelocator.ResourceObjectLocator;
 
 public class DataSourceFactoryTest {
 

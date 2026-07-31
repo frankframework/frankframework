@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jdbc.datasource;
+package org.frankframework.resourcelocator;
 
 import java.util.Properties;
 

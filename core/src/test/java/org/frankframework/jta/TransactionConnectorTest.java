@@ -27,7 +27,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.jdbc.datasource.JdbcPoolUtil;
+import org.frankframework.jdbc.factory.JdbcPoolUtil;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.DatabaseTestOptions;

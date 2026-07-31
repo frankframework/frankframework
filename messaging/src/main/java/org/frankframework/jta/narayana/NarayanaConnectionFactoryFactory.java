@@ -29,7 +29,7 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.jndi.JmsConnectionFactoryFactory;
+import org.frankframework.jms.factory.JmsConnectionFactoryFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 

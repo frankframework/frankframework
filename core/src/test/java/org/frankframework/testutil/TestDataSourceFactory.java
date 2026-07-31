@@ -6,7 +6,7 @@ import javax.sql.DataSource;
 
 import org.jspecify.annotations.NonNull;
 
-import org.frankframework.jdbc.datasource.DataSourceFactory;
+import org.frankframework.jdbc.factory.DataSourceFactory;
 import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 
 /**

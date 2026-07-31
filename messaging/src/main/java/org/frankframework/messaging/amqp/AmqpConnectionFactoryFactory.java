@@ -24,8 +24,8 @@ import org.apache.qpid.protonj2.client.Client;
 import org.apache.qpid.protonj2.client.ClientOptions;
 import org.jspecify.annotations.NonNull;
 
-import org.frankframework.jdbc.datasource.FrankResource;
-import org.frankframework.jdbc.datasource.ObjectFactory;
+import org.frankframework.resourcelocator.FrankResource;
+import org.frankframework.resourcelocator.ObjectFactory;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;

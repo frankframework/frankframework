@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.jndi.JndiContextPrefixFactory;
 import org.frankframework.util.AppConstants;
 
 public class JndiContextPrefixFactoryTest {

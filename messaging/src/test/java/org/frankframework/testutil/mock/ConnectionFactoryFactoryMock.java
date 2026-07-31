@@ -37,8 +37,8 @@ import org.mockito.Mockito;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.jms.IConnectionFactoryFactory;
 import org.frankframework.jms.JmsTransactionalStorage;
+import org.frankframework.jms.factory.IConnectionFactoryFactory;
 
 public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 	private final Map<String, ConnectionFactory> objects = new ConcurrentHashMap<>();

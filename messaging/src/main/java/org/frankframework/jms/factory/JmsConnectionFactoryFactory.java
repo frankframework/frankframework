@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jndi;
+package org.frankframework.jms.factory;
 
 import java.util.List;
 import java.util.Properties;
@@ -23,9 +23,7 @@ import jakarta.jms.ConnectionFactory;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import org.frankframework.jdbc.datasource.ObjectFactory;
-import org.frankframework.jms.IConnectionFactoryFactory;
-import org.frankframework.jms.TransactionalMetadataAwareConnectionFactoryProxy;
+import org.frankframework.resourcelocator.ObjectFactory;
 import org.frankframework.util.StringUtil;
 
 /**

@@ -59,7 +59,7 @@ import org.frankframework.core.TransactionAttributes;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.datasource.JdbcPoolUtil;
+import org.frankframework.jdbc.factory.JdbcPoolUtil;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;

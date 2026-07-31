@@ -1,4 +1,4 @@
-package org.frankframework.jdbc.datasource;
+package org.frankframework.jdbc.factory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -17,6 +17,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.yaml.snakeyaml.constructor.ConstructorException;
+
+import org.frankframework.resourcelocator.FrankResource;
+import org.frankframework.resourcelocator.ResourceObjectLocator;
 
 public class ResourceObjectLocatorTest {
 
@@ -63,7 +66,7 @@ public class ResourceObjectLocatorTest {
 	@Test
 	public void propertySubstitutionDataSource() throws Exception {
 		System.setProperty("substitution.dummyURL", "jdbc:mock:mem:test");
-		System.setProperty("substitution.type", "org.frankframework.jdbc.datasource.MockDataSource");
+		System.setProperty("substitution.type", "org.frankframework.jdbc.factory.MockDataSource");
 		System.setProperty("substitution.myDsAuthAlias", "alias1");
 		System.setProperty("substitution.defaultUsername", "ignoreMe1");
 		System.setProperty("substitution.defaultPassword", "ignoreMe2");

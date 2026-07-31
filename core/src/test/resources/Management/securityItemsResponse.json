@@ -35,7 +35,7 @@
             "resources": [
                 {
                     "name": "H2",
-                    "info": "targetDataSource [org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy]",
+                    "info": "targetDataSource [org.frankframework.jdbc.factory.TransactionalDbmsSupportAwareDataSourceProxy]",
                     "connectionPoolProperties": null
                 }
             ]

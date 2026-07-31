@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.jms;
+package org.frankframework.jms.factory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +29,8 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.jms.JmsPoolUtil;
 
 @Log4j2
 public class TransactionalMetadataAwareConnectionFactoryProxy extends TransactionAwareConnectionFactoryProxy {
