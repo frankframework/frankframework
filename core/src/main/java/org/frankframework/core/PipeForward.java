@@ -51,6 +51,7 @@ public class PipeForward {
 
 	public static final String SUCCESS_FORWARD_NAME = "success";
 	public static final String EXCEPTION_FORWARD_NAME = "exception";
+	public static final String FAILURE_FORWARD_NAME = "failure";
 
 	private @Getter String name;
 	private @Getter String path;

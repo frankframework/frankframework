@@ -92,7 +92,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 	@ActionSelector(BusAction.GET)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public Message<String> getAdapters(Message<?> message) {
+	public Message<@NonNull String> getAdapters(Message<?> message) {
 		Expanded expanded = BusMessageUtils.getEnumHeader(message, "expanded", Expanded.class, Expanded.NONE);
 		boolean showPendingMsgCount = BusMessageUtils.getBooleanHeader(message, "showPendingMsgCount", false);
 
@@ -110,7 +110,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 	@ActionSelector(BusAction.FIND)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
-	public Message<String> getAdapter(Message<?> message) {
+	public Message<@NonNull String> getAdapter(Message<?> message) {
 		Expanded expanded = BusMessageUtils.getEnumHeader(message, "expanded", Expanded.class, Expanded.NONE);
 		boolean showPendingMsgCount = BusMessageUtils.getBooleanHeader(message, "showPendingMsgCount", false);
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
@@ -200,15 +200,14 @@ public class AdapterStatus extends BusEndpointBase {
 
 	@Nullable
 	private ArrayList<Object> mapAdapterPipes(@NonNull Adapter adapter) {
-		if(!adapter.isConfigured())
+		if (!adapter.isConfigured())
 			return null;
 		PipeLine pipeline = adapter.getPipeLine();
 		int totalPipes = pipeline.getPipes().size();
 		ArrayList<Object> pipes = new ArrayList<>(totalPipes);
 
-		for (int i=0; i<totalPipes; i++) {
+		for (IPipe pipe : pipeline.getPipes()) {
 			Map<String, Object> pipesInfo = new HashMap<>();
-			IPipe pipe = pipeline.getPipe(i);
 			List<PipeForward> pipeForwards = pipe.getRegisteredForwards();
 
 			String pipeName = pipe.getName();
@@ -222,7 +221,7 @@ public class AdapterStatus extends BusEndpointBase {
 			pipesInfo.put("forwards", forwards);
 			if (pipe instanceof HasKeystore s) {
 				Map<String, Object> certInfo = addCertificateInfo(s);
-				if(certInfo != null)
+				if (certInfo != null)
 					pipesInfo.put("certificate", certInfo);
 			}
 			if (pipe instanceof MessageSendingPipe msp) {
@@ -230,7 +229,7 @@ public class AdapterStatus extends BusEndpointBase {
 				pipesInfo.put("sender", ClassUtils.nameOf(sender));
 				if (sender instanceof HasKeystore s) {
 					Map<String, Object> certInfo = addCertificateInfo(s);
-					if(certInfo != null)
+					if (certInfo != null)
 						pipesInfo.put("certificate", certInfo);
 				}
 				if (sender instanceof HasPhysicalDestination destination) {
@@ -239,9 +238,9 @@ public class AdapterStatus extends BusEndpointBase {
 				if (sender instanceof AbstractJdbcSender) {
 					pipesInfo.put("isJdbcSender", true);
 				}
-				if (pipe instanceof AsyncSenderWithListenerPipe slp) {
+				if (pipe instanceof AsyncSenderWithListenerPipe<?> slp) {
 					IListener<?> listener = slp.getListener();
-					if (listener!=null) {
+					if (listener != null) {
 						pipesInfo.put("listenerName", listener.getName());
 						pipesInfo.put("listenerClass", ClassUtils.nameOf(listener));
 						if (listener instanceof HasPhysicalDestination destination) {
@@ -251,9 +250,9 @@ public class AdapterStatus extends BusEndpointBase {
 					}
 				}
 				ITransactionalStorage<?> messageLog = msp.getMessageLog();
-				if (messageLog!=null) {
+				if (messageLog != null) {
 					mapPipeMessageLog(messageLog, pipesInfo, adapter.getRunState() == RunState.STARTED);
-				} else if(sender instanceof ITransactionalStorage store) {
+				} else if(sender instanceof ITransactionalStorage<?> store) {
 					mapPipeMessageLog(store, pipesInfo, adapter.getRunState() == RunState.STARTED);
 					pipesInfo.put("isSenderTransactionalStorage", true);
 				}
@@ -268,13 +267,13 @@ public class AdapterStatus extends BusEndpointBase {
 		String messageLogCount;
 		try {
 			if (showCountMessageLog && isStarted) {
-				messageLogCount=""+store.getMessageCount();
+				messageLogCount = "" + store.getMessageCount();
 			} else {
-				messageLogCount="?";
+				messageLogCount = "?";
 			}
 		} catch (Exception e) {
 			log.warn("Cannot determine number of messages in messageLog [{}]", store.getName(), e);
-			messageLogCount="error";
+			messageLogCount = "error";
 		}
 		data.put("messageLogCount", messageLogCount);
 
@@ -287,7 +286,7 @@ public class AdapterStatus extends BusEndpointBase {
 	}
 
 	private Object getMessageCount(RunState runState, IMessageBrowser<?> ts) {
-		if(runState == RunState.STARTED) {
+		if (runState == RunState.STARTED) {
 			try {
 				return ts.getMessageCount();
 			} catch (Exception e) {
@@ -299,6 +298,7 @@ public class AdapterStatus extends BusEndpointBase {
 		}
 	}
 
+	@SuppressWarnings("removal")
 	private ArrayList<Object> mapAdapterReceivers(Adapter adapter, boolean showPendingMsgCount) {
 		ArrayList<Object> receivers = new ArrayList<>();
 
@@ -320,7 +320,7 @@ public class AdapterStatus extends BusEndpointBase {
 			Map<ProcessState, Object> tsInfo = new LinkedHashMap<>();
 			for (ProcessState state : knownStates) {
 				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
-				if(ts != null) {
+				if (ts != null) {
 					ProcessStateDTO psDto = new ProcessStateDTO(state);
 					psDto.setMessageCount(getMessageCount(receiverRunState, ts));
 					tsInfo.put(state, psDto);
@@ -328,9 +328,9 @@ public class AdapterStatus extends BusEndpointBase {
 			}
 			receiverInfo.put("transactionalStores", tsInfo);
 
-			ISender sender=null;
-			IListener<?> listener=receiver.getListener();
-			if(listener != null) {
+			ISender sender = null;
+			IListener<?> listener = receiver.getListener();
+			if (listener != null) {
 				Map<String, Object> listenerInfo = HashMap.newHashMap(5);
 				listenerInfo.put("name", listener.getName());
 				listenerInfo.put("class", ClassUtils.nameOf(listener));
@@ -353,8 +353,8 @@ public class AdapterStatus extends BusEndpointBase {
 			}
 
 			ISender rsender = receiver.getSender();
-			if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
-				sender=rsender;
+			if (rsender != null) { // this sender has preference, but avoid overwriting listeners sender with null
+				sender = rsender;
 			}
 			if (sender != null) {
 				receiverInfo.put("senderName", sender.getName());
@@ -416,7 +416,7 @@ public class AdapterStatus extends BusEndpointBase {
 		adapterInfo.put("configured", adapter.isConfigured());
 		adapterInfo.put("upSince", adapter.getStatsUpSinceDate().getTime());
 		Date lastMessage = adapter.getLastMessageDateDate();
-		if(lastMessage != null) {
+		if (lastMessage != null) {
 			adapterInfo.put("lastMessage", lastMessage.getTime());
 			adapterInfo.put("messagesInProcess", adapter.getNumOfMessagesInProcess());
 			adapterInfo.put("messagesProcessed", adapter.getNumOfMessagesProcessed());
@@ -434,7 +434,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 			if(rcv.getRunState() == RunState.STARTED) {
 				IMessageBrowser<?> esmb = rcv.getMessageBrowser(ProcessState.ERROR);
-				if(esmb != null) {
+				if (esmb != null) {
 					try {
 						errorStoreMessageCount += esmb.getMessageCount();
 					} catch (ListenerException e) {
@@ -444,7 +444,7 @@ public class AdapterStatus extends BusEndpointBase {
 					}
 				}
 				IMessageBrowser<?> mlmb = rcv.getMessageBrowser(ProcessState.DONE);
-				if(mlmb != null) {
+				if (mlmb != null) {
 					try {
 						messageLogMessageCount += mlmb.getMessageCount();
 					} catch (ListenerException e) {
