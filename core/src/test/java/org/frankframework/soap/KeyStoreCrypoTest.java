@@ -1,6 +1,5 @@
 package org.frankframework.soap;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -19,6 +18,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.wss4j.common.crypto.CryptoType;
+import org.apache.wss4j.common.crypto.X509SubjectPublicKeyInfo;
 import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.dom.engine.WSSConfig;
@@ -39,7 +39,7 @@ import org.frankframework.lifecycle.LoadBouncyCastleBean;
 
 @Log4j2
 public class KeyStoreCrypoTest {
-	private static KeyPairGenerator KEY_GENERATOR;
+	private static KeyPairGenerator kpGenerator;
 
 	@BeforeAll
 	static void setup() throws NoSuchAlgorithmException {
@@ -48,16 +48,9 @@ public class KeyStoreCrypoTest {
 		WSSConfig.init();
 		JCEMapper.registerDefaultAlgorithms();
 
-		KEY_GENERATOR = KeyPairGenerator.getInstance("RSA");
-		KEY_GENERATOR.initialize(2048);
+		kpGenerator = KeyPairGenerator.getInstance("RSA");
+		kpGenerator.initialize(2048);
 	}
-
-//	private KeyStore createDummyKeyStoreWithNullKeyPassword(String certificateName, String certificatePassword) throws Exception {
-//		KeyStore ks = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
-//		ks.load(null, "password".toCharArray());
-//		ks.setKeyEntry(certificateName, keyPair.getPrivate(), certificatePassword.toCharArray(), new Certificate[] { cert } );
-//		return ks;
-//	}
 
 	private X509Certificate createCertificate(String issuer, String subject, KeyPair keyPair) throws Exception {
 		BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
@@ -100,7 +93,7 @@ public class KeyStoreCrypoTest {
 		// Arrange
 		String certificateAlias = "myTestCertAlias";
 
-		KeyPair keyPair = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair = kpGenerator.generateKeyPair();
 		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
 		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
 		keystore.load(null, "password".toCharArray());
@@ -122,11 +115,11 @@ public class KeyStoreCrypoTest {
 		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
 		keystore.load(null, "password".toCharArray());
 
-		KeyPair keyPair = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair = kpGenerator.generateKeyPair();
 		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
 		keystore.setKeyEntry("testCertificate", keyPair.getPrivate(), "certificatePassword".toCharArray(), new Certificate[] { certificate } );
 
-		KeyPair keyPair2 = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair2 = kpGenerator.generateKeyPair();
 		X509Certificate certificate2 = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair2);
 		keystore.setKeyEntry("otherCert", keyPair2.getPrivate(), "certificatePassword2".toCharArray(), new Certificate[] { certificate2 } );
 		keystore.setKeyEntry("otherCert-DUPLICATE", keyPair2.getPrivate(), "certificatePassword2".toCharArray(), new Certificate[] { certificate2 } );
@@ -145,7 +138,7 @@ public class KeyStoreCrypoTest {
 		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
 		keystore.load(null, "password".toCharArray());
 
-		KeyPair keyPair = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair = kpGenerator.generateKeyPair();
 		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
 		keystore.setKeyEntry("testCertificate", keyPair.getPrivate(), "certificatePassword".toCharArray(), new Certificate[] { certificate } );
 
@@ -173,7 +166,7 @@ public class KeyStoreCrypoTest {
 		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
 		keystore.load(null, "password".toCharArray());
 
-		KeyPair keyPair = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair = kpGenerator.generateKeyPair();
 		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
 		keystore.setKeyEntry("testCertificate", keyPair.getPrivate(), "certificatePassword".toCharArray(), new Certificate[] { certificate } );
 
@@ -195,9 +188,8 @@ public class KeyStoreCrypoTest {
 		Assertions.assertEquals("the private key for the supplied alias does not exist in the keystore", e2.getMessage());
 
 		// Assert with different public key should fail
-		CallbackHandler callback4 = new PasswordCallbackHandler("testcertificate", "wrongPassword");
 		WSSecurityException e3 = Assertions.assertThrows(WSSecurityException.class, () ->
-				ksCrypto.getPrivateKey(KEY_GENERATOR.generateKeyPair().getPublic(), callback3));
+				ksCrypto.getPrivateKey(kpGenerator.generateKeyPair().getPublic(), callback3));
 		Assertions.assertEquals("unable to find private key for corresponding public key", e3.getMessage());
 	}
 
@@ -207,7 +199,7 @@ public class KeyStoreCrypoTest {
 		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
 		keystore.load(null, "password".toCharArray());
 
-		KeyPair keyPair = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair = kpGenerator.generateKeyPair();
 		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
 		keystore.setKeyEntry("testCertificate", keyPair.getPrivate(), "certificatePassword".toCharArray(), new Certificate[] { certificate } );
 
@@ -231,7 +223,7 @@ public class KeyStoreCrypoTest {
 		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
 		keystore.load(null, "password".toCharArray());
 
-		KeyPair keyPair = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair = kpGenerator.generateKeyPair();
 		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
 		keystore.setKeyEntry("testCertificate", keyPair.getPrivate(), "certificatePassword".toCharArray(), new Certificate[] { certificate } );
 
@@ -246,7 +238,7 @@ public class KeyStoreCrypoTest {
 		Assertions.assertDoesNotThrow(() -> ksCrypto.verifyTrust(keyPair.getPublic()));
 
 		// Invalid public key
-		WSSecurityException e2 = Assertions.assertThrows(WSSecurityException.class, () -> ksCrypto.verifyTrust(KEY_GENERATOR.generateKeyPair().getPublic()));
+		WSSecurityException e2 = Assertions.assertThrows(WSSecurityException.class, () -> ksCrypto.verifyTrust(kpGenerator.generateKeyPair().getPublic()));
 		Assertions.assertEquals("The security token could not be authenticated or authorized", e2.getMessage());
 
 		// Issuer match
@@ -263,7 +255,7 @@ public class KeyStoreCrypoTest {
 		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
 		keystore.load(null, "password".toCharArray());
 
-		KeyPair keyPair = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair = kpGenerator.generateKeyPair();
 		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
 		keystore.setKeyEntry("testCertificate", keyPair.getPrivate(), "certificatePassword".toCharArray(), new Certificate[] { certificate } );
 
@@ -293,7 +285,6 @@ public class KeyStoreCrypoTest {
 		cryptoType.setSubjectDN("CN=DUMMY, OU=Test, O=Test, L=Test, C=US");
 		Assertions.assertEquals(0, ksCrypto.getX509Certificates(cryptoType).length);
 
-		System.out.println(certificate.getIssuerX500Principal().getName());
 		cryptoType.setType(CryptoType.TYPE.ISSUER_SERIAL);
 		X509Certificate[] certificates4 = ksCrypto.getX509Certificates(cryptoType);
 		Assertions.assertEquals(1, certificates4.length);
@@ -303,12 +294,38 @@ public class KeyStoreCrypoTest {
 	}
 
 	@Test
+	void getX509CertificatesBySkiBytes() throws Exception {
+		// Arrange
+		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
+		keystore.load(null, "password".toCharArray());
+
+		KeyPair keyPair = kpGenerator.generateKeyPair();
+		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
+		keystore.setKeyEntry("testCertificate", keyPair.getPrivate(), "certificatePassword".toCharArray(), new Certificate[] { certificate } );
+
+		// Act
+		KeyStoreCrypto ksCrypto = new KeyStoreCrypto(keystore);
+		MessageDigest digest = MessageDigest.getInstance("SHA-1");
+		X509SubjectPublicKeyInfo spki = new X509SubjectPublicKeyInfo(certificate.getPublicKey());
+		byte[] value = spki.getSubjectPublicKey();
+		byte[] thumbprint = digest.digest(value);
+
+		CryptoType cryptoType = new CryptoType(CryptoType.TYPE.SKI_BYTES);
+		cryptoType.setBytes(thumbprint);
+
+		// Assert
+		X509Certificate[] certificates = ksCrypto.getX509Certificates(cryptoType);
+		Assertions.assertEquals(1, certificates.length);
+		Assertions.assertEquals(certificate, certificates[0]);
+	}
+
+	@Test
 	void getX509CertificatesByThumbprint() throws Exception {
 		// Arrange
 		KeyStore keystore = KeyStore.getInstance(KeystoreType.PKCS12.name(), "SUN");
 		keystore.load(null, "password".toCharArray());
 
-		KeyPair keyPair = KEY_GENERATOR.generateKeyPair();
+		KeyPair keyPair = kpGenerator.generateKeyPair();
 		X509Certificate certificate = createCertificate("CN=Issuer, OU=Test, O=Test, L=Test, C=US", "CN=Subject, OU=Test, O=Test, L=Test, C=US", keyPair);
 		keystore.setKeyEntry("testCertificate", keyPair.getPrivate(), "certificatePassword".toCharArray(), new Certificate[] { certificate } );
 
@@ -329,7 +346,7 @@ public class KeyStoreCrypoTest {
 	private record PasswordCallbackHandler(String identifier, String password) implements CallbackHandler {
 
 		@Override
-		public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+		public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
 			for (Callback callback : callbacks) {
 				if (callback instanceof WSPasswordCallback pc) {
 					if (identifier.equals(pc.getIdentifier())) {
