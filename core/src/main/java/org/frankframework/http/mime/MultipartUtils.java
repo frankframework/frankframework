@@ -190,9 +190,7 @@ public class MultipartUtils {
 		String[] cte = part.getMimeHeader("Content-Transfer-Encoding");
 		if(cte != null) {
 			String cteFields = cte[0]; // Content-Transfer-Encoding - binary || 8bit
-			if("binary".equalsIgnoreCase(cteFields)) {
-				return true;
-			}
+			return "binary".equalsIgnoreCase(cteFields);
 		}
 		return false;
 	}
@@ -239,7 +237,7 @@ public class MultipartUtils {
 				}
 
 				// If MTOM use attachment, else fieldName. MTOM may use the same name twice.
-				String partName = bodyPart.getHeader("Content-ID") != null ? ("attachment" + i) : fieldName;
+				String partName = bodyPart.getHeader("Content-ID") != null ? (ATTACHMENT + i) : fieldName;
 
 				final XmlBuilder attachment = new XmlBuilder("part");
 				attachment.addAttribute("name", fieldName);
@@ -284,7 +282,7 @@ public class MultipartUtils {
 				}
 
 				// may be duplicate so we cannot use the fieldname
-				String partName = "attachment" + (i++);
+				String partName = ATTACHMENT + (i++);
 
 				Message message = new Message(attachmentPart.getRawContentBytes(), MessageUtils.getContext(attachmentPart.getAllMimeHeaders()));
 
