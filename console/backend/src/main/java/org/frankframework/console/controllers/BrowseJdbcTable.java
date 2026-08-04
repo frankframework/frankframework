@@ -15,6 +15,8 @@
 */
 package org.frankframework.console.controllers;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
@@ -40,7 +41,7 @@ public class BrowseJdbcTable {
 		this.frankApiService = frankApiService;
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@PostMapping(value = "/jdbc/browse", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("jdbc")
 	@Description("view a specific JDBC table")
