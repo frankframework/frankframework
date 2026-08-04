@@ -25,9 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 
+import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.frankframework.mcp.AbstractToolProvider;
-import org.frankframework.mcp.ManagementGatewaySender;
+import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.ToolSchema;
 
 /**
@@ -39,8 +40,8 @@ public class ClusterMemberToolProvider extends AbstractToolProvider {
 
 	private final ObjectMapper objectMapper;
 
-	public ClusterMemberToolProvider(ManagementGatewaySender sender, ObjectMapper objectMapper) {
-		super(sender);
+	public ClusterMemberToolProvider(OutboundGateway outboundGateway, McpSession session, ObjectMapper objectMapper) {
+		super(outboundGateway, session);
 		this.objectMapper = objectMapper;
 	}
 
@@ -56,12 +57,12 @@ public class ClusterMemberToolProvider extends AbstractToolProvider {
 				"List the members of the cluster. The currently selected member is the one requests are routed to.",
 				ToolSchema.object().build(),
 				request -> {
-					List<ClusterMember> members = sender.getMembers();
+					List<ClusterMember> members = getMembers();
 					if (members.isEmpty()) {
 						return "The configured gateway does not expose cluster members.";
 					}
 
-					UUID selected = sender.getSession().getMemberTarget();
+					UUID selected = session.getMemberTarget();
 					List<Map<String, Object>> result = new ArrayList<>();
 					for (ClusterMember member : members) {
 						result.add(describe(member, selected));
@@ -78,7 +79,7 @@ public class ClusterMemberToolProvider extends AbstractToolProvider {
 						.build(),
 				request -> {
 					UUID id = UUID.fromString(requiredStringArg(request, "id"));
-					sender.getSession().setMemberTarget(id);
+					session.setMemberTarget(id);
 					return "Selected cluster member [%s].".formatted(id);
 				});
 	}

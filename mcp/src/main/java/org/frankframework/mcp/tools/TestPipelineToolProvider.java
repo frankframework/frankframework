@@ -25,10 +25,11 @@ import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.AbstractMessage;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.mcp.AbstractToolProvider;
-import org.frankframework.mcp.ManagementGatewaySender;
+import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.ToolSchema;
 
 /**
@@ -37,8 +38,8 @@ import org.frankframework.mcp.ToolSchema;
  */
 public class TestPipelineToolProvider extends AbstractToolProvider {
 
-	public TestPipelineToolProvider(ManagementGatewaySender sender) {
-		super(sender);
+	public TestPipelineToolProvider(OutboundGateway outboundGateway, McpSession session) {
+		super(outboundGateway, session);
 	}
 
 	@Override
@@ -68,7 +69,7 @@ public class TestPipelineToolProvider extends AbstractToolProvider {
 					}
 					builder.setPayload(message);
 
-					Message<?> response = sender.sendSync(builder);
+					Message<?> response = sendSync(builder);
 					String state = BusMessageUtils.getHeader(response, AbstractMessage.STATE_KEY);
 					String result = BusMessageUtils.getPayloadAsString(response);
 					return "state: %s%nresult:%n%s".formatted(state, result != null ? result : "");

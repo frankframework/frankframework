@@ -29,7 +29,6 @@ import io.modelcontextprotocol.json.McpJsonMapper;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.server.transport.HttpServletSseServerTransportProvider;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
-import io.modelcontextprotocol.spec.McpServerTransportProvider;
 
 import org.frankframework.mcp.ManagementGatewayMcpServerFactory;
 import org.frankframework.mcp.config.ManagementGatewayMcpConfiguration;

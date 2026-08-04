@@ -22,9 +22,10 @@ import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.mcp.AbstractToolProvider;
-import org.frankframework.mcp.ManagementGatewaySender;
+import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.ToolSchema;
 
 /**
@@ -32,8 +33,8 @@ import org.frankframework.mcp.ToolSchema;
  */
 public class ConfigurationToolProvider extends AbstractToolProvider {
 
-	public ConfigurationToolProvider(ManagementGatewaySender sender) {
-		super(sender);
+	public ConfigurationToolProvider(OutboundGateway outboundGateway, McpSession session) {
+		super(outboundGateway, session);
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public class ConfigurationToolProvider extends AbstractToolProvider {
 		return tool("list_configurations",
 				"List all configurations, including their version and loaded state.",
 				ToolSchema.object().build(),
-				request -> sender.sendSyncForString(RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND)));
+				request -> sendSyncForString(RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND)));
 	}
 
 	private SyncToolSpecification getConfiguration() {
@@ -62,7 +63,7 @@ public class ConfigurationToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
 					builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, requiredStringArg(request, "configuration"));
 					builder.addHeader("loaded", booleanArg(request, "loaded"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -75,7 +76,7 @@ public class ConfigurationToolProvider extends AbstractToolProvider {
 				request -> {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
 					builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, requiredStringArg(request, "configuration"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 }

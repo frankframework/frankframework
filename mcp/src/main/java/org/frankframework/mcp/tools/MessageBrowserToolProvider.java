@@ -25,9 +25,10 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.mcp.AbstractToolProvider;
-import org.frankframework.mcp.ManagementGatewaySender;
+import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.ToolSchema;
 
 /**
@@ -38,8 +39,8 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 
 	private static final String DEFAULT_PROCESS_STATE = "Error";
 
-	public MessageBrowserToolProvider(ManagementGatewaySender sender) {
-		super(sender);
+	public MessageBrowserToolProvider(OutboundGateway outboundGateway, McpSession session) {
+		super(outboundGateway, session);
 	}
 
 	@Override
@@ -85,7 +86,7 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 					builder.addHeader("startDate", stringArg(request, "startDate"));
 					builder.addHeader("endDate", stringArg(request, "endDate"));
 					builder.addHeader("sort", stringArg(request, "sort"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -103,7 +104,7 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET);
 					addStoreHeaders(request, builder);
 					builder.addHeader("messageId", requiredStringArg(request, "messageId"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -121,7 +122,7 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.UPLOAD);
 					addReceiverHeaders(request, builder);
 					builder.addHeader("messageId", messageId);
-					sender.sendAsync(builder);
+					sendAsync(builder);
 					return "Requested resend of message [%s].".formatted(messageId);
 				});
 	}
@@ -140,7 +141,7 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 					addReceiverHeaders(request, builder);
 					builder.addHeader("messageId", messageId);
-					sender.sendAsync(builder);
+					sendAsync(builder);
 					return "Requested deletion of message [%s].".formatted(messageId);
 				});
 	}

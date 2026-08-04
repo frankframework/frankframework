@@ -25,9 +25,10 @@ import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.mcp.AbstractToolProvider;
-import org.frankframework.mcp.ManagementGatewaySender;
+import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.ToolSchema;
 
 /**
@@ -35,8 +36,8 @@ import org.frankframework.mcp.ToolSchema;
  */
 public class AdapterToolProvider extends AbstractToolProvider {
 
-	public AdapterToolProvider(ManagementGatewaySender sender) {
-		super(sender);
+	public AdapterToolProvider(OutboundGateway outboundGateway, McpSession session) {
+		super(outboundGateway, session);
 	}
 
 	@Override
@@ -63,7 +64,7 @@ public class AdapterToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 					builder.addHeader("expanded", booleanArg(request, "expanded"));
 					builder.addHeader("showPendingMsgCount", booleanArg(request, "showPendingMsgCount"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -82,7 +83,7 @@ public class AdapterToolProvider extends AbstractToolProvider {
 					builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, requiredStringArg(request, "adapter"));
 					builder.addHeader("expanded", booleanArg(request, "expanded"));
 					builder.addHeader("showPendingMsgCount", booleanArg(request, "showPendingMsgCount"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -97,7 +98,7 @@ public class AdapterToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.STATUS);
 					builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, requiredStringArg(request, "configuration"));
 					builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, requiredStringArg(request, "adapter"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -112,7 +113,7 @@ public class AdapterToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
 					builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, stringArg(request, "configuration"));
 					builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, stringArg(request, "adapter"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -152,7 +153,7 @@ public class AdapterToolProvider extends AbstractToolProvider {
 		builder.addHeader("action", action.name());
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
-		sender.sendAsync(builder);
+		sendAsync(builder);
 
 		return "Requested %s for adapter [%s] in configuration [%s].".formatted(action.name(), adapter, configuration);
 	}
@@ -167,7 +168,7 @@ public class AdapterToolProvider extends AbstractToolProvider {
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		builder.addHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter);
 		builder.addHeader(BusMessageUtils.HEADER_RECEIVER_NAME_KEY, receiver);
-		sender.sendAsync(builder);
+		sendAsync(builder);
 
 		return "Requested %s for receiver [%s] of adapter [%s] in configuration [%s]."
 				.formatted(action.name(), receiver, adapter, configuration);

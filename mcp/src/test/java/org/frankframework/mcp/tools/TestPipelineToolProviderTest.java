@@ -36,7 +36,7 @@ class TestPipelineToolProviderTest extends AbstractToolProviderTest {
 		// Arrange
 		gateway.setResponsePayload("<result>ok</result>");
 		gateway.setResponseHeader("state", "SUCCESS");
-		SyncToolSpecification tool = findTool(new TestPipelineToolProvider(sender).getTools(), "test_pipeline");
+		SyncToolSpecification tool = findTool(new TestPipelineToolProvider(gateway, session).getTools(), "test_pipeline");
 
 		// Act
 		CallToolResult result = call(tool, Map.of(

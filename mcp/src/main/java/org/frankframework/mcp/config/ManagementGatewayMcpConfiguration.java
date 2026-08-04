@@ -38,7 +38,6 @@ import org.frankframework.management.bus.OutboundGatewayFactory;
 import org.frankframework.management.gateway.HttpOutboundGateway;
 import org.frankframework.management.security.JwtKeyGenerator;
 import org.frankframework.mcp.ManagementGatewayMcpServerFactory;
-import org.frankframework.mcp.ManagementGatewaySender;
 import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.McpToolProvider;
 import org.frankframework.mcp.tools.AdapterToolProvider;
@@ -108,11 +107,6 @@ public class ManagementGatewayMcpConfiguration {
 	}
 
 	@Bean
-	ManagementGatewaySender managementGatewaySender(OutboundGateway outboundGateway, McpSession mcpSession) {
-		return new ManagementGatewaySender(outboundGateway, mcpSession);
-	}
-
-	@Bean
 	ObjectMapper mcpObjectMapper() {
 		return new ObjectMapper();
 	}
@@ -123,38 +117,38 @@ public class ManagementGatewayMcpConfiguration {
 	}
 
 	@Bean
-	AdapterToolProvider adapterToolProvider(ManagementGatewaySender sender) {
-		return new AdapterToolProvider(sender);
+	AdapterToolProvider adapterToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
+		return new AdapterToolProvider(outboundGateway, mcpSession);
 	}
 
 	@Bean
-	ConfigurationToolProvider configurationToolProvider(ManagementGatewaySender sender) {
-		return new ConfigurationToolProvider(sender);
+	ConfigurationToolProvider configurationToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
+		return new ConfigurationToolProvider(outboundGateway, mcpSession);
 	}
 
 	@Bean
-	LoggingToolProvider loggingToolProvider(ManagementGatewaySender sender) {
-		return new LoggingToolProvider(sender);
+	LoggingToolProvider loggingToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
+		return new LoggingToolProvider(outboundGateway, mcpSession);
 	}
 
 	@Bean
-	TestPipelineToolProvider testPipelineToolProvider(ManagementGatewaySender sender) {
-		return new TestPipelineToolProvider(sender);
+	TestPipelineToolProvider testPipelineToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
+		return new TestPipelineToolProvider(outboundGateway, mcpSession);
 	}
 
 	@Bean
-	MessageBrowserToolProvider messageBrowserToolProvider(ManagementGatewaySender sender) {
-		return new MessageBrowserToolProvider(sender);
+	MessageBrowserToolProvider messageBrowserToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
+		return new MessageBrowserToolProvider(outboundGateway, mcpSession);
 	}
 
 	@Bean
-	ServerInfoToolProvider serverInfoToolProvider(ManagementGatewaySender sender) {
-		return new ServerInfoToolProvider(sender);
+	ServerInfoToolProvider serverInfoToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
+		return new ServerInfoToolProvider(outboundGateway, mcpSession);
 	}
 
 	@Bean
-	ClusterMemberToolProvider clusterMemberToolProvider(ManagementGatewaySender sender, ObjectMapper mcpObjectMapper) {
-		return new ClusterMemberToolProvider(sender, mcpObjectMapper);
+	ClusterMemberToolProvider clusterMemberToolProvider(OutboundGateway outboundGateway, McpSession mcpSession, ObjectMapper mcpObjectMapper) {
+		return new ClusterMemberToolProvider(outboundGateway, mcpSession, mcpObjectMapper);
 	}
 
 	@Bean

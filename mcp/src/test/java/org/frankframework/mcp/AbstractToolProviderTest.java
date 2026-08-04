@@ -36,13 +36,11 @@ public abstract class AbstractToolProviderTest {
 
 	protected StubOutboundGateway gateway;
 	protected McpSession session;
-	protected ManagementGatewaySender sender;
 
 	@BeforeEach
 	void setUpGateway() {
 		gateway = new StubOutboundGateway();
 		session = new McpSession(gateway);
-		sender = new ManagementGatewaySender(gateway, session);
 	}
 
 	protected static SyncToolSpecification findTool(List<SyncToolSpecification> tools, String name) {

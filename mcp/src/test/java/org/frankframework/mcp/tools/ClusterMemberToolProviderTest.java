@@ -34,7 +34,6 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.frankframework.mcp.AbstractToolProviderTest;
-import org.frankframework.mcp.ManagementGatewaySender;
 import org.frankframework.mcp.McpSession;
 
 class ClusterMemberToolProviderTest extends AbstractToolProviderTest {
@@ -42,7 +41,7 @@ class ClusterMemberToolProviderTest extends AbstractToolProviderTest {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	private List<SyncToolSpecification> tools() {
-		return new ClusterMemberToolProvider(sender, OBJECT_MAPPER).getTools();
+		return new ClusterMemberToolProvider(gateway, session, OBJECT_MAPPER).getTools();
 	}
 
 	private static ClusterMember member(UUID id, String name, String type) {
@@ -53,10 +52,9 @@ class ClusterMemberToolProviderTest extends AbstractToolProviderTest {
 		return member;
 	}
 
-	/** Re-create the session and sender so a freshly configured set of members is picked up. */
+	/** Re-create the session so a freshly configured set of members is picked up. */
 	private void refreshSession() {
 		session = new McpSession(gateway);
-		sender = new ManagementGatewaySender(gateway, session);
 	}
 
 	@Test

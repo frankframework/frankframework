@@ -23,9 +23,10 @@ import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 import org.frankframework.mcp.AbstractToolProvider;
-import org.frankframework.mcp.ManagementGatewaySender;
+import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.ToolSchema;
 
 /**
@@ -34,8 +35,8 @@ import org.frankframework.mcp.ToolSchema;
  */
 public class LoggingToolProvider extends AbstractToolProvider {
 
-	public LoggingToolProvider(ManagementGatewaySender sender) {
-		super(sender);
+	public LoggingToolProvider(OutboundGateway outboundGateway, McpSession session) {
+		super(outboundGateway, session);
 	}
 
 	@Override
@@ -58,7 +59,7 @@ public class LoggingToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOGGING, BusAction.GET);
 					builder.addHeader("directory", stringArg(request, "directory"));
 					builder.addHeader("wildcard", stringArg(request, "wildcard"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -74,7 +75,7 @@ public class LoggingToolProvider extends AbstractToolProvider {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FILE_VIEWER, BusAction.GET);
 					builder.addHeader("fileName", requiredStringArg(request, "fileName"));
 					builder.addHeader("resultType", StringUtils.isNotBlank(resultType) ? resultType : "plain");
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 
@@ -82,7 +83,7 @@ public class LoggingToolProvider extends AbstractToolProvider {
 		return tool("get_log_configuration",
 				"Get the current logging configuration (log level, whether intermediary results are logged, max message length).",
 				ToolSchema.object().build(),
-				request -> sender.sendSyncForString(RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.GET)));
+				request -> sendSyncForString(RequestMessageBuilder.create(BusTopic.LOG_CONFIGURATION, BusAction.GET)));
 	}
 
 	private SyncToolSpecification getLogDefinitions() {
@@ -94,7 +95,7 @@ public class LoggingToolProvider extends AbstractToolProvider {
 				request -> {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOG_DEFINITIONS, BusAction.GET);
 					builder.addHeader("filter", stringArg(request, "filter"));
-					return sender.sendSyncForString(builder);
+					return sendSyncForString(builder);
 				});
 	}
 }

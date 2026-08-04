@@ -30,7 +30,7 @@ import org.frankframework.mcp.AbstractToolProviderTest;
 class LoggingToolProviderTest extends AbstractToolProviderTest {
 
 	private List<SyncToolSpecification> tools() {
-		return new LoggingToolProvider(sender).getTools();
+		return new LoggingToolProvider(gateway, session).getTools();
 	}
 
 	@Test

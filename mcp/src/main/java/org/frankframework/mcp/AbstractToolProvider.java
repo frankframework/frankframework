@@ -15,30 +15,78 @@
 */
 package org.frankframework.mcp;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.springframework.messaging.Message;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
 
+import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import org.frankframework.management.bus.message.RequestMessageBuilder;
+
 /**
- * Base class for {@link McpToolProvider}s. It offers small helpers to declare tools, read their arguments and turn a
- * result (or exception) into an MCP {@link CallToolResult}, so that concrete providers only need to describe the
- * gateway request.
+ * Base class for {@link McpToolProvider}s. It talks to the (possibly remote) Frank!Framework Management Gateway, in the
+ * same way the Frank!Console's {@code FrankApiService} does, and offers small helpers to declare tools, read their
+ * arguments and turn a result (or exception) into an MCP {@link CallToolResult}, so that concrete providers only need to
+ * describe the gateway request.
  */
 public abstract class AbstractToolProvider implements McpToolProvider {
 
 	protected final Logger log = LogManager.getLogger(this);
 
-	protected final ManagementGatewaySender sender;
+	protected final OutboundGateway outboundGateway;
+	protected final McpSession session;
 
-	protected AbstractToolProvider(ManagementGatewaySender sender) {
-		this.sender = sender;
+	protected AbstractToolProvider(OutboundGateway outboundGateway, McpSession session) {
+		this.outboundGateway = outboundGateway;
+		this.session = session;
+	}
+
+	/**
+	 * Send a request and wait for the response.
+	 *
+	 * @return the response message, never {@literal null}
+	 */
+	@NonNull
+	protected Message<?> sendSync(RequestMessageBuilder builder) {
+		try {
+			return outboundGateway.sendSyncMessage(builder.build(session.getMemberTarget()));
+		} catch (BusException e) {
+			throw new McpGatewayException("error sending request to the Frank!Framework: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Send a request, wait for the response and return its payload as a String.
+	 *
+	 * @return the response payload, or an empty String when the response has no content
+	 */
+	@NonNull
+	protected String sendSyncForString(RequestMessageBuilder builder) {
+		String payload = BusMessageUtils.getPayloadAsString(sendSync(builder));
+		return payload != null ? payload : "";
+	}
+
+	/** Send a request without waiting for (or expecting) a response. */
+	protected void sendAsync(RequestMessageBuilder builder) {
+		outboundGateway.sendAsyncMessage(builder.build(session.getMemberTarget()));
+	}
+
+	/** All members that are part of the (Hazelcast) cluster. Empty when the gateway does not support clustering. */
+	@NonNull
+	protected List<ClusterMember> getMembers() {
+		return outboundGateway.getMembers();
 	}
 
 	/** The logic behind a tool: it receives the (validated) request and produces the textual result. */

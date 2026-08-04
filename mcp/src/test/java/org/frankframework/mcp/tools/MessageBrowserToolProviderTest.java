@@ -33,7 +33,7 @@ import org.frankframework.mcp.AbstractToolProviderTest;
 class MessageBrowserToolProviderTest extends AbstractToolProviderTest {
 
 	private List<SyncToolSpecification> tools() {
-		return new MessageBrowserToolProvider(sender).getTools();
+		return new MessageBrowserToolProvider(gateway, session).getTools();
 	}
 
 	@Test

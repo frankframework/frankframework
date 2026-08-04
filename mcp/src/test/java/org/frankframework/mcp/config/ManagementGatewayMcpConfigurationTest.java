@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.hasSize;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.MapPropertySource;
 
@@ -32,7 +31,7 @@ class ManagementGatewayMcpConfigurationTest {
 
 	/**
 	 * Boots the full Spring configuration but replaces the outbound gateway with a {@link StubOutboundGateway}, so the
-	 * whole bean graph (session, sender, tool providers, server factory) is validated without a running Frank!Framework.
+	 * whole bean graph (session, tool providers, server factory) is validated without a running Frank!Framework.
 	 */
 	@Test
 	void springContextWiresAllToolsThroughTheServerFactory() {
@@ -44,7 +43,7 @@ class ManagementGatewayMcpConfigurationTest {
 
 			ManagementGatewayMcpServerFactory factory = context.getBean(ManagementGatewayMcpServerFactory.class);
 
-			assertThat(factory.getTools(), hasSize(30));
+			assertThat(factory.getTools(), hasSize(29));
 		}
 	}
 }

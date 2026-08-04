@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,8 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.mcp.tools.AdapterToolProvider;
 import org.frankframework.mcp.tools.ClusterMemberToolProvider;
@@ -48,17 +47,16 @@ class ManagementGatewayMcpServerFactoryTest {
 	void setUp() {
 		StubOutboundGateway gateway = new StubOutboundGateway();
 		McpSession session = new McpSession(gateway);
-		ManagementGatewaySender sender = new ManagementGatewaySender(gateway, session);
 		ObjectMapper objectMapper = new ObjectMapper();
 
 		List<McpToolProvider> providers = List.of(
-				new AdapterToolProvider(sender),
-				new LoggingToolProvider(sender),
-				new TestPipelineToolProvider(sender),
-				new MessageBrowserToolProvider(sender),
-				new ConfigurationToolProvider(sender),
-				new ServerInfoToolProvider(sender),
-				new ClusterMemberToolProvider(sender, objectMapper));
+				new AdapterToolProvider(gateway, session),
+				new LoggingToolProvider(gateway, session),
+				new TestPipelineToolProvider(gateway, session),
+				new MessageBrowserToolProvider(gateway, session),
+				new ConfigurationToolProvider(gateway, session),
+				new ServerInfoToolProvider(gateway, session),
+				new ClusterMemberToolProvider(gateway, session, objectMapper));
 
 		factory = new ManagementGatewayMcpServerFactory(providers, new JacksonMcpJsonMapper(objectMapper));
 	}
@@ -67,7 +65,7 @@ class ManagementGatewayMcpServerFactoryTest {
 	void exposesAllToolsFromEveryProvider() {
 		List<SyncToolSpecification> tools = factory.getTools();
 
-		assertThat(tools, hasSize(30));
+		assertThat(tools, hasSize(29));
 	}
 
 	@Test

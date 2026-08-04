@@ -60,6 +60,13 @@
 			<artifactId>tomcat-embed-core</artifactId>
 		</dependency>
 
+		<!-- Provided by the embedded servlet container at runtime -->
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Bridge the MCP SDK's SLF4J logging onto Log4j2 -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -70,13 +77,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<scope>runtime</scope>
-		</dependency>
-
-		<!-- Provided by the embedded servlet container at runtime -->
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- Test scoped dependencies -->
