@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.collections4.map.LRUMap;
@@ -64,8 +65,8 @@ import org.frankframework.xml.XmlWriter;
  */
 public class XsltSender extends AbstractSenderWithParameters {
 
-	public final TransformerPool.OutputType DEFAULT_OUTPUT_METHOD= TransformerPool.OutputType.XML;
-	public final TransformerPool.OutputType DEFAULT_XPATH_OUTPUT_METHOD= TransformerPool.OutputType.TEXT;
+	public static final TransformerPool.OutputType DEFAULT_OUTPUT_METHOD = TransformerPool.OutputType.XML;
+	public static final TransformerPool.OutputType DEFAULT_XPATH_OUTPUT_METHOD = TransformerPool.OutputType.TEXT;
 	public static final boolean DEFAULT_INDENT = false; // some existing FF expect default for indent to be false
 	public static final boolean DEFAULT_OMIT_XML_DECLARATION = false;
 
@@ -100,15 +101,8 @@ public class XsltSender extends AbstractSenderWithParameters {
 
 		dynamicTransformerPoolMap = Collections.synchronizedMap(new LRUMap<>(transformerPoolMapSize));
 
-		if(StringUtils.isNotEmpty(getXpathExpression()) && getOutputType()==null) {
-			setOutputType(DEFAULT_XPATH_OUTPUT_METHOD);
-		}
-		if(StringUtils.isNotEmpty(getStyleSheetName()) || StringUtils.isNotEmpty(getXpathExpression())) {
-			Boolean omitXmlDeclaration = getOmitXmlDeclaration();
-			if (omitXmlDeclaration == null) {
-				omitXmlDeclaration = true;
-			}
-			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !omitXmlDeclaration, getParameterList(), getXsltVersion());
+		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
+			transformerPool = createTransformerPool();
 		}
 		else if(StringUtils.isEmpty(getStyleSheetNameSessionKey())) {
 			throw new ConfigurationException("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified");
@@ -123,6 +117,28 @@ public class XsltSender extends AbstractSenderWithParameters {
 				}
 			}
 		}
+	}
+
+	private TransformerPool createTransformerPool() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getXpathExpression())) {
+			if (StringUtils.isNotEmpty(getStyleSheetName())) {
+				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
+			}
+			boolean includeXmlDeclaration = getOmitXmlDeclaration() == null || getOmitXmlDeclaration();
+			TransformerPool.OutputType type = getOutputType() == null ? DEFAULT_XPATH_OUTPUT_METHOD : getOutputType();
+			try {
+				return TransformerPool.getXPathTransformerPool(getNamespaceDefs(), getXpathExpression(), type, !includeXmlDeclaration, getParameterList(), getXsltVersion());
+			} catch (TransformerConfigurationException e) {
+				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+getXpathExpression()+"]", e);
+			}
+		}
+		else if (StringUtils.isNotEmpty(getStyleSheetName())) {
+			if (StringUtils.isNotEmpty(getNamespaceDefs())) {
+				throw new ConfigurationException("cannot have namespaceDefs specified for a styleSheetName");
+			}
+			return TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), getXsltVersion());
+		}
+		throw new ConfigurationException("one of xpathExpression, styleSheetName must be specified");
 	}
 
 	@Override
@@ -177,7 +193,8 @@ public class XsltSender extends AbstractSenderWithParameters {
 			String styleSheetNameToUse = session.getString(styleSheetNameSessionKey);
 			if (StringUtils.isNotEmpty(styleSheetNameToUse )) {
 				if (!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureTransformer(this, null, null, styleSheetNameToUse, null, true, getParameterList()));
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureStyleSheetTransformer(this, styleSheetNameToUse, 0));
+
 					poolToUse.open();
 				} else {
 					poolToUse = dynamicTransformerPoolMap.get(styleSheetNameToUse);
