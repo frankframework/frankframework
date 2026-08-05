@@ -447,7 +447,7 @@ public class KeyStoreCrypto extends CryptoBase {
 
 		// Finally check Cert Constraints
 		if (!matchesSubjectDnPattern(certs[0], subjectCertConstraints)) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
+			throw new CustomWSSecurityException("The security token could not be authenticated or authorized");
 		}
 	}
 
@@ -456,7 +456,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		verifyTrust(certs, enableRevocation, subjectCertConstraints);
 
 		if (!matchesIssuerDnPattern(certs[0], issuerCertConstraints)) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
+			throw new CustomWSSecurityException("The security token could not be authenticated or authorized");
 		}
 	}
 
@@ -472,7 +472,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		// If the public key is null, do not trust the signature
 		//
 		if (publicKey == null) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
+			throw new CustomWSSecurityException("The security token could not be authenticated or authorized");
 		}
 
 		//
@@ -480,7 +480,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		// then search the truststore for the transmitted public key (direct trust)
 		//
 		if (!findPublicKeyInKeyStore(publicKey, keystore, false) && !findPublicKeyInKeyStore(publicKey, truststore, true)) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
+			throw new CustomWSSecurityException("The security token could not be authenticated or authorized");
 		}
 	}
 
