@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +30,7 @@ import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SchemaRegistry;
 
 import lombok.Getter;
+import tools.jackson.core.exc.StreamReadException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -67,7 +67,7 @@ public class JsonValidator extends AbstractValidator {
 
 		try {
 			jsonSchema = getJsonSchema();
-		} catch (SchemaException | IOException e) {
+		} catch (SchemaException | IOException |StreamReadException e) {
 			throw new ConfigurationException("unable to configure JsonValidator", e);
 		}
 	}
@@ -123,7 +123,7 @@ public class JsonValidator extends AbstractValidator {
 					validationMessages.isEmpty() ? ValidationResult.VALID : ValidationResult.INVALID,
 					validationMessages
 			);
-		} catch (IOException | UncheckedIOException e) {
+		} catch (IOException | StreamReadException e) {
 			// Jackson throws UncheckedIOExceptions
 			return new SchemaValidationResult(ValidationResult.PARSER_ERROR,
 					List.of(Error.builder().message("Invalid input: " + e.getMessage()).build()));

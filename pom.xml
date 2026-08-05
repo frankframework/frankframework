@@ -90,9 +90,10 @@
 		<junit.includedTags />
 
 		<jackson.version>2.22.1</jackson.version>
+		<tools.jackson.version>3.2.1</tools.jackson.version>
 		<cxf.version>4.2.2</cxf.version>
 		<spring.version>7.0.8</spring.version>
-		<spring-security.version>7.0.6</spring-security.version>
+		<spring-security.version>7.1.0</spring-security.version>
 		<spring-integration.version>7.1.0</spring-integration.version>
 		<spring.boot.version>4.1.0</spring.boot.version>
 		<tomcat.version>11.0.24</tomcat.version>
@@ -193,6 +194,14 @@
 				<groupId>com.fasterxml.jackson</groupId>
 				<artifactId>jackson-bom</artifactId>
 				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>tools.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${tools.jackson.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

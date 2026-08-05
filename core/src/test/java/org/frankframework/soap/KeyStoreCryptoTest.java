@@ -38,7 +38,7 @@ import org.frankframework.encryption.KeystoreType;
 import org.frankframework.lifecycle.LoadBouncyCastleBean;
 
 @Log4j2
-public class KeyStoreCrypoTest {
+public class KeyStoreCryptoTest {
 	private static KeyPairGenerator kpGenerator;
 
 	@BeforeAll

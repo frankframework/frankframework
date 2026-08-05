@@ -12,9 +12,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xml.sax.SAXException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.log4j.Log4j2;
+import tools.jackson.databind.ObjectMapper;
 
 import org.frankframework.stream.FileMessage;
 import org.frankframework.testutil.TestFileUtils;
