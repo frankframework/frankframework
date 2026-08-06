@@ -33,7 +33,7 @@ jobs:
       relevant: ${{ steps.filter.outputs.relevant }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Filter paths
         id: filter
@@ -62,7 +62,7 @@ jobs:
 
     - name: Checkout repository
       if: needs.check-changes.outputs.relevant == 'true'
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:
         # Number of commits to fetch. 0 indicates all history for all branches and tags.
         # Required for SonarCloud
@@ -104,9 +104,9 @@ jobs:
 
     - name: Set up Node.js
       if: needs.check-changes.outputs.relevant == 'true'
-      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
       with:
-        node-version: 24.18.0
+        node-version: 24.18.1
         cache: pnpm
         cache-dependency-path: '**/pnpm-lock.yaml'
 
