@@ -242,12 +242,20 @@ public class TransformerPool {
 		return null;
 	}
 
+	/**
+	 * @deprecated either call {@code getXPathTransformerPool} or {@code configureStyleSheetTransformer}
+	 */
 	@NonNull
+	@Deprecated
 	public static TransformerPool configureTransformer(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nullable OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws ConfigurationException {
 		return configureTransformer0(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
 	}
 
+	/**
+	 * @deprecated either call {@code getXPathTransformerPool} or {@code configureStyleSheetTransformer}
+	 */
 	@NonNull
+	@Deprecated
 	public static TransformerPool configureTransformer0(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws ConfigurationException {
 		if (StringUtils.isNotEmpty(xPathExpression)) {
 			if (StringUtils.isNotEmpty(styleSheetName)) {

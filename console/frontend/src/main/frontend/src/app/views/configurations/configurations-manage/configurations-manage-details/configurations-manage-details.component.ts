@@ -1,4 +1,14 @@
-import { Component, inject, OnDestroy, OnInit, QueryList, ViewChildren, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  QueryList,
+  ViewChildren,
+  ChangeDetectionStrategy,
+  SecurityContext,
+} from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppService, Configuration } from '../../../../app.service';
 import { SweetalertService } from '../../../../services/sweetalert.service';
@@ -47,9 +57,10 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
   private readonly sweetalertService: SweetalertService = inject(SweetalertService);
   private readonly toastService: ToastService = inject(ToastService);
+  private readonly domSanitizer: DomSanitizer = inject(DomSanitizer);
 
   constructor() {
-    const routeState = this.router.getCurrentNavigation()?.extras.state ?? {};
+    const routeState = this.router.currentNavigation()?.extras.state ?? {};
     if (!routeState['configuration']) {
       this.router.navigate(['..'], { relativeTo: this.route });
     }
@@ -97,14 +108,15 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   }
 
   deleteConfig(config: Configuration): void {
-    const message = config.version ? `Are you sure you want to remove version '${config.version}'?` : 'Are you sure?';
+    const configVersion = this.domSanitizer.sanitize(SecurityContext.HTML, config.version ?? null);
+    const message = configVersion ? `Are you sure you want to remove version '${configVersion}'?` : 'Are you sure?';
 
     this.sweetalertService.confirm({ title: message }).then((result) => {
       if (result.isConfirmed) {
         this.configurationsService
           .deleteConfigurationVersion(config.name, encodeURIComponent(config.version!))
           .subscribe(() => {
-            this.toastService.success(`Successfully removed version '${config.version}'`);
+            this.toastService.success(`Successfully removed version '${configVersion}'`);
             this.update();
           });
       }
@@ -116,11 +128,13 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
       const configs = this.versions[x];
       if (configs.version != config.version) configs.actived = false;
     }
+
+    const configVersion = this.domSanitizer.sanitize(SecurityContext.HTML, config.version ?? null);
     this.configurationsService
       .updateConfigurationVersion(config.name, encodeURIComponent(config.version!), { activate: config.active! })
       .subscribe({
         next: () => {
-          this.toastService.success(`Successfully changed startup config to version '${config.version}'`);
+          this.toastService.success(`Successfully changed startup config to version '${configVersion}'`);
         },
         error: () => {
           this.update();
@@ -129,12 +143,13 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   }
 
   scheduleReload(config: Configuration): void {
+    const configVersion = this.domSanitizer.sanitize(SecurityContext.HTML, config.version ?? null);
     this.configurationsService
       .updateConfigurationVersion(config.name, encodeURIComponent(config.version!), { autoreload: config.autoreload! })
       .subscribe({
         next: () => {
           this.toastService.success(
-            `Successfully ${config.autoreload ? 'enabled' : 'disabled'} Auto Reload for version '${config.version}'`,
+            `Successfully ${config.autoreload ? 'enabled' : 'disabled'} Auto Reload for version '${configVersion}'`,
           );
         },
         error: () => {
