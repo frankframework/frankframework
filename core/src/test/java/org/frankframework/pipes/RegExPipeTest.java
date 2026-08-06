@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.Issue;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -192,4 +193,33 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 		assertTrue(pipeRunResult.getResult().isNull());
 	}
 
+	/**
+	 * The IfPipe regex implementation does not support multiline input.
+	 * That method has been deprecated and users are encouraged to use the RegexPipe instead.
+	 * This pipe DOES support multiline input.
+	 */
+	@Test
+	@Issue("6963")
+	void multilineInputRegexTest() throws Exception {
+		pipe.setRegex("(test1)+");
+		pipe.configure();
+		pipe.start();
+
+		String input = """
+				<directory>
+					<file name="test1.txt"/>
+					<file name="test2.txt"/>
+				</directory>""";
+
+		// Act & Assert 1: Test with matching regex
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
+
+		// Act & Assert 2: Test with non-matching regex
+		pipe.setRegex("(test3)+");
+		pipe.configure();
+		pipe.start();
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(RegExPipe.ELSE_FORWARD, pipeRunResult.getPipeForward().getName());
+	}
 }

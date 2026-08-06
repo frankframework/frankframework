@@ -491,8 +491,9 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 		try {
 			WSSecurityEngine engine = new WSSecurityEngine();
 			result = engine.processSecurityHeader(doc, requestData);
-		} catch (IllegalArgumentException | IllegalStateException e) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_CHECK);
+		} catch (IllegalArgumentException | IllegalStateException | WSSecurityException e) {
+			// Catch WSSecurityException to prevent the locale based exception trace and throw a generic instead.
+			throw new KeyStoreCrypto.CustomWSSecurityException("unable to process security header", e);
 		}
 
 		if (result == null || result.getResults().isEmpty()) {
@@ -507,7 +508,7 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 				.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
 
 		if (!encryptionProcessed) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "stax.encryption.unprocessedReferences");
+			throw new KeyStoreCrypto.CustomWSSecurityException("some encryption references were not processed");
 		}
 
 		WSSecHeader secHeader = new WSSecHeader(doc);

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junitpioneer.jupiter.Issue;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -205,7 +206,8 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 
 	@MethodSource("data")
 	@ParameterizedTest
-	void issue3973MissingLocalWarning(Class<? extends AbstractXmlValidator> implementation) throws Exception {
+	@Issue("3973")
+	void missingLocalWarning(Class<? extends AbstractXmlValidator> implementation) throws Exception {
 		initJson2XmlValidatorTest(implementation);
 		TestConfiguration config = new TestConfiguration();
 

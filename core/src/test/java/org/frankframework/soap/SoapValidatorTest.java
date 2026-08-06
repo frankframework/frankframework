@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.Issue;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -181,7 +182,8 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	void issue4183CharsetProblemInXSD() {
+	@Issue("4183")
+	void charsetProblemInXSD() {
 		configureSoapValidator(false);
 		pipe.setSchemaLocation("urn:namespacer Validation/CharsetProblem/non-utf8.xsd");
 

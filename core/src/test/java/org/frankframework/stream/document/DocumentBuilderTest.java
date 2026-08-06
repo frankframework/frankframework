@@ -18,6 +18,7 @@ import jakarta.json.JsonValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junitpioneer.jupiter.Issue;
 import org.xml.sax.SAXException;
 
 import org.frankframework.documentbuilder.ArrayBuilder;
@@ -162,7 +163,8 @@ public class DocumentBuilderTest {
 
 
 	@Test
-	public void Issue4106ContentAfterDuplicateArray() throws Exception {
+	@Issue("4106")
+	public void contentAfterDuplicateArray() throws Exception {
 		String input="{ \"a\": [ 1 ], \"b\": [ 2 ], \"c\": \"cc\" }";
 		String expected = """
 								<root>\
