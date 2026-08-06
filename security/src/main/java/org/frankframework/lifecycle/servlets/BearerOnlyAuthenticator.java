@@ -35,6 +35,7 @@ import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -65,6 +66,13 @@ import lombok.Setter;
  * @author evandongen
  */
 public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
+
+	/**
+	 * Sets the expected audience claim of the JWT token to validate.
+	 * If set, the JWT token must contain this value in its {@code aud} claim.
+	 */
+	@Setter
+	private String audience;
 
 	@Setter
 	private String issuerUri;
@@ -131,6 +139,11 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	 * </ul>
 	 */
 	protected AbstractAuthenticationToken jwtAuthenticationTokenConverter(Jwt jwt) {
+		if (StringUtils.isNotBlank(audience) && (jwt.getAudience() == null || !jwt.getAudience().contains(audience))) {
+			log.warn("JWT token audience [{}] does not contain the required audience [{}]", jwt.getAudience(), audience);
+			throw new InvalidBearerTokenException("JWT token audience does not match expected audience");
+		}
+
 		if (StringUtils.isNotBlank(userInfoUri)) {
 			log.debug("Fetching user roles from userInfoUri [{}]", userInfoUri);
 			jwt = updateJwtWithUserInfoUri(jwt);
