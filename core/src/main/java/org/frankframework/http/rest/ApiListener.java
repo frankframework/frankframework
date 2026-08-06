@@ -75,7 +75,7 @@ import org.frankframework.util.StringUtil;
  * <li><code>etag.cache.server=ip or hostname:port</code></li>
  * <li><code>etag.cache.type=memcached</code></li>
  * </ul>
- * In case authentication, is required the following application properties can be used:
+ * In case authentication is required the following application properties can be used:
  * <ul>
  * <li><code>etag.cache.username</code></li>
  * <li><code>etag.cache.password</code></li>
@@ -229,11 +229,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
 		}
 
-		// Check that none of configured parameters or path-variables matches any of the reserved names.
+		// Make sure allowedParameters or allowAll is explicitly set
 		if (allowedParameterSet.isEmpty() && allowAllParams == null) {
 			ConfigurationWarnings.add(this, log, "SECURITY RISK: All path parameters and query parameters will be copied into the session. Specify [allowedParameters] for your pipeline, or explicitly set [allowAllParams] to 'true'.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
 			allowAllParams = true;
 		}
+
+		// Check that none of configured parameters or path-variables matches any of the reserved names.
 		Set<String> paramsFromBlacklist = new HashSet<>(allowedParameterSet);
 		paramsFromBlacklist.retainAll(RESERVED_NAMES);
 		if (!paramsFromBlacklist.isEmpty()) {
