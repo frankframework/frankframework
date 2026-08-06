@@ -37,7 +37,9 @@ public class MailMessage extends MailItemId {
 
 	public MailMessage(MailFolder mailFolder, String id) {
 		log.debug("creating new MailItem with id [{}] in folder [{}]", id, mailFolder);
-		setMailFolder(mailFolder);
+		if (mailFolder != null) {
+			setMailFolder(mailFolder);
+		}
 		setId(id);
 	}
 
