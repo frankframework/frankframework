@@ -23,6 +23,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.cfg.EnumFeature;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -39,6 +40,7 @@ public class JacksonUtils {
 				.enable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT)
 				.enable(EnumFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
 				.disable(EnumFeature.READ_ENUMS_USING_TO_STRING)
+				.enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.build();
 	}
 
