@@ -113,10 +113,10 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 			}
 		}
 		if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-			correlationIDTp = TransformerPool.configureTransformer(this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(), OutputType.TEXT, false, null);
+			correlationIDTp = TransformerPool.configureTransformer0(this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(), OutputType.TEXT, false, null);
 		}
 		if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-			labelTp = TransformerPool.configureTransformer(this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(), OutputType.TEXT, false, null);
+			labelTp = TransformerPool.configureTransformer0(this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(), OutputType.TEXT, false, null);
 		}
 	}
 
