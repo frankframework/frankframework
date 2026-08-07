@@ -22,9 +22,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.env.MockEnvironment;
 
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -40,7 +40,7 @@ class KubernetesEventPublisherTest {
 
 	KubernetesClient client; // injected by the mock extension — instance field => fresh server per test
 
-	private static final UnaryOperator<String> POD_ENV = key -> "POD_NAME".equals(key) ? "ff-pod-1" : null;
+	private static final MockEnvironment POD_ENV = new MockEnvironment().withProperty("POD_NAME", "ff-pod-1");
 
 	@SuppressWarnings("rawtypes")
 	private static MessageEvent<?> event(Class<? extends MessageEvent> type, String message, MessageEventLevel level) {

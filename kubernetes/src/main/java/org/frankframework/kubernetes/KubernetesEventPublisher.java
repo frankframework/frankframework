@@ -19,12 +19,12 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
 
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.Environment;
 
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.EventBuilder;
@@ -79,15 +79,15 @@ public class KubernetesEventPublisher implements ApplicationListener<MessageEven
 	private final String namespace;
 	private final String podName;
 
-	public KubernetesEventPublisher() {
-		this(buildInClusterClientOrNull(), System::getenv);
+	public KubernetesEventPublisher(Environment environment) {
+		this(buildInClusterClientOrNull(), environment);
 	}
 
-	/** Package-private constructor allowing the client and environment to be injected for testing. */
-	KubernetesEventPublisher(KubernetesClient client, UnaryOperator<String> env) {
+	/** Package-private constructor allowing the client to be injected for testing. */
+	KubernetesEventPublisher(KubernetesClient client, Environment environment) {
 		this.client = client;
 		this.namespace = client == null ? DEFAULT_NAMESPACE : Optional.ofNullable(client.getNamespace()).orElse(DEFAULT_NAMESPACE);
-		this.podName = resolvePodName(env);
+		this.podName = resolvePodName(environment);
 		if (client == null) {
 			LOG.info("Kubernetes event publishing disabled: no in-cluster API access");
 		} else {
@@ -177,10 +177,10 @@ public class KubernetesEventPublisher implements ApplicationListener<MessageEven
 		}
 	}
 
-	private static String resolvePodName(UnaryOperator<String> env) {
-		String name = env.apply("POD_NAME");
+	private static String resolvePodName(Environment environment) {
+		String name = environment.getProperty("POD_NAME");
 		if (name == null || name.isBlank()) {
-			name = env.apply("HOSTNAME");
+			name = environment.getProperty("HOSTNAME");
 		}
 		return (name == null || name.isBlank()) ? "unknown" : name;
 	}
