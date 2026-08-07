@@ -15,16 +15,17 @@
 */
 package org.frankframework.util;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.cfg.EnumFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.management.bus.BusException;
 
@@ -32,14 +33,23 @@ public class JacksonUtils {
 	private static final ObjectMapper MAPPER;
 
 	static {
-		MAPPER = JsonMapper.builder().enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS).build();
-		MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		MAPPER.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
-		MAPPER.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
+		MAPPER = JsonMapper.builder()
+				.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+				.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+				.enable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT)
+				.enable(EnumFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
+				.disable(EnumFeature.READ_ENUMS_USING_TO_STRING)
+				.enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.build();
 	}
 
 	public static String convertToJson(Object payload) {
 		try {
+			// If this is an inputStream, it will always 'parse' to a string correctly. When an InputStream is passed, its contents should be parsed as JSON
+			if (payload instanceof InputStream stream) {
+				return MAPPER.writeValueAsString(MAPPER.readTree(stream));
+			}
 			return MAPPER.writeValueAsString(payload);
 		} catch (JacksonException e) {
 			throw new BusException("unable to convert response to JSON", e);
@@ -48,19 +58,14 @@ public class JacksonUtils {
 
 	public static <T> T convertToDTO(Object payload, Class<T> dto) {
 		try {
-			if(payload instanceof String string) {
-				return MAPPER.readValue(string, dto);
-			} else if(payload instanceof byte[] bytes) {
-				return MAPPER.readValue(bytes, dto);
-			} else if(payload instanceof InputStream stream) {
-				return MAPPER.readValue(stream, dto);
-			} else {
-				throw new NotImplementedException("unhandled payload type ["+payload.getClass()+"]");
-			}
+			return switch (payload) {
+				case String string -> MAPPER.readValue(string, dto);
+				case byte[] bytes -> MAPPER.readValue(bytes, dto);
+				case InputStream stream -> MAPPER.readValue(stream, dto);
+				default -> throw new NotImplementedException("unhandled payload type [" + payload.getClass() + "]");
+			};
 		} catch (JacksonException e) {
 			throw new BusException("unable to convert payload", e);
-		} catch (IOException e) {
-			throw new BusException("unable to parse payload", e);
 		}
 	}
 }
