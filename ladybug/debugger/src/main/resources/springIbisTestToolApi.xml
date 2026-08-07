@@ -52,6 +52,10 @@
 				<value>namespace</value>
 				<value>status</value>
 				<value>numberOfCheckpoints</value>
+				<!-- These will not appear in the debug table when host and application are not set
+				     on Ladybug's TestTool class -->
+				<value>host</value>
+				<value>application</value>
 			</list>
 		</property>
 	</bean>
