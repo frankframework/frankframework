@@ -51,19 +51,55 @@ class AdapterTest {
 	void testDuplicateReceiverNames() {
 		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean()) {
 
-			Receiver<?> receiver1 = SpringUtils.createBean(adapter);
-			receiver1.setName("testReceiver");
-
-			Receiver<?> receiver2 = SpringUtils.createBean(adapter);
-			receiver2.setName("testReceiver");
-
-			adapter.addReceiver(receiver1);
+			adapter.addReceiver(createReceiver(adapter, "testReceiver"));
 			assertEquals(0, config.getConfigurationWarnings().size());
 
-			adapter.addReceiver(receiver2);
+			adapter.addReceiver(createReceiver(adapter, "testReceiver"));
 			assertEquals(1, config.getConfigurationWarnings().size());
-			assertEquals("Receiver [testReceiver] name must be unique!", config.getConfigWarning(0));
+			assertEquals("Receiver [testReceiver] name must be unique, using: 'Receiver [2]'", config.getConfigWarning(0));
 		}
+	}
+
+	@Test
+	void testNoReceiverName() {
+		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean()) {
+
+			// Add receive with default name of the 2nd receiver
+			adapter.addReceiver(createReceiver(adapter, "Receiver [2]"));
+			assertEquals(0, config.getConfigurationWarnings().size());
+
+			// Add without name
+			adapter.addReceiver(SpringUtils.createBean(adapter));
+
+			assertEquals(1, config.getConfigurationWarnings().size());
+			assertEquals("Receiver does not have a name, using: 'Receiver [3]'", config.getConfigWarning(0));
+		}
+	}
+
+	@Test
+	void testNoReceiverNameAndDuplicateName() {
+		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean()) {
+
+			adapter.addReceiver(createReceiver(adapter, "Receiver [1]"));
+			assertEquals(0, config.getConfigurationWarnings().size());
+
+			adapter.addReceiver(createReceiver(adapter, "Receiver [1]"));
+			assertEquals(1, config.getConfigurationWarnings().size());
+			assertEquals("Receiver [Receiver [1]] name must be unique, using: 'Receiver [2]'", config.getConfigWarning(0));
+
+			// Add without name
+			adapter.addReceiver(SpringUtils.createBean(adapter));
+
+			assertEquals(2, config.getConfigurationWarnings().size());
+			assertEquals("Receiver does not have a name, using: 'Receiver [3]'", config.getConfigWarning(1));
+		}
+	}
+
+	private static Receiver<?> createReceiver(Adapter adapter, String name) {
+		Receiver<?> receiver = SpringUtils.createBean(adapter);
+		receiver.setName(name);
+
+		return receiver;
 	}
 
 	private @NonNull EchoPipe buildTestPipe(@NonNull PipeLine pipeLine) throws ConfigurationException {

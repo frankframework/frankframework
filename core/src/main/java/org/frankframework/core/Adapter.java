@@ -891,15 +891,17 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have a recursive call to logger when trace-level logging is enabled
 	public void addReceiver(Receiver<?> receiver) {
 		if (StringUtils.isBlank(receiver.getName())) {
+			String newName = createReceiverName(receivers.size() + 1);
 			// This will not contain the adapter name, as it's not present at this time yet which will make debugging this very difficult.
 			// Since we do need a name for each receiver, perhaps we should log this somewhere else to improve the dev-experience?
-			ConfigurationWarnings.add(receiver, log, "receiver does not have a name, generating implicit one.");
-			receiver.setName("Receiver [%d]".formatted(receivers.size() + 1));
+			ConfigurationWarnings.add(receiver, log, "does not have a name, using: '%s'".formatted(newName));
+			receiver.setName(newName);
 		}
 
 		if (receivers.stream().map(HasName::getName).toList().contains(receiver.getName())) {
-			ConfigurationWarnings.add(receiver, log, "name must be unique!");
-			receiver.setName("Receiver [%d]".formatted(receivers.size() + 1));
+			String newName = createReceiverName(receivers.size() + 1);
+			ConfigurationWarnings.add(receiver, log, "name must be unique, using: '%s'".formatted(newName));
+			receiver.setName(newName);
 		}
 
 		receivers.add(receiver);
@@ -909,6 +911,14 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		} else {
 			log.debug("Adapter [{}] registered receiver [{}]", this::getId, receiver::getName);
 		}
+	}
+
+	private String createReceiverName(final int i) {
+		String potentialName = "Receiver [%d]".formatted(i);
+		if (receivers.stream().map(HasName::getName).toList().contains(potentialName)) {
+			return createReceiverName(i+1);
+		}
+		return potentialName;
 	}
 
 	/**
