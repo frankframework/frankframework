@@ -379,7 +379,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 					pollToken.release();
 				}
 				threadsRunning.decrementAndGet();
-				if (listener != null) {
+				if (listener != null && threadContext != null) {
 					try {
 						listener.closeThread(threadContext);
 					} catch (ListenerException e) {
