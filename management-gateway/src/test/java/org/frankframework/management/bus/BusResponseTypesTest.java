@@ -1,5 +1,6 @@
 package org.frankframework.management.bus;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.management.bus.message.AbstractMessage;
@@ -61,9 +63,8 @@ public class BusResponseTypesTest {
 	public void testUnableToConvertPayloadToJson() {
 		ByteArrayInputStream stream = new ByteArrayInputStream("binary".getBytes());
 
-		// jackson 3 doesn't throw, but just returns an empty JSON object
-		JsonMessage jsonMessage = new JsonMessage(stream);
-		assertEquals("{}", jsonMessage.getPayload());
+		BusException e = assertThrows(BusException.class, () -> new JsonMessage(stream));
+		assertThat(e.getMessage(), Matchers.startsWith("unable to convert response to JSON: (StreamReadException) Unrecognized token 'binary'"));
 	}
 
 	@Test
@@ -81,8 +82,8 @@ public class BusResponseTypesTest {
 	public void testInvalidStatusCode() {
 		StringMessage message = new StringMessage("dummy input");
 		assertAll(
-			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(600)),
-			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(100))
+				() -> assertThrows(IllegalArgumentException.class, () -> message.setStatus(600)),
+				() -> assertThrows(IllegalArgumentException.class, () -> message.setStatus(100))
 		);
 	}
 

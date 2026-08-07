@@ -46,6 +46,10 @@ public class JacksonUtils {
 
 	public static String convertToJson(Object payload) {
 		try {
+			// If this is an inputStream, it will always 'parse' to a string correctly. When an InputStream is passed, its contents should be parsed as JSON
+			if (payload instanceof InputStream stream) {
+				return MAPPER.writeValueAsString(MAPPER.readTree(stream));
+			}
 			return MAPPER.writeValueAsString(payload);
 		} catch (JacksonException e) {
 			throw new BusException("unable to convert response to JSON", e);

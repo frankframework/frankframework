@@ -31,10 +31,6 @@ import lombok.extern.log4j.Log4j2;
 public class MailMessage extends MailItemId {
 	private static final String MESSAGE_BASE = "%s/messages";
 
-	public MailMessage() {
-		// public constructor for Jackson
-	}
-
 	public MailMessage(MailFolder mailFolder, String id) {
 		log.debug("creating new MailItem with id [{}] in folder [{}]", id, mailFolder);
 		if (mailFolder != null) {
