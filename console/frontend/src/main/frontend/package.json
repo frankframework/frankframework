@@ -44,7 +44,7 @@
     "chart.js": "^4.5.1",
     "ladda": "^2.0.3",
     "lodash.merge": "^4.6.2",
-    "markdown-it": "^14.3.0",
+    "markdown-it": "^15.0.0",
     "monaco-editor": "0.55.1",
     "ng2-charts": "^10.0.0",
     "pace-js": "1.2.4",
