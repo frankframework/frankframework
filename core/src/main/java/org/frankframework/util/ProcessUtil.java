@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
@@ -38,8 +39,8 @@ import org.frankframework.task.TimeoutGuard;
 /**
  * Process execution utilities.
  *
- * @author  Gerrit van Brakel
- * @since   4.8
+ * @author Gerrit van Brakel
+ * @since 4.8
  */
 @Log4j2
 public class ProcessUtil {
@@ -60,7 +61,7 @@ public class ProcessUtil {
 	}
 
 	protected static String getCommandLine(List<String> command) {
-		if (command==null || command.isEmpty()) {
+		if (command == null || command.isEmpty()) {
 			return "";
 		}
 		StringBuilder result = new StringBuilder(command.getFirst());
@@ -76,7 +77,7 @@ public class ProcessUtil {
 
 	public static Message executeCommand(String command) throws IOException {
 		try {
-			return executeCommand(splitUpCommandString(command),0);
+			return executeCommand(splitUpCommandString(command), 0);
 		} catch (TimeoutException e) {
 			throw new IOException(e);
 		}
@@ -87,6 +88,10 @@ public class ProcessUtil {
 	 * Timeout is passed in seconds, or 0 to wait indefinitely until the process ends
 	 */
 	public static Message executeCommand(List<String> command, int timeout) throws IOException, TimeoutException {
+		if (CollectionUtils.isEmpty(command)) {
+			throw new IllegalArgumentException("Command must not be empty");
+		}
+
 		Path tempFile = executeCommandInternal(command, timeout);
 
 		// Assume that if the above method returned successfully we are now in charge of cleaning the file.
@@ -106,7 +111,7 @@ public class ProcessUtil {
 
 		final Process process;
 		try {
-			process = new ProcessBuilder(command.toArray(new String[0]))
+			process = new ProcessBuilder(command)
 					.redirectOutput(Redirect.to(stdoutFile.toFile()))
 					.start();
 		} catch (Throwable t) {
@@ -139,7 +144,7 @@ public class ProcessUtil {
 			return stdoutFile;
 
 			// Yes catch the above Exception, so we can uniform the error handling (file-cleanup).
-		} catch(Exception e) {
+		} catch (Exception e) {
 			CleanupFileAction cleanupFileAction = new CleanupFileAction(stdoutFile);
 			Cleanable cleanable = CleanerProvider.register(process, cleanupFileAction);
 
@@ -147,27 +152,21 @@ public class ProcessUtil {
 				Files.delete(stdoutFile);
 				// If we've reached this point we were able to remove the file, no need for the cleaner anymore :).
 				CleanerProvider.clean(cleanable);
-			} catch(IOException ignored) {
+			} catch (IOException ignored) {
 				// We were not able to directly clean the File, rely on the CleanerProvider to clean our mess.
 			}
 
 			if (tg.threadKilled()) {
-				throw new TimeoutException("command ["+getCommandLine(command)+"] timed out", e);
+				throw new TimeoutException("command [" + getCommandLine(command) + "] timed out", e);
 			} else {
-				throw new IOException("error while executing command ["+getCommandLine(command)+"]", e);
+				throw new IOException("error while executing command [" + getCommandLine(command) + "]", e);
 			}
 		} finally {
 			tg.cancel();
 		}
 	}
 
-	private static class CleanupFileAction implements Runnable {
-		private final Path fileToClean;
-
-		private CleanupFileAction(Path fileToClean) {
-			this.fileToClean = fileToClean;
-		}
-
+	private record CleanupFileAction(Path fileToClean) implements Runnable {
 		@Override
 		public void run() {
 			try {
