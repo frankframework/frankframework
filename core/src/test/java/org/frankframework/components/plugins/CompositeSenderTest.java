@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -119,13 +120,13 @@ public class CompositeSenderTest extends SenderTestBase<CompositeSender> {
 		// Stub actual processing.
 		doAnswer(i -> {
 			PipeLineResult plr = new PipeLineResult();
-			plr.setResult(i.getArgument(1));
-			PipeLineSession session = i.getArgument(2);
+			plr.setResult(i.getArgument(2));
+			PipeLineSession session = i.getArgument(3);
 			assertNull(session.getMessageId());
 			assertEquals(testCorrelationId, session.getCorrelationId());
 			plr.setState(ExitState.SUCCESS);
 			return plr;
-		}).when(frankPlugin).process(anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(frankPlugin).process(isNull(), anyString(), any(Message.class), any(PipeLineSession.class));
 
 		// Process dummy message
 		Message ignored = Message.nullMessage();
@@ -153,14 +154,14 @@ public class CompositeSenderTest extends SenderTestBase<CompositeSender> {
 		// Stub actual processing.
 		doAnswer(i -> {
 			PipeLineResult plr = new PipeLineResult();
-			plr.setResult(i.getArgument(1));
-			PipeLineSession session = i.getArgument(2);
+			plr.setResult(i.getArgument(2));
+			PipeLineSession session = i.getArgument(3);
 			assertNull(session.getMessageId());
 			assertEquals(testCorrelationId, session.getCorrelationId());
 			assertEquals("value", session.getString("test"));
 			plr.setState(ExitState.SUCCESS);
 			return plr;
-		}).when(frankPlugin).process(anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(frankPlugin).process(isNull(), anyString(), any(Message.class), any(PipeLineSession.class));
 
 		// Process dummy message
 		Message ignored = Message.nullMessage();
