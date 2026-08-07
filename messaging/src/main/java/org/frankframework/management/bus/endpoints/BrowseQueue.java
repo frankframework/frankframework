@@ -38,10 +38,10 @@ import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.jms.JMSFacade.JmsDestinationType;
-import org.frankframework.jms.factory.IConnectionFactoryFactory;
 import org.frankframework.jms.JmsBrowser;
 import org.frankframework.jms.JmsMessageBrowserIteratorItem;
 import org.frankframework.jms.JmsRealmFactory;
+import org.frankframework.jms.factory.IConnectionFactoryFactory;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -86,6 +86,10 @@ public class BrowseQueue extends BusEndpointBase {
 		JmsDestinationType type = BusMessageUtils.getEnumHeader(message, "type", JmsDestinationType.class);
 		if(type == null) {
 			throw new BusException("a DestinationType must be provided");
+		}
+		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisDataAdmin", "IbisAdmin", "IbisTester");
+		if (showPayload && !isAdmin) {
+			throw new BusException("insufficient access rights");
 		}
 
 		Map<String, Object> returnMap = new HashMap<>();

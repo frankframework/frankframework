@@ -18,6 +18,7 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.Issue;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -191,6 +192,7 @@ public class ReceiverSubAdapterTest {
 	}
 
 	@Test
+	@Issue("5699")
 	void testManualRetryWithSubAdapter() throws Exception {
 		// Arrange
 		NarayanaJtaTransactionManager txManager = configuration.createBean();

@@ -1,8 +1,5 @@
 package org.frankframework.soap;
 
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -69,7 +66,6 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -139,6 +135,7 @@ public class SoapWrapperTest {
 	private final SoapWrapper soapWrapper = SoapWrapper.getInstance();
 
 	public SoapWrapperTest() throws ConfigurationException {
+		// Constructor is needed for the `SoapWrapper.getInstance` instantiation.
 	}
 
 	@Test
@@ -384,7 +381,6 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	@Disabled("Disabled because it is a flaky test, exceptions in KeyStoreCrypto should be changed to a more specific exception type, and the test should be updated accordingly.")
 	void validateEncryptedErrorSoap1_1() throws Exception {
 		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
 		assertNotNull(file); // ensure we can find the file
@@ -400,19 +396,27 @@ public class SoapWrapperTest {
 		SoapWrapper wrapper = SoapWrapper.getInstance();
 
 		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, certificateName, "wrong-password"));
-		assertThat(e1.getMessage(), anyOf(containsString("The private key for the supplied alias does not exist in the keystore"), containsString("No message with ID \"noPrivateKey\" found")));
+		assertEquals("unable to process security header", e1.getMessage());
+		assertNotNull(e1.getCause());
+		// Cause trace logs: "the private key for the supplied alias does not exist in the keystore"
 
 		WSSecurityException e2 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, "wrong-cert", "changeit"));
-		assertThat(e2.getMessage(), anyOf(containsString("The private key for the supplied alias does not exist in the keystore"), containsString("No message with ID \"noPrivateKey\" found")));
+		assertEquals("unable to process security header", e2.getMessage());
+		assertNotNull(e2.getCause());
+		// Cause trace logs: "the private key for the supplied alias does not exist in the keystore"
 
 		KeyStore differentStoreSameCertname = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
 		WSSecurityException e3 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, differentStoreSameCertname, certificateName, "changeit"));
-		assertEquals("No certificates were found for decryption (KeyId)", e3.getMessage());
+		assertEquals("unable to process security header", e3.getMessage());
+		assertNotNull(e3.getCause());
+		// Cause trace logs: "No certificates were found for decryption (KeyId)"
 
 		Message manipulatedMessage = new Message(encrypted.asString()
 				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>"));
 		WSSecurityException e4 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage, keystore, certificateName, "changeit"));
-		assertEquals("The signature or decryption was invalid", e4.getMessage());
+		assertEquals("unable to process security header", e4.getMessage());
+		assertNotNull(e3.getCause());
+		// Cause trace logs: "The signature or decryption was invalid"
 
 		// Swap the first 4 characters of the CipherValue
 		Message manipulatedMessage2 = new Message(encrypted.asString()
@@ -587,6 +591,7 @@ public class SoapWrapperTest {
 	}
 
 	private static class RemoveDynamicElements extends FullXmlFilter {
+		@SuppressWarnings("java:S115") // Suppress Enum constants should be uppercase
 		private enum Namespace {Timestamp, Nonce, Password, SignatureValue}
 
 		private Namespace ns = null;
@@ -636,8 +641,6 @@ public class SoapWrapperTest {
 			}
 			super.endElement(uri, localName, qName);
 		}
-
-		;
 	}
 
 	private void resetWSConfig() throws Exception {

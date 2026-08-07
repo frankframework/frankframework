@@ -18,8 +18,8 @@
 
 		<Routing name="log-format-appender">
 			<Routes pattern="${are.we.on.k8s}">
-				<Route ref="json-stdout" key="true" />
 				<Route ref="text-stdout" key="false" />
+				<Route ref="json-stdout" />
 			</Routes>
 		</Routing>
 

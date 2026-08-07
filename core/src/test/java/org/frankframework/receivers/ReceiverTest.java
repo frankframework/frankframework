@@ -68,6 +68,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junitpioneer.jupiter.Issue;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -1168,6 +1169,7 @@ public class ReceiverTest {
 	}
 
 	@Test
+	@Issue("5752")
 	public void testResultLargerThanMaxCommentSize() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
