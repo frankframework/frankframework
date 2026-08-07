@@ -887,19 +887,19 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	/**
 	 * Receives incoming messages. If an adapter can receive messages through multiple channels, then add a receiver for each channel.
-	 * @ff.mandatory
 	 */
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have a recursive call to logger when trace-level logging is enabled
 	public void addReceiver(Receiver<?> receiver) {
 		if (StringUtils.isBlank(receiver.getName())) {
 			// This will not contain the adapter name, as it's not present at this time yet which will make debugging this very difficult.
 			// Since we do need a name for each receiver, perhaps we should log this somewhere else to improve the dev-experience?
-			log.warn("receiver does not have a name, generating implicit one.");
+			ConfigurationWarnings.add(receiver, log, "receiver does not have a name, generating implicit one.");
 			receiver.setName("Receiver [%d]".formatted(receivers.size() + 1));
 		}
 
 		if (receivers.stream().map(HasName::getName).toList().contains(receiver.getName())) {
 			ConfigurationWarnings.add(receiver, log, "name must be unique!");
+			receiver.setName("Receiver [%d]".formatted(receivers.size() + 1));
 		}
 
 		receivers.add(receiver);
@@ -907,7 +907,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		if (log.isTraceEnabled()) {
 			log.trace("Adapter [{}] registered receiver [{}]", name, receiver.toString());
 		} else {
-			log.debug("Adapter [{}] registered receiver [{}]", this::getId, receiver::getName); // Receivers don't always have a name...
+			log.debug("Adapter [{}] registered receiver [{}]", this::getId, receiver::getName);
 		}
 	}
 
@@ -1118,7 +1118,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
 					log.debug("Adapter [{}] now in state STOPPED", name);
-				} catch (Throwable t) {
+				} catch (@SuppressWarnings("java:S2142") Throwable t) {
 					addErrorMessageToMessageKeeper("got error stopping Adapter", t);
 					runState.setRunState(RunState.ERROR);
 					log.warn("Adapter [{}] in state ERROR", name, t);
