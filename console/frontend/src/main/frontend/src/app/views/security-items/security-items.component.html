@@ -139,7 +139,11 @@
                       <td>{{ cert.adapter }}</td>
                       <td>{{ cert.pipe }}</td>
                       <td>{{ cert.certificate.name }}</td>
-                      <td>{{ cert.certificate }}</td>
+                      <td>
+                        @for (line of certificateInfoLines(cert.certificate); track $index) {
+                          <div>{{ line }}</div>
+                        }
+                      </td>
                     </tr>
                   }
                 </tbody>

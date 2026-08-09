@@ -4,7 +4,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faCheck, faCheckSquare, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { AppService, Pipe } from '../../app.service';
+import { AppService, Certificate, Pipe } from '../../app.service';
 import {
   AuthEntry,
   CertificateList,
@@ -88,5 +88,16 @@ export class SecurityItemsComponent implements OnInit {
     this.securityItemsService.getEndpointsWithRoles().subscribe(({ links }) => {
       this.links = links;
     });
+  }
+
+  protected certificateInfoLines(certificate: Certificate): string[] {
+    const info = certificate.info;
+    if (!info) {
+      return [];
+    }
+    if (typeof info === 'string') {
+      return [info];
+    }
+    return info.flatMap((entry) => (Array.isArray(entry) ? entry : [entry]));
   }
 }
