@@ -239,11 +239,11 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 	 *     stream. The value can be preserved in the message, but the underlying stream can not be
 	 *     preserved and reading the same session key again will effectively return an empty value.
 	 * </p>
-	 * @param key The key for which to retrieve the value.
+	 * @param key The key for which to retrieve the value. A {@code NULL} key always returns value NULL.
 	 * @return The value associated with the key encapsulated in a {@link Message} object.
 	 *         If the key does not exist or the value is null, a null message is returned.
 	 */
-	public Message getMessage(String key) {
+	public Message getMessage(@Nullable String key) {
 		Object obj = get(key);
 		if (obj instanceof Message message) {
 			return message;
@@ -331,8 +331,14 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 		return securityHandler;
 	}
 
+	/**
+	 * Overridden `get` method to supported dot-separated keys to get values from nested sub-maps.
+	 * @param key the key whose associated value is to be returned. A {@code NULL} key always returns value NULL.
+	 * @return Value from (nested) map, or {@code NULL}.
+	 */
 	@Override
-	public @Nullable Object get(Object key) {
+	public @Nullable Object get(@Nullable Object key) {
+		if (key == null) return null;
 		if (!key.toString().contains(".") || super.containsKey(key)) {
 			return super.get(key);
 		}
@@ -357,7 +363,7 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 	@SuppressWarnings({ "unchecked", "deprecation" })
 	@SafeVarargs
 	@Nullable
-	public final <T> T getAsType(String key, T... reified) {
+	public final <T> T getAsType(@Nullable String key, T... reified) {
 		Object obj = get(key);
 		if (obj == null) {
 			return null;
@@ -397,12 +403,12 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 	 *     If the value was another kind of {@link AutoCloseable}, then a side effect of this method
 	 *     may also be the value was closed.
 	 * </p>
-	 * @param key Session key to get.
+	 * @param key Session key to get. A {@code NULL} key always returns value NULL.
 	 * @return Value of the session key as String, or NULL of either the key was not present or had a NULL value.
 	 */
 	@Nullable
 	@SneakyThrows(IOException.class)
-	public String getString(String key) {
+	public String getString(@Nullable String key) {
 		Object obj = get(key);
 		if (obj == null) {
 			return null;
@@ -423,12 +429,12 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>String</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 * @param key the referenced key. A {@code NULL} key always returns value NULL.
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return String
 	 */
 	@Nullable
-	public String get(String key, @Nullable String defaultValue) {
+	public String get(@Nullable String key, @Nullable String defaultValue) {
 		String ob = this.getString(key);
 
 		if (ob == null) return defaultValue;
@@ -437,11 +443,11 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>boolean</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 * @param key the referenced key. A {@code NULL} key always returns value NULL.
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return boolean
 	 */
-	public boolean get(String key, boolean defaultValue) {
+	public boolean get(@Nullable String key, boolean defaultValue) {
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
@@ -453,11 +459,11 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>Boolean</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 * @param key the referenced key. A {@code NULL} key always returns value NULL.
 	 * @return Boolean
 	 */
 	@Nullable
-	public Boolean getBoolean(String key) {
+	public Boolean getBoolean(@Nullable String key) {
 		Object ob = this.get(key);
 		if (ob == null) return null;
 
@@ -469,11 +475,11 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves an <code>int</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 * @param key the referenced key. A {@code NULL} key always returns value NULL.
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return int
 	 */
-	public int get(String key, int defaultValue) {
+	public int get(@Nullable String key, int defaultValue) {
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
@@ -485,11 +491,11 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves an <code>Integer</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 * @param key the referenced key. A {@code NULL} key always returns value NULL.
 	 * @return Integer
 	 */
 	@Nullable
-	public Integer getInteger(String key) {
+	public Integer getInteger(@Nullable String key) {
 		Object ob = this.get(key);
 		return switch (ob) {
 			case null -> null;
@@ -501,11 +507,11 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>long</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 * @param key the referenced key. A {@code NULL} key always returns value NULL.
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return long
 	 */
-	public long get(String key, long defaultValue) {
+	public long get(@Nullable String key, long defaultValue) {
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
@@ -517,11 +523,11 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 
 	/**
 	 * Retrieves a <code>double</code> value from the PipeLineSession
-	 * @param key the referenced key
+	 * @param key the referenced key. A {@code NULL} key always returns value NULL.
 	 * @param defaultValue the value to return when the key cannot be found
 	 * @return double
 	 */
-	public double get(String key, double defaultValue) {
+	public double get(@Nullable String key, double defaultValue) {
 		Object ob = this.get(key);
 		if (ob == null) return defaultValue;
 
