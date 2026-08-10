@@ -16,6 +16,3 @@ overrides:
   serialize-javascript@<7.0.5: '~7.0.7'
   uuid@<14.0.0: '>=14.0.1'
   ws@<8.20.1: '~8.21.1'
-minimumReleaseAgeExclude:
-  # Renovate security update: dompurify@3.4.13
-  - dompurify@3.4.13
