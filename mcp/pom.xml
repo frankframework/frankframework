@@ -54,10 +54,35 @@
 			<artifactId>log4j-api</artifactId>
 		</dependency>
 
-		<!-- Embedded HTTP server, used by the optional streamable-HTTP transport. Bundles the jakarta.servlet classes at runtime -->
+		<!--
+			Optional streamable-HTTP (SSE) transport. The embedded Tomcat is created and managed by Spring Boot (see
+			McpHttpServerConfiguration) instead of being started by hand. The tomcat-embed artifacts are managed as
+			'provided' in the parent pom, so they are re-declared at 'compile' scope here to end up on the runtime
+			classpath of the stand-alone (exec) jar, mirroring the bootable-runner module.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-tomcat</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-core</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-el</artifactId>
+			<scope>compile</scope>
 		</dependency>
 
 		<!-- Provided by the embedded servlet container at runtime -->
