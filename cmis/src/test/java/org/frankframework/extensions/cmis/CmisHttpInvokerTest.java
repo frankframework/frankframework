@@ -1,9 +1,9 @@
 package org.frankframework.extensions.cmis;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.http.HttpResponseMock;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.StreamUtil;
 
 public class CmisHttpInvokerTest {
 
@@ -151,7 +150,7 @@ public class CmisHttpInvokerTest {
 		assertNotNull(response.getErrorContent());
 		assertNull(response.getStream());
 		assertEquals(400, response.getResponseCode());
-		assertTrue(response.getErrorContent().contains("HOST dummy.url.com"));
+		assertThat(response.getErrorContent()).contains("HOST dummy.url.com");
 		assertResponse("/HttpInvokerResponse/simpleGet.txt", response.getErrorContent());
 	}
 }

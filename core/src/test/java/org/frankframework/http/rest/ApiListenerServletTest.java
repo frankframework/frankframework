@@ -15,9 +15,8 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -66,6 +65,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.ThreadContext;
+import org.assertj.core.api.Condition;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
@@ -347,10 +347,11 @@ public class ApiListenerServletTest {
 		assertEquals(200, result.getStatus());
 		assertEquals("", result.getContentAsString()); // Pre-flight requests have no data
 		assertNull(result.getErrorMessage());
-		assertTrue(result.containsHeader("Access-Control-Allow-Origin"));
-		assertFalse(result.containsHeader("Access-Control-Allow-Headers"));
-		assertTrue(result.containsHeader("Access-Control-Expose-Headers"));
-		assertTrue(result.containsHeader("Access-Control-Allow-Methods"));
+		assertThat(result)
+				.has(header("Access-Control-Allow-Origin"))
+				.doesNotHave(header("Access-Control-Allow-Headers"))
+				.has(header("Access-Control-Expose-Headers"))
+				.has(header("Access-Control-Allow-Methods"));
 	}
 
 	@Test
@@ -364,11 +365,12 @@ public class ApiListenerServletTest {
 		assertEquals(200, result.getStatus());
 		assertEquals("", result.getContentAsString()); // Pre-flight requests have no data
 		assertNull(result.getErrorMessage());
-		assertTrue(result.containsHeader("Access-Control-Allow-Origin"));
-		assertTrue(result.containsHeader("Access-Control-Allow-Headers"));
-		assertEquals("Message-Id,CustomHeader", result.getHeader("Access-Control-Allow-Headers"));
-		assertTrue(result.containsHeader("Access-Control-Expose-Headers"));
-		assertTrue(result.containsHeader("Access-Control-Allow-Methods"));
+
+		assertThat(result)
+				.has(header("Access-Control-Allow-Origin"))
+				.has(header("Access-Control-Allow-Headers", "Message-Id,CustomHeader"))
+				.has(header("Access-Control-Expose-Headers"))
+				.has(header("Access-Control-Allow-Methods"));
 	}
 
 	@Test
@@ -383,12 +385,13 @@ public class ApiListenerServletTest {
 		assertEquals(200, result.getStatus());
 		assertEquals("data", result.getContentAsString());
 		assertNull(result.getErrorMessage());
-		assertTrue(result.containsHeader("Access-Control-Allow-Origin"));
-		assertTrue(result.containsHeader("Access-Control-Allow-Headers"));
-		assertEquals("Message-Id,CustomHeader", result.getHeader("Access-Control-Allow-Headers"));
-		assertTrue(result.containsHeader("Access-Control-Expose-Headers"));
-		assertTrue(result.containsHeader("Access-Control-Allow-Methods"));
-		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
+
+		assertThat(result)
+				.has(header("Access-Control-Allow-Origin"))
+				.has(header("Access-Control-Allow-Headers", "Message-Id,CustomHeader"))
+				.has(header("Access-Control-Expose-Headers"))
+				.has(header("Access-Control-Allow-Methods"))
+				.has(header("Allow", "OPTIONS, POST"));
 	}
 
 	@Test
@@ -991,12 +994,13 @@ public class ApiListenerServletTest {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
-		assertTrue(result.containsHeader("etag"));
-		assertEquals("must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
-		assertFalse(result.containsHeader("pragma"));
-		assertEquals("Fri, 13 Jan 2023 13:02:00 GMT", result.getHeader("Last-Modified"));
+		assertThat(result)
+				.has(header("Allow", "OPTIONS, GET"))
+				.has(header("etag"))
+				.has(header("Cache-Control", "must-revalidate, max-age=0, post-check=0, pre-check=0"))
+				.doesNotHave(header("pragma"))
+				.has(header("Last-Modified", "Fri, 13 Jan 2023 13:02:00 GMT"));
 	}
 
 	@Test
@@ -1017,11 +1021,12 @@ public class ApiListenerServletTest {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
-		assertFalse(result.containsHeader("etag"));
-		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
-		assertTrue(result.containsHeader("pragma"));
+		assertThat(result)
+				.has(header("Allow", "OPTIONS, GET"))
+				.doesNotHave(header("etag"))
+				.has(header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0"))
+				.has(header("pragma"));
 	}
 
 	@Test
@@ -1042,14 +1047,17 @@ public class ApiListenerServletTest {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
-		assertFalse(result.containsHeader("etag"));
-		assertEquals("23", result.getHeader("content-length"));
-		assertEquals("application/json;charset=UTF-8", result.getHeader("content-type"));
 		assertEquals("", result.getContentAsString());
-		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
-		assertTrue(result.containsHeader("pragma"));
+
+		assertThat(result)
+				.has(header("Allow", "OPTIONS, HEAD"))
+				.doesNotHave(header("etag"))
+				.has(header("content-length", "23"))
+				.has(header("content-type", "application/json;charset=UTF-8"))
+				.has(header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0"))
+				.has(header("pragma"));
+		;
 	}
 
 	@Test
@@ -1072,14 +1080,16 @@ public class ApiListenerServletTest {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
-		assertNull(result.getErrorMessage());
-		assertFalse(result.containsHeader("etag"));
-		assertEquals("20", result.getHeader("content-length"));
-		assertEquals("application/json;charset=UTF-8", result.getHeader("content-type"));
 		assertEquals("", result.getContentAsString());
-		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
-		assertTrue(result.containsHeader("pragma"));
+		assertNull(result.getErrorMessage());
+
+		assertThat(result)
+				.has(header("Allow", "OPTIONS, HEAD"))
+				.has(header("content-length", "20"))
+				.has(header("content-type", "application/json;charset=UTF-8"))
+				.has(header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0"))
+				.has(header("pragma"));
+
 	}
 
 	@Test
@@ -1102,7 +1112,7 @@ public class ApiListenerServletTest {
 		// Assert
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, etag should have matched");
 		assertEquals(304, result.getStatus());
-		assertFalse(result.containsHeader("Allow"));
+		assertThat(result).doesNotHave(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1124,7 +1134,7 @@ public class ApiListenerServletTest {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertEquals("{\"tralalalallala\":true}", result.getContentAsString());
 		assertNull(result.getErrorMessage());
 	}
@@ -1142,7 +1152,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals("{\"tralalalallala\":true}", result.getContentAsString());
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1159,7 +1169,7 @@ public class ApiListenerServletTest {
 
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, etag-matching should have aborted before handling request");
 		assertEquals(412, result.getStatus());
-		assertFalse(result.containsHeader("Allow"));
+		assertThat(result).doesNotHave(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1173,7 +1183,7 @@ public class ApiListenerServletTest {
 
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
-		assertFalse(result.containsHeader("Allow"));
+		assertThat(result).doesNotHave(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1190,7 +1200,7 @@ public class ApiListenerServletTest {
 
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
-		assertFalse(result.containsHeader("Allow"));
+		assertThat(result).doesNotHave(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1215,7 +1225,7 @@ public class ApiListenerServletTest {
 		assertEquals(authToken, sessionAuthToken, "auth tokens should match");
 
 		assertEquals(200, result.getStatus());
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 		assertTrue(result.containsCookie("authenticationToken"), "response contains auth cookie");
 	}
@@ -1231,7 +1241,7 @@ public class ApiListenerServletTest {
 
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
-		assertFalse(result.containsHeader("Allow"));
+		assertThat(result).doesNotHave(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1254,7 +1264,7 @@ public class ApiListenerServletTest {
 		assertEquals(authToken, sessionAuthToken, "auth tokens should match");
 
 		assertEquals(200, result.getStatus());
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1274,7 +1284,7 @@ public class ApiListenerServletTest {
 
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(401, result.getStatus());
-		assertFalse(result.containsHeader("Allow"));
+		assertThat(result).doesNotHave(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1293,7 +1303,7 @@ public class ApiListenerServletTest {
 		Response result = service(request);
 
 		assertEquals(200, result.getStatus());
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1467,7 +1477,7 @@ public class ApiListenerServletTest {
 		Response result = service(request);
 
 		assertEquals(200, result.getStatus());
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		String headersXml = (String) session.get("headers");
 		assertNotNull(headersXml);
 		assertEquals("<headers>\n"
@@ -1614,7 +1624,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1629,7 +1639,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1662,7 +1672,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1680,7 +1690,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1751,7 +1761,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1768,7 +1778,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1785,7 +1795,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1803,7 +1813,7 @@ public class ApiListenerServletTest {
 
 		assertEquals(200, result.getStatus());
 		assertEquals(PAYLOAD, session.get("ClaimsSet"));
-		assertTrue(result.containsHeader("Allow"));
+		assertThat(result).has(header("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1918,9 +1928,10 @@ public class ApiListenerServletTest {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertFalse(session.containsKey("p1"));
-		assertFalse(session.containsKey("p2"));
-		assertFalse(session.containsKey("originalMessage"));
+		assertThat(session)
+				.doesNotContainKey("p1")
+				.doesNotContainKey("p2")
+				.doesNotContainKey("originalMessage");
 	}
 
 	@Test
@@ -1937,9 +1948,10 @@ public class ApiListenerServletTest {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertEquals("1", session.get("p1"));
-		assertEquals("B", session.get("p2"));
-		assertFalse(session.containsKey("originalMessage"));
+		assertThat(session)
+				.containsEntry("p1", "1")
+				.containsEntry("p2", "B")
+				.doesNotContainKey("originalMessage");
 	}
 
 	@Test
@@ -1992,7 +2004,7 @@ public class ApiListenerServletTest {
 	public void testBlacklistedParamInUriPattern() {
 		ConfigurationException e = assertThrows(ConfigurationException.class, () -> new ApiListenerBuilder("/request/{with}/{uri}/params", List.of(HttpMethod.GET)).build());
 
-		assertThat(e.getMessage(), containsString("[uri]"));
+		assertThat(e.getMessage()).contains("[uri]");
 	}
 
 	@Test
@@ -2006,8 +2018,8 @@ public class ApiListenerServletTest {
 		ConfigurationException e = assertThrows(ConfigurationException.class, apiListener::configure);
 
 		// Assert
-		assertThat(e.getMessage(), containsString("[multipartBodyName]"));
-		assertThat(e.getMessage(), containsString("[originalMessage]"));
+		assertThat(e.getMessage()).contains("[multipartBodyName]");
+		assertThat(e.getMessage()).contains("[originalMessage]");
 	}
 
 	@Test
@@ -2043,12 +2055,12 @@ public class ApiListenerServletTest {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		assertTrue(result.containsHeader("key-1"));
-		assertTrue(result.containsHeader("key-3"));
-		assertFalse(result.containsHeader("key-2"));
-		assertFalse(result.containsHeader("key-4"));
-		assertEquals("value-1", result.getHeader("key-1"));
-		assertEquals("value-3", result.getHeader("key-3"));
+		assertThat(result)
+				.has(header("key-1", "value-1"))
+				.has(header("key-3", "value-3"))
+				.doesNotHave(header("key-2"))
+				.doesNotHave(header("key-4"))
+		;
 	}
 
 	private String createJWT() throws Exception {
@@ -2462,6 +2474,36 @@ public class ApiListenerServletTest {
 		}
 	}
 
+	private static @NonNull Condition<Response> header(@NonNull String headerName) {
+		return new ResponseHeaderCondition(headerName);
+	}
+
+	private static @NonNull Condition<Response> header(@NonNull String headerName, @NonNull String headerValue) {
+		return new ResponseHeaderCondition(headerName, headerValue);
+	}
+
+	private static class ResponseHeaderCondition extends Condition<Response> {
+		private final @NonNull String headerName;
+		private final @Nullable String headerValue;
+
+		private ResponseHeaderCondition(@NonNull String headerName) {
+			super("header [" + headerName + "]");
+			this.headerName = headerName;
+			this.headerValue = null;
+		}
+
+		private ResponseHeaderCondition(@NonNull String headerName, @NonNull String headerValue) {
+			super("header [" + headerName + "]=[" + headerValue + "]");
+			this.headerName = headerName;
+			this.headerValue = headerValue;
+		}
+
+		@Override
+		public boolean matches(@NonNull Response value) {
+			return value.containsHeader(headerName) && (headerValue == null || value.getHeader(headerName).equals(headerValue));
+		}
+	}
+
 	private static class Response {
 		private final MockHttpServletResponse response;
 
@@ -2517,7 +2559,7 @@ public class ApiListenerServletTest {
 				// Ignore
 			}
 
-			return "status["+getStatus()+"] contentType["+getContentType()+"] inError["+(getErrorMessage()!=null)+"] content["+content+"]";
+			return "status["+getStatus()+"] contentType["+getContentType()+"] inError["+(getErrorMessage()!=null)+"] headers "+ response.getHeaderNames()+" content["+content+"]";
 		}
 	}
 }
