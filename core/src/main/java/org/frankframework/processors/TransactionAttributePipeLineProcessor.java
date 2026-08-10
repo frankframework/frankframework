@@ -16,6 +16,7 @@
 package org.frankframework.processors;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import lombok.Getter;
@@ -27,6 +28,7 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
@@ -40,7 +42,7 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 
 	@Override
 	@SuppressWarnings({ "java:S1141", "java:S1181" })
-	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		try {
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
 			try {
@@ -48,7 +50,7 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 				Throwable tCaught=null;
 				try {
 					tg.activateGuard(pipeLine.getTransactionTimeout());
-					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
 
 					boolean mustRollback=false;
 

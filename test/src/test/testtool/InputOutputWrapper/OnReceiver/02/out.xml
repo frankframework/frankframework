@@ -8,12 +8,10 @@
         <Location>ESB.PropertyAndCasualtyRetail.BS.Policy.PolicyPropertyAndCasualtyRetail.1.WrapMessage.1.Response</Location>
       </To>
       <HeaderFields>
-        <CPAId>cpid</CPAId>
-        <ConversationId>ConversationId</ConversationId>
-        <MessageId>LPAB00000018345_0a5df019--12291c89_15ea482da85_-7e54</MessageId>
-        <CorrelationId>MessageId</CorrelationId>
-        <ExternalRefToMessageId>ExternalRefToMessageId</ExternalRefToMessageId>
-        <Timestamp>2017-09-21T14:59:56</Timestamp>
+        <CPAId>n/a</CPAId>
+        <ConversationId>LPAB00000018345_0a5df019--12291c89_15ea482da85_-7e66</ConversationId>
+        <MessageId>LPAB00000018345_0a5df019--12291c89_15ea482da85_-7e65</MessageId>
+        <Timestamp>2017-09-21T14:59:55</Timestamp>
       </HeaderFields>
       <Service>
         <Name>Policy</Name>
@@ -27,12 +25,12 @@
     </MessageHeader>
   </soapenv:Header>
   <soapenv:Body>
-    <Response xmlns="http://www.nn.nl/InputOutputWrapper" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1">
+	  <Response xmlns="http://www.nn.nl/InputOutputWrapper">
       <Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">
         <Status>ERROR</Status>
         <ErrorList>
           <Error>
-            <Code>INTERNAL_XSD_ERROR</Code>
+            <Code>INVALID_XML</Code>
             <Reason/>
             <Service>
               <Name>Policy</Name>
@@ -46,9 +44,9 @@
             <DetailList>
               <Detail>
                 <Code>Validation using XmlValidator with 'http://www.nn.nl/InputOutputWrapper InputOutputWrapper/rr.xsd' failed:
-/: at (1,173): cvc-elt.1.a: Cannot find the declaration of element 'InvalidResponse'.
-/: Illegal element 'InvalidResponse'. Element(s) 'Response' expected.
-/: Element(s) 'Response' not found</Code>
+/: at (1,134): cvc-elt.1.a: Cannot find the declaration of element 'InvalidRequest'.
+/: Illegal element 'InvalidRequest'. Element(s) 'Request' expected.
+/: Element(s) 'Request' not found</Code>
               </Detail>
             </DetailList>
           </Error>
