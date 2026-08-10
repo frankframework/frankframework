@@ -1136,7 +1136,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * The method assumes that a transaction has been started where necessary.
 	 */
 	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
+	public void processRawMessage(@NonNull IListener<M> origin, @Nullable RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
@@ -1149,7 +1149,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * <br/>
 	 * The method assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry,
+	private void processRawMessage(@Nullable RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry,
 								   boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (rawMessageWrapper == null) {
 			log.debug("{} Received null message, returning directly", this::getLogPrefix);
@@ -1157,7 +1157,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
-			if(isForceRetryFlag()) {
+			if (isForceRetryFlag()) {
 				session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
 			}
 

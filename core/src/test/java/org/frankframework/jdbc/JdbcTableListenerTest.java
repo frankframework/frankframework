@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -289,20 +291,22 @@ public class JdbcTableListenerTest {
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	public void testGetRawMessage(String status, boolean expectMessage) throws Exception {
+	public @Nullable RawMessageWrapper<String> testGetRawMessage(String status, boolean expectMessage) throws Exception {
 		listener.configure();
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'" + status + "')", null, new PipeLineSession());
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
-		if (expectMessage) {
-			assertEquals("10",rawMessage.getRawMessage());
-		} else {
+		if (!expectMessage) {
 			assertNull(rawMessage);
+			return null;
 		}
+		assertNotNull(rawMessage);
+		assertEquals("10",rawMessage.getRawMessage());
+		return rawMessage;
 	}
 
 	@DatabaseTest
@@ -346,6 +350,19 @@ public class JdbcTableListenerTest {
 	public void testGetRawMessageWithSelectConditionComplex() throws Exception {
 		listener.setSelectCondition("TKEY=(SELECT r.TKEY FROM " + TEST_TABLE + " r WHERE r.TINT = t.TINT)");
 		testGetRawMessage("1", true);
+	}
+
+	@DatabaseTest
+	public void testGetRawMessageWithAdditionalFields() throws Exception {
+		listener.setAdditionalFields("TVARCHAR, TINT");
+		RawMessageWrapper<String> rawMessageWrapper = testGetRawMessage("1", true);
+		assertNotNull(rawMessageWrapper);
+		try (PipeLineSession session = new PipeLineSession(rawMessageWrapper.getContext())) {
+			assertNotNull(session.get("additional_query_fields"));
+			assertNotNull(session.getString("additional_query_fields.tvarchar"));
+			assertEquals("1", session.getString("additional_query_fields.tvarchar"));
+			assertEquals("1", session.get("additional_query_fields.tint")); // Additional fields are always returned as String, even if they're numerical types in the database
+		}
 	}
 
 	@DatabaseTest

@@ -144,7 +144,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	protected RawMessageWrapper<Serializable> extractRawMessage(ResultSet rs) throws JdbcException {
+	protected @NonNull RawMessageWrapper<Serializable> extractRawMessage(@NonNull ResultSet rs) throws JdbcException {
 		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
 			ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
 

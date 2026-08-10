@@ -21,12 +21,12 @@ import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -54,7 +54,7 @@ import org.frankframework.util.TimeProvider;
  * @since   version 3.2.2
  */
 @NullMarked
-public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
+public class PipeLineSession extends TreeMap<String,Object> implements AutoCloseable {
 	private static final Logger LOG = LogManager.getLogger(PipeLineSession.class);
 
 	public static final String SYSTEM_MANAGED_RESOURCE_PREFIX = "__";
@@ -86,7 +86,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	private final transient @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
 
 	public PipeLineSession() {
-		super();
+		super(String.CASE_INSENSITIVE_ORDER);
 		createCloseAction();
 	}
 
@@ -96,7 +96,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param t {@link Map} or PipeLineSession from which to copy session variables into the new session. Should not be null!
 	 */
 	public PipeLineSession(Map<String, Object> t) {
-		super(t);
+		super(String.CASE_INSENSITIVE_ORDER);
+		putAll(t);
 		createCloseAction();
 	}
 
@@ -176,6 +177,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if (value instanceof Enum<?> enumValue && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX)) {
 			return super.put(key, enumValue.name());
 		}
+		if (value == null) {
+			return super.remove(key);
+		}
 		return super.put(key, value);
 	}
 
@@ -208,7 +212,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	@Override
 	public void putAll(Map<? extends String, ?> m) {
-		for (Entry<? extends String, ?> entry : m.entrySet()) {
+		for (Map.Entry<? extends String, ?> entry : m.entrySet()) {
 			put(entry.getKey(), entry.getValue());
 		}
 	}
@@ -325,6 +329,29 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			}
 		}
 		return securityHandler;
+	}
+
+	@Override
+	public @Nullable Object get(Object key) {
+		if (!key.toString().contains(".") || super.containsKey(key)) {
+			return super.get(key);
+		}
+		Map<?,?> subMap = this;
+		Object value = null;
+		for (String part : key.toString().split("\\.")) {
+			if (subMap == null) {
+				// We cannot find the sub-key before we exhausted all parts
+				return null;
+			}
+			value = subMap.get(part);
+			if (!(value instanceof Map<?,?> newSubMap)) {
+				// Do not directly return NULL because we don't know if we're on the last subKey, which can be any value
+				subMap = null;
+				continue;
+			}
+			subMap = newSubMap;
+		}
+		return value;
 	}
 
 	@SuppressWarnings({ "unchecked", "deprecation" })

@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -229,7 +230,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	protected RawMessageWrapper<M> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
+	protected @Nullable RawMessageWrapper<M> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		String query = preparedSelectQuery;
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
@@ -290,7 +291,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * Otherwise the message is loaded from the {@code rs} parameter and returned wrapped in a {@link MessageWrapper}.
 	 * @throws JdbcException If loading the message resulted in a database exception.
 	 */
-	protected RawMessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
+	protected @NonNull RawMessageWrapper<M> extractRawMessage(@NonNull ResultSet rs) throws JdbcException {
 		try {
 			String key = rs.getString(getKeyField());
 			Message message;
@@ -344,9 +345,10 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				throw Lombok.sneakyThrow(e);
 			}
 		};
+		// Make sure that the sub-map supports case-insensitive lookup of entries
 		Map<String, String> additionalValues = getAdditionalFieldsList().stream()
 				.map(extractFieldValue)
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (m1, m2) -> m2, () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
 
 		if (!additionalValues.isEmpty()) {
 			mw.getContext().put(ADDITIONAL_QUERY_FIELDS_KEY, additionalValues);
@@ -539,7 +541,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	/**
 	 * Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
-	 * be added to the session as session-variables.
+	 * be added to the session as session-variables, with the prefix {@literal ADDITIONAL_QUERY_FIELDS_KEY}. So if for example you specify {@code additionalFields = "updated_at"},
+	 * then in the session there will be a variable {@code ADDITIONAL_QUERY_FIELDS.updated_at}. The additional fields will always be added to the session as String values, regardless of
+	 * their original types in the database.
 	 */
 	public void setAdditionalFields(String fieldNames) {
 		this.additionalFields = fieldNames;

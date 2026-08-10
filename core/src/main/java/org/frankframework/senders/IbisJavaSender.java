@@ -16,6 +16,7 @@
 package org.frankframework.senders;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -129,7 +130,9 @@ public class IbisJavaSender extends AbstractSenderWithParameters implements HasP
 				}
 
 				String correlationID = session.getCorrelationId();
-				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
+				HashMap<String,?> processContext = new HashMap<>(subAdapterSession);
+				result = dm.processRequest(serviceName, correlationID, message.asString(), processContext);
+				subAdapterSession.putAll(processContext);
 			} catch (ParameterException e) {
 				throw new SenderException("exception evaluating parameters", e);
 			} catch (Exception e) {
