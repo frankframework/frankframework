@@ -14,6 +14,7 @@
     "e2e": "ng e2e",
     "e2e:ci": "ng e2e -c ci",
     "cypress:open": "pnpm -C cypress exec cypress open",
+    "cypress:open-test": "pnpm -C cypress exec cypress open --config baseUrl=http://localhost:8080/iaf-test/iaf/gui",
     "cypress:run": "pnpm -C cypress exec cypress run",
     "cypress:ci": "pnpm -C cypress exec cypress run --config baseUrl=http://localhost:8080/iaf-test/iaf/gui",
     "lint": "ng lint"

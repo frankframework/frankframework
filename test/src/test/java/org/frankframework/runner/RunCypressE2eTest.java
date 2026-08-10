@@ -119,7 +119,7 @@ public class RunCypressE2eTest {
 	public static void startTestContainer() {
 		org.testcontainers.Testcontainers.exposeHostPorts(8080);
 
-		container = new CypressContainer();
+		container = new CypressContainer("cypress/included:15.20.0");
 		container.withBaseUrl(TEST_CONTAINER_BASE_URL + "/iaf-test/iaf/gui");
 		container.withMochawesomeReportsAt(MOCHAWESOME_REPORTS_DIR);
 		container.withClasspathResourcePath("e2e");
