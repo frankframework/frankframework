@@ -440,13 +440,14 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private ServiceClient getJvmDispatcherServiceClient(Scope scope, String target) throws SenderException {
 		DispatcherManager dm = getDispatcherManager(scope == Scope.DLL);
 		return (message, session) -> {
+			HashMap<String,?> processContext = new HashMap<>(session);
 			try {
-				HashMap<String,?> processContext = new HashMap<>(session);
 				String result = dm.processRequest(target, session.getCorrelationId(), message.asString(), processContext);
-				session.putAll(processContext);
 				return new Message(result);
 			} catch (Exception e) {
 				throw new ListenerException("Exception sending message to [" + target + "]", e);
+			} finally {
+				session.putAll(processContext);
 			}
 		};
 	}
