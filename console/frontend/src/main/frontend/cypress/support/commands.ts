@@ -1,37 +1,37 @@
 /// <reference types="cypress" />
-// ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-//
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
+
+Cypress.Commands.add('setMonacoValue', (value: string, modelIndex = 0) => {
+  setMonacoValue(value, modelIndex);
+});
+
+type MonacoEditorModel = {
+  setValue(value: string): void;
+};
+
+type MonacoInstance = {
+  editor: {
+    getModels(): MonacoEditorModel[];
+  };
+};
+
+type MonacoWindow = Window & { monaco?: MonacoInstance };
+
+function setMonacoValue(value: string, modelIndex = 0): void {
+  cy.window().then((autWindow) => {
+    const monacoWindow = autWindow as MonacoWindow;
+    const framedWindow = autWindow.frames[0] as MonacoWindow | undefined;
+    const monacoInstance = monacoWindow.monaco ?? framedWindow?.monaco ?? null;
+
+    if (!monacoInstance) {
+      throw new Error('Monaco editor not found on the window or frames[0]');
+    }
+
+    const model = monacoInstance.editor.getModels()[modelIndex];
+
+    if (!model) {
+      throw new Error(`Monaco editor model at index ${modelIndex} not found`);
+    }
+
+    model.setValue(value);
+  });
+}
