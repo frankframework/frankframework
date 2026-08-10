@@ -201,9 +201,9 @@ public class ReceiverTest {
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(exitState);
-			plr.setResult(p.getArgument(1));
+			plr.setResult(p.getArgument(2));
 			return plr;
-		}).when(pl).process(anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(pl).process(any(), anyString(), any(Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();
@@ -714,7 +714,7 @@ public class ReceiverTest {
 		PipeLineResult pipeLineResult = new PipeLineResult();
 		pipeLineResult.setState(ExitState.SUCCESS);
 		pipeLineResult.setResult(testMessage);
-		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
+		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any(), any());
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
@@ -763,7 +763,7 @@ public class ReceiverTest {
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message(testMessage));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act
 		receiver.retryMessage("1");
@@ -802,7 +802,7 @@ public class ReceiverTest {
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message(testMessage));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act
 		receiver.retryMessage("1");
@@ -829,13 +829,13 @@ public class ReceiverTest {
 		MessageStoreListener listener = setupMessageStoreListener();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
-		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> {
 			PipeLineSession session = invocation.getArgument(1);
 			session.put(PipeLineSession.MESSAGE_ID_KEY, "1");
 			session.put(PipeLineSession.TS_RECEIVED_KEY, Instant.ofEpochMilli(0L));
-			return new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null);}).when(errorStorage)
-				.consumeMessage(eq("1"), any());
+			return new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null);
+		}).when(errorStorage).consumeMessage(eq("1"), any());
 		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
 
 		doReturn(false).when(listener).hasRawMessageAvailable();
@@ -865,7 +865,7 @@ public class ReceiverTest {
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, null);
 		IMessageBrowser<String> messageBrowser = mock();
 
-		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
 
 		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(messageBrowser)
@@ -1189,7 +1189,7 @@ public class ReceiverTest {
 		plr.setResult(result);
 		plr.setState(ExitState.SUCCESS);
 
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
@@ -1253,10 +1253,10 @@ public class ReceiverTest {
 		// Don't actually delay, but should be possible to verify
 		doNothing().when(receiver).suspendReceiverThread(anyLong());
 
-		doThrow(new ListenerException("forced error")).when(adapter).processMessageWithExceptions(startsWith("error-"), any(), any());
+		doThrow(new ListenerException("forced error")).when(adapter).processMessageWithExceptions(any(), startsWith("error-"), any(), any());
 		PipeLineResult successResult = new PipeLineResult();
 		successResult.setState(ExitState.SUCCESS);
-		doReturn(successResult).when(adapter).processMessageWithExceptions(startsWith("success-"), any(), any());
+		doReturn(successResult).when(adapter).processMessageWithExceptions(any(), startsWith("success-"), any(), any());
 
 		configuration.configure();
 		configuration.start();

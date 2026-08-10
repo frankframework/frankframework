@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import io.micrometer.core.instrument.DistributionSummary;
 
@@ -27,6 +28,7 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ResourceLimiter;
 import org.frankframework.stream.Message;
 
@@ -39,10 +41,10 @@ public class LimitingParallelExecutionPipeLineProcessor extends AbstractPipeLine
 	private final Map<PipeLine, ResourceLimiter> pipeLineThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
-	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		ResourceLimiter threadCountLimiter = getThreadLimiter(pipeLine);
 		if (threadCountLimiter == null) { // no restrictions on the maximum number of threads
-			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+			return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
 		IPipe pipe = pipeLine.getPipe(firstPipe);
 		try {
@@ -53,7 +55,7 @@ public class LimitingParallelExecutionPipeLineProcessor extends AbstractPipeLine
 			DistributionSummary summary = pipeLine.getPipelineWaitStatistics();
 			summary.record(waitingDuration);
 
-			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+			return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
 		} catch(InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new PipeRunException(pipe, "Interrupted acquiring PipeLine thread count limiter", e);

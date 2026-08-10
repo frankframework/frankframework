@@ -16,12 +16,14 @@
 package org.frankframework.processors;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Locker;
 
@@ -31,7 +33,7 @@ import org.frankframework.util.Locker;
 public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
-	public @NonNull PipeLineResult processPipeLine(@NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		PipeLineResult pipeLineResult;
 		Locker locker = pipeLine.getLocker();
 		String objectId = null;
@@ -47,7 +49,7 @@ public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 				pipeLineResult.setState(ExitState.SUCCESS);
 			} else {
 				try {
-					pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+					pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
 				} finally {
 					try {
 						locker.release(objectId);
@@ -59,7 +61,7 @@ public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 				}
 			}
 		} else {
-			pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
+			pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
 		return pipeLineResult;
 	}

@@ -193,7 +193,7 @@ public class JavaListenerTest {
 		assertSame(Receiver.OnError.CONTINUE, receiver.getOnError()); // Validate default setting: in state CONTINUE after an error occurs
 
 		PipeLine pl = adapter.getPipeLine();
-		doThrow(PipeRunException.class).when(pl).process(any(), any(), any());
+		doThrow(PipeRunException.class).when(pl).process(any(), any(), any(), any());
 
 		startAdapter();
 
@@ -217,7 +217,7 @@ public class JavaListenerTest {
 		listener.setThrowException(false);
 
 		PipeLine pipeLine = adapter.getPipeLine();
-		doThrow(new PipeRunException(pipeLine.getPipe(0), "FAILED PIPE")).when(pipeLine).process(any(), any(), any());
+		doThrow(new PipeRunException(pipeLine.getPipe(0), "FAILED PIPE")).when(pipeLine).process(any(), any(), any(), any());
 
 		// start adapter
 		startAdapter();
