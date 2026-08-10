@@ -26,7 +26,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -35,6 +34,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -54,7 +54,7 @@ import org.frankframework.util.TimeProvider;
  * @since   version 3.2.2
  */
 @NullMarked
-public class PipeLineSession extends TreeMap<String,Object> implements AutoCloseable {
+public class PipeLineSession extends LinkedCaseInsensitiveMap<Object> implements AutoCloseable {
 	private static final Logger LOG = LogManager.getLogger(PipeLineSession.class);
 
 	public static final String SYSTEM_MANAGED_RESOURCE_PREFIX = "__";
@@ -86,7 +86,7 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 	private final transient @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
 
 	public PipeLineSession() {
-		super(String.CASE_INSENSITIVE_ORDER);
+		super();
 		createCloseAction();
 	}
 
@@ -96,7 +96,7 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 	 * @param t {@link Map} or PipeLineSession from which to copy session variables into the new session. Should not be null!
 	 */
 	public PipeLineSession(Map<String, Object> t) {
-		super(String.CASE_INSENSITIVE_ORDER);
+		super();
 		putAll(t);
 		createCloseAction();
 	}
@@ -176,9 +176,6 @@ public class PipeLineSession extends TreeMap<String,Object> implements AutoClose
 		}
 		if (value instanceof Enum<?> enumValue && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX)) {
 			return super.put(key, enumValue.name());
-		}
-		if (value == null) {
-			return super.remove(key);
 		}
 		return super.put(key, value);
 	}

@@ -480,9 +480,9 @@ public class PipeLineSessionTest {
 		from.close();
 
 		// Assert
-		assertEquals(4, to.size()); // NULL values are no longer put in the map
+		assertEquals(5, to.size());
 		assertTrue(to.containsKey("a"));
-		assertFalse(to.containsKey("c"));
+		assertTrue(to.containsKey("c"));
 		assertTrue(to.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 		assertTrue(to.containsKey(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
 		assertEquals(15, to.get("a"));
