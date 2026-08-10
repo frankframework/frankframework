@@ -1057,7 +1057,6 @@ public class ApiListenerServletTest {
 				.has(header("content-type", "application/json;charset=UTF-8"))
 				.has(header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0"))
 				.has(header("pragma"));
-		;
 	}
 
 	@Test
@@ -1089,7 +1088,6 @@ public class ApiListenerServletTest {
 				.has(header("content-type", "application/json;charset=UTF-8"))
 				.has(header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0"))
 				.has(header("pragma"));
-
 	}
 
 	@Test
