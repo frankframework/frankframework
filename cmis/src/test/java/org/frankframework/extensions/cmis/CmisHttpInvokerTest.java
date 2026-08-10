@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.http.HttpResponseMock;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.StreamUtil;
 
 public class CmisHttpInvokerTest {
 
@@ -71,12 +71,7 @@ public class CmisHttpInvokerTest {
 		URL url = TestFileUtils.getTestFileURL(file);
 		assertNotNull(url, "unable to find test file");
 
-		return new Output() {
-			@Override
-			public void write(OutputStream out) throws Exception {
-				StreamUtil.streamToStream(url.openStream(), out);
-			}
-		};
+		return out -> StreamUtil.streamToStream(url.openStream(), out);
 	}
 
 	private void assertResponse(String string, InputStream response) throws IOException {
