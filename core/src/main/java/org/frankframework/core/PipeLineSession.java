@@ -34,7 +34,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -43,6 +42,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.NestedLookupMap;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TimeProvider;
@@ -54,7 +54,7 @@ import org.frankframework.util.TimeProvider;
  * @since   version 3.2.2
  */
 @NullMarked
-public class PipeLineSession extends LinkedCaseInsensitiveMap<Object> implements AutoCloseable {
+public class PipeLineSession extends NestedLookupMap<Object> implements AutoCloseable {
 	private static final Logger LOG = LogManager.getLogger(PipeLineSession.class);
 
 	public static final String SYSTEM_MANAGED_RESOURCE_PREFIX = "__";
@@ -326,35 +326,6 @@ public class PipeLineSession extends LinkedCaseInsensitiveMap<Object> implements
 			}
 		}
 		return securityHandler;
-	}
-
-	/**
-	 * Overridden `get` method to supported dot-separated keys to get values from nested sub-maps.
-	 * @param key the key whose associated value is to be returned. A {@code NULL} key always returns value NULL.
-	 * @return Value from (nested) map, or {@code NULL}.
-	 */
-	@Override
-	public @Nullable Object get(@Nullable Object key) {
-		if (key == null) return null;
-		if (!key.toString().contains(".") || super.containsKey(key)) {
-			return super.get(key);
-		}
-		Map<?,?> subMap = this;
-		Object value = null;
-		for (String part : key.toString().split("\\.")) {
-			if (subMap == null) {
-				// We cannot find the sub-key before we exhausted all parts
-				return null;
-			}
-			value = subMap.get(part);
-			if (!(value instanceof Map<?,?> newSubMap)) {
-				// Do not directly return NULL because we don't know if we're on the last subKey, which can be any value
-				subMap = null;
-				continue;
-			}
-			subMap = newSubMap;
-		}
-		return value;
 	}
 
 	@SuppressWarnings({ "unchecked", "deprecation" })
