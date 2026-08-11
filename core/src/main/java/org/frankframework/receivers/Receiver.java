@@ -109,7 +109,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
@@ -1167,18 +1166,17 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			LogUtil.setIdsToThreadContext(ctc, messageId, correlationId);
 
 			MessageWrapper<M> messageWrapper;
-			if (rawMessageWrapper instanceof MessageWrapper && !(getListener() instanceof MessageStoreListener)) {
-				// somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
-				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
-				// like JdbcListener
-				messageWrapper = (MessageWrapper<M>) rawMessageWrapper;
-			} else {
-				try {
-					Message message = getListener().extractMessage(rawMessageWrapper, session);
+			try {
+				Message message = getListener().extractMessage(rawMessageWrapper, session);
+				if (rawMessageWrapper instanceof MessageWrapper<M> mw) {
+					messageWrapper = mw;
+				} else {
 					messageWrapper = new MessageWrapper<>(rawMessageWrapper, message);
-				} catch (Exception e) {
-					throw new ListenerException(e);
 				}
+			} catch (ListenerException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new ListenerException(e);
 			}
 
 			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, retryStatusAlreadyChecked);
