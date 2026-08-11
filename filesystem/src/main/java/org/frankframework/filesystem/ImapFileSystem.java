@@ -224,25 +224,6 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public long getNumberOfFilesInFolder(String foldername) throws FileSystemException {
-		IMAPFolder baseFolder = getConnection();
-		boolean invalidateConnectionOnRelease = false;
-		try {
-			IMAPFolder folder = getFolder(baseFolder, foldername);
-			if (!folder.isOpen()) {
-				folder.open(Folder.READ_WRITE);
-			}
-			Message[] messages = folder.getMessages();
-			return messages.length;
-		} catch (MessagingException e) {
-			invalidateConnectionOnRelease = true;
-			throw new FileSystemException(e);
-		} finally {
-			releaseConnection(baseFolder, invalidateConnectionOnRelease);
-		}
-	}
-
-	@Override
 	public DirectoryStream<Message> list(Message foldername, TypeFilter filter) throws FileSystemException {
 		if (filter.includeFolders()) {
 			throw new FileSystemException("Filtering on folders is not supported");
