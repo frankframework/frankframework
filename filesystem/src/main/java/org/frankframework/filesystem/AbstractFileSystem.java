@@ -51,11 +51,13 @@ public abstract class AbstractFileSystem<F> implements IBasicFileSystem<F> {
 	public long getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		int count = 0;
 		int stopAt = getMaxNumberOfMessagesToList();
-		if (stopAt<0) {
+
+		if (stopAt < 0) {
 			stopAt = Integer.MAX_VALUE;
 		}
-		try(DirectoryStream<F> ds = list(folder, TypeFilter.FILES_ONLY)) {
-			for (Iterator<F> it = ds.iterator(); it.hasNext() && count<=stopAt; it.next()) {
+
+		try (DirectoryStream<F> ds = list(folder, TypeFilter.FILES_ONLY)) {
+			for (Iterator<F> it = ds.iterator(); it.hasNext() && count <= stopAt; it.next()) {
 				count++;
 			}
 		} catch (IOException e) {

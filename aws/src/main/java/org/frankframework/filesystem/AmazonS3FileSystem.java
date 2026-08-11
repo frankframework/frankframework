@@ -181,7 +181,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	public long getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try (DirectoryStream<S3FileRef> files = list(folder, TypeFilter.FILES_ONLY)) {
-			return Math.toIntExact(StreamSupport.stream(files.spliterator(), false).count());
+			return StreamSupport.stream(files.spliterator(), false).count();
 		} catch (IOException e) {
 			throw new FileSystemException("Exception while counting number of files in [" + folder + "]. " + e.getMessage());
 		}

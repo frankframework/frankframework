@@ -103,8 +103,9 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public long getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try {
-			List<LsEntry> files = listFolder(folder);
-			return (int) files.stream().filter(f -> !f.getAttrs().isDir()).count();
+			return listFolder(folder).stream()
+					.filter(f -> !f.getAttrs().isDir())
+					.count();
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
 		}
@@ -151,7 +152,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	private List<LsEntry> listFolder(SftpFileRef folder) throws SftpException {
 		return this.listFolder(getCanonicalName(folder));
 	}
-
 
 	private List<LsEntry> listFolder(String folder) throws SftpException {
 		return new ArrayList<>(ftpClient.ls(folder == null ? "*" : folder));
