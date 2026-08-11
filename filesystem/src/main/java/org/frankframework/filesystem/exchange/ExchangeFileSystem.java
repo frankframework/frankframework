@@ -251,7 +251,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
+	public long getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		MailFolder f = findSubFolder(mailFolder, folder);
 		return f.getTotalItemCount();
 	}

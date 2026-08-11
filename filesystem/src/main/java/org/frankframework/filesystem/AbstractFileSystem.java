@@ -48,7 +48,7 @@ public abstract class AbstractFileSystem<F> implements IBasicFileSystem<F> {
 	}
 
 	@Override
-	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
+	public long getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		int count = 0;
 		int stopAt = getMaxNumberOfMessagesToList();
 		if (stopAt<0) {

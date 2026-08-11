@@ -224,7 +224,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public int getNumberOfFilesInFolder(String foldername) throws FileSystemException {
+	public long getNumberOfFilesInFolder(String foldername) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {

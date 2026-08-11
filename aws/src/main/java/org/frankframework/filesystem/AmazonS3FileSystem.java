@@ -179,7 +179,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
+	public long getNumberOfFilesInFolder(String folder) throws FileSystemException {
 		try (DirectoryStream<S3FileRef> files = list(folder, TypeFilter.FILES_ONLY)) {
 			return Math.toIntExact(StreamSupport.stream(files.spliterator(), false).count());
 		} catch (IOException e) {

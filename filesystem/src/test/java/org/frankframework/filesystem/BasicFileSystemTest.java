@@ -602,7 +602,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		// act
-		int fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
+		long fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
 
 		// assert
 		assertEquals(0, fileCount);

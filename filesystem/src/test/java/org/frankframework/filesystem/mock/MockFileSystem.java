@@ -173,7 +173,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public int getNumberOfFilesInFolder(String folderName) throws FileSystemException {
+	public long getNumberOfFilesInFolder(String folderName) throws FileSystemException {
 		checkOpen();
 		MockFolder folder = getMockFolder(folderName);
 		if (folder == null) {
