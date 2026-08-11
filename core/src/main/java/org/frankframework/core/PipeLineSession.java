@@ -229,7 +229,7 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 	 *     stream. The value can be preserved in the message, but the underlying stream can not be
 	 *     preserved and reading the same session key again will effectively return an empty value.
 	 * </p>
-	 * @param key The key for which to retrieve the value. A {@code NULL} key always returns value NULL.
+	 * @param key The key for which to retrieve the value. A {@code NULL} key always returns a NULL Message.
 	 * @return The value associated with the key encapsulated in a {@link Message} object.
 	 *         If the key does not exist or the value is null, a null message is returned.
 	 */
