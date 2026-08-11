@@ -18,6 +18,7 @@ package org.frankframework.mcp.config;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -40,13 +41,6 @@ import org.frankframework.management.security.JwtKeyGenerator;
 import org.frankframework.mcp.ManagementGatewayMcpServerFactory;
 import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.McpToolProvider;
-import org.frankframework.mcp.tools.AdapterToolProvider;
-import org.frankframework.mcp.tools.ClusterMemberToolProvider;
-import org.frankframework.mcp.tools.ConfigurationToolProvider;
-import org.frankframework.mcp.tools.LoggingToolProvider;
-import org.frankframework.mcp.tools.MessageBrowserToolProvider;
-import org.frankframework.mcp.tools.ServerInfoToolProvider;
-import org.frankframework.mcp.tools.TestPipelineToolProvider;
 
 /**
  * Wires the MCP server that exposes the Frank!Framework Management Gateway. It configures an {@link OutboundGateway} in
@@ -54,6 +48,7 @@ import org.frankframework.mcp.tools.TestPipelineToolProvider;
  * registers all tool providers.
  */
 @Configuration
+@ComponentScan("org.frankframework.mcp.tools")
 @PropertySource("classpath:application.properties")
 public class ManagementGatewayMcpConfiguration {
 
@@ -114,41 +109,6 @@ public class ManagementGatewayMcpConfiguration {
 	@Bean
 	McpJsonMapper mcpJsonMapper(ObjectMapper mcpObjectMapper) {
 		return new JacksonMcpJsonMapper(mcpObjectMapper);
-	}
-
-	@Bean
-	AdapterToolProvider adapterToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
-		return new AdapterToolProvider(outboundGateway, mcpSession);
-	}
-
-	@Bean
-	ConfigurationToolProvider configurationToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
-		return new ConfigurationToolProvider(outboundGateway, mcpSession);
-	}
-
-	@Bean
-	LoggingToolProvider loggingToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
-		return new LoggingToolProvider(outboundGateway, mcpSession);
-	}
-
-	@Bean
-	TestPipelineToolProvider testPipelineToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
-		return new TestPipelineToolProvider(outboundGateway, mcpSession);
-	}
-
-	@Bean
-	MessageBrowserToolProvider messageBrowserToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
-		return new MessageBrowserToolProvider(outboundGateway, mcpSession);
-	}
-
-	@Bean
-	ServerInfoToolProvider serverInfoToolProvider(OutboundGateway outboundGateway, McpSession mcpSession) {
-		return new ServerInfoToolProvider(outboundGateway, mcpSession);
-	}
-
-	@Bean
-	ClusterMemberToolProvider clusterMemberToolProvider(OutboundGateway outboundGateway, McpSession mcpSession, ObjectMapper mcpObjectMapper) {
-		return new ClusterMemberToolProvider(outboundGateway, mcpSession, mcpObjectMapper);
 	}
 
 	@Bean

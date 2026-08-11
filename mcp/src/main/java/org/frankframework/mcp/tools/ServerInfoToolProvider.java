@@ -17,6 +17,8 @@ package org.frankframework.mcp.tools;
 
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 
 import org.frankframework.management.bus.BusAction;
@@ -31,6 +33,7 @@ import org.frankframework.mcp.ToolSchema;
  * Tools that expose general server information, mirroring the {@code ServerDetails}, {@code EnvironmentVariables},
  * {@code SecurityItems}, {@code Scheduler} and {@code ConnectionOverview} controllers of the Frank!Console.
  */
+@Component
 public class ServerInfoToolProvider extends AbstractToolProvider {
 
 	public ServerInfoToolProvider(OutboundGateway outboundGateway, McpSession session) {

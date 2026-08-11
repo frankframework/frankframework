@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
+import org.springframework.stereotype.Component;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 
@@ -36,6 +37,7 @@ import org.frankframework.mcp.ToolSchema;
  * Tool to test a pipeline (adapter) with a supplied input message, mirroring the {@code TestPipeline} controller of the
  * Frank!Console. Both the resulting state and the result message are returned.
  */
+@Component
 public class TestPipelineToolProvider extends AbstractToolProvider {
 
 	public TestPipelineToolProvider(OutboundGateway outboundGateway, McpSession session) {

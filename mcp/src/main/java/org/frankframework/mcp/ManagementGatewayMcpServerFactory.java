@@ -33,8 +33,7 @@ public class ManagementGatewayMcpServerFactory {
 	private static final String SERVER_NAME = "frank-framework-management-gateway";
 
 	private static final String INSTRUCTIONS = """
-			This server exposes the Frank!Framework Management Gateway, the same API the Frank!Console uses.
-			Use it to inspect and operate a running Frank!Framework instance during development:
+			This server exposes the Frank!Framework Management Gateway, use it to inspect and operate a running Frank!Framework instance during development:
 			list and inspect adapters and their statistics, start and stop adapters and receivers,
 			read log files to find errors, run a test message through an adapter, and browse or manage
 			messages in the error store. In a clustered setup, use list_cluster_members and

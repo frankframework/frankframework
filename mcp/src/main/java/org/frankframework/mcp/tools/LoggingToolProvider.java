@@ -18,6 +18,7 @@ package org.frankframework.mcp.tools;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 
@@ -33,6 +34,7 @@ import org.frankframework.mcp.ToolSchema;
  * Tools to inspect log files and logging settings, mirroring the {@code Logging} and {@code FileViewer} controllers of
  * the Frank!Console. These are the tools to reach for when hunting down errors.
  */
+@Component
 public class LoggingToolProvider extends AbstractToolProvider {
 
 	public LoggingToolProvider(OutboundGateway outboundGateway, McpSession session) {

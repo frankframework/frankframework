@@ -104,4 +104,16 @@ class ClusterMemberToolProviderTest extends AbstractToolProviderTest {
 
 		assertTrue(result.isError());
 	}
+
+	@Test
+	void selectNonWorkerMemberReturnsError() {
+		UUID controller = UUID.randomUUID();
+		gateway.setMembers(List.of(member(controller, "ctrl", "controller")));
+		SyncToolSpecification tool = findTool(tools(), "select_cluster_member");
+
+		CallToolResult result = call(tool, Map.of("id", controller.toString()));
+
+		assertTrue(result.isError());
+		assertThat(textOf(result), containsString("worker"));
+	}
 }

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
@@ -36,6 +38,7 @@ import org.frankframework.mcp.ToolSchema;
  * mirroring the {@code ClusterMembers} controller of the Frank!Console. When the configured gateway does not support
  * clustering these tools simply report that there are no members.
  */
+@Component
 public class ClusterMemberToolProvider extends AbstractToolProvider {
 
 	private final ObjectMapper objectMapper;

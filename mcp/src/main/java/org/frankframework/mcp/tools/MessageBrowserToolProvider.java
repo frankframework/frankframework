@@ -18,6 +18,7 @@ package org.frankframework.mcp.tools;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
@@ -35,6 +36,7 @@ import org.frankframework.mcp.ToolSchema;
  * Tools to browse and manage messages in a transactional storage (such as an error store) of a receiver, mirroring the
  * {@code TransactionalStorage} controller of the Frank!Console.
  */
+@Component
 public class MessageBrowserToolProvider extends AbstractToolProvider {
 
 	private static final String DEFAULT_PROCESS_STATE = "Error";

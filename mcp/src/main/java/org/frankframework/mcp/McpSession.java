@@ -51,15 +51,16 @@ public class McpSession {
 	 * Select the member that subsequent requests should be routed to.
 	 *
 	 * @param id the id of a known {@code worker} member
-	 * @throws IllegalArgumentException when no worker with the given id exists
+	 * @throws IllegalArgumentException when no member with the given id exists, or it is not a {@code worker}
 	 */
 	public void setMemberTarget(UUID id) {
-		boolean known = outboundGateway.getMembers().stream()
-				.filter(member -> "worker".equals(member.getType()))
-				.anyMatch(member -> id.equals(member.getId()));
+		ClusterMember member = outboundGateway.getMembers().stream()
+				.filter(candidate -> id.equals(candidate.getId()))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("member target with id [" + id + "] not found"));
 
-		if (!known) {
-			throw new IllegalArgumentException("member target with id [" + id + "] not found");
+		if (!"worker".equals(member.getType())) {
+			throw new IllegalArgumentException("member target with id [" + id + "] is of type [" + member.getType() + "], only [worker] members can be selected");
 		}
 
 		this.memberTarget = id;

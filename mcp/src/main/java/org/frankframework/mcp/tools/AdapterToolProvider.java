@@ -18,6 +18,8 @@ package org.frankframework.mcp.tools;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 
@@ -34,6 +36,7 @@ import org.frankframework.mcp.ToolSchema;
 /**
  * Tools to inspect and control adapters, mirroring the {@code Adapters} controller of the Frank!Console.
  */
+@Component
 public class AdapterToolProvider extends AbstractToolProvider {
 
 	public AdapterToolProvider(OutboundGateway outboundGateway, McpSession session) {
