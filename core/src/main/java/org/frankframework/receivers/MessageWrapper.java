@@ -99,11 +99,11 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		try {
 			correlationId = (String) stream.readObject();
 		} catch (OptionalDataException | EOFException e) {
-			// Correlation ID was not written in original serialised message
+			// Correlation ID was not written in original serialized message
 			correlationId = null;
 		}
 
-		// Synchronise ID / CID fields with context map.
+		// Synchronize ID / CID fields with context map.
 		if (id == null) {
 			id = (String) context.get(PipeLineSession.MESSAGE_ID_KEY);
 		}
