@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -268,7 +269,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
-			retryTp = TransformerPool.configureTransformer(this, getRetryNamespaceDefs(), getRetryXPath(), null, OutputType.TEXT,false,null);
+			try {
+				retryTp = TransformerPool.getXPathTransformerPool(getRetryNamespaceDefs(), getRetryXPath(), OutputType.TEXT, false, null);
+			} catch (TransformerConfigurationException e) {
+				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+getRetryXPath()+"]", e);
+			}
 		}
 
 		configureSpecialPipes();
