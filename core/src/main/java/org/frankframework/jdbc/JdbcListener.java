@@ -336,17 +336,17 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	protected void addAdditionalValuesToMessageWrapper(ResultSet rs, RawMessageWrapper<M> mw) throws SQLException {
 		ResultSetMetaData metaData = rs.getMetaData();
-		Function<String, Map.Entry<String, String>> extractFieldValue = fieldName -> {
+		Function<String, Map.Entry<String, Message>> extractFieldValue = fieldName -> {
 			try {
 				int colNum = rs.findColumn(fieldName);
-				String value = JdbcUtil.getValue(getDbmsSupport(), rs, colNum, metaData, getBlobCharset(), isBlobsCompressed(), null, false, isBlobSmartGet(), false);
+				Message value = JdbcUtil.getValueAsMessage(getDbmsSupport(), rs, colNum, metaData, getBlobCharset(), isBlobsCompressed());
 				return Map.entry(fieldName, value);
 			} catch (Exception e) {
 				throw Lombok.sneakyThrow(e);
 			}
 		};
 		// Make sure that the sub-map supports case-insensitive lookup of entries
-		Map<String, String> additionalValues = getAdditionalFieldsList().stream()
+		Map<String, Message> additionalValues = getAdditionalFieldsList().stream()
 				.map(extractFieldValue)
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (m1, m2) -> m2, () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
 

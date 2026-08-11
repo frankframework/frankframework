@@ -189,6 +189,57 @@ public class JdbcUtil {
 		}
 	}
 
+	public static Message getValueAsMessage(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs) throws SQLException, IOException {
+		try {
+			if (dbmsSupport.isBlobType(rsmeta, colNum)) {
+				if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
+					return Message.asMessage(rs.getString(colNum));
+				}
+				return new Message(JdbcUtil.getBlobInputStream(dbmsSupport, rs, colNum, decompressBlobs), blobCharset);
+			} else if (dbmsSupport.isClobType(rsmeta, colNum)) {
+				return new Message(dbmsSupport.getClobReader(rs, colNum));
+			}
+		} catch (JdbcException e) {
+			log.debug("Caught JdbcException, assuming no bloc/clob found", e);
+			return Message.nullMessage();
+		}
+		int columnType = rsmeta.getColumnType(colNum);
+		switch (columnType) {
+			case Types.BOOLEAN:
+			case Types.BIT: {
+				boolean value = rs.getBoolean(colNum);
+				return Message.asMessage(value);
+			}
+			// return as specified date format
+			case Types.TIMESTAMP:
+				return Message.asMessage(rs.getTimestamp(colNum).toLocalDateTime());
+			case Types.DATE: {
+				return Message.asMessage(rs.getDate(colNum).toLocalDate());
+			}
+			case Types.TIME: {
+				return Message.asMessage(rs.getTime(colNum).toLocalTime());
+			}
+			case Types.TIMESTAMP_WITH_TIMEZONE: {
+				return Message.asMessage(rs.getTimestamp(colNum).toInstant());
+			}
+			default: {
+				Object value = rs.getObject(colNum);
+				if (value == null) {
+					return Message.nullMessage();
+				}
+				return Message.asMessage(value);
+			}
+		}
+	}
+
+	/**
+	 * Get value of column-nr from record-set current record and return it as String.
+	 *
+	 * @deprecated Where possible prefer to use the new method {@link #getValueAsMessage(IDbmsSupport, ResultSet, int, ResultSetMetaData, String, boolean)} because
+	 * it is more flexible, and the result can always still be turned into a String value with {@link Message#asString()}. If flags missing from the old method
+	 * are needed on the new method, they can be added as needed.
+	 */
+	@Deprecated(since = "10.3")
 	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
 		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
 			if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
@@ -254,15 +305,15 @@ public class JdbcUtil {
 		}
 	}
 
-	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, boolean blobIsCompressed) throws SQLException, JdbcException {
+	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, final int column, final boolean blobIsCompressed) throws SQLException, JdbcException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
-	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, boolean blobIsCompressed) throws SQLException, JdbcException {
+	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, final String column, final boolean blobIsCompressed) throws SQLException, JdbcException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
-	private static InputStream getBlobInputStream(InputStream blobInputStream, boolean blobIsCompressed) {
+	private static InputStream getBlobInputStream(final InputStream blobInputStream, final boolean blobIsCompressed) {
 		if (blobInputStream == null) {
 			return null;
 		}

@@ -473,7 +473,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			} else if (isScalarExtended()) {
 					result="[absent]";
 			}
-			return new Message(result);
+			return Message.asMessage(result);
 		}
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();

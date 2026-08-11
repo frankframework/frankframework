@@ -361,7 +361,7 @@ public class JdbcTableListenerTest {
 			assertNotNull(session.get("additional_query_fields"));
 			assertNotNull(session.getString("additional_query_fields.tvarchar"));
 			assertEquals("1", session.getString("additional_query_fields.tvarchar"));
-			assertEquals("1", session.get("additional_query_fields.tint")); // Additional fields are always returned as String, even if they're numerical types in the database
+			assertEquals(1, session.getInteger("additional_query_fields.tint")); // Additional fields are always returned as String, even if they're numerical types in the database
 		}
 	}
 
