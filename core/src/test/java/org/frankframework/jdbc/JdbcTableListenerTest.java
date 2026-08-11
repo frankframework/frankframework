@@ -992,8 +992,8 @@ public class JdbcTableListenerTest {
 		assertEquals("message", message.asString());
 		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
 		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
-		assertEquals("fVC", session.get("tVARCHAR"));
-		assertEquals("fBLOB", session.get("tBLOB"));
+		assertEquals("fVC", session.getMessage("tVARCHAR").asString());
+		assertEquals("fBLOB", session.getMessage("tBLOB").asString());
 	}
 
 	@DatabaseTest
@@ -1033,9 +1033,9 @@ public class JdbcTableListenerTest {
 		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
 		assertTrue(session.containsKey("tCLOB"), "Session should contain tCLOB");
 		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
-		assertEquals("1", session.get("tINT"));
-		assertEquals("fVC", session.get("tVARCHAR"));
-		assertEquals("fBLOB", session.get("tBLOB"));
-		assertEquals("message", session.get("tCLOB"));
+		assertEquals("1", session.getString("tINT"));
+		assertEquals("fVC", session.getString("tVARCHAR"));
+		assertEquals("fBLOB", session.getString("tBLOB"));
+		assertEquals("message", session.getString("tCLOB"));
 	}
 }
