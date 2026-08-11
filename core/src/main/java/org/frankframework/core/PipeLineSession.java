@@ -207,13 +207,6 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 		return !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
 	}
 
-	@Override
-	public void putAll(Map<? extends String, ?> m) {
-		for (Map.Entry<? extends String, ?> entry : m.entrySet()) {
-			put(entry.getKey(), entry.getValue());
-		}
-	}
-
 	/*
 	 * The ladybug might stub the MessageId. The Stubbed value will be wrapped in a Message.
 	 * Ensure that a proper string is returned in those cases too.

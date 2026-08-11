@@ -519,9 +519,28 @@ public class PipeLineSessionTest {
 	}
 
 	@Test
+	public void testPutAllCallsCustomPut() {
+		// Arrange
+		Map<String, Object> map = new HashMap<>();
+		map.put("enum", TestEnumInSession.A);
+
+		// Demonstrate that in original map, we put the enum-value
+		assertEquals(TestEnumInSession.A, map.get("enum"));
+
+		// Act
+		session.putAll(map);
+
+		// Assert
+		// Demonstrate that using putAll we call put which will put the string-value in the session.
+		assertEquals("A", session.get("enum"));
+	}
+
+	@Test
 	public void testPutEnumInSessionNormalSessionKey() {
+		// Act
 		session.put("enum", TestEnumInSession.A);
 
+		// Assert
 		assertEquals("A", session.get("enum"));
 		assertThrows(IllegalArgumentException.class, () -> {
 			// Need to pass an Enum value to get the right type
