@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -176,15 +175,6 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	public S3FileRef toFile(@Nullable String folder, @Nullable String filename) {
 		return toFile(StringUtil.concatStrings(folder, FILE_DELIMITER, filename));
-	}
-
-	@Override
-	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
-		try (DirectoryStream<S3FileRef> files = list(folder, TypeFilter.FILES_ONLY)) {
-			return Math.toIntExact(StreamSupport.stream(files.spliterator(), false).count());
-		} catch (IOException e) {
-			throw new FileSystemException("Exception while counting number of files in [" + folder + "]. " + e.getMessage());
-		}
 	}
 
 	@Override

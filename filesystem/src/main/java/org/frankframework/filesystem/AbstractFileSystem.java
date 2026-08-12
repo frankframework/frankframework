@@ -15,9 +15,6 @@
  */
 package org.frankframework.filesystem;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.util.Iterator;
 
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.DestinationType.Type;
@@ -45,23 +42,6 @@ public abstract class AbstractFileSystem<F> implements IBasicFileSystem<F> {
 	@Override
 	public boolean isOpen() {
 		return open;
-	}
-
-	@Override
-	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
-		int count = 0;
-		int stopAt = getMaxNumberOfMessagesToList();
-		if (stopAt<0) {
-			stopAt = Integer.MAX_VALUE;
-		}
-		try(DirectoryStream<F> ds = list(folder, TypeFilter.FILES_ONLY)) {
-			for (Iterator<F> it = ds.iterator(); it.hasNext() && count<=stopAt; it.next()) {
-				count++;
-			}
-		} catch (IOException e) {
-			throw new FileSystemException(e);
-		}
-		return count;
 	}
 
 	/**
