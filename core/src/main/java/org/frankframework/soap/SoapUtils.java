@@ -42,6 +42,7 @@ import org.apache.wss4j.dom.handler.RequestData;
 import org.apache.wss4j.dom.handler.WSHandlerResult;
 import org.apache.wss4j.dom.message.WSSecEncrypt;
 import org.apache.wss4j.dom.message.WSSecHeader;
+import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.jspecify.annotations.NonNull;
@@ -52,7 +53,7 @@ import org.frankframework.stream.Message;
 
 public class SoapUtils {
 
-	private SoapUtils() {
+	static {
 		JCEMapper.registerDefaultAlgorithms();
 		WSSConfig.init();
 	}
@@ -171,6 +172,33 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 		return new Message(doc);
 	}
 
+	public static Message signMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean includeCertificateInMessage) throws SOAPException, IOException, WSSecurityException {
+		Document doc = SoapUtils.toSoapDocument(soapMessage);
+
+		// create security header and insert it into unsigned envelope
+		WSSecHeader secHeader = new WSSecHeader(doc);
+		secHeader.insertSecurityHeader();
+		secHeader.setMustUnderstand(true);
+
+		Crypto crypto = new KeyStoreCrypto(keystore);
+
+		WSSecSignature sign = new WSSecSignature(secHeader);
+		sign.setUserInfo(certificateName, certificatePassword);
+//		sign.setKeyIdentifierType(WSConstants.BST_DIRECT_REFERENCE);
+//		sign.setSignatureAlgorithm(WSConstants.RSA_SHA256);
+//		sign.setDigestAlgo(WSConstants.SHA256);
+		sign.setIncludeSignatureToken(includeCertificateInMessage);
+
+		// Add a Timestamp
+		WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
+		timestampBuilder.setTimeToLive(300);
+		timestampBuilder.build();
+
+		Document encryptedDocument = sign.build(crypto);
+
+		return new Message(encryptedDocument);
+	}
+
 	public static Message verifyMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean removeSecurityHeader) throws SOAPException, IOException, WSSecurityException {
 		RequestData requestData = getRequestData(keystore, certificateName, certificatePassword);
 		return verifyMessage(soapMessage, requestData, removeSecurityHeader);
@@ -196,10 +224,10 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 				.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
 				.filter(Objects::nonNull)
 				.map(Integer.class::cast)
-				.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
+				.anyMatch(action -> (action & WSConstants.SIGN) == WSConstants.SIGN);
 
 		if (!encryptionProcessed) {
-			throw new CustomWSSecurityException("some encryption references were not processed");
+			throw new CustomWSSecurityException("some signature references were not processed");
 		}
 
 		if (removeSecurityHeader) {
