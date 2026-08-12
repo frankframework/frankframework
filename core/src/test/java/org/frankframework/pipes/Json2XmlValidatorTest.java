@@ -22,6 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junitpioneer.jupiter.Issue;
 import org.springframework.http.MediaType;
 
 import org.frankframework.core.IValidator;
@@ -947,7 +948,8 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 			"true, partial4",
 			"true, partial5",
 	})
-	public void issue7146AttributesOnMultipleLevels(boolean deepSearch, String input) throws Exception {
+	@Issue("7146")
+	public void attributesOnMultipleLevels(boolean deepSearch, String input) throws Exception {
 		// Arrange
 		pipe.setSchema("/Validation/AttributesOnDifferentLevels/MultipleOptionalElements.xsd");
 		pipe.setRoot("Root");

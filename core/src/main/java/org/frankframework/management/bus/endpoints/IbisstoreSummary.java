@@ -60,9 +60,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public StringMessage showIbisStoreSummary(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
-		String query = BusMessageUtils.getHeader(message, "query");
-
-		return execute(datasource, query);
+		return execute(datasource, null);
 	}
 
 	// Protected for testing purposes only!

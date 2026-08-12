@@ -5,10 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,13 +21,11 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.pipes.AbstractPipe;
-import org.frankframework.pipes.AbstractValidator;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.PutInSessionPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.testdummies.TestDummyValidator;
+import org.frankframework.testdummies.TestDummyWrapper;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.CloseUtils;
@@ -141,20 +135,20 @@ class CorePipeLineProcessorTest {
 	}
 
 	private void addValidators(PipeLine pipeLine, boolean failDirectlyToExit, boolean outputValidationFailsAll) throws ConfigurationException {
-		IValidator inputValidator = new DummyValidator("fail-validator-input");
+		IValidator inputValidator = new TestDummyValidator("fail-validator-input");
 		inputValidator.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err1"));
 
-		IWrapperPipe inputWrapper = new DummyWrapper("fail-wrap-input");
+		IWrapperPipe inputWrapper = new TestDummyWrapper("fail-wrap-input");
 		inputWrapper.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err2"));
 
-		IWrapperPipe outputWrapper = new DummyWrapper("fail-wrap-output");
+		IWrapperPipe outputWrapper = new TestDummyWrapper("fail-wrap-output");
 		outputWrapper.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err3"));
 
 		IValidator outputValidator;
 		if (outputValidationFailsAll) {
-			outputValidator = new DummyValidator("fail-validator-output", "err4");
+			outputValidator = new TestDummyValidator("fail-validator-output", "err4");
 		} else {
-			outputValidator = new DummyValidator("fail-validator-output");
+			outputValidator = new TestDummyValidator("fail-validator-output");
 		}
 		outputValidator.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err4"));
 
@@ -175,7 +169,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message("<ns1:input xmlns:ns1=\"xyx\"/>"), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message("<ns1:input xmlns:ns1=\"xyx\"/>"), session, "p1");
 
 		// Assert
 		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
@@ -200,7 +194,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message("<ns1:input/>"), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message("<ns1:input/>"), session, "p1");
 
 		// Assert
 		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
@@ -233,7 +227,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
 		assertFalse(pipeLineResult.isSuccessful(), "Expected failure pipeline result");
@@ -247,8 +241,8 @@ class CorePipeLineProcessorTest {
 	@ParameterizedTest
 	@CsvSource({
 		"true, false, false, fail-wrap-output, wrapping-success- pipeline inputWrapper[fail-wrap-output]",
-		"true, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]",
-		"true, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]",
+		"true, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]]",
+		"true, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[wrapping-success- pipeline outputWrapper[wrapping-success- pipeline inputWrapper[fail-validator-output]]]",
 		"false, false, false, fail-wrap-output, wrapping-success- pipeline outputWrapper[err3]",
 		"false, false, false, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
 		"false, false, true, fail-validator-output, wrapping-success- pipeline outputWrapper[err4]",
@@ -268,7 +262,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
 		assertEquals(skipWrappingValidation, pipeLineResult.isSuccessful(), "Expected " + (skipWrappingValidation ? "success" : "failure") + " pipeline result");
@@ -298,7 +292,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
 		assertFalse(pipeLineResult.isSuccessful(), "Expected failure pipeline result");
@@ -330,7 +324,7 @@ class CorePipeLineProcessorTest {
 		configuration.start();
 
 		// Act
-		PipeLineResult pipeLineResult = processor.processPipeLine(pipeLine, "id", new Message(input), session, "p1");
+		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
 		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
@@ -341,51 +335,4 @@ class CorePipeLineProcessorTest {
 		assertEquals("2", session.getString("s2"));
 	}
 
-	private class DummyWrapper extends AbstractPipe implements IWrapperPipe {
-
-		private final String failOnValue;
-
-		private DummyWrapper(@NonNull String failOnValue) {
-			this.failOnValue = failOnValue;
-		}
-
-		@Override
-		public @NonNull PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
-			try {
-				String data = message.asString();
-				if (data != null && data.contains(failOnValue)) {
-					Message result = new Message("wrapping-failed" + getName() + "[" + data + "]");
-					return new PipeRunResult(findForward("failure"), result);
-				}
-				Message result = new Message("wrapping-success" + getName() + "[" + data + "]");
-				return new PipeRunResult(findForward("success"), result);
-			} catch (IOException e) {
-				throw new PipeRunException(this, "Failure to get data from message", e);
-			}
-		}
-	}
-
-	private class DummyValidator extends AbstractValidator {
-
-		private final String[] failOnValue;
-
-		private DummyValidator(String... failOnValue) {
-			this.failOnValue = failOnValue;
-		}
-
-		@Override
-		protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
-			try {
-				String data = messageToValidate.asString();
-				for (String value : failOnValue) {
-					if (StringUtils.isNotEmpty(data) && StringUtils.isNotEmpty(value) && data.contains(value)) {
-						return findForward("failure");
-					}
-				}
-				return findForward("success");
-			} catch (IOException e) {
-				throw new PipeRunException(this, "Failure to get data from message", e);
-			}
-		}
-	}
 }

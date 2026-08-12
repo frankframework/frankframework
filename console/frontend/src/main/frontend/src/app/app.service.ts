@@ -69,6 +69,8 @@ export type PipeMessage = {
 
 export type Certificate = {
   name: string;
+  authAlias?: string;
+  info?: string | (string | string[])[];
 };
 
 export type Adapter = {

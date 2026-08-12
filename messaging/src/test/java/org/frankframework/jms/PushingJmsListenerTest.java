@@ -125,7 +125,7 @@ public class PushingJmsListenerTest {
 			plr.setState(exitState);
 			plr.setResult(p.getArgument(1));
 			return plr;
-		}).when(pl).process(anyString(), any(org.frankframework.stream.Message.class), any(PipeLineSession.class));
+		}).when(pl).process(any(), anyString(), any(org.frankframework.stream.Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();

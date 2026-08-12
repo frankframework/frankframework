@@ -87,6 +87,10 @@ public class BrowseQueue extends BusEndpointBase {
 		if(type == null) {
 			throw new BusException("a DestinationType must be provided");
 		}
+		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisDataAdmin", "IbisAdmin", "IbisTester");
+		if (showPayload && !isAdmin) {
+			throw new BusException("insufficient access rights");
+		}
 
 		Map<String, Object> returnMap = new HashMap<>();
 

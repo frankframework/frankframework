@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -205,7 +206,11 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			}
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT, false, null);
+			try {
+				tpDynamicSessionKey = TransformerPool.getXPathTransformerPool(getNamespaceDefs(), getSessionKeyXPath(), OutputType.TEXT, false, null);
+			} catch (TransformerConfigurationException e) {
+				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+getSessionKeyXPath()+"]", e);
+			}
 		}
 		if (getType() == null) {
 			log.debug("parameter [{}] has no type. Setting the type to [{}]", this::getName, ()->ParameterType.STRING);
