@@ -8,7 +8,7 @@
 				transactionTimeout="30">
 			<listener name="JdbcQueryListener for ibis4test"
 						className="org.frankframework.jdbc.JdbcQueryListener"
-						selectQuery="SELECT TKEY, TCLOB
+						selectQuery="SELECT TKEY, TCLOB, TBLOB
 										FROM IBISTEMP
 										WHERE TCHAR = '1'
 										AND TNUMBER=${jdbc.querylistener.key}"
@@ -16,6 +16,9 @@
 						updateStatusToErrorQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
 						keyField="tkey"
 						messageField="TCLOB"
+						additionalFields="TBLOB"
+						blobCharset="UTF-8"
+						blobsCompressed="false"
 						peekQuery="SELECT TKEY, TCLOB
 										FROM IBISTEMP
 										WHERE TCHAR = '1'
@@ -43,14 +46,20 @@
 						statusValueError="7"
 						statusValueInProcess="8"
 						keyField="tkey"
-						messageField="TCLOB"/>
+						messageField="TCLOB"
+						additionalFields="TBLOB"
+						blobCharset="UTF-8"
+						blobsCompressed="false"
+			/>
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="Insert" transactionAttribute="RequiresNew">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key})" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key}, ?)">
+					<param name="blob" sessionKey="additional_query_fields.tblob" />
+				</sender>
 			</pipe>
 			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="originalMessage">
 				<forward name="success" path="do_success" />
@@ -79,7 +88,7 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe"
-				xpathExpression="request/@action"></pipe>
+				xpathExpression="request/@action"/>
 			<pipe name="DeleteIbistemp">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="DELETE FROM IBISTEMP WHERE TNUMBER = ${jdbc.querylistener.key}"
@@ -95,10 +104,13 @@
 			</pipe>
 			<pipe name="InsertIbistemp">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
-					query="INSERT INTO IBISTEMP (tkey, tchar, tclob, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ${jdbc.querylistener.key}, SYSDATE)"
+					blobsCompressed="false"
+					blobCharset="UTF-8"
+					query="INSERT INTO IBISTEMP (tkey, tchar, tclob, tblob, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ?, ${jdbc.querylistener.key}, SYSDATE)"
 				>
 					<param name="status" xpathExpression="request/@status"/>
 					<param name="string" xpathExpression="request/@string"/>
+					<param name="blob" xpathExpression="request/@additional"/>
 				</sender>
 				<forward name="success" path="do_success" />
 			</pipe>
