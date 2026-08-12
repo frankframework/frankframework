@@ -43,6 +43,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
 		JsonMapper jsonMapper = JsonMapper.builder()
 				.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+				.disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 				.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
 				.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
