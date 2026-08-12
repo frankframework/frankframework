@@ -52,7 +52,7 @@ public class LarvaHtmlConfig extends LarvaConfig {
 		String paramExecute = request.getParameter(REQUEST_PARAM_EXECUTE);
 		String paramScenariosRootDirectory = request.getParameter(REQUEST_PARAM_SCENARIOS_ROOT_DIR);
 
-		setLogLevel(LarvaLogLevel.parse(paramLogLevel, LarvaLogLevel.WRONG_PIPELINE_MESSAGES));
+		setLogLevel(LarvaLogLevel.parse(paramLogLevel, LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF));
 		setAutoScroll(paramAutoScroll != null || paramLogLevel == null);
 		setMultiThreaded(paramMultiThreaded != null && paramLogLevel != null);
 		if (paramWaitBeforeCleanUp != null) {
