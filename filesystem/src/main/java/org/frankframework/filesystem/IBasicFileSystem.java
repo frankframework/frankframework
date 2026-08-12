@@ -61,8 +61,9 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 		F actualFolder = toFile(folder);
 		return list(actualFolder, filter);
 	}
+
 	@NonNull DirectoryStream<F> list(@Nullable F folder, @NonNull TypeFilter filter) throws FileSystemException;
-	int getNumberOfFilesInFolder(String folder) throws FileSystemException;
+
 	/**
 	 * Get a string representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #toFile(String)}.
