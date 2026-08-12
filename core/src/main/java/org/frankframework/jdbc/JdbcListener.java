@@ -367,18 +367,10 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
-		addAdditionalQueryFieldsToSession(rawMessage, context);
 		if (rawMessage.getRawMessage() instanceof MessageWrapper<?> messageWrapper) {
 			return messageWrapper.getMessage();
 		}
 		return Message.asMessage(rawMessage.getRawMessage());
-	}
-
-	@SuppressWarnings("unchecked")
-	protected void addAdditionalQueryFieldsToSession(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) {
-		if (rawMessage.getContext().containsKey(ADDITIONAL_QUERY_FIELDS_KEY)) {
-			context.putAll((Map<String, String>) rawMessage.getContext().get(ADDITIONAL_QUERY_FIELDS_KEY));
-		}
 	}
 
 	@Override

@@ -109,7 +109,6 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
@@ -1050,18 +1049,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 
 		try {
-			final Message message;
-			if (rawMessageWrapper instanceof MessageWrapper) {
-				message = ((MessageWrapper<M>) rawMessageWrapper).getMessage();
-			} else {
-				message = getListener().extractMessage(rawMessageWrapper, session);
-			}
-			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, message);
-
-			if (errorStorage!=null) {
-				Serializable sobj = serializeMessageObject(rawMessageWrapper, message);
-				errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, sobj);
-			}
+			MessageWrapper<?> messageWrapper = serializeMessageObject(rawMessageWrapper, session);
+			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, messageWrapper.getMessage());
+			errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, messageWrapper);
 			txManager.commit(txStatus);
 		} catch (Exception e) {
 			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", getLogPrefix(), originalMessageId, correlationId, rawMessageWrapper, e);
@@ -1075,12 +1065,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
-	private Serializable serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper, Message message) {
-		final Serializable sobj;
+	private MessageWrapper<?> serializeMessageObject(RawMessageWrapper<M> rawMessageWrapper, PipeLineSession session) throws ListenerException {
+		final MessageWrapper<?> sobj;
 
 		if (rawMessageWrapper instanceof MessageWrapper<?> wrapper) {
 			sobj = wrapper;
 		} else {
+			Message message = getListener().extractMessage(rawMessageWrapper, session);
 			sobj = new MessageWrapper<>(rawMessageWrapper, message);
 		}
 
@@ -1167,15 +1158,14 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			LogUtil.setIdsToThreadContext(ctc, messageId, correlationId);
 
 			MessageWrapper<M> messageWrapper;
-			if (rawMessageWrapper instanceof MessageWrapper && !(getListener() instanceof MessageStoreListener)) {
-				// somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
-				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
-				// like JdbcListener
+			if (rawMessageWrapper instanceof MessageWrapper) {
 				messageWrapper = (MessageWrapper<M>) rawMessageWrapper;
 			} else {
 				try {
 					Message message = getListener().extractMessage(rawMessageWrapper, session);
 					messageWrapper = new MessageWrapper<>(rawMessageWrapper, message);
+				} catch (ListenerException e) {
+					throw e;
 				} catch (Exception e) {
 					throw new ListenerException(e);
 				}

@@ -49,13 +49,15 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 	@Override
 	public Message processRequest(IPushingListener<M> origin, MessageWrapper<M> rawMessage, PipeLineSession session) throws ListenerException {
+		session.putAll(rawMessage.getContext());
 		return processRequest(rawMessage.getMessage(), session);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
-		Message message = origin.extractMessage(rawMessage, threadContext);
-		processRequest(message, threadContext);
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+		session.putAll(rawMessage.getContext());
+		Message message = origin.extractMessage(rawMessage, session);
+		processRequest(message, session);
 	}
 
 	private Message processRequest(Message message, PipeLineSession session) throws ListenerException {
