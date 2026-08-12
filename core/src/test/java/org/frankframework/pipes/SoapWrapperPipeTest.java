@@ -1,5 +1,6 @@
 package org.frankframework.pipes;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -459,9 +460,10 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		// Assert: result is a SOAP envelope containing the header, with an empty body
 		String result = prr.getResult().asString();
 
-		assertTrue(result.contains("<eb:RefToMessageId>auto-20260806T130431134111Z-2863</eb:RefToMessageId>"));
-		assertTrue(result.contains("<eb:Action>Ping</eb:Action>"));
-		assertTrue(result.contains("<soapenv:Body></soapenv:Body>"));
+		assertThat(result)
+			.contains("<eb:RefToMessageId>auto-20260806T130431134111Z-2863</eb:RefToMessageId>")
+			.contains("<eb:Action>Ping</eb:Action>")
+			.contains("<soapenv:Body></soapenv:Body>");
 	}
 
 	public void testUnwrapConditional(boolean expectUnwrap) throws Exception {
