@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -987,13 +988,15 @@ public class JdbcTableListenerTest {
 		PipeLineSession session = new PipeLineSession();
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(session);
 		Message message = listener.extractMessage(rawMessage, session);
+		session.putAll(rawMessage.getContext());
 
 		// Assert
 		assertEquals("message", message.asString());
-		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
-		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
-		assertEquals("fVC", session.getMessage("tVARCHAR").asString());
-		assertEquals("fBLOB", session.getMessage("tBLOB").asString());
+		Assertions.assertThat(session).containsKey("additional_query_fields");
+		assertTrue(session.containsKey("additional_query_fields.tBLOB"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("additional_query_fields.tVARCHAR"), "Session should contain tVARCHAR");
+		assertEquals("fVC", session.getMessage("additional_query_fields.tVARCHAR").asString());
+		assertEquals("fBLOB", session.getMessage("additional_query_fields.tBLOB").asString());
 	}
 
 	@DatabaseTest
@@ -1026,16 +1029,18 @@ public class JdbcTableListenerTest {
 
 		// Extract message, then the additional fields should be copied to the session.
 		Message message = listener.extractMessage(rawMessage, session);
+		session.putAll(rawMessage.getContext());
 
 		// Assert
 		assertEquals("message", message.asString());
-		assertTrue(session.containsKey("tINT"), "Session should contain tINT");
-		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
-		assertTrue(session.containsKey("tCLOB"), "Session should contain tCLOB");
-		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
-		assertEquals("1", session.getString("tINT"));
-		assertEquals("fVC", session.getString("tVARCHAR"));
-		assertEquals("fBLOB", session.getString("tBLOB"));
-		assertEquals("message", session.getString("tCLOB"));
+		Assertions.assertThat(session).containsKey("additional_query_fields");
+		assertTrue(session.containsKey("additional_query_fields.tINT"), "Session should contain tINT");
+		assertTrue(session.containsKey("additional_query_fields.tBLOB"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("additional_query_fields.tCLOB"), "Session should contain tCLOB");
+		assertTrue(session.containsKey("additional_query_fields.tVARCHAR"), "Session should contain tVARCHAR");
+		assertEquals("1", session.getString("additional_query_fields.tINT"));
+		assertEquals("fVC", session.getString("additional_query_fields.tVARCHAR"));
+		assertEquals("fBLOB", session.getString("additional_query_fields.tBLOB"));
+		assertEquals("message", session.getString("additional_query_fields.tCLOB"));
 	}
 }

@@ -17,6 +17,7 @@ package org.frankframework.util;
 
 import java.util.Map;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
@@ -38,7 +39,7 @@ public class NestedLookupMap<V> extends LinkedCaseInsensitiveMap<V> {
 	@Override
 	public @Nullable V get(@Nullable Object key) {
 		if (!(key instanceof String strKey)) return null;
-		if (!strKey.contains(".") || containsKey(key)) {
+		if (!strKey.contains(".") || super.containsKey(key)) {
 			return super.get(key);
 		}
 		Map<?,?> subMap = this;
@@ -58,5 +59,27 @@ public class NestedLookupMap<V> extends LinkedCaseInsensitiveMap<V> {
 		}
 		//noinspection ReassignedVariable,unchecked
 		return (V)value;
+	}
+
+	@Override
+	public boolean containsKey(@NonNull Object key) {
+		if (!(key instanceof String strKey)) return false;
+		if (super.containsKey(key)) return true;
+
+		if (!strKey.contains(".")) return false;
+		Map<?,?> subMap = this;
+		for (String part : strKey.split("\\.")) {
+			if (subMap == null || !subMap.containsKey(part)) {
+				return false;
+			}
+			if (subMap.get(part) instanceof Map<?,?> newSubMap) {
+				subMap = newSubMap;
+			} else  {
+				// Do not directly return false here because we don't know inside the loop if this may be the last subkey, which
+				// can be any type.
+				subMap = null;
+			}
+		}
+		return true;
 	}
 }

@@ -1,5 +1,6 @@
 package org.frankframework.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,6 +25,19 @@ class NestedLookupMapTest {
 	}
 
 	@Test
+	void containsKeyCaseInsensitive() {
+		// Arrange
+		Map<String, Object> map = new NestedLookupMap<>();
+		map.put("MyKey", 1);
+
+		// Act / Assert
+		assertThat(map).containsKey("MyKey");
+		assertThat(map).containsKey("mykey");
+		assertThat(map).containsKey("MYKEY");
+		assertThat(map).doesNotContainKey("not-there");
+	}
+
+	@Test
 	void getFromNestedMap() {
 		// Arrange
 		Map<String, Object> nestedMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -41,6 +55,28 @@ class NestedLookupMapTest {
 		assertEquals(3, map.get("nested.b")); // Key from nested map is overridden by the direct key `nested.b` in the top level map
 		assertNull(map.get("nested.nothing"));
 		assertNull(map.get("nested.b.nothing"));
+		assertNull(map.get("a"));
+	}
+
+	@Test
+	void containsKeyWithNestedMap() {
+		// Arrange
+		Map<String, Object> nestedMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		nestedMap.put("a", 1);
+		nestedMap.put("b", 2);
+
+		Map<String, Object> map = new NestedLookupMap<>();
+		map.put("nested", nestedMap);
+		map.put("nested.b", 3);
+
+		// Act / Assert
+		assertThat(map).containsKey("nested.a");
+		assertThat(map).containsKey("Nested.A");
+		assertThat(map).containsKey("NESTED.A");
+		assertThat(map).containsKey("nested.b");
+		assertThat(map).doesNotContainKey("a");
+		assertThat(map).doesNotContainKey("nested.nothing");
+		assertThat(map).doesNotContainKey("nested.b.nothing");
 	}
 
 	@Test
