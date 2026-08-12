@@ -245,7 +245,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	}
 
 	/**
-	 * Determines the SOAP namespace for wrapping a message. Used order:
+	 * Determines the SOAP namespace for wrapping a message. Used order:z
 	 * 1) soapNamespace configuration setting
 	 * 2) soapVersion configuration setting
 	 * 3) saved soapNamespace from session
