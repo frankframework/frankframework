@@ -727,7 +727,7 @@ public class MessageTest {
 		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
 		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
 		assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-		assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+		assertEquals(1, (int) out.getContext().get("TEST-KEY-INT"));
 	}
 
 	@Test
@@ -747,7 +747,7 @@ public class MessageTest {
 		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
 		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
 		assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-		assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+		assertEquals(1, (int) out.getContext().get("TEST-KEY-INT"));
 	}
 
 	@Test
@@ -768,7 +768,7 @@ public class MessageTest {
 		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
 		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
 		assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-		assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+		assertEquals(1, (int) out.getContext().get("TEST-KEY-INT"));
 	}
 
 	@Test
@@ -791,7 +791,7 @@ public class MessageTest {
 		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
 		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
 		assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-		assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+		assertEquals(1, (int) out.getContext().get("TEST-KEY-INT"));
 		assertEquals("UTF-8", out.getContext().get(MessageContext.METADATA_CHARSET));
 	}
 

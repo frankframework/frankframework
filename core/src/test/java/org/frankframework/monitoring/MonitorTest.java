@@ -84,7 +84,7 @@ public class MonitorTest {
 		assertTrue(session.containsKey(PipeLineSession.ORIGINAL_MESSAGE_KEY));
 		Message originalMessage = (Message) session.get(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 		assertEquals(message.asString(), sender.getSessionOriginalMessageValue());
-		assertEquals(123, originalMessage.getContext().get("special-key"));
+		assertEquals(123, (int) originalMessage.getContext().get("special-key"));
 	}
 
 	private String ignoreHostname(String result) {

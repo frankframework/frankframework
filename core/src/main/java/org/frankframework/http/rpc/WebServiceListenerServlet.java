@@ -47,6 +47,7 @@ import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
+import org.frankframework.soap.SoapContext;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;

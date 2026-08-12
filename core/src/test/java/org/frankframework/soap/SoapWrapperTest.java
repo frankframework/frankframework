@@ -52,6 +52,7 @@ import javax.xml.transform.stream.StreamSource;
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPEnvelope;
+import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPPart;
 
@@ -67,6 +68,8 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -347,8 +350,9 @@ public class SoapWrapperTest {
 		return ks;
 	}
 
-	@Test
-	void validateEncryptedSoap1_1() throws Exception {
+	@ParameterizedTest
+	@CsvSource({"true, true", "true, false", "false, true", "false, false"})
+	void validateEncryptedSoap1_1(boolean includeCertificateInMessage, boolean removeSecurityHeader) throws Exception {
 		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
 		assertNotNull(file); // ensure we can find the file
 
@@ -360,7 +364,7 @@ public class SoapWrapperTest {
 		SecretKey secretKey = keyGen.generateKey();
 //		SecretKey secretKey = new SecretKeySpec(symmetricKey.getBytes(), "AES");
 
-		Message encrypted = SoapWrapper.getInstance().encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey);
+		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, includeCertificateInMessage);
 
 		String encryptedString = encrypted.asString()
 				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>")
@@ -371,13 +375,13 @@ public class SoapWrapperTest {
 				.replaceAll("(<wsse:BinarySecurityToken[^>]*>)[^<]*(</wsse:BinarySecurityToken>)", "$1IGNORE-BST$2")
 				.replaceAll("(<wsse:KeyIdentifier[^>]*>)[^<]*(</wsse:KeyIdentifier>)", "$1IGNORE-KI$2");
 
-		URL expectedFile = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap-encrypted.xml");
+		URL expectedFile = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap-encrypted-"+(includeCertificateInMessage ? "with" : "no")+"cert.xml");
 		assertNotNull(expectedFile); // ensure we can find the file
 		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(expectedFile), encryptedString);
 
-		Message decrypted = SoapWrapper.getInstance().decryptMessage(encrypted, keystore, certificateName, "changeit");
+		Message decrypted = SoapUtils.decryptMessage(encrypted, keystore, certificateName, "changeit", removeSecurityHeader);
 		// Ensure the decrypted result is the same as the initial document
-		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), decrypted.asString());
+		MatchUtils.assertXmlEquals(removeSecurityHeader ? StreamUtil.resourceToString(file) : encrypted.asString(), decrypted.asString());
 	}
 
 	@Test
@@ -392,28 +396,27 @@ public class SoapWrapperTest {
 		keyGen.init(256);
 		SecretKey secretKey = keyGen.generateKey();
 
-		Message encrypted = SoapWrapper.getInstance().encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey);
-		SoapWrapper wrapper = SoapWrapper.getInstance();
+		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, false);
 
-		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, certificateName, "wrong-password"));
+		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> SoapUtils.decryptMessage(encrypted, keystore, certificateName, "wrong-password", false));
 		assertEquals("unable to process security header", e1.getMessage());
 		assertNotNull(e1.getCause());
 		// Cause trace logs: "the private key for the supplied alias does not exist in the keystore"
 
-		WSSecurityException e2 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, keystore, "wrong-cert", "changeit"));
+		WSSecurityException e2 = assertThrows(WSSecurityException.class, () -> SoapUtils.decryptMessage(encrypted, keystore, "wrong-cert", "changeit", false));
 		assertEquals("unable to process security header", e2.getMessage());
 		assertNotNull(e2.getCause());
 		// Cause trace logs: "the private key for the supplied alias does not exist in the keystore"
 
 		KeyStore differentStoreSameCertname = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
-		WSSecurityException e3 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(encrypted, differentStoreSameCertname, certificateName, "changeit"));
+		WSSecurityException e3 = assertThrows(WSSecurityException.class, () -> SoapUtils.decryptMessage(encrypted, differentStoreSameCertname, certificateName, "changeit", false));
 		assertEquals("unable to process security header", e3.getMessage());
 		assertNotNull(e3.getCause());
 		// Cause trace logs: "No certificates were found for decryption (KeyId)"
 
 		Message manipulatedMessage = new Message(encrypted.asString()
 				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>"));
-		WSSecurityException e4 = assertThrows(WSSecurityException.class, () -> wrapper.decryptMessage(manipulatedMessage, keystore, certificateName, "changeit"));
+		WSSecurityException e4 = assertThrows(WSSecurityException.class, () -> SoapUtils.decryptMessage(manipulatedMessage, keystore, certificateName, "changeit", false));
 		assertEquals("unable to process security header", e4.getMessage());
 		assertNotNull(e3.getCause());
 		// Cause trace logs: "The signature or decryption was invalid"
@@ -423,11 +426,26 @@ public class SoapWrapperTest {
 				.replaceAll("<xenc:CipherValue>(.{4})(.{4})(.*)</xenc:CipherValue>", "<xenc:CipherValue>$2$1$3</xenc:CipherValue>"));
 		assertNotEquals(encrypted.asString(), manipulatedMessage2.asString());
 
-		Exception e5 = assertThrows(Exception.class, () -> wrapper.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit"));
+		Exception e5 = assertThrows(Exception.class, () -> SoapUtils.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit", false));
 		assertInstanceOf(WSSecurityException.class, e5, "expected a WSSecurityException but got: (%s): %s".formatted(e5.getClass(), e5.getMessage()));
 
-		Message resultMessage = wrapper.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit");
+		Message resultMessage = SoapUtils.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit", false);
 		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), resultMessage.asString());
+	}
+
+	// Reduce overhead when message is already of type SOAP
+	@Test
+	public void testMultipleToSoapCalls() throws SOAPException, IOException {
+		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
+		assertNotNull(file); // ensure we can find the file
+
+		Message soapMessage = new UrlMessage(file);
+		// soapMessage.getContext().get(SoapContext.SOAP_VERSION_KEY);
+		final Document doc = SoapUtils.toSoapDocument(soapMessage);
+		Message soapDocumentMessage = new Message(doc);
+		final Document doc2 = SoapUtils.toSoapDocument(soapDocumentMessage);
+
+		assertEquals(doc, doc2, "expected both instances to be the same");
 	}
 
 	private Document toSoapMessage(InputStream is) throws Exception {
