@@ -97,7 +97,6 @@
 		<spring-integration.version>7.1.0</spring-integration.version>
 		<spring.boot.version>4.1.0</spring.boot.version>
 		<tomcat.version>11.0.24</tomcat.version>
-		<bouncycastle.version>1.85.2</bouncycastle.version>
 		<tika.version>3.3.2</tika.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
@@ -483,22 +482,22 @@
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcprov-jdk18on</artifactId>
-				<version>${bouncycastle.version}</version>
+				<version>1.85.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcutil-jdk18on</artifactId>
-				<version>${bouncycastle.version}</version>
+				<version>1.85</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcpg-jdk18on</artifactId>
-				<version>${bouncycastle.version}</version>
+				<version>1.85</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcpkix-jdk18on</artifactId>
-				<version>${bouncycastle.version}</version>
+				<version>1.85</version>
 			</dependency>
 
 			<dependency>
