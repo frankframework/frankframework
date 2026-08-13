@@ -2,6 +2,7 @@ package org.frankframework.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -31,10 +32,10 @@ class NestedLookupMapTest {
 		map.put("MyKey", 1);
 
 		// Act / Assert
-		assertThat(map).containsKey("MyKey");
-		assertThat(map).containsKey("mykey");
-		assertThat(map).containsKey("MYKEY");
-		assertThat(map).doesNotContainKey("not-there");
+		assertThat(map).containsKey("MyKey")
+				.containsKey("mykey")
+				.containsKey("MYKEY")
+				.doesNotContainKey("not-there");
 	}
 
 	@Test
@@ -70,13 +71,13 @@ class NestedLookupMapTest {
 		map.put("nested.b", 3);
 
 		// Act / Assert
-		assertThat(map).containsKey("nested.a");
-		assertThat(map).containsKey("Nested.A");
-		assertThat(map).containsKey("NESTED.A");
-		assertThat(map).containsKey("nested.b");
-		assertThat(map).doesNotContainKey("a");
-		assertThat(map).doesNotContainKey("nested.nothing");
-		assertThat(map).doesNotContainKey("nested.b.nothing");
+		assertThat(map).containsKey("nested.a")
+				.containsKey("Nested.A")
+				.containsKey("NESTED.A")
+				.containsKey("nested.b")
+				.doesNotContainKey("a")
+				.doesNotContainKey("nested.nothing")
+				.doesNotContainKey("nested.b.nothing");
 	}
 
 	@Test
@@ -101,5 +102,16 @@ class NestedLookupMapTest {
 		// Act / Assert
 		assertNull(map.get(null));
 		assertNull(map.get(new Object()));
+	}
+
+	@Test
+	void neverContainsNullOrNonStringKey() {
+		// Arrange
+		Map<String, Object> map = new NestedLookupMap<>();
+		map.put("a", null);
+
+		// Act / Assert
+		assertThat(map).doesNotContainKey(null);
+		assertFalse(map.containsKey(new Object()), "NestedLookupMap must not contain key of non-String type");
 	}
 }
