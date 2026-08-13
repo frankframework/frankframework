@@ -1125,6 +1125,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * This method processes the raw message from the listener.
 	 * <br/>
 	 * The method assumes that a transaction has been started where necessary.
+	 * <p>If the {@code rawMessage} parameter is an instance of {@link org.frankframework.receivers.MessageWrapper} then this method
+	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
+	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
 	@Override
 	public void processRawMessage(@NonNull IListener<M> origin, @Nullable RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
@@ -1139,6 +1142,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * This method processes the raw message from the listener, or in case of a manual retry, from the error storage.
 	 * <br/>
 	 * The method assumes that a transaction has been started where necessary.
+	 * <p>If the {@code rawMessage} parameter is an instance of {@link org.frankframework.receivers.MessageWrapper} then this method
+	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
+	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
 	private void processRawMessage(@Nullable RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry,
 								   boolean retryStatusAlreadyChecked) throws ListenerException {

@@ -120,7 +120,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
 
 		Message message = listener.extractMessage(rawMessage, session);
-		session.putAll(rawMessage.getContext());
+		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
 
 		assertEquals(input, message.asString());
 		assertTrue(session.containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
@@ -144,7 +144,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(wrapper);
 		Message message = listener.extractMessage(rawMessage, session);
-		session.putAll(rawMessage.getContext());
+		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
 
 		assertEquals(input, message.asString());
 

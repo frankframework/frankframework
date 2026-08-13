@@ -325,7 +325,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			log.debug("building wrapper for key [{}], message [{}]", key, message);
 			String messageId = getColumnValueOrDefault(rs, getMessageIdField(), key);
 			String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
-			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId);
+			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId); // Creating instance of MessageWrapper instead of RawMessageWrapper means the Receiver will not call #extractMessage
 			mw.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 			addAdditionalValuesToMessageWrapper(rs, mw);
 			return mw;

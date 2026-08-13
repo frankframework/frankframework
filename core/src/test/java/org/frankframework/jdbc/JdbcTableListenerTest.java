@@ -988,7 +988,7 @@ public class JdbcTableListenerTest {
 		PipeLineSession session = new PipeLineSession();
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(session);
 		Message message = listener.extractMessage(rawMessage, session);
-		session.putAll(rawMessage.getContext());
+		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
 
 		// Assert
 		assertEquals("message", message.asString());
@@ -1029,7 +1029,7 @@ public class JdbcTableListenerTest {
 
 		// Extract message, then the additional fields should be copied to the session.
 		Message message = listener.extractMessage(rawMessage, session);
-		session.putAll(rawMessage.getContext());
+		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
 
 		// Assert
 		assertEquals("message", message.asString());
