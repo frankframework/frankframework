@@ -1,4 +1,4 @@
-FROM quay.io/wildfly/wildfly:39.0.1.Final-2-jdk21
+FROM quay.io/wildfly/wildfly:40.0.1.Final-jdk25
 
 COPY target/dependencies/secrets/ /opt/frank/secrets/
 # use * when copying into existing folders
