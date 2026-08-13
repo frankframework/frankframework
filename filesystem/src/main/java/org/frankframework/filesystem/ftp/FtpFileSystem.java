@@ -86,16 +86,6 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
-		try {
-			FTPFile[] files = ftpClient.listFiles(folder, FTPFile::isFile);
-			return files == null? 0 : files.length;
-		} catch (IOException e) {
-			throw new FileSystemException(e);
-		}
-	}
-
-	@Override
 	@NonNull
 	public DirectoryStream<FTPFileRef> list(FTPFileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
 		try {
