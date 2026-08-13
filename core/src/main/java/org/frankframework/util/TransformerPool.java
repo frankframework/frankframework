@@ -468,8 +468,13 @@ public class TransformerPool {
 		if (m.isEmpty()) {
 			return Message.nullMessage();
 		}
+
 		Source source = m.asSource();
-		if (source == null) throw new IllegalStateException("Message#asSource may not be null when message is not empty");
+
+		if (source == null) {
+			throw new IllegalStateException("Message#asSource may not be null when message is not empty");
+		}
+
 		return transform(source, parameterMap);
 	}
 
