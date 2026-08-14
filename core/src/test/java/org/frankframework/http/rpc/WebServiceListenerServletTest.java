@@ -156,6 +156,29 @@ class WebServiceListenerServletTest {
 		MatchUtils.assertXmlEquals(input.asString(), response.getContentAsString());
 	}
 
+	@Test
+	void testExitCodeEmptyResult() throws Exception {
+		ServiceClient sc = mock(WebServiceListener.class);
+		doAnswer(e -> {
+			PipeLineResult result = new PipeLineResult();
+			result.setExitCode(204);
+
+			PipeLineSession session = e.getArgument(1);
+			session.setExitState(result);
+			return Message.nullMessage();
+		}).when(sc).processRequest(any(Message.class), any(PipeLineSession.class));
+		ServiceDispatcher.getInstance().registerServiceClient("EXIT_CODE_CONTEXT_KEY", sc);
+
+		Message input = new Message("""
+				<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+				<soap:Body>bod</soap:Body></soap:Envelope>
+				""");
+		MockHttpServletResponse response = doPost(input, "address/EXIT_CODE_CONTEXT_KEY");
+
+		assertEquals(204, response.getStatus());
+		assertEquals("", response.getContentAsString());
+	}
+
 	private Message getFile(String file) {
 		URL url = this.getClass().getResource("/Soap/"+file);
 		if (url == null) {
