@@ -110,7 +110,7 @@
 				>
 					<param name="status" xpathExpression="request/@status"/>
 					<param name="string" xpathExpression="request/@string"/>
-					<param name="blob" xpathExpression="request/@additional"/>
+					<param name="blob" xpathExpression="request/@additional" type="binary"/>
 				</sender>
 				<forward name="success" path="do_success" />
 			</pipe>
