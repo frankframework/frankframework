@@ -534,8 +534,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	/**
 	 * Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
 	 * be added to the session as session-variables, with the prefix {@literal ADDITIONAL_QUERY_FIELDS_KEY}. So if for example you specify {@code additionalFields = "updated_at"},
-	 * then in the session there will be a variable {@code ADDITIONAL_QUERY_FIELDS.updated_at}. The additional fields will always be added to the session as String values, regardless of
-	 * their original types in the database.
+	 * then in the session there will be a variable {@code ADDITIONAL_QUERY_FIELDS.updated_at}.
 	 */
 	public void setAdditionalFields(String fieldNames) {
 		this.additionalFields = fieldNames;
