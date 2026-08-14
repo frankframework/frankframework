@@ -16,11 +16,11 @@
 		<!-- Latest versions and what libraries need the classifier can be checked on the -->
 		<!-- AsposeJava Maven repository: https://releases.aspose.com/java/repo/com/aspose/ -->
 		<aspose.cells.version>26.7</aspose.cells.version>
-		<aspose.email.version>26.5</aspose.email.version>
-		<aspose.imaging.version>26.7</aspose.imaging.version>
-		<aspose.pdf.version>26.6</aspose.pdf.version>
-		<aspose.slides.version>26.7</aspose.slides.version>
-		<aspose.words.version>26.6</aspose.words.version>
+		<aspose.email.version>26.6.0.1</aspose.email.version>
+		<aspose.imaging.version>26.8</aspose.imaging.version>
+		<aspose.pdf.version>26.7</aspose.pdf.version>
+		<aspose.slides.version>26.8</aspose.slides.version>
+		<aspose.words.version>26.7</aspose.words.version>
 	</properties>
 
 	<dependencies>

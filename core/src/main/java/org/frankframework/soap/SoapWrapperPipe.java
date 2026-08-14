@@ -21,6 +21,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -196,21 +197,18 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				if (rootTp != null) {
 					payload = rootTp.transform(payload);
 				}
+
 				if (outputNamespaceTp != null && !Message.isEmpty(payload)) {
 					payload = new Message(outputNamespaceTp.transformToString(payload));
 				}
+
 				ParameterValueList parameterValueList = null;
 				if (!getParameterList().isEmpty() && (soapHeaderTp != null || soapBodyTp != null)) {
 					parameterValueList = getParameterList().getValues(payload, session);
 				}
-				String soapHeader = null;
-				if (soapHeaderTp != null) {
-					soapHeader = soapHeaderTp.transform(payload, parameterValueList).asString();
-				} else {
-					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-						soapHeader = session.getString(getSoapHeaderSessionKey());
-					}
-				}
+
+				String soapHeader = getSoapHeader(session, payload, parameterValueList);
+
 				if (soapBodyTp != null) {
 					payload = soapBodyTp.transform(payload, parameterValueList);
 				}
@@ -242,6 +240,29 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 			throw new PipeRunException(this, "Unexpected exception during (un)wrapping ", t);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
+	}
+
+	@Nullable
+	private String getSoapHeader(@NonNull PipeLineSession session, Message payload, ParameterValueList parameterValueList)
+			throws IOException, TransformerException, SAXException {
+		if (soapHeaderTp != null) {
+			return soapHeaderTp.transform(getHeaderPayload(payload), parameterValueList).asString();
+		} else if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
+			return session.getString(getSoapHeaderSessionKey());
+		}
+
+		return null;
+	}
+
+	/**
+	 * Even with an empty payload, we still want to transform the header stylesheet (if any). Use a dummy payload in that case.
+	 */
+	private Message getHeaderPayload(Message payload) {
+		if (payload.isEmpty()) {
+			return new Message("<dummy/>");
+		}
+
+		return payload;
 	}
 
 	/**

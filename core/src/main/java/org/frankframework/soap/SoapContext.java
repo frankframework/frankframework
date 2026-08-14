@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.http.rpc;
+package org.frankframework.soap;
 
 import java.io.IOException;
 
@@ -40,6 +40,10 @@ import org.frankframework.util.XmlUtils;
 
 @Log4j2
 public class SoapContext {
+	public static final String SOAP_VERSION_KEY = MessageContext.SOAP_PREFIX + "version";
+	public static final String SOAP_ACTION_KEY = MessageContext.SOAP_PREFIX + "action";
+	public static final String SOAP_NAMESPACEURI_KEY = MessageContext.SOAP_PREFIX + "namespaceURI";
+
 	/**
 	 * Get the SOAP protocol version, either SOAP 1.1 or SOAP 1.2.
 	 */
@@ -86,6 +90,15 @@ public class SoapContext {
 		// Always return a MessageID, even if it's not in the message itself.
 		String inputMessageId = messageIdExtractor.getMessageId();
 		messageId = StringUtils.isNotBlank(inputMessageId) ? inputMessageId : generateMessageId();
+
+		updateMessageContext(body);
+	}
+
+	private void updateMessageContext(Message body) {
+		String version = SOAPConstants.SOAP_1_1_PROTOCOL.equals(soapProtocol) ? "1.1" : "1.2";
+		body.getContext().put(SOAP_VERSION_KEY, version);
+		body.getContext().put(SOAP_ACTION_KEY, soapAction);
+		body.getContext().put(SOAP_NAMESPACEURI_KEY, namespaceURI);
 	}
 
 	private String generateMessageId() {

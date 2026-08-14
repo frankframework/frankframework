@@ -172,20 +172,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public int getNumberOfFilesInFolder(String folderName) throws FileSystemException {
-		checkOpen();
-		MockFolder folder = getMockFolder(folderName);
-		if (folder == null) {
-			throw new FileSystemException("folder [" + folderName + "] is null");
-		}
-		Map<String, MockFile> files = folder.getFiles();
-		if (files == null) {
-			throw new FileSystemException("files in folder [" + folderName + "] is null");
-		}
-		return files.size();
-	}
-
-	@Override
 	@NonNull
 	public DirectoryStream<M> list(String folder, @NonNull TypeFilter filter) throws FileSystemException {
 		M actualFolder = toFile(folder, null);
