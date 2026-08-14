@@ -1,4 +1,4 @@
-package org.frankframework.http.rpc;
+package org.frankframework.soap;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,6 +30,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import org.frankframework.http.rpc.SoapMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.MessageUtils;

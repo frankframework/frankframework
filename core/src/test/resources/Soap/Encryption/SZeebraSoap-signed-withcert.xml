@@ -1,0 +1,65 @@
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+	<env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+		<wsse:Security env:mustUnderstand="1" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+			<wsse:BinarySecurityToken EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary" wsu:Id="id-here" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3">IGNORE-BST</wsse:BinarySecurityToken>
+			<ds:Signature Id="id-here" xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+				<ds:SignedInfo>
+					<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#">
+						<ec:InclusiveNamespaces PrefixList="wsa env" xmlns:ec="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+					</ds:CanonicalizationMethod>
+					<ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+					<ds:Reference URI="uri-here">
+						<ds:Transforms>
+							<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+						</ds:Transforms>
+						<ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+						<ds:DigestValue>IGNORE-DIGEST-VALUE</ds:DigestValue>
+					</ds:Reference>
+				</ds:SignedInfo>
+				<ds:SignatureValue>IGNORE-SIGNATURE-VALUE</ds:SignatureValue>
+				<ds:KeyInfo Id="id-here">
+					<wsse:SecurityTokenReference wsu:Id="id-here">
+						<ds:X509Data>
+							<ds:X509IssuerSerial>
+								<ds:X509IssuerName>C=US,L=Test,O=Test,OU=Test,CN=Test</ds:X509IssuerName>
+								<ds:X509SerialNumber>IGNORE-KI</ds:X509SerialNumber>
+							</ds:X509IssuerSerial>
+						</ds:X509Data>
+					</wsse:SecurityTokenReference>
+				</ds:KeyInfo>
+			</ds:Signature>
+			<wsu:Timestamp wsu:Id="id-here">
+				<wsu:Created>IGNORE-CREATED</wsu:Created>
+				<wsu:Expires>IGNORE-EXPIRES</wsu:Expires>
+			</wsu:Timestamp>
+		</wsse:Security>
+		<wsa:To>http://www.w3.org/2005/08/addressing/anonymous</wsa:To>
+		<wsa:Action>http://www.company.org/bla/blaba/lala/Baa</wsa:Action>
+		<wsa:MessageID>urn:uuid:fc69c06d-9e5c-abcd-1234-9a7a877450c7</wsa:MessageID>
+		<myHeader xmlns="http://www.test.nl/v0101">
+			<value>waarde</value>
+		</myHeader>
+	</env:Header>
+	<env:Body wsu:Id="id-here" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+		<Baa xmlns="http://www.company.org/Baa/v0101" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<Authenticatie xmlns="">GWS14E55769286245FF8F81DE413A9A74DE</Authenticatie>
+			<DiagnoseSZeebra xmlns="">
+				<Datum>20260423</Datum>
+				<Medewerker>AASSEN</Medewerker>
+				<Registratienummer>asf534test</Registratienummer>
+				<DatumIngangWerkloosheid>20260423</DatumIngangWerkloosheid>
+				<BeschikbaarBuitenKantooruren>false</BeschikbaarBuitenKantooruren>
+				<ParttimeBaan>false</ParttimeBaan>
+				<Verslaving>false</Verslaving>
+				<MedischeBeperking>false</MedischeBeperking>
+				<Klantprofiel>B</Klantprofiel>
+				<Startkwalificatie>false</Startkwalificatie>
+				<BelemmeringMobiliteit>false</BelemmeringMobiliteit>
+				<Werkprocesnummer/>
+				<Telefoon>0612345678</Telefoon>
+				<TelefoonMobiel/>
+				<Email/>
+			</DiagnoseSZeebra>
+		</Baa>
+	</env:Body>
+</env:Envelope>

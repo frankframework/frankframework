@@ -1,5 +1,6 @@
 package org.frankframework.pipes;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -436,6 +437,33 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 		String actual = prr.getResult().asString();
 
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
+	}
+
+	@Test
+	void testWrapEmptyBodyWithSoapHeaderDoesNotApplyStylesheets() throws Exception {
+		// Arrange: configure pipe to wrap with a body stylesheet and a SOAP header from session
+		pipe.setSoapVersion(SoapVersion.SOAP11);
+		pipe.setDirection(Direction.WRAP);
+		pipe.setSoapHeaderStyleSheet("/Xslt/AnyXml/HeaderStylesheet.xsl");
+
+		pipe.addParameter(new Parameter("action", "Ping"));
+		pipe.addParameter(new Parameter("cpaFilePath", "filePath"));
+		pipe.addParameter(new Parameter("cpaChannelId", "channelId"));
+		pipe.addParameter(new Parameter("conversationId", "12e16f09ee27_"));
+		pipe.addParameter(new Parameter("refToMessageId", "auto-20260806T130431134111Z-2863"));
+
+		configureAndStartPipe();
+
+		// Act: use an empty input message
+		PipeRunResult prr = doPipe(pipe, new Message(""), session);
+
+		// Assert: result is a SOAP envelope containing the header, with an empty body
+		String result = prr.getResult().asString();
+
+		assertThat(result)
+			.contains("<eb:RefToMessageId>auto-20260806T130431134111Z-2863</eb:RefToMessageId>")
+			.contains("<eb:Action>Ping</eb:Action>")
+			.contains("<soapenv:Body></soapenv:Body>");
 	}
 
 	public void testUnwrapConditional(boolean expectUnwrap) throws Exception {

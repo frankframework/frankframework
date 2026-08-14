@@ -39,6 +39,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.util.MimeType;
 
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 
 public class MessageContext implements Serializable {
@@ -109,8 +110,34 @@ public class MessageContext implements Serializable {
 		return data.remove(key);
 	}
 
-	public @Nullable Serializable get(@NonNull String key) {
+	/**
+	 * Normal lookup for a value stored in this {@code MessageContext}.
+	 *
+	 * @param key the context key (case-insensitive) to read.
+	 * @return the value when present; otherwise {@code null}.
+	 */
+	public @Nullable Serializable getRawValue(@NonNull String key) {
 		return data.get(key);
+	}
+
+	/**
+	 * Typed lookup for a value stored in this {@code MessageContext}.
+	 *
+	 * @param key the context key (case-insensitive) to read.
+	 * @param reified helper argument used to derive runtime type information for {@code T}, don't use this!
+	 * @return the typed value when compatible; otherwise {@code null}.
+	 */
+	@SafeVarargs
+	@SuppressWarnings("unchecked")
+	public final @Nullable <T> T get(@NonNull String key, T... reified) {
+		Serializable value = getRawValue(key);
+
+		Class<T> classType = SpringUtils.getClassOf(reified);
+
+		if (classType.isInstance(value)) {
+			return (T) value;
+		}
+		return null;
 	}
 
 	public Map<String, Serializable> getAll() {

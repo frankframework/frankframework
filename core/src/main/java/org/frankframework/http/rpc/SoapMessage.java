@@ -26,6 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
+import org.frankframework.soap.SoapContext;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 
