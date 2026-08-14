@@ -18,9 +18,13 @@ package org.frankframework.lifecycle.servlets;
 import java.io.FileNotFoundException;
 import java.net.URL;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
@@ -36,6 +40,7 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Getter;
@@ -81,7 +86,7 @@ import org.frankframework.util.StringUtil;
  * @see <a href="https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html#oauth2Client-auth-code-redirect-uri">Spring Security OAuth2 Authorization Grants</a>
  * @see OAuth2AuthorizationRequestRedirectFilter#DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
  */
-public class OAuth2Authenticator extends AbstractServletAuthenticator {
+public class OAuth2Authenticator extends AbstractJwtAuthenticator {
 
 	/**
 	 * The scopes to request from the OAuth2 provider.
@@ -109,22 +114,6 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	private @Setter String tokenUri;
 
 	/**
-	 * The URI of the JSON Web Key (JWK) set containing the public keys used to verify any JWT token issued by the authorization server.
-	 * <p>
-	 * e.g. {@code https://www.googleapis.com/oauth2/v3/certs}
-	 * </p>
-	 */
-	private @Setter String jwkSetUri;
-
-	/**
-	 * The issuer identifier URI of the authorization server. This is used to validate the issuer claim in ID tokens.
-	 * <p>
-	 * e.g. {@code https://accounts.google.com}
-	 * </p>
-	 */
-	private @Setter String issuerUri;
-
-	/**
 	 * The base URL used to build the complete redirect URI. Must be an absolute URL for proper OAuth2 flow.
 	 * <p>
 	 * e.g. external absolute URL (must start with {@code http(s)://})
@@ -132,38 +121,18 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	 */
 	private @Setter String baseUrl;
 
-	/**
-	 * The URI of the user info endpoint used to retrieve information about the authenticated user.
-	 * <p>
-	 * e.g. {@code https://www.googleapis.com/oauth2/v3/userinfo}
-	 * </p>
-	 */
-	private @Setter String userInfoUri;
+	// issuerUri, jwkSetUri, userInfoUri, userNameAttributeName and authoritiesClaimName are inherited
+	// from AbstractJwtAuthenticator; they configure both the login ClientRegistration and (when
+	// allowBearerAuthentication is enabled) the bearer-token resource server.
 
 	/**
-	 * The attribute name used to extract the username from the OAuth2 user information or JWT token.
-	 * Different OAuth2 providers may use different attribute names to identify the user.
-	 * <p>
-	 * Common values include:
-	 * <ul>
-	 *   <li>{@code sub} - The subject identifier</li>
-	 *   <li>{@code email} - The user's email address</li>
-	 *   <li>{@code preferred_username} - The user's preferred username</li>
-	 * </ul>
-	 * </p>
+	 * When {@code true}, this authenticator additionally validates incoming bearer JWTs as an OAuth2
+	 * resource server (on top of the interactive browser login), so both a human in a browser (OIDC
+	 * login) and an external system presenting an {@code Authorization: Bearer <jwt>} token can access
+	 * the same endpoint. Requires {@code issuerUri} or {@code jwkSetUri} to be set. Defaults to
+	 * {@code false}, in which case behaviour is unchanged.
 	 */
-	private @Setter String userNameAttributeName;
-
-	/**
-	 * <p>The claim name in the JWT token that contains the authorities of the user.
-	 * Defaults to any of {@code JwtGrantedAuthoritiesConverter#WELL_KNOWN_AUTHORITIES_CLAIM_NAMES} when this value is not set.</p>
-	 * <p>For keycloak, "realm_access.roles" is the standard claim, this is a 'nested' value. When we encounter a dot (.) in the claim name,
-	 * we assume it is a nested claim and use the custom mapper.</p>
-	 *
-	 * @ff.tip can only contain one dot (.) to indicate a nested claim, e.g. "realm_access.roles".
-	 */
-	@Setter
-	private String authoritiesClaimName;
+	private @Setter boolean allowBearerAuthentication = false;
 
 	/**
 	 * The client ID to use for the OAuth2 provider.
@@ -255,7 +224,32 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 				.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(authorityMapper))
 				.loginProcessingUrl(servletPath + "/oauth2/code/*"));
 
+		if (allowBearerAuthentication) {
+			// Also accept a bearer JWT (external systems). Both mechanisms then live on one chain:
+			// a request with an Authorization: Bearer header is validated statelessly by the resource
+			// server, a browser request without a token falls through to the oauth2Login redirect.
+			configureBearerTokenResourceServer(http);
+
+			// With both configured, unauthenticated requests must resolve to the right challenge:
+			// API/bearer clients get a 401 (WWW-Authenticate: Bearer), browsers get the login redirect.
+			http.exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+					new BearerTokenAuthenticationEntryPoint(), OAuth2Authenticator::isApiRequest));
+		}
+
 		return http.build();
+	}
+
+	/**
+	 * A request is treated as an API (non-browser) request — and therefore challenged with a 401
+	 * instead of a login redirect — when it carries a bearer token or does not accept HTML.
+	 */
+	private static boolean isApiRequest(HttpServletRequest request) {
+		String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+		if (authorization != null && authorization.toLowerCase().startsWith("bearer ")) {
+			return true;
+		}
+		String accept = request.getHeader(HttpHeaders.ACCEPT);
+		return accept == null || !accept.contains(MediaType.TEXT_HTML_VALUE);
 	}
 
 	/**
