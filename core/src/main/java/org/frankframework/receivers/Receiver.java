@@ -101,7 +101,7 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
-import org.frankframework.jdbc.MessageStoreListener;
+import org.frankframework.jdbc.JdbcListener;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
@@ -1099,7 +1099,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			LogUtil.setIdsToThreadContext(ctc, messageId, correlationId);
 
 			MessageWrapper<M> messageWrapper;
-			if (rawMessageWrapper instanceof MessageWrapper && !(getListener() instanceof MessageStoreListener)) {
+			if (rawMessageWrapper instanceof MessageWrapper && !(getListener() instanceof JdbcListener<M>)) {
 				// somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
 				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 				// like JdbcListener
