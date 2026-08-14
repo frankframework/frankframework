@@ -21,6 +21,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.receivers.MessageWrapper;
@@ -47,15 +48,15 @@ class WebServiceListenerServletTest {
 	}
 
 	private String doPost(String filename, String requestUri) throws Exception {
-		return doPost(getFile(filename), requestUri);
+		return doPost(getFile(filename), requestUri).getContentAsString();
 	}
 
-	private String doPost(Message content, String requestUri) throws Exception {
+	private MockHttpServletResponse doPost(Message content, String requestUri) throws Exception {
 		MockHttpServletRequest request = createContextFromRawMessage(content, requestUri);
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		servlet.doPost(request, response);
 
-		return response.getContentAsString();
+		return response;
 	}
 
 	@Test
@@ -90,7 +91,7 @@ class WebServiceListenerServletTest {
 				<xml>
 					<not-soap/>
 				</xml>
-				"""), "services/rpcrouter");
+				"""), "services/rpcrouter").getContentAsString();
 
 		assertEquals("""
 						<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -129,6 +130,30 @@ class WebServiceListenerServletTest {
 
 		String expected = getFile("VrijeBerichten_PipelineResult.xml").asString();
 		MatchUtils.assertXmlEquals(expected, response);
+	}
+
+	@Test
+	void testExitCode() throws Exception {
+		ServiceClient sc = mock(WebServiceListener.class);
+		doAnswer(e -> {
+			Message message = e.getArgument(0);
+			PipeLineResult result = new PipeLineResult();
+			result.setExitCode(204);
+
+			PipeLineSession session = e.getArgument(1);
+			session.setExitState(result);
+			return message;
+		}).when(sc).processRequest(any(Message.class), any(PipeLineSession.class));
+		ServiceDispatcher.getInstance().registerServiceClient("EXIT_CODE_CONTEXT_KEY", sc);
+
+		Message input = new Message("""
+				<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+				<soap:Body>bod</soap:Body></soap:Envelope>
+				""");
+		MockHttpServletResponse response = doPost(input, "address/EXIT_CODE_CONTEXT_KEY");
+
+		assertEquals(204, response.getStatus());
+		MatchUtils.assertXmlEquals(input.asString(), response.getContentAsString());
 	}
 
 	private Message getFile(String file) {

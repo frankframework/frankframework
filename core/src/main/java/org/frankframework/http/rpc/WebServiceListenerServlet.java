@@ -119,6 +119,14 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 
 			Message result = processRequest(soapMessage, pipelineSession, listener);
 
+			/*
+			 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
+			 */
+			int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
+			if (statusCode > 0) {
+				response.setStatus(statusCode);
+			}
+
 			final boolean outputWritten = writeToResponseStream(response, result, listener, pipelineSession);
 			if (!outputWritten) {
 				log.debug("No output written, set content-type header to null");
