@@ -163,7 +163,7 @@ public class WebServiceSender extends HttpSender {
 
 	private boolean isSoap(Message message) {
 		MimeType mimeType = message.getContext().getMimeType();
-		return isSoap() && ("xml".equals(mimeType.getSubtype()) || "xml".equals(mimeType.getSubtypeSuffix()));
+		return isSoap() && mimeType != null && ("xml".equals(mimeType.getSubtype()) || "xml".equals(mimeType.getSubtypeSuffix()));
 	}
 
 	/**
