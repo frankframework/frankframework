@@ -10,6 +10,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.params.shadow.de.siegmar.fastcsv.util.Nullable;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
@@ -66,21 +68,21 @@ public class JdbcTestUtil {
 		}
 	}
 
-	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
+	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
 		log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try {
 			PreparedStatement stmt = connection.prepareStatement(query);
-			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues, session);
+			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList(), session);
 			stmt.execute();
 		} catch (Exception e) {
 			throw new JdbcException("could not execute query [" + query + "]" + displayParameters(parameterValues), e);
 		}
 	}
 
-	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
+	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
 		JdbcTestUtil.log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues, session);
+			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList(), session);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					return null;
