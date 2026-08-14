@@ -520,59 +520,47 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterList parameters, Message message, PipeLineSession session) throws JdbcException, ParameterException {
+	public static void applyParameters(@NonNull IDbmsSupport dbmsSupport, @NonNull PreparedStatement statement, @Nullable ParameterList parameters, Message message, PipeLineSession session) throws JdbcException, ParameterException {
 		if (parameters != null) {
 			applyParameters(dbmsSupport, statement, parameters.getValues(message, session), session);
 		}
 	}
 
-	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterValueList parameters, PipeLineSession session) throws JdbcException {
+	public static void applyParameters(@NonNull IDbmsSupport dbmsSupport, @NonNull PreparedStatement statement, @NonNull ParameterValueList parameters, PipeLineSession session) throws JdbcException {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
-		if (parameters != null) {
-			for (int i = 0; i < parameters.size(); i++) {
-				ParameterValue parameterValue = parameters.getValue(i);
-				if (parameterValue.getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
-					continue;
-				}
-				try {
-					applyParameter(statement, parameterValue, i + 1, parameterTypeMatchRequired, session);
-				} catch (SQLException | IOException e) {
-					throw new JdbcException("Could not set parameter [" + parameterValue.getName() +
-							"] with type [" + parameterValue.getDefinition().getType() +
-							"] at position " + i + ", exception: " + e.getMessage(), e);
-				}
+		for (int i = 0; i < parameters.size(); i++) {
+			ParameterValue parameterValue = parameters.getValue(i);
+			if (parameterValue.getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
+				continue;
+			}
+			try {
+				applyParameter(statement, parameterValue, i + 1, parameterTypeMatchRequired, session);
+			} catch (SQLException | IOException e) {
+				throw new JdbcException(
+						"Could not set parameter [" + parameterValue.getName() +
+								"] with type [" + parameterValue.getDefinition().getType() +
+								"] at position " + i + ", exception: " + e.getMessage(), e
+				);
 			}
 		}
 	}
 
 	public static SQLType mapParameterTypeToSqlType(IDbmsSupport dbmsSupport, ParameterType parameterType) {
-		switch (parameterType) {
-			case DATE:
-				return JDBCType.DATE;
-			case TIMESTAMP:
-			case DATETIME:
-			case XMLDATETIME:
-				return JDBCType.TIMESTAMP;
-			case TIME:
-				return JDBCType.TIME;
-			case NUMBER:
-				return JDBCType.NUMERIC;
-			case INTEGER:
-				return JDBCType.INTEGER;
-			case BOOLEAN:
-				return JDBCType.BOOLEAN;
-			case STRING:
-				return JDBCType.VARCHAR;
-			case CHARACTER:
-				return JDBCType.CLOB;
-			case BINARY:
-				return JDBCType.BLOB;
-			case LIST:
+		return switch (parameterType) {
+			case DATE -> JDBCType.DATE;
+			case TIMESTAMP, DATETIME, XMLDATETIME -> JDBCType.TIMESTAMP;
+			case TIME -> JDBCType.TIME;
+			case NUMBER -> JDBCType.NUMERIC;
+			case INTEGER -> JDBCType.INTEGER;
+			case BOOLEAN -> JDBCType.BOOLEAN;
+			case STRING -> JDBCType.VARCHAR;
+			case CHARACTER -> JDBCType.CLOB;
+			case BINARY -> JDBCType.BLOB;
+			case LIST ->
 				// Type 'LIST' is used for REF_CURSOR type OUTPUT parameters of stored procedures.
-				return dbmsSupport.getCursorSqlType();
-			default:
-				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
-		}
+					dbmsSupport.getCursorSqlType();
+			default -> throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
+		};
 	}
 
 	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, IOException {
