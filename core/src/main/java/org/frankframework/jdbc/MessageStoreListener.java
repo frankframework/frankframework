@@ -144,7 +144,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	protected RawMessageWrapper<Serializable> extractRawMessage(ResultSet rs) throws JdbcException {
+	protected @NonNull RawMessageWrapper<Serializable> extractRawMessage(@NonNull ResultSet rs) throws JdbcException {
 		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
 			ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
 
@@ -158,7 +158,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 			RawMessageWrapper<Serializable> rawMessageWrapper;
 			if (rawMessage instanceof RawMessageWrapper<?>) {
 				// noinspection unchecked
-				rawMessageWrapper = (RawMessageWrapper<Serializable>) rawMessage;
+				rawMessageWrapper = (RawMessageWrapper<Serializable>) rawMessage; // If the stored object is an instance of subclass MessageWrapper then the Receiver will not call #extractMessage()
 			} else {
 				rawMessageWrapper = new RawMessageWrapper<>((Serializable) rawMessage, mid != null ? mid : key, cid);
 			}
@@ -184,14 +184,6 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 
 	@Override
 	public Message extractMessage(@NonNull RawMessageWrapper<Serializable> rawMessageWrapper, @NonNull Map<String, Object> context) throws ListenerException {
-		// If sessionKeys were set to be stored with message by the MessageStoreSender, they'll be in the context of
-		// the (Raw)MessageWrapper.
-		// If not, then the RawMessageWrapper context still contains some info we want to retain, such as MID, CID and Storage Key.
-		// So copying it here to thread context is always the right thing.
-		context.putAll(rawMessageWrapper.getContext());
-		context.remove(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY);
-		addAdditionalQueryFieldsToSession(rawMessageWrapper, context);
-
 		// Now get or create the Message
 		if (rawMessageWrapper instanceof MessageWrapper<?> messageWrapper) {
 			return messageWrapper.getMessage();

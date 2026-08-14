@@ -245,7 +245,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	}
 
 	@Override
-	protected PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
+	protected PreparedStatement prepareQueryWithColumnsReturned(Connection con, String query, String[] columnsReturned) {
 		throw new IllegalArgumentException("Stored Procedures do not support 'columnsReturned', specify outputParameters");
 	}
 

@@ -318,7 +318,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
-			switch(queryExecutionContext.getQueryType()) {
+			switch (queryExecutionContext.getQueryType()) {
 				case SELECT:
 					return executeSelectQuery(statement, legacyBlobOrClobFilename(session));
 				case UPDATEBLOB:
@@ -473,7 +473,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			} else if (isScalarExtended()) {
 					result="[absent]";
 			}
-			return new Message(result);
+			return Message.asMessage(result);
 		}
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();

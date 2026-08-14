@@ -17,6 +17,7 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -439,10 +440,14 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private ServiceClient getJvmDispatcherServiceClient(Scope scope, String target) throws SenderException {
 		DispatcherManager dm = getDispatcherManager(scope == Scope.DLL);
 		return (message, session) -> {
+			HashMap<String,?> processContext = new HashMap<>(session);
 			try {
-				return new Message(dm.processRequest(target, session.getCorrelationId(), message.asString(), session));
+				String result = dm.processRequest(target, session.getCorrelationId(), message.asString(), processContext);
+				return new Message(result);
 			} catch (Exception e) {
 				throw new ListenerException("Exception sending message to [" + target + "]", e);
+			} finally {
+				session.putAll(processContext);
 			}
 		};
 	}

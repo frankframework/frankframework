@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -229,7 +230,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	protected RawMessageWrapper<M> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
+	protected @Nullable RawMessageWrapper<M> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		String query = preparedSelectQuery;
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
@@ -290,7 +291,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * Otherwise the message is loaded from the {@code rs} parameter and returned wrapped in a {@link MessageWrapper}.
 	 * @throws JdbcException If loading the message resulted in a database exception.
 	 */
-	protected RawMessageWrapper<M> extractRawMessage(ResultSet rs) throws JdbcException {
+	protected @NonNull RawMessageWrapper<M> extractRawMessage(@NonNull ResultSet rs) throws JdbcException {
 		try {
 			String key = rs.getString(getKeyField());
 			Message message;
@@ -324,7 +325,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			log.debug("building wrapper for key [{}], message [{}]", key, message);
 			String messageId = getColumnValueOrDefault(rs, getMessageIdField(), key);
 			String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
-			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId);
+			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId); // Creating instance of MessageWrapper instead of RawMessageWrapper means the Receiver will not call #extractMessage
 			mw.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 			addAdditionalValuesToMessageWrapper(rs, mw);
 			return mw;
@@ -335,18 +336,19 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	protected void addAdditionalValuesToMessageWrapper(ResultSet rs, RawMessageWrapper<M> mw) throws SQLException {
 		ResultSetMetaData metaData = rs.getMetaData();
-		Function<String, Map.Entry<String, String>> extractFieldValue = fieldName -> {
+		Function<String, Map.Entry<String, Message>> extractFieldValue = fieldName -> {
 			try {
 				int colNum = rs.findColumn(fieldName);
-				String value = JdbcUtil.getValue(getDbmsSupport(), rs, colNum, metaData, getBlobCharset(), isBlobsCompressed(), null, false, isBlobSmartGet(), false);
+				Message value = JdbcUtil.getValueAsMessage(getDbmsSupport(), rs, colNum, metaData, getBlobCharset(), isBlobsCompressed());
 				return Map.entry(fieldName, value);
 			} catch (Exception e) {
 				throw Lombok.sneakyThrow(e);
 			}
 		};
-		Map<String, String> additionalValues = getAdditionalFieldsList().stream()
+		// Make sure that the sub-map supports case-insensitive lookup of entries
+		Map<String, Message> additionalValues = getAdditionalFieldsList().stream()
 				.map(extractFieldValue)
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (m1, m2) -> m2, () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
 
 		if (!additionalValues.isEmpty()) {
 			mw.getContext().put(ADDITIONAL_QUERY_FIELDS_KEY, additionalValues);
@@ -365,18 +367,10 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
-		addAdditionalQueryFieldsToSession(rawMessage, context);
 		if (rawMessage.getRawMessage() instanceof MessageWrapper<?> messageWrapper) {
 			return messageWrapper.getMessage();
 		}
 		return Message.asMessage(rawMessage.getRawMessage());
-	}
-
-	@SuppressWarnings("unchecked")
-	protected void addAdditionalQueryFieldsToSession(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) {
-		if (rawMessage.getContext().containsKey(ADDITIONAL_QUERY_FIELDS_KEY)) {
-			context.putAll((Map<String, String>) rawMessage.getContext().get(ADDITIONAL_QUERY_FIELDS_KEY));
-		}
 	}
 
 	@Override
@@ -539,7 +533,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	/**
 	 * Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
-	 * be added to the session as session-variables.
+	 * be added to the session as session-variables, with the prefix {@literal ADDITIONAL_QUERY_FIELDS_KEY}. So if for example you specify {@code additionalFields = "updated_at"},
+	 * then in the session there will be a variable {@code ADDITIONAL_QUERY_FIELDS.updated_at}.
 	 */
 	public void setAdditionalFields(String fieldNames) {
 		this.additionalFields = fieldNames;
