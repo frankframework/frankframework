@@ -15,6 +15,8 @@
 */
 package org.frankframework.core;
 
+import java.util.Map;
+
 import org.frankframework.receivers.RawMessageWrapper;
 
 /**
@@ -42,6 +44,9 @@ public interface IPushingListener<M> extends IListener<M> {
 	/**
 	 * Wrap a raw message in a MessageWrapper. Populate {@link PipeLineSession} with properties
 	 * from the message.
+	 * <p>If the returned object is an instance of {@link org.frankframework.receivers.MessageWrapper} then the {@link org.frankframework.receivers.Receiver#processRawMessage(IListener, RawMessageWrapper, PipeLineSession, boolean)}
+	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
+	 * {@link RawMessageWrapper#getContext()}</p>.
 	 *
 	 * @param rawMessage The raw message data, unwrapped
 	 * @param session {@link PipeLineSession} to populate with properties from the message.

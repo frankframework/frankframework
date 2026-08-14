@@ -1,18 +1,18 @@
 /*
-   Copyright 2026 WeAreFrank!
+  Copyright 2026 WeAreFrank!
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+      http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ */
 package org.frankframework.pipes;
 
 import java.io.IOException;
@@ -22,8 +22,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.Error;
 import com.networknt.schema.InputFormat;
 import com.networknt.schema.Schema;
@@ -33,6 +31,9 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -56,8 +57,10 @@ public class OpenApiValidationHelper {
 		this.useAsOutputValidator = useAsOutputValidator;
 
 		// This setting is important to make sure that resolving of references works correctly
-		this.objectMapper = new ObjectMapper()
-				.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+		this.objectMapper = JsonMapper.builder()
+				.changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL)
+						.withValueInclusion(JsonInclude.Include.NON_NULL))
+				.build();
 	}
 
 	/**
@@ -121,7 +124,7 @@ public class OpenApiValidationHelper {
 		io.swagger.v3.oas.models.media.Schema<?> schema = null;
 
 		if (content.containsKey("application/json")) {
-			 schema = content.get("application/json").getSchema();
+			schema = content.get("application/json").getSchema();
 		} else if (content.containsKey("*/*")) {
 			// try to get */*
 			schema = content.get("*/*").getSchema();
@@ -132,8 +135,27 @@ public class OpenApiValidationHelper {
 					"Available content types: %s".formatted(content.keySet()));
 		}
 
-		JsonNode schemaNode = objectMapper.valueToTree(schema);
+		JsonNode schemaNode = toJsonNode(schema);
 
 		return schemaRegistry.getSchema(schemaNode);
+	}
+
+	/**
+	 * Converts a swagger Schema to a Jackson 3 JsonNode.
+	 * <p>
+	 * The swagger Schema class uses Jackson 2 annotations and custom serializers which Jackson 3
+	 * does not recognize. In particular, if the schema has an unresolved {@code $ref} (e.g. due to an
+	 * invalid reference that the swagger-parser could not resolve), Jackson 3 will silently drop the
+	 * {@code $ref} field and produce a permissive schema that validates everything.
+	 * <p>
+	 * To avoid silent pass-through of broken schemas, we detect a non-null {@code $ref} on the swagger
+	 * Schema object and construct the node manually. This ensures networknt will attempt to resolve the
+	 * reference and throw a {@link com.networknt.schema.SchemaException} for invalid references.
+	 */
+	private JsonNode toJsonNode(io.swagger.v3.oas.models.media.Schema<?> schema) {
+		if (schema.get$ref() != null) {
+			return objectMapper.createObjectNode().put("$ref", schema.get$ref());
+		}
+		return objectMapper.valueToTree(schema);
 	}
 }

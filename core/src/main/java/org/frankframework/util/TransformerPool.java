@@ -234,24 +234,18 @@ public class TransformerPool {
 		}
 	}
 
-	@Nullable
-	public static TransformerPool configureTransformer(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean mandatory) throws ConfigurationException {
-		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
-			return configureTransformer(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType, includeXmlDeclaration, params);
-		}
-		return null;
-	}
-
 	/**
+	 * Handy dandy utility method to ensure no attributes have been configured that are not required.
 	 * @deprecated either call {@code getXPathTransformerPool} or {@code configureStyleSheetTransformer}
 	 */
 	@NonNull
 	@Deprecated
-	public static TransformerPool configureTransformer(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nullable OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws ConfigurationException {
+	public static TransformerPool configureTransformer0(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nullable OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws ConfigurationException {
 		return configureTransformer0(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
 	}
 
 	/**
+	 * Handy dandy utility method to ensure no attributes have been configured that are not required.
 	 * @deprecated either call {@code getXPathTransformerPool} or {@code configureStyleSheetTransformer}
 	 */
 	@NonNull
@@ -474,8 +468,13 @@ public class TransformerPool {
 		if (m.isEmpty()) {
 			return Message.nullMessage();
 		}
+
 		Source source = m.asSource();
-		if (source == null) throw new IllegalStateException("Message#asSource may not be null when message is not empty");
+
+		if (source == null) {
+			throw new IllegalStateException("Message#asSource may not be null when message is not empty");
+		}
+
 		return transform(source, parameterMap);
 	}
 

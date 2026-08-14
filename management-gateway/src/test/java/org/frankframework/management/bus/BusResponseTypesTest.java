@@ -64,7 +64,7 @@ public class BusResponseTypesTest {
 		ByteArrayInputStream stream = new ByteArrayInputStream("binary".getBytes());
 
 		BusException e = assertThrows(BusException.class, () -> new JsonMessage(stream));
-		assertThat(e.getMessage(), Matchers.startsWith("unable to convert response to JSON: (InvalidDefinitionException) No serializer found for class java.io.ByteArrayInputStream"));
+		assertThat(e.getMessage(), Matchers.startsWith("unable to convert response to JSON: (StreamReadException) Unrecognized token 'binary'"));
 	}
 
 	@Test
@@ -82,8 +82,8 @@ public class BusResponseTypesTest {
 	public void testInvalidStatusCode() {
 		StringMessage message = new StringMessage("dummy input");
 		assertAll(
-			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(600)),
-			() -> assertThrows(IllegalArgumentException.class, ()->message.setStatus(100))
+				() -> assertThrows(IllegalArgumentException.class, () -> message.setStatus(600)),
+				() -> assertThrows(IllegalArgumentException.class, () -> message.setStatus(100))
 		);
 	}
 

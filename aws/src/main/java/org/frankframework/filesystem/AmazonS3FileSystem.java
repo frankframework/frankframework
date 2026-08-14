@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -177,16 +176,6 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 		return toFile(StringUtil.concatStrings(folder, FILE_DELIMITER, filename));
 	}
 
-	@Override
-	public int getNumberOfFilesInFolder(String folder) throws FileSystemException {
-		try (DirectoryStream<S3FileRef> files = list(folder, TypeFilter.FILES_ONLY)) {
-			return Math.toIntExact(StreamSupport.stream(files.spliterator(), false).count());
-		} catch (IOException e) {
-			throw new FileSystemException("Exception while counting number of files in [" + folder + "]. " + e.getMessage());
-		}
-	}
-
-	@NonNull
 	@Override
 	public DirectoryStream<S3FileRef> list(S3FileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
 		List<S3Object> files = new ArrayList<>();

@@ -155,9 +155,9 @@ public class KeyStoreCrypto extends CryptoBase {
 				certificateFactory = CertificateFactory.getInstance("X.509", provider);
 			}
 		} catch (CertificateException e) {
-			throw new CustomWSSecurityException("unsupported certificate type", e);
+			throw new SoapUtils.CustomWSSecurityException("unsupported certificate type", e);
 		} catch (NoSuchProviderException e) {
-			throw new CustomWSSecurityException("security provider not found", e);
+			throw new SoapUtils.CustomWSSecurityException("security provider not found", e);
 		}
 
 		return certificateFactory;
@@ -196,7 +196,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				}
 			}
 		} catch (KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to read keystore", e);
+			throw new SoapUtils.CustomWSSecurityException("unable to read keystore", e);
 		}
 
 		return null;
@@ -260,13 +260,13 @@ public class KeyStoreCrypto extends CryptoBase {
 	@Override
 	public PrivateKey getPrivateKey(X509Certificate certificate, CallbackHandler callbackHandler) throws WSSecurityException {
 		if (callbackHandler == null) {
-			throw new CustomWSSecurityException("no CallbackHandler provided");
+			throw new SoapUtils.CustomWSSecurityException("no CallbackHandler provided");
 		}
 
 		String identifier = getIdentifier(certificate, keystore);
 		if (identifier == null) {
 			log.warn("cannot find key for certificate in keystore [{}]", () -> createKeyStoreErrorMessage(keystore));
-			throw new CustomWSSecurityException("the private key for the supplied alias does not exist in the keystore");
+			throw new SoapUtils.CustomWSSecurityException("the private key for the supplied alias does not exist in the keystore");
 		}
 		String password = getPassword(identifier, callbackHandler);
 		return getPrivateKey(identifier, password);
@@ -282,13 +282,13 @@ public class KeyStoreCrypto extends CryptoBase {
 	@Override
 	public PrivateKey getPrivateKey(PublicKey publicKey, CallbackHandler callbackHandler) throws WSSecurityException {
 		if (callbackHandler == null) {
-			throw new CustomWSSecurityException("no CallbackHandler provided");
+			throw new SoapUtils.CustomWSSecurityException("no CallbackHandler provided");
 		}
 
 		String identifier = getIdentifier(publicKey, keystore);
 		if (identifier == null) {
 			log.warn("cannot find key for corresponding public key in keystore [{}]", () -> createKeyStoreErrorMessage(keystore));
-			throw new CustomWSSecurityException("unable to find private key for corresponding public key");
+			throw new SoapUtils.CustomWSSecurityException("unable to find private key for corresponding public key");
 		}
 		String password = getPassword(identifier, callbackHandler);
 		return getPrivateKey(identifier, password);
@@ -306,19 +306,19 @@ public class KeyStoreCrypto extends CryptoBase {
 		try {
 			if (identifier == null || !keystore.isKeyEntry(identifier)) {
 				log.warn("cannot find key for alias [{}] in keystore [{}]", () -> identifier, () -> createKeyStoreErrorMessage(keystore));
-				throw new CustomWSSecurityException("the private key for the supplied alias does not exist in the keystore");
+				throw new SoapUtils.CustomWSSecurityException("the private key for the supplied alias does not exist in the keystore");
 			}
 
 			Key keyTmp = keystore.getKey(identifier, password == null ? new char[] {} : password.toCharArray());
 			if (!(keyTmp instanceof PrivateKey)) {
 				log.warn("Key is not a private key for alias [{}] in keystore [{}]", () -> identifier, () -> createKeyStoreErrorMessage(keystore));
-				throw new CustomWSSecurityException("the key for the supplied alias is not a private key");
+				throw new SoapUtils.CustomWSSecurityException("the key for the supplied alias is not a private key");
 			}
 
 			return (PrivateKey) keyTmp;
 		} catch (KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException ex) {
 			// Though we may have found the key, the password may be incorrect.
-			throw new CustomWSSecurityException("the private key for the supplied alias does not exist in the keystore", ex);
+			throw new SoapUtils.CustomWSSecurityException("the private key for the supplied alias does not exist in the keystore", ex);
 		}
 	}
 
@@ -351,7 +351,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				try {
 					certs[0].checkValidity();
 				} catch (CertificateExpiredException | CertificateNotYetValidException e) {
-					throw new CustomWSSecurityException("invalid certificate", e);
+					throw new SoapUtils.CustomWSSecurityException("invalid certificate", e);
 				}
 				log.debug("Direct trust for certificate with {}", certs[0].getSubjectX500Principal().getName());
 				return;
@@ -380,7 +380,7 @@ public class KeyStoreCrypto extends CryptoBase {
 			if (foundIssuingCertChains.isEmpty() || foundIssuingCertChains.getFirst().length < 1) {
 				String subjectString = certs[0].getSubjectX500Principal().getName();
 				log.debug("No certs found in keystore for issuer {} of certificate for {}", issuerString, subjectString);
-				throw new CustomWSSecurityException("no trusted certificates found for ["+subjectString+"]");
+				throw new SoapUtils.CustomWSSecurityException("no trusted certificates found for ["+subjectString+"]");
 			}
 		}
 
@@ -442,12 +442,12 @@ public class KeyStoreCrypto extends CryptoBase {
 			}
 		} catch (NoSuchProviderException | NoSuchAlgorithmException | CertificateException | InvalidAlgorithmParameterException
 				| java.security.cert.CertPathValidatorException | KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to validate certificate");
+			throw new SoapUtils.CustomWSSecurityException("unable to validate certificate");
 		}
 
 		// Finally check Cert Constraints
 		if (!matchesSubjectDnPattern(certs[0], subjectCertConstraints)) {
-			throw new CustomWSSecurityException("The security token could not be authenticated or authorized");
+			throw new SoapUtils.CustomWSSecurityException("The security token could not be authenticated or authorized");
 		}
 	}
 
@@ -456,7 +456,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		verifyTrust(certs, enableRevocation, subjectCertConstraints);
 
 		if (!matchesIssuerDnPattern(certs[0], issuerCertConstraints)) {
-			throw new CustomWSSecurityException("The security token could not be authenticated or authorized");
+			throw new SoapUtils.CustomWSSecurityException("The security token could not be authenticated or authorized");
 		}
 	}
 
@@ -472,7 +472,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		// If the public key is null, do not trust the signature
 		//
 		if (publicKey == null) {
-			throw new CustomWSSecurityException("The security token could not be authenticated or authorized");
+			throw new SoapUtils.CustomWSSecurityException("The security token could not be authenticated or authorized");
 		}
 
 		//
@@ -480,7 +480,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		// then search the truststore for the transmitted public key (direct trust)
 		//
 		if (!findPublicKeyInKeyStore(publicKey, keystore, false) && !findPublicKeyInKeyStore(publicKey, truststore, true)) {
-			throw new CustomWSSecurityException("The security token could not be authenticated or authorized");
+			throw new SoapUtils.CustomWSSecurityException("The security token could not be authenticated or authorized");
 		}
 	}
 
@@ -567,7 +567,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				}
 			}
 		} catch (KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to read keystore", e);
+			throw new SoapUtils.CustomWSSecurityException("unable to read keystore", e);
 		}
 
 		log.debug("No issuer serial match found in {}", store);
@@ -587,7 +587,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		try {
 			sha = MessageDigest.getInstance("SHA1");
 		} catch (NoSuchAlgorithmException e) {
-			throw new CustomWSSecurityException("error while decoding certificate", e);
+			throw new SoapUtils.CustomWSSecurityException("error while decoding certificate", e);
 		}
 
 		Certificate[] certs = getCertificates(thumbprint, keystore, sha);
@@ -630,7 +630,7 @@ public class KeyStoreCrypto extends CryptoBase {
 					try {
 						sha.update(x509cert.getEncoded());
 					} catch (CertificateEncodingException ex) {
-						throw new CustomWSSecurityException("unable to read the encoded form of the certificate", ex);
+						throw new SoapUtils.CustomWSSecurityException("unable to read the encoded form of the certificate", ex);
 					}
 					byte[] data = sha.digest();
 
@@ -641,7 +641,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				}
 			}
 		} catch (KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to read keystore", e);
+			throw new SoapUtils.CustomWSSecurityException("unable to read keystore", e);
 		}
 
 		log.debug("No thumbprint match found in {}", store);
@@ -700,7 +700,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				}
 			}
 		} catch (KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to read keystore", e);
+			throw new SoapUtils.CustomWSSecurityException("unable to read keystore", e);
 		}
 
 		log.debug("No SKI match found in {}", store);
@@ -790,7 +790,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				return new X509Certificate[0];
 			}
 		} catch (KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to read keystore", e);
+			throw new SoapUtils.CustomWSSecurityException("unable to read keystore", e);
 		}
 
 		return Arrays.copyOf(certs, certs.length, X509Certificate[].class);
@@ -863,7 +863,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				}
 			}
 		} catch (KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to read keystore", e);
+			throw new SoapUtils.CustomWSSecurityException("unable to read keystore", e);
 		}
 
 		if (foundCerts.isEmpty()) {
@@ -921,7 +921,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				}
 			}
 		} catch (KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to read keystore", e);
+			throw new SoapUtils.CustomWSSecurityException("unable to read keystore", e);
 		}
 		return null;
 	}
@@ -945,7 +945,7 @@ public class KeyStoreCrypto extends CryptoBase {
 				}
 			}
 		} catch (KeyStoreException e) {
-			throw new CustomWSSecurityException("unable to read keystore", e);
+			throw new SoapUtils.CustomWSSecurityException("unable to read keystore", e);
 		}
 		return null;
 	}
@@ -962,7 +962,7 @@ public class KeyStoreCrypto extends CryptoBase {
 			Callback[] callbacks = new Callback[] { pwCb };
 			cb.handle(callbacks);
 		} catch (IOException | UnsupportedCallbackException e) {
-			throw new CustomWSSecurityException("no password provided for identifier ["+identifier+"]", e);
+			throw new SoapUtils.CustomWSSecurityException("no password provided for identifier ["+identifier+"]", e);
 		}
 
 		return pwCb.getPassword();
@@ -992,19 +992,4 @@ public class KeyStoreCrypto extends CryptoBase {
 		}
 	}
 
-	/**
-	 * This implementation does not use a LOCALE and therefor does not rely on either
-	 * {@code org/apache/xml/security/resource/xmlsecurity_en.properties} or
-	 * a JVM default {@code com/sun/org/apache/xml/internal/security/resource/xmlsecurity_en.properties}.
-	 */
-	public static final class CustomWSSecurityException extends WSSecurityException {
-
-		public CustomWSSecurityException(String message) {
-			super(WSSecurityException.ErrorCode.FAILURE, "empty", new Object[] { message });
-		}
-
-		public CustomWSSecurityException(String message, Exception exception) {
-			super(WSSecurityException.ErrorCode.FAILURE, exception, "empty", new Object[] { message });
-		}
-	}
 }

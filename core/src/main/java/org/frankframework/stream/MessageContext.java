@@ -35,10 +35,11 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.InvalidMimeTypeException;
-import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.util.MimeType;
 
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.NestedLookupMap;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 
 public class MessageContext implements Serializable {
@@ -63,7 +64,7 @@ public class MessageContext implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final long CUSTOM_SERIALIZATION_VERSION = 1L;
 
-	private Map<String, Serializable> data = new LinkedCaseInsensitiveMap<>();
+	private Map<String, Serializable> data = new NestedLookupMap<>();
 
 	public MessageContext() {
 		super();
@@ -109,8 +110,34 @@ public class MessageContext implements Serializable {
 		return data.remove(key);
 	}
 
-	public @Nullable Serializable get(@NonNull String key) {
+	/**
+	 * Normal lookup for a value stored in this {@code MessageContext}.
+	 *
+	 * @param key the context key (case-insensitive) to read.
+	 * @return the value when present; otherwise {@code null}.
+	 */
+	public @Nullable Serializable getRawValue(@NonNull String key) {
 		return data.get(key);
+	}
+
+	/**
+	 * Typed lookup for a value stored in this {@code MessageContext}.
+	 *
+	 * @param key the context key (case-insensitive) to read.
+	 * @param reified helper argument used to derive runtime type information for {@code T}, don't use this!
+	 * @return the typed value when compatible; otherwise {@code null}.
+	 */
+	@SafeVarargs
+	@SuppressWarnings("unchecked")
+	public final @Nullable <T> T get(@NonNull String key, T... reified) {
+		Serializable value = getRawValue(key);
+
+		Class<T> classType = SpringUtils.getClassOf(reified);
+
+		if (classType.isInstance(value)) {
+			return (T) value;
+		}
+		return null;
 	}
 
 	public Map<String, Serializable> getAll() {

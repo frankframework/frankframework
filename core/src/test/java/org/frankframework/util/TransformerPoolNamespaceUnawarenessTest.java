@@ -2,10 +2,10 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.ContentHandler;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.xml.XmlWriter;
@@ -23,8 +23,13 @@ public class TransformerPoolNamespaceUnawarenessTest {
 	public static final String STYLESHEET_AUTO_UNAWARE_RESULT = NAMESPACE_INSENSITIVE_FIRST_RESULT;
 	public static final String XSLT_1_UNAWARE_RESULT = NAMESPACE_INSENSITIVE_FIRST_RESULT;
 
-	public TransformerPool getTransformerPool(String xpath, String stylesheet, int xsltVersion) throws ConfigurationException {
-		return TransformerPool.configureTransformer0(null, null, xpath, stylesheet, OutputType.TEXT, false, null, xsltVersion);
+	public TransformerPool getTransformerPool(String xpath, String stylesheet, int xsltVersion) throws Exception {
+		if (StringUtils.isNotEmpty(xpath)) {
+			return TransformerPool.getXPathTransformerPool(null, xpath, OutputType.TEXT, false, null, xsltVersion);
+		} else {
+			return TransformerPool.configureStyleSheetTransformer(null, stylesheet, xsltVersion);
+		}
+
 	}
 
 	public void testNamespaceInsensitiveTransformation(String xpath, String stylesheet, int xsltVersion, boolean namespaceAware, String expectedResult) throws Exception {

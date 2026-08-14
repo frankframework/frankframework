@@ -16,6 +16,7 @@
 package org.frankframework.senders;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -103,6 +104,7 @@ public class IbisJavaSender extends AbstractSenderWithParameters implements HasP
 	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		String result;
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
+			HashMap<String,Object> processContext = new HashMap<>();
 			subAdapterSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));
 			try {
 				subAdapterSession.putAll(paramList.getValues(message, session).getValueMap());
@@ -111,8 +113,9 @@ public class IbisJavaSender extends AbstractSenderWithParameters implements HasP
 
 				if (getDispatchType().equalsIgnoreCase("DLL")) {
 					String version = nl.nn.adapterframework.dispatcher.Version.version;
-					if (version.contains("IbisServiceDispatcher 1.3"))
+					if (version.contains("IbisServiceDispatcher 1.3")) {
 						throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher");
+					}
 
 					Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
 					dm = (DispatcherManager) getDispatcherManager.invoke(null, getDispatchType());
@@ -129,12 +132,14 @@ public class IbisJavaSender extends AbstractSenderWithParameters implements HasP
 				}
 
 				String correlationID = session.getCorrelationId();
-				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
+				processContext.putAll(subAdapterSession);
+				result = dm.processRequest(serviceName, correlationID, message.asString(), processContext);
 			} catch (ParameterException e) {
 				throw new SenderException("exception evaluating parameters", e);
 			} catch (Exception e) {
 				throw new SenderException("exception processing message using request processor [" + serviceName + "]", e);
 			} finally {
+				subAdapterSession.putAll(processContext);
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}

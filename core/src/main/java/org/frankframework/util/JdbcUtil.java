@@ -189,6 +189,57 @@ public class JdbcUtil {
 		}
 	}
 
+	public static Message getValueAsMessage(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs) throws SQLException, IOException {
+		try {
+			if (dbmsSupport.isBlobType(rsmeta, colNum)) {
+				if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
+					return Message.asMessage(rs.getString(colNum));
+				}
+				return new Message(JdbcUtil.getBlobInputStream(dbmsSupport, rs, colNum, decompressBlobs), blobCharset);
+			} else if (dbmsSupport.isClobType(rsmeta, colNum)) {
+				return new Message(dbmsSupport.getClobReader(rs, colNum));
+			}
+		} catch (JdbcException e) {
+			log.debug("Caught JdbcException, assuming no bloc/clob found", e);
+			return Message.nullMessage();
+		}
+		int columnType = rsmeta.getColumnType(colNum);
+		switch (columnType) {
+			case Types.BOOLEAN:
+			case Types.BIT: {
+				boolean value = rs.getBoolean(colNum);
+				return Message.asMessage(value);
+			}
+			// return as specified date format
+			case Types.TIMESTAMP:
+				return Message.asMessage(rs.getTimestamp(colNum).toLocalDateTime());
+			case Types.DATE: {
+				return Message.asMessage(rs.getDate(colNum).toLocalDate());
+			}
+			case Types.TIME: {
+				return Message.asMessage(rs.getTime(colNum).toLocalTime());
+			}
+			case Types.TIMESTAMP_WITH_TIMEZONE: {
+				return Message.asMessage(rs.getTimestamp(colNum).toInstant());
+			}
+			default: {
+				Object value = rs.getObject(colNum);
+				if (value == null) {
+					return Message.nullMessage();
+				}
+				return Message.asMessage(value);
+			}
+		}
+	}
+
+	/**
+	 * Get value of column-nr from record-set current record and return it as String.
+	 *
+	 * @deprecated Where possible prefer to use the new method {@link #getValueAsMessage(IDbmsSupport, ResultSet, int, ResultSetMetaData, String, boolean)} because
+	 * it is more flexible, and the result can always still be turned into a String value with {@link Message#asString()}. If flags missing from the old method
+	 * are needed on the new method, they can be added as needed.
+	 */
+	@Deprecated(since = "10.3")
 	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
 		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
 			if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
@@ -254,15 +305,15 @@ public class JdbcUtil {
 		}
 	}
 
-	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, boolean blobIsCompressed) throws SQLException, JdbcException {
+	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, final int column, final boolean blobIsCompressed) throws SQLException, JdbcException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
-	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, boolean blobIsCompressed) throws SQLException, JdbcException {
+	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, final String column, final boolean blobIsCompressed) throws SQLException, JdbcException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
-	private static InputStream getBlobInputStream(InputStream blobInputStream, boolean blobIsCompressed) {
+	private static InputStream getBlobInputStream(final InputStream blobInputStream, final boolean blobIsCompressed) {
 		if (blobInputStream == null) {
 			return null;
 		}
@@ -469,59 +520,47 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterList parameters, Message message, PipeLineSession session) throws JdbcException, ParameterException {
+	public static void applyParameters(@NonNull IDbmsSupport dbmsSupport, @NonNull PreparedStatement statement, @Nullable ParameterList parameters, Message message, PipeLineSession session) throws JdbcException, ParameterException {
 		if (parameters != null) {
 			applyParameters(dbmsSupport, statement, parameters.getValues(message, session), session);
 		}
 	}
 
-	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterValueList parameters, PipeLineSession session) throws JdbcException {
+	public static void applyParameters(@NonNull IDbmsSupport dbmsSupport, @NonNull PreparedStatement statement, @NonNull ParameterValueList parameters, PipeLineSession session) throws JdbcException {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
-		if (parameters != null) {
-			for (int i = 0; i < parameters.size(); i++) {
-				ParameterValue parameterValue = parameters.getValue(i);
-				if (parameterValue.getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
-					continue;
-				}
-				try {
-					applyParameter(statement, parameterValue, i + 1, parameterTypeMatchRequired, session);
-				} catch (SQLException | IOException e) {
-					throw new JdbcException("Could not set parameter [" + parameterValue.getName() +
-							"] with type [" + parameterValue.getDefinition().getType() +
-							"] at position " + i + ", exception: " + e.getMessage(), e);
-				}
+		for (int i = 0; i < parameters.size(); i++) {
+			ParameterValue parameterValue = parameters.getValue(i);
+			if (parameterValue.getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
+				continue;
+			}
+			try {
+				applyParameter(statement, parameterValue, i + 1, parameterTypeMatchRequired, session);
+			} catch (SQLException | IOException e) {
+				throw new JdbcException(
+						"Could not set parameter [" + parameterValue.getName() +
+								"] with type [" + parameterValue.getDefinition().getType() +
+								"] at position " + i + ", exception: " + e.getMessage(), e
+				);
 			}
 		}
 	}
 
 	public static SQLType mapParameterTypeToSqlType(IDbmsSupport dbmsSupport, ParameterType parameterType) {
-		switch (parameterType) {
-			case DATE:
-				return JDBCType.DATE;
-			case TIMESTAMP:
-			case DATETIME:
-			case XMLDATETIME:
-				return JDBCType.TIMESTAMP;
-			case TIME:
-				return JDBCType.TIME;
-			case NUMBER:
-				return JDBCType.NUMERIC;
-			case INTEGER:
-				return JDBCType.INTEGER;
-			case BOOLEAN:
-				return JDBCType.BOOLEAN;
-			case STRING:
-				return JDBCType.VARCHAR;
-			case CHARACTER:
-				return JDBCType.CLOB;
-			case BINARY:
-				return JDBCType.BLOB;
-			case LIST:
+		return switch (parameterType) {
+			case DATE -> JDBCType.DATE;
+			case TIMESTAMP, DATETIME, XMLDATETIME -> JDBCType.TIMESTAMP;
+			case TIME -> JDBCType.TIME;
+			case NUMBER -> JDBCType.NUMERIC;
+			case INTEGER -> JDBCType.INTEGER;
+			case BOOLEAN -> JDBCType.BOOLEAN;
+			case STRING -> JDBCType.VARCHAR;
+			case CHARACTER -> JDBCType.CLOB;
+			case BINARY -> JDBCType.BLOB;
+			case LIST ->
 				// Type 'LIST' is used for REF_CURSOR type OUTPUT parameters of stored procedures.
-				return dbmsSupport.getCursorSqlType();
-			default:
-				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
-		}
+					dbmsSupport.getCursorSqlType();
+			default -> throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
+		};
 	}
 
 	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, IOException {
