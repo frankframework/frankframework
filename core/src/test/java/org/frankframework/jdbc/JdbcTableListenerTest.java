@@ -973,10 +973,10 @@ public class JdbcTableListenerTest {
 
 		// Assert
 		assertEquals("message", message.asString());
-		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
-		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
-		assertEquals("fVC", session.get("tVARCHAR"));
-		assertEquals("fBLOB", session.get("tBLOB"));
+		assertTrue(session.containsKey("additional_query_fields.tblob"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("additional_query_fields.tvarchar"), "Session should contain tVARCHAR");
+		assertEquals("fVC", session.get("additional_query_fields.tvarchar"));
+		assertEquals("fBLOB", session.get("additional_query_fields.tblob"));
 	}
 
 	@DatabaseTest
@@ -1012,13 +1012,13 @@ public class JdbcTableListenerTest {
 
 		// Assert
 		assertEquals("message", message.asString());
-		assertTrue(session.containsKey("tINT"), "Session should contain tINT");
-		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
-		assertTrue(session.containsKey("tCLOB"), "Session should contain tCLOB");
-		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
-		assertEquals("1", session.get("tINT"));
-		assertEquals("fVC", session.get("tVARCHAR"));
-		assertEquals("fBLOB", session.get("tBLOB"));
-		assertEquals("message", session.get("tCLOB"));
+		assertTrue(session.containsKey("additional_query_fields.tint"), "Session should contain tINT");
+		assertTrue(session.containsKey("additional_query_fields.tblob"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("additional_query_fields.tclob"), "Session should contain tCLOB");
+		assertTrue(session.containsKey("additional_query_fields.tvarchar"), "Session should contain tVARCHAR");
+		assertEquals("1", session.get("additional_query_fields.tint"));
+		assertEquals("fVC", session.get("additional_query_fields.tvarchar"));
+		assertEquals("fBLOB", session.get("additional_query_fields.tblob"));
+		assertEquals("message", session.get("additional_query_fields.tclob"));
 	}
 }
