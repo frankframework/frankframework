@@ -23,6 +23,7 @@ import java.util.Optional;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.Environment;
 
@@ -79,6 +80,7 @@ public class KubernetesEventPublisher implements ApplicationListener<MessageEven
 	private final String namespace;
 	private final String podName;
 
+	@Autowired
 	public KubernetesEventPublisher(Environment environment) {
 		this(buildInClusterClientOrNull(), environment);
 	}

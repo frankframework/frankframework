@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.mock.env.MockEnvironment;
 
 import io.fabric8.kubernetes.api.model.Event;
@@ -37,6 +38,25 @@ import org.frankframework.lifecycle.events.MessageEventLevel;
 
 @EnableKubernetesMockClient(crud = true)
 class KubernetesEventPublisherTest {
+
+	/**
+	 * Reproduces the CI failure ("No default constructor found"): Spring's component-scan
+	 * (org.frankframework.lifecycle.IbisInitializer is meta-annotated {@code @Component}) resolves
+	 * this bean through the same annotation-driven constructor autowiring as
+	 * AnnotationConfigApplicationContext#register. With two declared constructors and neither
+	 * annotated @Autowired, Spring's implicit single-constructor rule doesn't apply, so it falls back
+	 * to a no-arg constructor that doesn't exist.
+	 */
+	@Test
+	void isInstantiableAsASpringBeanFromEnvironmentAlone() {
+		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext()) {
+			ctx.getBeanFactory().registerSingleton("environment", new MockEnvironment().withProperty("POD_NAME", "ff-pod-1"));
+			ctx.register(KubernetesEventPublisher.class);
+			ctx.refresh();
+
+			assertTrue(ctx.getBean(KubernetesEventPublisher.class) != null);
+		}
+	}
 
 	KubernetesClient client; // injected by the mock extension — instance field => fresh server per test
 
