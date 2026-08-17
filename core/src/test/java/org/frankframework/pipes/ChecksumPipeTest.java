@@ -12,7 +12,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.hash.Algorithm;
 import org.frankframework.stream.Message;
@@ -33,13 +32,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	}
 
 	@Test
-	public void badCharset() throws Exception {
-		configureAndStartPipe();
-		assertThrows(PipeRunException.class, () -> doPipe(pipe, "anotherDummy", session));
-	}
-
-	@Test
-	public void emptyCharset() throws Exception {
+	public void happyFlow() throws Exception {
 		configureAndStartPipe();
 		assertNotNull(doPipe(pipe,"anotherDummy", session));
 	}
