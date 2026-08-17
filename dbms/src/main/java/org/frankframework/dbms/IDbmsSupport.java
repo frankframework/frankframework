@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface to define DBMS specific SQL implementations.
@@ -83,9 +84,9 @@ public interface IDbmsSupport {
 
 	boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 
-	Reader getClobReader(ResultSet rs, int column) throws SQLException, DbmsException;
+	@Nullable Reader getClobReader(ResultSet rs, int column) throws SQLException, DbmsException;
 
-	Reader getClobReader(ResultSet rs, String column) throws SQLException, DbmsException;
+	@Nullable Reader getClobReader(ResultSet rs, String column) throws SQLException, DbmsException;
 
 	Object getClobHandle(ResultSet rs, int column) throws SQLException, DbmsException;
 
@@ -107,9 +108,9 @@ public interface IDbmsSupport {
 
 	boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 
-	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, DbmsException;
+	@Nullable InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, DbmsException;
 
-	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, DbmsException;
+	@Nullable InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, DbmsException;
 
 	Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException;
 

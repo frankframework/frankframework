@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.sql.SQLType;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.format.DateTimeFormatter;
@@ -198,7 +199,7 @@ public class JdbcUtil {
 			if (dbmsSupport.isBlobType(rsmeta, colNum)) {
 				return getBlobValueAsMessage(dbmsSupport, rs, colNum, rsmeta, blobCharset, decompressBlobs, blobSmartGet, blobEncodeBase64);
 			} else if (dbmsSupport.isClobType(rsmeta, colNum)) {
-				return new Message(dbmsSupport.getClobReader(rs, colNum));
+				return Message.asMessage(dbmsSupport.getClobReader(rs, colNum));
 			}
 		} catch (JdbcException e) {
 			log.debug("Caught JdbcException, assuming no bloc/clob found", e);
@@ -212,16 +213,33 @@ public class JdbcUtil {
 				return Message.asMessage(value);
 			}
 			// return as specified date format
-			case Types.TIMESTAMP:
-				return Message.asMessage(rs.getTimestamp(colNum).toLocalDateTime());
+			case Types.TIMESTAMP: {
+				Timestamp timestamp = rs.getTimestamp(colNum);
+				if (timestamp == null) {
+					return Message.nullMessage();
+				}
+				return Message.asMessage(timestamp.toLocalDateTime());
+			}
 			case Types.DATE: {
-				return Message.asMessage(rs.getDate(colNum).toLocalDate());
+				java.sql.Date sqlDate = rs.getDate(colNum);
+				if (sqlDate == null) {
+					return Message.nullMessage();
+				}
+				return Message.asMessage(sqlDate.toLocalDate());
 			}
 			case Types.TIME: {
-				return Message.asMessage(rs.getTime(colNum).toLocalTime());
+				Time time = rs.getTime(colNum);
+				if (time == null) {
+					return Message.nullMessage();
+				}
+				return Message.asMessage(time.toLocalTime());
 			}
 			case Types.TIMESTAMP_WITH_TIMEZONE: {
-				return Message.asMessage(rs.getTimestamp(colNum).toInstant());
+				Timestamp timestamp = rs.getTimestamp(colNum);
+				if (timestamp == null) {
+					return Message.nullMessage();
+				}
+				return Message.asMessage(timestamp.toInstant());
 			}
 			case Types.VARCHAR, Types.NVARCHAR: {
 				String str = rs.getString(colNum);

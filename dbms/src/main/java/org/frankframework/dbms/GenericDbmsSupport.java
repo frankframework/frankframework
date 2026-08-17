@@ -165,7 +165,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Reader getClobReader(ResultSet rs, int column) throws SQLException {
+	public @Nullable Reader getClobReader(ResultSet rs, int column) throws SQLException {
 		Clob clob = rs.getClob(column);
 		if (clob == null) {
 			return null;
@@ -174,7 +174,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Reader getClobReader(ResultSet rs, String column) throws SQLException {
+	public @Nullable Reader getClobReader(ResultSet rs, String column) throws SQLException {
 		Clob clob = rs.getClob(column);
 		if (clob == null) {
 			return null;
@@ -242,7 +242,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 
 	@Override
-	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException {
+	public @Nullable InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException {
 		Blob blob = rs.getBlob(column);
 		if (blob == null) {
 			return null;
@@ -251,7 +251,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException {
+	public @Nullable InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException {
 		Blob blob = rs.getBlob(column);
 		if (blob == null) {
 			return null;

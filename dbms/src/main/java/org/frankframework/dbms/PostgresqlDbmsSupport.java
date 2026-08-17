@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.SneakyThrows;
 
@@ -149,12 +150,12 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public Reader getClobReader(ResultSet rs, int column) throws SQLException {
+	public @Nullable Reader getClobReader(ResultSet rs, int column) throws SQLException {
 		return rs.getCharacterStream(column);
 	}
 
 	@Override
-	public Reader getClobReader(ResultSet rs, String column) throws SQLException {
+	public @Nullable Reader getClobReader(ResultSet rs, String column) throws SQLException {
 		return rs.getCharacterStream(column);
 	}
 
@@ -202,12 +203,12 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException {
+	public @Nullable InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException {
 		return rs.getBinaryStream(column);
 	}
 
 	@Override
-	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException {
+	public @Nullable InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException {
 		return rs.getBinaryStream(column);
 	}
 
