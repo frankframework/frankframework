@@ -28,7 +28,6 @@ import org.jspecify.annotations.NonNull;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -41,7 +40,6 @@ import org.frankframework.pipes.hash.Algorithm;
 import org.frankframework.pipes.hash.HashGenerator;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StreamUtil;
 
 /**
  * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
@@ -77,7 +75,6 @@ import org.frankframework.util.StreamUtil;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.TRANSLATOR)
 public class HashPipe extends FixedForwardPipe {
 
-	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private @Getter String secret = null;
 	private @Getter String authAlias = null;
 
@@ -159,7 +156,7 @@ public class HashPipe extends FixedForwardPipe {
 		CredentialFactory accessTokenCf = new CredentialFactory(authAlias, "", secret);
 		String cfSecret = accessTokenCf.getPassword();
 
-		return new SecretKeySpec(cfSecret.getBytes(getCharset()), "algorithm");
+		return new SecretKeySpec(cfSecret.getBytes(), "algorithm");
 	}
 
 	/**
@@ -169,17 +166,6 @@ public class HashPipe extends FixedForwardPipe {
 	 */
 	public void setAlgorithm(Algorithm algorithm) {
 		this.algorithm = algorithm;
-	}
-
-	/**
-	 * Character set to use for converting the secret from String to bytes.
-	 *
-	 * @ff.default UTF-8
-	 */
-	@Deprecated(since = "10.1.0", forRemoval = true)
-	@ConfigurationWarning("Charset will be read from the message")
-	public void setCharset(String charset) {
-		this.charset = charset;
 	}
 
 	/**
