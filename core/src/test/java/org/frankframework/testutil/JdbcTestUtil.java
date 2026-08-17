@@ -158,25 +158,16 @@ public class JdbcTestUtil {
 
 	private static int deriveSqlType(final Object param) {
 		// NB: So far this is not exhaustive, but previously only INTEGER and VARCHAR were supported, so for now this should do.
-		int sqlType;
-		if (param instanceof Integer) {
-			sqlType = Types.INTEGER;
-		} else if (param instanceof Long) {
-			sqlType = Types.BIGINT;
-		} else if (param instanceof Float) {
-			sqlType = Types.NUMERIC;
-		} else if (param instanceof Double) {
-			sqlType = Types.NUMERIC;
-		} else if (param instanceof Timestamp) {
-			sqlType = Types.TIMESTAMP;
-		} else if (param instanceof Time) {
-			sqlType = Types.TIME;
-		} else if (param instanceof java.sql.Date) {
-			sqlType = Types.DATE;
-		} else {
-			sqlType = Types.VARCHAR;
-		}
-		return sqlType;
+		return switch (param) {
+			case Integer i -> Types.INTEGER;
+			case Long l -> Types.BIGINT;
+			case Float v -> Types.NUMERIC;
+			case Double v -> Types.NUMERIC;
+			case Timestamp timestamp -> Types.TIMESTAMP;
+			case Time time -> Types.TIME;
+			case java.sql.Date date -> Types.DATE;
+			case null, default -> Types.VARCHAR;
+		};
 	}
 
 	/**

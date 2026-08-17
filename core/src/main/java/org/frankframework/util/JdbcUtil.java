@@ -189,13 +189,14 @@ public class JdbcUtil {
 		}
 	}
 
-	public static Message getValueAsMessage(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs) throws SQLException, IOException {
+	public static @NonNull Message getValueAsMessage(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs) throws SQLException, IOException {
+		return getValueAsMessage(dbmsSupport, rs, colNum, rsmeta, blobCharset, decompressBlobs, false, false, false);
+	}
+
+	public static @NonNull Message getValueAsMessage(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, boolean trimSpaces, boolean blobSmartGet, boolean blobEncodeBase64) throws SQLException, IOException {
 		try {
 			if (dbmsSupport.isBlobType(rsmeta, colNum)) {
-				if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
-					return Message.asMessage(rs.getString(colNum));
-				}
-				return new Message(JdbcUtil.getBlobInputStream(dbmsSupport, rs, colNum, decompressBlobs), blobCharset);
+				return getBlobValueAsMessage(dbmsSupport, rs, colNum, rsmeta, blobCharset, decompressBlobs, blobSmartGet, blobEncodeBase64);
 			} else if (dbmsSupport.isClobType(rsmeta, colNum)) {
 				return new Message(dbmsSupport.getClobReader(rs, colNum));
 			}
@@ -222,6 +223,13 @@ public class JdbcUtil {
 			case Types.TIMESTAMP_WITH_TIMEZONE: {
 				return Message.asMessage(rs.getTimestamp(colNum).toInstant());
 			}
+			case Types.VARCHAR, Types.NVARCHAR: {
+				String str = rs.getString(colNum);
+				if (rs.wasNull()) {
+					return Message.nullMessage();
+				}
+				return Message.asMessage(trimSpaces ? str.trim() : str);
+			}
 			default: {
 				Object value = rs.getObject(colNum);
 				if (value == null) {
@@ -229,6 +237,41 @@ public class JdbcUtil {
 				}
 				return Message.asMessage(value);
 			}
+		}
+	}
+
+	private static Message getBlobValueAsMessage(IDbmsSupport dbmsSupport, ResultSet rs, int colNum, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, boolean blobSmartGet, boolean blobEncodeBase64) throws SQLException, JdbcException, IOException {
+		if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
+			return Message.asMessage(rs.getString(colNum));
+		}
+		InputStream blobInputStream = JdbcUtil.getBlobInputStream(dbmsSupport, rs, colNum, decompressBlobs);
+		if (blobInputStream == null) {
+			return Message.nullMessage();
+		}
+		if (blobEncodeBase64) {
+			return Message.asMessage(Base64InputStream
+					.builder()
+					.setInputStream(blobInputStream)
+					.setEncode(true)
+					.get());
+		}
+		Message intermediateMessage = new Message(blobInputStream, blobCharset);
+		if (!blobSmartGet) {
+			return intermediateMessage;
+		}
+		Object result;
+		try (ObjectInputStream ois = new RenamingObjectInputStream(intermediateMessage.asInputStream())) {
+			result = ois.readObject();
+		} catch (Exception e) {
+			log.debug("message in column [{}] is probably not a serialized object: {}", colNum, e.getMessage());
+			return intermediateMessage;
+		}
+		if (result instanceof Message message) {
+			return message;
+		} else if (result instanceof MessageWrapper<?> mw) {
+			return mw.getMessage();
+		} else {
+			return Message.asMessage(result);
 		}
 	}
 
@@ -240,7 +283,7 @@ public class JdbcUtil {
 	 * are needed on the new method, they can be added as needed.
 	 */
 	@Deprecated(since = "10.3")
-	public static String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
+	public static @Nullable String getValue(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
 		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
 			if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
 				return rs.getString(colNum);
@@ -313,7 +356,7 @@ public class JdbcUtil {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
-	private static InputStream getBlobInputStream(final InputStream blobInputStream, final boolean blobIsCompressed) {
+	private static @Nullable InputStream getBlobInputStream(final InputStream blobInputStream, final boolean blobIsCompressed) {
 		if (blobInputStream == null) {
 			return null;
 		}
@@ -376,7 +419,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static @Nullable String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
 			return getBlobAsString(blobStream, Integer.toString(column), charset, blobSmartGet, encodeBlobBase64);
 		} catch (ZipException | EOFException e) {    // if any decompression exception occurs in getBlobInputStream
@@ -402,7 +445,7 @@ public class JdbcUtil {
 		}
 	}
 
-	private static String getBlobAsString(final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException {
+	private static @Nullable String getBlobAsString(final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException {
 		if (blobInputStream == null) {
 			log.debug("no blob found in column [{}]", column);
 			return null;

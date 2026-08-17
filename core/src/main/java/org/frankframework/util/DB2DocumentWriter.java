@@ -32,6 +32,7 @@ import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
+import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 
 @Log4j2
@@ -162,18 +163,22 @@ public class DB2DocumentWriter {
 			try (ObjectBuilder row=nodeBuilder.startObject()) {
 				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 					String columnName = rsmeta.getColumnName(i);
-					if(CONVERT_FIELDNAMES_TO_UPPERCASE) {
+					if (CONVERT_FIELDNAMES_TO_UPPERCASE) {
 						columnName = columnName.toUpperCase();
 					}
 					try {
-						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
+						Message value = JdbcUtil.getValueAsMessage(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, trimSpaces, getBlobSmart, false);
 						if (rs.wasNull()) {
 							row.add(columnName, (String)null);
 						} else {
-							if (JdbcUtil.isSQLTypeNumeric(rsmeta.getColumnType(i))) {
-								row.addNumber(columnName, value);
+							if (value.isRequestOfType(Number.class)) {
+								Number n = value.asType();
+								row.add(columnName, n);
+							} else if (value.isRequestOfType(Boolean.class)) {
+								Boolean b = value.asType();
+								row.add(columnName, b);
 							} else {
-								row.add(columnName, value);
+								row.add(columnName, value.asString());
 							}
 						}
 					} catch (Exception e) {

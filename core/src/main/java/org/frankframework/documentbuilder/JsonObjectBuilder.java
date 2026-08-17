@@ -49,10 +49,4 @@ public class JsonObjectBuilder extends ObjectBuilder {
 		handler.startObjectEntry(fieldName);
 		return new JsonArrayBuilder(handler);
 	}
-
-	@Override
-	public void addNumber(String name, String value) throws SAXException {
-		addField(name).setNumberValue(value);
-	}
-
 }

@@ -50,6 +50,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.MessageUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
@@ -253,6 +254,17 @@ public class Message implements Serializable {
 	@Nullable
 	public Object asObject() {
 		return request.asRawObject();
+	}
+
+	@SafeVarargs
+	@Nullable
+	public final <T> T asType(T... reified) {
+		Class<T> type = SpringUtils.getClassOf(reified);
+		if (!isRequestOfType(type)) {
+			return null;
+		}
+		//noinspection unchecked
+		return (T)request.asRawObject();
 	}
 
 	public boolean isBinary() {
