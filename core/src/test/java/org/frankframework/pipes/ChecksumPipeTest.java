@@ -34,14 +34,12 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
 	@Test
 	public void badCharset() throws Exception {
-		pipe.setCharset("dummy");
 		configureAndStartPipe();
 		assertThrows(PipeRunException.class, () -> doPipe(pipe, "anotherDummy", session));
 	}
 
 	@Test
 	public void emptyCharset() throws Exception {
-		pipe.setCharset("");
 		configureAndStartPipe();
 		assertNotNull(doPipe(pipe,"anotherDummy", session));
 	}
