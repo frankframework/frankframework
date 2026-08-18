@@ -50,7 +50,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
@@ -256,14 +255,20 @@ public class Message implements Serializable {
 		return request.asRawObject();
 	}
 
+	/**
+	 * Get the value of the request object, of it can be cast to the given receiver type.
+	 *
+	 * @param reified Receiver type -- do not pass value, instead this is derived from the type of the variable that the result is assigned to.
+	 * @return Value as requested type if assignment-compatible, otherwise {@code NULL}.
+	 * @param <T> Requested type of the value
+	 */
 	@SafeVarargs
-	@Nullable
-	public final <T> T asType(T... reified) {
-		Class<T> type = SpringUtils.getClassOf(reified);
+	public final <T> T getValueAsType(T... reified) {
+		Class<T> type = ClassUtils.getClassOf(reified);
 		if (!isRequestOfType(type)) {
-			return null;
+			throw new IllegalStateException("Value is not of [" + type.getName() + "], check first Message#isRequestOfType before calling this method");
 		}
-		//noinspection unchecked
+		//noinspection unchecked,DataFlowIssue
 		return (T)request.asRawObject();
 	}
 

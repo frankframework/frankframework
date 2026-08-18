@@ -39,11 +39,11 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.NestedLookupMap;
-import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TimeProvider;
 
@@ -313,7 +313,7 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler == null) {
-			securityHandler = (ISecurityHandler) get(SECURITY_HANDLER_KEY);
+			securityHandler = getAsType(SECURITY_HANDLER_KEY);
 			if (securityHandler == null) {
 				throw new NotImplementedException("no securityhandler found in PipeLineSession");
 			}
@@ -329,7 +329,7 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 		if (obj == null) {
 			return null;
 		}
-		Class<T> type = SpringUtils.getClassOf(reified);
+		Class<T> type = ClassUtils.getClassOf(reified);
 		if (Message.class.isAssignableFrom(type)) {
 			return (T) Message.asMessage(obj);
 		}

@@ -89,19 +89,24 @@ public class JdbcUtil {
 	}
 
 	@Deprecated
-	public static @Nullable String warningsToString(@NonNull SQLWarning warnings) {
+	public static @Nullable String warningsToString(@Nullable SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
 		return warningsElem.asXmlString();
 	}
 
 	@Deprecated
-	public static void warningsToXml(@NonNull SQLWarning warnings, @NonNull XmlBuilder parent) {
+	public static void warningsToXml(@Nullable SQLWarning warnings, @NonNull XmlBuilder parent) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
-		parent.addSubElement(warningsElem);
+		if (warningsElem != null) {
+			parent.addSubElement(warningsElem);
+		}
 	}
 
 	@Deprecated
-	public static @NonNull XmlBuilder warningsToXmlBuilder(@NonNull SQLWarning warnings) {
+	public static @Nullable XmlBuilder warningsToXmlBuilder(@Nullable SQLWarning warnings) {
+		if (warnings == null) {
+			return null;
+		}
 		XmlBuilder warningsElem = new XmlBuilder("warnings");
 		while (warnings != null) {
 			XmlBuilder warningElem = new XmlBuilder("warning");

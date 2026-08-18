@@ -65,7 +65,7 @@ public class DB2DocumentWriter {
 		if (maxlength < 0) {
 			maxlength = Integer.MAX_VALUE;
 		}
-		Statement stmt=null;
+		Statement stmt;
 		try {
 			stmt = rs.getStatement();
 			if (stmt!=null) {
@@ -84,7 +84,7 @@ public class DB2DocumentWriter {
 			// Process result rows
 			try (ArrayBuilder rows = documentBuilder.addArrayField(recordname,"row")) {
 				while (rs.next() && rowCounter < maxlength) {
-					writeRow(rows, dbmsSupport, rs,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
+					writeRow(rows, dbmsSupport, rs,rsmeta,getBlobCharset(),decompressBlobs, trimSpaces,getBlobSmart);
 					rowCounter++;
 				}
 			}
@@ -158,34 +158,28 @@ public class DB2DocumentWriter {
 		}
 	}
 
-	public static void writeRow(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
-		try (INodeBuilder nodeBuilder = rows.addElement()) {
-			try (ObjectBuilder row=nodeBuilder.startObject()) {
-				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
-					String columnName = rsmeta.getColumnName(i);
-					if (CONVERT_FIELDNAMES_TO_UPPERCASE) {
-						columnName = columnName.toUpperCase();
-					}
-					try {
-						Message value = JdbcUtil.getValueAsMessage(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, trimSpaces, getBlobSmart, false);
-						if (rs.wasNull()) {
-							row.add(columnName, (String)null);
-						} else {
-							if (value.isRequestOfType(Number.class)) {
-								Number n = value.asType();
-								row.add(columnName, n);
-							} else if (value.isRequestOfType(Boolean.class)) {
-								Boolean b = value.asType();
-								row.add(columnName, b);
-							} else {
-								row.add(columnName, value.asString());
-							}
-						}
-					} catch (Exception e) {
-						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
-					}
+	public static void writeRow(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
+		try (INodeBuilder nodeBuilder = rows.addElement();
+			 ObjectBuilder row = nodeBuilder.startObject()) {
+			for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
+				String columnName = rsmeta.getColumnName(i);
+				if (CONVERT_FIELDNAMES_TO_UPPERCASE) {
+					columnName = columnName.toUpperCase();
 				}
-				// JdbcUtil.warningsToXml(rs.getWarnings(), row);
+				try {
+					Message value = JdbcUtil.getValueAsMessage(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, trimSpaces, getBlobSmart, false);
+					if (value.isRequestOfType(Number.class)) {
+						Number n = value.getValueAsType();
+						row.add(columnName, n);
+					} else if (value.isRequestOfType(Boolean.class)) {
+						Boolean b = value.getValueAsType();
+						row.add(columnName, b);
+					} else {
+						row.add(columnName, value.asString());
+					}
+				} catch (Exception e) {
+					throw new SenderException("error getting fieldvalue column [" + i + "] fieldType [" + getFieldType(rsmeta.getColumnType(i)) + "]", e);
+				}
 			}
 		}
 	}
