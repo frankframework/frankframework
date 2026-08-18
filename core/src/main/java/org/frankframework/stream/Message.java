@@ -259,7 +259,9 @@ public class Message implements Serializable {
 	 * Get the value of the request object, of it can be cast to the given receiver type.
 	 *
 	 * @param reified Receiver type -- do not pass value, instead this is derived from the type of the variable that the result is assigned to.
-	 * @return Value as requested type if assignment-compatible, otherwise {@code NULL}.
+	 * @return Value as requested type if assignment-compatible, throws {@link IllegalArgumentException}
+	 * @throws IllegalArgumentException if the value of the request was not of a compatible type. (Check with {@link #isRequestOfType(Class)} before using this method to avoid
+	 * the exception).
 	 * @param <T> Requested type of the value
 	 */
 	@SafeVarargs

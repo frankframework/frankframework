@@ -335,7 +335,7 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 		}
 		Object realValue = obj instanceof Message message ? message.asObject() : obj;
 		if (!type.isInstance(realValue)) {
-			throw new IllegalArgumentException("Value for key [%s] is of type [%s], not an instance of requested type [%s]".formatted(key, obj.getClass().getName(), type.getName()));
+			return null;
 		}
 		return (T)realValue;
 	}
