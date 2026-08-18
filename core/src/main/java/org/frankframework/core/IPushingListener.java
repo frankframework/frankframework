@@ -17,6 +17,8 @@ package org.frankframework.core;
 
 import java.util.Map;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.receivers.RawMessageWrapper;
 
 /**
@@ -53,5 +55,5 @@ public interface IPushingListener<M> extends IListener<M> {
 	 * @return Wrapped raw message
 	 * @throws ListenerException If any exception occurs during wrapping, a {@link ListenerException} is thrown.
 	 */
-	RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) throws ListenerException;
+	RawMessageWrapper<@NonNull M> wrapRawMessage(@NonNull M rawMessage, PipeLineSession session) throws ListenerException;
 }

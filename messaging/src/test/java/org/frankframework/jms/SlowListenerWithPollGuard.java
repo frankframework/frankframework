@@ -122,7 +122,7 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, PipeLineSession session) {
 		return null;
 	}
 

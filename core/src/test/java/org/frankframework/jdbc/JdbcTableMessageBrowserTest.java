@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.management.bus.dto.StorageItemDTO;
@@ -36,7 +37,7 @@ class JdbcTableMessageBrowserTest {
 
 	private JdbcTransactionalStorage<String> storage;
 	private MessageStoreListener listener;
-
+	private PipeLineSession session;
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
@@ -57,6 +58,8 @@ class JdbcTableMessageBrowserTest {
 		storage.setSlotId(SLOT_ID);
 		storage.setType("M");
 		storage.configure();
+
+		session = new PipeLineSession();
 	}
 
 	@AfterEach
@@ -64,6 +67,7 @@ class JdbcTableMessageBrowserTest {
 		if (listener != null) {
 			listener.stop(); // does this trigger an exception
 		}
+		session.close();
 	}
 
 	@DatabaseTest
@@ -129,7 +133,7 @@ class JdbcTableMessageBrowserTest {
 		for (int i = 0; i < nrOfMessages; i++) {
 			String formatted = String.format("%05d", i);
 			Date receivedDate = new Date(millisNow + 1_000L * i); // Message iterator always order by receivedDate so make sure that it is unique and incrementing. The JVM might loop too fast for now() to actually increment enough for the SQL date-time resolution.
-			storage.storeMessage("mid" + formatted, "cid" + formatted, receivedDate, null, null, formatted);
+			storage.storeMessage("mid" + formatted, "cid" + formatted, receivedDate, null, null, formatted, session);
 		}
 	}
 }

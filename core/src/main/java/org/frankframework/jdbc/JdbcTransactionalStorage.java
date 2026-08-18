@@ -559,7 +559,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	@Override
 	@NonNull
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message, PipeLineSession pipeLineSession) throws SenderException {
 		if (messageId == null) {
 			throw new SenderException("messageId cannot be null");
 		}

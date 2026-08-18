@@ -1051,7 +1051,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		try {
 			MessageWrapper<?> messageWrapper = serializeMessageObject(rawMessageWrapper, session);
 			throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT, messageWrapper.getMessage());
-			errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, messageWrapper);
+			errorStorage.storeMessage(originalMessageId, correlationId, new Date(receivedDate.toEpochMilli()), comments, null, messageWrapper, session);
 			txManager.commit(txStatus);
 		} catch (Exception e) {
 			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", getLogPrefix(), originalMessageId, correlationId, rawMessageWrapper, e);
@@ -1237,7 +1237,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					log.warn("{} {} is unknown, cannot update comments", this::getLogPrefix, logValue(PipeLineSession.TS_RECEIVED_KEY));
 				} else {
 					errorStorage.deleteMessage(storageKey);
-					errorStorage.storeMessage(messageId, correlationId,Date.from(receivedDate),"after retry: "+e.getMessage(),null, msg.rawMessage);
+					errorStorage.storeMessage(messageId, correlationId,Date.from(receivedDate),"after retry: "+e.getMessage(),null, msg.rawMessage, session);
 				}
 			} catch (SenderException e1) {
 				itxErrorStorage.setRollbackOnly();
@@ -1337,7 +1337,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				try {
 					if (getMessageLog() != null) {
 						final String label = extractLabel(compactedMessage);
-						getMessageLog().storeMessage(messageId, businessCorrelationId, TimeProvider.nowAsDate(), RCV_MESSAGE_LOG_COMMENTS, label, messageWrapper);
+						getMessageLog().storeMessage(messageId, businessCorrelationId, TimeProvider.nowAsDate(), RCV_MESSAGE_LOG_COMMENTS, label, messageWrapper, session);
 					}
 					log.debug("{} preparing TimeoutGuard", logPrefix);
 					TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());

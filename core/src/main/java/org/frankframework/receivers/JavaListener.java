@@ -132,7 +132,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	}
 
 	@Override
-	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<M> wrapRawMessage(@NonNull M rawMessage, PipeLineSession session) {
 		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 

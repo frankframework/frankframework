@@ -164,7 +164,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public RawMessageWrapper<MqttMessage> wrapRawMessage(MqttMessage message, PipeLineSession session) {
+	public RawMessageWrapper<MqttMessage> wrapRawMessage(@NonNull MqttMessage message, PipeLineSession session) {
 		return new RawMessageWrapper<>(message, String.valueOf(message.getId()), null);
 	}
 

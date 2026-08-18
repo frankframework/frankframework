@@ -76,7 +76,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 	}
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message, PipeLineSession pipeLineSession) throws SenderException {
 		Session session=null;
 		try {
 			session = createSession();

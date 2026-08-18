@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
@@ -32,6 +33,7 @@ public class MessageStoreListenerTest {
 
 	private MessageStoreListener listener;
 	private JdbcTransactionalStorage<String> storage;
+	private PipeLineSession pipeLineSession;
 	static final String TEST_TABLE_NAME = "JDBCTRANSACTIONALSTORAGETEST";
 	private static final String SLOT_ID = "slot";
 	private static final String MESSAGE_ID_FIELD = "MESSAGEID";
@@ -52,6 +54,8 @@ public class MessageStoreListenerTest {
 		storage.setTableName(TEST_TABLE_NAME);
 		storage.setIdField(MESSAGE_ID_FIELD);
 		storage.setSlotId(SLOT_ID);
+
+		pipeLineSession = new PipeLineSession();
 	}
 
 	@AfterEach
@@ -59,6 +63,7 @@ public class MessageStoreListenerTest {
 		if (listener != null) {
 			listener.stop(); // does this trigger an exception
 		}
+		pipeLineSession.close();
 	}
 
 	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws ConfigurationException {
@@ -298,7 +303,7 @@ public class MessageStoreListenerTest {
 		storage.configure();
 		storage.start();
 		try {
-			return storage.storeMessage("fakeMid", "fakeCid", TimeProvider.nowAsDate(), "fakeComments", "fakeLabel", message);
+			return storage.storeMessage("fakeMid", "fakeCid", TimeProvider.nowAsDate(), "fakeComments", "fakeLabel", message, pipeLineSession);
 		} finally {
 			storage.stop();
 		}

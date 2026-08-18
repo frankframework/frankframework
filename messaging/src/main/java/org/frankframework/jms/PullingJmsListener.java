@@ -180,12 +180,12 @@ public class PullingJmsListener extends AbstractJmsListener implements IPullingL
 		if (session==null) {
 			try {
 				session=getSession(pipeLineSession);
-				send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), pipeLineSession, getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} finally {
 				releaseSession(session);
 			}
 		} else {
-			send(session, replyTo, replyCid, plr.getResult(), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+			send(session, replyTo, replyCid, plr.getResult(), pipeLineSession, getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 		}
 	}
 
@@ -218,7 +218,7 @@ public class PullingJmsListener extends AbstractJmsListener implements IPullingL
 	/**
 	 * Retrieves messages from queue or other channel under transaction control, but does no processing on it.
 	 */
-	private RawMessageWrapper<Message> getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
+	private @Nullable RawMessageWrapper<Message> getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
 		Message msg = null;
 		String messageId;

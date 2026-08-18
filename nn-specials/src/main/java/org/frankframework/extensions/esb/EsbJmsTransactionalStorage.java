@@ -28,6 +28,7 @@ import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.Resource;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
@@ -123,7 +124,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	}
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message, PipeLineSession pipeLineSession) throws SenderException {
 		Session session = null;
 		try {
 			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, message);
@@ -136,7 +137,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 				logRequest = auditLogTp.transformToString("<dummy/>", parameterValues, true);
 			}
 			session = createSession();
-			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest));
+			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest), pipeLineSession, getMessageClass());
 			String returnMessage = send(session, getDestination(), msg);
 			log.debug("{}sent message [{}] to [{}] msgID [{}] correlationID [{}]", getLogPrefix(), logRequest, getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID());
 			return returnMessage;
