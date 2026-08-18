@@ -346,11 +346,9 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 		if (!containsKey(key)) {
 			return null;
 		}
-		T value;
-		try {
-			// First get the value, so that if it is not the right class we do not remove the value.
-			value = getAsType(key, reified);
-		} catch (IllegalArgumentException e) {
+		T value = getAsType(key, reified);
+		// We did have the key but since we got null value it was not of the correct type
+		if (value == null) {
 			return null;
 		}
 		remove(key);
