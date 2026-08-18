@@ -29,6 +29,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -339,7 +340,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			try {
 				int colNum = rs.findColumn(fieldName);
 				String value = JdbcUtil.getValue(getDbmsSupport(), rs, colNum, metaData, getBlobCharset(), isBlobsCompressed(), null, false, isBlobSmartGet(), false);
-				return Map.entry(fieldName, value);
+				return Map.entry("%s.%s".formatted(ADDITIONAL_QUERY_FIELDS_KEY, fieldName).toLowerCase(Locale.ROOT), value);
 			} catch (Exception e) {
 				throw Lombok.sneakyThrow(e);
 			}
@@ -539,7 +540,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	/**
 	 * Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
-	 * be added to the session as session-variables.
+	 * be added to the session as session-variables, with their names lower-cased and prefixed with {@code additional_query_fields.}.
 	 */
 	public void setAdditionalFields(String fieldNames) {
 		this.additionalFields = fieldNames;
