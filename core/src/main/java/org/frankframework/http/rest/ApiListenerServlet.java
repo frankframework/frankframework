@@ -52,6 +52,7 @@ import com.nimbusds.jose.util.JSONObjectUtils;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.http.AbstractHttpServlet;
+import org.frankframework.http.HttpHeaderUtils;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.jwt.AuthorizationException;
@@ -593,9 +594,12 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					}
 				}
 
-				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
+				if (StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
 					String contentDisposition = pipelineSession.getString(listener.getContentDispositionHeaderSessionKey());
-					if(StringUtils.isNotEmpty(contentDisposition)) {
+
+					if (StringUtils.isNotEmpty(contentDisposition)) {
+						HttpHeaderUtils.checkContentDispositionValueForValidFilename(contentDisposition);
+
 						LOG.debug("Setting Content-Disposition header to [{}]", contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);
 					}
