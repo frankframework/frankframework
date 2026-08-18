@@ -681,7 +681,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					int ri = 1;
 					if (parameterList != null) {
 						ParameterValueList parameters = parameterList.getValues(message, session);
-						JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters, session);
+						JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters);
 						ri = parameters.size() + 1;
 					}
 					cstmt.registerOutParameter(ri, Types.VARCHAR);

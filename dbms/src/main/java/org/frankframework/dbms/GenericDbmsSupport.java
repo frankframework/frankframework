@@ -130,37 +130,37 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getClob(column);
 	}
 
 	@Override
-	public Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException {
+	public @NonNull Writer getClobWriter(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException {
 		return ((Clob) clobHandle).setCharacterStream(1L);
 	}
 
 	@Override
-	public void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, DbmsException {
+	public void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException, DbmsException {
 		rs.updateClob(column, (Clob) clobHandle);
 	}
 
 	@Override
-	public void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, DbmsException {
+	public void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobHandle) throws SQLException, DbmsException {
 		rs.updateClob(column, (Clob) clobHandle);
 	}
 
 	@Override
-	public Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, DbmsException {
+	public @NonNull Object getClobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException, DbmsException {
 		return stmt.getConnection().createClob();
 	}
 
 	@Override
-	public Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException {
+	public @NonNull Writer getClobWriter(@NonNull PreparedStatement stmt, int column, @NonNull Object clobHandle) throws SQLException {
 		return ((Clob) clobHandle).setCharacterStream(1L);
 	}
 
 	@Override
-	public void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException {
+	public void applyClobParameter(@NonNull PreparedStatement stmt, int column, @NonNull Object clobHandle) throws SQLException {
 		stmt.setClob(column, (Clob) clobHandle);
 	}
 
@@ -189,60 +189,55 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
-		switch (rsmeta.getColumnType(colNum)) {
-			case Types.LONGVARBINARY:
-			case Types.VARBINARY:
-			case Types.BINARY:
-			case Types.BLOB:
-				return true;
-			default:
-				return false;
-		}
+	public boolean isBlobType(final @NonNull ResultSetMetaData rsmeta, final int colNum) throws SQLException {
+		return switch (rsmeta.getColumnType(colNum)) {
+			case Types.LONGVARBINARY, Types.VARBINARY, Types.BINARY, Types.BLOB -> true;
+			default -> false;
+		};
 	}
 
 	@Override
-	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getBlob(column);
 	}
 
-	protected OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException {
+	protected @NonNull OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException {
 		return ((Blob) blobUpdateHandle).setBinaryStream(1L);
 	}
 
 	@Override
-	public OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, DbmsException {
+	public @NonNull OutputStream getBlobOutputStream(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) throws SQLException, DbmsException {
 		return getBlobOutputStream(rs, blobUpdateHandle);
 	}
 
 	@Override
-	public void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, DbmsException {
+	public void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) throws SQLException, DbmsException {
 		rs.updateBlob(column, (Blob) blobUpdateHandle);
 	}
 
 	@Override
-	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, DbmsException {
+	public void updateBlob(@NonNull ResultSet rs, @NonNull String column, @NonNull Object blobUpdateHandle) throws SQLException, DbmsException {
 		rs.updateBlob(column, (Blob) blobUpdateHandle);
 	}
 
 	@Override
-	public Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, DbmsException {
+	public @NonNull Object getBlobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException, DbmsException {
 		return stmt.getConnection().createBlob();
 	}
 
 	@Override
-	public OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException {
+	public @NonNull OutputStream getBlobOutputStream(@NonNull PreparedStatement stmt, int column, @NonNull Object blobInsertHandle) throws SQLException {
 		return ((Blob) blobInsertHandle).setBinaryStream(1L);
 	}
 
 	@Override
-	public void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException {
+	public void applyBlobParameter(@NonNull PreparedStatement stmt, int column, @NonNull Object blobInsertHandle) throws SQLException {
 		stmt.setBlob(column, (Blob) blobInsertHandle);
 	}
 
 
 	@Override
-	public @Nullable InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException {
+	public @Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, int column) throws SQLException {
 		Blob blob = rs.getBlob(column);
 		if (blob == null) {
 			return null;
@@ -251,7 +246,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public @Nullable InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException {
+	public @Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, String column) throws SQLException {
 		Blob blob = rs.getBlob(column);
 		if (blob == null) {
 			return null;

@@ -72,7 +72,7 @@ public class JdbcTestUtil {
 		log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try {
 			PreparedStatement stmt = connection.prepareStatement(query);
-			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList(), session);
+			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList());
 			stmt.execute();
 		} catch (Exception e) {
 			throw new JdbcException("could not execute query [" + query + "]" + displayParameters(parameterValues), e);
@@ -82,7 +82,7 @@ public class JdbcTestUtil {
 	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
 		JdbcTestUtil.log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList(), session);
+			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList());
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					return null;

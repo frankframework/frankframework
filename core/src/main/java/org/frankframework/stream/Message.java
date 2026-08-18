@@ -154,7 +154,7 @@ public class Message implements Serializable {
 		this(context, request, requestClass);
 	}
 
-	public Message(InputStream request, String charset) throws IOException {
+	public Message(InputStream request, @Nullable String charset) throws IOException {
 		this(request, new MessageContext(charset));
 	}
 
