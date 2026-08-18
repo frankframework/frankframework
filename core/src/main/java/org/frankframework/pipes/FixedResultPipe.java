@@ -381,7 +381,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 * @ff.default false
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
-	@ConfigurationWarning("substituteVars is scheduled for removal. Please use the ReplacerPipe")
+	@ConfigurationWarning("Please use the ReplacerPipe")
 	public void setSubstituteVars(boolean substitute) {
 		this.substituteVars = substitute;
 	}
@@ -404,7 +404,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 * Returned message.
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
-	@ConfigurationWarning("returnString is scheduled for removal. Please use the ReplacerPipe or EchoPipe if you need to control the output string")
+	@ConfigurationWarning("Please use the ReplacerPipe or EchoPipe if you need to control the output string")
 	public void setReturnString(String returnString) {
 		this.returnString = returnString;
 	}
@@ -413,7 +413,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 * If set, every occurrence of this attribute's value is replaced by the value of <code>replaceTo</code>.
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
-	@ConfigurationWarning("replaceFrom is scheduled for removal. Please use the ReplacerPipe")
+	@ConfigurationWarning("Please use the ReplacerPipe")
 	public void setReplaceFrom(String replaceFrom) {
 		this.replaceFrom = replaceFrom;
 	}
@@ -422,7 +422,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 * See {@code replaceFrom}.
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
-	@ConfigurationWarning("replaceTo is scheduled for removal. Please use the ReplacerPipe")
+	@ConfigurationWarning("Please use the ReplacerPipe")
 	public void setReplaceTo(String replaceTo) {
 		this.replaceTo = replaceTo;
 	}
@@ -431,7 +431,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 * File name of the XSLT stylesheet to apply.
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
-	@ConfigurationWarning("styleSheetName is scheduled for removal. Please use the XsltPipe")
+	@ConfigurationWarning("Please use the XsltPipe")
 	public void setStyleSheetName(String styleSheetName) {
 		this.styleSheetName = styleSheetName;
 	}
@@ -442,13 +442,13 @@ public class FixedResultPipe extends FixedForwardPipe {
 	 * @ff.default false
 	 */
 	@Deprecated(since = "8.2", forRemoval = true)
-	@ConfigurationWarning("replaceFixedParams is scheduled for removal. Please use the ReplacerPipe")
+	@ConfigurationWarning("Please use the ReplacerPipe")
 	public void setReplaceFixedParams(boolean b) {
 		replaceFixedParams = b;
 	}
 
 	@Deprecated(since = "8.1", forRemoval = true)
-	@ConfigurationWarning("please use ?{key} instead where possible so it's clear when to use properties and when to use session variables")
+	@ConfigurationWarning("Please use ?{key} instead where possible so it's clear when to use properties and when to use session variables")
 	public void setUseOldSubstitutionStartDelimiter(boolean old) {
 		useOldSubstitutionStartDelimiter = old;
 	}
