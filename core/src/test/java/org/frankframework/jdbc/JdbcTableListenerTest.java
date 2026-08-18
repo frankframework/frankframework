@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import org.assertj.core.api.Assertions;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -289,20 +292,22 @@ public class JdbcTableListenerTest {
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	public void testGetRawMessage(String status, boolean expectMessage) throws Exception {
+	public @Nullable RawMessageWrapper<String> testGetRawMessage(String status, boolean expectMessage) throws Exception {
 		listener.configure();
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'" + status + "')", null, new PipeLineSession());
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
-		if (expectMessage) {
-			assertEquals("10",rawMessage.getRawMessage());
-		} else {
+		if (!expectMessage) {
 			assertNull(rawMessage);
+			return null;
 		}
+		assertNotNull(rawMessage);
+		assertEquals("10",rawMessage.getRawMessage());
+		return rawMessage;
 	}
 
 	@DatabaseTest
@@ -346,6 +351,19 @@ public class JdbcTableListenerTest {
 	public void testGetRawMessageWithSelectConditionComplex() throws Exception {
 		listener.setSelectCondition("TKEY=(SELECT r.TKEY FROM " + TEST_TABLE + " r WHERE r.TINT = t.TINT)");
 		testGetRawMessage("1", true);
+	}
+
+	@DatabaseTest
+	public void testGetRawMessageWithAdditionalFields() throws Exception {
+		listener.setAdditionalFields("TVARCHAR, TINT");
+		RawMessageWrapper<String> rawMessageWrapper = testGetRawMessage("1", true);
+		assertNotNull(rawMessageWrapper);
+		try (PipeLineSession session = new PipeLineSession(rawMessageWrapper.getContext())) {
+			assertNotNull(session.get("additional_query_fields"));
+			assertNotNull(session.getString("additional_query_fields.tvarchar"));
+			assertEquals("1", session.getString("additional_query_fields.tvarchar"));
+			assertEquals(1, session.getInteger("additional_query_fields.tint")); // Additional fields are always returned as String, even if they're numerical types in the database
+		}
 	}
 
 	@DatabaseTest
@@ -970,13 +988,15 @@ public class JdbcTableListenerTest {
 		PipeLineSession session = new PipeLineSession();
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(session);
 		Message message = listener.extractMessage(rawMessage, session);
+		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
 
 		// Assert
 		assertEquals("message", message.asString());
-		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
-		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
-		assertEquals("fVC", session.get("tVARCHAR"));
-		assertEquals("fBLOB", session.get("tBLOB"));
+		Assertions.assertThat(session).containsKey("additional_query_fields");
+		assertTrue(session.containsKey("additional_query_fields.tBLOB"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("additional_query_fields.tVARCHAR"), "Session should contain tVARCHAR");
+		assertEquals("fVC", session.getMessage("additional_query_fields.tVARCHAR").asString());
+		assertEquals("fBLOB", session.getMessage("additional_query_fields.tBLOB").asString());
 	}
 
 	@DatabaseTest
@@ -1009,16 +1029,18 @@ public class JdbcTableListenerTest {
 
 		// Extract message, then the additional fields should be copied to the session.
 		Message message = listener.extractMessage(rawMessage, session);
+		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
 
 		// Assert
 		assertEquals("message", message.asString());
-		assertTrue(session.containsKey("tINT"), "Session should contain tINT");
-		assertTrue(session.containsKey("tBLOB"), "Session should contain tBLOB");
-		assertTrue(session.containsKey("tCLOB"), "Session should contain tCLOB");
-		assertTrue(session.containsKey("tVARCHAR"), "Session should contain tVARCHAR");
-		assertEquals("1", session.get("tINT"));
-		assertEquals("fVC", session.get("tVARCHAR"));
-		assertEquals("fBLOB", session.get("tBLOB"));
-		assertEquals("message", session.get("tCLOB"));
+		Assertions.assertThat(session).containsKey("additional_query_fields");
+		assertTrue(session.containsKey("additional_query_fields.tINT"), "Session should contain tINT");
+		assertTrue(session.containsKey("additional_query_fields.tBLOB"), "Session should contain tBLOB");
+		assertTrue(session.containsKey("additional_query_fields.tCLOB"), "Session should contain tCLOB");
+		assertTrue(session.containsKey("additional_query_fields.tVARCHAR"), "Session should contain tVARCHAR");
+		assertEquals("1", session.getString("additional_query_fields.tINT"));
+		assertEquals("fVC", session.getString("additional_query_fields.tVARCHAR"));
+		assertEquals("fBLOB", session.getString("additional_query_fields.tBLOB"));
+		assertEquals("message", session.getString("additional_query_fields.tCLOB"));
 	}
 }

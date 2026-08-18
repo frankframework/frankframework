@@ -34,6 +34,7 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.Args;
 
+import org.frankframework.http.HttpHeaderUtils;
 import org.frankframework.stream.Message;
 
 /**
@@ -107,22 +108,27 @@ public class MultipartEntityBuilder {
 			this.bodyParts = new ArrayList<>();
 		}
 
-		if(mtom) {
+		if (mtom) {
 			Header header = bodyPart.getHeader();
 			String contentID;
 			String fileName = bodyPart.getBody().getFilename();
 			header.removeFields("Content-Disposition");
-			if(fileName == null) {
+
+			if (fileName == null) {
 				contentID = "<"+bodyPart.getName()+">";
-			}
-			else {
-				bodyPart.addField("Content-Disposition", "attachment; name=\""+bodyPart.getName()+"\"; filename=\""+fileName+"\"");
+			} else {
+				String value = "attachment; name=\"" + bodyPart.getName() + "\"; filename=\"" + fileName + "\"";
+				HttpHeaderUtils.checkContentDispositionValueForValidFilename(value);
+
+				bodyPart.addField("Content-Disposition", value);
 				contentID = "<"+fileName+">";
 			}
+
 			bodyPart.addField("Content-ID", contentID);
 
-			if(firstPart == null)
+			if (firstPart == null) {
 				firstPart = contentID;
+			}
 		}
 
 		this.bodyParts.add(bodyPart);

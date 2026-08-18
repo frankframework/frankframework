@@ -318,7 +318,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
-			switch(queryExecutionContext.getQueryType()) {
+			switch (queryExecutionContext.getQueryType()) {
 				case SELECT:
 					return executeSelectQuery(statement, legacyBlobOrClobFilename(session));
 				case UPDATEBLOB:
@@ -473,7 +473,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			} else if (isScalarExtended()) {
 					result="[absent]";
 			}
-			return new Message(result);
+			return Message.asMessage(result);
 		}
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();
@@ -994,7 +994,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	 * read to accommodate for the fact that senders need to return a String. This is no longer the case.
 	 */
 	@Deprecated(since = "9.3.0", forRemoval = true)
-	@ConfigurationWarning("BlobCharset property will be removed in a future version.")
+	@ConfigurationWarning("Charset will be read from the message")
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
 			ConfigurationWarnings.add(this, log, "setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");

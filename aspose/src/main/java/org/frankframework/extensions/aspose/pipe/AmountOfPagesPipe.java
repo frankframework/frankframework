@@ -65,7 +65,7 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 	 * Defaults to the message's known charset or UTF-8 when unknown.
 	 */
 	@Deprecated(since = "9.3.0", forRemoval = true)
-	@ConfigurationWarning("Charset property will be removed in a future version. ")
+	@ConfigurationWarning("Charset will be read from the message")
 	public void setCharset(String charset){
 		this.charset = charset;
 	}

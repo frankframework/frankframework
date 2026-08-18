@@ -1,9 +1,9 @@
 package org.frankframework.jdbc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -116,8 +116,10 @@ public class MessageStoreSenderAndListenerTest {
 		assertNotNull(result);
 		assertEquals(TEST_DATA, result.asString());
 
-		assertTrue(threadContext.containsKey("key1"), "ThreadContext should key1");
-		assertFalse(threadContext.containsKey("key2"), "ThreadContext should not contain key2"); // Key not specified
-		assertFalse(threadContext.containsKey("key3"), "ThreadContext should not contain key3"); // Key does not exist in session
+		assertThat(rawMessage.getContext())
+				.containsKey("key1")
+				.doesNotContainKey("key2") // Key not specified
+				.doesNotContainKey("key3"); // Key does not exist in session
+		// Keys are no longer copied into threadContext because the Receiver now copies the RawMessageWrapper.context; ConfigurationMessageStoreSenderAndListener tests the full behaviour
 	}
 }

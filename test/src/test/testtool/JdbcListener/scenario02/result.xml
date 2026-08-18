@@ -22,7 +22,7 @@
 						<field name="TCHAR">X</field>
 						<field name="TCLOB" null="true"/>
 						<field name="TNUMBER">IGNORE</field>
-						<field name="TVARCHAR" null="true"/>
+						<field name="TVARCHAR">The Extras</field>
 					</row>
 				</rowset>
 			</result>

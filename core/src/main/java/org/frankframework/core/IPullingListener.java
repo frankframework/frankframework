@@ -52,7 +52,10 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * Retrieves messages from queue or other channel, but does no processing on it.
 	 * Multiple objects may try to call this method at the same time, from different threads.
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
-	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
+	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.</p>
+	 * <p>If the returned object is an instance of {@link org.frankframework.receivers.MessageWrapper} then the {@link org.frankframework.receivers.Receiver#processRawMessage(IListener, RawMessageWrapper, PipeLineSession, boolean)}
+	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
+	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
 	@Nullable
 	RawMessageWrapper<M> getRawMessage(@NonNull Map<String,Object> threadContext) throws ListenerException;

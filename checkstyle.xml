@@ -48,6 +48,7 @@
 			org.checkerframework.checker.nullness.qual,
 			org.testcontainers.shaded.org,
 			org.testcontainers.shaded.com,
+			org.junit.jupiter.params.shadow.de.siegmar.fastcsv.util,
 			" />
 			<property name="illegalClasses" value="
 			com.sun.istack.Nullable,

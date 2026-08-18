@@ -27,9 +27,16 @@ import org.frankframework.core.PipeLineSession;
 
 public class RawMessageWrapper<M> {
 
+	/**
+	 * Raw message obtained from the {@link org.frankframework.core.IListener}.
+	 */
 	protected @Getter M rawMessage;
 	protected @Getter String id;
 	protected @Getter String correlationId;
+	/**
+	 * Additional information regarding the (raw) message. The information in this map will be added to the {@link PipeLineSession} by the
+	 * {@link Receiver}.
+	 */
 	protected @Getter Map<String,Object> context = new LinkedHashMap<>();
 
 	protected RawMessageWrapper() {

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -24,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.jupiter.api.BeforeEach;
@@ -517,9 +519,28 @@ public class PipeLineSessionTest {
 	}
 
 	@Test
+	public void testPutAllCallsCustomPut() {
+		// Arrange
+		Map<String, Object> map = new HashMap<>();
+		map.put("enum", TestEnumInSession.A);
+
+		// Demonstrate that in original map, we put the enum-value
+		assertEquals(TestEnumInSession.A, map.get("enum"));
+
+		// Act
+		session.putAll(map);
+
+		// Assert
+		// Demonstrate that using putAll we call put which will put the string-value in the session.
+		assertEquals("A", session.get("enum"));
+	}
+
+	@Test
 	public void testPutEnumInSessionNormalSessionKey() {
+		// Act
 		session.put("enum", TestEnumInSession.A);
 
+		// Assert
 		assertEquals("A", session.get("enum"));
 		assertThrows(IllegalArgumentException.class, () -> {
 			// Need to pass an Enum value to get the right type
@@ -545,6 +566,31 @@ public class PipeLineSessionTest {
 		assertEquals(TestEnumInSession.B, session.getAsType(key));
 		assertEquals(TestEnumInSession.B, session.removeIfType(key));
 		assertFalse(session.containsKey(key));
+	}
+
+	@Test
+	public void testGetNestedMapKeys() {
+		// Arrange
+		Map<String, String> nestedMap = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		nestedMap.put("field1", "value1");
+		nestedMap.put("field2", "value2");
+
+		session.put("nestedMap", nestedMap);
+		session.put("nestedMap.field3", "value3");
+
+		// Act / Assert
+		assertSame(nestedMap, session.get("nestedMap"));
+		assertEquals("value1", session.get("nestedMap.field1"));
+		assertEquals("value2", session.get("nestedMap.field2"));
+		assertEquals("value3", session.get("nestedMap.field3"));
+		assertNull(session.get("nestedMap.field4"));
+	}
+
+	@Test
+	public void testCaseInsensitiveKeyAccess() {
+		assertEquals("test1", session.get("key1"));
+		assertEquals("test1", session.get("Key1"));
+		assertEquals("test1", session.get("KEY1"));
 	}
 
 	private enum TestEnumInSession { A, B }
