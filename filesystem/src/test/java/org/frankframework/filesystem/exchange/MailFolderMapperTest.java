@@ -28,7 +28,7 @@ public class MailFolderMapperTest {
 	 * Integer.MAX_VALUE. This test ensures that all long fields in MailFolder can exceed Integer.MAX_VALUE.
 	 */
 	@Test
-	void testAllLongFieldsCanExceedIntegerMaxValue() throws Exception {
+	void testAllLongFieldsCanExceedIntegerMaxValue() {
 		long longValue = (long) Integer.MAX_VALUE + 1;
 		String json = """
 				{
