@@ -109,25 +109,25 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException {
+	public void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobUpdateHandle) throws SQLException {
 		// updateClob is not required for Oracle
 		// rs.updateClob(column, (Clob)clobUpdateHandle);
 	}
 
 	@Override
-	public void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException {
+	public void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobUpdateHandle) throws SQLException {
 		// updateClob is not required for Oracle
 		// rs.updateClob(column, (Clob)clobUpdateHandle);
 	}
 
 	@Override
-	public void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException {
+	public void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) throws SQLException {
 		// updateBlob is not required for Oracle
 		// rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}
 
 	@Override
-	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException {
+	public void updateBlob(@NonNull ResultSet rs, @NonNull String column, @NonNull Object blobUpdateHandle) throws SQLException {
 		// updateBlob is not required for Oracle
 		// rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}

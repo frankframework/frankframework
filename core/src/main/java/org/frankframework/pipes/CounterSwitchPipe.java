@@ -40,7 +40,6 @@ import org.frankframework.stream.Message;
  *
  * @author  Peter Leeuwenburgh
  */
-
 @Forward(name = "*", description = "the exitState, based on the number of received messages")
 @EnterpriseIntegrationPattern(Type.ROUTER)
 public class CounterSwitchPipe extends FixedForwardPipe {

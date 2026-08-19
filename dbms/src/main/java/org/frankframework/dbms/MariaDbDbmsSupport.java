@@ -20,6 +20,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.jspecify.annotations.NonNull;
 
 
 /**
@@ -100,12 +101,12 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createClob();
 	}
 
 	@Override
-	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
 

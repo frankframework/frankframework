@@ -420,4 +420,8 @@ public class ClassUtils {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getClassOf(T[] array) {
+		return (Class<T>) array.getClass().getComponentType();
+	}
 }

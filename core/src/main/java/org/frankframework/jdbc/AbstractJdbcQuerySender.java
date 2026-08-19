@@ -436,11 +436,11 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 
 	protected Message getResult(ResultSet resultset, @Nullable Path blobOrClobFilename) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
-			String result=null;
+			Message result = null;
 			if (resultset.next()) {
 				ResultSetMetaData rsmeta = resultset.getMetaData();
 				int numberOfColumns = rsmeta.getColumnCount();
-				if(numberOfColumns > 1) {
+				if (numberOfColumns > 1) {
 					log.warn("has set scalar=true but the resultset contains [{}] columns. Consider optimizing the query.", numberOfColumns);
 				}
 				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
@@ -455,25 +455,25 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, messageBuilder);
 					return messageBuilder.build();
 				}
-				result = JdbcUtil.getValue(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), getBlobBase64Direction() == Direction.ENCODE);
+				result = JdbcUtil.getValueAsMessage(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), isTrimSpaces(), isBlobSmartGet(), getBlobBase64Direction() == Direction.ENCODE);
 				if (resultset.wasNull()) {
 					if (isScalarExtended()) {
-						result = "[null]";
+						result = Message.asMessage("[null]");
 					} else {
-						result = null;
+						result = Message.nullMessage();
 					}
 				} else {
 					if (result.isEmpty() && isScalarExtended()) {
-						result="[empty]";
+						result = Message.asMessage("[empty]");
 					}
 				}
 				if (resultset.next()) {
 					log.warn("has set scalar=true but the query returned more than 1 row. Consider optimizing the query.");
 				}
 			} else if (isScalarExtended()) {
-					result="[absent]";
+				result = Message.asMessage("[absent]");
 			}
-			return Message.asMessage(result);
+			return result;
 		}
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();
@@ -681,7 +681,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					int ri = 1;
 					if (parameterList != null) {
 						ParameterValueList parameters = parameterList.getValues(message, session);
-						JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters, session);
+						JdbcUtil.applyParameters(getDbmsSupport(), cstmt, parameters);
 						ri = parameters.size() + 1;
 					}
 					cstmt.registerOutParameter(ri, Types.VARCHAR);
@@ -994,7 +994,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	 * read to accommodate for the fact that senders need to return a String. This is no longer the case.
 	 */
 	@Deprecated(since = "9.3.0", forRemoval = true)
-	@ConfigurationWarning("BlobCharset property will be removed in a future version.")
+	@ConfigurationWarning("Charset will be read from the message")
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
 			ConfigurationWarnings.add(this, log, "setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
