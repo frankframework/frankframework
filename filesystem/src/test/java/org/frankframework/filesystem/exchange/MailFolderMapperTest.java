@@ -19,13 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.frankframework.util.JacksonUtils;
 
 public class MailFolderMapperTest {
-
-	private static final ObjectMapper MAPPER = new ObjectMapper()
-			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 	/**
 	 * In issue "https://github.com/frankframework/frankframework/issues/11380" we had an issue that mapping failed with a value larger than
@@ -43,7 +39,7 @@ public class MailFolderMapperTest {
 				}
 				""".formatted(longValue, longValue, longValue, longValue);
 
-		MailFolder folder = MAPPER.readValue(json, MailFolder.class);
+		MailFolder folder = JacksonUtils.convertToDTO(json, MailFolder.class);
 
 		assertEquals(longValue, folder.getChildFolderCount());
 		assertEquals(longValue, folder.getUnreadItemCount());

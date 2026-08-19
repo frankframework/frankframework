@@ -92,6 +92,9 @@ public class MailMessage extends MailItemId {
 	public List<EmailAddress> getBccRecipients() {
 		return unwrapHolder(bccRecipients);
 	}
+	public List<EmailAddress> getReplyToRecipients() {
+		return unwrapHolder(replyTo);
+	}
 
 	private List<EmailAddress> unwrapHolder(List<EmailAddressHolder> mailAddresses) {
 		if (mailAddresses == null) {
@@ -100,7 +103,7 @@ public class MailMessage extends MailItemId {
 		return mailAddresses.stream().map(EmailAddressHolder::getEmailAddress).toList();
 	}
 
-	private String replyTo;
+	private List<EmailAddressHolder> replyTo;
 
 	@Override
 	public String toString() {
