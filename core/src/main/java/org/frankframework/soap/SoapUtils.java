@@ -22,6 +22,7 @@ import java.util.Objects;
 import javax.crypto.SecretKey;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.xml.crypto.dsig.DigestMethod;
 
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPConstants;
@@ -44,10 +45,14 @@ import org.apache.wss4j.dom.message.WSSecEncrypt;
 import org.apache.wss4j.dom.message.WSSecHeader;
 import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
+import org.apache.wss4j.dom.processor.Processor;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import lombok.Getter;
 
 import org.frankframework.stream.Message;
 
@@ -89,7 +94,8 @@ public class SoapUtils {
 		}
 	}
 
-	public static Message encryptMessage(Message soapMessage, KeyStore keystore, String certificateName, SecretKey symmetricKey, boolean includeCertificateInMessage) throws SOAPException, IOException, WSSecurityException {
+	@SuppressWarnings("java:S107")
+	public static Message encryptMessage(Message soapMessage, KeyStore keystore, String certificateName, SecretKey symmetricKey, boolean includeCertificateInMessage, KeyIdentifierType kiType, DigestAlgorithm digestAlgorithm, KeyEncryptionAlgorithm keAlgorithm, DataEncryptionAlgorithm deAlgorithm) throws SOAPException, IOException, WSSecurityException {
 		Document doc = toSoapDocument(soapMessage);
 
 		// create security header and insert it into unsigned envelope
@@ -101,82 +107,24 @@ public class SoapUtils {
 
 		WSSecEncrypt encrypt = new WSSecEncrypt(secHeader);
 		encrypt.setUserInfo(certificateName);
-/*
-	// Encrypt a specific element in the header by namespace + localname
-	List<WSEncryptionPart> parts = new ArrayList<>();
 
-String soapNamespace = WSSecurityUtil.getSOAPNamespace(doc.getDocumentElement());
-if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
-                    && WSConstants.ELEM_HEADER.equals(elementToEncrypt.getParentNode().getLocalName())) {
-                }
-	//doc.getElementsByTagName("Body").item(0);
-	// Encrypt the entire Body (default, optional to keep)
-	parts.add(new WSEncryptionPart("Body", "http://schemas.xmlsoap.org/soap/envelope/", "Content"));
-
-	// Encrypt a custom header element
-	parts.add(new WSEncryptionPart("myHeader", "http://www.test.nl/v0101", "Element"));
-
-	encrypt.getParts().addAll(parts);
-*/
-		encrypt.setKeyEncAlgo(WSS4JConstants.KEYTRANSPORT_RSAOAEP); // Key EncryptionMethod (rsa-oaep-mgf1p)
+		encrypt.setKeyEncAlgo(keAlgorithm.getAlgorithm()); // Key EncryptionMethod (rsa-oaep-mgf1p)
 		encrypt.setEncryptSymmKey(true);
 
-		encrypt.setKeyIdentifierType(WSConstants.THUMBPRINT_IDENTIFIER); // embeds KeyInfo with BinarySecurityToken ref
-		encrypt.setSymmetricEncAlgorithm(WSS4JConstants.AES_256); // Data EncryptionMethod (aes256-cbc)
-		encrypt.setDigestAlgorithm(WSS4JConstants.SHA1); // DigestMethod
+		encrypt.setKeyIdentifierType(kiType.getType()); // embeds KeyInfo with BinarySecurityToken ref
+		encrypt.setSymmetricEncAlgorithm(deAlgorithm.getAlgorithm()); // Data EncryptionMethod (aes256-cbc)
+		encrypt.setDigestAlgorithm(digestAlgorithm.getAlgorithm()); // DigestMethod
 		encrypt.setIncludeEncryptionToken(includeCertificateInMessage);
 
-		// Add a Timestamp
-		WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
-		timestampBuilder.setTimeToLive(300);
-//		timestampBuilder.setIdAllocator(idAllocator);
-		timestampBuilder.build();
+		setTimestamp(secHeader);
 
 		Document encryptedDocument = encrypt.build(crypto, symmetricKey);
 
 		return new Message(encryptedDocument);
 	}
 
-	public static Message decryptMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean removeSecurityHeader) throws SOAPException, IOException, WSSecurityException {
-		RequestData requestData = getRequestData(keystore, certificateName, certificatePassword);
-		return decryptMessage(soapMessage, requestData, removeSecurityHeader);
-	}
-
-	private static Message decryptMessage(Message soapMessage, RequestData requestData, boolean removeSecurityHeader) throws SOAPException, IOException, WSSecurityException {
-		final Document doc = toSoapDocument(soapMessage);
-		final WSHandlerResult result;
-		try {
-			WSSecurityEngine engine = new WSSecurityEngine();
-			result = engine.processSecurityHeader(doc, requestData);
-		} catch (IllegalArgumentException | IllegalStateException | WSSecurityException e) {
-			// Catch WSSecurityException to prevent the locale based exception trace and throw a generic instead.
-			throw new CustomWSSecurityException("unable to process security header", e);
-		}
-
-		if (result == null || result.getResults().isEmpty()) {
-			// Return message as-is. It appears to not be encrypted/signed.
-			return new Message(doc);
-		}
-
-		boolean encryptionProcessed = result.getResults().stream()
-				.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
-				.filter(Objects::nonNull)
-				.map(Integer.class::cast)
-				.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
-
-		if (!encryptionProcessed) {
-			throw new CustomWSSecurityException("some encryption references were not processed");
-		}
-
-		if (removeSecurityHeader) {
-			WSSecHeader secHeader = new WSSecHeader(doc);
-			secHeader.removeSecurityHeader();
-		}
-
-		return new Message(doc);
-	}
-
-	public static Message signMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean includeCertificateInMessage) throws SOAPException, IOException, WSSecurityException {
+	@SuppressWarnings("java:S107")
+	public static Message signMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean includeCertificateInMessage, KeyIdentifierType kiType, DigestAlgorithm digestAlgorithm, SignatureAlgorithm signatureAlgorithm) throws SOAPException, IOException, WSSecurityException {
 		Document doc = SoapUtils.toSoapDocument(soapMessage);
 
 		// create security header and insert it into unsigned envelope
@@ -188,31 +136,57 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 
 		WSSecSignature sign = new WSSecSignature(secHeader);
 		sign.setUserInfo(certificateName, certificatePassword);
-//		sign.setKeyIdentifierType(WSConstants.BST_DIRECT_REFERENCE);
-//		sign.setSignatureAlgorithm(WSConstants.RSA_SHA256);
-//		sign.setDigestAlgo(WSConstants.SHA256);
+		sign.setAddInclusivePrefixes(true);
+		sign.setSignatureAlgorithm(signatureAlgorithm.getAlgorithm());
 		sign.setIncludeSignatureToken(includeCertificateInMessage);
+		sign.setDigestAlgo(digestAlgorithm.getAlgorithm());
+		sign.setUseSingleCertificate(true);
 
-		// Add a Timestamp
-		WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
-		timestampBuilder.setTimeToLive(300);
-		timestampBuilder.build();
+		sign.setKeyIdentifierType(kiType.getType());
+
+		setTimestamp(secHeader);
 
 		Document encryptedDocument = sign.build(crypto);
 
 		return new Message(encryptedDocument);
 	}
 
+	/**
+	 * Add a Timestamp if not yet present
+	 */
+	private static void setTimestamp(WSSecHeader secHeader) {
+		NodeList timestamp = secHeader.getSecurityHeaderElement().getElementsByTagNameNS(WSS4JConstants.WSU_NS, WSS4JConstants.TIMESTAMP_TOKEN_LN);
+		if (timestamp.getLength() == 0) {
+			WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
+			timestampBuilder.setTimeToLive(300);
+			timestampBuilder.build();
+		}
+	}
+
+	public static Message decryptMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean removeSecurityHeader) throws SOAPException, IOException, WSSecurityException {
+		RequestData requestData = getRequestData(keystore, certificateName, certificatePassword, WSConstants.ENCR);
+		return decryptMessage(soapMessage, requestData, removeSecurityHeader);
+	}
+
+	private static Message decryptMessage(Message soapMessage, RequestData requestData, boolean removeSecurityHeader) throws SOAPException, IOException, WSSecurityException {
+		return processMessage(soapMessage, requestData, removeSecurityHeader, WSConstants.ENCR);
+	}
+
 	public static Message verifyMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean removeSecurityHeader) throws SOAPException, IOException, WSSecurityException {
-		RequestData requestData = getRequestData(keystore, certificateName, certificatePassword);
+		RequestData requestData = getRequestData(keystore, certificateName, certificatePassword, WSConstants.SIGN);
 		return verifyMessage(soapMessage, requestData, removeSecurityHeader);
 	}
 
 	private static Message verifyMessage(Message soapMessage, RequestData requestData, boolean removeSecurityHeader) throws SOAPException, IOException, WSSecurityException {
+		return processMessage(soapMessage, requestData, removeSecurityHeader, WSConstants.SIGN);
+	}
+
+	private static Message processMessage(Message soapMessage, RequestData requestData, boolean removeSecurityHeader, Integer actionType) throws SOAPException, IOException, WSSecurityException {
 		final Document doc = toSoapDocument(soapMessage);
 		final WSHandlerResult result;
 		try {
 			WSSecurityEngine engine = new WSSecurityEngine();
+			engine.setWssConfig(requestData.getWssConfig());
 			result = engine.processSecurityHeader(doc, requestData);
 		} catch (IllegalArgumentException | IllegalStateException | WSSecurityException e) {
 			// Catch WSSecurityException to prevent the locale based exception trace and throw a generic instead.
@@ -221,16 +195,16 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 
 		if (result == null || result.getResults().isEmpty()) {
 			// Return message as-is. It appears to not be encrypted/signed.
-			return new Message(doc);
+			throw new CustomWSSecurityException("message does not appear to be signed nor encrypted");
 		}
 
-		boolean encryptionProcessed = result.getResults().stream()
+		boolean processed = result.getResults().stream()
 				.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
 				.filter(Objects::nonNull)
 				.map(Integer.class::cast)
-				.anyMatch(action -> (action & WSConstants.SIGN) == WSConstants.SIGN);
+				.anyMatch(action -> (action & actionType) == actionType);
 
-		if (!encryptionProcessed) {
+		if (!processed) {
 			throw new CustomWSSecurityException("some signature references were not processed");
 		}
 
@@ -242,15 +216,29 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 		return new Message(doc);
 	}
 
-	private static @NonNull RequestData getRequestData(KeyStore keystore, String certificateName, String certificatePassword) {
+	private static @NonNull RequestData getRequestData(@NonNull KeyStore keystore, @NonNull String certificateName, @NonNull String certificatePassword, @NonNull int type) {
 		Crypto crypto = new KeyStoreCrypto(keystore);
 		RequestData requestData = new RequestData();
-		requestData.setSigVerCrypto(crypto);
-		requestData.setDecCrypto(crypto);
+
+		// By default the following two Processors are used.
+		// WSConstants.ENCRYPTED_KEY, org.apache.wss4j.dom.processor.EncryptedKeyProcessor.class
+		// WSConstants.SIGNATURE, org.apache.wss4j.dom.processor.SignatureProcessor.class
+		// If we disable one, it's skipped. This allows you to only verify a signature or decrypt a message.
+		WSSConfig defaultWssConfig = WSSConfig.getNewInstance();
+		if (type == WSConstants.ENCR) {
+			requestData.setDecCrypto(crypto);
+			defaultWssConfig.setProcessor(WSConstants.SIGNATURE, (Processor) null);
+		} else {
+			requestData.setSigVerCrypto(crypto);
+			defaultWssConfig.setProcessor(WSConstants.ENCRYPTED_KEY, (Processor) null);
+		}
+		requestData.setWssConfig(defaultWssConfig);
+
+
 		requestData.setCallbackHandler(callbacks -> {
 			for (Callback callback : callbacks) {
 				if (callback instanceof WSPasswordCallback pc && WSPasswordCallback.DECRYPT == pc.getUsage()) {
-					if (certificateName.equals(pc.getIdentifier())) {
+					if (certificateName.equalsIgnoreCase(pc.getIdentifier())) {
 						pc.setPassword(certificatePassword);
 					}
 				} else {
@@ -274,6 +262,77 @@ if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
 
 		public CustomWSSecurityException(String message, Exception exception) {
 			super(ErrorCode.FAILURE, exception, "empty", new Object[] { message });
+		}
+	}
+
+	public enum KeyEncryptionAlgorithm {
+		RSA_OAEP(WSS4JConstants.KEYTRANSPORT_RSAOAEP);
+
+		@Getter
+		private final String algorithm;
+
+		KeyEncryptionAlgorithm(String algorithm) {
+			this.algorithm = algorithm;
+		}
+	}
+
+	public enum DataEncryptionAlgorithm {
+		AES_256(WSS4JConstants.AES_256);
+
+		@Getter
+		private final String algorithm;
+
+		DataEncryptionAlgorithm(String algorithm) {
+			this.algorithm = algorithm;
+		}
+	}
+
+	public enum KeyIdentifierType {
+		ISSUER_SERIAL(WSConstants.ISSUER_SERIAL),
+		ISSUER_SERIAL_QUOTE_FORMAT(WSConstants.ISSUER_SERIAL_QUOTE_FORMAT),
+		BST_DIRECT_REFERENCE(WSConstants.BST_DIRECT_REFERENCE),
+		X509_KEY_IDENTIFIER(WSConstants.X509_KEY_IDENTIFIER),
+		THUMBPRINT_IDENTIFIER(WSConstants.THUMBPRINT_IDENTIFIER),
+		SKI_KEY_IDENTIFIER(WSConstants.SKI_KEY_IDENTIFIER),
+		KEY_VALUE(WSConstants.KEY_VALUE);
+
+		@Getter
+		private final int type;
+
+		KeyIdentifierType(int type) {
+			this.type = type;
+		}
+	}
+
+	public enum DigestAlgorithm {
+		SHA1(DigestMethod.SHA1),
+		SHA224(DigestMethod.SHA224),
+		SHA256(DigestMethod.SHA256),
+		SHA384(DigestMethod.SHA384),
+		SHA512(DigestMethod.SHA512),
+		SHA3_224(DigestMethod.SHA3_224),
+		SHA3_256(DigestMethod.SHA3_256),
+		SHA3_384(DigestMethod.SHA3_384),
+		SHA3_512(DigestMethod.SHA3_512);
+
+		@Getter
+		private final String algorithm;
+
+		DigestAlgorithm(String algorithm) {
+			this.algorithm = algorithm;
+		}
+	}
+
+	public enum SignatureAlgorithm {
+		RSA_SHA1(WSS4JConstants.RSA_SHA1),
+		RSA_SHA256(WSS4JConstants.RSA_SHA256),
+		RSA_SHA512(WSS4JConstants.RSA_SHA512);
+
+		@Getter
+		private final String algorithm;
+
+		SignatureAlgorithm(String algorithm) {
+			this.algorithm = algorithm;
 		}
 	}
 }

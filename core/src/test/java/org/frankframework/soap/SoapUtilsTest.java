@@ -80,15 +80,15 @@ public class SoapUtilsTest {
 		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
 		assertNotNull(file); // ensure we can find the file
 
-		String certificateName = "tralalal";
+		String certificateName = "myCertificateNameWithCasing";
 		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
 
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 		keyGen.init(256);
 		SecretKey secretKey = keyGen.generateKey();
-//		SecretKey secretKey = new SecretKeySpec(symmetricKey.getBytes(), "AES");
 
-		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, includeCertificateInMessage);
+		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, includeCertificateInMessage,
+				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256);
 
 		String encryptedString = encrypted.asString()
 				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>")
@@ -113,14 +113,15 @@ public class SoapUtilsTest {
 		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
 		assertNotNull(file); // ensure we can find the file
 
-		String certificateName = "tralalal";
+		String certificateName = "myCustomCertificateName";
 		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, "changeit");
 
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 		keyGen.init(256);
 		SecretKey secretKey = keyGen.generateKey();
 
-		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, false);
+		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, false,
+				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256);
 
 		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> SoapUtils.decryptMessage(encrypted, keystore, certificateName, "wrong-password", false));
 		assertEquals("unable to process security header", e1.getMessage());
@@ -182,7 +183,7 @@ public class SoapUtilsTest {
 		String certificatePass = "tralalal";
 		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, certificatePass);
 
-		Message encrypted = SoapUtils.signMessage(new UrlMessage(file), keystore, certificateName, certificatePass, includeCertificateInMessage);
+		Message encrypted = SoapUtils.signMessage(new UrlMessage(file), keystore, certificateName, certificatePass, includeCertificateInMessage, SoapUtils.KeyIdentifierType.ISSUER_SERIAL, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.SignatureAlgorithm.RSA_SHA1);
 
 		String encryptedString = encrypted.asString()
 				.replaceAll("<ds:SignatureValue>.*?</ds:SignatureValue>", "<ds:SignatureValue>IGNORE-SIGNATURE-VALUE</ds:SignatureValue>")
@@ -206,5 +207,31 @@ public class SoapUtilsTest {
 				.replaceAll("(<env:Body )[^<]*(>)", "$1$2");
 		// If removeSecurityHeader==true the input should match the output. Else it should contain the wsse header
 		MatchUtils.assertXmlEquals(removeSecurityHeader ? StreamUtil.resourceToString(file) : originalEncryptedMessage, decryptedString);
+	}
+
+	@Test
+	void validateSignedEncryptedSoap() throws Exception {
+		URL file = TestFileUtils.getTestFileURL("/Soap/Encryption/SZeebraSoap.xml");
+		assertNotNull(file); // ensure we can find the file
+
+		String certificateName = "myCustomCertificateName";
+		String certificatePass = "myCustomCertificateName";
+		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, certificatePass);
+
+		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+		keyGen.init(256);
+		SecretKey secretKey = keyGen.generateKey();
+
+		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, true,
+				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256);
+
+		Message signed = SoapUtils.signMessage(encrypted, keystore, certificateName, certificatePass, true, SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.SignatureAlgorithm.RSA_SHA1);
+
+		Message unsigned = SoapUtils.verifyMessage(signed, keystore, certificateName, certificatePass, false);
+		Message decrypted = SoapUtils.decryptMessage(unsigned, keystore, certificateName, certificatePass, true);
+
+		String decryptedString = decrypted.asString().replaceAll("(<env:Body )[^<]*(>)", "$1$2");
+		// Ensure the decrypted result is the same as the initial document
+		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), decryptedString);
 	}
 }
