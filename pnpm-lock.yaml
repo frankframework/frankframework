@@ -172,9 +172,6 @@ importers:
       happy-dom:
         specifier: ^20.10.6
         version: 20.10.6
-      istanbul-lib-instrument:
-        specifier: ^6.0.3
-        version: 6.0.3(supports-color@8.1.1)
       prettier:
         specifier: ^3.9.5
         version: 3.9.5
@@ -5021,13 +5018,15 @@ snapshots:
       '@babel/helper-validator-identifier': 7.29.7
       js-tokens: 4.0.0
       picocolors: 1.1.1
+    optional: true
 
   '@babel/code-frame@8.0.0':
     dependencies:
       '@babel/helper-validator-identifier': 8.0.4
       js-tokens: 10.0.0
 
-  '@babel/compat-data@7.29.7': {}
+  '@babel/compat-data@7.29.7':
+    optional: true
 
   '@babel/compat-data@8.0.0': {}
 
@@ -5050,6 +5049,7 @@ snapshots:
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@babel/core@8.0.1':
     dependencies:
@@ -5077,6 +5077,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
       jsesc: 3.1.0
+    optional: true
 
   '@babel/generator@8.0.0':
     dependencies:
@@ -5098,6 +5099,7 @@ snapshots:
       browserslist: 4.28.4
       lru-cache: 5.1.1
       semver: 6.3.1
+    optional: true
 
   '@babel/helper-compilation-targets@8.0.0':
     dependencies:
@@ -5107,7 +5109,8 @@ snapshots:
       lru-cache: 11.5.1
       semver: 7.8.5
 
-  '@babel/helper-globals@7.29.7': {}
+  '@babel/helper-globals@7.29.7':
+    optional: true
 
   '@babel/helper-globals@8.0.0': {}
 
@@ -5117,6 +5120,7 @@ snapshots:
       '@babel/types': 7.29.7
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@babel/helper-module-transforms@7.29.7(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
@@ -5126,6 +5130,7 @@ snapshots:
       '@babel/traverse': 7.29.7(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@babel/helper-split-export-declaration@7.24.7':
     dependencies:
@@ -5139,7 +5144,8 @@ snapshots:
 
   '@babel/helper-validator-identifier@8.0.4': {}
 
-  '@babel/helper-validator-option@7.29.7': {}
+  '@babel/helper-validator-option@7.29.7':
+    optional: true
 
   '@babel/helper-validator-option@8.0.0': {}
 
@@ -5147,6 +5153,7 @@ snapshots:
     dependencies:
       '@babel/template': 7.29.7
       '@babel/types': 7.29.7
+    optional: true
 
   '@babel/helpers@8.0.0':
     dependencies:
@@ -5156,6 +5163,7 @@ snapshots:
   '@babel/parser@7.29.7':
     dependencies:
       '@babel/types': 7.29.7
+    optional: true
 
   '@babel/parser@8.0.4':
     dependencies:
@@ -5166,6 +5174,7 @@ snapshots:
       '@babel/code-frame': 7.29.7
       '@babel/parser': 7.29.7
       '@babel/types': 7.29.7
+    optional: true
 
   '@babel/template@8.0.0':
     dependencies:
@@ -5184,6 +5193,7 @@ snapshots:
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@babel/traverse@8.0.4':
     dependencies:
@@ -5567,7 +5577,8 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
-  '@istanbuljs/schema@0.1.6': {}
+  '@istanbuljs/schema@0.1.6':
+    optional: true
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -5578,6 +5589,7 @@ snapshots:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
+    optional: true
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
@@ -7745,7 +7757,8 @@ snapshots:
 
   isstream@0.1.2: {}
 
-  istanbul-lib-coverage@3.2.2: {}
+  istanbul-lib-coverage@3.2.2:
+    optional: true
 
   istanbul-lib-instrument@6.0.3(supports-color@8.1.1):
     dependencies:
@@ -7756,6 +7769,7 @@ snapshots:
       semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   jackspeak@3.4.3:
     dependencies:
@@ -7983,6 +7997,7 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+    optional: true
 
   lru-cache@7.18.3: {}
 
@@ -8640,7 +8655,8 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  semver@6.3.1: {}
+  semver@6.3.1:
+    optional: true
 
   semver@7.8.5: {}
 
@@ -9230,7 +9246,8 @@ snapshots:
 
   y18n@5.0.8: {}
 
-  yallist@3.1.1: {}
+  yallist@3.1.1:
+    optional: true
 
   yaml@2.9.0: {}
 
