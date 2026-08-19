@@ -21,6 +21,8 @@ import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.JdbcUtil;
@@ -33,14 +35,14 @@ import org.frankframework.util.XmlBuilder;
  */
 public class BlobOutputStream extends FilterOutputStream {
 
-	private final IDbmsSupport dbmsSupport;
-	private final Object blobUpdateHandle;
+	private final @NonNull IDbmsSupport dbmsSupport;
+	private final @NonNull Object blobUpdateHandle;
 	private final int blobColumn;
-	private final ResultSet resultSet;
-	private final XmlBuilder warnings;
+	private final @NonNull ResultSet resultSet;
+	private final @NonNull XmlBuilder warnings;
 	private boolean open;
 
-	public BlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, int blobColumn, OutputStream blobOutputStream, ResultSet resultSet, XmlBuilder warnings) {
+	public BlobOutputStream(@NonNull IDbmsSupport dbmsSupport, @NonNull Object blobUpdateHandle, int blobColumn, @NonNull OutputStream blobOutputStream, @NonNull ResultSet resultSet, @NonNull XmlBuilder warnings) {
 		super(blobOutputStream);
 		this.dbmsSupport=dbmsSupport;
 		this.blobUpdateHandle=blobUpdateHandle;
