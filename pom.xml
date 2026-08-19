@@ -858,7 +858,7 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-acr-plugin</artifactId>
+					<artifactId>maven-dependency-plugin</artifactId>
 					<executions>
 						<execution>
 							<id>resolve-mockito-agent</id>
