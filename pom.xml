@@ -899,6 +899,7 @@
 					<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
+						<!-- Because of this mockito agent property, mockito now needs to be a dependency of every single module even when not used in tests in that module -->
 						<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 					</configuration>
 					<executions>
