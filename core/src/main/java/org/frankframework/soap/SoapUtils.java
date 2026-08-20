@@ -53,6 +53,10 @@ import org.frankframework.stream.Message;
 
 public class SoapUtils {
 
+	private SoapUtils() {
+		/* This utility class should not be instantiated */
+	}
+
 	static {
 		JCEMapper.registerDefaultAlgorithms();
 		WSSConfig.init();
@@ -60,7 +64,7 @@ public class SoapUtils {
 
 	@NonNull
 	public static Document toSoapDocument(Message soapMessage) throws SOAPException, IOException {
-		if (soapMessage.isRequestOfType(Document.class) && soapMessage.asObject() instanceof Document d) {
+		if (soapMessage.asObject() instanceof Document d) {
 			// If the source is already a Document (not NODE) it we can directly use it.
 			// Yes we check things twice, but it keeps my compiler happy...
 			return d;

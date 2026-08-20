@@ -153,7 +153,7 @@ public class Message implements Serializable {
 		this(context, request, requestClass);
 	}
 
-	public Message(InputStream request, String charset) throws IOException {
+	public Message(InputStream request, @Nullable String charset) throws IOException {
 		this(request, new MessageContext(charset));
 	}
 
@@ -253,6 +253,25 @@ public class Message implements Serializable {
 	@Nullable
 	public Object asObject() {
 		return request.asRawObject();
+	}
+
+	/**
+	 * Get the value of the request object, of it can be cast to the given receiver type.
+	 *
+	 * @param reified Receiver type -- do not pass value, instead this is derived from the type of the variable that the result is assigned to.
+	 * @return Value as requested type if assignment-compatible, throws {@link IllegalArgumentException}
+	 * @throws IllegalArgumentException if the value of the request was not of a compatible type. (Check with {@link #isRequestOfType(Class)} before using this method to avoid
+	 * the exception).
+	 * @param <T> Requested type of the value
+	 */
+	@SafeVarargs
+	public final <T> T getValueAsType(T... reified) {
+		Class<T> type = ClassUtils.getClassOf(reified);
+		if (!isRequestOfType(type)) {
+			throw new IllegalStateException("Value is not of [" + type.getName() + "], check first Message#isRequestOfType before calling this method");
+		}
+		//noinspection unchecked,DataFlowIssue
+		return (T)request.asRawObject();
 	}
 
 	public boolean isBinary() {

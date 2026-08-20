@@ -288,7 +288,7 @@ public class PdfPipe extends FixedForwardPipe {
 	 * @ff.default UTF-8
 	 */
 	@Deprecated(since = "9.3.0", forRemoval = true)
-	@ConfigurationWarning("Charset property will be removed in a future version. ")
+	@ConfigurationWarning("Charset will be read from the message")
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}

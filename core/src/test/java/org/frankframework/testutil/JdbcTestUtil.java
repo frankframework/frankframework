@@ -10,6 +10,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
@@ -66,21 +68,21 @@ public class JdbcTestUtil {
 		}
 	}
 
-	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
+	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
 		log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try {
 			PreparedStatement stmt = connection.prepareStatement(query);
-			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues, session);
+			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList());
 			stmt.execute();
 		} catch (Exception e) {
 			throw new JdbcException("could not execute query [" + query + "]" + displayParameters(parameterValues), e);
 		}
 	}
 
-	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
+	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
 		JdbcTestUtil.log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues, session);
+			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList());
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (!rs.next()) {
 					return null;
@@ -156,25 +158,16 @@ public class JdbcTestUtil {
 
 	private static int deriveSqlType(final Object param) {
 		// NB: So far this is not exhaustive, but previously only INTEGER and VARCHAR were supported, so for now this should do.
-		int sqlType;
-		if (param instanceof Integer) {
-			sqlType = Types.INTEGER;
-		} else if (param instanceof Long) {
-			sqlType = Types.BIGINT;
-		} else if (param instanceof Float) {
-			sqlType = Types.NUMERIC;
-		} else if (param instanceof Double) {
-			sqlType = Types.NUMERIC;
-		} else if (param instanceof Timestamp) {
-			sqlType = Types.TIMESTAMP;
-		} else if (param instanceof Time) {
-			sqlType = Types.TIME;
-		} else if (param instanceof java.sql.Date) {
-			sqlType = Types.DATE;
-		} else {
-			sqlType = Types.VARCHAR;
-		}
-		return sqlType;
+		return switch (param) {
+			case Integer i -> Types.INTEGER;
+			case Long l -> Types.BIGINT;
+			case Float v -> Types.NUMERIC;
+			case Double v -> Types.NUMERIC;
+			case Timestamp timestamp -> Types.TIMESTAMP;
+			case Time time -> Types.TIME;
+			case java.sql.Date date -> Types.DATE;
+			case null, default -> Types.VARCHAR;
+		};
 	}
 
 	/**

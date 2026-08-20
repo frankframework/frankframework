@@ -35,11 +35,11 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.InvalidMimeTypeException;
-import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.util.MimeType;
 
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.SpringUtils;
+import org.frankframework.util.NestedLookupMap;
 import org.frankframework.util.StringUtil;
 
 public class MessageContext implements Serializable {
@@ -64,7 +64,7 @@ public class MessageContext implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final long CUSTOM_SERIALIZATION_VERSION = 1L;
 
-	private Map<String, Serializable> data = new LinkedCaseInsensitiveMap<>();
+	private Map<String, Serializable> data = new NestedLookupMap<>();
 
 	public MessageContext() {
 		super();
@@ -132,7 +132,7 @@ public class MessageContext implements Serializable {
 	public final @Nullable <T> T get(@NonNull String key, T... reified) {
 		Serializable value = getRawValue(key);
 
-		Class<T> classType = SpringUtils.getClassOf(reified);
+		Class<T> classType = ClassUtils.getClassOf(reified);
 
 		if (classType.isInstance(value)) {
 			return (T) value;

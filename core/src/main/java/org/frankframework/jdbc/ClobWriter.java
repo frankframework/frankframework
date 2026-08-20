@@ -21,6 +21,8 @@ import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.JdbcUtil;
@@ -33,14 +35,14 @@ import org.frankframework.util.XmlBuilder;
  */
 public class ClobWriter extends FilterWriter {
 
-	private final IDbmsSupport dbmsSupport;
-	private final Object clobUpdateHandle;
+	private final @NonNull IDbmsSupport dbmsSupport;
+	private final @NonNull Object clobUpdateHandle;
 	private final int clobColumn;
-	private final ResultSet resultSet;
-	private final XmlBuilder warnings;
+	private final @NonNull ResultSet resultSet;
+	private final @NonNull XmlBuilder warnings;
 	private boolean open;
 
-	public ClobWriter(IDbmsSupport dbmsSupport, Object clobUpdateHandle, int clobColumn, Writer clobWriter, ResultSet resultSet, XmlBuilder warnings) {
+	public ClobWriter(@NonNull IDbmsSupport dbmsSupport, @NonNull Object clobUpdateHandle, int clobColumn, @NonNull Writer clobWriter, @NonNull ResultSet resultSet, @NonNull XmlBuilder warnings) {
 		super(clobWriter);
 		this.dbmsSupport=dbmsSupport;
 		this.clobUpdateHandle=clobUpdateHandle;
@@ -67,7 +69,7 @@ public class ClobWriter extends FilterWriter {
 		}
 	}
 
-	public XmlBuilder getWarnings() {
+	public @NonNull XmlBuilder getWarnings() {
 		return warnings;
 	}
 

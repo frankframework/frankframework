@@ -36,8 +36,8 @@ import org.springframework.util.ResourceUtils;
 
 import org.frankframework.components.ComponentLoader;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
@@ -205,7 +205,7 @@ public class IbisApplicationContext implements Closeable {
 		if (reified.length > 0) {
 			throw new IllegalArgumentException("Do not pass any actual arguments to the reified parameter");
 		}
-		return applicationContext.getBean(beanName, SpringUtils.getClassOf(reified));
+		return applicationContext.getBean(beanName, ClassUtils.getClassOf(reified));
 	}
 
 	/**

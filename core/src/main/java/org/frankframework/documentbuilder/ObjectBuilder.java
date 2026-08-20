@@ -34,11 +34,6 @@ public abstract class ObjectBuilder extends StructureBuilder implements IObjectB
 		addField(name).setValue(value);
 	}
 
-	public void addNumber(String name, String value) throws SAXException {
-		addField(name).setValue(value);
-	}
-
-
 	public void addAttribute(String name, String value) throws SAXException {
 		add(name, XmlUtils.normalizeAttributeValue(value));
 	}
@@ -49,10 +44,6 @@ public abstract class ObjectBuilder extends StructureBuilder implements IObjectB
 
 	public void addAttribute(String name, boolean value) throws SAXException {
 		add(name, value);
-	}
-
-	public void addNumberAttribute(String name, String value) throws SAXException {
-		addNumber(name, XmlUtils.normalizeAttributeValue(value));
 	}
 
 	public ObjectBuilder addObjectField(String name) throws SAXException {
