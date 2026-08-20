@@ -863,7 +863,7 @@
 						<execution>
 							<id>resolve-mockito-agent</id>
 							<goals>
-								<goal>get</goal>
+								<goal>copy</goal>
 							</goals>
 							<phase>initialize</phase>
 							<configuration>
