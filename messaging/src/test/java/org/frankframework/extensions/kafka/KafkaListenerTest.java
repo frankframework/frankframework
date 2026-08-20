@@ -16,6 +16,11 @@
 package org.frankframework.extensions.kafka;
 
 import static org.apache.kafka.clients.consumer.ConsumerRecord.NULL_SIZE;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
 
 import java.util.Collections;
@@ -37,7 +42,6 @@ import org.apache.kafka.common.metrics.KafkaMetric;
 import org.apache.kafka.common.metrics.stats.Value;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.utils.Time;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -88,8 +92,8 @@ public class KafkaListenerTest {
 	@MethodSource
 	void validateParameters(Consumer<KafkaListener> configurer, boolean shouldSucceed, String name) {
 		configurer.accept(listener);
-		if(shouldSucceed) Assertions.assertDoesNotThrow(listener::configure, name);
-		else Assertions.assertThrows(ConfigurationException.class, listener::configure, name);
+		if(shouldSucceed) assertDoesNotThrow(listener::configure, name);
+		else assertThrows(ConfigurationException.class, listener::configure, name);
 	}
 
 	public static Consumer<KafkaListener> configure(Consumer<KafkaListener> function) {
@@ -130,24 +134,26 @@ public class KafkaListenerTest {
 				headers, Optional.empty());
 		mockConsumer.addRecord(record);
 
-		Assertions.assertNull(mockConsumer.committed(Set.of(topicPartition)).get(topicPartition));
+		assertNull(mockConsumer.committed(Set.of(topicPartition)).get(topicPartition));
 
 		RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapper = listener.getRawMessage(new HashMap<>());
-		Assertions.assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
+		assertNotNull(wrapper);
+		assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
 		Message message = listener.extractMessage(wrapper, new HashMap<>());
 
-		Assertions.assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
+		assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
 
-		Assertions.assertEquals(topic, message.getContext().get("kafkaTopic"));
-		Assertions.assertEquals("testtesttest",message.asString());
-		Map<String, String> receivedHeaders = (Map<String, String>) message.getContext().get("kafkaHeaders");
-		Assertions.assertEquals("headerValue", receivedHeaders.get("headerKey"));
+		String kafkaTopic = message.getContext().get("kafkaTopic");
+		assertEquals(topic, kafkaTopic);
+		assertEquals("testtesttest",message.asString());
+		Map<String, String> receivedHeaders = message.getContext().get("kafkaHeaders");
+		assertEquals("headerValue", receivedHeaders.get("headerKey"));
 
-		Assertions.assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
+		assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
 
-		Assertions.assertNull(listener.getRawMessage(new HashMap<>()));
+		assertNull(listener.getRawMessage(new HashMap<>()));
 
-		Assertions.assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
+		assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
 		listener.stop();
 	}
 
@@ -161,12 +167,12 @@ public class KafkaListenerTest {
 	@Test
 	void throwsErrorOnBadConnection() {
 		// Assert that it works, because of the `Mockito.doNothing()` in the setUp method.
-		Assertions.assertDoesNotThrow(listener::start, "shouldn't throw on valid connection");
+		assertDoesNotThrow(listener::start, "shouldn't throw on valid connection");
 
 		// Reset that mock
 		Mockito.reset(listener);
 
 		// And now expect an exception
-		Assertions.assertThrows(LifecycleException.class, listener::start, "should throw on (simulated) bad connection");
+		assertThrows(LifecycleException.class, listener::start, "should throw on (simulated) bad connection");
 	}
 }
