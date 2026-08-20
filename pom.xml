@@ -863,9 +863,14 @@
 						<execution>
 							<id>resolve-mockito-agent</id>
 							<goals>
-								<goal>properties</goal>
+								<goal>get</goal>
 							</goals>
 							<phase>initialize</phase>
+							<configuration>
+								<artifact>org.mockito:mockito-core:${mockito.version}:jar</artifact>
+								<stripVersion>true</stripVersion>
+								<outputDirectory>${project.build.directory}</outputDirectory>
+							</configuration>
 						</execution>
 					</executions>
 				</plugin>
@@ -900,7 +905,7 @@
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
 						<!-- Because of this mockito agent property, mockito now needs to be a dependency of every single module even when not used in tests in that module -->
-						<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
+						<argLine>@{argLine} -javaagent:${project.build.directory}/mockito-core.jar -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 					</configuration>
 					<executions>
 						<execution>
