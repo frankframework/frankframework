@@ -24,8 +24,8 @@ import org.frankframework.util.JacksonUtils;
 public class MailMessageMapperTest {
 
 	/**
-	 * In issue "https://github.com/frankframework/frankframework/issues/11380" we had an issue that mapping failed with a value larger than
-	 * Integer.MAX_VALUE. This test ensures that all long fields in MailFolder can exceed Integer.MAX_VALUE.
+	 * Users reported an issue that mapping failed with a `replyTo` set in a received e-mail. This test ensures that a an actual captured JSON response
+	 * can be parsed into a MailMessage.
 	 */
 	@Test
 	void testAllLongFieldsCanExceedIntegerMaxValue() {
