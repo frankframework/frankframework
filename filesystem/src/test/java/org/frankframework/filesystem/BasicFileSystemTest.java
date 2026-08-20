@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.assertj.core.api.Assertions;
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -259,7 +260,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		// test
 		long diff = actual2.getTime() - date.getTime();
-		assertFalse(diff > 10000);
+		Assertions.assertThat(diff).describedAs("File Modification time should be within 10 seconds of current time").isLessThan(10_000L);
 	}
 
 

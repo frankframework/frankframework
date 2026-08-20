@@ -145,8 +145,8 @@ public class MailFileSystemUtils {
 		if (StringUtils.isEmpty(replyAddressFields)) {
 			return null;
 		}
-		String result;
 		for(String field:replyAddressFields.split(",")) {
+			String result;
 			if (null != (result = getValidAddressFromHeader(field, headers))) {
 				return result;
 			}
