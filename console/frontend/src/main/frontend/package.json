@@ -64,7 +64,6 @@
     "@angular/compiler-cli": "^22.1.2",
     "@cypress/schematic": "^5.0.0",
     "@eslint/js": "^10.0.1",
-    "@types/jasmine": "~6.0.0",
     "@types/lodash": "^4.17.25",
     "@types/markdown-it": "^14.1.2",
     "@types/sockjs-client": "^1.5.4",
