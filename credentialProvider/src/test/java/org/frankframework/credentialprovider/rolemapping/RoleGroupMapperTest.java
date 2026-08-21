@@ -19,8 +19,8 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.unittest.TesterContext;
 import org.apache.tomcat.util.file.ConfigFileLoader;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
@@ -31,7 +31,7 @@ import org.frankframework.util.ClassUtils;
 
 public class RoleGroupMapperTest {
 
-	private static InMemoryDirectoryServer inMemoryDirectoryServer = null;
+	private InMemoryDirectoryServer inMemoryDirectoryServer = null;
 	private static final String baseDNs = "dc=myorg,dc=com";
 	private static final Log log = LogFactory.getLog(RoleGroupMapperTest.class);
 
@@ -63,8 +63,8 @@ public class RoleGroupMapperTest {
 		return realm;
 	}
 
-	@BeforeAll
-	public static void setup() throws Exception {
+	@BeforeEach
+	public void setup() throws Exception {
 		String loggings = ClassLoader.getSystemResource("logging.properties").getPath();
 
 		System.setProperty("java.util.logging.config.file", loggings);
@@ -88,8 +88,8 @@ public class RoleGroupMapperTest {
 		}
 	}
 
-	@AfterAll
-	public static void tearDown() {
+	@AfterEach
+	public void tearDown() {
 		if(inMemoryDirectoryServer != null) {
 			inMemoryDirectoryServer.shutDown(true);
 		}
