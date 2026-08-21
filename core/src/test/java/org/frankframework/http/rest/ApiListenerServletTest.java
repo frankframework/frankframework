@@ -129,7 +129,7 @@ public class ApiListenerServletTest {
 	private static final String PAYLOAD="{\"sub\":\"UnitTest\",\"aud\":\"Framework\",\"iss\":\"JWTPipeTest\",\"jti\":\"1234\"}";
 
 	enum AuthMethods {
-		COOKIE,HEADER,AUTHROLE
+		COOKIE, HEADER, AUTHROLE
 	}
 
 	private ApiListenerServlet servlet;
@@ -2026,6 +2026,24 @@ public class ApiListenerServletTest {
 		assertEquals("localhost", result.getContentAsString());
 	}
 
+	@Test
+	public void testContentDispositionHeaderWithNonIso88591CharactersReturns500() throws Exception {
+		// Arrange
+		String uri = "/request/with/invalid/contentDisposition";
+		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
+				.withResponseContent("body")
+				.withResultSessionKey("contentDisposition", "attachment; filename=\"\u4e2d\u6587.txt\"") // contains non-ISO-8859-1 Chinese characters
+				.setContentDispositionHeaderSessionKey("contentDisposition")
+				.build();
+
+		// Act
+		Response result = service(createRequest(uri, HttpMethod.GET));
+
+		// Assert - checkContentDispositionValue on line 395 of ApiListenerServlet throws IllegalArgumentException,
+		// which the servlet catches and converts to status 500
+		assertEquals(500, result.getStatus());
+	}
+
 	private String createJWT() throws Exception {
 		JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).build();
 
@@ -2377,6 +2395,11 @@ public class ApiListenerServletTest {
 
 		public ApiListenerBuilder withAllowAllParams(boolean allowAllParams) {
 			listener.setAllowAllParams(allowAllParams);
+			return this;
+		}
+
+		public ApiListenerBuilder setContentDispositionHeaderSessionKey(String sessionKey) {
+			listener.setContentDispositionHeaderSessionKey(sessionKey);
 			return this;
 		}
 

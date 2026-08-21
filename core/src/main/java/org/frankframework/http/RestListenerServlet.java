@@ -147,11 +147,12 @@ public class RestListenerServlet extends AbstractHttpServlet {
 					if (StringUtils.isNotEmpty(contentType)) {
 						response.setHeader("Content-Type", contentType);
 					}
-					String contentDisposition=(String)messageContext.get("contentDisposition");
+					String contentDisposition = (String) messageContext.get("contentDisposition");
 					if (StringUtils.isNotEmpty(contentDisposition)) {
+						HttpHeaderUtils.checkContentDispositionValueForValidFilename(contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);
 					}
-					String allowedMethods=(String)messageContext.get("allowedMethods");
+					String allowedMethods = (String) messageContext.get("allowedMethods");
 					if (StringUtils.isNotEmpty(allowedMethods)) {
 						response.setHeader("Allow", allowedMethods);
 					}
