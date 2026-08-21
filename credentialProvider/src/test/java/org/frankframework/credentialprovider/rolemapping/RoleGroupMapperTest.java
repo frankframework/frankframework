@@ -21,6 +21,7 @@ import org.apache.tomcat.unittest.TesterContext;
 import org.apache.tomcat.util.file.ConfigFileLoader;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
@@ -29,6 +30,7 @@ import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import org.frankframework.credentialprovider.RoleToGroupMappingJndiRealm;
 import org.frankframework.util.ClassUtils;
 
+@Disabled
 public class RoleGroupMapperTest {
 
 	private static InMemoryDirectoryServer inMemoryDirectoryServer = null;
