@@ -15,7 +15,7 @@
  */
 package org.frankframework.filesystem.exchange;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +24,7 @@ import org.frankframework.util.JacksonUtils;
 public class MailMessageMapperTest {
 
 	/**
-	 * Users reported an issue that mapping failed with a `replyTo` set in a received e-mail. This test ensures that a an actual captured JSON response
+	 * Users reported an issue that mapping failed with a `replyTo` set in a received e-mail. This test ensures that an actual captured JSON response
 	 * can be parsed into a MailMessage.
 	 */
 	@Test
@@ -83,9 +83,9 @@ public class MailMessageMapperTest {
 		MailMessage mailMessage = JacksonUtils.convertToDTO(json, MailMessage.class);
 
 		MailMessage.EmailAddress recipient = mailMessage.getToRecipients().getFirst();
-		assertThat(recipient.get()).isEqualTo("Sergi Philipsen <sergi@frankframework.org>");
+		assertEquals("Sergi Philipsen <sergi@frankframework.org>", recipient.get());
 
 		MailMessage.EmailAddress replyTo = mailMessage.getReplyTo().getFirst();
-		assertThat(replyTo.get()).isEqualTo("iaf-test-mailbox <frank-test-mailbox@frankframework.org>");
+		assertEquals("iaf-test-mailbox <frank-test-mailbox@frankframework.org>", replyTo.get());
 	}
 }
