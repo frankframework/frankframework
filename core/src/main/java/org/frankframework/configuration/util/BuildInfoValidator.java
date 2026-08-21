@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -135,13 +136,14 @@ public class BuildInfoValidator {
 			if (zipEntry.isDirectory()) {
 				String entryName = zipEntry.getName();
 				String configName = FilenameUtils.getPathNoEndSeparator(entryName);
-				if (info.getName().equals(configName)) {
+				// TODO hier baseren op nieuwe info.getConfigurationNames
+				if (info.getConfigurationNames().equals(configName)) {
 					return info;
 				}
 			}
 		}
 
-		log.info("did find a MANIFEST file but not a valid configuration folder in [{}]", info::getName);
+		log.info("did find a MANIFEST file but not a valid configuration folder in [{}]", info::getConfigurationNames);
 		return null;
 	}
 
@@ -157,8 +159,9 @@ public class BuildInfoValidator {
 		return new ByteArrayInputStream(jar);
 	}
 
-	public String getName() {
-		return configInfo.getName();
+	public List<String> getConfigurationNames() {
+		return configInfo.getConfigurationNames();
+		// return configInfo.getName();
 	}
 	public String getVersion() {
 		return configInfo.getVersion();

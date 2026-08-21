@@ -40,8 +40,8 @@ public class ConfigurationInfoTest {
 		ComponentInfo info = new ConfigurationInfo(manifest);
 
 		assertAll(
-				() -> assertEquals("Configuration_Template", ConfigurationInfo.fromManifest(manifest).getName()),
-				() -> assertEquals("Configuration_Template", info.getName()),
+				() -> assertEquals("Configuration_Template", ConfigurationInfo.fromManifest(manifest).getConfigurationNames()),
+				() -> assertEquals("Configuration_Template", info.getConfigurationNames()),
 				() -> assertEquals("0.0.1-SNAPSHOT_20250809-1003", info.getVersion()),
 				() -> assertEquals(expectedDate, info.getTimestamp()), // 2025-08-09 12:03
 				() -> assertEquals("FrankFramework! ConfigurationJar", info.getDescription()),

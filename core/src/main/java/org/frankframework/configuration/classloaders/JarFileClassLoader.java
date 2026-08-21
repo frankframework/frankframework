@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -68,7 +69,8 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 			Path configDir = ConfigurationUtils.getConfigurationDirectory();
 			try (Stream<Path> input = Files.list(configDir)) {
 				return input.filter(JarFileClassLoader::isJarFile)
-						.filter(e -> getConfigurationName().equals(findConfigurationName(e)))
+						// TODO filter fixen
+						.filter(e -> getConfigurationName().equals(findConfigurationNames(e)))
 						.findFirst()
 						.orElseThrow(()-> new FileNotFoundException(getConfigurationName() + " not found"));
 			}
@@ -87,10 +89,10 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 	}
 
 	@Nullable
-	public static String findConfigurationName(Path path) {
+	public static List<String> findConfigurationNames(Path path) {
 		try (InputStream potentialJarFile = Files.newInputStream(path)) {
 			BuildInfoValidator configDetails = new BuildInfoValidator(potentialJarFile);
-			return configDetails.getName();
+			return configDetails.getConfigurationNames();
 		} catch (Exception e) {
 			log.debug("unable to open file [{}] assume it's not a (valid) configuration", path, e);
 		}

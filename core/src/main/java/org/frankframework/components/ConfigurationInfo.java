@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.List;
 import java.util.jar.Manifest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +48,7 @@ public class ConfigurationInfo extends ComponentInfo {
 	 * @param timestamp Derived from BuildInfo.properties -> ${configuration.timestamp} using format 'YYYYMMdd-HHmmss'
 	 */
 	public ConfigurationInfo(String name, String version, String timestamp) {
-		super(name, version, parseBuildInfoDate(timestamp));
+		super(List.of(name), version, parseBuildInfoDate(timestamp));
 	}
 
 	@Override

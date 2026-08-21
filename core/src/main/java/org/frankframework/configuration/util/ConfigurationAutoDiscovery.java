@@ -236,11 +236,15 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		List<String> configurationNames = new ArrayList<>();
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, JarFileClassLoader::isJarFile)) {
+
+			// for each jar file found
 			for (Path path : stream) {
-				String configName = JarFileClassLoader.findConfigurationName(path);
-				if (configName != null) {
-					configurationNames.add(configName);
-				}
+				// String --> List<String>
+				// en op basis van configuration names
+				// WARN op directory namen die niet zijn ingesteld
+				List<String> configurationsInJar = JarFileClassLoader.findConfigurationNames(path);
+
+				configurationNames.addAll(configurationsInJar);
 			}
 		}
 
