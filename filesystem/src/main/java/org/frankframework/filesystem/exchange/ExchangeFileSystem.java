@@ -487,7 +487,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			if (emailMessage.getSender() != null) {
 				result.put(IMailFileSystem.SENDER_ADDRESS_KEY, emailMessage.getSender().get());
 			}
-			result.put(IMailFileSystem.REPLY_TO_RECIPIENTS_KEY, emailMessage.getReplyTo());
+			result.put(IMailFileSystem.REPLY_TO_RECIPIENTS_KEY, asList(emailMessage.getReplyTo()));
 			result.put(IMailFileSystem.DATETIME_SENT_KEY, toDate(emailMessage.getSentDateTime()));
 			result.put(IMailFileSystem.DATETIME_RECEIVED_KEY, toDate(emailMessage.getReceivedDateTime()));
 
