@@ -78,6 +78,8 @@ public class ExchangeFileSystemListenerTest extends BasicFileSystemListenerTest<
 					<recipients>
 						<recipient type="to">Sergi Philipsen &lt;sergi@frankframework.org&gt;</recipient>
 					</recipients>
+					<replyTo>iaf-test-mailbox &lt;frank-test-mailbox@frankframework.org&gt;</replyTo>
+					<bestReplyAddress>iaf-test-mailbox &lt;frank-test-mailbox@frankframework.org&gt;</bestReplyAddress>
 					<subject>rawMessageFile</subject>
 					<DateTimeSent>STUB</DateTimeSent>
 					<DateTimeReceived>STUB</DateTimeReceived>
