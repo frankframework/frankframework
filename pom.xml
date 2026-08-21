@@ -831,6 +831,24 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>resolve-mockito-agent</id>
+							<goals>
+								<goal>copy</goal>
+							</goals>
+							<phase>initialize</phase>
+							<configuration>
+								<artifact>org.mockito:mockito-core:${mockito.version}:jar</artifact>
+								<stripVersion>true</stripVersion>
+								<outputDirectory>${project.build.directory}</outputDirectory>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
 					<version>3.5.0</version>
 				</plugin>
@@ -859,7 +877,8 @@
 					<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
-						<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
+						<!-- Because of this mockito agent property, mockito now needs to be a dependency of every single module even when not used in tests in that module -->
+						<argLine>@{argLine} -javaagent:${project.build.directory}/mockito-core.jar -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 					</configuration>
 					<executions>
 						<execution>
@@ -1427,6 +1446,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
