@@ -38,6 +38,8 @@
 				<value>numberOfCheckpoints</value>
 				<value>estimatedMemoryUsage</value>
 				<value>storageSize</value>
+				<value>host</value>
+				<value>application</value>
 			</list>
 		</property>
 		<property name="metadataFilter">
