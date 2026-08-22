@@ -17,14 +17,18 @@ package org.frankframework.larva;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
+import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.larva.actions.LarvaActionUtils;
+import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
@@ -35,6 +39,16 @@ import org.frankframework.util.StringResolver;
 public class Step implements Comparable<Step> {
 
 	private static final Pattern STEP_PARSE_RE = Pattern.compile("(?i)^step(?<idx>\\d+)\\.(?<target>.+)\\.(?<action>read|readline|write|writeline)$");
+
+	private static final String WAITFOR_TIMEOUT_PROPERTY = "waitfor.timeout";
+	private static final String WAITFOR_INTERVAL_PROPERTY = "waitfor.interval";
+	private static final String WAITFOR_XPATH_PROPERTY = "waitfor.xPath";
+	private static final long DEFAULT_WAITFOR_INTERVAL_MILLIS = 100L;
+
+	// Only action classes whose read can be safely re-executed on every poll (query-style reads)
+	// support waitfor.*. Other actions (e.g. listeners, or senders driven via SenderThread) either
+	// throw on a second read or destructively consume a new message from a queue.
+	private static final Set<String> WAITFOR_SUPPORTED_ACTION_CLASS_NAMES = Set.of(FixedQuerySender.class.getName(), DelaySender.class.getName());
 
 	private final @Getter Scenario scenario;
 	private final @Getter String baseKey;
@@ -58,7 +72,9 @@ public class Step implements Comparable<Step> {
 			throw new IllegalArgumentException("Step '" + stepLine + "' does not have a step number, action target, or action");
 		}
 		String value = scenario.getProperties().getProperty(stepLine);
-		return new Step(scenario, stepLine, Integer.parseInt(stepMatch.group("idx")), stepMatch.group("target"), stepMatch.group("action"), value);
+		Step step = new Step(scenario, stepLine, Integer.parseInt(stepMatch.group("idx")), stepMatch.group("target"), stepMatch.group("action"), value);
+		step.validateWaitFor();
+		return step;
 	}
 
 	public static boolean isValidStep(String stepLine) {
@@ -110,6 +126,41 @@ public class Step implements Comparable<Step> {
 
 	public Properties getStepParameters() {
 		return LarvaActionUtils.getSubProperties(scenario.getProperties(), baseKey);
+	}
+
+	public long getWaitForTimeoutMillis() {
+		return parseWaitForMillis(WAITFOR_TIMEOUT_PROPERTY, 0L);
+	}
+
+	public long getWaitForIntervalMillis() {
+		return parseWaitForMillis(WAITFOR_INTERVAL_PROPERTY, DEFAULT_WAITFOR_INTERVAL_MILLIS);
+	}
+
+	public @Nullable String getWaitForXPath() {
+		return getStepParameters().getProperty(WAITFOR_XPATH_PROPERTY);
+	}
+
+	private long parseWaitForMillis(String propertyName, long defaultValue) {
+		String value = getStepParameters().getProperty(propertyName);
+		if (value == null) {
+			return defaultValue;
+		}
+		try {
+			return Long.parseLong(value);
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Step '" + baseKey + "' property '" + propertyName + "' must be a number, but was '" + value + "'");
+		}
+	}
+
+	private void validateWaitFor() {
+		if (getWaitForTimeoutMillis() <= 0) {
+			return;
+		}
+		String actionClassName = scenario.getScenarioActionClassName(actionTarget);
+		if (actionClassName == null || !WAITFOR_SUPPORTED_ACTION_CLASS_NAMES.contains(actionClassName)) {
+			throw new IllegalArgumentException("Step '" + baseKey + "' sets '" + WAITFOR_TIMEOUT_PROPERTY + "', but action '" + actionTarget
+					+ "' (class '" + actionClassName + "') does not support waitfor; supported action classes: " + WAITFOR_SUPPORTED_ACTION_CLASS_NAMES);
+		}
 	}
 
 	@Override
