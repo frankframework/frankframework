@@ -1,7 +1,9 @@
 package org.frankframework.lifecycle.servlets;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -135,5 +137,56 @@ public class OAuth2AuthenticatorTest extends ServletAuthenticatorTest<OAuth2Auth
 		assertEquals("clientID", credentials.getUsername());
 		assertEquals("clientSecret", credentials.getPassword());
 		assertEquals("doesnt-exist", credentials.getAlias());
+	}
+
+	@Test
+	void testAllowBearerAuthenticationAddsResourceServer() throws Exception {
+		// Arrange: browser login config + bearer enabled with a jwkSetUri (no network needed to build)
+		authenticator.setClientId("clientID");
+		authenticator.setClientSecret("clientSecret");
+		authenticator.setProvider("github");
+		authenticator.setAllowBearerAuthentication(true);
+		authenticator.setJwkSetUri("http://localhost:8080/realms/myrealm/.well-known/jwks.json");
+
+		ServletConfiguration config = createServletConfiguration();
+		config.setUrlMapping("/iaf/gui/*");
+		config.setSecurityRoles(new String[] {"IbisTester"});
+		authenticator.registerServlet(config);
+
+		// Act + Assert: both oauth2Login and the bearer resource server configure without error
+		assertDoesNotThrow(() -> authenticator.configureHttpSecurity(httpSecurity));
+	}
+
+	@Test
+	void testAllowBearerAuthenticationWithoutIssuerOrJwkSetThrows() throws Exception {
+		// Arrange: bearer enabled but neither issuerUri nor jwkSetUri set
+		authenticator.setClientId("clientID");
+		authenticator.setClientSecret("clientSecret");
+		authenticator.setProvider("github");
+		authenticator.setAllowBearerAuthentication(true);
+
+		ServletConfiguration config = createServletConfiguration();
+		config.setUrlMapping("/iaf/gui/*");
+		config.setSecurityRoles(new String[] {"IbisTester"});
+		authenticator.registerServlet(config);
+
+		// Act + Assert
+		assertThrows(IllegalArgumentException.class, () -> authenticator.configureHttpSecurity(httpSecurity));
+	}
+
+	@Test
+	void testBearerAuthenticationDisabledByDefault() throws Exception {
+		// Arrange: no issuerUri/jwkSetUri, bearer NOT enabled — must configure fine (unchanged behaviour)
+		authenticator.setClientId("clientID");
+		authenticator.setClientSecret("clientSecret");
+		authenticator.setProvider("github");
+
+		ServletConfiguration config = createServletConfiguration();
+		config.setUrlMapping("/iaf/gui/*");
+		config.setSecurityRoles(new String[] {"IbisTester"});
+		authenticator.registerServlet(config);
+
+		// Act + Assert
+		assertDoesNotThrow(() -> authenticator.configureHttpSecurity(httpSecurity));
 	}
 }
