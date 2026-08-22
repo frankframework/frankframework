@@ -132,7 +132,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 			messageWrapper.getContext().putAll(sessionValuesToStore);
 			messageToStore = messageWrapper;
 		}
-		return new SenderResult(storeMessage(messageId, correlationId, TimeProvider.nowAsDate(), null, null, messageToStore));
+		return new SenderResult(storeMessage(messageId, correlationId, TimeProvider.nowAsDate(), null, null, messageToStore, session));
 	}
 
 	/**

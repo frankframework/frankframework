@@ -4,6 +4,7 @@ import static org.frankframework.testutil.mock.WaitUtils.waitForState;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -164,6 +165,9 @@ public class ReceiverSubAdapterTest {
 		when(listener.getApplicationContext()).thenReturn(receiver.getApplicationContext());
 		when(listener.getConfigurationClassLoader()).thenReturn(receiver.getConfigurationClassLoader());
 
+		doCallRealMethod().when(listener).extractSessionKeyList();
+		listener.extractSessionKeyList();
+
 		return listener;
 	}
 
@@ -171,7 +175,7 @@ public class ReceiverSubAdapterTest {
 		ITransactionalStorage<Serializable> errorStorage = mock();
 
 		Map<String, Serializable> storedMessages = new HashMap<>();
-		when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any())).thenAnswer(params -> {
+		when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any(), any())).thenAnswer(params -> {
 			String msgId = params.getArgument(0);
 			Serializable message = params.getArgument(5);
 
@@ -228,7 +232,7 @@ public class ReceiverSubAdapterTest {
 			mainAdapterReceiver.processRawMessage(mockListener, rawMessage, session, false);
 		}
 		// Assert
-		verify(mockErrorStorage, times(1)).storeMessage(any(), any(), any(), any(), any(), any());
+		verify(mockErrorStorage, times(1)).storeMessage(any(), any(), any(), any(), any(), any(), any());
 
 		// Act 2 -- 1st manual retry
 		log.info("*>>> Retrying message; Run 2");

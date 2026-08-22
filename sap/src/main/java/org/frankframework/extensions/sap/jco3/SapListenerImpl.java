@@ -153,7 +153,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	}
 
 	@Override
-	public RawMessageWrapper<M> wrapRawMessage(M message, PipeLineSession session) {
+	public RawMessageWrapper<M> wrapRawMessage(@NonNull M message, PipeLineSession session) {
 		if(message instanceof JCoFunction jcoFunction) {
 			return wrapAsJcoFunction(jcoFunction);
 		}

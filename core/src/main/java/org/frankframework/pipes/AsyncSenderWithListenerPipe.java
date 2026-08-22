@@ -16,6 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -168,7 +169,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 				}
 			}
 
-			return storeMessage(messageID, correlationID, input, messageTrail, label);
+			return storeMessage(session, messageID, correlationID, input, messageTrail, label);
 		} catch (TransformerException | IOException | SAXException e) {
 			throw new SenderException("unable to apply xml transformation", e);
 		}
@@ -206,7 +207,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 
 	@Override
 	@Reintroduce
-	public void setMessageLog(ITransactionalStorage<?> messageLog) {
+	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		super.setMessageLog(messageLog);
 	}
 

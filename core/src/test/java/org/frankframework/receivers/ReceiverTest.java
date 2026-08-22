@@ -349,7 +349,7 @@ public class ReceiverTest {
 						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
 						// noinspection unchecked
 						reset(errorStorage, listener);
-						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any()))
+						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any(), any()))
 								.thenAnswer(invocation -> {
 									if (tx.isRollbackOnly()) {
 										txRollbackOnlyInErrorStorage.incrementAndGet();
@@ -468,7 +468,7 @@ public class ReceiverTest {
 						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
 						// noinspection unchecked
 						reset(errorStorage, listener);
-						when(errorStorage.storeMessage(messageIdCaptor.capture(), correlationIdCaptor.capture(), any(), any(), any(), messageCaptor.capture()))
+						when(errorStorage.storeMessage(messageIdCaptor.capture(), correlationIdCaptor.capture(), any(), any(), any(), messageCaptor.capture(), any()))
 								.thenAnswer(invocation -> {
 									if (tx.isRollbackOnly()) {
 										txRollbackOnlyInErrorStorage.incrementAndGet();
@@ -850,7 +850,7 @@ public class ReceiverTest {
 		// Assert
 		verify(errorStorage, times(1)).consumeMessage(eq("1"), any());
 		verify(errorStorage, times(1)).deleteMessage("1");
-		verify(errorStorage, times(1)).storeMessage(eq("1"), any(), eq(new Date(0L)), startsWith("after retry:"), any(), any());
+		verify(errorStorage, times(1)).storeMessage(eq("1"), any(), eq(new Date(0L)), startsWith("after retry:"), any(), any(), any());
 
 		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}

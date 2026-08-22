@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
@@ -98,9 +99,8 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public jakarta.jms.@NonNull Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException {
-		BytesMessage bytesMessage;
-		bytesMessage = session.createBytesMessage();
+	public jakarta.jms.@NonNull Message createMessage(@NonNull Session session, String correlationID, Message message, PipeLineSession pipeLineSession, MessageClass messageClass) throws JMSException {
+		BytesMessage bytesMessage = session.createBytesMessage();
 
 		setMessageCorrelationID(bytesMessage, correlationID);
 
@@ -131,9 +131,7 @@ public class IMSSender extends MQSender {
 			bos.write(new byte[2]); // ZZ
 			bos.write((transactionCode + " ").getBytes(CHARSET));
 
-			bos.write(data);
-
-			bos.toByteArray();
+			bos.write(data != null ? data : new byte[0]);
 		} catch (IOException e) {
 			// Should never happen
 			throw new IllegalArgumentException("unable to compile binary message", e);

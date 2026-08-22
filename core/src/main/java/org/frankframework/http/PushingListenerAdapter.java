@@ -84,7 +84,7 @@ public class PushingListenerAdapter implements RequestReplyListener, IPushingLis
 
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, PipeLineSession session) {
 		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 

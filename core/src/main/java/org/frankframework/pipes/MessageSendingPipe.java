@@ -16,6 +16,7 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -151,7 +152,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	private @Getter String exceptionOnResult;
 
 	private @Getter @Nullable ISender sender = null;
-	private @Getter @Nullable ITransactionalStorage messageLog = null;
+	private @Getter @Nullable ITransactionalStorage<Serializable> messageLog = null;
 
 	private String returnString; // contains contents of stubUrl
 	private TransformerPool retryTp=null;
@@ -512,11 +513,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	protected String doLogToMessageLog(@NonNull final Message input, @NonNull final PipeLineSession session, @NonNull final Message originalMessage, @NonNull final String messageID, @NonNull String correlationID) throws SenderException {
-		return storeMessage(messageID, correlationID, input, "no audit trail", null);
+		return storeMessage(session, messageID, correlationID, input, "no audit trail", null);
 	}
 
-	protected final String storeMessage(String messageID, String correlationID, Message messageToStore, String messageTrail, String label) throws SenderException {
-		messageLog.storeMessage(messageID, correlationID, TimeProvider.nowAsDate(), messageTrail, label, new MessageWrapper<>(messageToStore, messageID, correlationID));
+	protected final String storeMessage(PipeLineSession pipeLineSession, String messageID, String correlationID, Message messageToStore, String messageTrail, String label) throws SenderException {
+		messageLog.storeMessage(messageID, correlationID, TimeProvider.nowAsDate(), messageTrail, label, new MessageWrapper<>(messageToStore, messageID, correlationID), pipeLineSession);
 		return correlationID;
 	}
 
@@ -800,7 +801,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	/** log of all messages sent */
-	public void setMessageLog(ITransactionalStorage<?> messageLog) {
+	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
 		this.messageLog = messageLog;
 		messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
 		if (StringUtils.isEmpty(messageLog.getSlotId())) {

@@ -20,6 +20,7 @@ import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IListener;
 import org.frankframework.receivers.MessageWrapper;
@@ -29,7 +30,7 @@ import org.frankframework.stream.Message;
 public class MessageBrowsingUtil {
 	private static final Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
 
-	public static String getMessageText(RawMessageWrapper<?> rawMessageWrapper, IListener listener) throws IOException {
+	public static @Nullable String getMessageText(@Nullable RawMessageWrapper<?> rawMessageWrapper, IListener listener) throws IOException {
 		if (rawMessageWrapper == null || rawMessageWrapper.getRawMessage() == null) {
 			return null;
 		}

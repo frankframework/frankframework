@@ -85,7 +85,7 @@ public class FrankListener implements RequestReplyListener, IPushingListener<Mes
 	}
 
 	@Override
-	public MessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+	public MessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, PipeLineSession session) {
 		return new MessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 

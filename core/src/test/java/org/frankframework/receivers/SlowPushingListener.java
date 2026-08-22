@@ -15,6 +15,8 @@
 */
 package org.frankframework.receivers;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
@@ -33,7 +35,7 @@ public class SlowPushingListener extends SlowListenerBase implements IPushingLis
 	}
 
 	@Override
-	public RawMessageWrapper<String> wrapRawMessage(String rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<String> wrapRawMessage(@NonNull String rawMessage, PipeLineSession session) {
 		return null;
 	}
 }

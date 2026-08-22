@@ -8,11 +8,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Date;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
@@ -27,8 +29,9 @@ import org.frankframework.testutil.junit.WithLiquibase;
 public class MessageBrowsingFilterTest {
 
 	private MessageBrowsingFilter filter;
-	private JdbcTransactionalStorage storage = null;
-	private IListener<?> listener = null;
+	private JdbcTransactionalStorage<Serializable> storage = null;
+	private IListener<Serializable> listener = null;
+	private PipeLineSession pipeLineSession = null;
 	static final String tableName = "MESSAGEBROWSINGFILTERTEST";
 
 	@BeforeEach
@@ -38,7 +41,13 @@ public class MessageBrowsingFilterTest {
 		storage.setSlotId("MessageBrowsingFilter");
 		storage.setTableName(tableName);
 		storage.setSequenceName("SEQ_"+tableName);
-		listener = new JavaListener();
+		listener = new JavaListener<>();
+		pipeLineSession = new PipeLineSession();
+	}
+
+	@AfterEach
+	public void tearDown() throws Exception {
+		pipeLineSession.close();
 	}
 
 	@TxManagerTest
@@ -46,8 +55,8 @@ public class MessageBrowsingFilterTest {
 		String messageRoot = "message";
 		filter.setMessageMask(messageRoot, storage);
 		storage.configure();
-		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageRoot);
-		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", "out filter");
+		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageRoot, pipeLineSession);
+		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", "out filter", pipeLineSession);
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
@@ -198,8 +207,8 @@ public class MessageBrowsingFilterTest {
 
 		filter.setMessageMask(messageRoot, storage, listener);
 		storage.configure();
-		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageInFilter);
-		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", messageOutOfFilter);
+		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageInFilter, pipeLineSession);
+		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", messageOutOfFilter, pipeLineSession);
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){

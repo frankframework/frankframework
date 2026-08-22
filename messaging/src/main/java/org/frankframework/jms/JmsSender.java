@@ -196,7 +196,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
 
 			// create message to send
-			jakarta.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
+			jakarta.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, pipeLineSession, getMessageClass());
 			enhanceMessage(messageToSend, messageProducer, pvl, jmsSession);
 			Destination replyQueue = messageToSend.getJMSReplyTo();
 
