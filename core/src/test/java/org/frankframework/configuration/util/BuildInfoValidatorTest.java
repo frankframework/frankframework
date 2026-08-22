@@ -43,7 +43,7 @@ public class BuildInfoValidatorTest {
 
 		BuildInfoValidator details = new BuildInfoValidator(fis);
 
-		assertEquals("ConfigurationName", details.getConfigurationNames(), "buildInfo name does not match");
+		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
 		assertEquals("001_20191002-1300", details.getVersion(), "buildInfo version does not match");
 
 		assertTrue(wasClosed.get());  // Ensure the original stream is closed properly
@@ -59,7 +59,7 @@ public class BuildInfoValidatorTest {
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
 		BuildInfoValidator details = new BuildInfoValidator(zip.openStream());
 
-		assertEquals("ConfigurationName", details.getConfigurationNames(), "buildInfo name does not match");
+		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
 		assertEquals("123_20181002-1300", details.getVersion(), "buildInfo version does not match");
 	}
 
@@ -71,7 +71,7 @@ public class BuildInfoValidatorTest {
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
 		BuildInfoValidator details = new BuildInfoValidator(zip.openStream());
 
-		assertEquals("ConfigurationName", details.getConfigurationNames(), "buildInfo name does not match");
+		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
 		assertEquals("789_20171002-1300", details.getVersion(), "buildInfo version does not match");
 	}
 
@@ -83,12 +83,12 @@ public class BuildInfoValidatorTest {
 
 		BuildInfoValidator details = new BuildInfoValidator(zip.openStream());
 
-		assertEquals("ConfigurationName", details.getConfigurationNames(), "buildInfo name does not match");
+		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
 		assertEquals("001_20191002-1300", details.getVersion(), "buildInfo version does not match");
 	}
 
 	@Test
-	public void configurationValidatorNoBuildInfoZip() throws Exception {
+	public void configurationValidatorNoBuildInfoZip() {
 		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/noBuildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 
@@ -106,7 +106,7 @@ public class BuildInfoValidatorTest {
 
 		BuildInfoValidator details = new BuildInfoValidator(zip.openStream());
 
-		assertEquals("ConfigurationName", details.getConfigurationNames(), "buildInfo name does not match");
+		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
 		assertEquals("001_20191002-1300", details.getVersion(), "buildInfo version does not match");
 	}
 
@@ -122,7 +122,7 @@ public class BuildInfoValidatorTest {
 
 		BuildInfoValidator details = new BuildInfoValidator(jar.openStream());
 
-		assertEquals("Configuration_Template", details.getConfigurationNames(), "buildInfo name does not match");
+		assertEquals("Configuration_Template", details.getName(), "buildInfo name does not match");
 		assertEquals("0.0.1-SNAPSHOT_20250811-0709", details.getVersion(), "buildInfo version does not match");
 
 		// No version boundary, allow all.
@@ -148,7 +148,7 @@ public class BuildInfoValidatorTest {
 
 		BuildInfoValidator details = new BuildInfoValidator(jar.openStream());
 
-		assertEquals("Configuration_Template", details.getConfigurationNames(), "buildInfo name does not match");
+		assertEquals("Configuration_Template", details.getName(), "buildInfo name does not match");
 		assertEquals("0.0.1-SNAPSHOT_20250823-1703", details.getVersion(), "buildInfo version does not match");
 
 		// Since the lower limit is 9.2 these should throw

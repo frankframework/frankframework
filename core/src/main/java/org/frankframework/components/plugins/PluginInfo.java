@@ -54,8 +54,7 @@ public class PluginInfo extends ComponentInfo implements PluginDescriptor {
 
 	@Override
 	public String getPluginId() {
-		// TODO hier nog iets mee
-		return getConfigurationNames().getFirst();
+		return getName();
 	}
 
 	@Override

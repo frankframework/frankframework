@@ -94,6 +94,15 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	}
 
 	@Test
+	public void testJarWithMultipleConfigurations() throws  Exception {
+		JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/MultipleConfigsInJar/Weer-1.0.0-SNAPSHOT-configurations.jar");
+
+		appConstants.setProperty("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
+
+		classLoader.configure(ibisContext, "Weer");
+	}
+
+	@Test
 	public void testMyConfig() throws Exception {
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");

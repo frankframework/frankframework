@@ -39,7 +39,7 @@ import org.frankframework.util.StringUtil;
 @Getter
 public class ComponentInfo {
 
-	private final List<String> configurationNames;
+	private final String name;
 	private final String version;
 	private final Instant timestamp;
 
@@ -50,8 +50,8 @@ public class ComponentInfo {
 	private final List<String> classpath;
 	private final VersionRange frameworkVersion;
 
-	protected ComponentInfo(@NonNull List<String> configurationNames, @NonNull String version, @Nullable Instant timestamp) {
-		this.configurationNames = configurationNames;
+	protected ComponentInfo(@NonNull String name, @NonNull String version, @Nullable Instant timestamp) {
+		this.name = name;
 		this.version = version;
 		this.timestamp = timestamp;
 
@@ -66,7 +66,7 @@ public class ComponentInfo {
 	}
 
 	protected ComponentInfo(@NonNull Manifest manifest) {
-		this.configurationNames = StringUtil.split(manifest.getMainAttributes().getValue("FrankFramework-Configurations"));
+		this.name = manifest.getMainAttributes().getValue("Implementation-Title");
 		this.version = manifest.getMainAttributes().getValue("Implementation-Version");
 
 		String timestampStr = manifest.getMainAttributes().getValue("Build-Timestamp"); // yyyy-MM-dd HH:mm:ss
@@ -86,7 +86,7 @@ public class ComponentInfo {
 	}
 
 	private void validate() {
-		if (configurationNames.isEmpty()) {
+		if (StringUtils.isEmpty(name)) {
 			throw new IllegalArgumentException("no (valid) name");
 		}
 

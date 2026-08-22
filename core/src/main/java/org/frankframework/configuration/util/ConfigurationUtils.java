@@ -259,10 +259,8 @@ public class ConfigurationUtils {
 	 */
 	public static String addConfigToDatabase(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		BuildInfoValidator configDetails = new BuildInfoValidator(file);
-		// TODO fix for each configurationName
-		if (addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, configDetails.getConfigurationNames().getFirst(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
-		// if (addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, configDetails.getConfigurationNames(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
-			return configDetails.getConfigurationNames() +": "+ configDetails.getVersion();
+		if (addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
+			return configDetails.getName() +": "+ configDetails.getVersion();
 		}
 		return null;
 	}
