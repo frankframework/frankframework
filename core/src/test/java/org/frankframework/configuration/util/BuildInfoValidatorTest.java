@@ -88,7 +88,7 @@ public class BuildInfoValidatorTest {
 	}
 
 	@Test
-	public void configurationValidatorNoBuildInfoZip() throws Exception {
+	public void configurationValidatorNoBuildInfoZip() {
 		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/noBuildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 

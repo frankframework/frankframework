@@ -19,6 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -130,14 +132,34 @@ public class BuildInfoValidator {
 		}
 
 		// We've found a valid MANIFEST file. Let's see if there's a configuration in there.
-		ZipEntry zipEntry;
-		while ((zipEntry = jarInputStream.getNextJarEntry()) != null) {
-			if (zipEntry.isDirectory()) {
-				String entryName = zipEntry.getName();
-				String configName = FilenameUtils.getPathNoEndSeparator(entryName);
-				if (info.getName().equals(configName)) {
-					return info;
+		if (info.getConfigurationNames().isEmpty()) {
+			ZipEntry zipEntry;
+			while ((zipEntry = jarInputStream.getNextJarEntry()) != null) {
+				if (zipEntry.isDirectory()) {
+					String entryName = zipEntry.getName();
+					String configName = FilenameUtils.getPathNoEndSeparator(entryName);
+					if (info.getName().equals(configName)) {
+						return info;
+					}
 				}
+			}
+		} else {
+			List<String> configsFound = new ArrayList<>(info.getConfigurationNames());
+
+			ZipEntry zipEntry;
+			while ((zipEntry = jarInputStream.getNextJarEntry()) != null) {
+				// Check if configuration names all exist as directories in this jar. If not, the configuration is invalid.
+				if (zipEntry.isDirectory()) {
+					String entryName = zipEntry.getName();
+					String configName = FilenameUtils.getPathNoEndSeparator(entryName);
+
+					configsFound.remove(configName);
+				}
+			}
+
+			if (configsFound.isEmpty()) {
+				log.debug("all configuration names [{}] found as directories in jar", info::getConfigurationNames);
+				return info;
 			}
 		}
 
@@ -157,9 +179,14 @@ public class BuildInfoValidator {
 		return new ByteArrayInputStream(jar);
 	}
 
+	public List<String> getConfigurationNames() {
+		return configInfo.getConfigurationNames();
+	}
+
 	public String getName() {
 		return configInfo.getName();
 	}
+
 	public String getVersion() {
 		return configInfo.getVersion();
 	}
