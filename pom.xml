@@ -89,7 +89,7 @@
 		<junit.excludedTags />
 		<junit.includedTags />
 
-		<jackson.version>2.22.1</jackson.version>
+		<jackson.version>2.22.2</jackson.version>
 		<tools.jackson.version>3.2.2</tools.jackson.version>
 		<cxf.version>4.2.3</cxf.version>
 		<spring.version>7.0.8</spring.version>
