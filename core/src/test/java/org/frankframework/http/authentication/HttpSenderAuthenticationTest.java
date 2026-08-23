@@ -717,8 +717,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
 
 		KeystoreConfiguration keystoreConfiguration = new KeystoreConfiguration();
-		keystoreConfiguration.setKeystoreResource("/Signature/saml-keystore.p12");
-		keystoreConfiguration.setKeystorePassword("geheim");
+		keystoreConfiguration.setResource("/Signature/saml-keystore.p12");
+		keystoreConfiguration.setPassword("geheim");
 		keystoreConfiguration.setKeystoreAlias("myalias");
 		keystoreConfiguration.setKeystoreAliasPassword("geheim");
 		sender.setKeystoreConfiguration(keystoreConfiguration);

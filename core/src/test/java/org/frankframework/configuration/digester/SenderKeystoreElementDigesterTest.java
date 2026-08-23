@@ -53,7 +53,7 @@ public class SenderKeystoreElementDigesterTest {
 		KeystoreConfiguration keystoreConfiguration = sender.getKeystoreConfiguration();
 
 		assertNotNull(keystoreConfiguration);
-		assertEquals("testKeystore", keystoreConfiguration.getKeystoreResource());
+		assertEquals("testKeystore", keystoreConfiguration.getResource());
 	}
 
 	@Test

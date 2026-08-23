@@ -13,7 +13,7 @@ public class KeystoreOwner implements HasKeystore {
 	private @Getter @Setter ApplicationContext applicationContext = null;
 
 	public KeystoreOwner(String keystore) {
-		this.keystoreConfiguration.setKeystoreResource(keystore);
+		this.keystoreConfiguration.setResource(keystore);
 	}
 
 	@Override

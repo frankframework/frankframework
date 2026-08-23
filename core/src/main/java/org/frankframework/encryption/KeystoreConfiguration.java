@@ -15,29 +15,42 @@
  */
 package org.frankframework.encryption;
 
+import org.springframework.context.ApplicationContext;
+
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+import org.frankframework.core.FrankElement;
 
 /**
- * Container for Keystore data
+ * KEYSTORE FF!Config Element.
  */
 @Data
-public class KeystoreConfiguration {
+public class KeystoreConfiguration implements FrankElement {
+	private @Getter @Setter ApplicationContext applicationContext;
+
+	@Override
+	public String getName() {
+		return resource;
+	}
+
 	/**
-	 * Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.
+	 * Filename of the keystore or certificate to use.
 	 */
-	private String keystoreResource;
+	private String resource;
 
 	/** Authentication alias used to obtain keystore password */
-	private String keystoreAuthAlias;
+	private String authAlias;
 
 	/** Default password to access keystore */
-	private String keystorePassword;
+	private String password;
 
 	/**
 	 * Type of keystore
 	 * @ff.default pkcs12
 	 */
-	private KeystoreType keystoreType = KeystoreType.PKCS12;
+	private KeystoreType type = KeystoreType.PKCS12;
 
 	/** Alias to obtain specific certificate or key in keystore */
 	private String keystoreAlias;

@@ -1277,9 +1277,9 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender = getSender();
 		KeystoreConfiguration keystoreConfiguration = new KeystoreConfiguration();
-		keystoreConfiguration.setKeystoreResource(keystoreResource);
-		keystoreConfiguration.setKeystorePassword("geheim");
-		keystoreConfiguration.setKeystoreType(KeystoreType.JKS);
+		keystoreConfiguration.setResource(keystoreResource);
+		keystoreConfiguration.setPassword("geheim");
+		keystoreConfiguration.setType(KeystoreType.JKS);
 		keystoreConfiguration.setKeystoreAliasPassword("test");
 
 		sender.setKeystoreConfiguration(keystoreConfiguration);

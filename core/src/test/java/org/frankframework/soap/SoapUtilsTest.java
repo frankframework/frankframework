@@ -69,7 +69,7 @@ public class SoapUtilsTest {
 		X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBuilder.build(signer));
 
 		KeyStore ks = KeyStore.getInstance(KeystoreType.PKCS12.name());
-		ks.load(null, "password".toCharArray());
+		ks.load(null, null);
 		ks.setKeyEntry(certificateName, keyPair.getPrivate(), certificatePassword.toCharArray(), new Certificate[] { cert } );
 		return ks;
 	}
@@ -215,7 +215,7 @@ public class SoapUtilsTest {
 		assertNotNull(file); // ensure we can find the file
 
 		String certificateName = "myCustomCertificateName";
-		String certificatePass = "myCustomCertificateName";
+		String certificatePass = "Super$3cure";
 		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, certificatePass);
 
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
