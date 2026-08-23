@@ -55,10 +55,6 @@ public class XmlObjectBuilder extends ObjectBuilder {
 	public void addAttribute(String name, boolean value) throws SAXException {
 		addAttribute(name, Boolean.toString(value));
 	}
-	@Override
-	public void addNumberAttribute(String name, String value) throws SAXException {
-		addAttribute(name, value);
-	}
 
 	@Override
 	public ArrayBuilder addRepeatedField(String fieldName) {

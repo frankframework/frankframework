@@ -278,7 +278,7 @@ public class FrankApplication {
 	 */
 	@SafeVarargs
 	public final <T> T getBean(String name, T... reified) {
-		return applicationContext.getBean(name, SpringUtils.getClassOf(reified));
+		return applicationContext.getBean(name, ClassUtils.getClassOf(reified));
 	}
 
 	/**
@@ -286,7 +286,7 @@ public class FrankApplication {
 	 */
 	@SafeVarargs
 	public final <T> T getBean(T... reified) {
-		return applicationContext.getBean(SpringUtils.getClassOf(reified));
+		return applicationContext.getBean(ClassUtils.getClassOf(reified));
 	}
 
 	/**

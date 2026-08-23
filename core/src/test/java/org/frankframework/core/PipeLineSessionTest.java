@@ -1,11 +1,11 @@
 package org.frankframework.core;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doAnswer;
@@ -542,12 +542,8 @@ public class PipeLineSessionTest {
 
 		// Assert
 		assertEquals("A", session.get("enum"));
-		assertThrows(IllegalArgumentException.class, () -> {
-			// Need to pass an Enum value to get the right type
-			@SuppressWarnings("unused")
-			TestEnumInSession ignored = session.getAsType("enum");
-		}
-		);
+		TestEnumInSession expectedNull = session.getAsType("enum"); // Need to assign to an Enum variable to get the right type
+		assertThat(expectedNull).isNull();
 
 		TestEnumInSession result = session.removeIfType("enum");
 		assertNull(result);

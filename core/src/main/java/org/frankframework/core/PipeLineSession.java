@@ -39,11 +39,11 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.NestedLookupMap;
-import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TimeProvider;
 
@@ -313,7 +313,7 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler == null) {
-			securityHandler = (ISecurityHandler) get(SECURITY_HANDLER_KEY);
+			securityHandler = getAsType(SECURITY_HANDLER_KEY);
 			if (securityHandler == null) {
 				throw new NotImplementedException("no securityhandler found in PipeLineSession");
 			}
@@ -329,13 +329,13 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 		if (obj == null) {
 			return null;
 		}
-		Class<T> type = SpringUtils.getClassOf(reified);
+		Class<T> type = ClassUtils.getClassOf(reified);
 		if (Message.class.isAssignableFrom(type)) {
 			return (T) Message.asMessage(obj);
 		}
 		Object realValue = obj instanceof Message message ? message.asObject() : obj;
 		if (!type.isInstance(realValue)) {
-			throw new IllegalArgumentException("Value for key [%s] is of type [%s], not an instance of requested type [%s]".formatted(key, obj.getClass().getName(), type.getName()));
+			return null;
 		}
 		return (T)realValue;
 	}
@@ -346,11 +346,9 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 		if (!containsKey(key)) {
 			return null;
 		}
-		T value;
-		try {
-			// First get the value, so that if it is not the right class we do not remove the value.
-			value = getAsType(key, reified);
-		} catch (IllegalArgumentException e) {
+		T value = getAsType(key, reified);
+		// We did have the key but since we got null value it was not of the correct type
+		if (value == null) {
 			return null;
 		}
 		remove(key);
