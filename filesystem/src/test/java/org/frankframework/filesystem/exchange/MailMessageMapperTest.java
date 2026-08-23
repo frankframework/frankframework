@@ -82,10 +82,10 @@ public class MailMessageMapperTest {
 
 		MailMessage mailMessage = JacksonUtils.convertToDTO(json, MailMessage.class);
 
-		MailMessage.EmailAddress recipient = mailMessage.getToRecipients().getFirst();
+		MailMessage.EmailAddress recipient = mailMessage.getToRecipients().get(0);
 		assertEquals("Sergi Philipsen <sergi@frankframework.org>", recipient.get());
 
-		MailMessage.EmailAddress replyTo = mailMessage.getReplyTo().getFirst();
+		MailMessage.EmailAddress replyTo = mailMessage.getReplyTo().get(0);
 		assertEquals("iaf-test-mailbox <frank-test-mailbox@frankframework.org>", replyTo.get());
 	}
 }
