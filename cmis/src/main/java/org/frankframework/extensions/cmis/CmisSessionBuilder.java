@@ -207,7 +207,7 @@ public class CmisSessionBuilder implements HasKeystore, HasTruststore {
 
 			parameterMap.put("keystoreUrl", keystoreResource);
 			parameterMap.put("keystorePassword", keystoreCf.getPassword());
-			parameterMap.put("keystoreType", keystoreConfiguration.getKeystoreType().name());
+			parameterMap.put("keystoreType", keystoreConfiguration.getType().name());
 			parameterMap.put("keystoreAlias", keystoreConfiguration.getKeystoreAlias());
 			parameterMap.put("keyManagerAlgorithm", keystoreConfiguration.getKeyManagerAlgorithm());
 			parameterMap.put("keystoreAliasPassword", keystoreAliasCf.getPassword());
