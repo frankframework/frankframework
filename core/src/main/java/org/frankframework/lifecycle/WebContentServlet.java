@@ -32,12 +32,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
@@ -50,6 +45,7 @@ import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 
 /**
  * This servlet allows the use of WebContent served from {@link Configuration Configurations}.
@@ -73,7 +69,6 @@ public class WebContentServlet extends AbstractHttpServlet {
 	private final Map<String, MimeType> supportedMediaTypes = new HashMap<>();
 	private final Map<URL, MimeType> computedMediaTypes = new WeakHashMap<>();
 	private final boolean isDtapStageLoc = "LOC".equalsIgnoreCase(AppConstants.getInstance().getProperty("dtap.stage"));
-	private Detector detector = null;
 
 	@Override
 	public void init() throws ServletException {
@@ -82,13 +77,6 @@ public class WebContentServlet extends AbstractHttpServlet {
 		try {
 			loadMediaTypes();
 		} catch (IOException e) {
-			throw new ServletException(e);
-		}
-
-		try {
-			TikaConfig tika = new TikaConfig();
-			detector = tika.getDetector();
-		} catch (TikaException | IOException e) {
 			throw new ServletException(e);
 		}
 	}
@@ -177,12 +165,10 @@ public class WebContentServlet extends AbstractHttpServlet {
 	 */
 	private MimeType computeMimeType(URL resource) {
 		log.debug("computing MimeType for resource [{}]", resource);
-		Metadata metadata = new Metadata();
 		String name = FilenameUtils.getExtension(resource.toString());
-		metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name);
-		try(InputStream in = resource.openStream()) {
-			MimeType type = MimeType.valueOf(detector.detect(TikaInputStream.get(in), metadata).toString());
-			if(!type.getSubtype().contains("x-tika")) {
+		try (InputStream in = resource.openStream(); TikaInputStream tis = TikaInputStream.get(in)) {
+			MimeType type = MimeType.valueOf(MessageUtils.TIKA.detect(tis, name));
+			if (!type.getSubtype().contains("x-tika")) {
 				return type;
 			}
 		} catch (IOException e) {
