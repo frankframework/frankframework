@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { AppService } from '../../app.service';
@@ -11,11 +11,10 @@ import { AppService } from '../../app.service';
   },
 })
 export abstract class BaseIframeComponent implements OnInit, OnDestroy {
-  protected url = '';
+  protected url = signal('');
   protected iframeState: 'loading' | 'show' | 'error' = 'loading';
   protected iframeName = 'custom page';
   protected iframeSrc?: SafeResourceUrl;
-  protected redirectURL?: string;
 
   protected readonly sanitizer = inject(DomSanitizer);
   protected readonly appService = inject(AppService);
@@ -41,15 +40,16 @@ export abstract class BaseIframeComponent implements OnInit, OnDestroy {
   }
 
   protected setFFIframeSource(ffPage: string): void {
-    this.url = `${this.appService.getServerPath()}iaf/${ffPage}`;
-    this.setIframeSource(this.url, ffPage);
+    const url = `${this.appService.getServerPath()}iaf/${ffPage}`;
+    this.url.set(url);
+    this.setIframeSource(url, ffPage);
   }
 
   protected setIframeSource(url: string, pageName: string): void {
     this.appService.iframePopoutUrl.set(url);
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
     this.iframeName = pageName;
-    this.checkIframeUrl(this.url);
+    this.checkIframeUrl(url);
   }
 
   protected checkIframeUrl(url: string): void {
