@@ -271,7 +271,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.6.0-jre</version>
+				<version>33.7.1-jre</version>
 			</dependency>
 			<dependency>
 				<!-- needed for io.fabric8:kubernetes-client transitive deps -->
@@ -1204,7 +1204,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>13.11.0</version>
+							<version>14.0.0</version>
 						</dependency>
 					</dependencies>
 					<executions>
