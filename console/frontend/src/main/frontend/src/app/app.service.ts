@@ -363,7 +363,7 @@ export class AppService {
 
   updateAdapterSummary(configurationName: string, changedConfiguration: boolean): void {
     const updated = Date.now();
-    if (updated - 3000 < this.lastUpdated && !changedConfiguration) {
+    if (!changedConfiguration && updated - 3000 < this.lastUpdated) {
       // 3 seconds
       clearTimeout(this.timeout);
       this.timeout = globalThis.setTimeout(() => {
