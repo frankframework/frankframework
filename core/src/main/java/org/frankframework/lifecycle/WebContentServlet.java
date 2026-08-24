@@ -73,7 +73,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 	private static final String WELCOME_FILE = "index.html";
 	private static final String CONFIGURATION_KEY = WebContentServlet.class.getCanonicalName() + ".configuration";
 	private final Map<String, MimeType> supportedMediaTypes = new HashMap<>();
-	private final Map<String, MimeType> computedMediaTypes = new WeakHashMap<>();
+	private final transient Map<String, MimeType> computedMediaTypes = new WeakHashMap<>();
 	private final boolean isDtapStageLoc = "LOC".equalsIgnoreCase(AppConstants.getInstance().getProperty("dtap.stage"));
 	private Detector detector = null;
 
