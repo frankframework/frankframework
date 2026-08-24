@@ -154,8 +154,9 @@ public class SoapUtilsTest {
 		Exception e5 = assertThrows(Exception.class, () -> SoapUtils.decryptMessage(manipulatedMessage2, keystore, certificateName, "changeit", false));
 		assertInstanceOf(WSSecurityException.class, e5, "expected a WSSecurityException but got: (%s): %s".formatted(e5.getClass(), e5.getMessage()));
 
-		Message resultMessage = SoapUtils.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit", false);
-		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), resultMessage.asString());
+		// Not encrypted message
+		Exception e6 = assertThrows(Exception.class, () -> SoapUtils.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit", false));
+		assertInstanceOf(WSSecurityException.class, e5, "expected a WSSecurityException but got: (%s): %s".formatted(e5.getClass(), e5.getMessage()));
 	}
 
 	// Reduce overhead when message is already of type SOAP
