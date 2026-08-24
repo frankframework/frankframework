@@ -18,7 +18,6 @@ package org.frankframework.encryption;
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.util.SpringUtils;
 
 /**
  * marker interface with default behaviour to set values in the {@link KeystoreConfiguration} object. The goal is to only support 'setKeystoreConfiguration'
@@ -31,11 +30,7 @@ public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 	 */
 	@Deprecated
 	default KeystoreConfiguration createKeystoreConfiguration() {
-		if (getApplicationContext() != null) {
-			return SpringUtils.createBean(getApplicationContext());
-		} else  {
-			return new KeystoreConfiguration();
-		}
+		return new KeystoreConfiguration();
 	}
 
 	/**
