@@ -29,6 +29,7 @@ import org.frankframework.core.FrankElement;
 @Data
 public class KeystoreConfiguration implements FrankElement {
 	private @Getter @Setter ApplicationContext applicationContext;
+	private final @Getter ClassLoader configurationClassLoader = getClass().getClassLoader();
 
 	@Override
 	public String getName() {
