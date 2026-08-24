@@ -872,6 +872,18 @@
 								<outputDirectory>${project.build.directory}</outputDirectory>
 							</configuration>
 						</execution>
+						<execution>
+							<id>resolve-mockito-agent-post-clean</id>
+							<goals>
+								<goal>copy</goal>
+							</goals>
+							<phase>post-clean</phase>
+							<configuration>
+								<artifact>org.mockito:mockito-core:${mockito.version}:jar</artifact>
+								<stripVersion>true</stripVersion>
+								<outputDirectory>${project.build.directory}</outputDirectory>
+							</configuration>
+						</execution>
 					</executions>
 				</plugin>
 				<plugin>
