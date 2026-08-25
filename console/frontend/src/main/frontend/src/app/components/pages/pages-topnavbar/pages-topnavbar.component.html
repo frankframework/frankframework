@@ -59,6 +59,7 @@
       @if (clusterMembers.length > 0) {
         <li>
           <select
+            data-cy-cluster-member
             class="cluster-member-selector"
             name="selectedClusterMember"
             [(ngModel)]="selectedClusterMember"
