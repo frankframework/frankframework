@@ -75,17 +75,20 @@ public interface HasTruststore extends IScopeProvider {
 		getTruststoreConfiguration().setResource(truststore);
 	}
 
-	@ReferTo(TruststoreConfiguration.class)
+	/**
+	 * Type of truststore.
+	 * @ff.default JKS
+	 */
 	default void setTruststoreType(KeystoreType truststoreType) {
 		getTruststoreConfiguration().setType(truststoreType);
 	}
 
-	@ReferTo(TruststoreConfiguration.class)
+	/** Authentication alias used to obtain truststore password. */
 	default void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		getTruststoreConfiguration().setAuthAlias(truststoreAuthAlias);
 	}
 
-	@ReferTo(TruststoreConfiguration.class)
+	/** Default password to access truststore. */
 	default void setTruststorePassword(String truststorePassword) {
 		getTruststoreConfiguration().setPassword(truststorePassword);
 	}
