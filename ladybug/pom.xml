@@ -19,7 +19,7 @@
 	</modules>
 
 	<properties>
-		<ladybug.version>4.1-20260723.104852</ladybug.version>
+		<ladybug.version>10.3.0-20260825.042332</ladybug.version>
 	</properties>
 
 </project>
