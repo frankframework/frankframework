@@ -41,26 +41,41 @@ public abstract class AbstractJarBytesClassLoader extends AbstractBytesClassLoad
 		try (JarInputStream jarInputStream = new JarInputStream(stream)) {
 			Map<String, byte[]> resources = new HashMap<>();
 			JarEntry jarEntry;
+			int skippedFiles = 0;
+
 			while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
 				String fileName = jarEntry.getName();
 				if(getBasePath() != null) {
-					boolean isFolder = fileName.endsWith("/"); // if the name ends with a slash, assume it's a folder
+					boolean isFolder = fileName.endsWith("/");
+					// If the name ends with a slash, assume it's a folder.
 					if(isFolder || fileName.startsWith("META-INF/")) { // Ignore all folders and files in META-INF
-						log.debug("ignoring {} [{}]", (isFolder?"folder":"file"), fileName);
+						log.debug("ignoring {} [{}]", ( isFolder ? "folder" : "file" ), fileName);
 						continue;
 					}
 
-					if(fileName.startsWith(getBasePath())) { // Remove BasePath from the filename
+					// By default, the basePath is the configuration name.
+					// When it's not, it is still the functional demarcation between configurations,
+					// even when multiple configurations are in the same archive.
+					if(fileName.startsWith(getBasePath())) {
+						// Remove BasePath from the filename
 						fileName = fileName.substring(getBasePath().length());
-					} else { // Found a file that's not in the BasePath folder
+					} else {
+						// Found a file that's not in the BasePath folder
 						if(!fileName.endsWith(".class")) { // Allow classes to be in the root path, but not resources
-							log.warn("invalid file [{}] not in folder [{}]", fileName, getBasePath());
-							continue; // Don't add the file to the resources lists
+							skippedFiles++;
+
+							// Don't add the file to the resources lists
+							continue;
 						}
 					}
 				}
 				resources.put(fileName, StreamUtil.streamToBytes(CloseUtils.dontClose(jarInputStream)));
 			}
+
+			if (skippedFiles > 0) {
+				log.warn("skipped [{}] files not located in configuration basePath [{}]", skippedFiles, getBasePath());
+			}
+
 			return resources;
 		} catch (IOException e) {
 			throw new ClassLoaderException("Could not read resources from jar input stream for configuration '" + getConfigurationName() + "'", e);
