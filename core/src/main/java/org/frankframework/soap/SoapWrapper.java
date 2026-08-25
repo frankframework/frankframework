@@ -16,39 +16,19 @@
 package org.frankframework.soap;
 
 import java.io.IOException;
-import java.security.KeyStore;
-import java.util.Objects;
 import java.util.StringTokenizer;
 
-import javax.crypto.SecretKey;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-
-import jakarta.xml.soap.MessageFactory;
-import jakarta.xml.soap.SOAPConstants;
-import jakarta.xml.soap.SOAPEnvelope;
-import jakarta.xml.soap.SOAPException;
-import jakarta.xml.soap.SOAPMessage;
-import jakarta.xml.soap.SOAPPart;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.wss4j.common.WSS4JConstants;
-import org.apache.wss4j.common.crypto.Crypto;
-import org.apache.wss4j.common.ext.WSPasswordCallback;
-import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.common.util.WSTimeSource;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WsuIdAllocator;
 import org.apache.wss4j.dom.engine.WSSConfig;
-import org.apache.wss4j.dom.engine.WSSecurityEngine;
-import org.apache.wss4j.dom.engine.WSSecurityEngineResult;
-import org.apache.wss4j.dom.handler.RequestData;
-import org.apache.wss4j.dom.handler.WSHandlerResult;
-import org.apache.wss4j.dom.message.WSSecEncrypt;
 import org.apache.wss4j.dom.message.WSSecHeader;
 import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
@@ -349,9 +329,10 @@ public class SoapWrapper {
 		return createSoapFaultMessage("soapenv:Server", faultstring);
 	}
 
+	// Conform UT_SIGNING (old and no longer supported by default in WSS4J).
 	public Message signMessage(Message soapMessage, String user, String password, boolean passwordDigest) {
 		try {
-			Document doc = toSoapDocument(soapMessage);
+			Document doc = SoapUtils.toSoapDocument(soapMessage);
 
 			// create security header and insert it into unsigned envelope
 			WSSecHeader secHeader = new WSSecHeader(doc);
@@ -401,118 +382,5 @@ public class SoapWrapper {
 		} catch (Exception e) {
 			throw new RuntimeException("Could not sign message", e);
 		}
-	}
-
-	// We only support signing for soap1_1 ?
-	// Create an empty message and populate it later. createMessage(MimeHeaders, InputStream) requires proper headers to be set which we do not have...
-	private static Document toSoapDocument(Message soapMessage) throws SOAPException, IOException {
-		MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL);
-		SOAPMessage msg = factory.createMessage();
-		SOAPPart part = msg.getSOAPPart();
-
-		try {
-			part.setContent(soapMessage.asSource());
-
-			// Create unsigned envelope
-			SOAPEnvelope unsignedEnvelope = part.getEnvelope();
-			return unsignedEnvelope.getOwnerDocument();
-		} catch (SAXException e) {
-			throw new IOException("unable to read document", e);
-		}
-	}
-
-	public Message encryptMessage(Message soapMessage, KeyStore keystore, String certificateName, SecretKey symmetricKey) throws SOAPException, IOException, WSSecurityException {
-		Document doc = toSoapDocument(soapMessage);
-
-		// create security header and insert it into unsigned envelope
-		WSSecHeader secHeader = new WSSecHeader(doc);
-		secHeader.insertSecurityHeader();
-		secHeader.setMustUnderstand(true);
-
-		Crypto crypto = new KeyStoreCrypto(keystore);
-
-		WSSecEncrypt encrypt = new WSSecEncrypt(secHeader);
-		encrypt.setUserInfo(certificateName);
-/*
-	// Encrypt a specific element in the header by namespace + localname
-	List<WSEncryptionPart> parts = new ArrayList<>();
-
-String soapNamespace = WSSecurityUtil.getSOAPNamespace(doc.getDocumentElement());
-if (elementToEncrypt.getParentNode().getNamespaceURI().equals(soapNamespace)
-                    && WSConstants.ELEM_HEADER.equals(elementToEncrypt.getParentNode().getLocalName())) {
-                }
-	//doc.getElementsByTagName("Body").item(0);
-	// Encrypt the entire Body (default, optional to keep)
-	parts.add(new WSEncryptionPart("Body", "http://schemas.xmlsoap.org/soap/envelope/", "Content"));
-
-	// Encrypt a custom header element
-	parts.add(new WSEncryptionPart("myHeader", "http://www.test.nl/v0101", "Element"));
-
-	encrypt.getParts().addAll(parts);
-*/
-		encrypt.setKeyEncAlgo(WSS4JConstants.KEYTRANSPORT_RSAOAEP); // Key EncryptionMethod (rsa-oaep-mgf1p)
-		encrypt.setEncryptSymmKey(true);
-
-		encrypt.setKeyIdentifierType(WSConstants.THUMBPRINT_IDENTIFIER); // embeds KeyInfo with BinarySecurityToken ref
-		encrypt.setSymmetricEncAlgorithm(WSS4JConstants.AES_256); // Data EncryptionMethod (aes256-cbc)
-		encrypt.setDigestAlgorithm(WSS4JConstants.SHA1); // DigestMethod
-		encrypt.setIncludeEncryptionToken(true);
-
-		// Add a Timestamp
-		WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
-		timestampBuilder.setTimeToLive(300);
-		timestampBuilder.setIdAllocator(idAllocator);
-		timestampBuilder.build();
-
-		Document encryptedDocument = encrypt.build(crypto, symmetricKey);
-
-		return new Message(encryptedDocument);
-	}
-
-	public Message decryptMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword) throws SOAPException, IOException, WSSecurityException {
-		Crypto crypto = new KeyStoreCrypto(keystore);
-		RequestData requestData = new RequestData();
-		requestData.setSigVerCrypto(crypto);
-		requestData.setDecCrypto(crypto);
-		requestData.setCallbackHandler(callbacks -> {
-			for (Callback callback : callbacks) {
-				if (callback instanceof WSPasswordCallback pc) {
-					if (certificateName.equals(pc.getIdentifier())) {
-						pc.setPassword(certificatePassword);
-					}
-				} else {
-					throw new UnsupportedCallbackException(callback, "Unknown Callback");
-				}
-			}
-		});
-
-		final Document doc = toSoapDocument(soapMessage);
-		final WSHandlerResult result;
-		try {
-			WSSecurityEngine engine = new WSSecurityEngine();
-			result = engine.processSecurityHeader(doc, requestData);
-		} catch (IllegalArgumentException | IllegalStateException e) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_CHECK);
-		}
-
-		if (result == null || result.getResults().isEmpty()) {
-			// Return message as-is. It appears to not be encrypted/signed.
-			return new Message(doc);
-		}
-
-		boolean encryptionProcessed = result.getResults().stream()
-				.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
-				.filter(Objects::nonNull)
-				.map(Integer.class::cast)
-				.anyMatch(action -> (action & WSConstants.ENCR) == WSConstants.ENCR);
-
-		if (!encryptionProcessed) {
-			throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "stax.encryption.unprocessedReferences");
-		}
-
-		WSSecHeader secHeader = new WSSecHeader(doc);
-		secHeader.removeSecurityHeader();
-
-		return new Message(doc);
 	}
 }

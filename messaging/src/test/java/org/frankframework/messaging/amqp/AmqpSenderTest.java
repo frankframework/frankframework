@@ -43,7 +43,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.extensions.messaging.MessageProtocol;
-import org.frankframework.jdbc.datasource.ResourceObjectLocator;
+import org.frankframework.resourcelocator.ResourceObjectLocator;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.UUIDUtil;

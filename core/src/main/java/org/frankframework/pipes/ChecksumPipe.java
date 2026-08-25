@@ -71,11 +71,11 @@ public class ChecksumPipe extends HashPipe {
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
-		try (InputStream fis = message.asInputStream(getCharset())) {
+		try (InputStream fis = message.asInputStream()) {
 
 			return super.doPipe(new Message(fis, message.getContext()), session);
 		} catch (IOException e) {
-			throw new PipeRunException(this, "Error reading input using charset [" + getCharset() + "]", e);
+			throw new PipeRunException(this, "Error reading input using charset [" + message.getCharset() + "]", e);
 		}
 	}
 

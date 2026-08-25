@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.credentialprovider.CredentialFactory;
-import org.frankframework.jdbc.datasource.FrankResource;
-import org.frankframework.jdbc.datasource.ResourceObjectLocator;
+import org.frankframework.resourcelocator.FrankResource;
+import org.frankframework.resourcelocator.ResourceObjectLocator;
 
 @Log4j2
 public class MqttClientFactoryFactoryTest {

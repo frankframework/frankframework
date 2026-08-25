@@ -21,7 +21,7 @@
 		<property name="autoStartup" value="false"/>
 	</bean>
 
-	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JmsConnectionFactoryFactory" />
+	<bean id="connectionFactoryFactory" class="org.frankframework.jms.factory.JmsConnectionFactoryFactory" />
 	<bean id="mqttClientFactory" class="org.frankframework.extensions.mqtt.MqttClientFactoryFactory" />
 	<bean id="amqpConnectionFactoryFactory" class="org.frankframework.messaging.amqp.AmqpConnectionFactoryFactory" />
 	<bean id="amqpListenerContainerManager" class="org.frankframework.messaging.amqp.AmqpListenerContainerManager" lazy-init="true" />

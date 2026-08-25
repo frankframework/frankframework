@@ -16,6 +16,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.Issue;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -250,6 +251,7 @@ public class XmlParameterTest {
 	@Test
 	// Test for #2256 PutInSessionPipe with xpathExpression with type=domdoc
 	// results in "Content is not allowed in prolog"
+	@Issue("2256")
 	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
 		try (TestConfiguration configuration = new TestConfiguration()) {
 			Adapter adapter = configuration.createBean();
@@ -297,7 +299,7 @@ public class XmlParameterTest {
 			CorePipeProcessor pipeProcessor = configuration.createBean();
 			cpp.setPipeProcessor(pipeProcessor);
 			PipeLineSession session = configuration.createBean();
-			PipeLineResult pipeRunResult = cpp.processPipeLine(pipeline, "messageId", new Message(testMessage), session, firstPipe);
+			PipeLineResult pipeRunResult = cpp.processPipeLine(null, pipeline, "messageId", new Message(testMessage), session, firstPipe);
 
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());
 			assertEquals(testMessage, pipeRunResult.getResult().asString());

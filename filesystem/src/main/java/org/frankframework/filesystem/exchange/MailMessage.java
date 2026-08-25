@@ -31,13 +31,11 @@ import lombok.extern.log4j.Log4j2;
 public class MailMessage extends MailItemId {
 	private static final String MESSAGE_BASE = "%s/messages";
 
-	public MailMessage() {
-		// public constructor for Jackson
-	}
-
 	public MailMessage(MailFolder mailFolder, String id) {
 		log.debug("creating new MailItem with id [{}] in folder [{}]", id, mailFolder);
-		setMailFolder(mailFolder);
+		if (mailFolder != null) {
+			setMailFolder(mailFolder);
+		}
 		setId(id);
 	}
 
@@ -84,6 +82,7 @@ public class MailMessage extends MailItemId {
 	private List<EmailAddressHolder> toRecipients;
 	private List<EmailAddressHolder> ccRecipients;
 	private List<EmailAddressHolder> bccRecipients;
+	private List<EmailAddressHolder> replyTo;
 
 	public List<EmailAddress> getToRecipients() {
 		return unwrapHolder(toRecipients);
@@ -94,6 +93,9 @@ public class MailMessage extends MailItemId {
 	public List<EmailAddress> getBccRecipients() {
 		return unwrapHolder(bccRecipients);
 	}
+	public List<EmailAddress> getReplyTo() {
+		return unwrapHolder(replyTo);
+	}
 
 	private List<EmailAddress> unwrapHolder(List<EmailAddressHolder> mailAddresses) {
 		if (mailAddresses == null) {
@@ -101,8 +103,6 @@ public class MailMessage extends MailItemId {
 		}
 		return mailAddresses.stream().map(EmailAddressHolder::getEmailAddress).toList();
 	}
-
-	private String replyTo;
 
 	@Override
 	public String toString() {

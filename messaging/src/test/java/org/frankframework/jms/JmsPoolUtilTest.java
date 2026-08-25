@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.springframework.jms.connection.DelegatingConnectionFactory;
 
+import org.frankframework.jms.factory.TransactionalMetadataAwareConnectionFactoryProxy;
+
 public class JmsPoolUtilTest {
 
 	@Test

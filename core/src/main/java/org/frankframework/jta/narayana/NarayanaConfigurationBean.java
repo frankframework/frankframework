@@ -40,7 +40,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.jdbc.datasource.NonTransactionalDataSourceFactory;
+import org.frankframework.jdbc.factory.NonTransactionalDataSourceFactory;
 import org.frankframework.util.AppConstants;
 
 @Log4j2

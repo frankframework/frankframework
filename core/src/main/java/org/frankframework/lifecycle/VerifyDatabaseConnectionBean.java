@@ -36,7 +36,7 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.jdbc.datasource.JdbcPoolUtil;
+import org.frankframework.jdbc.factory.JdbcPoolUtil;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;

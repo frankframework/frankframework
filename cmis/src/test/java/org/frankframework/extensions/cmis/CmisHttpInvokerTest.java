@@ -1,9 +1,9 @@
 package org.frankframework.extensions.cmis;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,12 +71,7 @@ public class CmisHttpInvokerTest {
 		URL url = TestFileUtils.getTestFileURL(file);
 		assertNotNull(url, "unable to find test file");
 
-		return new Output() {
-			@Override
-			public void write(OutputStream out) throws Exception {
-				StreamUtil.streamToStream(url.openStream(), out);
-			}
-		};
+		return out -> StreamUtil.streamToStream(url.openStream(), out);
 	}
 
 	private void assertResponse(String string, InputStream response) throws IOException {
@@ -151,7 +145,7 @@ public class CmisHttpInvokerTest {
 		assertNotNull(response.getErrorContent());
 		assertNull(response.getStream());
 		assertEquals(400, response.getResponseCode());
-		assertTrue(response.getErrorContent().contains("HOST dummy.url.com"));
+		assertThat(response.getErrorContent()).contains("HOST dummy.url.com");
 		assertResponse("/HttpInvokerResponse/simpleGet.txt", response.getErrorContent());
 	}
 }

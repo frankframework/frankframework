@@ -756,14 +756,15 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @param pipeLineSession {@link PipeLineSession} session in which message is to be processed
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
-	public PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, PipeLineSession pipeLineSession) {
+	@SuppressWarnings("java:S1181")
+	public PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
 			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
 		) {
 			PipeLineResult result = new PipeLineResult();
 			boolean success = false;
 			try {
-				result = processMessageWithExceptions(messageId, message, pipeLineSession);
+				result = processMessageWithExceptions(null, messageId, message, pipeLineSession);
 				success = true;
 			} catch (Throwable t) {
 				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
@@ -810,7 +811,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @return {@link PipeLineResult} with result from processing the message in the {@link PipeLine}.
 	 * @throws ListenerException If there was an exception, throws a {@link ListenerException}.
 	 */
-	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
+	public PipeLineResult processMessageWithExceptions(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never know....
@@ -835,7 +836,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
 				message = new Message("");
 			}
-			result = pipeline.process(messageId, message, pipeLineSession);
+			result = pipeline.process(receiver, messageId, message, pipeLineSession);
 			return result;
 		} catch (Throwable t) {
 			ListenerException e = new ListenerException(t);
@@ -887,19 +888,21 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	/**
 	 * Receives incoming messages. If an adapter can receive messages through multiple channels, then add a receiver for each channel.
-	 * @ff.mandatory
 	 */
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have a recursive call to logger when trace-level logging is enabled
 	public void addReceiver(Receiver<?> receiver) {
 		if (StringUtils.isBlank(receiver.getName())) {
+			String newName = createReceiverName(receivers.size() + 1);
 			// This will not contain the adapter name, as it's not present at this time yet which will make debugging this very difficult.
 			// Since we do need a name for each receiver, perhaps we should log this somewhere else to improve the dev-experience?
-			log.warn("receiver does not have a name, generating implicit one.");
-			receiver.setName("Receiver [%d]".formatted(receivers.size() + 1));
+			ConfigurationWarnings.add(receiver, log, "does not have a name, using: '%s'".formatted(newName));
+			receiver.setName(newName);
 		}
 
 		if (receivers.stream().map(HasName::getName).toList().contains(receiver.getName())) {
-			ConfigurationWarnings.add(receiver, log, "name must be unique!");
+			String newName = createReceiverName(receivers.size() + 1);
+			ConfigurationWarnings.add(receiver, log, "name must be unique, using: '%s'".formatted(newName));
+			receiver.setName(newName);
 		}
 
 		receivers.add(receiver);
@@ -907,8 +910,16 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		if (log.isTraceEnabled()) {
 			log.trace("Adapter [{}] registered receiver [{}]", name, receiver.toString());
 		} else {
-			log.debug("Adapter [{}] registered receiver [{}]", this::getId, receiver::getName); // Receivers don't always have a name...
+			log.debug("Adapter [{}] registered receiver [{}]", this::getId, receiver::getName);
 		}
+	}
+
+	private String createReceiverName(final int i) {
+		String potentialName = "Receiver [%d]".formatted(i);
+		if (receivers.stream().map(HasName::getName).toList().contains(potentialName)) {
+			return createReceiverName(i+1);
+		}
+		return potentialName;
 	}
 
 	/**
@@ -1118,7 +1129,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
 					log.debug("Adapter [{}] now in state STOPPED", name);
-				} catch (Throwable t) {
+				} catch (@SuppressWarnings("java:S2142") Throwable t) {
 					addErrorMessageToMessageKeeper("got error stopping Adapter", t);
 					runState.setRunState(RunState.ERROR);
 					log.warn("Adapter [{}] in state ERROR", name, t);

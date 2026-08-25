@@ -22,6 +22,8 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.jndi.JndiTemplate;
 
+import org.frankframework.jms.factory.JmsConnectionFactoryFactory;
+
 public class TestJmsConnectionFactoryFactory {
 
 	@Test

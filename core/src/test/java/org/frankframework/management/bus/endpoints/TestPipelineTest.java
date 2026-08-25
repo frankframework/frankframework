@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
@@ -52,7 +53,7 @@ public class TestPipelineTest extends BusTestBase {
 
 	public static class TestPipelineSessionAdapter extends Adapter {
 		@Override
-		public PipeLineResult processMessageDirect(String messageId, org.frankframework.stream.Message message, PipeLineSession session) {
+		public PipeLineResult processMessageDirect(@NonNull String messageId, org.frankframework.stream.@NonNull Message message, @NonNull PipeLineSession session) {
 			try {
 				String action = message.asString();
 				if (StringUtils.isEmpty(action)) {

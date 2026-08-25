@@ -21,7 +21,7 @@
     "module": "ES2022",
     "useDefineForClassFields": false,
     "types": [ // explicitly including types avoids NodeJS pollution of globalThis
-      "jasmine"
+      "vitest/globals"
     ]
   },
   "angularCompilerOptions": {

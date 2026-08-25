@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import javax.xml.transform.TransformerConfigurationException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -189,9 +191,12 @@ public class IfPipe extends AbstractPipe {
 		elseForward = assertExistsAndGetForward(elseForwardName);
 
 		if (StringUtils.isNotEmpty(xpathExpression)) {
-			transformerPool = TransformerPool.configureTransformer0(this, namespaceDefs, determineXpathExpression(), null,
-					TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion
-			);
+			String xPathExpression = determineXpathExpression();
+			try {
+				transformerPool = TransformerPool.getXPathTransformerPool(namespaceDefs, xPathExpression, TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion);
+			} catch (TransformerConfigurationException e) {
+				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+xPathExpression+"]", e);
+			}
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
 

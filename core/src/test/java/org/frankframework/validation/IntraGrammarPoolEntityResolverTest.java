@@ -20,6 +20,7 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junitpioneer.jupiter.Issue;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -127,7 +128,8 @@ public class IntraGrammarPoolEntityResolverTest {
 		}
 	}
 
-	@Test // See issue #3973. Should throw an XNIException to trigger XercesValidationErrorHandler#error which rethrows the Exception.
+	@Test // Should throw an XNIException to trigger XercesValidationErrorHandler#error which rethrows the Exception.
+	@Issue("3973")
 	public void localClassPathAbsoluteRef() throws Exception {
 		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, EMPTY_SCHEMAS_LIST);
 

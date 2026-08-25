@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.assertj.core.api.Assertions;
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -259,7 +260,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		// test
 		long diff = actual2.getTime() - date.getTime();
-		assertFalse(diff > 10000);
+		Assertions.assertThat(diff).describedAs("File Modification time should be within 10 seconds of current time").isLessThan(10_000L);
 	}
 
 
@@ -339,7 +340,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			F movedFile = fileSystem.moveFile(f, dstFolder, false);
 			assertFileExistsWithContents(srcFolder, fileSystem.getName(movedFile), srcContents);
 			assertFalse(fileSystem.exists(f));
-			assertEquals(2, fileSystem.getNumberOfFilesInFolder(dstFolder));
 		}
 	}
 
@@ -582,38 +582,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertEquals(2, files.size(), "Size of set of files, should not contain folders");
 		assertEquals( 2, filenames.size(), "Size of set of filenames, should not contain folders");
 
-	}
-
-	@Test
-	public void basicFileSytemTestGetNumberOfFilesInFolder() throws Exception {
-		// arrange
-		String contents1 = "maakt niet uit";
-		String contents2 = "maakt ook niet uit";
-		String folderName = "folder_for_counting";
-
-		if (_folderExists(folderName)) {
-			_deleteFolder(folderName);
-		}
-		_createFolder(folderName);
-
-		fileSystem.configure();
-		fileSystem.open();
-
-		// act
-		int fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
-
-		// assert
-		assertEquals(0, fileCount);
-
-		// arrange 2
-		createFile(folderName, FILE1, contents1);
-		createFile(folderName, FILE2, contents2);
-
-		// act 2
-		fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
-
-		// assert 2
-		assertEquals(2, fileCount);
 	}
 
 	@Test

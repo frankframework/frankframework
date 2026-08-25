@@ -43,7 +43,7 @@ public class MessageUtilsTest {
 		MessageContext context = MessageUtils.getContext(request);
 
 		assertEquals("UTF-8", context.get(MessageContext.METADATA_CHARSET));
-		assertEquals((long) 7, context.get(MessageContext.METADATA_SIZE));
+		assertEquals(7L, context.getRawValue(MessageContext.METADATA_SIZE));
 		assertEquals(MimeType.valueOf("application/xml; charset=UTF-8"), context.get(MessageContext.METADATA_MIMETYPE));
 	}
 
@@ -56,7 +56,7 @@ public class MessageUtilsTest {
 		MessageContext context = MessageUtils.getContext(request);
 
 		assertEquals("UTF-16", context.get(MessageContext.METADATA_CHARSET));
-		assertEquals((long) 7, context.get(MessageContext.METADATA_SIZE));
+		assertEquals(7L, context.getRawValue(MessageContext.METADATA_SIZE));
 		assertEquals(MimeType.valueOf("application/xml; charset=UTF-16"), context.get(MessageContext.METADATA_MIMETYPE));
 	}
 
@@ -105,7 +105,7 @@ public class MessageUtilsTest {
 		// Assert
 		assertEquals(size, calculatedSize);
 		assertEquals(MessageUtils.computeSize(message), size, "computing twice should have the same result");
-		assertEquals(message.getContext().get(MessageContext.METADATA_SIZE), size, "(correct) size should be in the message context");
+		assertEquals(message.getContext().getRawValue(MessageContext.METADATA_SIZE), size, "(correct) size should be in the message context");
 	}
 
 	@Test

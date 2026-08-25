@@ -7,17 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 import org.frankframework.util.LogUtil;
 
 public class PipeLineSessionBaseTest {
 	protected Logger log = LogUtil.getLogger(this);
 
-	@Mock
-	private PipeLineSession session = new PipeLineSession();
+	private final PipeLineSession session = new PipeLineSession();
 
 	private static final double DELTA = 1e-15;
 	private static final Object TEST_OBJECT = new Object();
@@ -53,6 +52,12 @@ public class PipeLineSessionBaseTest {
 		session.put("long3", 12345678910L);
 
 		session.put("object1", TEST_OBJECT);
+	}
+
+	@AfterEach
+	public void tearDown() {
+		session.close();
+		session.clear();
 	}
 
 	@Test

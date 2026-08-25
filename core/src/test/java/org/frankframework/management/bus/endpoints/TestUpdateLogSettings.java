@@ -11,7 +11,7 @@ import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.BusAction;

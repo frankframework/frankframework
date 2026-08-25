@@ -31,8 +31,8 @@ import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.messaging.MessageProtocol;
-import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.receivers.MessageWrapper;
+import org.frankframework.resourcelocator.ResourceObjectLocator;
 import org.frankframework.stream.Message;
 
 @Log4j2

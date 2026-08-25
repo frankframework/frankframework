@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -105,13 +106,17 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 		super.configure();
 
 		if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
-			auditTrailTp = TransformerPool.configureTransformer(this, getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null, OutputType.TEXT, false, null);
+			try {
+				auditTrailTp = TransformerPool.getXPathTransformerPool(getAuditTrailNamespaceDefs(), getAuditTrailXPath(), OutputType.TEXT, false, null);
+			} catch (TransformerConfigurationException e) {
+				throw new ConfigurationException("Cannot create TransformerPool for XPath expression ["+getAuditTrailXPath()+"]", e);
+			}
 		}
 		if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-			correlationIDTp = TransformerPool.configureTransformer(this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(), OutputType.TEXT, false, null);
+			correlationIDTp = TransformerPool.configureTransformer0(this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(), OutputType.TEXT, false, null);
 		}
 		if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-			labelTp = TransformerPool.configureTransformer(this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(), OutputType.TEXT, false, null);
+			labelTp = TransformerPool.configureTransformer0(this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(), OutputType.TEXT, false, null);
 		}
 	}
 

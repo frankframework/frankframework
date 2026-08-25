@@ -68,7 +68,7 @@ import org.frankframework.stream.MessageContext;
 public class MessageUtils {
 
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
-	private static final Tika TIKA = new Tika();
+	public static final Tika TIKA = new Tika();
 
 	public static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	public static final String JSON_TEMPLATE_VALUE_QUOTED = "{\"%s\": \"%s\"}";

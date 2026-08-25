@@ -60,9 +60,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public StringMessage showIbisStoreSummary(Message<?> message) {
 		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
-		String query = BusMessageUtils.getHeader(message, "query");
-
-		return execute(datasource, query);
+		return execute(datasource, null);
 	}
 
 	// Protected for testing purposes only!
@@ -111,8 +109,8 @@ public class IbisstoreSummary extends BusEndpointBase {
 		Map<String, SlotIdRecord> slotmap = new HashMap<>();
 
 		for(Adapter adapter: getAdapters()) {
-			for (Receiver receiver: adapter.getReceivers()) {
-				ITransactionalStorage errorStorage=receiver.getErrorStorage();
+			for (Receiver<?> receiver: adapter.getReceivers()) {
+				ITransactionalStorage<?> errorStorage=receiver.getErrorStorage();
 				if (errorStorage!=null) {
 					String slotId=errorStorage.getSlotId();
 					if (StringUtils.isNotEmpty(slotId)) {
@@ -121,7 +119,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 						slotmap.put(type+"/"+slotId,sir);
 					}
 				}
-				ITransactionalStorage messageLog=receiver.getMessageLog();
+				ITransactionalStorage<?> messageLog=receiver.getMessageLog();
 				if (messageLog!=null) {
 					String slotId=messageLog.getSlotId();
 					if (StringUtils.isNotEmpty(slotId)) {
@@ -133,10 +131,9 @@ public class IbisstoreSummary extends BusEndpointBase {
 			}
 			PipeLine pipeline=adapter.getPipeLine();
 			if (pipeline!=null) {
-				for (int i=0; i<pipeline.getPipeLineSize(); i++) {
-					IPipe pipe=pipeline.getPipe(i);
+				for (IPipe pipe : pipeline.getPipes()) {
 					if (pipe instanceof MessageSendingPipe msp) {
-						ITransactionalStorage messageLog = msp.getMessageLog();
+						ITransactionalStorage<?> messageLog = msp.getMessageLog();
 						if (messageLog!=null) {
 							String slotId=messageLog.getSlotId();
 							if (StringUtils.isNotEmpty(slotId)) {
@@ -147,7 +144,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 							}
 						} else {
 							ISender sender = msp.getSender();
-							if(sender instanceof ITransactionalStorage transactionalStorage) {
+							if (sender instanceof ITransactionalStorage<?> transactionalStorage) {
 								String slotId=transactionalStorage.getSlotId();
 								if (StringUtils.isNotEmpty(slotId)) {
 									SlotIdRecord sir=new SlotIdRecord(adapter.getConfiguration().getName(), adapter.getName(),null,msp.getName());

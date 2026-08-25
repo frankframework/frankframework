@@ -81,6 +81,16 @@
 			<artifactId>spring-boot-starter</artifactId>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- Jackson dependencies -->
+		<dependency>
+			<groupId>tools.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>tools.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>

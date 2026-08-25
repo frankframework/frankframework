@@ -23,6 +23,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 
 public class BearerOnlyAuthenticatorTest extends ServletAuthenticatorTest<BearerOnlyAuthenticator> {
 
@@ -139,6 +140,36 @@ public class BearerOnlyAuthenticatorTest extends ServletAuthenticatorTest<Bearer
 		// Ensure these values are copied over
 		assertEquals(Instant.MAX, jwtToken.getExpiresAt());
 		assertEquals(Instant.MIN, jwtToken.getIssuedAt());
+	}
+
+	@Test
+	void testAudienceValidationPasses() {
+		authenticator.setUserNameAttributeName("sub");
+		authenticator.setAudience("https://audience.example.org");
+
+		Jwt jwt = jwt().build();
+
+		assertDoesNotThrow(() -> authenticator.jwtAuthenticationTokenConverter(jwt));
+	}
+
+	@Test
+	void testAudienceValidationFailsWhenAudienceMismatch() {
+		authenticator.setUserNameAttributeName("sub");
+		authenticator.setAudience("https://other-audience.example.org");
+
+		Jwt jwt = jwt().build();
+
+		assertThrows(InvalidBearerTokenException.class, () -> authenticator.jwtAuthenticationTokenConverter(jwt));
+	}
+
+	@Test
+	void testAudienceValidationSkippedWhenNotConfigured() {
+		authenticator.setUserNameAttributeName("sub");
+
+		// jwt() has an audience set, but no audience is configured on the authenticator — should pass
+		Jwt jwt = jwt().build();
+
+		assertDoesNotThrow(() -> authenticator.jwtAuthenticationTokenConverter(jwt));
 	}
 
 	public static Jwt.Builder jwt() {

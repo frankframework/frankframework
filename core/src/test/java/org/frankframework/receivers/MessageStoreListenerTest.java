@@ -35,7 +35,7 @@ import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcListener;
 import org.frankframework.jdbc.MessageStoreListener;
-import org.frankframework.jdbc.datasource.DataSourceFactory;
+import org.frankframework.jdbc.factory.DataSourceFactory;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
@@ -120,15 +120,17 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
 
 		Message message = listener.extractMessage(rawMessage, session);
+		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
+
 		assertEquals(input, message.asString());
-		assertFalse(session.containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
-		assertTrue(session.containsKey("timestamp"));
-		assertEquals("timestamp", session.get("timestamp"));
+		assertTrue(session.containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY));
+		assertTrue(session.containsKey("additional_query_fields.timestamp"));
+		assertEquals("timestamp", session.get("additional_query_fields.timestamp"));
 
 	}
 
 	@Test
-	void withSessionKeysLegacyCsvFormat() throws Exception {
+	void withSessionKeysBinaryFormat() throws Exception {
 		listener.setSessionKeys("sessionKey1,sessionKey2,sessionKey3");
 		listener.configure();
 		listener.start();
@@ -142,6 +144,8 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(wrapper);
 		Message message = listener.extractMessage(rawMessage, session);
+		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
+
 		assertEquals(input, message.asString());
 
 		assertEquals("value1", session.get("sessionKey1"));
@@ -150,7 +154,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 	}
 
 	@Test
-	void withSessionKeysBinaryFormat() throws Exception {
+	void withSessionKeysLegacyCsvFormat() throws Exception {
 		listener.setSessionKeys("sessionKey1,sessionKey2,sessionKey3");
 		listener.configure();
 		listener.start();

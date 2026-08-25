@@ -17,12 +17,14 @@ package org.frankframework.core;
 
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.validation.IXSD;
 
 public interface IXmlValidator extends IValidator {
 
-	ConfigurationException getConfigurationException();
+	@Nullable ConfigurationException getConfigurationException();
 
 	String getMessageRoot();
 
@@ -38,5 +40,5 @@ public interface IXmlValidator extends IValidator {
 	 * subsequent processing. This documentation will be included in generated
 	 * schema's like WSDL or OpenApi
 	 */
-	String getDocumentation();
+	@Nullable String getDocumentation();
 }

@@ -47,6 +47,7 @@ import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
+import org.frankframework.soap.SoapContext;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
@@ -117,6 +118,14 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 			pipelineSession.setSecurityHandler(new SpringSecurityHandler());
 
 			Message result = processRequest(soapMessage, pipelineSession, listener);
+
+			/*
+			 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
+			 */
+			int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
+			if (statusCode > 0) {
+				response.setStatus(statusCode);
+			}
 
 			final boolean outputWritten = writeToResponseStream(response, result, listener, pipelineSession);
 			if (!outputWritten) {

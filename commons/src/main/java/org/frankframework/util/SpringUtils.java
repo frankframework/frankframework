@@ -35,7 +35,7 @@ public class SpringUtils {
 		if (reified.length > 0) {
 			throw new IllegalArgumentException("Do not pass any actual arguments to the reified parameter");
 		}
-		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(getClassOf(reified), AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		return (T) applicationContext.getAutowireCapableBeanFactory().createBean(ClassUtils.getClassOf(reified), AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
 
@@ -82,10 +82,5 @@ public class SpringUtils {
 	public static void registerSingleton(ApplicationContext applicationContext, String name, Object bean) {
 		ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
 		cbf.registerSingleton(name, bean);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getClassOf(T[] array) {
-		return (Class<T>) array.getClass().getComponentType();
 	}
 }

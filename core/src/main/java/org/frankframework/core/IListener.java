@@ -53,6 +53,11 @@ public interface IListener<M> extends IConfigurable, FrankElement, NameAware {
 	 * Extracts data from message obtained from {@link IPullingListener#getRawMessage(Map)} or
 	 * {@link IPushingListener#wrapRawMessage(Object, PipeLineSession)}. May also extract
 	 * other parameters from the message and put those into the context.
+	 * <p>
+	 *     The {@link org.frankframework.receivers.Receiver} does not call this method when the listener implementation
+	 *     returned an instance of {@link org.frankframework.receivers.MessageWrapper} from {@link IPullingListener#getRawMessage(Map)} or
+	 * 	 * {@link IPushingListener#wrapRawMessage(Object, PipeLineSession)}.
+	 * </p>
 	 *
 	 * @param rawMessage The {@link RawMessageWrapper} from which to extract the {@link Message}.
 	 * @param context Context to populate. Either a {@link PipeLineSession} or a {@link Map} threadContext depending on caller.
