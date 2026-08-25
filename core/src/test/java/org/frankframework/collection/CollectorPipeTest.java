@@ -2,7 +2,6 @@ package org.frankframework.collection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -66,7 +65,7 @@ public class CollectorPipeTest extends PipeTestBase<AbstractCollectorPipe<TestCo
 
 		assertEquals("success", prr.getPipeForward().getName());
 		assertEquals("testWrite", collector.getInput());
-		assertNull(prr.getResult().asString());
+		assertTrue(prr.getResult().isNull());
 		assertTrue(collector.open);
 	}
 
@@ -81,7 +80,7 @@ public class CollectorPipeTest extends PipeTestBase<AbstractCollectorPipe<TestCo
 
 		assertEquals("success", prr.getPipeForward().getName());
 		assertEquals("testWrite", collector.getInput());
-		assertNull(prr.getResult().asString());
+		assertTrue(prr.getResult().isNull());
 		assertTrue(collector.open);
 	}
 }

@@ -28,6 +28,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -186,24 +187,24 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	void noHtmlToXhtml() throws Exception {
 		Message message = new Message("<xml>tralalal</xml>");
 
-		String actual = XmlUtils.toXhtml(message).asString();
-		assertNull(actual);
+		Message result = XmlUtils.toXhtml(message);
+		Assertions.assertThat(result.isNull()).isTrue();
 	}
 
 	@Test
 	void nullToXhtml() throws Exception {
 		Message message = Message.nullMessage();
 
-		String actual = XmlUtils.toXhtml(message).asString();
-		assertNull(actual);
+		Message result = XmlUtils.toXhtml(message);
+		Assertions.assertThat(result.isNull()).isTrue();
 	}
 
 	@Test
 	void emptyToXhtml() throws Exception {
 		Message message = new Message("");
 
-		String actual = XmlUtils.toXhtml(message).asString();
-		assertNull(actual);
+		Message result = XmlUtils.toXhtml(message);
+		Assertions.assertThat(result.isNull()).isTrue();
 	}
 
 	@Test

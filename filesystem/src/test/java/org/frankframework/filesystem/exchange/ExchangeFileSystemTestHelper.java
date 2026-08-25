@@ -148,6 +148,9 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	/** Removes all files and folders in the base directory */
 	private void cleanBaseMailFolder() {
+		if (baseMailFolder == null) {
+			return;
+		}
 		List<MailFolder> folders = baseMailFolder.childFolders().get().getValue();
 		for (MailFolder mailFolder : folders) {
 			deleteFolderById(mailFolder.getId());

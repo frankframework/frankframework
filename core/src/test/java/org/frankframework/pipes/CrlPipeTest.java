@@ -2,7 +2,7 @@ package org.frankframework.pipes;
 
 import static org.frankframework.testutil.MatchUtils.assertTestFileEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 
@@ -78,7 +78,7 @@ public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 
 		// assert
 		assertEquals("success", prr.getPipeForward().getName()); 	// CrlPipe could return exception forward here
-		assertNull(prr.getResult().asString());						// CrlPipe could return error message here
+		assertTrue(prr.getResult().isNull());						// CrlPipe could return error message here
 	}
 
 

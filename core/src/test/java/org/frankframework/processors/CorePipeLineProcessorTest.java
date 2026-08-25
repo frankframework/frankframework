@@ -1,8 +1,8 @@
 package org.frankframework.processors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.AfterEach;
@@ -295,8 +295,8 @@ class CorePipeLineProcessorTest {
 		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
-		assertFalse(pipeLineResult.isSuccessful(), "Expected failure pipeline result");
-		assertNull(pipeLineResult.getResult().asString(), "Expected pipeline result to be NULL");
+		assertThat(pipeLineResult.isSuccessful()).describedAs("Expected failure pipeline result").isFalse();
+		assertThat(pipeLineResult.getResult().isNull()).describedAs("Expected pipeline result to be NULL").isTrue();
 
 		// Verify that pipes 1 & 2 have not been executed
 		assertFalse(session.containsKey("s1"), "Did not expect pipe 1 to be executed");
@@ -327,8 +327,8 @@ class CorePipeLineProcessorTest {
 		PipeLineResult pipeLineResult = processor.processPipeLine(null, pipeLine, "id", new Message(input), session, "p1");
 
 		// Assert
-		assertTrue(pipeLineResult.isSuccessful(), "Expected successful pipeline result");
-		assertNull(pipeLineResult.getResult().asString(), "Expected pipeline result to be NULL");
+		assertThat(pipeLineResult.isSuccessful()).describedAs("Expected successful pipeline result").isTrue();
+		assertThat(pipeLineResult.getResult().isNull()).describedAs("Expected pipeline result to be a NULL message").isTrue();
 
 		// Verify that pipes 1 & 2 have both been executed
 		assertEquals("1", session.getString("s1"));

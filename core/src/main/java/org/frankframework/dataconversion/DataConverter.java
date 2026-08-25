@@ -81,12 +81,12 @@ public interface DataConverter {
 	/**
 	 * Returns a {@link String} representing the data in this container, or {@code NULL} if {@link #isNull()}.
 	 */
-	@Nullable String asString() throws IOException;
+	String asString() throws IOException;
 
 	/**
 	 * Returns a {@code byte[]} representing the data in this container, or {@code NULL} if {@link #isNull()}.
 	 */
-	byte @Nullable [] asByteArray() throws IOException;
+	byte[] asByteArray() throws IOException;
 
 	/**
 	 * Return data as a {@link Reader}. The {@code Reader} is guaranteed to support {@link Reader#mark(int)} and
