@@ -144,16 +144,21 @@ public class BuildInfoValidator {
 				}
 			}
 		} else {
+			// Configurations are defined in the MANIFEST file. Let's see if they all exist as directories in this jar.
 			List<String> configsFound = new ArrayList<>(info.getConfigurationNames());
 
 			ZipEntry zipEntry;
 			while ((zipEntry = jarInputStream.getNextJarEntry()) != null) {
 				// Check if configuration names all exist as directories in this jar. If not, the configuration is invalid.
-				if (zipEntry.isDirectory()) {
+				if (zipEntry.isDirectory() && !zipEntry.getName().startsWith("META-INF")) {
 					String entryName = zipEntry.getName();
 					String configName = FilenameUtils.getPathNoEndSeparator(entryName);
 
-					configsFound.remove(configName);
+					boolean wasFound = configsFound.remove(configName);
+
+					if (!wasFound) {
+						log.warn("configuration name [{}] found as directory in jar, but wasn't configured in [configuration.names]", configName);
+					}
 				}
 			}
 

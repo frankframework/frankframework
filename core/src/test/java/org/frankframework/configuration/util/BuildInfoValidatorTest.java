@@ -2,6 +2,7 @@ package org.frankframework.configuration.util;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,11 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarInputStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -177,6 +180,25 @@ public class BuildInfoValidatorTest {
 			ConfigurationException ex = assertThrows(ConfigurationException.class, () -> new BuildInfoValidator(jar.openStream()));
 			assertEquals("no (valid) [META-INF/MANIFEST.MF] or [BuildInfo.properties] present in configuration", ex.getMessage());
 			assertTrue(appender.contains("did find a MANIFEST file but not a valid configuration folder in [Configuration_Template]"));
+		}
+	}
+
+	@DisplayName("Whether a configuration name found as directory in jar, but not configured in [configuration.names], is logged as a warning")
+	@Test
+	public void checkForConfigurationNotInMavenSettings() throws Exception {
+		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/Weer-1.0.0-SNAPSHOT-configurations.jar");
+		assertNotNull(zip, "Configuration not found");
+
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			BuildInfoValidator buildInfoValidator = new BuildInfoValidator(zip.openStream());
+
+			List<String> configurationNames = buildInfoValidator.getConfigurationNames();
+
+			assertTrue(configurationNames.contains("Weer"));
+			assertTrue(configurationNames.contains("Nieuws"));
+			assertFalse(configurationNames.contains("Trein"));
+
+			assertTrue(appender.contains("configuration name [Trein] found as directory in jar, but wasn't configured in [configuration.names]"));
 		}
 	}
 }
