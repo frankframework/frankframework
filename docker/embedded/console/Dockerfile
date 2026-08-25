@@ -11,4 +11,6 @@ CMD ["java", \
 	"--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED", \
 	"--add-opens", "java.management/sun.management=ALL-UNNAMED", \
 	"--add-opens", "jdk.management/com.sun.management.internal=ALL-UNNAMED", \
-	"-jar", "/app/frankframework-console-webapp.war"]
+	"--sun-misc-unsafe-memory-access=allow", \
+	"-jar", "/app/frankframework-console-webapp.war"
+]
