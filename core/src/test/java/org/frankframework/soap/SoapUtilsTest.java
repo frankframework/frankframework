@@ -17,6 +17,7 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -88,9 +89,9 @@ public class SoapUtilsTest {
 		SecretKey secretKey = keyGen.generateKey();
 
 		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, includeCertificateInMessage,
-				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256);
+				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
 
-		String encryptedString = encrypted.asString()
+		String encryptedString = Objects.requireNonNull(encrypted.asString())
 				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>")
 				.replaceAll("<wsu:Created>.*?</wsu:Created>", "<wsu:Created>IGNORE-CREATED</wsu:Created>")
 				.replaceAll("<wsu:Expires>.*?</wsu:Expires>", "<wsu:Expires>IGNORE-EXPIRES</wsu:Expires>")
@@ -121,7 +122,7 @@ public class SoapUtilsTest {
 		SecretKey secretKey = keyGen.generateKey();
 
 		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, false,
-				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256);
+				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
 
 		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> SoapUtils.decryptMessage(encrypted, keystore, certificateName, "wrong-password", false));
 		assertEquals("unable to process security header", e1.getMessage());
@@ -139,7 +140,7 @@ public class SoapUtilsTest {
 		assertNotNull(e3.getCause());
 		// Cause trace logs: "No certificates were found for decryption (KeyId)"
 
-		Message manipulatedMessage = new Message(encrypted.asString()
+		Message manipulatedMessage = new Message(Objects.requireNonNull(encrypted.asString())
 				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>"));
 		WSSecurityException e4 = assertThrows(WSSecurityException.class, () -> SoapUtils.decryptMessage(manipulatedMessage, keystore, certificateName, "changeit", false));
 		assertEquals("unable to process security header", e4.getMessage());
@@ -156,7 +157,7 @@ public class SoapUtilsTest {
 
 		// Not encrypted message
 		Exception e6 = assertThrows(Exception.class, () -> SoapUtils.decryptMessage(new UrlMessage(file), keystore, certificateName, "changeit", false));
-		assertInstanceOf(WSSecurityException.class, e5, "expected a WSSecurityException but got: (%s): %s".formatted(e5.getClass(), e5.getMessage()));
+		assertInstanceOf(WSSecurityException.class, e6, "expected a WSSecurityException but got: (%s): %s".formatted(e5.getClass(), e5.getMessage()));
 	}
 
 	// Reduce overhead when message is already of type SOAP
@@ -184,9 +185,10 @@ public class SoapUtilsTest {
 		String certificatePass = "tralalal";
 		KeyStore keystore = createDummyKeyStoreWithNullKeyPassword(certificateName, certificatePass);
 
-		Message encrypted = SoapUtils.signMessage(new UrlMessage(file), keystore, certificateName, certificatePass, includeCertificateInMessage, SoapUtils.KeyIdentifierType.ISSUER_SERIAL, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.SignatureAlgorithm.RSA_SHA1);
+		Message encrypted = SoapUtils.signMessage(new UrlMessage(file), keystore, certificateName, certificatePass, includeCertificateInMessage,
+				SoapUtils.KeyIdentifierType.ISSUER_SERIAL, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.SignatureAlgorithm.RSA_SHA1, 300);
 
-		String encryptedString = encrypted.asString()
+		String encryptedString = Objects.requireNonNull(encrypted.asString())
 				.replaceAll("<ds:SignatureValue>.*?</ds:SignatureValue>", "<ds:SignatureValue>IGNORE-SIGNATURE-VALUE</ds:SignatureValue>")
 				.replaceAll("<ds:DigestValue>.*?</ds:DigestValue>", "<ds:DigestValue>IGNORE-DIGEST-VALUE</ds:DigestValue>")
 				.replaceAll("<wsu:Created>.*?</wsu:Created>", "<wsu:Created>IGNORE-CREATED</wsu:Created>")
@@ -201,10 +203,10 @@ public class SoapUtilsTest {
 		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(expectedFile), encryptedString);
 
 		Message decrypted = SoapUtils.verifyMessage(encrypted, keystore, certificateName, certificatePass, removeSecurityHeader);
-		String decryptedString = decrypted.asString()
+		String decryptedString = Objects.requireNonNull(decrypted.asString())
 				.replaceAll("(<env:Body )[^<]*(>)", "$1$2");
 		// Ensure the decrypted result is the same as the initial document
-		String originalEncryptedMessage = encrypted.asString()
+		String originalEncryptedMessage = Objects.requireNonNull(encrypted.asString())
 				.replaceAll("(<env:Body )[^<]*(>)", "$1$2");
 		// If removeSecurityHeader==true the input should match the output. Else it should contain the wsse header
 		MatchUtils.assertXmlEquals(removeSecurityHeader ? StreamUtil.resourceToString(file) : originalEncryptedMessage, decryptedString);
@@ -224,14 +226,15 @@ public class SoapUtilsTest {
 		SecretKey secretKey = keyGen.generateKey();
 
 		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, true,
-				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256);
+				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
 
-		Message signed = SoapUtils.signMessage(encrypted, keystore, certificateName, certificatePass, true, SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.SignatureAlgorithm.RSA_SHA1);
+		Message signed = SoapUtils.signMessage(encrypted, keystore, certificateName, certificatePass, true,
+				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.SignatureAlgorithm.RSA_SHA1, 300);
 
 		Message unsigned = SoapUtils.verifyMessage(signed, keystore, certificateName, certificatePass, false);
 		Message decrypted = SoapUtils.decryptMessage(unsigned, keystore, certificateName, certificatePass, true);
 
-		String decryptedString = decrypted.asString().replaceAll("(<env:Body )[^<]*(>)", "$1$2");
+		String decryptedString = Objects.requireNonNull(decrypted.asString()).replaceAll("(<env:Body )[^<]*(>)", "$1$2");
 		// Ensure the decrypted result is the same as the initial document
 		MatchUtils.assertXmlEquals(StreamUtil.resourceToString(file), decryptedString);
 	}

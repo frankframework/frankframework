@@ -17,7 +17,6 @@ package org.frankframework.soap;
 
 import java.io.IOException;
 import java.security.KeyStore;
-import java.util.Objects;
 
 import javax.crypto.SecretKey;
 import javax.security.auth.callback.Callback;
@@ -95,7 +94,7 @@ public class SoapUtils {
 	}
 
 	@SuppressWarnings("java:S107")
-	public static Message encryptMessage(Message soapMessage, KeyStore keystore, String certificateName, SecretKey symmetricKey, boolean includeCertificateInMessage, KeyIdentifierType kiType, DigestAlgorithm digestAlgorithm, KeyEncryptionAlgorithm keAlgorithm, DataEncryptionAlgorithm deAlgorithm) throws SOAPException, IOException, WSSecurityException {
+	public static Message encryptMessage(Message soapMessage, KeyStore keystore, String certificateName, SecretKey symmetricKey, boolean includeCertificateInMessage, KeyIdentifierType kiType, DigestAlgorithm digestAlgorithm, KeyEncryptionAlgorithm keAlgorithm, DataEncryptionAlgorithm deAlgorithm, int ttl) throws SOAPException, IOException, WSSecurityException {
 		Document doc = toSoapDocument(soapMessage);
 
 		// create security header and insert it into unsigned envelope
@@ -116,7 +115,7 @@ public class SoapUtils {
 		encrypt.setDigestAlgorithm(digestAlgorithm.getAlgorithm()); // DigestMethod
 		encrypt.setIncludeEncryptionToken(includeCertificateInMessage);
 
-		setTimestamp(secHeader);
+		setTimestamp(secHeader, ttl);
 
 		Document encryptedDocument = encrypt.build(crypto, symmetricKey);
 
@@ -124,7 +123,7 @@ public class SoapUtils {
 	}
 
 	@SuppressWarnings("java:S107")
-	public static Message signMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean includeCertificateInMessage, KeyIdentifierType kiType, DigestAlgorithm digestAlgorithm, SignatureAlgorithm signatureAlgorithm) throws SOAPException, IOException, WSSecurityException {
+	public static Message signMessage(Message soapMessage, KeyStore keystore, String certificateName, String certificatePassword, boolean includeCertificateInMessage, KeyIdentifierType kiType, DigestAlgorithm digestAlgorithm, SignatureAlgorithm signatureAlgorithm, int ttl) throws SOAPException, IOException, WSSecurityException {
 		Document doc = SoapUtils.toSoapDocument(soapMessage);
 
 		// create security header and insert it into unsigned envelope
@@ -144,7 +143,7 @@ public class SoapUtils {
 
 		sign.setKeyIdentifierType(kiType.getType());
 
-		setTimestamp(secHeader);
+		setTimestamp(secHeader, ttl);
 
 		Document encryptedDocument = sign.build(crypto);
 
@@ -152,13 +151,17 @@ public class SoapUtils {
 	}
 
 	/**
-	 * Add a Timestamp if not yet present
+	 * Add a WS-Sec Timestamp if not yet present.
 	 */
-	private static void setTimestamp(WSSecHeader secHeader) {
+	private static void setTimestamp(WSSecHeader secHeader, int ttl) {
+		if (ttl  < 1) {
+			return; // No need to set a TTL.
+		}
+
 		NodeList timestamp = secHeader.getSecurityHeaderElement().getElementsByTagNameNS(WSS4JConstants.WSU_NS, WSS4JConstants.TIMESTAMP_TOKEN_LN);
 		if (timestamp.getLength() == 0) {
 			WSSecTimestamp timestampBuilder = new WSSecTimestamp(secHeader);
-			timestampBuilder.setTimeToLive(300);
+			timestampBuilder.setTimeToLive(ttl);
 			timestampBuilder.build();
 		}
 	}
@@ -200,9 +203,10 @@ public class SoapUtils {
 
 		boolean processed = result.getResults().stream()
 				.map(e -> e.get(WSSecurityEngineResult.TAG_ACTION))
-				.filter(Objects::nonNull)
+				.filter(Integer.class::isInstance)
 				.map(Integer.class::cast)
 				.anyMatch(action -> (action & actionType) == actionType);
+		// Since there may also be other actions present, decrypt vs verify. Only validate the given actionType.
 
 		if (!processed) {
 			throw new CustomWSSecurityException("some signature references were not processed");

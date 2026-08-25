@@ -64,7 +64,7 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 			Message result2 = SoapUtils.decryptMessage(result, keystore, getKeystoreAlias(), certificateCf.getPassword(), true);
 			return super.doPipe(result2, session, false, messageRoot);
 		} catch (SOAPException | IOException | WSSecurityException e) {
-			throw new PipeRunException(this, "blabla", e);
+			throw new PipeRunException(this, "unable to verify and decrypt SOAP message", e);
 		}
 	}
 
