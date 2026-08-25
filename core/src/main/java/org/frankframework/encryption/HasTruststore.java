@@ -37,7 +37,7 @@ public interface HasTruststore extends IScopeProvider {
 	TruststoreConfiguration getTruststoreConfiguration();
 
 	default String getTruststore() {
-		return getTruststoreConfiguration().getTruststoreResource();
+		return getTruststoreConfiguration().getResource();
 	}
 
 	default KeystoreType getTruststoreType() {
@@ -69,10 +69,10 @@ public interface HasTruststore extends IScopeProvider {
 
 	/**
 	 * Resource url to truststore. If none specified, the JVMs default truststore will be used.
-	 * @see TruststoreConfiguration#setTruststoreResource(String)
+	 * @see TruststoreConfiguration#setResource(String)
 	 */
 	default void setTruststore(String truststore) {
-		getTruststoreConfiguration().setTruststoreResource(truststore);
+		getTruststoreConfiguration().setResource(truststore);
 	}
 
 	@ReferTo(TruststoreConfiguration.class)

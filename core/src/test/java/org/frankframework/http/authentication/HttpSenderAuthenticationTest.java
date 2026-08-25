@@ -724,7 +724,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setKeystoreConfiguration(keystoreConfiguration);
 
 		TruststoreConfiguration truststoreConfiguration = new TruststoreConfiguration();
-		truststoreConfiguration.setTruststoreResource("/Signature/saml-keystore.p12");
+		truststoreConfiguration.setResource("/Signature/saml-keystore.p12");
 		truststoreConfiguration.setTruststorePassword("geheim");
 		truststoreConfiguration.setTruststoreAuthAlias("myalias");
 		sender.setTruststoreConfiguration(truststoreConfiguration);

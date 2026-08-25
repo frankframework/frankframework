@@ -31,11 +31,6 @@ public class KeystoreConfiguration implements FrankElement {
 	private @Getter @Setter ApplicationContext applicationContext;
 	private final @Getter ClassLoader configurationClassLoader = getClass().getClassLoader();
 
-	@Override
-	public String getName() {
-		return resource;
-	}
-
 	/**
 	 * Filename of the keystore or certificate to use.
 	 */
@@ -64,4 +59,10 @@ public class KeystoreConfiguration implements FrankElement {
 
 	/** Key manager algorithm. Can be left empty to use the servers default algorithm */
 	private String keyManagerAlgorithm;
+
+	@Override
+	public String getName() {
+		return resource;
+	}
+
 }

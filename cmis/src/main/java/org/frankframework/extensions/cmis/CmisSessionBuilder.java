@@ -192,7 +192,7 @@ public class CmisSessionBuilder implements HasKeystore, HasTruststore {
 		parameterMap.setRepositoryId(repository);
 
 		// SSL
-		if (keystoreConfiguration.getResource() != null || truststoreConfiguration.getTruststoreResource() != null) {
+		if (keystoreConfiguration.getResource() != null || truststoreConfiguration.getResource() != null) {
 			String keystoreResource = keystoreConfiguration.getResource();
 
 			CredentialFactory keystoreCf = new CredentialFactory(keystoreResource, null, keystoreConfiguration.getPassword());
@@ -211,7 +211,7 @@ public class CmisSessionBuilder implements HasKeystore, HasTruststore {
 			parameterMap.put("keystoreAlias", keystoreConfiguration.getKeystoreAlias());
 			parameterMap.put("keyManagerAlgorithm", keystoreConfiguration.getKeyManagerAlgorithm());
 			parameterMap.put("keystoreAliasPassword", keystoreAliasCf.getPassword());
-			parameterMap.put("truststoreUrl", truststoreConfiguration.getTruststoreResource());
+			parameterMap.put("truststoreUrl", truststoreConfiguration.getResource());
 			parameterMap.put("truststorePassword", truststoreCf.getPassword());
 			parameterMap.put("truststoreType", truststoreConfiguration.getTruststoreType().name());
 			parameterMap.put("trustManagerAlgorithm", truststoreConfiguration.getTrustManagerAlgorithm());

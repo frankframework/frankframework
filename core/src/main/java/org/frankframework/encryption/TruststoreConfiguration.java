@@ -22,7 +22,7 @@ public class TruststoreConfiguration {
 	/**
 	 * Resource url to truststore or certificate. If none specified, the JVMs default truststore will be used.
 	 */
-	private String truststoreResource;
+	private String resource;
 
 	/** Authentication alias used to obtain truststore password */
 	private String truststoreAuthAlias;
