@@ -1,4 +1,4 @@
-@if (url.length > 0) {
+@if (url().length > 0) {
   @switch (iframeState) {
     @case ('show') {
       <div class="iframe-wrapper" [style]="`height: calc(100% - ${getTopBarHeight()}px);`">
