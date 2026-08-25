@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022, 2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,33 +27,37 @@ public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 
 	/**
 	 * Creates a new, empty {@link KeystoreConfiguration} instance
-	 * @return
 	 */
+	@Deprecated
 	default KeystoreConfiguration createKeystoreConfiguration() {
 		return new KeystoreConfiguration();
 	}
 
 	/**
-	 * Set the {@link KeystoreConfiguration} object
+	 * FrankDoc requirement, to be able to set the KEYSTORE element.
 	 */
 	void setKeystoreConfiguration(KeystoreConfiguration keystoreConfiguration);
 
+	/**
+	 * Only exists until classes use the KEYSTORE element.
+	 */
+	@Deprecated
 	KeystoreConfiguration getKeystoreConfiguration();
 
 	default String getKeystore() {
-		return getKeystoreConfiguration().getKeystoreResource();
+		return getKeystoreConfiguration().getResource();
 	}
 
 	default KeystoreType getKeystoreType() {
-		return getKeystoreConfiguration().getKeystoreType();
+		return getKeystoreConfiguration().getType();
 	}
 
 	default String getKeystoreAuthAlias() {
-		return getKeystoreConfiguration().getKeystoreAuthAlias();
+		return getKeystoreConfiguration().getAuthAlias();
 	}
 
 	default String getKeystorePassword() {
-		return getKeystoreConfiguration().getKeystorePassword();
+		return getKeystoreConfiguration().getPassword();
 	}
 
 	default String getKeystoreAlias() {
@@ -74,25 +78,28 @@ public interface HasKeystore extends IScopeProvider, HasApplicationContext {
 
 	/**
 	 * Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.
-	 * @see KeystoreConfiguration#setKeystoreResource(String)
+	 * @see KeystoreConfiguration#setResource(String)
 	 */
 	default void setKeystore(String keystore) {
-		getKeystoreConfiguration().setKeystoreResource(keystore);
+		getKeystoreConfiguration().setResource(keystore);
 	}
 
-	@ReferTo(KeystoreConfiguration.class)
+	/**
+	 * Type of keystore
+	 * @ff.default pkcs12
+	 */
 	default void setKeystoreType(KeystoreType keystoreType) {
-		getKeystoreConfiguration().setKeystoreType(keystoreType);
+		getKeystoreConfiguration().setType(keystoreType);
 	}
 
-	@ReferTo(KeystoreConfiguration.class)
+	/** Authentication alias used to obtain keystore password */
 	default void setKeystoreAuthAlias(String keystoreAuthAlias) {
-		getKeystoreConfiguration().setKeystoreAuthAlias(keystoreAuthAlias);
+		getKeystoreConfiguration().setAuthAlias(keystoreAuthAlias);
 	}
 
-	@ReferTo(KeystoreConfiguration.class)
+	/** Default password to access keystore */
 	default void setKeystorePassword(String keystorePassword) {
-		getKeystoreConfiguration().setKeystorePassword(keystorePassword);
+		getKeystoreConfiguration().setPassword(keystorePassword);
 	}
 
 	@ReferTo(KeystoreConfiguration.class)

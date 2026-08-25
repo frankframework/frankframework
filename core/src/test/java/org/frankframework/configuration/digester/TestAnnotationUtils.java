@@ -28,6 +28,7 @@ import org.springframework.core.type.ClassMetadata;
 import org.springframework.util.Assert;
 
 import org.frankframework.configuration.IbisManager;
+import org.frankframework.encryption.HasKeystore;
 
 /**
  * We're using AnnotationUtils.findAnnotation(method, Deprecated.class);
@@ -233,6 +234,7 @@ public class TestAnnotationUtils {
 
 		Set<String> interfacesToSkip = new HashSet<>();
 		interfacesToSkip.add(IbisManager.class.getCanonicalName());
+		interfacesToSkip.add(HasKeystore.class.getCanonicalName());
 
 		for (Class<?> interfaze : interfazes) {
 			if(interfaze.getCanonicalName().startsWith(frankFrameworkPackage)

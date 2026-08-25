@@ -53,7 +53,7 @@ public class SenderTruststoreElementDigesterTest {
 		TruststoreConfiguration truststoreConfiguration = sender.getTruststoreConfiguration();
 
 		assertNotNull(truststoreConfiguration);
-		assertEquals("testTruststore", truststoreConfiguration.getTruststoreResource());
+		assertEquals("testTruststore", truststoreConfiguration.getResource());
 	}
 
 	@Test
