@@ -12,6 +12,7 @@ export JAVA_OPTS="\
 	--add-opens java.base/sun.nio.ch=ALL-UNNAMED \
 	--add-opens java.management/sun.management=ALL-UNNAMED \
 	--add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
+	--sun-misc-unsafe-memory-access=allow \
 	$JAVA_OPTS"
 
 # By default, GC debugging is disabled.
