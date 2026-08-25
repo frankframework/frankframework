@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
+import com.unboundid.ldap.listener.InMemoryListenerConfig;
 
 import org.frankframework.credentialprovider.RoleToGroupMappingJndiRealm;
 import org.frankframework.util.ClassUtils;
@@ -39,7 +41,7 @@ public class RoleGroupMapperTest {
 		RoleToGroupMappingJndiRealm realm = new RoleToGroupMappingJndiRealm();
 		int port = inMemoryDirectoryServer.getListenPort();
 
-		realm.setConnectionURL("ldap://localhost:" + port);
+		realm.setConnectionURL("ldap://" + InetAddress.getLoopbackAddress().getHostAddress() + ":" + port);
 		realm.setConnectionName("cn=LdapTester1,ou=Users,dc=myorg,dc=com");
 		realm.setConnectionPassword("12345");
 
@@ -76,6 +78,8 @@ public class RoleGroupMapperTest {
 
 		InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(baseDNs);
 		config.setSchema(null);
+		config.setListenerConfigs(InMemoryListenerConfig.createLDAPConfig(
+				"default", InetAddress.getLoopbackAddress(), 0, null));
 		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
 
 		String ldifDataFile = "users.ldif";
