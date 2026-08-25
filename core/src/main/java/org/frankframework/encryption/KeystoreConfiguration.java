@@ -36,14 +36,14 @@ public class KeystoreConfiguration implements FrankElement {
 	 */
 	private String resource;
 
-	/** Authentication alias used to obtain keystore password */
+	/** Authentication alias used to obtain keystore password. */
 	private String authAlias;
 
-	/** Default password to access keystore */
+	/** Default password to access keystore. */
 	private String password;
 
 	/**
-	 * Type of keystore
+	 * Type of keystore.
 	 * @ff.default pkcs12
 	 */
 	private KeystoreType type = KeystoreType.PKCS12;

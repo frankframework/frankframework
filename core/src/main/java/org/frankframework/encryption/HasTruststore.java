@@ -41,15 +41,15 @@ public interface HasTruststore extends IScopeProvider {
 	}
 
 	default KeystoreType getTruststoreType() {
-		return getTruststoreConfiguration().getTruststoreType();
+		return getTruststoreConfiguration().getType();
 	}
 
 	default String getTruststoreAuthAlias() {
-		return getTruststoreConfiguration().getTruststoreAuthAlias();
+		return getTruststoreConfiguration().getAuthAlias();
 	}
 
 	default String getTruststorePassword() {
-		return getTruststoreConfiguration().getTruststorePassword();
+		return getTruststoreConfiguration().getPassword();
 	}
 
 	default String getTrustManagerAlgorithm() {
@@ -77,17 +77,17 @@ public interface HasTruststore extends IScopeProvider {
 
 	@ReferTo(TruststoreConfiguration.class)
 	default void setTruststoreType(KeystoreType truststoreType) {
-		getTruststoreConfiguration().setTruststoreType(truststoreType);
+		getTruststoreConfiguration().setType(truststoreType);
 	}
 
 	@ReferTo(TruststoreConfiguration.class)
 	default void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		getTruststoreConfiguration().setTruststoreAuthAlias(truststoreAuthAlias);
+		getTruststoreConfiguration().setAuthAlias(truststoreAuthAlias);
 	}
 
 	@ReferTo(TruststoreConfiguration.class)
 	default void setTruststorePassword(String truststorePassword) {
-		getTruststoreConfiguration().setTruststorePassword(truststorePassword);
+		getTruststoreConfiguration().setPassword(truststorePassword);
 	}
 
 	@ReferTo(TruststoreConfiguration.class)

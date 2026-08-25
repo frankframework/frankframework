@@ -725,8 +725,8 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 		TruststoreConfiguration truststoreConfiguration = new TruststoreConfiguration();
 		truststoreConfiguration.setResource("/Signature/saml-keystore.p12");
-		truststoreConfiguration.setTruststorePassword("geheim");
-		truststoreConfiguration.setTruststoreAuthAlias("myalias");
+		truststoreConfiguration.setPassword("geheim");
+		truststoreConfiguration.setAuthAlias("myalias");
 		sender.setTruststoreConfiguration(truststoreConfiguration);
 
 		sender.setClientId(MockTokenServer.CLIENT_ID);

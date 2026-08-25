@@ -67,9 +67,9 @@ public class CorePkiUtil {
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
 		TruststoreConfiguration truststoreConfiguration = new TruststoreConfiguration();
 		truststoreConfiguration.setResource(keystoreOwner.getKeystore());
-		truststoreConfiguration.setTruststoreType(keystoreOwner.getKeystoreType());
-		truststoreConfiguration.setTruststoreAuthAlias(keystoreOwner.getKeystoreAuthAlias());
-		truststoreConfiguration.setTruststorePassword(keystoreOwner.getKeystorePassword());
+		truststoreConfiguration.setType(keystoreOwner.getKeystoreType());
+		truststoreConfiguration.setAuthAlias(keystoreOwner.getKeystoreAuthAlias());
+		truststoreConfiguration.setPassword(keystoreOwner.getKeystorePassword());
 		truststoreConfiguration.setTrustManagerAlgorithm(keystoreOwner.getKeyManagerAlgorithm());
 
 		return new HasTruststore() {
