@@ -26,10 +26,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
+import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.mcp.tools.AdapterToolProvider;
 import org.frankframework.mcp.tools.ClusterMemberToolProvider;
@@ -47,7 +46,7 @@ class ManagementGatewayMcpServerFactoryTest {
 	void setUp() {
 		StubOutboundGateway gateway = new StubOutboundGateway();
 		McpSession session = new McpSession(gateway);
-		ObjectMapper objectMapper = new ObjectMapper();
+		JsonMapper objectMapper = JsonMapper.builder().build();
 
 		List<McpToolProvider> providers = List.of(
 				new AdapterToolProvider(gateway, session),

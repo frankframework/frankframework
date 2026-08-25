@@ -29,10 +29,9 @@ import org.springframework.integration.config.IntegrationSimpleEvaluationContext
 import org.springframework.integration.context.IntegrationContextUtils;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.modelcontextprotocol.json.McpJsonMapper;
-import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
+import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGatewayFactory;
@@ -102,12 +101,12 @@ public class ManagementGatewayMcpConfiguration {
 	}
 
 	@Bean
-	ObjectMapper mcpObjectMapper() {
-		return new ObjectMapper();
+	JsonMapper mcpObjectMapper() {
+		return JsonMapper.builder().build();
 	}
 
 	@Bean
-	McpJsonMapper mcpJsonMapper(ObjectMapper mcpObjectMapper) {
+	McpJsonMapper mcpJsonMapper(JsonMapper mcpObjectMapper) {
 		return new JacksonMcpJsonMapper(mcpObjectMapper);
 	}
 

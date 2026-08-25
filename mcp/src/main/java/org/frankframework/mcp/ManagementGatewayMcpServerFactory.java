@@ -23,6 +23,7 @@ import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
 import io.modelcontextprotocol.spec.McpServerTransportProvider;
+import io.modelcontextprotocol.spec.McpStreamableServerTransportProvider;
 
 /**
  * Assembles an {@link McpSyncServer} that exposes the Frank!Framework Management Gateway. It collects the tools from all
@@ -48,8 +49,15 @@ public class ManagementGatewayMcpServerFactory {
 	}
 
 	public McpSyncServer create(McpServerTransportProvider transportProvider) {
-		return McpServer.sync(transportProvider)
-				.serverInfo(SERVER_NAME, determineVersion())
+		return configure(McpServer.sync(transportProvider));
+	}
+
+	public McpSyncServer create(McpStreamableServerTransportProvider transportProvider) {
+		return configure(McpServer.sync(transportProvider));
+	}
+
+	private McpSyncServer configure(McpServer.SyncSpecification<?> spec) {
+		return spec.serverInfo(SERVER_NAME, determineVersion())
 				.capabilities(ServerCapabilities.builder().tools(true).build())
 				.instructions(INSTRUCTIONS)
 				.tools(getTools())

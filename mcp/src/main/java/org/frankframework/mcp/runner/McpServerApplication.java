@@ -25,7 +25,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -46,7 +45,7 @@ import org.frankframework.mcp.config.ManagementGatewayMcpConfiguration;
  * <ul>
  *   <li>{@code stdio} (default): communicate over standard input/output, the way most MCP clients launch a server. No
  *   servlet container is started and a plain application context is used.</li>
- *   <li>{@code http}: expose an HTTP (SSE) endpoint on {@code mcp.http.port} (default 3000). The embedded Tomcat that
+ *   <li>{@code http}: expose a streamable-HTTP endpoint on {@code mcp.http.port} (default 3000). The embedded Tomcat that
  *   serves it is created and managed by Spring Boot (see {@link McpHttpServerConfiguration}).</li>
  * </ul>
  * The Management Gateway it talks to is configured through the same properties the Frank!Console uses, most importantly
@@ -113,7 +112,7 @@ public class McpServerApplication {
 	}
 
 	/**
-	 * Run the streamable-HTTP (SSE) transport. The embedded Tomcat that serves the MCP servlet is created and managed by
+	 * Run the streamable-HTTP transport. The embedded Tomcat that serves the MCP servlet is created and managed by
 	 * Spring Boot (see {@link McpHttpServerConfiguration}); its non-daemon threads keep the JVM alive and Spring Boot
 	 * stops the server and closes the MCP server on shutdown.
 	 */
@@ -123,10 +122,9 @@ public class McpServerApplication {
 		application.setBannerMode(Banner.Mode.OFF);
 		ConfigurableApplicationContext context = application.run(args);
 
-		Environment environment = context.getEnvironment();
 		McpSyncServer server = context.getBean(McpSyncServer.class);
-		int port = environment.getProperty("mcp.http.port", Integer.class, 3000);
-		String sseEndpoint = environment.getProperty("mcp.http.sseEndpoint", "/sse");
-		LOG.info("MCP server ready with [{}] tools, listening on http://localhost:{}{} (SSE)", server.listTools().size(), port, sseEndpoint);
+		McpHttpProperties properties = context.getBean(McpHttpProperties.class);
+		LOG.info("MCP server ready with [{}] tools, listening on http://localhost:{}{} (streamable HTTP)",
+				server.listTools().size(), properties.getPort(), properties.getMcpEndpoint());
 	}
 }

@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
@@ -44,8 +45,8 @@ import org.frankframework.mcp.config.ManagementGatewayMcpConfiguration;
 /**
  * Boots the HTTP transport the same way {@link McpServerApplication} does (but on a random port and against a stub
  * gateway) to verify that the embedded Tomcat is created and managed by Spring Boot: there is a {@code tomcat}
- * {@link TomcatServletWebServerFactory} bean, the web server is started by the context and the MCP SSE servlet it hosts
- * actually serves requests.
+ * {@link TomcatServletWebServerFactory} bean, the web server is started by the context and the MCP streamable-HTTP
+ * servlet it hosts actually serves requests.
  */
 class McpHttpServerConfigurationTest {
 
@@ -74,13 +75,28 @@ class McpHttpServerConfigurationTest {
 			McpSyncServer server = context.getBean(McpSyncServer.class);
 			assertThat(server.listTools(), hasSize(29));
 
-			// The MCP SSE servlet is actually reachable through the Spring-managed container.
-			HttpURLConnection connection = (HttpURLConnection) URI.create("http://localhost:" + port + "/sse").toURL().openConnection();
+			// The MCP streamable-HTTP servlet is actually reachable through the Spring-managed container: an initialize
+			// handshake establishes a session and returns the server info.
+			HttpURLConnection connection = (HttpURLConnection) URI.create("http://localhost:" + port + "/mcp").toURL().openConnection();
 			try {
 				connection.setConnectTimeout(5000);
 				connection.setReadTimeout(5000);
+				connection.setRequestMethod("POST");
+				connection.setRequestProperty("Content-Type", "application/json");
+				connection.setRequestProperty("Accept", "application/json, text/event-stream");
+				connection.setDoOutput(true);
+				String initializeRequest = """
+						{"jsonrpc":"2.0","id":1,"method":"initialize","params":{\
+						"protocolVersion":"2024-11-05","capabilities":{},\
+						"clientInfo":{"name":"integration-test","version":"1.0.0"}}}""";
+				connection.getOutputStream().write(initializeRequest.getBytes(StandardCharsets.UTF_8));
+
 				assertEquals(HttpURLConnection.HTTP_OK, connection.getResponseCode());
-				assertThat(connection.getContentType(), containsString("text/event-stream"));
+				assertThat(connection.getContentType(), containsString("application/json"));
+				assertThat("the streamable transport should establish a session", connection.getHeaderField("mcp-session-id"), notNullValue());
+
+				String body = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+				assertThat(body, containsString("frank-framework-management-gateway"));
 			} finally {
 				connection.disconnect();
 			}

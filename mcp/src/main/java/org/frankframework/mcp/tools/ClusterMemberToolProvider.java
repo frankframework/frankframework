@@ -23,9 +23,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
@@ -41,9 +40,9 @@ import org.frankframework.mcp.ToolSchema;
 @Component
 public class ClusterMemberToolProvider extends AbstractToolProvider {
 
-	private final ObjectMapper objectMapper;
+	private final JsonMapper objectMapper;
 
-	public ClusterMemberToolProvider(OutboundGateway outboundGateway, McpSession session, ObjectMapper objectMapper) {
+	public ClusterMemberToolProvider(OutboundGateway outboundGateway, McpSession session, JsonMapper objectMapper) {
 		super(outboundGateway, session);
 		this.objectMapper = objectMapper;
 	}

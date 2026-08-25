@@ -27,10 +27,9 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.frankframework.mcp.AbstractToolProviderTest;
@@ -38,7 +37,7 @@ import org.frankframework.mcp.McpSession;
 
 class ClusterMemberToolProviderTest extends AbstractToolProviderTest {
 
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private static final JsonMapper OBJECT_MAPPER = JsonMapper.builder().build();
 
 	private List<SyncToolSpecification> tools() {
 		return new ClusterMemberToolProvider(gateway, session, OBJECT_MAPPER).getTools();

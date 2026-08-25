@@ -104,10 +104,8 @@ public abstract class AbstractToolProvider implements McpToolProvider {
 	 * @param call        the logic that is invoked when the tool is called
 	 */
 	protected SyncToolSpecification tool(String name, String description, Map<String, Object> inputSchema, ToolCall call) {
-		Tool tool = Tool.builder()
-				.name(name)
+		Tool tool = Tool.builder(name, inputSchema)
 				.description(description)
-				.inputSchema(inputSchema)
 				.build();
 
 		return SyncToolSpecification.builder()
