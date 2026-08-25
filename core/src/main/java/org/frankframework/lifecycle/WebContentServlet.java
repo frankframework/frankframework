@@ -18,6 +18,8 @@ package org.frankframework.lifecycle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serial;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,7 +69,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 	private static final String WELCOME_FILE = "index.html";
 	private static final String CONFIGURATION_KEY = WebContentServlet.class.getCanonicalName() + ".configuration";
 	private final Map<String, MimeType> supportedMediaTypes = new HashMap<>();
-	private final Map<URL, MimeType> computedMediaTypes = new WeakHashMap<>();
+	private final transient Map<String, MimeType> computedMediaTypes = new WeakHashMap<>();
 	private final boolean isDtapStageLoc = "LOC".equalsIgnoreCase(AppConstants.getInstance().getProperty("dtap.stage"));
 
 	@Override
@@ -100,7 +102,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
-		if(path == null) {
+		if (path == null) {
 			resp.sendRedirect(req.getContextPath() + SERVLET_PATH);
 			return;
 		} else if("/".equals(path)) {
@@ -115,18 +117,18 @@ public class WebContentServlet extends AbstractHttpServlet {
 
 		URL resource = findResource(req);
 
-		if(resource == null) {
+		if (resource == null) {
 			resp.sendError(404, "resource not found");
 			return;
 		}
 
 		MimeType mimeType = determineMimeType(resource);
-		if(mimeType != null) {
+		if (mimeType != null) {
 			log.debug("found MimeType [{}] for resource [{}]", mimeType, resource);
 			resp.setContentType(mimeType.toString());
 		}
 
-		try(InputStream in = resource.openStream()) {
+		try (InputStream in = resource.openStream()) {
 			IOUtils.copy(in, resp.getOutputStream());
 		} catch (IOException e) {
 			log.warn("error reading or writing resource to servlet", e);
@@ -140,7 +142,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 	@Override
 	protected long getLastModified(HttpServletRequest req) {
 		String path = req.getPathInfo();
-		if(StringUtils.isNotEmpty(path) && !"/".equals(path) && findResource(req) != null) {
+		if (StringUtils.isNotEmpty(path) && !"/".equals(path) && findResource(req) != null) {
 			String configurationName = (String) req.getAttribute(CONFIGURATION_KEY);
 			return findConfiguration(configurationName).getStartupDate();
 		}
@@ -149,12 +151,12 @@ public class WebContentServlet extends AbstractHttpServlet {
 	}
 
 	private MimeType determineMimeType(URL resource) {
-		String extension = FilenameUtils.getExtension(resource.toString());
+		String extension = FilenameUtils.getExtension(resource.getPath());
 		log.debug("trying to lookup MimeType for extension [{}]", extension);
 		MimeType type = supportedMediaTypes.get(extension);
-		if(type == null) {
+		if (type == null) {
 			log.info("no default MimeType mapping found for extension [{}]", extension);
-			return computedMediaTypes.computeIfAbsent(resource, this::computeMimeType);
+			return computedMediaTypes.computeIfAbsent(resource.toExternalForm(), this::computeMimeType);
 		}
 		return type;
 	}
@@ -163,7 +165,14 @@ public class WebContentServlet extends AbstractHttpServlet {
 	 * Tries to determine the MimeType by reading the file's magic (first 16k bytes)
 	 * @return the computed MimeType or APPLICATION/OCTET_STREAM
 	 */
-	private MimeType computeMimeType(URL resource) {
+	private MimeType computeMimeType(String resourcePath) {
+		URL resource;
+		try {
+			resource = URI.create(resourcePath).toURL();
+		} catch (MalformedURLException e) {
+			log.warn("Could not create URL from path [{}]", resourcePath);
+			return MediaType.APPLICATION_OCTET_STREAM;
+		}
 		log.debug("computing MimeType for resource [{}]", resource);
 		String name = FilenameUtils.getExtension(resource.toString());
 		try (InputStream in = resource.openStream(); TikaInputStream tis = TikaInputStream.get(in)) {
@@ -182,7 +191,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 	 */
 	private URL findResource(HttpServletRequest req) {
 		String normalizedPath = FilenameUtils.normalize(req.getPathInfo(), true);
-		if(normalizedPath.startsWith("/")) {
+		if (normalizedPath.startsWith("/")) {
 			normalizedPath = normalizedPath.substring(1);
 		}
 		String[] split = normalizedPath.split("/");
