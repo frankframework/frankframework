@@ -20,6 +20,7 @@ import jakarta.json.JsonStructure;
 import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.Diff;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -83,19 +84,19 @@ public class MatchUtils {
 		}
 	}
 
-	public static void assertXmlEquals(String xmlExp, String xmlAct) {
+	public static void assertXmlEquals(@Nullable String xmlExp, @Nullable String xmlAct) {
 		assertXmlEquals(null, xmlExp, xmlAct);
 	}
 
-	public static void assertXmlEquals(String description, String xmlExp, String xmlAct) {
+	public static void assertXmlEquals(@Nullable String description, @Nullable String xmlExp, @Nullable String xmlAct) {
 		assertXmlEquals(description, xmlExp, xmlAct, false);
 	}
 
-	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces) {
+	public static void assertXmlEquals(@Nullable String description, @Nullable String xmlExp, @Nullable String xmlAct, boolean ignoreNamespaces) {
 		assertXmlEquals(description, xmlExp, xmlAct, ignoreNamespaces, false);
 	}
 
-	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces, boolean includeComments) {
+	public static void assertXmlEquals(@Nullable String description, @Nullable String xmlExp, @Nullable String xmlAct, boolean ignoreNamespaces, boolean includeComments) {
 		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces, includeComments);
 		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces, includeComments);
 

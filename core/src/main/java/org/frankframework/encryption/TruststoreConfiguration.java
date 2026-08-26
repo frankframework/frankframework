@@ -17,24 +17,28 @@ package org.frankframework.encryption;
 
 import lombok.Data;
 
+/**
+ * TRUSTSTORE FF!Config Element.
+ * (Defaults to CACERTS.)
+ */
 @Data
 public class TruststoreConfiguration {
 	/**
-	 * Resource url to truststore or certificate. If none specified, the JVMs default truststore will be used.
+	 * Filename of the keystore or certificate to use.
 	 */
-	private String truststoreResource;
+	private String resource;
 
-	/** Authentication alias used to obtain truststore password */
-	private String truststoreAuthAlias;
+	/** Authentication alias used to obtain truststore password. */
+	private String authAlias;
 
-	/** Default password to access truststore */
-	private String truststorePassword;
+	/** Default password to access truststore. */
+	private String password;
 
 	/**
-	 * Type of truststore
+	 * Type of truststore.
 	 * @ff.default JKS
 	 */
-	private KeystoreType truststoreType = KeystoreType.JKS;
+	private KeystoreType type = KeystoreType.JKS;
 
 	/** Alias to obtain specific certificate in truststore */
 	private String truststoreAlias;

@@ -192,10 +192,10 @@ public class CmisSessionBuilder implements HasKeystore, HasTruststore {
 		parameterMap.setRepositoryId(repository);
 
 		// SSL
-		if (keystoreConfiguration.getKeystoreResource() != null || truststoreConfiguration.getTruststoreResource() != null) {
-			String keystoreResource = keystoreConfiguration.getKeystoreResource();
+		if (keystoreConfiguration.getResource() != null || truststoreConfiguration.getResource() != null) {
+			String keystoreResource = keystoreConfiguration.getResource();
 
-			CredentialFactory keystoreCf = new CredentialFactory(keystoreResource, null, keystoreConfiguration.getKeystorePassword());
+			CredentialFactory keystoreCf = new CredentialFactory(keystoreResource, null, keystoreConfiguration.getPassword());
 			String keystoreAliasPassword = getKeystoreAliasPassword();
 			String keystoreAliasAuthAlias = keystoreConfiguration.getKeystoreAliasAuthAlias();
 
@@ -203,17 +203,17 @@ public class CmisSessionBuilder implements HasKeystore, HasTruststore {
 							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword)
 							: keystoreCf;
 
-			CredentialFactory truststoreCf = new CredentialFactory(truststoreConfiguration.getTruststoreAuthAlias(),  null, truststoreConfiguration.getTruststorePassword());
+			CredentialFactory truststoreCf = new CredentialFactory(truststoreConfiguration.getAuthAlias(),  null, truststoreConfiguration.getPassword());
 
 			parameterMap.put("keystoreUrl", keystoreResource);
 			parameterMap.put("keystorePassword", keystoreCf.getPassword());
-			parameterMap.put("keystoreType", keystoreConfiguration.getKeystoreType().name());
+			parameterMap.put("keystoreType", keystoreConfiguration.getType().name());
 			parameterMap.put("keystoreAlias", keystoreConfiguration.getKeystoreAlias());
 			parameterMap.put("keyManagerAlgorithm", keystoreConfiguration.getKeyManagerAlgorithm());
 			parameterMap.put("keystoreAliasPassword", keystoreAliasCf.getPassword());
-			parameterMap.put("truststoreUrl", truststoreConfiguration.getTruststoreResource());
+			parameterMap.put("truststoreUrl", truststoreConfiguration.getResource());
 			parameterMap.put("truststorePassword", truststoreCf.getPassword());
-			parameterMap.put("truststoreType", truststoreConfiguration.getTruststoreType().name());
+			parameterMap.put("truststoreType", truststoreConfiguration.getType().name());
 			parameterMap.put("trustManagerAlgorithm", truststoreConfiguration.getTrustManagerAlgorithm());
 		}
 

@@ -66,10 +66,10 @@ public class CorePkiUtil {
 
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
 		TruststoreConfiguration truststoreConfiguration = new TruststoreConfiguration();
-		truststoreConfiguration.setTruststoreResource(keystoreOwner.getKeystore());
-		truststoreConfiguration.setTruststoreType(keystoreOwner.getKeystoreType());
-		truststoreConfiguration.setTruststoreAuthAlias(keystoreOwner.getKeystoreAuthAlias());
-		truststoreConfiguration.setTruststorePassword(keystoreOwner.getKeystorePassword());
+		truststoreConfiguration.setResource(keystoreOwner.getKeystore());
+		truststoreConfiguration.setType(keystoreOwner.getKeystoreType());
+		truststoreConfiguration.setAuthAlias(keystoreOwner.getKeystoreAuthAlias());
+		truststoreConfiguration.setPassword(keystoreOwner.getKeystorePassword());
 		truststoreConfiguration.setTrustManagerAlgorithm(keystoreOwner.getKeyManagerAlgorithm());
 
 		return new HasTruststore() {
@@ -92,11 +92,16 @@ public class CorePkiUtil {
 		};
 	}
 
+	@SuppressWarnings("deprecation")
 	public static KeyStore createKeyStore(HasKeystore keystoreOwner) throws EncryptionException {
-		URL truststoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
-		CredentialFactory truststoreCredentialFactory = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
+		return createKeyStore(keystoreOwner.getKeystoreConfiguration());
+	}
+
+	public static KeyStore createKeyStore(KeystoreConfiguration keystoreOwner) throws EncryptionException {
+		URL truststoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getResource());
+		CredentialFactory truststoreCredentialFactory = new CredentialFactory(keystoreOwner.getAuthAlias(), null, keystoreOwner.getPassword());
 		try {
-			return CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
+			return CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), keystoreOwner.getType());
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
 			throw new EncryptionException("unable to open keystore [" + truststoreUrl + "]", e);
 		}

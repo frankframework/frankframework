@@ -37,19 +37,19 @@ public interface HasTruststore extends IScopeProvider {
 	TruststoreConfiguration getTruststoreConfiguration();
 
 	default String getTruststore() {
-		return getTruststoreConfiguration().getTruststoreResource();
+		return getTruststoreConfiguration().getResource();
 	}
 
 	default KeystoreType getTruststoreType() {
-		return getTruststoreConfiguration().getTruststoreType();
+		return getTruststoreConfiguration().getType();
 	}
 
 	default String getTruststoreAuthAlias() {
-		return getTruststoreConfiguration().getTruststoreAuthAlias();
+		return getTruststoreConfiguration().getAuthAlias();
 	}
 
 	default String getTruststorePassword() {
-		return getTruststoreConfiguration().getTruststorePassword();
+		return getTruststoreConfiguration().getPassword();
 	}
 
 	default String getTrustManagerAlgorithm() {
@@ -69,25 +69,28 @@ public interface HasTruststore extends IScopeProvider {
 
 	/**
 	 * Resource url to truststore. If none specified, the JVMs default truststore will be used.
-	 * @see TruststoreConfiguration#setTruststoreResource(String)
+	 * @see TruststoreConfiguration#setResource(String)
 	 */
 	default void setTruststore(String truststore) {
-		getTruststoreConfiguration().setTruststoreResource(truststore);
+		getTruststoreConfiguration().setResource(truststore);
 	}
 
-	@ReferTo(TruststoreConfiguration.class)
+	/**
+	 * Type of truststore.
+	 * @ff.default JKS
+	 */
 	default void setTruststoreType(KeystoreType truststoreType) {
-		getTruststoreConfiguration().setTruststoreType(truststoreType);
+		getTruststoreConfiguration().setType(truststoreType);
 	}
 
-	@ReferTo(TruststoreConfiguration.class)
+	/** Authentication alias used to obtain truststore password. */
 	default void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		getTruststoreConfiguration().setTruststoreAuthAlias(truststoreAuthAlias);
+		getTruststoreConfiguration().setAuthAlias(truststoreAuthAlias);
 	}
 
-	@ReferTo(TruststoreConfiguration.class)
+	/** Default password to access truststore. */
 	default void setTruststorePassword(String truststorePassword) {
-		getTruststoreConfiguration().setTruststorePassword(truststorePassword);
+		getTruststoreConfiguration().setPassword(truststorePassword);
 	}
 
 	@ReferTo(TruststoreConfiguration.class)
