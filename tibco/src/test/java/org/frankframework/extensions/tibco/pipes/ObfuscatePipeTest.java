@@ -2,7 +2,7 @@ package org.frankframework.extensions.tibco.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -53,7 +53,7 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 		PipeRunResult emptyResult = doPipe(pipe, "", session);
 
 		// Assert
-		assertNull(nullMessageResult.getResult().asString());
+		assertTrue(nullMessageResult.getResult().isNull());
 		assertEquals("", emptyResult.getResult().asString());
 	}
 
