@@ -238,6 +238,13 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	}
 
 	/**
+	 * Method for testing purposes, so files from the test-classpath can be read.
+	 */
+	protected InputStream getResourceAsStream(String resource) throws IOException {
+		return ConfigFileLoader.getSource().getResource(resource).getInputStream();
+	}
+
+	/**
 	 * Read the mapping configuration and apply the role group mapping to the container
 	 */
 	protected void initMappingConfig() throws IOException {
@@ -248,7 +255,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 			return;
 		}
 
-		try (InputStream is = ConfigFileLoader.getSource().getResource(pathName).getInputStream()) {
+		try (InputStream is = getResourceAsStream(pathName)) {
 			// Load the contents of the database file
 			if (log.isDebugEnabled()) log.debug("Loading mapping: " + pathName);
 

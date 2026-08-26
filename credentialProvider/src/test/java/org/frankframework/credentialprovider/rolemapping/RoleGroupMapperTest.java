@@ -6,19 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.startup.CatalinaBaseConfigurationSource;
-import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.unittest.TesterContext;
-import org.apache.tomcat.util.file.ConfigFileLoader;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,20 +25,33 @@ import org.junit.jupiter.api.Test;
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.credentialprovider.RoleToGroupMappingJndiRealm;
 import org.frankframework.util.ClassUtils;
 
+@Log4j2
 public class RoleGroupMapperTest {
 
 	private InMemoryDirectoryServer inMemoryDirectoryServer = null;
-	private static final String baseDNs = "dc=myorg,dc=com";
-	private static final Log log = LogFactory.getLog(RoleGroupMapperTest.class);
+	private static final String BASE_DN = "dc=myorg,dc=com";
 
 	private RoleToGroupMappingJndiRealm setupRoleToGroupMappingJndiRealm(Context context, String pathname) {
-		RoleToGroupMappingJndiRealm realm = new RoleToGroupMappingJndiRealm();
+		RoleToGroupMappingJndiRealm realm = new RoleToGroupMappingJndiRealm() {
+			@Override
+			protected InputStream getResourceAsStream(@NonNull String resource) throws IOException {
+				String removeProtocol = "/" + StringUtils.substringAfter(resource, "classpath:");
+				URL url = RoleGroupMapperTest.class.getResource(removeProtocol);
+				if (url == null) {
+					throw new FileNotFoundException("file ["+removeProtocol+"] not found");
+				}
+
+				return url.openStream();
+			}
+		};
 		int port = inMemoryDirectoryServer.getListenPort();
 
-		realm.setConnectionURL("ldap://localhost:" + port);
+		realm.setConnectionURL("ldap://localhost:%d".formatted(port));
 		realm.setConnectionName("cn=LdapTester1,ou=Users,dc=myorg,dc=com");
 		realm.setConnectionPassword("12345");
 
@@ -65,16 +77,7 @@ public class RoleGroupMapperTest {
 
 	@BeforeEach
 	public void setup() throws Exception {
-		String loggings = ClassLoader.getSystemResource("logging.properties").getPath();
-
-		System.setProperty("java.util.logging.config.file", loggings);
-
-		TomcatURLStreamHandlerFactory.getInstance();
-		System.setProperty("catalina.base", "");
-		ConfigFileLoader.setSource(new CatalinaBaseConfigurationSource(new File(System.getProperty("catalina.base")), null));
-
-
-		InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(baseDNs);
+		InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(BASE_DN);
 		config.setSchema(null);
 		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
 
@@ -97,14 +100,12 @@ public class RoleGroupMapperTest {
 
 	@Test
 	public void testEmptyRoleToGroupMappingJndiRealm() throws LifecycleException {
-
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(null, null);
 		realm.start();
 	}
 
 	@Test
 	public void testNoExistingResource() {
-
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(null, "classpath:conf/tomcat-role-group-mapping1.xml");
 
 		assertThrows(LifecycleException.class, realm::start);
@@ -112,7 +113,6 @@ public class RoleGroupMapperTest {
 
 	@Test
 	public void testGetNestedGroups() throws LifecycleException {
-
 		TesterContext context = new TesterContext();
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(context, "classpath:conf/tomcat-role-group-mapping.xml");
 		realm.start();
@@ -127,7 +127,6 @@ public class RoleGroupMapperTest {
 				"cn=ApplSubSubGroup1,ou=SubGroups,ou=Groups,dc=myorg,dc=com",
 				"AllAuthenticated"
 			));
-
 	}
 
 	@Test
@@ -145,7 +144,6 @@ public class RoleGroupMapperTest {
 		assertEquals("director", roleToGroupMapping.get("Admin"));
 		assertEquals("director2", roleToGroupMapping.get("Admin2"));
 		assertEquals("cn=UserGroup1,ou=Groups,dc=myorg,dc=com", roleToGroupMapping.get("PowerUser"));
-
 	}
 
 }
