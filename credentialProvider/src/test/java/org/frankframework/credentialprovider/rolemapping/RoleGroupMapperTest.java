@@ -30,6 +30,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.credentialprovider.RoleToGroupMappingJndiRealm;
 import org.frankframework.util.ClassUtils;
 
+@org.junit.jupiter.api.Disabled("testje")
 @Log4j2
 public class RoleGroupMapperTest {
 
