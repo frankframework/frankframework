@@ -76,7 +76,7 @@ import org.frankframework.util.StringUtil;
  * }</pre>
  * </p>
  * <p>
- * Please note that we assume keycloak version 18 or higher is used, so we use the new endpoints and not the old ones. So `<host></host>/realms/test` is
+ * Please note that we assume keycloak version 18 or higher is used, so we use the new endpoints and not the old ones. So `HOST_NAME/realms/test` is
  * used and not `HOST_NAME/auth/realms/test`.
  * </p>
  *
