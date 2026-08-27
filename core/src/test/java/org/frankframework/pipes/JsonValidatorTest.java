@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Arrays;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -74,7 +75,7 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		PipeRunResult result = doPipe(input);
 
 		assertEquals("failure", result.getPipeForward().getName());
-		assertEquals(input, result.getResult().asString());
+		Assertions.assertThat(result.getResult().isNull()).describedAs("Expected result to be a NULL message").isTrue();
 
 		String reason = (String)session.get("failureReason");
 		assertThat(reason, containsString("required property 'members' not found"));

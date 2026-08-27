@@ -9,9 +9,9 @@
     "cypress:ci": "cypress run --config baseUrl=http://localhost:8080/iaf-test/iaf/gui"
   },
   "devDependencies": {
-    "cypress": "^15.18.1",
+    "cypress": "^15.20.1",
     "cypress-multi-reporters": "^2.0.5",
-    "mocha": "^11.7.6",
+    "mocha": "^11.8.0",
     "mochawesome": "^8.0.1",
     "typescript": "~5.9.3"
   },

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -147,6 +148,9 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	/** Removes all files and folders in the base directory */
 	private void cleanBaseMailFolder() {
+		if (baseMailFolder == null) {
+			return;
+		}
 		List<MailFolder> folders = baseMailFolder.childFolders().get().getValue();
 		for (MailFolder mailFolder : folders) {
 			deleteFolderById(mailFolder.getId());
@@ -229,13 +233,23 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 		body.setContent(content);
 		message.setBody(body);
 
-		List<Recipient> toRecipients = new LinkedList<Recipient>();
+		List<Recipient> toRecipients = new LinkedList<>();
 		Recipient recipient = new Recipient();
 		EmailAddress emailAddress = new EmailAddress();
 		emailAddress.setAddress("sergi@frankframework.org");
+		emailAddress.setName("Sergi");
 		recipient.setEmailAddress(emailAddress);
 		toRecipients.add(recipient);
 		message.setToRecipients(toRecipients);
+
+		Recipient replyToRecipient = new Recipient();
+		EmailAddress replyToEmailAddress = new EmailAddress();
+		replyToEmailAddress.setAddress("frank-test-mailbox@wearefrank.nl");
+		replyToEmailAddress.setName("Frank! Test Mailbox");
+		replyToRecipient.setEmailAddress(replyToEmailAddress);
+		List<Recipient> replyToRecipients = new ArrayList<>();
+		replyToRecipients.add(replyToRecipient);
+		message.setReplyTo(replyToRecipients);
 
 		Message response = getRequestBuilder().messages().post(message);
 

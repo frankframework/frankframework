@@ -237,14 +237,11 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 				for (Map.Entry<String, Object> entry : entries) {
 					String key = entry.getKey();
 					Object value = entry.getValue();
-					if (value instanceof Message message) {
-						paramsObject.add(key, message.asString());
-					} else if (value instanceof Number number) {
-						paramsObject.add(key, number);
-					} else if (value instanceof Boolean bool) {
-						paramsObject.add(key, bool);
-					} else {
-						paramsObject.add(key, entry.getValue().toString());
+					switch (value) {
+						case Message message -> paramsObject.add(key, message.asString());
+						case Number number -> paramsObject.add(key, number);
+						case Boolean bool -> paramsObject.add(key, bool);
+						case null, default -> paramsObject.add(key, entry.getValue().toString());
 					}
 				}
 				paramsObject.close();

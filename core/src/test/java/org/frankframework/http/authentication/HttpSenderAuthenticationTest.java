@@ -717,16 +717,16 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION);
 
 		KeystoreConfiguration keystoreConfiguration = new KeystoreConfiguration();
-		keystoreConfiguration.setKeystoreResource("/Signature/saml-keystore.p12");
-		keystoreConfiguration.setKeystorePassword("geheim");
+		keystoreConfiguration.setResource("/Signature/saml-keystore.p12");
+		keystoreConfiguration.setPassword("geheim");
 		keystoreConfiguration.setKeystoreAlias("myalias");
 		keystoreConfiguration.setKeystoreAliasPassword("geheim");
 		sender.setKeystoreConfiguration(keystoreConfiguration);
 
 		TruststoreConfiguration truststoreConfiguration = new TruststoreConfiguration();
-		truststoreConfiguration.setTruststoreResource("/Signature/saml-keystore.p12");
-		truststoreConfiguration.setTruststorePassword("geheim");
-		truststoreConfiguration.setTruststoreAuthAlias("myalias");
+		truststoreConfiguration.setResource("/Signature/saml-keystore.p12");
+		truststoreConfiguration.setPassword("geheim");
+		truststoreConfiguration.setAuthAlias("myalias");
 		sender.setTruststoreConfiguration(truststoreConfiguration);
 
 		sender.setClientId(MockTokenServer.CLIENT_ID);

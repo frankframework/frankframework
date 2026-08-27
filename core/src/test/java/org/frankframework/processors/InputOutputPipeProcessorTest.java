@@ -2,7 +2,6 @@ package org.frankframework.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -345,7 +344,7 @@ public class InputOutputPipeProcessorTest {
 		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
 
 		// Assert
-		assertNull(prr.getResult().asString());
+		assertTrue(prr.getResult().isNull());
 		assertFalse(pipeExecuted.get(), "Pipe executed but should not have been");
 	}
 

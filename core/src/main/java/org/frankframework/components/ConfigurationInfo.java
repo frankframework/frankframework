@@ -20,17 +20,24 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.Collections;
+import java.util.List;
 import java.util.jar.Manifest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class ConfigurationInfo extends ComponentInfo {
+	@Getter
+	private final List<String> configurationNames;
+
 	private static final DateTimeFormatter BUILDINFO_PROPERTIES_FORMATTER = DateTimeFormatter
 			.ofPattern("yyyyMMdd-HHmm[ss]")
 			.withZone(ZoneOffset.UTC)
@@ -39,6 +46,7 @@ public class ConfigurationInfo extends ComponentInfo {
 
 	public ConfigurationInfo(Manifest manifest) {
 		super(manifest);
+		this.configurationNames = StringUtil.split(manifest.getMainAttributes().getValue("FrankFramework-Configurations"));
 	}
 
 	/**
@@ -48,6 +56,7 @@ public class ConfigurationInfo extends ComponentInfo {
 	 */
 	public ConfigurationInfo(String name, String version, String timestamp) {
 		super(name, version, parseBuildInfoDate(timestamp));
+		this.configurationNames = Collections.emptyList();
 	}
 
 	@Override

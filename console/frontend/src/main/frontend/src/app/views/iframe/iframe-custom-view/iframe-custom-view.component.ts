@@ -16,7 +16,6 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly location: LocationStrategy = inject(LocationStrategy);
-  private readonly window: Window = inject(Window);
 
   override ngOnInit(): void {
     super.ngOnInit();
@@ -41,12 +40,13 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
 
     const view = routeState['view'];
 
-    this.url = view['url'].startsWith('/') ? view['url'] : this.appService.getServerPath() + view['url'];
+    const url = view['url'].startsWith('/') ? view['url'] : this.appService.getServerPath() + view['url'];
+    this.url.set(url);
 
-    this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
+    this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
     setTimeout(() => {
       // run after router events have passed
-      this.setIframeSource(this.url, view['name']);
+      this.setIframeSource(url, view['name']);
     }, 50);
   }
 }

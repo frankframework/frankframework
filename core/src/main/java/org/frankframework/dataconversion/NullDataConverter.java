@@ -55,8 +55,8 @@ final class NullDataConverter implements DataConverter {
 	}
 
 	@Override
-	public @Nullable String asString() {
-		return null;
+	public String asString() {
+		return "";
 	}
 
 	@Override
@@ -75,8 +75,8 @@ final class NullDataConverter implements DataConverter {
 	}
 
 	@Override
-	public byte @Nullable [] asByteArray() {
-		return null;
+	public byte[] asByteArray() {
+		return new byte[0];
 	}
 
 	@Override

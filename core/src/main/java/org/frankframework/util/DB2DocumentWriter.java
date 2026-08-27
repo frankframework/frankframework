@@ -168,7 +168,9 @@ public class DB2DocumentWriter {
 				}
 				try {
 					Message value = JdbcUtil.getValueAsMessage(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, trimSpaces, getBlobSmart, false);
-					if (value.isRequestOfType(Number.class)) {
+					if (value.isNull()) {
+						row.add(columnName, (String)null);
+					} else if (value.isRequestOfType(Number.class)) {
 						Number n = value.getValueAsType();
 						row.add(columnName, n);
 					} else if (value.isRequestOfType(Boolean.class)) {

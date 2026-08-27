@@ -21,12 +21,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -59,7 +60,7 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 	@NonNull
 	private Path locateJarFile() throws ClassLoaderException {
 		// Name has been, set is it an absolute path?
-		if(jarFileName != null) {
+		if (jarFileName != null) {
 			return new File(jarFileName).toPath();
 		}
 
@@ -68,7 +69,7 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 			Path configDir = ConfigurationUtils.getConfigurationDirectory();
 			try (Stream<Path> input = Files.list(configDir)) {
 				return input.filter(JarFileClassLoader::isJarFile)
-						.filter(e -> getConfigurationName().equals(findConfigurationName(e)))
+						.filter(e -> findConfigurationNames(e).contains(getConfigurationName()))
 						.findFirst()
 						.orElseThrow(()-> new FileNotFoundException(getConfigurationName() + " not found"));
 			}
@@ -86,14 +87,18 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 		this.jarFileName = jar;
 	}
 
-	@Nullable
-	public static String findConfigurationName(Path path) {
+	public static List<String> findConfigurationNames(Path path) {
 		try (InputStream potentialJarFile = Files.newInputStream(path)) {
 			BuildInfoValidator configDetails = new BuildInfoValidator(potentialJarFile);
-			return configDetails.getName();
+
+			if (!configDetails.getConfigurationNames().isEmpty()) {
+				return configDetails.getConfigurationNames();
+			}
+
+			return List.of(configDetails.getName());
 		} catch (Exception e) {
 			log.debug("unable to open file [{}] assume it's not a (valid) configuration", path, e);
 		}
-		return null;
+		return Collections.emptyList();
 	}
 }

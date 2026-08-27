@@ -86,10 +86,11 @@ public class ComponentInfo {
 	}
 
 	private void validate() {
-		if(StringUtils.isEmpty(name)) {
+		if (StringUtils.isEmpty(name)) {
 			throw new IllegalArgumentException("no (valid) name");
 		}
-		if(StringUtils.isEmpty(version)) {
+
+		if (StringUtils.isEmpty(version)) {
 			throw new IllegalArgumentException("no (valid) version");
 		}
 	}

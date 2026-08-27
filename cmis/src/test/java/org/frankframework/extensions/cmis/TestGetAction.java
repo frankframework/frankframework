@@ -79,11 +79,11 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setFileSessionKey("fis");
 		configure(bindingType, getProperties, getDocumentContent);
 
-		String actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session).asString();
+		Message actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session);
 		if (!getProperties) {
-			assertNull(actualResult);
+			assertTrue(actualResult.isNull());
 		} else {
-			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult.asString());
 		}
 
 		Message stream = session.getMessage(sender.getFileSessionKey());
@@ -112,11 +112,11 @@ public class TestGetAction extends CmisSenderTestBase {
 
 		configure(bindingType, getProperties, getDocumentContent);
 
-		String actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session).asString();
+		Message actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session);
 		if (!getProperties) {
-			assertNull(actualResult);
+			assertTrue(actualResult.isNull());
 		} else {
-			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
+			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult.asString());
 		}
 
 		Message message = (Message) session.get(sender.getFileSessionKey());

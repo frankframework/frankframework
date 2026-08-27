@@ -89,19 +89,19 @@
 		<junit.excludedTags />
 		<junit.includedTags />
 
-		<jackson.version>2.22.1</jackson.version>
-		<tools.jackson.version>3.2.1</tools.jackson.version>
+		<jackson.version>2.22.2</jackson.version>
+		<tools.jackson.version>3.2.2</tools.jackson.version>
 		<cxf.version>4.2.3</cxf.version>
-		<spring.version>7.0.8</spring.version>
-		<spring-security.version>7.1.0</spring-security.version>
-		<spring-integration.version>7.1.0</spring-integration.version>
-		<spring.boot.version>4.1.0</spring.boot.version>
-		<tomcat.version>11.0.24</tomcat.version>
-		<tika.version>3.3.2</tika.version>
+		<spring.version>7.0.9</spring.version>
+		<spring-security.version>7.1.1</spring-security.version>
+		<spring-integration.version>7.1.1</spring-integration.version>
+		<spring.boot.version>4.1.1</spring.boot.version>
+		<tomcat.version>11.0.25</tomcat.version>
+		<tika.version>4.0.0</tika.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
-		<micrometer.version>1.17.0</micrometer.version>
+		<micrometer.version>1.17.1</micrometer.version>
 		<argLine />
 		<!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
@@ -119,14 +119,14 @@
 		<mysql.driver.version>26.7.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.10</mariadb.driver.version>
 		<postgresql.driver.version>42.7.13</postgresql.driver.version>
-		<mongodb.driver.version>5.9.1</mongodb.driver.version>
+		<mongodb.driver.version>5.10.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.3.1</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.34.0</rabbitmq.driver.version>
-		<rabbitmq.jms.version>3.7.0</rabbitmq.jms.version>
+		<rabbitmq.jms.version>3.8.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.39.2</aws.java.sdk.version>
 
@@ -266,12 +266,12 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.35.1</version>
+				<version>4.36.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.6.0-jre</version>
+				<version>33.7.1-jre</version>
 			</dependency>
 			<dependency>
 				<!-- needed for io.fabric8:kubernetes-client transitive deps -->
@@ -858,6 +858,24 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>resolve-mockito-agent</id>
+							<goals>
+								<goal>copy</goal>
+							</goals>
+							<phase>initialize</phase>
+							<configuration>
+								<artifact>org.mockito:mockito-core:${mockito.version}:jar</artifact>
+								<stripVersion>true</stripVersion>
+								<outputDirectory>${project.build.directory}</outputDirectory>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
 					<version>3.5.0</version>
 				</plugin>
@@ -886,7 +904,8 @@
 					<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
-						<argLine>@{argLine} -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
+						<!-- Because of this mockito agent property, mockito now needs to be a dependency of every single module even when not used in tests in that module -->
+						<argLine>@{argLine} -javaagent:${project.build.directory}/mockito-core.jar -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
 					</configuration>
 					<executions>
 						<execution>
@@ -973,7 +992,7 @@
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
-					<version>3.9.0</version>
+					<version>3.10.0</version>
 					<configuration>
 						<java>
 							<removeUnusedImports />
@@ -1185,7 +1204,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>13.10.0</version>
+							<version>14.0.0</version>
 						</dependency>
 					</dependencies>
 					<executions>
@@ -1454,6 +1473,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
