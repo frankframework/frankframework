@@ -128,6 +128,14 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return defaultValue;
 	}
 
+	public boolean getValue(@NonNull String parameterName, boolean defaultValue) {
+		ParameterValue pv = get(parameterName);
+		if (pv != null) {
+			return pv.asBooleanValue(defaultValue);
+		}
+		return defaultValue;
+	}
+
 	@Nullable
 	public String getValue(@NonNull String parameterName) {
 		return getValue(parameterName, (String) null);

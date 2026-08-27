@@ -146,8 +146,10 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		try {
 			String token = future.get().accessToken();
 			return "Bearer " + token;
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
+			throw new IOException("interrupted while generating access token", e);
+		} catch (ExecutionException e) {
 			throw new IOException("could not generate access token", e);
 		}
 	}

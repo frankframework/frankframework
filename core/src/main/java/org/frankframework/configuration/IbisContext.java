@@ -204,6 +204,9 @@ public class IbisContext extends IbisApplicationContext {
 		try {
 			classLoaderManager.reload(configurationName);
 			unload(configurationName);
+			if (Thread.interrupted()) { // clear the Thread-Interrupted status because it will, ahem, interrupt the loading process
+				APPLICATION_LOG.info("Thread interrupted while unloading configuration [{}], status cleared before reloading", configurationName);
+			}
 			load(configurationName);
 		} catch (ClassLoaderException e) {
 			log("failed to reload", MessageEventLevel.ERROR, e);
