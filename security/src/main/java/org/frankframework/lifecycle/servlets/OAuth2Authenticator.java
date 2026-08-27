@@ -29,6 +29,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
@@ -50,14 +51,12 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 
 /**
- * OAuth2 Authentication provider which contains 4 defaults (Google, GitHub,
- * Facebook and Okta), as well as a custom setting which allows users to
+ * OAuth2 Authentication provider which contains 5 defaults (Google, GitHub, Facebook, Okta and Keycloak), as well as a custom setting which allows users to
  * use their own IDP.
- *
  * <p>
  * Default redirect url is as follows:
  * <pre>{@code
- * {baseUrl}/-servlet-name-/oauth2/code/{registrationId}
+ *   {baseUrl}/-servlet-name-/oauth2/code/{registrationId}
  * }</pre>
  * </p>
  * <p>
@@ -70,11 +69,15 @@ import org.frankframework.util.StringUtil;
  * <p>
  * This authenticator should be configured by setting its type to 'OAUTH2', for example:
  * <pre>{@code
- * application.security.console.authentication.type=OAUTH2
- * application.security.console.authentication.provider=google
- * application.security.console.authentication.clientId=my-client-id
- * application.security.console.authentication.clientSecret=my-client-secret
+ *   application.security.console.authentication.type=OAUTH2
+ *   application.security.console.authentication.provider=google
+ *   application.security.console.authentication.clientId=my-client-id
+ *   application.security.console.authentication.clientSecret=my-client-secret
  * }</pre>
+ * </p>
+ * <p>
+ * Please note that we assume keycloak version 18 or higher is used, so we use the new endpoints and not the old ones. So `HOST_NAME/realms/test` is
+ * used and not `HOST_NAME/auth/realms/test`.
  * </p>
  *
  * @author Niels Meijer
@@ -183,7 +186,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	private ICredentials clientCredentials;
 
 	/**
-	 * The tenant ID to use for the Azure provider.
+	 * The tenant ID to use for the Azure or Keycloak provider.
 	 */
 	private @Setter String tenantId = null;
 
@@ -197,6 +200,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	 *   <li>facebook - Facebook OAuth2</li>
 	 *   <li>okta - Okta OAuth2</li>
 	 *   <li>azure - Microsoft Azure OAuth2</li>
+	 *   <li>keycloak - Keycloak</li>
 	 *   <li>custom - Custom OAuth2 provider (requires additional configuration)</li>
 	 * </ul>
 	 * </p>
@@ -326,6 +330,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 				yield commonProvider.getBuilder(provider);
 			}
 			case "azure" -> createAzureBuilder(credentials.getUsername());
+			case "keycloak" -> createKeycloakBuilder();
 			case "custom" -> createCustomBuilder(provider, provider.toLowerCase());
 			default -> throw new IllegalStateException("unknown OAuth provider");
 		};
@@ -338,7 +343,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 	/**
 	 * @param appId the Azure ClientID
-	 * See https://login.microsoftonline.com/%s/.well-known/openid-configuration
+	 *              See <a href="https://login.microsoftonline.com/%s/.well-known/openid-configuration">Microsoft well known information</a>
 	 */
 	private ClientRegistration.Builder createAzureBuilder(@NonNull String appId) {
 		if (StringUtils.isBlank(tenantId)) throw new IllegalStateException("when using Azure provider the tenantId property is required");
@@ -357,6 +362,34 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		builder.userInfoUri("https://graph.microsoft.com/oidc/userinfo");
 		builder.userNameAttributeName("email");
 		builder.clientName("azure");
+
+		return builder;
+	}
+
+	/**
+	 * Uses Keycloak's OIDC discovery endpoint to autoconfigure all provider URLs. We use the issuerUri to base the discovery url off of.
+	 * The discovery document is fetched from: {@code {baseUrl}/realms/{tenantId}/.well-known/openid-configuration}
+	 */
+	private ClientRegistration.Builder createKeycloakBuilder() {
+		if (StringUtils.isBlank(tenantId)) {
+			throw new IllegalStateException("when using Keycloak provider the tenantId property is required");
+		}
+
+		if (StringUtils.isBlank(baseUrl)) {
+			throw new IllegalStateException("when using Keycloak provider the baseUrl property is required");
+		}
+
+		String issuerUri = "%s/realms/%s".formatted(baseUrl, tenantId);
+
+		// Fetches .well-known/openid-configuration to auto-configure authorizationUri, tokenUri, jwkSetUri, userInfoUri, etc.
+		ClientRegistration.Builder builder = ClientRegistrations.fromOidcIssuerLocation(issuerUri);
+		builder.registrationId("keycloak");
+
+		// Use the default scopes but allow users to overwrite them
+		builder.scope(StringUtil.split(StringUtils.isBlank(scopes) ? "openid,profile,email" : scopes));
+
+		builder.userNameAttributeName("preferred_username");
+		builder.clientName("keycloak");
 
 		return builder;
 	}
@@ -390,8 +423,8 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		}
 
 		final String computed;
-		if(baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
-			computed = baseUrl.substring(0, baseUrl.length()-1);
+		if (baseUrl.endsWith("/")) { // Ensure the url does not end with a slash
+			computed = baseUrl.substring(0, baseUrl.length() - 1);
 		} else {
 			computed = baseUrl;
 		}
@@ -433,12 +466,12 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	private String computeRelativePathFromServlet() {
 		String servletPath = getPrivateEndpoints().stream().findFirst().orElse("");
 
-		if(servletPath.endsWith("*")) { // Strip the '*' if the url ends with it
-			servletPath = servletPath.substring(0, servletPath.length()-1);
+		if (servletPath.endsWith("*")) { // Strip the '*' if the url ends with it
+			servletPath = servletPath.substring(0, servletPath.length() - 1);
 		}
 
-		if(servletPath.endsWith("/")) { // Ensure the url does not end with a slash
-			servletPath = servletPath.substring(0, servletPath.length()-1);
+		if (servletPath.endsWith("/")) { // Ensure the url does not end with a slash
+			servletPath = servletPath.substring(0, servletPath.length() - 1);
 		}
 
 		log.debug("using oauth servlet-path [{}]", servletPath);
