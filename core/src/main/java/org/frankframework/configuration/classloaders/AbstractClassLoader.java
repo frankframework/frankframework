@@ -112,6 +112,14 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	/**
 	 * The root directory where all resources are located. This may purely be used within the ClassLoader and resources
 	 * should not be aware of this 'root' directory.
+	 * <p/>
+	 * The basePath can be determined from the configurationName if this includes a directory, or it's the name itself.
+	 * <p/>
+	 * <p>
+	 * For example: <br/>
+	 * {@code /myPath/to/configuration.xml} becomes basePath='/myPath/to/' and configurationFile=configuration.xml<br/>
+	 * {@code /myPath/my-configuration.xml} becomes basePath='/myPath/' and configurationFile=my-configuration.xml
+	 * </p>
 	 *
 	 * @return the path prefix that is used for retrieving files through this ClassLoader
 	 */
