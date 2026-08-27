@@ -17,8 +17,8 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -33,6 +33,7 @@ import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.stream.Message;
 
 class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	private final String PRINCIPAL_NAME = "TST9";
@@ -104,9 +105,9 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 		PipeRunResult prr = doPipe(pipe, "", session);
 
 		// Expect
-		String result = prr.getResult().asString();
+		Message result = prr.getResult();
 		assertEquals("success", prr.getPipeForward().getName());
-		assertNull(result);
+		assertTrue(result.isNull());
 	}
 
 	@Test
@@ -181,10 +182,10 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 		PipeRunResult prr = doPipe(pipe, "", session);
 
 		// Expect
-		String result = prr.getResult().asString();
+		Message result = prr.getResult();
 		assertEquals(NOT_FOUND_FORWARD_NAME, prr.getPipeForward().getName());
 		assertEquals(NOT_FOUND_FORWARD_PATH, prr.getPipeForward().getPath());
-		assertNull(result);
+		assertTrue(result.isNull());
 	}
 
 	@Test

@@ -347,15 +347,16 @@ public class Message implements Serializable {
 	/**
 	 * Return the request object as a byte array.
 	 */
-	public byte @Nullable[] asByteArray() throws IOException {
+	public byte[] asByteArray() throws IOException {
+		if (isEmpty()) return new byte[0];
 		return request.asByteArray();
 	}
 
 	/**
 	 * Return the request object as a byte array with the specified character encoding.
 	 */
-	public byte @Nullable[] asByteArray(@Nullable String defaultEncodingCharset) throws IOException {
-		if (isNull()) return null;
+	public byte[] asByteArray(@Nullable String defaultEncodingCharset) throws IOException {
+		if (isEmpty()) return new byte[0];
 		return StreamUtil.streamToBytes(asInputStream(defaultEncodingCharset));
 	}
 
@@ -364,7 +365,6 @@ public class Message implements Serializable {
 	 * modifying the state of the Message object.
 	 * This operation is not thread-safe.
 	 */
-	@Nullable
 	public String asString() throws IOException {
 		return request.asString();
 	}
