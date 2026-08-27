@@ -34,14 +34,14 @@ public interface IPushingListener<M> extends IListener<M> {
 	 * Set the handler that will do the processing of the message.
 	 * Each of the received messages must be pushed through handler.processMessage()
 	 */
-	void setHandler(IMessageHandler<M> handler);
+	void setHandler(@NonNull IMessageHandler<M> handler);
 
 	/**
 	 * Set a (single) listener that will be notified of any exceptions.
 	 * The listener should use this listener to notify the receiver of
 	 * any exception that occurs outside the processing of a message.
 	 */
-	void setExceptionListener(IbisExceptionListener listener);
+	void setExceptionListener(@NonNull IbisExceptionListener listener);
 
 	/**
 	 * Wrap a raw message in a MessageWrapper. Populate {@link PipeLineSession} with properties
@@ -55,5 +55,5 @@ public interface IPushingListener<M> extends IListener<M> {
 	 * @return Wrapped raw message
 	 * @throws ListenerException If any exception occurs during wrapping, a {@link ListenerException} is thrown.
 	 */
-	RawMessageWrapper<@NonNull M> wrapRawMessage(@NonNull M rawMessage, PipeLineSession session) throws ListenerException;
+	RawMessageWrapper<@NonNull M> wrapRawMessage(@NonNull M rawMessage, @NonNull PipeLineSession session) throws ListenerException;
 }

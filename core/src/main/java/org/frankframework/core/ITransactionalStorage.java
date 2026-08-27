@@ -55,7 +55,7 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	 *
 	 * The messageId should be unique.
 	 */
-	String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message, PipeLineSession pipeLineSession) throws SenderException;
+	String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
 
 	/**
 	 * Retrieves and deletes the message.

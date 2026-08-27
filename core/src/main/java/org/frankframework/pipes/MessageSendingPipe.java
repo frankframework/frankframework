@@ -513,11 +513,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	protected String doLogToMessageLog(@NonNull final Message input, @NonNull final PipeLineSession session, @NonNull final Message originalMessage, @NonNull final String messageID, @NonNull String correlationID) throws SenderException {
-		return storeMessage(session, messageID, correlationID, input, "no audit trail", null);
+		return storeMessage(messageID, correlationID, input, "no audit trail", null);
 	}
 
-	protected final String storeMessage(PipeLineSession pipeLineSession, String messageID, String correlationID, Message messageToStore, String messageTrail, String label) throws SenderException {
-		messageLog.storeMessage(messageID, correlationID, TimeProvider.nowAsDate(), messageTrail, label, new MessageWrapper<>(messageToStore, messageID, correlationID), pipeLineSession);
+	protected final String storeMessage(String messageID, String correlationID, Message messageToStore, String messageTrail, String label) throws SenderException {
+		messageLog.storeMessage(messageID, correlationID, TimeProvider.nowAsDate(), messageTrail, label, new MessageWrapper<>(messageToStore, messageID, correlationID));
 		return correlationID;
 	}
 

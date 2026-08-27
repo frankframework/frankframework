@@ -55,8 +55,8 @@ public class MessageBrowsingFilterTest {
 		String messageRoot = "message";
 		filter.setMessageMask(messageRoot, storage);
 		storage.configure();
-		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageRoot, pipeLineSession);
-		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", "out filter", pipeLineSession);
+		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageRoot);
+		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", "out filter");
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
@@ -207,8 +207,8 @@ public class MessageBrowsingFilterTest {
 
 		filter.setMessageMask(messageRoot, storage, listener);
 		storage.configure();
-		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageInFilter, pipeLineSession);
-		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", messageOutOfFilter, pipeLineSession);
+		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageInFilter);
+		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", messageOutOfFilter);
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){

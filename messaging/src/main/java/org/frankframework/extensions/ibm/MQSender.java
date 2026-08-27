@@ -24,6 +24,9 @@ import jakarta.jms.Session;
 import jakarta.jms.Topic;
 import jakarta.jms.TopicSession;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.jms.JmsSender;
 import org.frankframework.util.ClassUtils;
 
@@ -38,8 +41,8 @@ import org.frankframework.util.ClassUtils;
 public class MQSender extends JmsSender {
 
 	@Override
-	public MessageProducer getMessageProducer(Session session,
-			Destination destination) throws JMSException {
+	public @NonNull MessageProducer getMessageProducer(@NonNull Session session,
+													   @Nullable Destination destination) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.getMessageProducer(session, destination);
 	}

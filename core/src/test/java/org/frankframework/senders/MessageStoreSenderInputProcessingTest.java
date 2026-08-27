@@ -15,7 +15,6 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.MessageStoreSender;
@@ -33,7 +32,7 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 			@Override public void start() { } // Suppress start as it's will do a JNDI lookup
 
 			@Override
-			public @NonNull String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message, PipeLineSession pipeLineSession) {
+			public @NonNull String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) {
 				mockMessageStore.put(messageId, message);
 				return messageId;
 			}

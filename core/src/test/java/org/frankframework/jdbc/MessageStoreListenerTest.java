@@ -303,7 +303,7 @@ public class MessageStoreListenerTest {
 		storage.configure();
 		storage.start();
 		try {
-			return storage.storeMessage("fakeMid", "fakeCid", TimeProvider.nowAsDate(), "fakeComments", "fakeLabel", message, pipeLineSession);
+			return storage.storeMessage("fakeMid", "fakeCid", TimeProvider.nowAsDate(), "fakeComments", "fakeLabel", message);
 		} finally {
 			storage.stop();
 		}

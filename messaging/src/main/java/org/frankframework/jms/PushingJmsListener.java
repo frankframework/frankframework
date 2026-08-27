@@ -131,7 +131,7 @@ public class PushingJmsListener extends AbstractJmsListener implements IPortConn
 	}
 
 	@Override
-	public RawMessageWrapper<@NonNull Message> wrapRawMessage(@NonNull Message rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<@NonNull Message> wrapRawMessage(@NonNull Message rawMessage, @NonNull PipeLineSession session) {
 		Map<String, Object> messageProperties = extractMessageProperties(rawMessage);
 		session.putAll(messageProperties);
 		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());

@@ -27,6 +27,8 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -61,18 +63,18 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 			}
 
 			@Override
-			public Destination getDestination() {
-				return null;
+			public @NonNull Destination getDestination() {
+				return mock();
 			}
 
 			@Override
-			public MessageProducer getMessageProducer(Session session, Destination destination) {
+			public @NonNull MessageProducer getMessageProducer(@NonNull Session session, @Nullable Destination destination) {
 				return mock(MessageProducer.class);
 			}
 
 			@Override
 			protected Session createSession() throws JmsException {
-				Session s = mock(Session.class);
+				Session s = mock();
 				try {
 					doAnswer(message).when(s).createBytesMessage();
 				} catch (JMSException e) {

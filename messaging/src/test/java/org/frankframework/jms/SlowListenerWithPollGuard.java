@@ -112,17 +112,17 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
 
 
 	@Override
-	public void setHandler(IMessageHandler<Message> handler) {
+	public void setHandler(@NonNull IMessageHandler<Message> handler) {
 		// No-op
 	}
 
 	@Override
-	public void setExceptionListener(IbisExceptionListener listener) {
+	public void setExceptionListener(@NonNull IbisExceptionListener listener) {
 		// No-op
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, @NonNull PipeLineSession session) {
 		return null;
 	}
 

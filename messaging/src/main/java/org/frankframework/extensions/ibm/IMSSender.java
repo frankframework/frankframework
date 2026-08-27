@@ -29,6 +29,7 @@ import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -99,7 +100,7 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public jakarta.jms.@NonNull Message createMessage(@NonNull Session session, String correlationID, Message message, PipeLineSession pipeLineSession, MessageClass messageClass) throws JMSException {
+	public jakarta.jms.@NonNull Message createMessage(@NonNull Session session, String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException {
 		BytesMessage bytesMessage = session.createBytesMessage();
 
 		setMessageCorrelationID(bytesMessage, correlationID);

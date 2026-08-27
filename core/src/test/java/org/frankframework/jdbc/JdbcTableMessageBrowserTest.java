@@ -133,7 +133,7 @@ class JdbcTableMessageBrowserTest {
 		for (int i = 0; i < nrOfMessages; i++) {
 			String formatted = String.format("%05d", i);
 			Date receivedDate = new Date(millisNow + 1_000L * i); // Message iterator always order by receivedDate so make sure that it is unique and incrementing. The JVM might loop too fast for now() to actually increment enough for the SQL date-time resolution.
-			storage.storeMessage("mid" + formatted, "cid" + formatted, receivedDate, null, null, formatted, session);
+			storage.storeMessage("mid" + formatted, "cid" + formatted, receivedDate, null, null, formatted);
 		}
 	}
 }

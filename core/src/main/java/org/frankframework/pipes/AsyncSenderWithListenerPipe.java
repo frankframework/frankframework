@@ -169,7 +169,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 				}
 			}
 
-			return storeMessage(session, messageID, correlationID, input, messageTrail, label);
+			return storeMessage(messageID, correlationID, input, messageTrail, label);
 		} catch (TransformerException | IOException | SAXException e) {
 			throw new SenderException("unable to apply xml transformation", e);
 		}

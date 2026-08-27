@@ -175,7 +175,7 @@ public class ReceiverSubAdapterTest {
 		ITransactionalStorage<Serializable> errorStorage = mock();
 
 		Map<String, Serializable> storedMessages = new HashMap<>();
-		when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any(), any())).thenAnswer(params -> {
+		when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any())).thenAnswer(params -> {
 			String msgId = params.getArgument(0);
 			Serializable message = params.getArgument(5);
 
@@ -232,7 +232,7 @@ public class ReceiverSubAdapterTest {
 			mainAdapterReceiver.processRawMessage(mockListener, rawMessage, session, false);
 		}
 		// Assert
-		verify(mockErrorStorage, times(1)).storeMessage(any(), any(), any(), any(), any(), any(), any());
+		verify(mockErrorStorage, times(1)).storeMessage(any(), any(), any(), any(), any(), any());
 
 		// Act 2 -- 1st manual retry
 		log.info("*>>> Retrying message; Run 2");
