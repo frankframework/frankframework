@@ -11,11 +11,10 @@ import { Subscription } from 'rxjs';
   imports: [TitleCasePipe],
 })
 export class IframeCustomViewComponent extends BaseIframeComponent implements OnInit, OnDestroy {
+  private routeSubscription: Subscription | null = null;
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly location: LocationStrategy = inject(LocationStrategy);
-  private readonly window: Window = inject(Window);
-  private routeSubscription: Subscription | null = null;
 
   override ngOnInit(): void {
     super.ngOnInit();
@@ -40,18 +39,13 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
 
     const view = routeState['view'];
 
-    if (view['url'].includes('http')) {
-      this.window.open(view['url'], view['name']);
-      this.redirectURL = view['url'];
-      this.url = '';
-    } else {
-      this.url = this.appService.getServerPath() + view['url'];
-    }
+    const url = view['url'].startsWith('/') ? view['url'] : this.appService.getServerPath() + view['url'];
+    this.url.set(url);
 
-    this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
+    this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
     setTimeout(() => {
       // run after router events have passed
-      this.setIframeSource(this.url, view['name']);
+      this.setIframeSource(url, view['name']);
     }, 50);
   }
 }
