@@ -94,7 +94,7 @@ public class TestAppender extends AbstractAppender implements AutoCloseable {
 		if (logEvent.getMessage() == null || leakDetectionFilter && logEvent.getMessage().getFormattedMessage().contains("Leak detection")) {
 			return;
 		}
-		logMessages.add((String) this.toSerializable(logEvent));
+		logMessages.add(("" + this.toSerializable(logEvent)).trim());
 		logEvents.add(logEvent);
 	}
 

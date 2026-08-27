@@ -70,7 +70,7 @@ public class Parameter extends AbstractParameter<Message> {
 		this.type = type;
 
 		if (type == ParameterType.XML) {
-			ConfigurationWarnings.add(this, log, "use attribute xpathResult with value [XML] instead");
+			ConfigurationWarnings.add(this, log, "don't use type=XML, use attribute xpathResult=XML instead");
 			setXpathResult(OutputType.XML);
 		}
 
