@@ -46,8 +46,9 @@ public abstract class AbstractJarBytesClassLoader extends AbstractBytesClassLoad
 			while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
 				String fileName = jarEntry.getName();
 				if(getBasePath() != null) {
-					boolean isFolder = fileName.endsWith("/");
 					// If the name ends with a slash, assume it's a folder.
+					boolean isFolder = fileName.endsWith("/");
+
 					if(isFolder || fileName.startsWith("META-INF/")) { // Ignore all folders and files in META-INF
 						log.debug("ignoring {} [{}]", ( isFolder ? "folder" : "file" ), fileName);
 						continue;
