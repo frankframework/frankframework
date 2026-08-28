@@ -52,11 +52,11 @@ public class ReloadSender extends AbstractSenderWithParameters {
 		boolean forceReload = getForceReload();
 
 		ParameterValueList pvl = getParameterValueList(message, session);
-		if(pvl != null) {
-			if(pvl.contains("name"))
-				configName = pvl.get("name").asStringValue();
-			if(pvl.contains("forceReload"))
-				forceReload = pvl.get("forceReload").asBooleanValue(false);
+		if (pvl != null) {
+			if (pvl.contains("name"))
+				configName = pvl.getValue("name");
+			if (pvl.contains("forceReload"))
+				forceReload = pvl.getValue("forceReload", false);
 		}
 
 		try {
@@ -78,7 +78,7 @@ public class ReloadSender extends AbstractSenderWithParameters {
 
 		if (configuration != null) {
 			String currentVersion = configuration.getVersion();
-			if (forceReload || (currentVersion != null && !newVersion.equals(currentVersion))) {
+			if (forceReload || (currentVersion != null && !currentVersion.equals(newVersion))) {
 				IbisContext ibisContext = ibisManager.getIbisContext();
 				ibisContext.reload(configName);
 				return new SenderResult("Reload " + configName + " succeeded");
