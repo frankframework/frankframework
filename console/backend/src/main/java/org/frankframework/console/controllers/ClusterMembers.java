@@ -130,7 +130,7 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 
 	public record ClusterMemberTargetModel(
 			String id,
-			String nameb
+			String name
 	) {}
 
 	private void setMemberTarget(UUID id) {
