@@ -56,7 +56,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  * @author  Gerrit van Brakel
  * @since   4.1
  */
-public class JmsTransactionalStorage<S extends Serializable> extends AbstractJmsMessageBrowser<S, ObjectMessage> implements ITransactionalStorage<S> {
+public class JmsTransactionalStorage extends AbstractJmsMessageBrowser<Serializable, ObjectMessage> implements ITransactionalStorage {
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -76,7 +76,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 	}
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		Session session=null;
 		try {
 			session = createSession();
@@ -105,11 +105,10 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 	}
 
 	@Override
-	public RawMessageWrapper<S> browseMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<Serializable> browseMessage(String storageKey) throws ListenerException {
 		try {
 			ObjectMessage msg=browseJmsMessage(storageKey);
-			@SuppressWarnings("unchecked")
-			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
+			RawMessageWrapper<Serializable> messageWrapper = new RawMessageWrapper<>(msg.getObject(), storageKey, null);
 			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 			return messageWrapper;
 		} catch (JMSException e) {
@@ -118,11 +117,10 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 	}
 
 	@Override
-	public @NonNull RawMessageWrapper<S> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
+	public @NonNull RawMessageWrapper<Serializable> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		try {
 			ObjectMessage msg=getJmsMessage(storageKey);
-			@SuppressWarnings("unchecked")
-			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);
+			RawMessageWrapper<Serializable> messageWrapper = new RawMessageWrapper<>(msg.getObject(), storageKey, null);
 			messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 			pipeLineSession.put(PipeLineSession.TS_RECEIVED_KEY, Instant.ofEpochMilli(msg.getLongProperty(FIELD_RECEIVED_DATE)));
 			pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, msg.getStringProperty(FIELD_ORIGINAL_ID));

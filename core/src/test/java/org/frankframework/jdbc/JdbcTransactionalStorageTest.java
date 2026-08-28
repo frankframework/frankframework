@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,7 +53,7 @@ public class JdbcTransactionalStorageTest {
 
 	static final String tableName = "JDBCTRANSACTIONALSTORAGETEST";
 
-	private JdbcTransactionalStorage<String> storage;
+	private JdbcTransactionalStorage storage;
 	private DatabaseTestEnvironment env;
 
 	private final String messageField = "MESSAGE";
@@ -94,8 +95,8 @@ public class JdbcTransactionalStorageTest {
 		String message = createMessage();
 		String storageKey = insertARecord(blobsCompressed, message, 'E');
 
-		RawMessageWrapper<String> rawMessageWrapper = storage.browseMessage(storageKey);
-		String data = rawMessageWrapper.getRawMessage();
+		RawMessageWrapper<Serializable> rawMessageWrapper = storage.browseMessage(storageKey);
+		String data = rawMessageWrapper.getRawMessage().toString();
 		assertEquals(storageKey, rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_ID_KEY));
 		assertEquals(message, data);
 	}
@@ -133,7 +134,7 @@ public class JdbcTransactionalStorageTest {
 			try (PreparedStatement statement = connection.prepareStatement(selectQuery)) {
 				ResultSet rs = statement.executeQuery();
 				if (rs.next()) {
-					String result = storage.retrieveObject("dummy", rs, 9).getRawMessage();
+					String result = storage.retrieveObject("dummy", rs, 9).getRawMessage().toString();
 					assertEquals(message, result);
 				} else {
 					fail("The query [" + selectQuery + "] returned empty result set expected 1");
@@ -231,7 +232,7 @@ public class JdbcTransactionalStorageTest {
 
 			try (ResultSet rs = connection.prepareStatement(selectQuery).executeQuery()) {
 				if (rs.next()) {
-					String result = storage.retrieveObject("dummy", rs, 1).getRawMessage();
+					String result = storage.retrieveObject("dummy", rs, 1).getRawMessage().toString();
 					assertEquals(message, result);
 				} else {
 					fail("The query [" + selectQuery + "] returned empty result set expected 1");
@@ -255,7 +256,7 @@ public class JdbcTransactionalStorageTest {
 
 		TransactionStatus tx = storage.getTxManager().getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		String result = storage.consumeMessage(key, pipeLineSession).getRawMessage();
+		String result = storage.consumeMessage(key, pipeLineSession).getRawMessage().toString();
 		assertEquals(message, result);
 		storage.getTxManager().commit(tx);
 	}
@@ -281,7 +282,7 @@ public class JdbcTransactionalStorageTest {
 
 		TransactionStatus tx = storage.getTxManager().getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
 		PipeLineSession session = new PipeLineSession();
-		String result = storage.consumeMessage(key, session).getRawMessage();
+		String result = storage.consumeMessage(key, session).getRawMessage().toString();
 		assertEquals(message, result);
 		assertEquals("correlationId", session.getCorrelationId());
 		storage.getTxManager().commit(tx);

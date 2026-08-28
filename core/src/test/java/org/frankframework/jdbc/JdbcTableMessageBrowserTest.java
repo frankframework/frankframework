@@ -34,7 +34,7 @@ class JdbcTableMessageBrowserTest {
 	private static final String SLOT_ID = "slot";
 	private static final String MESSAGE_ID_FIELD = "MESSAGEID";
 
-	private JdbcTransactionalStorage<String> storage;
+	private JdbcTransactionalStorage storage;
 	private MessageStoreListener listener;
 
 
@@ -50,7 +50,6 @@ class JdbcTableMessageBrowserTest {
 		listener.setReceiver(receiver);
 		listener.configure();
 
-		//noinspection unchecked
 		storage = env.createBean(JdbcTransactionalStorage.class);
 		storage.setTableName(TEST_TABLE_NAME);
 		storage.setIdField(MESSAGE_ID_FIELD);

@@ -748,7 +748,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 
 		validatorsAndWrappers.forEach(IPipe::start);
 
-		ITransactionalStorage<?> messageLog = getMessageLog();
+		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog != null) {
 			messageLog.start();
 		}
@@ -800,7 +800,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	/** log of all messages sent */
-	public void setMessageLog(ITransactionalStorage<?> messageLog) {
+	public void setMessageLog(ITransactionalStorage messageLog) {
 		this.messageLog = messageLog;
 		messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
 		if (StringUtils.isEmpty(messageLog.getSlotId())) {

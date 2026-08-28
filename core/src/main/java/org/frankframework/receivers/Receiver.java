@@ -347,8 +347,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private @Getter IListener<M> listener;
 
 	// See configure() for explanation on this field
-	private @Getter @Nullable ITransactionalStorage<Serializable> messageLog = null;
-	private @Getter @Nullable ITransactionalStorage<Serializable> errorStorage = null;
+	private @Getter @Nullable ITransactionalStorage messageLog = null;
+	private @Getter @Nullable ITransactionalStorage errorStorage = null;
 	private @Getter @Nullable ICorrelatedSender sender = null; // reply-sender
 	private final @NonNull Map<ProcessState,IMessageBrowser<?>> messageBrowsers = new EnumMap<>(ProcessState.class);
 
@@ -544,7 +544,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
 			listener.setName("listener of ["+getName()+"]");
 		}
-		ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+		ITransactionalStorage errorStorage = getErrorStorage();
 		if (errorStorage != null) {
 			errorStorage.setName("errorStorage of ["+getName()+"]");
 		}
@@ -630,7 +630,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				supportProgrammaticRetry = knownProcessStates.contains(ProcessState.INPROCESS);
 			}
 
-			ITransactionalStorage<Serializable> messageLog = getMessageLog();
+			ITransactionalStorage messageLog = getMessageLog();
 			if (messageLog != null) {
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers<?>)getListener()).getMessageBrowser(ProcessState.DONE)!=null) {
 					throw new ConfigurationException("listener with built-in messageLog cannot have external messageLog too");
@@ -650,7 +650,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					labelTp=TransformerPool.configureTransformer0(this, getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(), OutputType.TEXT,false,null);
 				}
 			}
-			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+			ITransactionalStorage errorStorage = getErrorStorage();
 			if (errorStorage != null) {
 				if (getListener() instanceof IProvidesMessageBrowsers && ((IProvidesMessageBrowsers<?>)getListener()).getMessageBrowser(ProcessState.ERROR) != null) {
 					throw new ConfigurationException("listener with built-in errorStorage cannot have external errorStorage too");
@@ -1028,7 +1028,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			correlationId = (String) session.get(PipeLineSession.CORRELATION_ID_KEY);
 		}
 
-		final ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+		final ITransactionalStorage errorStorage = getErrorStorage();
 
 		// Bail out now if we have no error sender/storage, so we do not have to create a TX and get message from supplier.
 		if (errorStorage==null) {
@@ -1199,7 +1199,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.MANUAL_RETRY_KEY, true);
 
-			ITransactionalStorage<Serializable> errorStorage = getErrorStorage();
+			ITransactionalStorage errorStorage = getErrorStorage();
 			if (errorStorage == null) {
 				manualRetryWithMessageBrowser(storageKey, session);
 				return;
@@ -1208,7 +1208,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
-	private void manualRetryWithErrorStorage(String storageKey, ITransactionalStorage<Serializable> errorStorage, PipeLineSession session) throws ListenerException {
+	private void manualRetryWithErrorStorage(String storageKey, ITransactionalStorage errorStorage, PipeLineSession session) throws ListenerException {
 		PlatformTransactionManager transactionManager = getTxManager();
 		RawMessageWrapper<Serializable> msg = null;
 		try {
@@ -2134,13 +2134,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	/** Storage to keep track of messages that failed processing */
-	public void setErrorStorage(ITransactionalStorage<Serializable> errorStorage) {
+	public void setErrorStorage(ITransactionalStorage errorStorage) {
 		this.errorStorage = errorStorage;
 	}
 
 
 	/** Storage to keep track of all messages processed correctly */
-	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
+	public void setMessageLog(ITransactionalStorage messageLog) {
 		this.messageLog = messageLog;
 	}
 
