@@ -25,8 +25,8 @@ import org.frankframework.util.SpringUtils;
  */
 public class TestConfiguration extends Configuration {
 	public static final String TEST_CONFIGURATION_NAME = "TestConfiguration";
-	public static final String TEST_CONFIGURATION_FILE = "testConfigurationContext.xml";
-	public static final String TEST_DATABASE_ENABLED_CONFIGURATION_FILE = "testDatabaseEnabledConfigurationContext.xml";
+	public static final String TEST_SPRING_CONFIGURATION_FILE = "testConfigurationContext.xml";
+	public static final String TEST_DATABASE_ENABLED_SPRING_CONFIGURATION_FILE = "testDatabaseEnabledConfigurationContext.xml";
 	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 	private final boolean autoConfigure;
 
@@ -36,22 +36,22 @@ public class TestConfiguration extends Configuration {
 	}
 
 	public TestConfiguration(boolean autoConfigure) {
-		this(autoConfigure, TEST_CONFIGURATION_FILE);
+		this(autoConfigure, TEST_SPRING_CONFIGURATION_FILE);
 		refresh();
 	}
 
-	public TestConfiguration(String... configurationFiles) {
-		this(true, configurationFiles);
+	public TestConfiguration(String... springConfigurationFiles) {
+		this(true, springConfigurationFiles);
 	}
 
-	public TestConfiguration(boolean autoConfigure, String... configurationFiles) {
+	public TestConfiguration(boolean autoConfigure, String... springConfigurationFiles) {
 		super();
 		setAutoStart(false);
 		this.autoConfigure = autoConfigure;
 
 		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); // Add ability to retrieve classes from src/test/resources
 		setClassLoader(classLoader); // Add the test classpath
-		setConfigLocations(configurationFiles);
+		setConfigLocations(springConfigurationFiles);
 		setName(TEST_CONFIGURATION_NAME);
 	}
 
