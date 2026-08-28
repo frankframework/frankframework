@@ -65,7 +65,7 @@ import lombok.Setter;
  *
  * @author evandongen
  */
-public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
+public class BearerOnlyAuthenticator extends AbstractOAuth2Authenticator {
 
 	/**
 	 * Sets the expected audience claim of the JWT token to validate.
@@ -73,38 +73,6 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	 */
 	@Setter
 	private String audience;
-
-	@Setter
-	private String issuerUri;
-
-	@Setter
-	private String jwkSetUri;
-
-	/**
-	 * If set, use this URI to obtain user info from the IdP with the access token.
-	 * This is optional, as all required user info might already be present in the JWT token
-	 */
-	@Setter
-	private String userInfoUri;
-
-	/**
-	 * The claim name in the JWT token that contains the preferred username of the user.
-	 * Defaults to "sub", which is the standard claim for subject identifier. But, when using Keycloak, it is common to use "preferred_username" instead.
-	 * @see "JwtAuthenticationConverter#principalClaimName"
-	 */
-	@Setter
-	private String userNameAttributeName;
-
-	/**
-	 * <p>The claim name in the JWT token that contains the authorities of the user.
-	 * Defaults to any of {@code JwtGrantedAuthoritiesConverter#WELL_KNOWN_AUTHORITIES_CLAIM_NAMES} when this value is not set.</p>
-	 * <p>For keycloak, "realm_access.roles" is the standard claim, this is a 'nested' value. When we encounter a dot (.) in the claim name,
-	 * we assume it is a nested claim and use the custom mapper.</p>
-	 *
-	 * @ff.tip can only contain one dot (.) to indicate a nested claim, e.g. "realm_access.roles".
-	 */
-	@Setter
-	private String authoritiesClaimName;
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -175,20 +143,21 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	Collection<GrantedAuthority> getGrantedAuthorities(Jwt jwt) {
 		log.debug("Using custom Jwt to GrantedAuthorities converter for authoritiesClaimName [{}]", authoritiesClaimName);
 		return AuthorityMapperUtil.getRolesFromClaim(jwt, authoritiesClaimName).stream()
-					.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
-					.collect(Collectors.toList());
+				.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
+				.collect(Collectors.toList());
 	}
 
 	private Jwt updateJwtWithUserInfoUri(Jwt jwt) {
 		final Map<String, Object> userInfo;
 		try {
 			userInfo = RestClient.create()
-				.get()
-				.uri(userInfoUri)
-				.accept(MediaType.APPLICATION_JSON)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue())
-				.retrieve()
-				.body(new ParameterizedTypeReference<>() {});
+					.get()
+					.uri(userInfoUri)
+					.accept(MediaType.APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue())
+					.retrieve()
+					.body(new ParameterizedTypeReference<>() {
+					});
 		} catch (HttpClientErrorException e) {
 			log.warn("userInfo endpoint exception, status code [{}]", e.getStatusCode().value(), e);
 			return jwt;
