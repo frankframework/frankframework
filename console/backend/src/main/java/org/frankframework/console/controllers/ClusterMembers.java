@@ -114,7 +114,6 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	@Description("select a specific cluster member to retrieve data from")
 	@PostMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> setClusterMemberTarget(@RequestBody ClusterMemberTargetModel model) {
-		List<ClusterMember> members = outboundGateway.getMembers();
 		if (model.name != null)  setMemberTarget(model.name);
 		if (model.id != null) {
 			UUID uuid = UUID.fromString(model.id);
