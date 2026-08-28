@@ -199,6 +199,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * It then replaces the old resources with the new resources. If all is successful
 	 * it will unload the old configuration from the IbisManager, and load the new
 	 * configuration.
+	 * This also destroys the ClassLoader and creates a new one.
 	 */
 	public synchronized void reload(String configurationName) {
 		try {
