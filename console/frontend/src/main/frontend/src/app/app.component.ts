@@ -448,22 +448,28 @@ export class AppComponent implements OnInit, OnDestroy {
     this.appService.getClusterMembers().subscribe((data) => {
       this.clusterMembers = data;
       const wantedMemberName = this.routeQueryParams.get('memberName');
-
-      if (data.length > 0) {
-        const selectedMember = data.find((member) => member.selectedMember) ?? null;
-
-        if (wantedMemberName && selectedMember?.name !== wantedMemberName) {
-          const wantedMember = data.find((member) => member.name === wantedMemberName);
-          if (wantedMember) {
-            this.appService.updateSelectedClusterMember(wantedMember.id).subscribe(() => {
-              this.appService.triggerReload();
-            });
-            return;
-          }
+      const newQueryParameters = { ...this.routeQueryParams, memberName: null };
+      if (data.length === 0) {
+        this.initializeWebsocket();
+        if (wantedMemberName) {
+          this.router.navigate([], { relativeTo: this.route, queryParams: newQueryParameters });
         }
-
-        this.selectedClusterMember = selectedMember;
+        return;
       }
+
+      const selectedMember = data.find((member) => member.selectedMember) ?? null;
+      if (wantedMemberName && selectedMember?.name !== wantedMemberName) {
+        const wantedMember = data.find((member) => member.name === wantedMemberName);
+        if (wantedMember) {
+          this.appService.updateSelectedClusterMember(wantedMember.id).subscribe(() => {
+            this.router.navigate([], { relativeTo: this.route, queryParams: newQueryParameters });
+            this.appService.triggerReload();
+          });
+          return;
+        }
+      }
+
+      this.selectedClusterMember = selectedMember;
       this.initializeWebsocket();
     });
   }
