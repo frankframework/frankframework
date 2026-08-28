@@ -447,12 +447,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.processAdapters(data);
     this.appService.getClusterMembers().subscribe((data) => {
       this.clusterMembers = data;
-      const wantedMemberName = this.routeQueryParams.get('memberName');
-      const newQueryParameters = { ...this.routeQueryParams, memberName: null };
+      const wantedMemberName = this.routeQueryParams.get('member-name');
       if (data.length === 0) {
         this.initializeWebsocket();
         if (wantedMemberName) {
-          this.router.navigate([], { relativeTo: this.route, queryParams: newQueryParameters });
+          this.router.navigate([], { relativeTo: this.route, queryParams: null });
         }
         return;
       }
@@ -462,7 +461,7 @@ export class AppComponent implements OnInit, OnDestroy {
         const wantedMember = data.find((member) => member.name === wantedMemberName);
         if (wantedMember) {
           this.appService.updateSelectedClusterMember(wantedMember.id).subscribe(() => {
-            this.router.navigate([], { relativeTo: this.route, queryParams: newQueryParameters });
+            this.router.navigate([], { relativeTo: this.route, queryParams: null });
             this.appService.triggerReload();
           });
           return;
