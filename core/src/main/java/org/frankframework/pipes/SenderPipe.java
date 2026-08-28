@@ -15,8 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import java.io.Serializable;
-
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -68,7 +66,7 @@ public class SenderPipe extends MessageSendingPipe {
 
 	@Override
 	@Reintroduce
-	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
+	public void setMessageLog(ITransactionalStorage<?> messageLog) {
 		super.setMessageLog(messageLog);
 	}
 

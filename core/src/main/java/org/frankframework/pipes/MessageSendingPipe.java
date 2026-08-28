@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -152,7 +151,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	private @Getter String exceptionOnResult;
 
 	private @Getter @Nullable ISender sender = null;
-	private @Getter @Nullable ITransactionalStorage<Serializable> messageLog = null;
+	private @Getter @Nullable ITransactionalStorage messageLog = null;
 
 	private String returnString; // contains contents of stubUrl
 	private TransformerPool retryTp=null;
@@ -801,7 +800,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 	}
 
 	/** log of all messages sent */
-	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
+	public void setMessageLog(ITransactionalStorage<?> messageLog) {
 		this.messageLog = messageLog;
 		messageLog.setName(MESSAGE_LOG_NAME_PREFIX+getName()+MESSAGE_LOG_NAME_SUFFIX);
 		if (StringUtils.isEmpty(messageLog.getSlotId())) {

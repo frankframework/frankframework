@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -207,7 +206,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 
 	@Override
 	@Reintroduce
-	public void setMessageLog(ITransactionalStorage<Serializable> messageLog) {
+	public void setMessageLog(ITransactionalStorage<?> messageLog) {
 		super.setMessageLog(messageLog);
 	}
 

@@ -29,8 +29,8 @@ import org.frankframework.testutil.junit.WithLiquibase;
 public class MessageBrowsingFilterTest {
 
 	private MessageBrowsingFilter filter;
-	private JdbcTransactionalStorage<Serializable> storage = null;
-	private IListener<Serializable> listener = null;
+	private JdbcTransactionalStorage storage = null;
+	private IListener<?> listener = null;
 	private PipeLineSession pipeLineSession = null;
 	static final String tableName = "MESSAGEBROWSINGFILTERTEST";
 

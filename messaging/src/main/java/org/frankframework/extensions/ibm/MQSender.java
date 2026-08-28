@@ -1,5 +1,5 @@
 /*
-   Copyright 2014 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2014 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,8 +41,7 @@ import org.frankframework.util.ClassUtils;
 public class MQSender extends JmsSender {
 
 	@Override
-	public @NonNull MessageProducer getMessageProducer(@NonNull Session session,
-													   @Nullable Destination destination) throws JMSException {
+	public @NonNull MessageProducer getMessageProducer(@NonNull Session session, @Nullable Destination destination) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.getMessageProducer(session, destination);
 	}
@@ -54,15 +53,13 @@ public class MQSender extends JmsSender {
 	}
 
 	@Override
-	protected String sendByQueue(QueueSession session, Queue destination,
-			jakarta.jms.Message message) throws JMSException {
+	protected String sendByQueue(QueueSession session, Queue destination, jakarta.jms.Message message) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.sendByQueue(session, destination, message);
 	}
 
 	@Override
-	protected String sendByTopic(TopicSession session, Topic destination,
-			jakarta.jms.Message message) throws JMSException {
+	protected String sendByTopic(TopicSession session, Topic destination, jakarta.jms.Message message) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.sendByTopic(session, destination, message);
 	}
