@@ -135,7 +135,7 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 
 	private void setMemberTarget(UUID id) {
 		List<ClusterMember> members = outboundGateway.getMembers();
-		members.stream()
+		ClusterMember unused = members.stream()
 				.filter(m -> "worker".equals(m.getType()))
 				.filter(m -> id.equals(m.getId()))
 				.findAny()
