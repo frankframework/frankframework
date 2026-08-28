@@ -69,11 +69,14 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	@GetMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getClusterMembers(GetClusterMembersParams params) {
 		String id = params.id;
+		String name = params.name;
 		String type = params.type;
 
 		if (StringUtils.isNotEmpty(id)) {
 			UUID uuid = UUID.fromString(id);
 			setMemberTarget(uuid);
+		} else if (StringUtils.isNotEmpty(name)) {
+			setMemberTarget(name);
 		}
 
 		List<ClusterMember> members = type != null ?
@@ -126,7 +129,7 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 		this.messagingTemplate.convertAndSend("/event/cluster", jsonResponse);
 	}
 
-	public record GetClusterMembersParams(String id, String type) {}
+	public record GetClusterMembersParams(String id, String name, String type) {}
 
 	public record ClusterMemberTargetModel(
 			String id,
@@ -136,8 +139,8 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	private void setMemberTarget(UUID id) {
 		List<ClusterMember> members = outboundGateway.getMembers();
 		ClusterMember unused = members.stream()
-				.filter(m -> "worker".equals(m.getType()))
-				.filter(m -> id.equals(m.getId()))
+				.filter(member -> "worker".equals(member.getType()))
+				.filter(member -> id.equals(member.getId()))
 				.findAny()
 				.orElseThrow(() -> new ApiException("member target with id ["+id.toString()+"] not found"));
 		session.setMemberTarget(id);
@@ -146,8 +149,8 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	private void setMemberTarget(String name) {
 		List<ClusterMember> members = outboundGateway.getMembers();
 		ClusterMember target = members.stream()
-				.filter(m -> "worker".equals(m.getType()))
-				.filter(m -> name.equals(m.getName()))
+				.filter(member -> "worker".equals(member.getType()))
+				.filter(member -> name.equals(member.getName()))
 				.findFirst()
 				.orElseThrow(() -> new ApiException("member target with instance name ["+name+"] not found"));
 		session.setMemberTarget(target.getId());
