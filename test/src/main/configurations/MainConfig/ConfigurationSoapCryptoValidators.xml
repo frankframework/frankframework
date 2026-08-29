@@ -13,14 +13,33 @@
 				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
-			<inputValidator className="org.frankframework.soap.CryptoSoapValidator" schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd" soapBody="Item_Request" outputSoapBody="Item_Response,InputValidationFailure" soapVersion="auto" >
+			<CryptoSoapInputValidator
+				schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd"
+				soapBody="Item_Request"
+				soapVersion="auto"
+				operations="VERIFY,DECRYPT"
+			>
 				<keystore resource="soap-sign-encryption.jks" password="changeit" type="JKS" keystoreAlias="myCustomCertificateName"  keystoreAliasPassword="Super$3cure" />
 				<param name="Status" sessionKey="Status" />
 				<param name="Id" sessionKey="Id" />
 				<param name="Item/Id" sessionKey="ItemId" />
 				<param name="Attributes/Attribute/Id" sessionKey="AttributeId" />
 				<forward name="failure" path="InputValidationFailure" />
-			</inputValidator>
+			</CryptoSoapInputValidator>
+
+			<CryptoSoapOutputValidator
+				schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd"
+				soapBody="Item_Response,InputValidationFailure"
+				soapVersion="auto"
+				operations="SIGN,ENCRYPT"
+			>
+				<keystore resource="soap-sign-encryption.jks" password="changeit" type="JKS" keystoreAlias="myCustomCertificateName"  keystoreAliasPassword="Super$3cure" />
+				<param name="Status" sessionKey="Status" />
+				<param name="Id" sessionKey="Id" />
+				<param name="Item/Id" sessionKey="ItemId" />
+				<param name="Attributes/Attribute/Id" sessionKey="AttributeId" />
+				<forward name="failure" path="InputValidationFailure" />
+			</CryptoSoapOutputValidator>
 
 			<!-- since we don't use the auto-wrap, explicitly configure the wrappers -->
 			<SoapInputWrapper direction="unwrap" />
@@ -48,20 +67,34 @@
 			</exits>
 			<SwitchPipe name="SwitchAction" xpathExpression="/Envelope/Body/Item_Request/Status" />
 			<!-- I'm sorry, 'a' isn't a descriptive forward, but I was too lazy to edit the XSD. -->
-			<pipe className="org.frankframework.pipes.SenderPipe" name="a">
-				<sender className="org.frankframework.http.WebServiceSender"
+			<SenderPipe name="a">
+				<WebServiceSender
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/CryptoSoapValidator"
 					soap="false"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
 					timeout="1000"
 				/>
-				<CryptoSoapInputValidator className="org.frankframework.soap.CryptoSoapValidator" schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd" soapBody="Item_Request" outputSoapBody="Item_Response,InputValidationFailure" soapVersion="auto" >
+				<CryptoSoapInputValidator
+					schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd"
+					soapBody="Item_Request"
+					soapVersion="auto"
+					operations="SIGN,ENCRYPT"
+				>
 					<keystore resource="soap-sign-encryption.jks" password="changeit" type="JKS" keystoreAlias="myCustomCertificateName"  keystoreAliasPassword="Super$3cure" />
 					<forward name="failure" path="InputValidationFailure" />
 				</CryptoSoapInputValidator>
+				<CryptoSoapOutputValidator
+					schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd"
+					soapBody="Item_Response,InputValidationFailure"
+					soapVersion="auto"
+					operations="VERIFY,DECRYPT"
+				>
+					<keystore resource="soap-sign-encryption.jks" password="changeit" type="JKS" keystoreAlias="myCustomCertificateName"  keystoreAliasPassword="Super$3cure" />
+					<forward name="failure" path="InputValidationFailure" />
+				</CryptoSoapOutputValidator>
 				<forward name="success" path="EXIT" />
-			</pipe>
+			</SenderPipe>
 
 		</pipeline>
 	</adapter>
