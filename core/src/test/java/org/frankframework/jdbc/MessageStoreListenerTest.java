@@ -26,6 +26,7 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.TimeProvider;
 
 @WithLiquibase(tableName = MessageStoreListenerTest.TEST_TABLE_NAME)
@@ -63,7 +64,7 @@ public class MessageStoreListenerTest {
 		if (listener != null) {
 			listener.stop(); // does this trigger an exception
 		}
-		pipeLineSession.close();
+		CloseUtils.closeSilently(pipeLineSession);
 	}
 
 	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws ConfigurationException {
