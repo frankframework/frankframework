@@ -14,7 +14,6 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.SpringUtils;
 
 class AdapterTest {
-	private int pipeNr = 0;
 
 	@Test
 	void testComputeCombinedHideRegex() throws ConfigurationException {
@@ -65,7 +64,7 @@ class AdapterTest {
 	@Test
 	void testNoReceiverName() {
 		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean();
-			 TestAppender appender = TestAppender.newBuilder().build()) {
+			TestAppender appender = TestAppender.newBuilder().build()) {
 
 			// Add receive with default name of the 2nd receiver
 			adapter.addReceiver(createReceiver(adapter, "Receiver [2]"));
@@ -84,7 +83,7 @@ class AdapterTest {
 	@Test
 	void testNoReceiverNameAndDuplicateName() {
 		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean();
-			 TestAppender appender = TestAppender.newBuilder().build()) {
+			TestAppender appender = TestAppender.newBuilder().build()) {
 			adapter.setId("adapterName");
 
 			adapter.addReceiver(createReceiver(adapter, "Receiver [1]"));
@@ -117,7 +116,7 @@ class AdapterTest {
 
 	private @NonNull EchoPipe buildTestPipe(@NonNull PipeLine pipeLine) throws ConfigurationException {
 		EchoPipe pipe = new EchoPipe();
-		pipe.setName("Pipe" + ++pipeNr);
+		pipe.setName("Pipe" + System.identityHashCode(pipe));
 		pipeLine.addPipe(pipe);
 		return pipe;
 	}
