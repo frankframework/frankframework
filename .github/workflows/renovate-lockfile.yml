@@ -23,14 +23,14 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         with:
           version: 11.9.0
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: 24.18.1
+          node-version: 24.19.0
           cache: 'pnpm'
 
       - name: Run pnpm install after dependency bump
