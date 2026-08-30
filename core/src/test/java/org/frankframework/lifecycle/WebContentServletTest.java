@@ -39,7 +39,7 @@ public class WebContentServletTest {
 	 */
 	@Test
 	void testListDirectory() throws IOException, ClassLoaderException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 
 		DirectoryClassLoader classLoader = new DirectoryClassLoader(new NullClassLoader());
 		classLoader.setDirectory(JunitTestClassLoaderWrapper.getTestClassesLocation() + "WebContentTestRoot");
@@ -58,7 +58,7 @@ public class WebContentServletTest {
 	 */
 	@Test
 	void testListDirectoryNotPresent() throws IOException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 
 		// Act
 		MockHttpServletResponse response = getWebContentForConfiguration(config);
@@ -87,7 +87,7 @@ public class WebContentServletTest {
 
 	@Test
 	void noPath() throws IOException, ServletException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 
 		// Act
 		MockHttpServletResponse response = doGet(config, null);
@@ -100,7 +100,7 @@ public class WebContentServletTest {
 
 	@Test
 	void rootPath() throws IOException, ServletException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 
 		// Act
 		MockHttpServletResponse response = doGet(config, "/");
@@ -113,7 +113,7 @@ public class WebContentServletTest {
 
 	@Test
 	void testConfigurationWelcomeFile() throws IOException, ServletException, ClassLoaderException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 
 		DirectoryClassLoader classLoader = new DirectoryClassLoader(new NullClassLoader());
 		classLoader.setDirectory(JunitTestClassLoaderWrapper.getTestClassesLocation() + "WebContentTestRoot");
@@ -131,7 +131,7 @@ public class WebContentServletTest {
 
 	@Test
 	void testConfigurationTestFile() throws IOException, ServletException, ClassLoaderException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 
 		DirectoryClassLoader classLoader = new DirectoryClassLoader(new NullClassLoader());
 		classLoader.setDirectory(JunitTestClassLoaderWrapper.getTestClassesLocation() + "WebContentTestRoot");

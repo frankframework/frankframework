@@ -98,7 +98,7 @@
 		<spring.boot.version>4.1.1</spring.boot.version>
 		<tomcat.version>11.0.25</tomcat.version>
 		<tika.version>4.0.0</tika.version>
-		<mcp-sdk.version>2.0.0</mcp-sdk.version>
+		<mcp-sdk.version>2.0.1</mcp-sdk.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
@@ -126,8 +126,8 @@
 		<activemq.driver.version>6.3.1</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
-		<rabbitmq.driver.version>5.34.0</rabbitmq.driver.version>
-		<rabbitmq.jms.version>3.8.0</rabbitmq.jms.version>
+		<rabbitmq.driver.version>5.35.0</rabbitmq.driver.version>
+		<rabbitmq.jms.version>3.9.0</rabbitmq.jms.version>
 
 		<aws.java.sdk.version>2.39.2</aws.java.sdk.version>
 
@@ -771,7 +771,7 @@
 			<dependency>
 				<groupId>com.icegreen</groupId>
 				<artifactId>greenmail-junit5</artifactId>
-				<version>2.1.12</version>
+				<version>2.1.13</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>

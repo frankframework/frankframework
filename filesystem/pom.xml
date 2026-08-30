@@ -24,13 +24,13 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.25.1</version>
+			<version>1.26.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.hierynomus</groupId>
 			<artifactId>smbj</artifactId>
-			<version>0.14.0</version>
+			<version>0.15.0</version>
 		</dependency>
 		<dependency>
 			<groupId>jcifs</groupId>
@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.18.4</version>
+			<version>1.18.5</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>

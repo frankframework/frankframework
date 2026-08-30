@@ -50,7 +50,7 @@ public class BusTestBase {
 
 	protected final Configuration getConfiguration() {
 		if(configuration == null) {
-			Configuration config = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+			Configuration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 			try {
 				getParentContext().getAutowireCapableBeanFactory().autowireBeanProperties(config, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 				configuration = (Configuration) getParentContext().getAutowireCapableBeanFactory().initializeBean(config, TestConfiguration.TEST_CONFIGURATION_NAME);
