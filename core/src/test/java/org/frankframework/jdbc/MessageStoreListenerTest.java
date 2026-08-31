@@ -42,7 +42,7 @@ public class MessageStoreListenerTest {
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
 		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms()); // tests are based on H2 syntax queries
-		Receiver<Serializable> receiver = mock(Receiver.class);
+		Receiver<Serializable> receiver = mock();
 		when(receiver.isTransacted()).thenReturn(false);
 
 		listener = env.createBean(MessageStoreListener.class);
@@ -69,6 +69,7 @@ public class MessageStoreListenerTest {
 
 	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws ConfigurationException {
 		JdbcTableMessageBrowser<?> browser = (JdbcTableMessageBrowser<?>) listener.getMessageBrowser(state);
+		assertNotNull(browser, () -> "Expected to have MessageBrowser for state [%s]".formatted(state));
 		browser.configure();
 		return browser;
 	}
