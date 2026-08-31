@@ -49,7 +49,7 @@
 					<Param name="FILEURI" sessionKey="originalMessage" xpathExpression="file/@canonicalName" />
 					<Param name="FILESIZE" sessionKey="originalMessage" xpathExpression="file/@size" />
 					<Param name="FLOWID" sessionKey="triggerMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/TransferFlowId"/>
-					<Param name="MESSAGE" sessionKey="triggerMessage" type="xml" />
+					<Param name="MESSAGE" sessionKey="triggerMessage" xpathResult="xml" />
 				</FixedQuerySender>
 			</SenderPipe>
 		</Pipeline>

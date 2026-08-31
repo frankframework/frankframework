@@ -36,16 +36,16 @@ class BusExceptionTest {
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size(), "expected only 1 line to be logged, got: "+logEvents);
 			String logMessage = logEvents.getFirst();
-			String[] event = logMessage.split(" - ");
-			String level = event[0];
-			String message = event[1];
+			String[] event = logMessage.split("-");
+			String level = event[0].trim();
+			String message = event[1].trim();
 			String exception = event.length == 3 ? event[2] : null;
 
 			// Check log level
 			assertEquals(expectedLogLevel.name(), level, "["+level+"] did not match the expected log level ["+expectedLogLevel+"]");
 
 			// Check log message
-			assertEquals("outer exception", message.trim());
+			assertEquals("outer exception", message);
 
 			// Check log exception
 			if(exception != null) {

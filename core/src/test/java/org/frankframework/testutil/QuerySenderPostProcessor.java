@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -35,7 +34,7 @@ public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationC
 
 	@Override
 	@Nullable
-	public Object postProcessBeforeInitialization(Object bean, @NonNull String beanName) throws BeansException {
+	public Object postProcessBeforeInitialization(Object bean, @Nullable String beanName) throws BeansException {
 		if(FixedQuerySender.class.getCanonicalName().equals(bean.getClass().getCanonicalName())) {
 			FixedQuerySenderMock qs = createMock(FixedQuerySenderMock.class);
 			qs.addMockedQueries(fixedQuerySenderMocks);
