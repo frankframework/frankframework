@@ -37,9 +37,9 @@ public enum TransactionManagerType {
 
 	TransactionManagerType(Class<? extends IDataSourceFactory> clazz, String springConfigurationFile) {
 		if(springConfigurationFile == null) {
-			springConfigurationFiles = new String[]{ TestConfiguration.TEST_CONFIGURATION_FILE };
+			springConfigurationFiles = new String[]{ TestConfiguration.TEST_SPRING_CONFIGURATION_FILE};
 		} else {
-			springConfigurationFiles = new String[]{ springConfigurationFile, TestConfiguration.TEST_DATABASE_ENABLED_CONFIGURATION_FILE };
+			springConfigurationFiles = new String[]{ springConfigurationFile, TestConfiguration.TEST_DATABASE_ENABLED_SPRING_CONFIGURATION_FILE };
 		}
 		factory = clazz;
 	}

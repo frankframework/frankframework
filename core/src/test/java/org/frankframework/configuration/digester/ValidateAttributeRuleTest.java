@@ -323,7 +323,7 @@ public class ValidateAttributeRuleTest {
 	@Test
 	public void testAttributeValueEqualToDefaultValueWarningsSuppressed() throws Exception {
 		// Arrange
-		configuration = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		configuration = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 		loadAppConstants(configuration);
 
 		// This test has a different value for this property than the other tests in this class

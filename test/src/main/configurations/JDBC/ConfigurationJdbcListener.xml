@@ -17,7 +17,6 @@
 						keyField="tkey"
 						messageField="TCLOB"
 						additionalFields="TBLOB"
-						blobCharset="UTF-8"
 						blobsCompressed="false"
 						peekQuery="SELECT TKEY, TCLOB
 										FROM IBISTEMP
@@ -48,7 +47,6 @@
 						keyField="tkey"
 						messageField="TCLOB"
 						additionalFields="TBLOB"
-						blobCharset="UTF-8"
 						blobsCompressed="false"
 			/>
 		</receiver>

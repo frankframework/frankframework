@@ -58,7 +58,7 @@ import org.frankframework.util.TransformerPool;
  * @author Peter Leeuwenburgh
  */
 @Category(Category.Type.NN_SPECIAL)
-public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTransactionalStorage<S> {
+public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;
 
@@ -123,7 +123,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	}
 
 	@Override
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		Session session = null;
 		try {
 			Map<String,Object> parameterValues = createParameterValues(messageId, correlationId, receivedDate, comments, message);
@@ -147,7 +147,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		}
 	}
 
-	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, S message) throws JMSException {
+	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws JMSException {
 		Map<String,Object> parameterValues = new HashMap<>();
 		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
 		parameterValues.put("conversationId", 	MessageUtils.generateMessageId());

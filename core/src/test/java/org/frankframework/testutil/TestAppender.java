@@ -25,6 +25,7 @@ import org.apache.logging.log4j.core.Filter.Result;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 
@@ -77,13 +78,30 @@ public class TestAppender extends AbstractAppender implements AutoCloseable {
 
 	private TestAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
 		super(name, filter, layout, false, null);
-		addToRootLogger(this);
 		start();
 	}
 
 	@Override
-	public void close() {
-		removeAppender(this);
+	public synchronized void start() {
+		Logger logger = getRootLogger();
+		logger.addAppender(this);
+
+		super.start();
+	}
+
+	@Override
+	public synchronized void close() {
+		super.stop();
+
+		Logger logger = getRootLogger();
+		logger.removeAppender(this);
+
+		reconfigure();
+	}
+
+	public synchronized void reconfigure() {
+		LoggerContext logContext = LoggerContext.getContext(false);
+		logContext.reconfigure();
 	}
 
 	@Override
@@ -94,7 +112,7 @@ public class TestAppender extends AbstractAppender implements AutoCloseable {
 		if (logEvent.getMessage() == null || leakDetectionFilter && logEvent.getMessage().getFormattedMessage().contains("Leak detection")) {
 			return;
 		}
-		logMessages.add((String) this.toSerializable(logEvent));
+		logMessages.add(("" + this.toSerializable(logEvent)).trim());
 		logEvents.add(logEvent);
 	}
 
@@ -115,20 +133,9 @@ public class TestAppender extends AbstractAppender implements AutoCloseable {
 		return (Logger) LogUtil.getRootLogger();
 	}
 
-	private void addToRootLogger(TestAppender appender) {
-		Logger logger = getRootLogger();
-		logger.addAppender(appender);
-	}
-
 	public static void addToLogger(String loggerName, TestAppender appender) {
 		Logger logger = (Logger) LogUtil.getLogger(loggerName);
 		logger.addAppender(appender);
-	}
-
-	private void removeAppender(TestAppender appender) {
-		if (appender == null) return;
-		Logger logger = getRootLogger();
-		logger.removeAppender(appender);
 	}
 
 	@Override

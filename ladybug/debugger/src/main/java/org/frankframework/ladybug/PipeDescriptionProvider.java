@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
 import org.frankframework.components.FrankPlugin;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.digester.ConfigurationDigester;
+import org.frankframework.core.IDualModeValidator;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.MessageSendingPipe;
@@ -101,16 +102,16 @@ public class PipeDescriptionProvider {
 
 			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.computeIfAbsent(System.identityHashCode(pipeLine), k -> new HashMap<>());
 
-			return pipeDescriptionCache.computeIfAbsent(xpathExpression, xpath -> {
+			return pipeDescriptionCache.computeIfAbsent(checkpointName, name -> {
 				PipeDescription pipeDescription = new PipeDescription();
 				pipeDescription.setCheckpointName(checkpointName);
 
-				if (xpath == null) {
+				if (xpathExpression == null) {
 					pipeDescription.setDescription("Could not create xpath to extract pipe from configuration");
 				} else {
 					try {
 						Document document = getLoadedConfiguration(pipeLine);
-						Node node = doXPath(document, xpath);
+						Node node = doXPath(document, xpathExpression);
 
 						if (node != null) {
 							pipeDescription.setDescription(nodeToString(node));
@@ -163,7 +164,11 @@ public class PipeDescriptionProvider {
 			if (PipeLine.INPUT_VALIDATOR_NAME.equals(pipeName)) {
 				return new PipeInfo(INPUT_VALIDATOR_CHECKPOINT_NAME, "/inputValidator");
 			} else if (PipeLine.OUTPUT_VALIDATOR_NAME.equals(pipeName)) {
-				return new PipeInfo(OUTPUT_VALIDATOR_CHECKPOINT_NAME, "/outputValidator");
+				if (pipeLine.getInputValidator() instanceof IDualModeValidator validator && validator.isConfiguredForMixedValidation()) {
+					return new PipeInfo(OUTPUT_VALIDATOR_CHECKPOINT_NAME, "/inputValidator");
+				} else {
+					return new PipeInfo(OUTPUT_VALIDATOR_CHECKPOINT_NAME, "/outputValidator");
+				}
 			} else if (PipeLine.INPUT_WRAPPER_NAME.equals(pipeName)) {
 				return new PipeInfo(INPUT_WRAPPER_CHECKPOINT_NAME, "/inputWrapper");
 			} else if (PipeLine.OUTPUT_WRAPPER_NAME.equals(pipeName)) {

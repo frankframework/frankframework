@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.3.0-SNAPSHOT">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -52,7 +52,7 @@ The DisplayName will always be updated, which is purely used for logging purpose
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
-        <xs:element name="Receiver" minOccurs="1" maxOccurs="unbounded" type="ReceiverType" />
+        <xs:element name="Receiver" minOccurs="0" maxOccurs="unbounded" type="ReceiverType" />
         <xs:group ref="ErrorMessageFormatterElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:element name="Pipeline" minOccurs="1" maxOccurs="1" type="PipelineType" />
       </xs:choice>
@@ -307,6 +307,124 @@ This is so that errors coming from external systems so not overload those extern
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Receiver" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="receiver" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:complexType name="KeystoreType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="resource" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Filename of the keystore or certificate to use.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type">
+      <xs:annotation>
+        <xs:documentation>Type of keystore. Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.encryption.KeystoreConfiguration" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="keystore" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:complexType>
+  <xs:complexType name="TruststoreType">
+    <xs:attribute name="resource" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Filename of the keystore or certificate to use.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type">
+      <xs:annotation>
+        <xs:documentation>Type of truststore. Default: JKS</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate in truststore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate indicated by &lt;code&gt;truststoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate indicated by &lt;code&gt;truststoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.encryption.TruststoreConfiguration" use="prohibited" />
+    <xs:attribute ref="active" />
+    <xs:attribute name="elementRole" type="xs:string" fixed="truststore" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="ForwardType">
@@ -876,8 +994,10 @@ You may only use one suffix! Default: 30d</xs:documentation>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+              <xs:element name="Keystore" type="KeystoreType" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
+              <xs:element name="Truststore" type="TruststoreType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -1241,8 +1361,10 @@ If not specified, the default is INPUT.</xs:documentation>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="CacheElementGroup" />
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+              <xs:element name="Keystore" type="KeystoreType" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
+              <xs:element name="Truststore" type="TruststoreType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -1426,15 +1548,6 @@ If not specified, the default is INPUT.</xs:documentation>
   </xs:attributeGroup>
   <xs:group name="SenderElementGroupBase_2">
     <xs:choice>
-      <xs:element name="Afm2EdiFactSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="Afm2EdiFactSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="AmazonS3Sender">
         <xs:complexType>
           <xs:complexContent>
@@ -1448,15 +1561,6 @@ If not specified, the default is INPUT.</xs:documentation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="AmqpSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="BisJmsSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BisJmsSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
             </xs:extension>
           </xs:complexContent>
@@ -1894,24 +1998,6 @@ If not specified, the default is INPUT.</xs:documentation>
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="XComSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="XComSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="XfbSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="XfbSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="XmlJmsBrowserSender">
         <xs:complexType>
           <xs:complexContent>
@@ -1959,32 +2045,6 @@ If not specified, the default is INPUT.</xs:documentation>
       </xs:element>
     </xs:choice>
   </xs:group>
-  <xs:complexType name="Afm2EdiFactSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="Afm2EdiFactSenderDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="Afm2EdiFactSenderDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.afm.Afm2EdiFactSender" />
-  </xs:complexType>
-  <xs:group name="Afm2EdiFactSenderDeclaredChildGroup">
-    <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="Afm2EdiFactSenderDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The functional name of the object.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="destination" type="xs:string" />
-    <xs:attribute name="postbus" type="xs:string" />
-    <xs:attribute name="tpnummer" type="xs:string" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
   <xs:complexType name="AmazonS3SenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -2265,211 +2325,27 @@ always sent as binary messages, with an AMQP &lt;code&gt;Body&lt;/code&gt; secti
     <xs:attributeGroup ref="AmqpSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="BisJmsSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="JmsSenderCumulativeChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="BisJmsSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.bis.BisJmsSender" />
-  </xs:complexType>
-  <xs:attributeGroup name="BisJmsSenderDeclaredAttributeGroup">
-    <xs:attribute name="responseXPath" type="xs:string" />
-    <xs:attribute name="responseNamespaceDefs" type="xs:string" />
-    <xs:attribute name="messageHeaderInSoapBody" type="frankBoolean" />
-    <xs:attribute name="resultInPayload" type="frankBoolean" />
-    <xs:attribute name="errorListSessionKey" type="xs:string" />
-    <xs:attribute name="externalRefToMessageIdSessionKey" type="xs:string" />
-    <xs:attribute name="conversationIdSessionKey" type="xs:string" />
-    <xs:attribute name="requestNamespace" type="xs:string" />
-    <xs:attribute name="removeResponseNamespaces" type="frankBoolean" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BisJmsSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BisJmsSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="JmsSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="JmsSenderCumulativeChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsSender" />
-  </xs:complexType>
-  <xs:group name="JmsSenderDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:group>
-  <xs:group name="JmsSenderCumulativeChildGroup">
-    <xs:sequence>
-      <xs:group ref="JmsSenderDeclaredChildGroup" />
-      <xs:group ref="JMSFacadeDeclaredChildGroup" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="JmsSenderDeclaredAttributeGroup">
-    <xs:attribute ref="destinationParam" />
-    <xs:attribute name="synchronous" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the sender operates in RR mode: A reply is expected, either on the queue specified in &lt;code&gt;replyToName&lt;/code&gt;, or on a dynamically generated temporary queue Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="replyToName" />
-    <xs:attribute ref="linkMethod" />
-    <xs:attribute name="replyTimeout" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>(Only for &lt;code&gt;synchronous=true&lt;/code&gt;). Maximum time in ms to wait for a reply. 0 means no timeout. Default: 5000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="messageType" />
-    <xs:attribute name="deliveryMode">
-      <xs:annotation>
-        <xs:documentation>Controls mode that messages are sent with Default: not set by application</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="DeliveryModeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute ref="priority" />
-    <xs:attribute name="soap" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a SOAP envelope Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="encodingStyleURI" />
-    <xs:attribute ref="serviceNamespaceURI" />
-    <xs:attribute name="soapAction" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>SOAPAction string sent as message property</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="soapHeaderParam" />
-    <xs:attribute ref="replySoapHeaderSessionKey" />
-    <xs:attribute ref="responseHeadersToSessionKeys" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="JmsSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="JmsSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="JMSFacadeType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="JMSFacadeDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JMSFacade" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="JMSFacadeDeclaredChildGroup">
-    <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
-    <xs:attribute ref="messageClass" />
-    <xs:attribute ref="jndiContextPrefix" />
-    <xs:attribute name="destinationName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="destinationType" />
-    <xs:attribute ref="acknowledgeMode" />
-    <xs:attribute ref="subscriberType" />
-    <xs:attribute ref="queueConnectionFactoryName" />
-    <xs:attribute ref="topicConnectionFactoryName" />
-    <xs:attribute name="transacted" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Controls whether messages are send under transaction control.
-If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back under control of an XA-transaction. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="correlationIdToHex" />
-    <xs:attribute ref="correlationIdToHexPrefix" />
-    <xs:attribute ref="messageTimeToLive" />
-    <xs:attribute ref="correlationIdMaxLength" />
-    <xs:attribute ref="messageSelector" />
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias used to obtain credentials for authentication to JMS server</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="lookupDestination" />
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The name of this FrankElement</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="JMSFacadeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="JMSFacadeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="JndiBaseType">
-    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jndi.JndiBase" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="JndiBaseDeclaredAttributeGroup">
-    <xs:attribute name="authentication" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>maps to the field context.security_authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="credentials" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username to connect to context, maps to context.security_credentials</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="initialContextFactoryName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>class to use as initial context factory</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="providerURL" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Sets the value of providerURL</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="securityProtocol" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>maps to the field context.security_protocol</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="urlPkgPrefixes" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>maps to the field context.url_pkg_prefixes</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jmsRealm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="principal" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username to connect to context, maps to context.security_principal</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jndiAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>authentication alias, may be used to override principal and credential-settings</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jndiProperties" type="xs:string" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
   <xs:complexType name="CmisSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+        <xs:group ref="CmisSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="CmisSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.cmis.CmisSender" />
   </xs:complexType>
+  <xs:group name="CmisSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="CmisSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="CmisSenderDeclaredChildGroup" />
+      <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="CmisSenderDeclaredAttributeGroup">
     <xs:attribute name="action" use="required">
       <xs:annotation>
@@ -2563,92 +2439,6 @@ Defaults to 10000, inherited from HttpSender#setTimeout. Default: 10000</xs:docu
         <xs:documentation>Override entrypoint WSDL by reading it from the classpath, overrides url attribute</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="keystore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType">
-      <xs:annotation>
-        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keystoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default password to access keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType">
-      <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Default password to access truststore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="proxyHost" type="xs:string">
       <xs:annotation>
         <xs:documentation>Proxy host url</xs:documentation>
@@ -2672,6 +2462,92 @@ Defaults to 10000, inherited from HttpSender#setTimeout. Default: 10000</xs:docu
     <xs:attribute name="proxyPassword" type="xs:string">
       <xs:annotation>
         <xs:documentation>Proxy Password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore. Default: JKS</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -3044,6 +2920,178 @@ You no longer need to use a filename handle.</xs:documentation>
     <xs:attribute ref="responseHeadersToSessionKeys" />
     <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="JmsSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JmsSenderCumulativeChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsSender" />
+  </xs:complexType>
+  <xs:group name="JmsSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="JmsSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="JmsSenderDeclaredChildGroup" />
+      <xs:group ref="JMSFacadeDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="JmsSenderDeclaredAttributeGroup">
+    <xs:attribute ref="destinationParam" />
+    <xs:attribute name="synchronous" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the sender operates in RR mode: A reply is expected, either on the queue specified in &lt;code&gt;replyToName&lt;/code&gt;, or on a dynamically generated temporary queue Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="replyToName" />
+    <xs:attribute ref="linkMethod" />
+    <xs:attribute name="replyTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>(Only for &lt;code&gt;synchronous=true&lt;/code&gt;). Maximum time in ms to wait for a reply. 0 means no timeout. Default: 5000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="messageType" />
+    <xs:attribute name="deliveryMode">
+      <xs:annotation>
+        <xs:documentation>Controls mode that messages are sent with Default: not set by application</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DeliveryModeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute ref="priority" />
+    <xs:attribute name="soap" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a SOAP envelope Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="encodingStyleURI" />
+    <xs:attribute ref="serviceNamespaceURI" />
+    <xs:attribute name="soapAction" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAPAction string sent as message property</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="soapHeaderParam" />
+    <xs:attribute ref="replySoapHeaderSessionKey" />
+    <xs:attribute ref="responseHeadersToSessionKeys" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JmsSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JmsSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="JMSFacadeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JMSFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JMSFacade" use="prohibited" />
+  </xs:complexType>
+  <xs:group name="JMSFacadeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
+    <xs:attribute ref="messageClass" />
+    <xs:attribute ref="jndiContextPrefix" />
+    <xs:attribute name="destinationName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="destinationType" />
+    <xs:attribute ref="acknowledgeMode" />
+    <xs:attribute ref="subscriberType" />
+    <xs:attribute ref="queueConnectionFactoryName" />
+    <xs:attribute ref="topicConnectionFactoryName" />
+    <xs:attribute name="transacted" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether messages are send under transaction control.
+If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back under control of an XA-transaction. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="correlationIdToHex" />
+    <xs:attribute ref="correlationIdToHexPrefix" />
+    <xs:attribute ref="messageTimeToLive" />
+    <xs:attribute ref="correlationIdMaxLength" />
+    <xs:attribute ref="messageSelector" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain credentials for authentication to JMS server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JMSFacadeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JMSFacadeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="JndiBaseType">
+    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jndi.JndiBase" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="JndiBaseDeclaredAttributeGroup">
+    <xs:attribute name="authentication" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>maps to the field context.security_authentication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="credentials" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>username to connect to context, maps to context.security_credentials</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="initialContextFactoryName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>class to use as initial context factory</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="providerURL" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Sets the value of providerURL</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="securityProtocol" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>maps to the field context.security_protocol</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="urlPkgPrefixes" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>maps to the field context.url_pkg_prefixes</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jmsRealm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="principal" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>username to connect to context, maps to context.security_principal</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jndiAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>authentication alias, may be used to override principal and credential-settings</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jndiProperties" type="xs:string" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:complexType name="ExchangeFileSystemSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -3171,7 +3219,7 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="truststoreType">
       <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+        <xs:documentation>Type of truststore. Default: JKS</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -3179,12 +3227,12 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="truststoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+        <xs:documentation>Authentication alias used to obtain truststore password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access truststore</xs:documentation>
+        <xs:documentation>Default password to access truststore.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trustManagerAlgorithm" type="xs:string">
@@ -3194,12 +3242,12 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
@@ -3339,12 +3387,24 @@ The set of available sessionKeys to be returned might be limited by the returned
   <xs:complexType name="FtpFileSystemSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+        <xs:group ref="FtpFileSystemSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FtpFileSystemSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.FtpFileSystemSender" />
   </xs:complexType>
+  <xs:group name="FtpFileSystemSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="FtpFileSystemSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="FtpFileSystemSenderDeclaredChildGroup" />
+      <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="FtpFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
       <xs:annotation>
@@ -3412,92 +3472,6 @@ The set of available sessionKeys to be returned might be limited by the returned
         <xs:union memberTypes="TransportTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="keystore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType">
-      <xs:annotation>
-        <xs:documentation>(ftps) Type of keystore Default: pkcs12</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keystoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias used to obtain keystore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to access keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Alias to obtain specific certificate or key in keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType">
-      <xs:annotation>
-        <xs:documentation>(ftps) Type of truststore Default: jks</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to access truststore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="prot">
       <xs:annotation>
         <xs:documentation>Sets the &lt;code&gt;Data Channel Protection Level&lt;/code&gt;. Default: C</xs:documentation>
@@ -3505,6 +3479,92 @@ The set of available sessionKeys to be returned might be limited by the returned
       <xs:simpleType>
         <xs:union memberTypes="ProtAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore. Default: JKS</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FtpFileSystemSenderCumulativeAttributeGroup">
@@ -3633,6 +3693,14 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
     <xs:attribute ref="keystoreAuthAlias" />
@@ -3642,21 +3710,13 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="keystoreAliasAuthAlias" />
     <xs:attribute ref="keystoreAliasPassword" />
     <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="truststoreAuthAlias" />
     <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="trustManagerAlgorithm" />
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -3742,6 +3802,14 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
     <xs:attribute ref="keystoreAuthAlias" />
@@ -3751,27 +3819,21 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="keystoreAliasAuthAlias" />
     <xs:attribute ref="keystoreAliasPassword" />
     <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="truststoreAuthAlias" />
     <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="trustManagerAlgorithm" />
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:group name="AbstractHttpSessionDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractHttpSessionDeclaredAttributeGroup">
@@ -3822,22 +3884,6 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
-    <xs:attribute ref="keystore" />
-    <xs:attribute ref="keystoreType" />
-    <xs:attribute ref="keystoreAuthAlias" />
-    <xs:attribute ref="keystorePassword" />
-    <xs:attribute ref="keyManagerAlgorithm" />
-    <xs:attribute ref="keystoreAlias" />
-    <xs:attribute ref="keystoreAliasAuthAlias" />
-    <xs:attribute ref="keystoreAliasPassword" />
-    <xs:attribute ref="truststore" />
-    <xs:attribute ref="truststoreAuthAlias" />
-    <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
-    <xs:attribute ref="trustManagerAlgorithm" />
-    <xs:attribute ref="verifyHostname" />
-    <xs:attribute ref="allowSelfSignedCertificates" />
-    <xs:attribute ref="ignoreCertificateExpiredException" />
     <xs:attribute ref="followRedirects" />
     <xs:attribute ref="ignoreRedirects" />
     <xs:attribute ref="staleChecking" />
@@ -3847,6 +3893,22 @@ The name of the part is determined by the name attribute, unless that is empty, 
     <xs:attribute ref="protocol" />
     <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute name="name" type="xs:string" />
+    <xs:attribute ref="keystore" />
+    <xs:attribute ref="keystoreType" />
+    <xs:attribute ref="keystoreAuthAlias" />
+    <xs:attribute ref="keystorePassword" />
+    <xs:attribute ref="keyManagerAlgorithm" />
+    <xs:attribute ref="keystoreAlias" />
+    <xs:attribute ref="keystoreAliasAuthAlias" />
+    <xs:attribute ref="keystoreAliasPassword" />
+    <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
+    <xs:attribute ref="truststoreAuthAlias" />
+    <xs:attribute ref="truststorePassword" />
+    <xs:attribute ref="trustManagerAlgorithm" />
+    <xs:attribute ref="verifyHostname" />
+    <xs:attribute ref="allowSelfSignedCertificates" />
+    <xs:attribute ref="ignoreCertificateExpiredException" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -4568,7 +4630,7 @@ Beware that this option can cause spurious NullPointerExceptions due to a race c
         <xs:documentation>Specifies LDAP operation to perform Default: read</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="OperationAttributeValuesType variableRef" />
+        <xs:union memberTypes="OperationAttributeValuesType_2 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="ldapProviderURL" type="xs:string">
@@ -4701,17 +4763,22 @@ When the root is left unspecified, absolute paths to files and folders can be us
   <xs:attributeGroup name="MailSenderDeclaredAttributeGroup">
     <xs:attribute name="smtpHost" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the SMTP-host by which the messages are to be send</xs:documentation>
+        <xs:documentation>Name of the SMTP-host by which the messages are to be sent</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="smtpPort" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Port of the SMTP-host by which the messages are to be send Default: 25</xs:documentation>
+        <xs:documentation>Port of the SMTP-host by which the messages are to be sent. Port 465 means implicit SSL, port 587 means no ssl by default, but the connection
+is upgraded to ssl by using startTls if #useSsl is true Default: 25</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="useSsl" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure TLS is being used Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, we ensure the correct SSL/TLS settings are applied for the given port number. Please note that:
+&lt;ul&gt;
+    &lt;li&gt;Port 465 means implicit ssl&lt;/li&gt;
+    &lt;li&gt;Port 587 means no ssl/upgradeable to ssl by using startTls&lt;/li&gt;
+&lt;/ul&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4771,7 +4838,8 @@ When the root is left unspecified, absolute paths to files and folders can be us
   <xs:attributeGroup name="MessageStoreSenderDeclaredAttributeGroup">
     <xs:attribute name="sessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the same value for this attribute.</xs:documentation>
+        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. Please note: corresponding MessageStoreListener must have the
+same value for this attribute.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="onlyStoreWhenMessageIdUnique" type="frankBoolean">
@@ -5226,6 +5294,14 @@ Can be dynamically set using the &lt;code&gt;topic&lt;/code&gt; parameter.</xs:d
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
     <xs:attribute ref="keystoreAuthAlias" />
@@ -5235,21 +5311,13 @@ Can be dynamically set using the &lt;code&gt;topic&lt;/code&gt; parameter.</xs:d
     <xs:attribute ref="keystoreAliasAuthAlias" />
     <xs:attribute ref="keystoreAliasPassword" />
     <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="truststoreAuthAlias" />
     <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="trustManagerAlgorithm" />
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -5517,12 +5585,24 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
   <xs:complexType name="SendGridSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+        <xs:group ref="SendGridSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SendGridSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.SendGridSender" />
   </xs:complexType>
+  <xs:group name="SendGridSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="SendGridSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="SendGridSenderDeclaredChildGroup" />
+      <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="SendGridSenderDeclaredAttributeGroup">
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
@@ -5569,9 +5649,29 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>Proxy realm</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="followRedirects" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="staleChecking" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether connections checked to be stale, i.e. appear open, but are not. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="staleTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="protocol" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>resource URL to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreType">
@@ -5592,6 +5692,11 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>Default password to access keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="keystoreAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
@@ -5607,19 +5712,14 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststoreType">
       <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+        <xs:documentation>Type of truststore. Default: JKS</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -5627,12 +5727,12 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="truststoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+        <xs:documentation>Authentication alias used to obtain truststore password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access truststore</xs:documentation>
+        <xs:documentation>Default password to access truststore.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trustManagerAlgorithm" type="xs:string">
@@ -5642,37 +5742,17 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="followRedirects" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="staleChecking" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Controls whether connections checked to be stale, i.e. appear open, but are not. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="staleTimeout" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="protocol" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6053,6 +6133,14 @@ Using any other value will be rejected.
     <xs:attribute ref="proxyRealm" />
     <xs:attribute ref="prefillProxyAuthCache" />
     <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="keystore" />
     <xs:attribute ref="keystoreType" />
     <xs:attribute ref="keystoreAuthAlias" />
@@ -6062,167 +6150,15 @@ Using any other value will be rejected.
     <xs:attribute ref="keystoreAliasAuthAlias" />
     <xs:attribute ref="keystoreAliasPassword" />
     <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="truststoreAuthAlias" />
     <xs:attribute ref="truststorePassword" />
-    <xs:attribute ref="truststoreType" />
     <xs:attribute ref="trustManagerAlgorithm" />
     <xs:attribute ref="verifyHostname" />
     <xs:attribute ref="allowSelfSignedCertificates" />
     <xs:attribute ref="ignoreCertificateExpiredException" />
-    <xs:attribute ref="followRedirects" />
-    <xs:attribute ref="ignoreRedirects" />
-    <xs:attribute ref="staleChecking" />
-    <xs:attribute ref="staleTimeout" />
-    <xs:attribute ref="connectionTimeToLive" />
-    <xs:attribute ref="connectionIdleTimeout" />
-    <xs:attribute ref="protocol" />
-    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="XComSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="XComSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.xcom.XComSender" />
-  </xs:complexType>
-  <xs:attributeGroup name="XComSenderDeclaredAttributeGroup">
-    <xs:attribute name="fileOption">
-      <xs:annotation>
-        <xs:documentation>one of create, append or replace</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="FileOptionTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="remoteDirectory" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>remote directory is prefixed witht the remote file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="carriageflag">
-      <xs:simpleType>
-        <xs:union memberTypes="CarriageFlagTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="codeflag">
-      <xs:annotation>
-        <xs:documentation>characterset conversion</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="CodeTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="compress">
-      <xs:simpleType>
-        <xs:union memberTypes="CompressTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="logfile" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of logfile for xcomtcp to be used</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="password" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>password of user on remote system</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="port" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>port of remote host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="queue" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>set queue off or on</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="remoteSystem" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>hostname or tcpip adres of remote host</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="tracelevel" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>set between 0 (no trace) and 10</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truncation" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>set truncation off or on</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="userid" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>loginname of user on remote system</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="remoteFilePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>remote file to create. if empty, the name is equal to the local file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="workingDirName" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>directory in which to run the xcomtcp command</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xcomtcp" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>path to xcomtcp command</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="configFile" type="xs:string" />
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>name of the alias to obtain credentials to authenticatie on remote server</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="XComSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="XComSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="XfbSenderType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="XfbSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.xfb.XfbSender" />
-  </xs:complexType>
-  <xs:attributeGroup name="XfbSenderDeclaredAttributeGroup">
-    <xs:attribute name="script" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Full pathname to the XFB script to be executed to transfer the file</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ft" type="xs:string" />
-    <xs:attribute name="flow" type="xs:string" />
-    <xs:attribute name="appli" type="xs:string" />
-    <xs:attribute name="noname" type="xs:string" />
-    <xs:attribute name="copy" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, the file is copied before calling the XFB script.
-Reasons to copy the file:
-- XFB will rename the file (prefix it with FXB_) and delete it.
-- On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy).</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="copyPrefix" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Prefix for the name of the copied or original filename. When the name of the original file starts with this prefix, it is removed. Otherwise this prefix is added to the filename of the copied file.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="XfbSenderCumulativeAttributeGroup">
-    <xs:attributeGroup ref="XfbSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XmlJmsBrowserSenderType">
     <xs:sequence>
@@ -6364,15 +6300,6 @@ Alternatively, warnings can be switched off using suppression properties Suppres
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ApiListenerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="BisJmsListener">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BisJmsListenerType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
             </xs:extension>
           </xs:complexContent>
@@ -6795,6 +6722,11 @@ values will be ignored. Default: UTF-8</xs:documentation>
         <xs:documentation>Only active when AuthenticationMethod=AUTHROLE. Comma separated list of authorization roles which are granted for this service, eq. &lt;code&gt;IbisTester,IbisObserver&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="responseHeaderSessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>An optional list of session keys to be used to set response-headers. Session key names should be separated with a &lt;pre&gt;,&lt;/pre&gt; or &lt;pre&gt;;&lt;/pre&gt;.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="multipartBodyName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Specify the form-part you wish to enter the pipeline.
@@ -6961,146 +6893,6 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
     </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="BisJmsListenerType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="BisJmsListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.bis.BisJmsListener" />
-  </xs:complexType>
-  <xs:attributeGroup name="BisJmsListenerDeclaredAttributeGroup">
-    <xs:attribute name="requestXPath" type="xs:string" />
-    <xs:attribute name="requestNamespaceDefs" type="xs:string" />
-    <xs:attribute name="messageHeaderInSoapBody" type="frankBoolean" />
-    <xs:attribute name="resultInPayload" type="frankBoolean" />
-    <xs:attribute name="omitResult" type="frankBoolean" />
-    <xs:attribute name="removeRequestNamespaces" type="frankBoolean" />
-    <xs:attribute name="layByNamespace" type="frankBoolean" />
-    <xs:attribute name="errorCodeSessionKey" type="xs:string" />
-    <xs:attribute name="errorTextSessionKey" type="xs:string" />
-    <xs:attribute name="errorReasonSessionKey" type="xs:string" />
-    <xs:attribute name="serviceName" type="xs:string" />
-    <xs:attribute name="actionName" type="xs:string" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BisJmsListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BisJmsListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:group name="AbstractJmsListenerDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:group>
-  <xs:group name="AbstractJmsListenerCumulativeChildGroup">
-    <xs:sequence>
-      <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
-      <xs:group ref="JMSFacadeDeclaredChildGroup" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="AbstractJmsListenerDeclaredAttributeGroup">
-    <xs:attribute name="forceMessageIdAsCorrelationId" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply.
-When set to &lt;code&gt;true&lt;/code&gt;, the messageID is used as Correlation-ID of the reply. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="timeout" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Receive timeout &lt;i&gt;in milliseconds&lt;/i&gt; as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long- Default: 1000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="useReplyTo" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Flag if reply-to queue from the request message should be used or not. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="replyDestinationName" />
-    <xs:attribute ref="replyMessageType" />
-    <xs:attribute ref="replyDeliveryMode" />
-    <xs:attribute ref="replyPriority" />
-    <xs:attribute ref="replyMessageTimeToLive" />
-    <xs:attribute name="soap" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a SOAP envelope Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="replyEncodingStyleURI" />
-    <xs:attribute ref="replyNamespaceURI" />
-    <xs:attribute ref="replySoapAction" />
-    <xs:attribute ref="soapHeaderSessionKey" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="AbstractJmsListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="AbstractJmsListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="PushingJmsListenerType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.PushingJmsListener" />
-  </xs:complexType>
-  <xs:attributeGroup name="PushingJmsListenerDeclaredAttributeGroup">
-    <xs:attribute name="destinationName" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="cacheMode">
-      <xs:simpleType>
-        <xs:union memberTypes="CacheModeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="pollGuardInterval" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Interval &lt;i&gt;in milliseconds&lt;/i&gt; for the poll guard to check whether a successful poll was done by the
-(&lt;a href="https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-"&gt;JMS Receive call&lt;/a&gt;) since last check. If polling has stopped this will be logged
-and the listener will be stopped and started in an attempt to workaround problems with polling.
-Polling might stop due to bugs in the JMS driver/implementation which should be fixed by the supplier. As the poll time includes reading
-and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence
-while messages are being processed the check on last successful poll will be skipped. Set to -1 to disable. Default: ten times the specified timeout</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="PushingJmsListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="PushingJmsListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractJmsListenerDeclaredAttributeGroup" />
-    <xs:attribute ref="messageClass" />
-    <xs:attribute ref="jndiContextPrefix" />
-    <xs:attribute ref="destinationType" />
-    <xs:attribute ref="acknowledgeMode" />
-    <xs:attribute ref="subscriberType" />
-    <xs:attribute ref="queueConnectionFactoryName" />
-    <xs:attribute ref="topicConnectionFactoryName" />
-    <xs:attribute name="transacted" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Controls whether messages are send under transaction control.
-If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back under control of an XA-transaction. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="correlationIdToHex" />
-    <xs:attribute ref="correlationIdToHexPrefix" />
-    <xs:attribute ref="messageTimeToLive" />
-    <xs:attribute ref="correlationIdMaxLength" />
-    <xs:attribute ref="messageSelector" />
-    <xs:attribute name="authAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias used to obtain credentials for authentication to JMS server</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="lookupDestination" />
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The name of this FrankElement</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CmisEventListenerType">
     <xs:sequence>
@@ -7353,6 +7145,119 @@ If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back unde
     </xs:attribute>
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:group name="AbstractJmsListenerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="AbstractJmsListenerCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+      <xs:group ref="JMSFacadeDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="AbstractJmsListenerDeclaredAttributeGroup">
+    <xs:attribute name="forceMessageIdAsCorrelationId" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>By default, the JmsListener takes the Correlation-ID (if present) as the ID that has to be used as Correlation-ID of the reply.
+When set to &lt;code&gt;true&lt;/code&gt;, the messageID is used as Correlation-ID of the reply. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="timeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Receive timeout &lt;i&gt;in milliseconds&lt;/i&gt; as specified by the JMS API, see https://docs.oracle.com/javaee/7/api/javax/jms/MessageConsumer.html#receive-long- Default: 1000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="useReplyTo" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Flag if reply-to queue from the request message should be used or not. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="replyDestinationName" />
+    <xs:attribute ref="replyMessageType" />
+    <xs:attribute ref="replyDeliveryMode" />
+    <xs:attribute ref="replyPriority" />
+    <xs:attribute ref="replyMessageTimeToLive" />
+    <xs:attribute name="soap" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, messages sent are put in a SOAP envelope Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="replyEncodingStyleURI" />
+    <xs:attribute ref="replyNamespaceURI" />
+    <xs:attribute ref="replySoapAction" />
+    <xs:attribute ref="soapHeaderSessionKey" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractJmsListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractJmsListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="PushingJmsListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.PushingJmsListener" />
+  </xs:complexType>
+  <xs:attributeGroup name="PushingJmsListenerDeclaredAttributeGroup">
+    <xs:attribute name="destinationName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="cacheMode">
+      <xs:simpleType>
+        <xs:union memberTypes="CacheModeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="pollGuardInterval" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Interval &lt;i&gt;in milliseconds&lt;/i&gt; for the poll guard to check whether a successful poll was done by the
+(&lt;a href="https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-"&gt;JMS Receive call&lt;/a&gt;) since last check. If polling has stopped this will be logged
+and the listener will be stopped and started in an attempt to workaround problems with polling.
+Polling might stop due to bugs in the JMS driver/implementation which should be fixed by the supplier. As the poll time includes reading
+and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence
+while messages are being processed the check on last successful poll will be skipped. Set to -1 to disable. Default: ten times the specified timeout</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="PushingJmsListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="PushingJmsListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractJmsListenerDeclaredAttributeGroup" />
+    <xs:attribute ref="messageClass" />
+    <xs:attribute ref="jndiContextPrefix" />
+    <xs:attribute ref="destinationType" />
+    <xs:attribute ref="acknowledgeMode" />
+    <xs:attribute ref="subscriberType" />
+    <xs:attribute ref="queueConnectionFactoryName" />
+    <xs:attribute ref="topicConnectionFactoryName" />
+    <xs:attribute name="transacted" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether messages are send under transaction control.
+If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back under control of an XA-transaction. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="correlationIdToHex" />
+    <xs:attribute ref="correlationIdToHexPrefix" />
+    <xs:attribute ref="messageTimeToLive" />
+    <xs:attribute ref="correlationIdMaxLength" />
+    <xs:attribute ref="messageSelector" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain credentials for authentication to JMS server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="ExchangeMailListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -7480,7 +7385,7 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="truststoreType">
       <xs:annotation>
-        <xs:documentation>Type of truststore Default: jks</xs:documentation>
+        <xs:documentation>Type of truststore. Default: JKS</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -7488,12 +7393,12 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="truststoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
+        <xs:documentation>Authentication alias used to obtain truststore password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access truststore</xs:documentation>
+        <xs:documentation>Default password to access truststore.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="trustManagerAlgorithm" type="xs:string">
@@ -7503,12 +7408,12 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="verifyHostname" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
@@ -7584,12 +7489,24 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
   <xs:complexType name="FtpFileSystemListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+        <xs:group ref="FtpFileSystemListenerCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FtpFileSystemListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.FtpFileSystemListener" />
   </xs:complexType>
+  <xs:group name="FtpFileSystemListenerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+      <xs:element name="Truststore" minOccurs="0" maxOccurs="1" type="TruststoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="FtpFileSystemListenerCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="FtpFileSystemListenerDeclaredChildGroup" />
+      <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="FtpFileSystemListenerDeclaredAttributeGroup">
     <xs:attribute name="messageType">
       <xs:annotation>
@@ -7665,92 +7582,6 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
         <xs:union memberTypes="TransportTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="keystore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Resource url to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreType">
-      <xs:annotation>
-        <xs:documentation>(ftps) Type of keystore Default: pkcs12</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="keystoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias used to obtain keystore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to access keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Alias to obtain specific certificate or key in keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststore" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Resource url to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststoreType">
-      <xs:annotation>
-        <xs:documentation>(ftps) Type of truststore Default: jks</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="truststoreAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Authentication alias used to obtain truststore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="truststorePassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Default password to access truststore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>(ftps) Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="verifyHostname" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>(ftps) If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="prot">
       <xs:annotation>
         <xs:documentation>Sets the &lt;code&gt;Data Channel Protection Level&lt;/code&gt;. Default: C</xs:documentation>
@@ -7758,6 +7589,92 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
       <xs:simpleType>
         <xs:union memberTypes="ProtAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststoreType">
+      <xs:annotation>
+        <xs:documentation>Type of truststore. Default: JKS</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="truststoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain truststore password.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="truststorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access truststore.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trustManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Trust manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verifyHostname" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="FtpFileSystemListenerCumulativeAttributeGroup">
@@ -8723,15 +8640,6 @@ This is slightly different from the namespaceURI which routes messages based on 
   </xs:group>
   <xs:group name="SenderElementGroupBase">
     <xs:choice>
-      <xs:element name="BisJmsSender">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BisJmsSenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="EsbJmsSender">
         <xs:complexType>
           <xs:complexContent>
@@ -8943,6 +8851,7 @@ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documen
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:element name="Forward" type="ForwardType" />
+              <xs:element name="Keystore" type="KeystoreType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
             </xs:choice>
@@ -8962,6 +8871,15 @@ then the Receiver's hideRegex is used for the errorStore / logStore.</xs:documen
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ApiWsdlXmlValidatorType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="inputValidator" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CryptoSoapInputValidator">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CryptoSoapValidatorType">
               <xs:attribute name="elementRole" type="xs:string" fixed="inputValidator" />
             </xs:extension>
           </xs:complexContent>
@@ -9566,6 +9484,125 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     <xs:attribute ref="emptyInputReplacement" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="CryptoSoapValidatorType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="CryptoSoapValidatorCumulativeChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="CryptoSoapValidatorCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.soap.CryptoSoapValidator" />
+  </xs:complexType>
+  <xs:group name="CryptoSoapValidatorDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="CryptoSoapValidatorCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="CryptoSoapValidatorDeclaredChildGroup" />
+      <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="CryptoSoapValidatorDeclaredAttributeGroup">
+    <xs:attribute name="operations">
+      <xs:annotation>
+        <xs:documentation>Which operations must be executed.
+&lt;p&gt;It is not possible to use this validator as a Mixed input-output validator.&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="OperationAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="includeCertificateInMessage" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Add the certificate to the signed or encrypted message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ttl" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Add a restriction on when the message must be read / verified by.
+If this time has exceeded, the message is rejected.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="removeSecurityHeader" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Remove the `WSSE:Security` part from the SOAP:Header.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyEncryptionAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="KeyEncryptionAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="dataEncryptionAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="DataEncryptionAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keyIdentifier">
+      <xs:simpleType>
+        <xs:union memberTypes="KeyIdentifierTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="digestAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="DigestAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="signatureAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="SignatureAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystore" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreType">
+      <xs:annotation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keystoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyManagerAlgorithm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="CryptoSoapValidatorCumulativeAttributeGroup">
+    <xs:attributeGroup ref="CryptoSoapValidatorDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SoapValidatorCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="EsbSoapValidatorType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -9761,6 +9798,7 @@ validator if you want to validate both input and output. Default: false</xs:docu
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:element name="Forward" type="ForwardType" />
+              <xs:element name="Keystore" type="KeystoreType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
             </xs:choice>
@@ -9780,6 +9818,15 @@ validator if you want to validate both input and output. Default: false</xs:docu
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ApiWsdlXmlValidatorType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="outputValidator" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CryptoSoapOutputValidator">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CryptoSoapValidatorType">
               <xs:attribute name="elementRole" type="xs:string" fixed="outputValidator" />
             </xs:extension>
           </xs:complexContent>
@@ -9895,15 +9942,6 @@ validator if you want to validate both input and output. Default: false</xs:docu
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ApiSoapWrapperPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="inputWrapper" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="BisInputWrapper">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BisWrapperPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="inputWrapper" />
             </xs:extension>
           </xs:complexContent>
@@ -10103,36 +10141,6 @@ validator if you want to validate both input and output. Default: false</xs:docu
     <xs:attribute ref="emptyInputReplacement" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="BisWrapperPipeType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractPipeDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="BisWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.bis.BisWrapperPipe" />
-  </xs:complexType>
-  <xs:attributeGroup name="BisWrapperPipeDeclaredAttributeGroup">
-    <xs:attribute name="inputXPath" type="xs:string" />
-    <xs:attribute name="inputNamespaceDefs" type="xs:string" />
-    <xs:attribute name="outputRoot" type="xs:string" />
-    <xs:attribute name="bisMessageHeaderInSoapBody" type="frankBoolean" />
-    <xs:attribute name="bisMessageHeaderSessionKey" type="xs:string" />
-    <xs:attribute name="bisResultInPayload" type="frankBoolean" />
-    <xs:attribute name="bisConversationIdSessionKey" type="xs:string" />
-    <xs:attribute name="bisExternalRefToMessageIdSessionKey" type="xs:string" />
-    <xs:attribute name="bisErrorCodeSessionKey" type="xs:string" />
-    <xs:attribute name="bisErrorTextSessionKey" type="xs:string" />
-    <xs:attribute name="bisErrorReasonSessionKey" type="xs:string" />
-    <xs:attribute name="bisServiceName" type="xs:string" />
-    <xs:attribute name="bisActionName" type="xs:string" />
-    <xs:attribute name="omitResult" type="frankBoolean" />
-    <xs:attribute name="addOutputNamespace" type="frankBoolean" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BisWrapperPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BisWrapperPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="SoapWrapperPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="EsbSoapWrapperPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -10269,15 +10277,6 @@ validator if you want to validate both input and output. Default: false</xs:docu
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ApiSoapWrapperPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="outputWrapper" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="BisOutputWrapper">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BisWrapperPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="outputWrapper" />
             </xs:extension>
           </xs:complexContent>
@@ -10541,6 +10540,7 @@ validator if you want to validate both input and output. Default: false</xs:docu
               <xs:element name="Forward" type="ForwardType" />
               <xs:group ref="InputValidatorElementGroup" />
               <xs:group ref="InputWrapperElementGroup" />
+              <xs:element name="Keystore" type="KeystoreType" />
               <xs:group ref="ListenerElementGroup_2" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ManagerElementGroup" />
@@ -11497,15 +11497,6 @@ is handled as a block. Default: true</xs:documentation>
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="BisWrapperPipe">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BisWrapperPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="BlobLineIteratingPipe">
         <xs:complexType>
           <xs:complexContent>
@@ -11600,6 +11591,15 @@ is handled as a block. Default: true</xs:documentation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CrlPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CryptoSoapValidatorPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="CryptoSoapValidatorType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -12122,15 +12122,6 @@ is handled as a block. Default: true</xs:documentation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SapLUWManagerPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="ScanTibcoSolutionPipe">
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ScanTibcoSolutionPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -13185,11 +13176,6 @@ This field controls how to iterate over the input and does not determine the pip
       <xs:simpleType>
         <xs:union memberTypes="AlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Character set to use for converting the secret from String to bytes. Default: UTF-8</xs:documentation>
-      </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hashEncoding">
       <xs:annotation>
@@ -15087,7 +15073,7 @@ separately.
         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles2&lt;/code&gt;&lt;/li&gt;
         &lt;li&gt;&lt;code&gt;pdfConversionResultFiles3&lt;/code&gt;&lt;/li&gt;
     &lt;/ol&gt;
-    Each session key will contain a FileMessage referencing the contents of that PDF.
+    Each session key will contain a Message referencing the contents of that PDF.
 &lt;/p&gt; Default: pdfConversionResultFiles</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -15119,7 +15105,15 @@ separately.
     </xs:attribute>
     <xs:attribute name="pdfOutputLocation" type="xs:string">
       <xs:annotation>
-        <xs:documentation>directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.</xs:documentation>
+        <xs:documentation>Directory to save resulting PDF files after conversion.
+If not set documents will be streamed in memory opposed to written to disk.
+A temporary directory is automatically used if needed and the conversion results will be cleaned up automatically.
+&lt;br/&gt;
+NOTE: &lt;strong&gt;Converted documents should be fetched from the session and not from disk.&lt;/strong&gt;
+&lt;br/&gt;
+This behavior differs from v10.0 and earlier where conversion results were persistent and always stored on disk.
+In order to use the old (non-streaming) behavior, set this to &lt;code&gt;${ibis.tmpdir}/Pdf&lt;/code&gt;.
+By setting a location the &lt;code&gt;convertedDocument&lt;/code&gt; attribute will be used to store the PDF location.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="loadExternalResources" type="frankBoolean">
@@ -15389,7 +15383,8 @@ by the #setLineSeparatorSymbol(String).</xs:documentation>
     <xs:attribute name="replace" type="xs:string">
       <xs:annotation>
         <xs:documentation>Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
-* by the #setLineSeparatorSymbol(String).</xs:documentation>
+by the #setLineSeparatorSymbol(String).
+If left empty, the 'find' values will be omitted, and nothing will be replaced.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lineSeparatorSymbol" type="xs:string">
@@ -15613,23 +15608,6 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     <xs:attributeGroup ref="SapLUWManagerPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="ScanTibcoSolutionPipeType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractPipeDeclaredChildGroup" />
-      </xs:choice>
-    </xs:sequence>
-    <xs:attributeGroup ref="ScanTibcoSolutionPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.svn.ScanTibcoSolutionPipe" />
-  </xs:complexType>
-  <xs:attributeGroup name="ScanTibcoSolutionPipeDeclaredAttributeGroup">
-    <xs:attribute name="url" type="xs:string" />
-    <xs:attribute name="level" type="frankInt" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="ScanTibcoSolutionPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="ScanTibcoSolutionPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="SendTibcoMessageType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -15721,12 +15699,23 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
   <xs:complexType name="SignaturePipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+        <xs:group ref="SignaturePipeCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SignaturePipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SignaturePipe" />
   </xs:complexType>
+  <xs:group name="SignaturePipeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Keystore" minOccurs="0" maxOccurs="1" type="KeystoreType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="SignaturePipeCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="SignaturePipeDeclaredChildGroup" />
+      <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="SignaturePipeDeclaredAttributeGroup">
     <xs:attribute name="action">
       <xs:annotation>
@@ -15751,14 +15740,14 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the signature is (expected to be) base64 encoded Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="keystore" type="xs:string" use="required">
+    <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Keystore to obtain signing key</xs:documentation>
+        <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystoreType">
       <xs:annotation>
-        <xs:documentation>Type of keystore, can be pkcs12 or pem Default: pkcs12</xs:documentation>
+        <xs:documentation>Type of keystore Default: pkcs12</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -15766,32 +15755,32 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="keystoreAuthAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Alias used to obtain keystore password</xs:documentation>
+        <xs:documentation>Authentication alias used to obtain keystore password</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keystorePassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Keystore password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias in keystore</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alias used to obtain keystoreAlias password</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="keystoreAliasPassword" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>KeystoreAlias password</xs:documentation>
+        <xs:documentation>Default password to access keystore</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyManagerAlgorithm" type="xs:string">
       <xs:annotation>
         <xs:documentation>Key manager algorithm. Can be left empty to use the servers default algorithm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias to obtain specific certificate or key in keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keystoreAliasPassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -16895,6 +16884,8 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
+              <xs:element name="Keystore" type="KeystoreType" />
+              <xs:element name="Truststore" type="TruststoreType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -16928,6 +16919,14 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
     <xs:attributeGroup ref="AbstractHttpSessionDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.HttpSession" />
   </xs:complexType>
+  <xs:simpleType name="KeystoreTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[pP][eE][mM]" />
+      <xs:pattern value="[pP][kK][cC][sS][11][22]" />
+      <xs:pattern value="[jJ][kK][sS]" />
+      <xs:pattern value="[jJ][cC][eE][kK][sS]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="ParameterModeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[iI][nN][pP][uU][tT]" />
@@ -17049,11 +17048,40 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[rR][rR]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="LinkMethodAttributeValuesType">
+  <xs:simpleType name="CmisActionAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[mM][eE][sS][sS][aA][gG][eE][iI][dD]" />
-      <xs:pattern value="[cC][oO][rR][rR][eE][lL][aA][tT][iI][oO][nN][iI][dD]" />
-      <xs:pattern value="[cC][oO][rR][rR][eE][lL][aA][tT][iI][oO][nN][iI][dD][__][fF][rR][oO][mM][__][mM][eE][sS][sS][aA][gG][eE]" />
+      <xs:pattern value="[cC][rR][eE][aA][tT][eE]" />
+      <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
+      <xs:pattern value="[gG][eE][tT]" />
+      <xs:pattern value="[fF][iI][nN][dD]" />
+      <xs:pattern value="[uU][pP][dD][aA][tT][eE]" />
+      <xs:pattern value="[fF][eE][tT][cC][hH]" />
+      <xs:pattern value="[dD][yY][nN][aA][mM][iI][cC]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="BindingTypesAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[aA][tT][oO][mM][pP][uU][bB]" />
+      <xs:pattern value="[wW][eE][bB][sS][eE][rR][vV][iI][cC][eE][sS]" />
+      <xs:pattern value="[bB][rR][oO][wW][sS][eE][rR]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="QueryTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[sS][eE][lL][eE][cC][tT]" />
+      <xs:pattern value="[uU][pP][dD][aA][tT][eE][bB][lL][oO][bB]" />
+      <xs:pattern value="[uU][pP][dD][aA][tT][eE][cC][lL][oO][bB]" />
+      <xs:pattern value="[pP][aA][cC][kK][aA][gG][eE]" />
+      <xs:pattern value="[oO][tT][hH][eE][rR]" />
+      <xs:pattern value="[iI][nN][sS][eE][rR][tT]" />
+      <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
+      <xs:pattern value="[uU][pP][dD][aA][tT][eE]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DirectionAttributeValuesType_6">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[eE][nN][cC][oO][dD][eE]" />
+      <xs:pattern value="[dD][eE][cC][oO][dD][eE]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DeliveryModeAttributeValuesType">
@@ -17061,6 +17089,13 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[nN][oO][tT][__][sS][eE][tT]" />
       <xs:pattern value="[pP][eE][rR][sS][iI][sS][tT][eE][nN][tT]" />
       <xs:pattern value="[nN][oO][nN][__][pP][eE][rR][sS][iI][sS][tT][eE][nN][tT]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="LinkMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[mM][eE][sS][sS][aA][gG][eE][iI][dD]" />
+      <xs:pattern value="[cC][oO][rR][rR][eE][lL][aA][tT][iI][oO][nN][iI][dD]" />
+      <xs:pattern value="[cC][oO][rR][rR][eE][lL][aA][tT][iI][oO][nN][iI][dD][__][fF][rR][oO][mM][__][mM][eE][sS][sS][aA][gG][eE]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MessageClassAttributeValuesType">
@@ -17088,50 +17123,6 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
     <xs:restriction base="xs:string">
       <xs:pattern value="[dD][uU][rR][aA][bB][lL][eE]" />
       <xs:pattern value="[tT][rR][aA][nN][sS][iI][eE][nN][tT]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="CmisActionAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[cC][rR][eE][aA][tT][eE]" />
-      <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
-      <xs:pattern value="[gG][eE][tT]" />
-      <xs:pattern value="[fF][iI][nN][dD]" />
-      <xs:pattern value="[uU][pP][dD][aA][tT][eE]" />
-      <xs:pattern value="[fF][eE][tT][cC][hH]" />
-      <xs:pattern value="[dD][yY][nN][aA][mM][iI][cC]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="BindingTypesAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[aA][tT][oO][mM][pP][uU][bB]" />
-      <xs:pattern value="[wW][eE][bB][sS][eE][rR][vV][iI][cC][eE][sS]" />
-      <xs:pattern value="[bB][rR][oO][wW][sS][eE][rR]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="KeystoreTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[pP][eE][mM]" />
-      <xs:pattern value="[pP][kK][cC][sS][11][22]" />
-      <xs:pattern value="[jJ][kK][sS]" />
-      <xs:pattern value="[jJ][cC][eE][kK][sS]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="QueryTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[sS][eE][lL][eE][cC][tT]" />
-      <xs:pattern value="[uU][pP][dD][aA][tT][eE][bB][lL][oO][bB]" />
-      <xs:pattern value="[uU][pP][dD][aA][tT][eE][cC][lL][oO][bB]" />
-      <xs:pattern value="[pP][aA][cC][kK][aA][gG][eE]" />
-      <xs:pattern value="[oO][tT][hH][eE][rR]" />
-      <xs:pattern value="[iI][nN][sS][eE][rR][tT]" />
-      <xs:pattern value="[dD][eE][lL][eE][tT][eE]" />
-      <xs:pattern value="[uU][pP][dD][aA][tT][eE]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_6">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[eE][nN][cC][oO][dD][eE]" />
-      <xs:pattern value="[dD][eE][cC][oO][dD][eE]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ScopeAttributeValuesType">
@@ -17198,6 +17189,7 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[rR][eE][sS][oO][uU][rR][cC][eE][__][oO][wW][nN][eE][rR][__][pP][aA][sS][sS][wW][oO][rR][dD][__][cC][rR][eE][dD][eE][nN][tT][iI][aA][lL][sS][__][bB][aA][sS][iI][cC][__][aA][uU][tT][hH]" />
       <xs:pattern value="[rR][eE][sS][oO][uU][rR][cC][eE][__][oO][wW][nN][eE][rR][__][pP][aA][sS][sS][wW][oO][rR][dD][__][cC][rR][eE][dD][eE][nN][tT][iI][aA][lL][sS][__][qQ][uU][eE][rR][yY][__][pP][aA][rR][aA][mM][eE][tT][eE][rR][sS]" />
       <xs:pattern value="[sS][aA][mM][lL][__][aA][sS][sS][eE][rR][tT][iI][oO][nN]" />
+      <xs:pattern value="[pP][rR][iI][vV][aA][tT][eE][__][kK][eE][yY][__][jJ][wW][tT]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ActionAttributeValuesType_5">
@@ -17213,7 +17205,7 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[gG][rR][aA][aA][lL][jJ][sS]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="OperationAttributeValuesType">
+  <xs:simpleType name="OperationAttributeValuesType_2">
     <xs:restriction base="xs:string">
       <xs:pattern value="[rR][eE][aA][dD]" />
       <xs:pattern value="[cC][rR][eE][aA][tT][eE]" />
@@ -17290,40 +17282,6 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[hH][tT][tT][pP]" />
       <xs:pattern value="[sS][oO][cC][kK][sS][44]" />
       <xs:pattern value="[sS][oO][cC][kK][sS][55]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="FileOptionTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[cC][rR][eE][aA][tT][eE]" />
-      <xs:pattern value="[aA][pP][pP][eE][nN][dD]" />
-      <xs:pattern value="[rR][eE][pP][lL][aA][cC][eE]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="CarriageFlagTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[yY][eE][sS]" />
-      <xs:pattern value="[vV][lL][rR]" />
-      <xs:pattern value="[vV][lL][rR][22]" />
-      <xs:pattern value="[mM][pP][aA][cC][kK]" />
-      <xs:pattern value="[xX][pP][aA][cC][kK]" />
-      <xs:pattern value="[nN][oO]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="CodeTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[eE][bB][cC][dD][iI][cC]" />
-      <xs:pattern value="[aA][sS][cC][iI][iI]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="CompressTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[yY][eE][sS]" />
-      <xs:pattern value="[cC][oO][mM][pP][aA][cC][tT]" />
-      <xs:pattern value="[lL][zZ][lL][aA][rR][gG][eE]" />
-      <xs:pattern value="[lL][zZ][mM][eE][dD][iI][uU][mM]" />
-      <xs:pattern value="[lL][zZ][sS][mM][aA][lL][lL]" />
-      <xs:pattern value="[rR][lL][eE]" />
-      <xs:pattern value="[nN][oO]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ExceptionHandlingMethodAttributeValuesType">
@@ -17408,14 +17366,6 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[jJ][wW][tT]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="CacheModeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[cC][aA][cC][hH][eE][__][nN][oO][nN][eE]" />
-      <xs:pattern value="[cC][aA][cC][hH][eE][__][cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]" />
-      <xs:pattern value="[cC][aA][cC][hH][eE][__][sS][eE][sS][sS][iI][oO][nN]" />
-      <xs:pattern value="[cC][aA][cC][hH][eE][__][cC][oO][nN][sS][uU][mM][eE][rR]" />
-    </xs:restriction>
-  </xs:simpleType>
   <xs:simpleType name="MessageTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[nN][aA][mM][eE]" />
@@ -17428,6 +17378,14 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
     <xs:restriction base="xs:string">
       <xs:pattern value="[fF][fF]" />
       <xs:pattern value="[rR][rR]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="CacheModeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[cC][aA][cC][hH][eE][__][nN][oO][nN][eE]" />
+      <xs:pattern value="[cC][aA][cC][hH][eE][__][cC][oO][nN][nN][eE][cC][tT][iI][oO][nN]" />
+      <xs:pattern value="[cC][aA][cC][hH][eE][__][sS][eE][sS][sS][iI][oO][nN]" />
+      <xs:pattern value="[cC][aA][cC][hH][eE][__][cC][oO][nN][sS][uU][mM][eE][rR]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MessageTypeAttributeValuesType_2">
@@ -17486,6 +17444,55 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[11][..][22]" />
       <xs:pattern value="[nN][oO][nN][eE]" />
       <xs:pattern value="[aA][uU][tT][oO]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="OperationAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[sS][iI][gG][nN]" />
+      <xs:pattern value="[eE][nN][cC][rR][yY][pP][tT]" />
+      <xs:pattern value="[vV][eE][rR][iI][fF][yY]" />
+      <xs:pattern value="[dD][eE][cC][rR][yY][pP][tT]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="KeyEncryptionAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][sS][aA][__][oO][aA][eE][pP]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DataEncryptionAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[aA][eE][sS][__][22][55][66]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="KeyIdentifierTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[iI][sS][sS][uU][eE][rR][__][sS][eE][rR][iI][aA][lL]" />
+      <xs:pattern value="[iI][sS][sS][uU][eE][rR][__][sS][eE][rR][iI][aA][lL][__][qQ][uU][oO][tT][eE][__][fF][oO][rR][mM][aA][tT]" />
+      <xs:pattern value="[bB][sS][tT][__][dD][iI][rR][eE][cC][tT][__][rR][eE][fF][eE][rR][eE][nN][cC][eE]" />
+      <xs:pattern value="[xX][55][00][99][__][kK][eE][yY][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
+      <xs:pattern value="[tT][hH][uU][mM][bB][pP][rR][iI][nN][tT][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
+      <xs:pattern value="[sS][kK][iI][__][kK][eE][yY][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
+      <xs:pattern value="[kK][eE][yY][__][vV][aA][lL][uU][eE]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DigestAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[sS][hH][aA][11]" />
+      <xs:pattern value="[sS][hH][aA][22][22][44]" />
+      <xs:pattern value="[sS][hH][aA][22][55][66]" />
+      <xs:pattern value="[sS][hH][aA][33][88][44]" />
+      <xs:pattern value="[sS][hH][aA][55][11][22]" />
+      <xs:pattern value="[sS][hH][aA][33][__][22][22][44]" />
+      <xs:pattern value="[sS][hH][aA][33][__][22][55][66]" />
+      <xs:pattern value="[sS][hH][aA][33][__][33][88][44]" />
+      <xs:pattern value="[sS][hH][aA][33][__][55][11][22]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SignatureAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][sS][aA][__][sS][hH][aA][11]" />
+      <xs:pattern value="[rR][sS][aA][__][sS][hH][aA][22][55][66]" />
+      <xs:pattern value="[rR][sS][aA][__][sS][hH][aA][55][11][22]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType">
@@ -17739,6 +17746,89 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[cC][lL][eE][aA][rR][iI][nN][gG]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:attribute name="datasourceName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="connectionsArePooled" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed) Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="packageContent" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Controls if the returned package content is db2 format or xml format.
+Possible values:
+&lt;ul&gt;
+&lt;li&gt;select:&lt;/li&gt; xml content s expected
+&lt;li&gt;&lt;i&gt;anything else&lt;/i&gt;:&lt;/li&gt; db2 content is expected
+&lt;/ul&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="scalar" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the value of the first column of the first row (or the startrow) is returned as the only result, as a simple non-xml value Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="scalarExtended" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>When &lt;code&gt;true&lt;/code&gt; and &lt;code&gt;scalar&lt;/code&gt; is also &lt;code&gt;true&lt;/code&gt;, but returns no value, one of the following is returned:
+&lt;ul&gt;
+&lt;li&gt;'[absent]' no row is found&lt;/li&gt;
+&lt;li&gt;'[null]' a row is found, but the value is a SQL-NULL&lt;/li&gt;
+&lt;li&gt;'[empty]' a row is found, but the value is a empty string&lt;/li&gt;
+&lt;/ul&gt; Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="nullValue" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Value used in result as contents of fields that contain no value (sql-null) Default: &lt;i&gt;empty string&lt;/i&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="resultQuery" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM dual</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="useNamedParams" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;&lt;code&gt;?{&lt;/code&gt;paramname&lt;code&gt;}&lt;/code&gt;&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="includeFieldDefinition" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, the result contains besides the returned rows also includes a header with information about the fetched fields Default: application default (true)</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="trimSpaces" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Remove trailing blanks from all result values. Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="synchronous" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the result of sendMessage is the reply of the request. Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="streamCharset" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="prettyPrint" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If true and scalar=false, multiline indented XML is produced Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="outputFormat">
+    <xs:annotation>
+      <xs:documentation>The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly Default: false</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+    </xs:simpleType>
+  </xs:attribute>
   <xs:attribute name="destinationParam" type="xs:string">
     <xs:annotation>
       <xs:documentation>Parameter that is used, if specified and not empty, to determine the destination. Overrides the &lt;code&gt;destination&lt;/code&gt; attribute</xs:documentation>
@@ -17878,89 +17968,6 @@ Useful when sending messages to MQ which expects this value to be in hexadecimal
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the destinationName is used directly instead of performing a JNDI lookup Default: true</xs:documentation>
     </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="datasourceName" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="connectionsArePooled" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed) Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="packageContent" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Controls if the returned package content is db2 format or xml format.
-Possible values:
-&lt;ul&gt;
-&lt;li&gt;select:&lt;/li&gt; xml content s expected
-&lt;li&gt;&lt;i&gt;anything else&lt;/i&gt;:&lt;/li&gt; db2 content is expected
-&lt;/ul&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="scalar" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the value of the first column of the first row (or the startrow) is returned as the only result, as a simple non-xml value Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="scalarExtended" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>When &lt;code&gt;true&lt;/code&gt; and &lt;code&gt;scalar&lt;/code&gt; is also &lt;code&gt;true&lt;/code&gt;, but returns no value, one of the following is returned:
-&lt;ul&gt;
-&lt;li&gt;'[absent]' no row is found&lt;/li&gt;
-&lt;li&gt;'[null]' a row is found, but the value is a SQL-NULL&lt;/li&gt;
-&lt;li&gt;'[empty]' a row is found, but the value is a empty string&lt;/li&gt;
-&lt;/ul&gt; Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="nullValue" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Value used in result as contents of fields that contain no value (sql-null) Default: &lt;i&gt;empty string&lt;/i&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="resultQuery" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM dual</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="useNamedParams" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>Named parameters will be auto-detected by default. Every string in the query which equals &lt;code&gt;&lt;code&gt;?{&lt;/code&gt;paramname&lt;code&gt;}&lt;/code&gt;&lt;/code&gt; will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="includeFieldDefinition" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, the result contains besides the returned rows also includes a header with information about the fetched fields Default: application default (true)</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="trimSpaces" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>Remove trailing blanks from all result values. Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="synchronous" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the result of sendMessage is the reply of the request. Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="streamCharset" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="prettyPrint" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If true and scalar=false, multiline indented XML is produced Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="outputFormat">
-    <xs:annotation>
-      <xs:documentation>The type of output. If not set then defaults to old-style XML. If set to XML, new-style XML is used. EXPERIMENTAL: datatypes like numbers are not yet rendered correctly Default: false</xs:documentation>
-    </xs:annotation>
-    <xs:simpleType>
-      <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
-    </xs:simpleType>
   </xs:attribute>
   <xs:attribute name="batchSize" type="frankInt">
     <xs:annotation>
@@ -18138,9 +18145,50 @@ If not specified, and the accessTokens lifetime is not found in the token respon
       <xs:documentation>Disables the use of cookies, making the sender completely stateless Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="followRedirects" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="ignoreRedirects" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="staleChecking" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Controls whether connections checked to be stale, i.e. appear open, but are not. Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="staleTimeout" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="connectionTimeToLive" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value. Default: 900 s</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="connectionIdleTimeout" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool Default: 10 s</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="protocol" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="supportedCipherSuites" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with &lt;code&gt;protocol&lt;/code&gt; as the provided Suite may not be valid for the provided Protocol
+See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="keystore" type="xs:string">
     <xs:annotation>
-      <xs:documentation>resource URL to keystore or certificate to be used for authentication. If none specified, the JVMs default keystore will be used.</xs:documentation>
+      <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="keystoreType">
@@ -18183,26 +18231,26 @@ If not specified, and the accessTokens lifetime is not found in the token respon
   </xs:attribute>
   <xs:attribute name="truststore" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Resource URL to truststore to be used for authenticating peer. If none specified, the JVMs default truststore will be used.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="truststoreAuthAlias" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Authentication alias used to obtain truststore password</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="truststorePassword" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Default password to access truststore</xs:documentation>
+      <xs:documentation>Resource url to truststore. If none specified, the JVMs default truststore will be used.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="truststoreType">
     <xs:annotation>
-      <xs:documentation>Type of truststore Default: jks</xs:documentation>
+      <xs:documentation>Type of truststore. Default: JKS</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
     </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="truststoreAuthAlias" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Authentication alias used to obtain truststore password.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="truststorePassword" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Default password to access truststore.</xs:documentation>
+    </xs:annotation>
   </xs:attribute>
   <xs:attribute name="trustManagerAlgorithm" type="xs:string">
     <xs:annotation>
@@ -18211,58 +18259,17 @@ If not specified, and the accessTokens lifetime is not found in the token respon
   </xs:attribute>
   <xs:attribute name="verifyHostname" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the hostname in the certificate will be checked against the actual hostname of the peer Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="allowSelfSignedCertificates" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self signed certificates are accepted. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, self-signed certificates are accepted Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="ignoreCertificateExpiredException" type="frankBoolean">
     <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored. Note: This attribute is unsafe and should not be used in a production environment. Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="followRedirects" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a redirect request will be honoured, e.g. to switch to HTTPS Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="ignoreRedirects" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful Default: false</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="staleChecking" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>Controls whether connections checked to be stale, i.e. appear open, but are not. Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="staleTimeout" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Used when &lt;code&gt;staleChecking&lt;/code&gt; is &lt;code&gt;true&lt;/code&gt;. Timeout after which an idle connection will be validated before being used. Default: 5000 ms</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="connectionTimeToLive" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Maximum Time to Live for connections in the pool. No connection will be re-used past its timeToLive value. Default: 900 s</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="connectionIdleTimeout" type="frankInt">
-    <xs:annotation>
-      <xs:documentation>Maximum Time for connection to stay idle in the pool. Connections that are idle longer will periodically be evicted from the pool Default: 10 s</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="protocol" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="supportedCipherSuites" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with &lt;code&gt;protocol&lt;/code&gt; as the provided Suite may not be valid for the provided Protocol
-See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, CertificateExpiredExceptions are ignored Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="contentType" type="xs:string">
@@ -18477,7 +18484,8 @@ the sender specified reply destination takes precedence over this one.</xs:docum
   <xs:attribute name="additionalFields" type="xs:string">
     <xs:annotation>
       <xs:documentation>Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
-be added to the session as session-variables.</xs:documentation>
+be added to the session as session-variables, with the prefix &lt;pre&gt;ADDITIONAL_QUERY_FIELDS_KEY&lt;/pre&gt;. So if for example you specify &lt;code&gt;additionalFields = &amp;quot;updated_at&amp;quot;&lt;/code&gt;,
+then in the session there will be a variable &lt;code&gt;ADDITIONAL_QUERY_FIELDS.updated_at&lt;/code&gt;.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="trace" type="frankBoolean" />

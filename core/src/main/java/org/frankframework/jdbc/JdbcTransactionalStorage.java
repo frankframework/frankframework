@@ -111,7 +111,7 @@ import org.frankframework.util.TimeProvider;
  * @author Jaco de Groot
  * @since 4.1
  */
-public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableMessageBrowser<S> implements ITransactionalStorage<S> {
+public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializable> implements ITransactionalStorage {
 
 	private @Getter boolean checkTable; 		// default set from appConstant jdbc.storage.checkTable
 	private @Getter boolean checkIndices;		// default set from appConstant jdbc.storage.checkIndices
@@ -436,7 +436,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	@NonNull
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, S message) throws IOException, SQLException, JdbcException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		if (isOnlyStoreWhenMessageIdUnique()) {
 			String resultString = checkIfMessageIdAlreadyStored(conn, messageId, message);
@@ -498,7 +498,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-	private String checkIfMessageIdAlreadyStored(Connection conn, String messageId, S message) throws SQLException {
+	private String checkIfMessageIdAlreadyStored(Connection conn, String messageId, Serializable message) throws SQLException {
 		log.debug("Preparing select key statement [{}]", selectKeyForMessageQuery);
 		try (PreparedStatement stmt = conn.prepareStatement(selectKeyForMessageQuery)) {
 			stmt.setString(1, getSlotId());
@@ -519,7 +519,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		return null;
 	}
 
-	private boolean isMessageDifferent(ResultSet rs, int columnIndex, String messageId, S message) {
+	private boolean isMessageDifferent(ResultSet rs, int columnIndex, String messageId, Serializable message) {
 		try {
 			String inputMessage;
 			if (message instanceof Message msg) {
@@ -529,9 +529,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			} else {
 				inputMessage = message.toString();
 			}
-			RawMessageWrapper<S> rawMessageWrapper = retrieveObject(messageId, rs, columnIndex);
+			RawMessageWrapper<Serializable> rawMessageWrapper = retrieveObject(messageId, rs, columnIndex);
 			String dataBaseMessage;
-			if (rawMessageWrapper instanceof MessageWrapper<?> mw) {
+			if (rawMessageWrapper instanceof MessageWrapper<Serializable> mw) {
 				dataBaseMessage = mw.getMessage().asString();
 			} else {
 				dataBaseMessage = rawMessageWrapper.getRawMessage().toString();
@@ -559,7 +559,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	@Override
 	@NonNull
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		if (messageId == null) {
 			throw new SenderException("messageId cannot be null");
 		}
@@ -598,7 +598,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * @throws SenderException if there is an error storing the message
 	 */
 	@NonNull
-	public String storeMessage(@NonNull Connection conn, @NonNull String messageId, @NonNull String correlationId, @NonNull Date receivedDate, @Nullable String comments, @Nullable String label, @NonNull S message) throws SenderException {
+	public String storeMessage(@NonNull Connection conn, @NonNull String messageId, @NonNull String correlationId, @NonNull Date receivedDate, @Nullable String comments, @Nullable String label, @NonNull Serializable message) throws SenderException {
 		try {
 			final Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
 			final String storedMessageId = StringUtils.truncate(messageId, MAXIDLEN);
@@ -613,7 +613,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	@SuppressWarnings("unchecked")
-	private RawMessageWrapper<S> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	private RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream == null) {
 				return null;
@@ -621,13 +621,13 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			try (ObjectInputStream ois = new RenamingObjectInputStream(blobInputStream)) {
 				Object s = ois.readObject();
 				if (s instanceof MessageWrapper<?>) {
-					return (MessageWrapper<S>) s;
+					return (MessageWrapper<Serializable>) s;
 				} else if (s instanceof Message message) {
-					MessageWrapper<S> messageWrapper = new MessageWrapper<>(message, storageKey, null);
+					MessageWrapper<Serializable> messageWrapper = new MessageWrapper<>(message, storageKey, null);
 					messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 					return messageWrapper;
 				} else {
-					RawMessageWrapper<S> rawMessageWrapper = new RawMessageWrapper<>((S) s, storageKey, null);
+					RawMessageWrapper<Serializable> rawMessageWrapper = new RawMessageWrapper<>((Serializable) s, storageKey, null);
 					rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 					return rawMessageWrapper;
 				}
@@ -636,7 +636,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	@Override
-	protected RawMessageWrapper<S> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws JdbcException {
+	protected RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws JdbcException {
 		try {
 			if (isBlobsCompressed()) {
 				try {
@@ -663,10 +663,10 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * This method should always run in an existing transaction.
 	 */
 	@Override
-	public @NonNull RawMessageWrapper<S> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
+	public @NonNull RawMessageWrapper<Serializable> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		IbisTransaction itx = new IbisTransaction(txManager, txMandatory, ClassUtils.nameOf(this));
 		try {
-			RawMessageWrapper<S> result = browseMessage(storageKey);
+			RawMessageWrapper<Serializable> result = browseMessage(storageKey);
 			// This is a bit of a kludge but this is the easiest way to get this extra info with the message without a huge rewrite of the code
 			try (IMessageBrowsingIteratorItem item = getContext(storageKey)) {
 				pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, item.getOriginalId());

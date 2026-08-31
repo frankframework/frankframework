@@ -249,10 +249,10 @@ public class AdapterStatus extends BusEndpointBase {
 						}
 					}
 				}
-				ITransactionalStorage<?> messageLog = msp.getMessageLog();
+				ITransactionalStorage messageLog = msp.getMessageLog();
 				if (messageLog != null) {
 					mapPipeMessageLog(messageLog, pipesInfo, adapter.getRunState() == RunState.STARTED);
-				} else if(sender instanceof ITransactionalStorage<?> store) {
+				} else if(sender instanceof ITransactionalStorage store) {
 					mapPipeMessageLog(store, pipesInfo, adapter.getRunState() == RunState.STARTED);
 					pipesInfo.put("isSenderTransactionalStorage", true);
 				}
@@ -262,7 +262,7 @@ public class AdapterStatus extends BusEndpointBase {
 		return pipes;
 	}
 
-	private void mapPipeMessageLog(ITransactionalStorage<?> store, Map<String, Object> data, boolean isStarted) {
+	private void mapPipeMessageLog(ITransactionalStorage store, Map<String, Object> data, boolean isStarted) {
 		data.put("hasMessageLog", true);
 		String messageLogCount;
 		try {

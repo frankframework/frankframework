@@ -247,7 +247,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 		return datasourceNames;
 	}
 
-	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage<?> transactionalStorage) {
+	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage transactionalStorage) {
 		if (transactionalStorage instanceof JdbcTransactionalStorage messageLog) {
 			String datasourceName = messageLog.getDatasourceName();
 			String expiryDateField = messageLog.getExpiryDateField();

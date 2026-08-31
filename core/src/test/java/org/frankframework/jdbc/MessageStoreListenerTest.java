@@ -31,7 +31,7 @@ import org.frankframework.util.TimeProvider;
 public class MessageStoreListenerTest {
 
 	private MessageStoreListener listener;
-	private JdbcTransactionalStorage<String> storage;
+	private JdbcTransactionalStorage storage;
 	static final String TEST_TABLE_NAME = "JDBCTRANSACTIONALSTORAGETEST";
 	private static final String SLOT_ID = "slot";
 	private static final String MESSAGE_ID_FIELD = "MESSAGEID";

@@ -1,0 +1,102 @@
+<Module
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+
+	<Adapter name="CryptoSoapValidator">
+		<Receiver>
+			<WebServiceListener name="CryptoSoapListener" address="CryptoSoapValidator" soap="false" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="success" code="200"/>
+				<Exit name="SpecialExit" state="success" code="201" responseRoot="SpecialResponse" />
+				<Exit name="NotModified" state="success" code="304" empty="true" />
+				<Exit name="BadRequest" state="error" code="400" responseRoot="InputValidationFailure" />
+				<Exit name="ServerError" state="error" code="500" />
+			</Exits>
+
+			<CryptoSoapInputValidator
+				schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd"
+				soapBody="Item_Request"
+				soapVersion="auto"
+				operations="VERIFY,DECRYPT"
+			>
+				<Keystore resource="soap-sign-encryption.jks" password="changeit" type="JKS" keystoreAlias="myCustomCertificateName" keystoreAliasPassword="Super$3cure" />
+				<Param name="Status" sessionKey="Status" />
+				<Param name="Id" sessionKey="Id" />
+				<Param name="Item/Id" sessionKey="ItemId" />
+				<Param name="Attributes/Attribute/Id" sessionKey="AttributeId" />
+				<Forward name="failure" path="InputValidationFailure" />
+			</CryptoSoapInputValidator>
+
+			<CryptoSoapOutputValidator
+				schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd"
+				soapBody="Item_Response,InputValidationFailure"
+				soapVersion="auto"
+				operations="SIGN,ENCRYPT"
+			>
+				<Keystore resource="soap-sign-encryption.jks" password="changeit" type="JKS" keystoreAlias="myCustomCertificateName" keystoreAliasPassword="Super$3cure" />
+				<Param name="Status" sessionKey="Status" />
+				<Param name="Id" sessionKey="Id" />
+				<Param name="Item/Id" sessionKey="ItemId" />
+				<Param name="Attributes/Attribute/Id" sessionKey="AttributeId" />
+				<Forward name="failure" path="InputValidationFailure" />
+			</CryptoSoapOutputValidator>
+
+			<!-- since we don't use the auto-wrap, explicitly configure the wrappers -->
+			<SoapInputWrapper direction="unwrap" />
+			<SoapOutputWrapper />
+
+			<XsltPipe name="CopyItem" styleSheetName="Validators/xsl/CopyItem.xsl">
+				<Forward name="success" path="EXIT" />
+			</XsltPipe>
+
+			<EchoPipe name="InputValidationFailure" getInputFromFixedValue="&lt;InputValidationFailure xmlns=&quot;urn:items&quot;/&gt;">
+				<Forward name="success" path="EXIT" />
+			</EchoPipe>
+
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="WebServiceCryptoSoap" description="Test the functioning of the WebServiceSender with Crypto">
+		<Receiver>
+			<FrankListener name="ibis4test-WebServiceSenderCrypto" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+				<Exit name="InputValidationFailure" state="ERROR" />
+			</Exits>
+			<SwitchPipe name="SwitchAction" xpathExpression="/Envelope/Body/Item_Request/Status" />
+			<!-- I'm sorry, 'a' isn't a descriptive forward, but I was too lazy to edit the XSD. -->
+			<SenderPipe name="a">
+				<WebServiceSender
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/CryptoSoapValidator"
+					soap="false"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					timeout="1000"
+				/>
+				<CryptoSoapInputValidator
+					schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd"
+					soapBody="Item_Request"
+					soapVersion="auto"
+					operations="SIGN,ENCRYPT"
+				>
+					<keystore resource="soap-sign-encryption.jks" password="changeit" type="JKS" keystoreAlias="myCustomCertificateName" keystoreAliasPassword="Super$3cure" />
+					<Forward name="failure" path="InputValidationFailure" />
+				</CryptoSoapInputValidator>
+				<CryptoSoapOutputValidator
+					schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd"
+					soapBody="Item_Response,InputValidationFailure"
+					soapVersion="auto"
+					operations="VERIFY,DECRYPT"
+				>
+					<keystore resource="soap-sign-encryption.jks" password="changeit" type="JKS" keystoreAlias="myCustomCertificateName" keystoreAliasPassword="Super$3cure" />
+					<Forward name="failure" path="InputValidationFailure" />
+				</CryptoSoapOutputValidator>
+				<Forward name="success" path="EXIT" />
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+</Module>
