@@ -67,7 +67,7 @@ public class Init {
 		}
 	}
 
-	@Description("view all available api resources")
+	@Description("view all available API resources")
 	@GetMapping(value = {"", "/"}, produces = "application/json")
 	@PermitAll
 	public ResponseEntity<?> getAllResources(HttpServletRequest servletRequest, ParametersModel params) {

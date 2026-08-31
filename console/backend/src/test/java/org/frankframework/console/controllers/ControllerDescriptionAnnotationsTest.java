@@ -27,10 +27,14 @@ public class ControllerDescriptionAnnotationsTest {
 	@Test
 	public void allRequestMappedMethodsShouldHaveDescriptionAnnotation() throws Exception {
 		List<String> missingDescriptions = new ArrayList<>();
+		int productionControllerCount = 0;
 		Enumeration<URL> controllerDirectories = Thread.currentThread().getContextClassLoader().getResources(CONTROLLERS_PACKAGE_PATH);
 		while (controllerDirectories.hasMoreElements()) {
 			URL directory = controllerDirectories.nextElement();
-			if (!"file".equals(directory.getProtocol()) || directory.getPath().contains("/test-classes/")) {
+			if (!"file".equals(directory.getProtocol())) {
+				continue;
+			}
+			if (directory.getPath().contains("/test-classes/")) {
 				continue;
 			}
 
@@ -44,6 +48,7 @@ public class ControllerDescriptionAnnotationsTest {
 					if (!controllerClass.isAnnotationPresent(RestController.class)) {
 						continue;
 					}
+					productionControllerCount++;
 
 					for (Method method : controllerClass.getDeclaredMethods()) {
 						if (AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class) && !method.isAnnotationPresent(Description.class)) {
@@ -54,6 +59,7 @@ public class ControllerDescriptionAnnotationsTest {
 			}
 		}
 
+		assertTrue(productionControllerCount > 0, "No production controllers were discovered for annotation validation");
 		missingDescriptions.sort(Comparator.naturalOrder());
 		assertTrue(missingDescriptions.isEmpty(), () -> "Request-mapped methods missing @Description: " + missingDescriptions);
 	}
