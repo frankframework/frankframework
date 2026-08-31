@@ -95,9 +95,9 @@ public class ControllerDescriptionAnnotationsTest {
 		for (Method method : controllerClass.getDeclaredMethods()) {
 			if (AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class)) {
 				hasRequestMappedMethod = true;
-			}
-			if (AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class) && !AnnotatedElementUtils.hasAnnotation(method, Description.class)) {
-				missingDescriptions.add(controllerClass.getSimpleName() + "#" + method.toGenericString());
+				if (!AnnotatedElementUtils.hasAnnotation(method, Description.class)) {
+					missingDescriptions.add(controllerClass.getSimpleName() + "#" + method.toGenericString());
+				}
 			}
 		}
 		return hasRequestMappedMethod ? 1 : 0;
