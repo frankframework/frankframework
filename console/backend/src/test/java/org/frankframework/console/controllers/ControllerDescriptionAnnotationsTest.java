@@ -54,6 +54,7 @@ public class ControllerDescriptionAnnotationsTest {
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry, false);
 		scanner.setIncludeAnnotationConfig(false);
+		// Only audit controllers declared directly in this package; endpoints in subpackages such as .socket are out of scope.
 		scanner.addIncludeFilter((metadataReader, metadataReaderFactory) -> {
 			String className = metadataReader.getClassMetadata().getClassName();
 			String packageName = className.substring(0, className.lastIndexOf('.'));
