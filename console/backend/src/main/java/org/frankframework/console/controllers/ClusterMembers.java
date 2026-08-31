@@ -69,34 +69,38 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	@GetMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getClusterMembers(GetClusterMembersParams params) {
 		String id = params.id;
+		String name = params.name;
 		String type = params.type;
 
-		if(StringUtils.isNotEmpty(id)) {
-			setMemberTarget(id);
+		if (StringUtils.isNotEmpty(id)) {
+			UUID uuid = UUID.fromString(id);
+			setMemberTarget(uuid);
+		} else if (StringUtils.isNotEmpty(name)) {
+			setMemberTarget(name);
 		}
 
 		List<ClusterMember> members = type != null ?
 				outboundGateway.getMembers().stream().filter(m -> type.equals(m.getType())).toList() :
 				outboundGateway.getMembers();
 
-		if(members.isEmpty()) {
+		if (members.isEmpty()) {
 			JsonMessage response = new JsonMessage(members);
 			return ResponseUtils.convertToSpringResponse(response);
 		}
 
 		boolean hasSelectedMember = false;
 
-		for(ClusterMember member : members) {
+		for (ClusterMember member : members) {
 			if (member.getId().equals(session.getMemberTarget())) {
 				hasSelectedMember = true;
 				member.setSelectedMember(true);
 			}
 		}
 
-		if(!hasSelectedMember) {
+		if (!hasSelectedMember) {
 			ClusterMember firstWorker = members.stream().filter(m -> "worker".equals(m.getType())).findFirst().orElse(null);
 			if (firstWorker != null) {
-				setMemberTarget(String.valueOf(firstWorker.getId()));
+				setMemberTarget(firstWorker.getId());
 				firstWorker.setSelectedMember(true);
 			}
 		}
@@ -110,7 +114,15 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	@Description("select a specific cluster member to retrieve data from")
 	@PostMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> setClusterMemberTarget(@RequestBody ClusterMemberTargetModel model) {
-		setMemberTarget(model.id);
+		if (model.name != null) {
+			setMemberTarget(model.name);
+		}
+
+		if (model.id != null) {
+			UUID uuid = UUID.fromString(model.id);
+			setMemberTarget(uuid);
+		}
+
 		return ResponseEntity.accepted().build();
 	}
 
@@ -120,22 +132,33 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 		this.messagingTemplate.convertAndSend("/event/cluster", jsonResponse);
 	}
 
-	public record GetClusterMembersParams(String id, String type) {}
+	public record GetClusterMembersParams(String id, String name, String type) {}
 
 	public record ClusterMemberTargetModel(
-			String id
+			String id,
+			String name
 	) {}
 
-	private void setMemberTarget(String id) {
-		List<ClusterMember> members = outboundGateway.getMembers();
-		UUID uuid = UUID.fromString(id);
-		var unused = members.stream()
-				.filter(m -> "worker".equals(m.getType()))
-				.filter(m -> uuid.equals(m.getId()))
-				.findAny()
-				.orElseThrow(() -> new ApiException("member target with id ["+id+"] not found"));
+	private void setMemberTarget(UUID id) {
+		boolean found = outboundGateway.getMembers().stream()
+				.filter(member -> "worker".equals(member.getType()))
+				.anyMatch(member -> id.equals(member.getId()));
 
-		session.setMemberTarget(uuid);
+		if (!found) {
+			throw new ApiException("member target with id [" + id + "] not found");
+		}
+
+		session.setMemberTarget(id);
+	}
+
+	private void setMemberTarget(String name) {
+		ClusterMember target = outboundGateway.getMembers().stream()
+				.filter(member -> "worker".equals(member.getType()))
+				.filter(member -> name.equals(member.getName()))
+				.findFirst()
+				.orElseThrow(() -> new ApiException("member target with instance name [" + name + "] not found"));
+
+		session.setMemberTarget(target.getId());
 	}
 
 	private record EventWrapper(EventType type, ClusterMember member) {}
