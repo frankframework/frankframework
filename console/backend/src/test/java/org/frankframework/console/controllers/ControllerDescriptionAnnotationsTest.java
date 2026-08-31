@@ -3,20 +3,18 @@ package org.frankframework.console.controllers;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,19 +26,31 @@ public class ControllerDescriptionAnnotationsTest {
 	private static final String CONTROLLERS_PACKAGE_PATH = CONTROLLERS_PACKAGE.replace('.', '/');
 
 	@Test
-	public void allRequestMappedMethodsShouldHaveDescriptionAnnotation() throws Exception {
+	public void allRequestMappedMethodsShouldHaveDescriptionAnnotation() throws ClassNotFoundException {
 		List<String> missingDescriptions = new ArrayList<>();
+
+		ClassPathBeanDefinitionScanner scanner = scanControllers();
+		BeanDefinitionRegistry registry = scanner.getRegistry();
 		int productionRestControllerCount = 0;
-		Enumeration<URL> controllerDirectories = Thread.currentThread().getContextClassLoader().getResources(CONTROLLERS_PACKAGE_PATH);
-		while (controllerDirectories.hasMoreElements()) {
-			URL directory = controllerDirectories.nextElement();
-			if ("file".equals(directory.getProtocol())) {
-				if (directory.getPath().contains("/test-classes/")) {
-					continue;
-				}
-				productionRestControllerCount += scanFileDirectory(Path.of(directory.toURI()), missingDescriptions);
-			} else if ("jar".equals(directory.getProtocol())) {
-				productionRestControllerCount += scanJarDirectory(directory, missingDescriptions);
+		for (String beanName : registry.getBeanDefinitionNames()) {
+			BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
+			String resourceDescription = beanDefinition.getResourceDescription();
+			if (resourceDescription != null && resourceDescription.contains("/test-classes/")) {
+				continue;
+			}
+
+			String beanClassName = beanDefinition.getBeanClassName();
+			if (beanClassName == null) {
+				continue;
+			}
+
+			Class<?> controllerClass = Class.forName(beanClassName);
+			if (!CONTROLLERS_PACKAGE.equals(controllerClass.getPackageName())) {
+				continue;
+			}
+
+			if (inspectControllerClass(controllerClass, missingDescriptions)) {
+				productionRestControllerCount++;
 			}
 		}
 
@@ -49,48 +59,19 @@ public class ControllerDescriptionAnnotationsTest {
 		assertTrue(missingDescriptions.isEmpty(), () -> "Request-mapped methods missing @Description: " + missingDescriptions);
 	}
 
-	private int scanFileDirectory(Path directory, List<String> missingDescriptions) throws Exception {
-		int productionControllerCount = 0;
-		try (DirectoryStream<Path> files = Files.newDirectoryStream(directory, "*.class")) {
-			for (Path file : files) {
-				String className = file.getFileName().toString().replace(".class", "");
-				if (className.contains("$")) {
-					continue;
-				}
-				productionControllerCount += inspectControllerClass(className, missingDescriptions);
-			}
-		}
-		return productionControllerCount;
+	private ClassPathBeanDefinitionScanner scanControllers() {
+		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
+		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
+		scanner.setIncludeAnnotationConfig(false);
+		scanner.addIncludeFilter(new AnnotationTypeFilter(RestController.class));
+		scanner.setBeanNameGenerator(new FullyQualifiedAnnotationBeanNameGenerator());
+
+		int numberOfBeans = scanner.scan(CONTROLLERS_PACKAGE);
+		assertTrue(numberOfBeans > 0, "No rest controllers were found during scanning");
+		return scanner;
 	}
 
-	private int scanJarDirectory(URL directory, List<String> missingDescriptions) throws Exception {
-		int productionControllerCount = 0;
-		JarURLConnection connection = (JarURLConnection) directory.openConnection();
-		String entryPrefix = connection.getEntryName() + "/";
-		try (JarFile jarFile = connection.getJarFile()) {
-			Enumeration<JarEntry> entries = jarFile.entries();
-			while (entries.hasMoreElements()) {
-				JarEntry entry = entries.nextElement();
-				String entryName = entry.getName();
-				if (!entryName.startsWith(entryPrefix) || !entryName.endsWith(".class")) {
-					continue;
-				}
-				String className = entryName.substring(entryPrefix.length()).replace(".class", "");
-				if (className.contains("/") || className.contains("$")) {
-					continue;
-				}
-				productionControllerCount += inspectControllerClass(className, missingDescriptions);
-			}
-		}
-		return productionControllerCount;
-	}
-
-	private int inspectControllerClass(String className, List<String> missingDescriptions) throws ClassNotFoundException {
-		Class<?> controllerClass = Class.forName(CONTROLLERS_PACKAGE + "." + className);
-		if (!controllerClass.isAnnotationPresent(RestController.class)) {
-			return 0;
-		}
-
+	private boolean inspectControllerClass(Class<?> controllerClass, List<String> missingDescriptions) {
 		boolean hasRequestMappedMethod = false;
 		for (Method method : controllerClass.getDeclaredMethods()) {
 			if (AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class)) {
@@ -100,6 +81,6 @@ public class ControllerDescriptionAnnotationsTest {
 				}
 			}
 		}
-		return hasRequestMappedMethod ? 1 : 0;
+		return hasRequestMappedMethod;
 	}
 }

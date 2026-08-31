@@ -51,7 +51,7 @@ public class LiquibaseScript {
 	}
 
 	@AllowAllIbisUserRoles
-	@Description("download a liquibase script")
+	@Description("Download a database migration script")
 	@GetMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadScript(@RequestParam(value = "configuration", required = false) String configuration) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
