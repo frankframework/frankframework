@@ -66,7 +66,7 @@ public class SenderPipe extends MessageSendingPipe {
 
 	@Override
 	@Reintroduce
-	public void setMessageLog(ITransactionalStorage<?> messageLog) {
+	public void setMessageLog(ITransactionalStorage messageLog) {
 		super.setMessageLog(messageLog);
 	}
 

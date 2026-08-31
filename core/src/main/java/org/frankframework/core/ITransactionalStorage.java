@@ -36,7 +36,7 @@ import org.frankframework.receivers.Receiver;
  * @since   4.1
 */
 @FrankDocGroup(FrankDocGroupValue.TRANSACTIONAL_STORAGE)
-public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, NameAware, HasName {
+public interface ITransactionalStorage extends IMessageBrowser<Serializable>, NameAware, HasName {
 
 	int MAXCOMMENTLEN = 1000;
 
@@ -55,12 +55,12 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	 *
 	 * The messageId should be unique.
 	 */
-	String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException;
+	String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException;
 
 	/**
 	 * Retrieves and deletes the message.
 	 */
-	@NonNull RawMessageWrapper<@Nullable S> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException;
+	@NonNull RawMessageWrapper<@Nullable Serializable> consumeMessage(@NonNull String storageKey, @NonNull PipeLineSession pipeLineSession) throws ListenerException;
 
 	/** Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes. */
 	void setSlotId(String string);

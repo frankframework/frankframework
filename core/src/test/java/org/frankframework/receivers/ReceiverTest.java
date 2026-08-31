@@ -220,7 +220,7 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public Receiver<Serializable> setupReceiverWithListener(Adapter adapter, IListener<Serializable> listener, ITransactionalStorage<Serializable> errorStorage) {
+	public Receiver<Serializable> setupReceiverWithListener(Adapter adapter, IListener<Serializable> listener, ITransactionalStorage errorStorage) {
 		@SuppressWarnings("unchecked")
 		Receiver<Serializable> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
 		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
@@ -263,9 +263,8 @@ public class ReceiverTest {
 		return listener;
 	}
 
-	@SuppressWarnings("unchecked")
-	public ITransactionalStorage<Serializable> setupErrorStorage() {
-		JdbcTransactionalStorage<Serializable> txStorage = mock(JdbcTransactionalStorage.class);
+	public ITransactionalStorage setupErrorStorage() {
+		JdbcTransactionalStorage txStorage = mock(JdbcTransactionalStorage.class);
 		txStorage.setDataSourceFactory(new DataSourceFactoryMock());
 		return txStorage;
 	}
@@ -306,8 +305,7 @@ public class ReceiverTest {
 		doNothing().when(listener).start();
 		doNothing().when(listener).configure();
 
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
+		ITransactionalStorage errorStorage = mock(ITransactionalStorage.class);
 
 		Adapter adapter = setupAdapter();
 		Receiver<String> receiver = setupReceiver(adapter, listener);
@@ -347,7 +345,6 @@ public class ReceiverTest {
 					int nrTries = 0;
 					while (nrTries++ < NR_TIMES_MESSAGE_OFFERED) {
 						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
-						// noinspection unchecked
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any()))
 								.thenAnswer(invocation -> {
@@ -409,10 +406,8 @@ public class ReceiverTest {
 		configuration = configurationSupplier.get();
 		MockPushingListener listener = spy(configuration.createBean(MockPushingListener.class));
 
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
+		ITransactionalStorage errorStorage = mock(ITransactionalStorage.class);
+		ITransactionalStorage messageLog = mock(ITransactionalStorage.class);
 
 		Adapter adapter = setupAdapter(ExitState.ERROR);
 		Receiver<String> receiver = setupReceiver(adapter, listener);
@@ -466,7 +461,6 @@ public class ReceiverTest {
 
 						log.info("Nr tries: {}, Nr rolled back transactions: {}, delivery count: {}", nrTries, rolledBackTXCounter.get(), receiver.getDeliveryCount(messageWrapper));
 						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
-						// noinspection unchecked
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(messageIdCaptor.capture(), correlationIdCaptor.capture(), any(), any(), any(), messageCaptor.capture()))
 								.thenAnswer(invocation -> {
@@ -591,10 +585,8 @@ public class ReceiverTest {
 		configuration = buildDataSourceTransactionManagerConfiguration();
 		MockPushingListener listener = spy(configuration.createBean(MockPushingListener.class));
 
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
+		ITransactionalStorage errorStorage = mock(ITransactionalStorage.class);
+		ITransactionalStorage messageLog = mock(ITransactionalStorage.class);
 
 		Adapter adapter = setupAdapter();
 		Receiver<String> receiver = setupReceiver(adapter, listener);
@@ -655,10 +647,8 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		MockPullingListener listener = spy(configuration.createBean(MockPullingListener.class));
 
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
+		ITransactionalStorage errorStorage = mock(ITransactionalStorage.class);
+		ITransactionalStorage messageLog = mock(ITransactionalStorage.class);
 
 		Adapter adapter = setupAdapter(ExitState.ERROR);
 		Receiver<String> receiver = setupReceiver(adapter, listener);
@@ -706,8 +696,8 @@ public class ReceiverTest {
 
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		Adapter adapter = setupAdapter();
-		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		JavaListener listener = setupJavaListener();
+		ITransactionalStorage errorStorage = setupErrorStorage();
+		JavaListener<Serializable> listener = setupJavaListener();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
 		PipeLine pipeLine = adapter.getPipeLine();
@@ -743,7 +733,7 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		Adapter adapter = setupAdapter();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
-		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		ITransactionalStorage errorStorage = setupErrorStorage();
 		MessageStoreListener listener = setupMessageStoreListener();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
@@ -825,7 +815,7 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		Adapter adapter = setupAdapter();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
-		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		ITransactionalStorage errorStorage = setupErrorStorage();
 		MessageStoreListener listener = setupMessageStoreListener();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
@@ -1173,7 +1163,7 @@ public class ReceiverTest {
 	public void testResultLargerThanMaxCommentSize() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
-		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		ITransactionalStorage errorStorage = setupErrorStorage();
 		JavaListener<Serializable> listener = setupJavaListener();
 		Adapter adapter = setupAdapter();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
@@ -1243,7 +1233,7 @@ public class ReceiverTest {
 	void testMessageDeliveryDelay() throws Exception {
 		// Arrange
 		configuration = buildDataSourceTransactionManagerConfiguration();
-		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		ITransactionalStorage errorStorage = setupErrorStorage();
 		JavaListener<Serializable> listener = setupJavaListener();
 		Adapter adapter = setupAdapter();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
@@ -1315,8 +1305,7 @@ public class ReceiverTest {
 		configuration = configurationSupplier.get();
 		MockPushingListener listener = spy(configuration.createBean(MockPushingListener.class));
 
-		@SuppressWarnings("unchecked")
-		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
+		ITransactionalStorage errorStorage = mock(ITransactionalStorage.class);
 
 		Adapter adapter = setupAdapter();
 		Receiver<String> receiver = setupReceiver(adapter, listener);

@@ -171,8 +171,8 @@ public class ReceiverSubAdapterTest {
 		return listener;
 	}
 
-	private ITransactionalStorage<Serializable> createMockErrorStorage(Receiver<?> receiver) throws Exception {
-		ITransactionalStorage<Serializable> errorStorage = mock();
+	private ITransactionalStorage createMockErrorStorage(Receiver<?> receiver) throws Exception {
+		ITransactionalStorage errorStorage = mock();
 
 		Map<String, Serializable> storedMessages = new HashMap<>();
 		when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any())).thenAnswer(params -> {
@@ -213,7 +213,7 @@ public class ReceiverSubAdapterTest {
 		PipeLine mainAdapterPipeLine = createPipeLine(mainAdapter, messageSendingPipe);
 		Receiver<Serializable> mainAdapterReceiver = createReceiver(mainAdapter, mainAdapterPipeLine, "TEST", txManager);
 
-		ITransactionalStorage<Serializable> mockErrorStorage = createMockErrorStorage(mainAdapterReceiver);
+		ITransactionalStorage mockErrorStorage = createMockErrorStorage(mainAdapterReceiver);
 		IListener<Serializable> mockListener = createMockListener(mainAdapterReceiver);
 
 		log.info("*>>> Starting Configuration");
