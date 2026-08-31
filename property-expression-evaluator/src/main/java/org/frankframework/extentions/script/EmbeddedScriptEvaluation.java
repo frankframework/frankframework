@@ -29,6 +29,7 @@ import org.apache.commons.collections4.map.CompositeMap;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlFeatures;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
@@ -174,6 +175,9 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 			} else {
 				return Optional.of(result.toString());
 			}
+		} catch (JexlException.Cancel c) {
+			log.warn("Script execution has been cancelled because thread was interrupted.", c);
+			return Optional.empty();
 		} catch (Exception e) {
 			// Script was probably valid but not in the context of variables given
 			log.error(() -> "Cannot evaluate JEXL expression [%s]".formatted(key), e);
