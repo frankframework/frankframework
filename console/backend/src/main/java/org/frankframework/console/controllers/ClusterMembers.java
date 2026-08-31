@@ -114,11 +114,15 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	@Description("select a specific cluster member to retrieve data from")
 	@PostMapping(value = "/cluster/members", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> setClusterMemberTarget(@RequestBody ClusterMemberTargetModel model) {
-		if (model.name != null)  setMemberTarget(model.name);
+		if (model.name != null) {
+			setMemberTarget(model.name);
+		}
+
 		if (model.id != null) {
 			UUID uuid = UUID.fromString(model.id);
 			setMemberTarget(uuid);
 		}
+
 		return ResponseEntity.accepted().build();
 	}
 
@@ -136,22 +140,24 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	) {}
 
 	private void setMemberTarget(UUID id) {
-		List<ClusterMember> members = outboundGateway.getMembers();
-		members.stream()
+		boolean found = outboundGateway.getMembers().stream()
 				.filter(member -> "worker".equals(member.getType()))
-				.filter(member -> id.equals(member.getId()))
-				.findAny()
-				.orElseThrow(() -> new ApiException("member target with id ["+id.toString()+"] not found"));
+				.anyMatch(member -> id.equals(member.getId()));
+
+		if (!found) {
+			throw new ApiException("member target with id [" + id + "] not found");
+		}
+
 		session.setMemberTarget(id);
 	}
 
 	private void setMemberTarget(String name) {
-		List<ClusterMember> members = outboundGateway.getMembers();
-		ClusterMember target = members.stream()
+		ClusterMember target = outboundGateway.getMembers().stream()
 				.filter(member -> "worker".equals(member.getType()))
 				.filter(member -> name.equals(member.getName()))
 				.findFirst()
-				.orElseThrow(() -> new ApiException("member target with instance name ["+name+"] not found"));
+				.orElseThrow(() -> new ApiException("member target with instance name [" + name + "] not found"));
+
 		session.setMemberTarget(target.getId());
 	}
 
