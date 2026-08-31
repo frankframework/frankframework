@@ -61,7 +61,7 @@ public class ControllerDescriptionAnnotationsTest {
 			return CONTROLLERS_PACKAGE.equals(packageName)
 				&& REST_CONTROLLER_FILTER.match(metadataReader, metadataReaderFactory);
 		});
-		scanner.addExcludeFilter(new AnnotationTypeFilter(DescriptionAuditTestController.class));
+		scanner.addExcludeFilter(new AnnotationTypeFilter(ExcludeFromDescriptionAudit.class));
 		scanner.setBeanNameGenerator(new FullyQualifiedAnnotationBeanNameGenerator());
 
 		int numberOfBeans = scanner.scan(CONTROLLERS_PACKAGE);

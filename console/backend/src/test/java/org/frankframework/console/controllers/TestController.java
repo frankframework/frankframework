@@ -12,7 +12,7 @@ import org.frankframework.console.ApiException;
 /**
  * Test controller to replicate throwing of Exceptions in controller methods to test the ApiExceptionHandler
  */
-@DescriptionAuditTestController
+@ExcludeFromDescriptionAudit
 @RestController
 public class TestController {
 
