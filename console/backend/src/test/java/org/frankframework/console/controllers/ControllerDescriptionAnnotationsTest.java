@@ -3,12 +3,14 @@ package org.frankframework.console.controllers;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -20,22 +22,33 @@ import org.frankframework.console.Description;
 public class ControllerDescriptionAnnotationsTest {
 
 	private static final String CONTROLLERS_PACKAGE = "org.frankframework.console.controllers";
+	private static final String CONTROLLERS_PACKAGE_PATH = CONTROLLERS_PACKAGE.replace('.', '/');
 
 	@Test
 	public void allRequestMappedMethodsShouldHaveDescriptionAnnotation() throws Exception {
-		Path controllersDirectory = Path.of("src/main/java/org/frankframework/console/controllers");
 		List<String> missingDescriptions = new ArrayList<>();
-		try (Stream<Path> files = Files.list(controllersDirectory)) {
-			for (Path file : files.filter(path -> path.toString().endsWith(".java")).toList()) {
-				String className = file.getFileName().toString().replace(".java", "");
-				Class<?> controllerClass = Class.forName(CONTROLLERS_PACKAGE + "." + className);
-				if (!controllerClass.isAnnotationPresent(RestController.class)) {
-					continue;
-				}
+		Enumeration<URL> controllerDirectories = Thread.currentThread().getContextClassLoader().getResources(CONTROLLERS_PACKAGE_PATH);
+		while (controllerDirectories.hasMoreElements()) {
+			URL directory = controllerDirectories.nextElement();
+			if (!"file".equals(directory.getProtocol()) || directory.getPath().contains("/test-classes/")) {
+				continue;
+			}
 
-				for (Method method : controllerClass.getDeclaredMethods()) {
-					if (AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class) && !method.isAnnotationPresent(Description.class)) {
-						missingDescriptions.add(controllerClass.getSimpleName() + "#" + method.getName());
+			try (DirectoryStream<Path> files = Files.newDirectoryStream(Path.of(directory.toURI()), "*.class")) {
+				for (Path file : files) {
+					String className = file.getFileName().toString().replace(".class", "");
+					if (className.contains("$")) {
+						continue;
+					}
+					Class<?> controllerClass = Class.forName(CONTROLLERS_PACKAGE + "." + className);
+					if (!controllerClass.isAnnotationPresent(RestController.class)) {
+						continue;
+					}
+
+					for (Method method : controllerClass.getDeclaredMethods()) {
+						if (AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class) && !method.isAnnotationPresent(Description.class)) {
+							missingDescriptions.add(controllerClass.getSimpleName() + "#" + method.getName());
+						}
 					}
 				}
 			}
