@@ -23,6 +23,7 @@ import org.frankframework.console.Description;
 public class ControllerDescriptionAnnotationsTest {
 
 	private static final String CONTROLLERS_PACKAGE = "org.frankframework.console.controllers";
+	private static final AnnotationTypeFilter REST_CONTROLLER_FILTER = new AnnotationTypeFilter(RestController.class);
 
 	@Test
 	public void allRequestMappedMethodsShouldHaveDescriptionAnnotation() throws ClassNotFoundException {
@@ -57,7 +58,7 @@ public class ControllerDescriptionAnnotationsTest {
 			String className = metadataReader.getClassMetadata().getClassName();
 			String packageName = className.substring(0, className.lastIndexOf('.'));
 			return CONTROLLERS_PACKAGE.equals(packageName)
-				&& metadataReader.getAnnotationMetadata().hasAnnotation(RestController.class.getName());
+				&& REST_CONTROLLER_FILTER.match(metadataReader, metadataReaderFactory);
 		});
 		scanner.addExcludeFilter(new AnnotationTypeFilter(DescriptionAuditTestController.class));
 		scanner.setBeanNameGenerator(new FullyQualifiedAnnotationBeanNameGenerator());
