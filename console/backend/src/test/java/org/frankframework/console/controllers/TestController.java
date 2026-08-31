@@ -1,10 +1,5 @@
 package org.frankframework.console.controllers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import jakarta.servlet.ServletException;
 
 import org.springframework.http.MediaType;
@@ -13,11 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.ApiException;
-
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@interface DescriptionAuditTestController {
-}
 
 /**
  * Test controller to replicate throwing of Exceptions in controller methods to test the ApiExceptionHandler
