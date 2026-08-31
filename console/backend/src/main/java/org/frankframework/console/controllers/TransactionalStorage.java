@@ -42,6 +42,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.console.ApiException;
+import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
@@ -65,6 +66,7 @@ public class TransactionalStorage {
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Description("view a specific stored message")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> browseMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
@@ -72,6 +74,7 @@ public class TransactionalStorage {
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Description("view available message store fields")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/fields", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFields(TransactionStoragePathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
@@ -80,6 +83,7 @@ public class TransactionalStorage {
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Description("download a specific stored message")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
@@ -87,6 +91,7 @@ public class TransactionalStorage {
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Description("download multiple stored messages")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<StreamingResponseBody> downloadMessages(TransactionStoragePathVariables path, @RequestPart("messageIds") String messageIdsPart) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
@@ -129,6 +134,7 @@ public class TransactionalStorage {
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Description("view stored messages")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> browseMessages(
 			TransactionStoragePathVariables path,
@@ -156,6 +162,7 @@ public class TransactionalStorage {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
+	@Description("resend a specific receiver error message")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> resendReceiverMessage(TransactionStoragePathVariables path) {
 
@@ -171,6 +178,7 @@ public class TransactionalStorage {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
+	@Description("resend multiple receiver error messages")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> resendReceiverMessages(TransactionStoragePathVariables path,
 													@RequestPart("messageIds") String messageIdsPart) {
@@ -185,6 +193,7 @@ public class TransactionalStorage {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
+	@Description("move multiple receiver messages to a different state")
 	@PostMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/{processState}/move/{targetState}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> changeMessagesProcessState(TransactionStoragePathVariables path,
 														@RequestPart("messageIds") String messageIdsPart) {
@@ -202,6 +211,7 @@ public class TransactionalStorage {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
+	@Description("delete a specific receiver error message")
 	@DeleteMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> deleteReceiverMessage(TransactionStoragePathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
@@ -219,6 +229,7 @@ public class TransactionalStorage {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("pipeline")
+	@Description("delete multiple receiver error messages")
 	@DeleteMapping(value = "/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> deleteReceiverMessages(TransactionStoragePathVariables path,
 													@RequestPart("messageIds") String messageIdsPart) {

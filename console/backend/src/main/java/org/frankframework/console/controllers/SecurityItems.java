@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.Getter;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
@@ -43,6 +44,7 @@ public class SecurityItems {
 	}
 
 	@AllowAllIbisUserRoles
+	@Description("view all security items")
 	@GetMapping(value = "/securityitems", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("securityitems")
 	public ResponseEntity<?> getSecurityItems() {
