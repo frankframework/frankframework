@@ -3,6 +3,7 @@ package org.frankframework.console.controllers;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -31,36 +34,68 @@ public class ControllerDescriptionAnnotationsTest {
 		Enumeration<URL> controllerDirectories = Thread.currentThread().getContextClassLoader().getResources(CONTROLLERS_PACKAGE_PATH);
 		while (controllerDirectories.hasMoreElements()) {
 			URL directory = controllerDirectories.nextElement();
-			if (!"file".equals(directory.getProtocol())) {
-				continue;
-			}
-			if (directory.getPath().contains("/test-classes/")) {
-				continue;
-			}
-
-			try (DirectoryStream<Path> files = Files.newDirectoryStream(Path.of(directory.toURI()), "*.class")) {
-				for (Path file : files) {
-					String className = file.getFileName().toString().replace(".class", "");
-					if (className.contains("$")) {
-						continue;
-					}
-					Class<?> controllerClass = Class.forName(CONTROLLERS_PACKAGE + "." + className);
-					if (!controllerClass.isAnnotationPresent(RestController.class)) {
-						continue;
-					}
-					productionControllerCount++;
-
-					for (Method method : controllerClass.getDeclaredMethods()) {
-						if (AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class) && !method.isAnnotationPresent(Description.class)) {
-							missingDescriptions.add(controllerClass.getSimpleName() + "#" + method.getName());
-						}
-					}
+			if ("file".equals(directory.getProtocol())) {
+				if (directory.getPath().contains("/test-classes/")) {
+					continue;
 				}
+				productionControllerCount += scanFileDirectory(Path.of(directory.toURI()), missingDescriptions);
+			} else if ("jar".equals(directory.getProtocol())) {
+				productionControllerCount += scanJarDirectory(directory, missingDescriptions);
 			}
 		}
 
 		assertTrue(productionControllerCount > 0, "No production controllers were discovered for annotation validation");
 		missingDescriptions.sort(Comparator.naturalOrder());
 		assertTrue(missingDescriptions.isEmpty(), () -> "Request-mapped methods missing @Description: " + missingDescriptions);
+	}
+
+	private int scanFileDirectory(Path directory, List<String> missingDescriptions) throws Exception {
+		int productionControllerCount = 0;
+		try (DirectoryStream<Path> files = Files.newDirectoryStream(directory, "*.class")) {
+			for (Path file : files) {
+				String className = file.getFileName().toString().replace(".class", "");
+				if (className.contains("$")) {
+					continue;
+				}
+				productionControllerCount += inspectControllerClass(className, missingDescriptions);
+			}
+		}
+		return productionControllerCount;
+	}
+
+	private int scanJarDirectory(URL directory, List<String> missingDescriptions) throws Exception {
+		int productionControllerCount = 0;
+		JarURLConnection connection = (JarURLConnection) directory.openConnection();
+		String entryPrefix = connection.getEntryName() + "/";
+		try (JarFile jarFile = connection.getJarFile()) {
+			Enumeration<JarEntry> entries = jarFile.entries();
+			while (entries.hasMoreElements()) {
+				JarEntry entry = entries.nextElement();
+				String entryName = entry.getName();
+				if (!entryName.startsWith(entryPrefix) || !entryName.endsWith(".class")) {
+					continue;
+				}
+				String className = entryName.substring(entryPrefix.length()).replace(".class", "");
+				if (className.contains("/") || className.contains("$")) {
+					continue;
+				}
+				productionControllerCount += inspectControllerClass(className, missingDescriptions);
+			}
+		}
+		return productionControllerCount;
+	}
+
+	private int inspectControllerClass(String className, List<String> missingDescriptions) throws ClassNotFoundException {
+		Class<?> controllerClass = Class.forName(CONTROLLERS_PACKAGE + "." + className);
+		if (!controllerClass.isAnnotationPresent(RestController.class)) {
+			return 0;
+		}
+
+		for (Method method : controllerClass.getDeclaredMethods()) {
+			if (AnnotatedElementUtils.hasAnnotation(method, RequestMapping.class) && !method.isAnnotationPresent(Description.class)) {
+				missingDescriptions.add(controllerClass.getSimpleName() + "#" + method.getName());
+			}
+		}
+		return 1;
 	}
 }
