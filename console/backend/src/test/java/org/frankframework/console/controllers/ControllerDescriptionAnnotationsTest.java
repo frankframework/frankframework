@@ -52,7 +52,7 @@ public class ControllerDescriptionAnnotationsTest {
 
 	private ClassPathBeanDefinitionScanner scanControllers() {
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
-		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
+		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry, false);
 		scanner.setIncludeAnnotationConfig(false);
 		scanner.addIncludeFilter((metadataReader, metadataReaderFactory) -> {
 			String className = metadataReader.getClassMetadata().getClassName();
