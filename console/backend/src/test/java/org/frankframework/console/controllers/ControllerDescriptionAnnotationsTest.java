@@ -76,7 +76,7 @@ public class ControllerDescriptionAnnotationsTest {
 			return false;
 		}
 		URL location = protectionDomain.getCodeSource().getLocation();
-		return location.toExternalForm().contains(TEST_CLASSES_PATH_SEGMENT);
+		return location != null && location.toExternalForm().contains(TEST_CLASSES_PATH_SEGMENT);
 	}
 
 	private boolean inspectControllerClass(Class<?> controllerClass, List<String> missingDescriptions) {
