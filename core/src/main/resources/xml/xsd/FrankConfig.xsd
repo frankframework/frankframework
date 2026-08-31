@@ -5966,6 +5966,56 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="CryptoSoapValidatorDeclaredAttributeGroup">
+    <xs:attribute name="operations">
+      <xs:annotation>
+        <xs:documentation>Which operations must be executed.
+&lt;p&gt;It is not possible to use this validator as a Mixed input-output validator.&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="OperationAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="includeCertificateInMessage" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Add the certificate to the signed or encrypted message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ttl" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Add a restriction on when the message must be read / verified by.
+If this time has exceeded, the message is rejected.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="removeSecurityHeader" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Remove the `WSSE:Security` part from the SOAP:Header.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyEncryptionAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="KeyEncryptionAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="dataEncryptionAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="DataEncryptionAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keyIdentifier">
+      <xs:simpleType>
+        <xs:union memberTypes="KeyIdentifierTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="digestAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="DigestAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="signatureAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="SignatureAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
         <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
@@ -11452,7 +11502,7 @@ Beware that this option can cause spurious NullPointerExceptions due to a race c
         <xs:documentation>Specifies LDAP operation to perform Default: read</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="OperationAttributeValuesType variableRef" />
+        <xs:union memberTypes="OperationAttributeValuesType_2 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="ldapProviderURL" type="xs:string">
@@ -21081,6 +21131,55 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="OperationAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SIGN" />
+      <xs:enumeration value="ENCRYPT" />
+      <xs:enumeration value="VERIFY" />
+      <xs:enumeration value="DECRYPT" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="KeyEncryptionAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RSA_OAEP" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DataEncryptionAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AES_256" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="KeyIdentifierTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ISSUER_SERIAL" />
+      <xs:enumeration value="ISSUER_SERIAL_QUOTE_FORMAT" />
+      <xs:enumeration value="BST_DIRECT_REFERENCE" />
+      <xs:enumeration value="X509_KEY_IDENTIFIER" />
+      <xs:enumeration value="THUMBPRINT_IDENTIFIER" />
+      <xs:enumeration value="SKI_KEY_IDENTIFIER" />
+      <xs:enumeration value="KEY_VALUE" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DigestAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SHA1" />
+      <xs:enumeration value="SHA224" />
+      <xs:enumeration value="SHA256" />
+      <xs:enumeration value="SHA384" />
+      <xs:enumeration value="SHA512" />
+      <xs:enumeration value="SHA3_224" />
+      <xs:enumeration value="SHA3_256" />
+      <xs:enumeration value="SHA3_384" />
+      <xs:enumeration value="SHA3_512" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SignatureAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RSA_SHA1" />
+      <xs:enumeration value="RSA_SHA256" />
+      <xs:enumeration value="RSA_SHA512" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="INPUT" />
@@ -21442,7 +21541,7 @@ The &lt;pre&gt;accessToken&lt;/pre&gt; is then used in the Authorization header 
       <xs:enumeration value="GRAALJS" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="OperationAttributeValuesType">
+  <xs:simpleType name="OperationAttributeValuesType_2">
     <xs:restriction base="xs:string">
       <xs:enumeration value="read">
         <xs:annotation>

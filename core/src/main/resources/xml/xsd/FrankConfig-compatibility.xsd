@@ -4630,7 +4630,7 @@ Beware that this option can cause spurious NullPointerExceptions due to a race c
         <xs:documentation>Specifies LDAP operation to perform Default: read</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
-        <xs:union memberTypes="OperationAttributeValuesType variableRef" />
+        <xs:union memberTypes="OperationAttributeValuesType_2 variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="ldapProviderURL" type="xs:string">
@@ -9505,6 +9505,56 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="CryptoSoapValidatorDeclaredAttributeGroup">
+    <xs:attribute name="operations">
+      <xs:annotation>
+        <xs:documentation>Which operations must be executed.
+&lt;p&gt;It is not possible to use this validator as a Mixed input-output validator.&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="OperationAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="includeCertificateInMessage" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Add the certificate to the signed or encrypted message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ttl" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Add a restriction on when the message must be read / verified by.
+If this time has exceeded, the message is rejected.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="removeSecurityHeader" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Remove the `WSSE:Security` part from the SOAP:Header.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyEncryptionAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="KeyEncryptionAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="dataEncryptionAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="DataEncryptionAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="keyIdentifier">
+      <xs:simpleType>
+        <xs:union memberTypes="KeyIdentifierTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="digestAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="DigestAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="signatureAlgorithm">
+      <xs:simpleType>
+        <xs:union memberTypes="SignatureAlgorithmAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="keystore" type="xs:string">
       <xs:annotation>
         <xs:documentation>Resource url to keystore or certificate. If none specified, the JVMs default keystore will be used.</xs:documentation>
@@ -17155,7 +17205,7 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[gG][rR][aA][aA][lL][jJ][sS]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="OperationAttributeValuesType">
+  <xs:simpleType name="OperationAttributeValuesType_2">
     <xs:restriction base="xs:string">
       <xs:pattern value="[rR][eE][aA][dD]" />
       <xs:pattern value="[cC][rR][eE][aA][tT][eE]" />
@@ -17394,6 +17444,55 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[11][..][22]" />
       <xs:pattern value="[nN][oO][nN][eE]" />
       <xs:pattern value="[aA][uU][tT][oO]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="OperationAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[sS][iI][gG][nN]" />
+      <xs:pattern value="[eE][nN][cC][rR][yY][pP][tT]" />
+      <xs:pattern value="[vV][eE][rR][iI][fF][yY]" />
+      <xs:pattern value="[dD][eE][cC][rR][yY][pP][tT]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="KeyEncryptionAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][sS][aA][__][oO][aA][eE][pP]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DataEncryptionAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[aA][eE][sS][__][22][55][66]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="KeyIdentifierTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[iI][sS][sS][uU][eE][rR][__][sS][eE][rR][iI][aA][lL]" />
+      <xs:pattern value="[iI][sS][sS][uU][eE][rR][__][sS][eE][rR][iI][aA][lL][__][qQ][uU][oO][tT][eE][__][fF][oO][rR][mM][aA][tT]" />
+      <xs:pattern value="[bB][sS][tT][__][dD][iI][rR][eE][cC][tT][__][rR][eE][fF][eE][rR][eE][nN][cC][eE]" />
+      <xs:pattern value="[xX][55][00][99][__][kK][eE][yY][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
+      <xs:pattern value="[tT][hH][uU][mM][bB][pP][rR][iI][nN][tT][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
+      <xs:pattern value="[sS][kK][iI][__][kK][eE][yY][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
+      <xs:pattern value="[kK][eE][yY][__][vV][aA][lL][uU][eE]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DigestAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[sS][hH][aA][11]" />
+      <xs:pattern value="[sS][hH][aA][22][22][44]" />
+      <xs:pattern value="[sS][hH][aA][22][55][66]" />
+      <xs:pattern value="[sS][hH][aA][33][88][44]" />
+      <xs:pattern value="[sS][hH][aA][55][11][22]" />
+      <xs:pattern value="[sS][hH][aA][33][__][22][22][44]" />
+      <xs:pattern value="[sS][hH][aA][33][__][22][55][66]" />
+      <xs:pattern value="[sS][hH][aA][33][__][33][88][44]" />
+      <xs:pattern value="[sS][hH][aA][33][__][55][11][22]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="SignatureAlgorithmAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][sS][aA][__][sS][hH][aA][11]" />
+      <xs:pattern value="[rR][sS][aA][__][sS][hH][aA][22][55][66]" />
+      <xs:pattern value="[rR][sS][aA][__][sS][hH][aA][55][11][22]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType">
