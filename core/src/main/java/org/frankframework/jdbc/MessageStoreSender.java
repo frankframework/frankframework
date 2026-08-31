@@ -73,7 +73,7 @@ import org.frankframework.util.TimeProvider;
  * @author Jaco de Groot
  */
 @ExcludeFromType(ITransactionalStorage.class)
-public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> implements ISenderWithParameters {
+public class MessageStoreSender extends JdbcTransactionalStorage implements ISenderWithParameters {
 	static final String PARAM_MESSAGEID = "messageId";
 	static final String PARAM_CORRELATION_ID = "correlationId";
 

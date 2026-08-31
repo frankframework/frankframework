@@ -400,7 +400,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	private ITransactionalStorage getTransactionalStorage() {
-		ITransactionalStorage<String> browser = mock(ITransactionalStorage.class);
+		ITransactionalStorage browser = mock(ITransactionalStorage.class);
 		try {
 			doReturn(IMessageBrowser.HideMethod.ALL).when(browser).getHideMethod();
 			doReturn("silly mock because the storage requires a name").when(browser).getName();

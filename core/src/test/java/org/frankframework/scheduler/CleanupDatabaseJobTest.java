@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -37,7 +36,7 @@ import org.frankframework.util.TimeProvider;
 public class CleanupDatabaseJobTest {
 
 	private CleanupDatabaseJob jobDef;
-	private JdbcTransactionalStorage<Serializable> storage;
+	private JdbcTransactionalStorage storage;
 	private final String cleanupJobName = "CleanupDB";
 	protected static final String txStorageTableName = "NOT_IBISLOCK_TABLE";
 
