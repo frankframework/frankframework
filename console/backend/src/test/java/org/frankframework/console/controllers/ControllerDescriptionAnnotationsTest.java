@@ -3,7 +3,6 @@ package org.frankframework.console.controllers;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,7 +23,6 @@ import org.frankframework.console.Description;
 public class ControllerDescriptionAnnotationsTest {
 
 	private static final String CONTROLLERS_PACKAGE = "org.frankframework.console.controllers";
-	private static final String TEST_CLASSES_PATH_SEGMENT = "test-classes";
 
 	@Test
 	public void allRequestMappedMethodsShouldHaveDescriptionAnnotation() throws ClassNotFoundException {
@@ -40,9 +39,6 @@ public class ControllerDescriptionAnnotationsTest {
 			}
 
 			Class<?> controllerClass = Class.forName(beanClassName);
-			if (isTestClass(controllerClass)) {
-				continue;
-			}
 			if (inspectControllerClass(controllerClass, missingDescriptions)) {
 				productionRestControllerCount++;
 			}
@@ -63,20 +59,12 @@ public class ControllerDescriptionAnnotationsTest {
 			return CONTROLLERS_PACKAGE.equals(packageName)
 				&& metadataReader.getAnnotationMetadata().hasAnnotation(RestController.class.getName());
 		});
+		scanner.addExcludeFilter(new AnnotationTypeFilter(DescriptionAuditTestController.class));
 		scanner.setBeanNameGenerator(new FullyQualifiedAnnotationBeanNameGenerator());
 
 		int numberOfBeans = scanner.scan(CONTROLLERS_PACKAGE);
 		assertTrue(numberOfBeans > 0, "No rest controllers were found during scanning");
 		return scanner;
-	}
-
-	private boolean isTestClass(Class<?> clazz) {
-		var protectionDomain = clazz.getProtectionDomain();
-		if (protectionDomain == null || protectionDomain.getCodeSource() == null) {
-			return false;
-		}
-		URL location = protectionDomain.getCodeSource().getLocation();
-		return location != null && location.toExternalForm().contains(TEST_CLASSES_PATH_SEGMENT);
 	}
 
 	private boolean inspectControllerClass(Class<?> controllerClass, List<String> missingDescriptions) {
