@@ -42,10 +42,6 @@ public class ControllerDescriptionAnnotationsTest {
 			if (isTestClass(controllerClass)) {
 				continue;
 			}
-			if (!CONTROLLERS_PACKAGE.equals(controllerClass.getPackageName())) {
-				continue;
-			}
-
 			if (inspectControllerClass(controllerClass, missingDescriptions)) {
 				productionRestControllerCount++;
 			}
