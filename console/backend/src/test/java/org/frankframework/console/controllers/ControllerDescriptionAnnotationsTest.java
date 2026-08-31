@@ -23,6 +23,7 @@ import org.frankframework.console.Description;
 public class ControllerDescriptionAnnotationsTest {
 
 	private static final String CONTROLLERS_PACKAGE = "org.frankframework.console.controllers";
+	private static final String TEST_CLASSES_PATH_SEGMENT = "test-classes";
 
 	@Test
 	public void allRequestMappedMethodsShouldHaveDescriptionAnnotation() throws ClassNotFoundException {
@@ -70,11 +71,12 @@ public class ControllerDescriptionAnnotationsTest {
 	}
 
 	private boolean isTestClass(Class<?> clazz) {
-		if (clazz.getProtectionDomain() == null || clazz.getProtectionDomain().getCodeSource() == null) {
+		var protectionDomain = clazz.getProtectionDomain();
+		if (protectionDomain == null || protectionDomain.getCodeSource() == null) {
 			return false;
 		}
-		URL location = clazz.getProtectionDomain().getCodeSource().getLocation();
-		return location != null && location.toExternalForm().contains("test-classes");
+		URL location = protectionDomain.getCodeSource().getLocation();
+		return location.toExternalForm().contains(TEST_CLASSES_PATH_SEGMENT);
 	}
 
 	private boolean inspectControllerClass(Class<?> controllerClass, List<String> missingDescriptions) {
