@@ -71,8 +71,13 @@ jobs:
     services:
       database:
         image: ghcr.io/frankframework/dbms/${{ matrix.db }}:latest
-        options: >-
-          --publish-all
+        # Map all ports so that the database can be accessed from the host machine.
+        ports:
+          - 5432:5432 # PostgreSQL
+          - 3306:3306 # MariaDB
+          - 1433:1433 # MSSQL Server
+          - 1521:1521 # Oracle
+        #  - 50000:50000 # DB2
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
