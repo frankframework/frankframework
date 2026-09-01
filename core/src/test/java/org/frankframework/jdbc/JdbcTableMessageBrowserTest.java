@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.management.bus.dto.StorageItemDTO;
@@ -36,7 +37,7 @@ class JdbcTableMessageBrowserTest {
 
 	private JdbcTransactionalStorage storage;
 	private MessageStoreListener listener;
-
+	private PipeLineSession session;
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
@@ -56,6 +57,8 @@ class JdbcTableMessageBrowserTest {
 		storage.setSlotId(SLOT_ID);
 		storage.setType("M");
 		storage.configure();
+
+		session = new PipeLineSession();
 	}
 
 	@AfterEach
@@ -63,6 +66,7 @@ class JdbcTableMessageBrowserTest {
 		if (listener != null) {
 			listener.stop(); // does this trigger an exception
 		}
+		session.close();
 	}
 
 	@DatabaseTest

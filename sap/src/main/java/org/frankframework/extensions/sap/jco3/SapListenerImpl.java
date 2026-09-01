@@ -153,7 +153,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	}
 
 	@Override
-	public RawMessageWrapper<M> wrapRawMessage(M message, PipeLineSession session) {
+	public RawMessageWrapper<M> wrapRawMessage(@NonNull M message, @NonNull PipeLineSession session) {
 		if(message instanceof JCoFunction jcoFunction) {
 			return wrapAsJcoFunction(jcoFunction);
 		}
@@ -252,12 +252,12 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	}
 
 	@Override
-	public void setHandler(IMessageHandler<M> handler) {
+	public void setHandler(@NonNull IMessageHandler<M> handler) {
 		this.handler=handler;
 	}
 
 	@Override
-	public void setExceptionListener(IbisExceptionListener listener) {
+	public void setExceptionListener(@NonNull IbisExceptionListener listener) {
 		exceptionListener = listener;
 	}
 

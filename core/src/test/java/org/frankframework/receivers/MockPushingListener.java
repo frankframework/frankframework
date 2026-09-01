@@ -25,12 +25,12 @@ public class MockPushingListener extends MockListenerBase implements IPushingLis
 	}
 
 	@Override
-	public void setExceptionListener(IbisExceptionListener listener) {
+	public void setExceptionListener(@NonNull IbisExceptionListener listener) {
 		// No-op for this class
 	}
 
 	@Override
-	public MessageWrapper<String> wrapRawMessage(String rawMessage, PipeLineSession session) {
+	public MessageWrapper<String> wrapRawMessage(@NonNull String rawMessage, @NonNull PipeLineSession session) {
 		return new MessageWrapper<>(new Message(rawMessage), session.getMessageId(), session.getCorrelationId());
 	}
 

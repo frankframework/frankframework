@@ -15,7 +15,6 @@
 */
 package org.frankframework.jms;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -33,6 +32,7 @@ import jakarta.jms.InvalidDestinationException;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
+import jakarta.jms.ObjectMessage;
 import jakarta.jms.Queue;
 import jakarta.jms.QueueSender;
 import jakarta.jms.QueueSession;
@@ -46,6 +46,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -300,7 +301,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	/**
 	 * Returns a session on the connection for a topic or a queue
 	 */
-	protected Session createSession() throws JmsException {
+	protected @NonNull Session createSession() throws JmsException {
 		try {
 			return getMessagingSource().createSession(false, getAcknowledgeMode().getAcknowledgeMode());
 		} catch (JmsException e) {
@@ -310,7 +311,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		}
 	}
 
-	protected void closeSession(Session session) {
+	protected void closeSession(@Nullable Session session) {
 		try {
 			getMessagingSource().releaseSession(session);
 		} catch (Exception e) {
@@ -368,20 +369,15 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return started;
 	}
 
-	public jakarta.jms.@NonNull Message createMessage(Session session, String correlationID, Message message) throws JMSException, IOException {
-		return createMessage(session, correlationID, message, messageClassDefault);
-	}
-
-	public jakarta.jms.@NonNull Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException, IOException {
-		return switch (messageClass) {
+	public jakarta.jms.@NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException, IOException {
+		return switch (getMessageClass()) {
 			case TEXT -> createTextMessage(session, correlationID, message);
 			case BYTES -> createBytesMessage(session, correlationID, message);
 			case AUTO -> message.isBinary() ? createBytesMessage(session, correlationID, message) : createTextMessage(session, correlationID, message);
-			default -> throw new IllegalArgumentException("Unsupported messageClass value: [" + messageClass + "]");
 		};
 	}
 
-	protected jakarta.jms.@NonNull Message createBytesMessage(final Session session, final String correlationID, final Message message) throws JMSException, IOException {
+	protected @NonNull BytesMessage createBytesMessage(@NonNull final Session session, @Nullable final String correlationID, @NonNull final Message message) throws JMSException, IOException {
 		BytesMessage bytesMessage = session.createBytesMessage();
 		setMessageCorrelationID(bytesMessage, correlationID);
 		bytesMessage.writeBytes(message.asByteArray());
@@ -389,14 +385,14 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	@NonNull
-	protected TextMessage createTextMessage(final Session session, final String correlationID, final Message message) throws JMSException, IOException {
+	protected TextMessage createTextMessage(@NonNull final Session session, @Nullable final String correlationID, @NonNull final Message message) throws JMSException, IOException {
 		TextMessage textMessage = session.createTextMessage();
 		setMessageCorrelationID(textMessage, correlationID);
 		textMessage.setText(message.asString());
 		return textMessage;
 	}
 
-	public void setMessageCorrelationID(jakarta.jms.Message message, String correlationID)
+	public void setMessageCorrelationID(jakarta.jms. @NonNull Message message, @Nullable String correlationID)
 			throws JMSException {
 		if (null == correlationID) {
 			return;
@@ -426,19 +422,19 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		message.setJMSCorrelationID(correlationID);
 	}
 
-	public Destination getDestination() throws JmsException {
+	public @NonNull Destination getDestination() throws JmsException {
 		if (StringUtils.isEmpty(getDestinationName())) {
 			throw new JmsException("no (default) destinationName specified");
 		}
 		return getDestination(getDestinationName());
 	}
 
-	public Destination getDestination(String destinationName) {
+	public @NonNull Destination getDestination(@NonNull String destinationName) {
 		return destinations.computeIfAbsent(destinationName, this::computeDestination);
 	}
 
 	@SneakyThrows({JMSException.class, JmsException.class, NamingException.class})
-	private Destination computeDestination(String destinationName) {
+	private @NonNull Destination computeDestination(@NonNull String destinationName) {
 		Destination result;
 		if (StringUtils.isEmpty(destinationName)) {
 			throw new NamingException("no destinationName specified");
@@ -504,14 +500,14 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return getMessageConsumer(session, destination, getMessageSelector());
 	}
 
-	public MessageProducer getMessageProducer(Session session, Destination destination) throws JMSException {
+	public @NonNull MessageProducer getMessageProducer(@NonNull Session session, @Nullable Destination destination) throws JMSException {
 		MessageProducer mp = session.createProducer(destination);
 		if (getMessageTimeToLive() > 0)
 			mp.setTimeToLive(getMessageTimeToLive());
 		return mp;
 	}
 
-	public String getPhysicalDestinationShortName() {
+	public @Nullable String getPhysicalDestinationShortName() {
 		try {
 			return getPhysicalDestinationShortName(false);
 		} catch (JmsException e) {
@@ -520,7 +516,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		}
 	}
 
-	public String getPhysicalDestinationShortName(boolean throwException) throws JmsException {
+	public @Nullable String getPhysicalDestinationShortName(boolean throwException) throws JmsException {
 		if (StringUtils.isEmpty(getDestinationName()) && !throwException) {
 			return null;
 		}
@@ -543,7 +539,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	@Override
-	public String getPhysicalDestinationName() {
+	public @NonNull String getPhysicalDestinationName() {
 		StringBuilder builder = new StringBuilder(destinationType.toString());
 		builder.append("(").append(getDestinationName()).append(") [").append(getPhysicalDestinationShortName()).append("]");
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
@@ -557,7 +553,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return builder.toString();
 	}
 
-	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws JMSException {
+	private @NonNull MessageConsumer getTopicSubscriber(@NonNull Session session, @NonNull Topic topic, @Nullable String selector) throws JMSException {
 		MessageConsumer messageConsumer;
 		switch (subscriberType) {
 		case DURABLE:
@@ -574,8 +570,8 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return messageConsumer;
 	}
 
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
-		jakarta.jms.Message msg = createMessage(session, correlationId, message, messageClass);
+	public @Nullable String send(@NonNull Session session, @Nullable Destination dest, String correlationId, Message message, PipeLineSession pipeLineSession, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
+		jakarta.jms.Message msg = createMessage(session, correlationId, message, pipeLineSession);
 		try (MessageProducer mp = session.createProducer(dest)) {
 			if (messageType!=null) {
 				msg.setJMSType(messageType);
@@ -731,18 +727,16 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	 * {@link jakarta.jms.TextMessage}s and {@link jakarta.jms.BytesMessage}.<br/><br/>
 	 */
 	public Message extractMessage(jakarta.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException, XmlException {
-		Message message;
-
-		if (jmsMessage instanceof TextMessage textMessage) {
-			message = new Message(textMessage.getText(), getContext(jmsMessage));
-		} else if (jmsMessage instanceof BytesMessage bytesMsg) {
-			InputStream input = new BytesMessageInputStream(bytesMsg);
-			message = new Message(new BufferedInputStream(input), getContext(jmsMessage));
-		} else if (jmsMessage == null) {
-			message = Message.nullMessage();
-		} else {
-			message = Message.asMessage(jmsMessage);
-		}
+		Message message = switch (jmsMessage) {
+			case TextMessage textMessage -> new Message(textMessage.getText(), getContext(jmsMessage));
+			case BytesMessage bytesMsg -> {
+				InputStream input = new BytesMessageInputStream(bytesMsg);
+				yield new Message(input, getContext(jmsMessage));
+			}
+			case ObjectMessage objectMessage -> Message.asMessage(objectMessage.getObject());
+			case null -> Message.nullMessage();
+			default -> Message.asMessage(jmsMessage);
+		};
 		if (!soap) {
 			return message;
 		}

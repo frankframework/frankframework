@@ -60,6 +60,7 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlException;
@@ -193,10 +194,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 				if (log.isDebugEnabled()) log.debug("correlationId [{}] soap message [{}]", correlationID, message);
 			}
 			jmsSession = createSession();
-			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
+			messageProducer = getMessageProducer(jmsSession, getDestination(pvl));
 
 			// create message to send
-			jakarta.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
+			jakarta.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, pipeLineSession);
 			enhanceMessage(messageToSend, messageProducer, pvl, jmsSession);
 			Destination replyQueue = messageToSend.getJMSReplyTo();
 
@@ -209,18 +210,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException | XmlException e) {
 			throw new SenderException(e);
 		} finally {
-			if (messageProducer != null) {
-				try {
-					messageProducer.close();
-				} catch (JMSException e) {
-					log.warn("JmsSender [{}] got exception closing message producer", getName(), e);
-				}
-			}
+			CloseUtils.closeSilently(messageProducer);
 			closeSession(jmsSession);
 		}
 	}
 
-	private void enhanceMessage(jakarta.jms.Message msg, MessageProducer messageProducer, ParameterValueList pvl, Session s) throws JMSException, JmsException {
+	protected void enhanceMessage(jakarta.jms.Message msg, MessageProducer messageProducer, ParameterValueList pvl, Session s) throws JMSException, JmsException {
 		if (getMessageType() != null) {
 			msg.setJMSType(getMessageType());
 		}
@@ -257,24 +252,15 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		if (getReplyToName() == null) {
 			replyCorrelationId = null;
 		} else {
-			switch (getLinkMethod()) {
-				case MESSAGEID:
-					replyCorrelationId = jmsMessageID;
-					break;
-				case CORRELATIONID:
-					replyCorrelationId = session == null ? null : session.getCorrelationId();
-					break;
-				case CORRELATIONID_FROM_MESSAGE:
-					replyCorrelationId = msg.getJMSCorrelationID();
-					break;
-				default:
-					throw new IllegalStateException("unknown linkMethod [" + getLinkMethod() + "]");
-			}
+			replyCorrelationId = switch (getLinkMethod()) {
+				case MESSAGEID -> jmsMessageID;
+				case CORRELATIONID -> session == null ? null : session.getCorrelationId();
+				case CORRELATIONID_FROM_MESSAGE -> msg.getJMSCorrelationID();
+			};
 		}
 		log.debug("[{}] start waiting for reply on [{}] requestMsgId [{}] replyCorrelationId [{}] for [{}] ms",
 				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
-		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
-		try {
+		try (MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId)) {
 			jakarta.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
 			if (rawReplyMsg == null) {
 				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + jmsMessageID + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
@@ -295,20 +281,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 			logMessageDetails(rawReplyMsg, null);
 			log.debug("Received properties: {}", receivedJMSProperties);
 			return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(), soapWrapper);
-		} finally {
-			if (mc != null) {
-				try {
-					mc.close();
-				} catch (JMSException e) {
-					log.warn("JmsSender [{}] got exception closing message consumer for reply", getName(), e);
-				}
-			}
 		}
 	}
 
-	public Destination getDestination(PipeLineSession session, ParameterValueList pvl) throws JmsException, NamingException, JMSException {
+	public Destination getDestination(@NonNull ParameterValueList pvl) throws JmsException, NamingException, JMSException {
 		if (StringUtils.isNotEmpty(getDestinationParam())) {
-			String destinationName = pvl.get(getDestinationParam()).asStringValue(null);
+			String destinationName = pvl.getValue(getDestinationParam());
 			if (StringUtils.isNotEmpty(destinationName)) {
 				return getDestination(destinationName);
 			}
@@ -319,26 +297,18 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	/**
 	 * Sets the JMS message properties as described in the msgProperties arraylist
 	 */
-	private void setProperties(jakarta.jms.Message msg, ParameterValueList pvl) throws JMSException {
-		for(ParameterValue property : pvl) {
+	private void setProperties(jakarta.jms. @NonNull Message msg, @NonNull ParameterValueList pvl) throws JMSException {
+		for (ParameterValue property : pvl) {
 			ParameterType type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 
 			if (!isSoap() || !name.equals(getSoapHeaderParam()) && !name.equals(getDestinationParam())) {
 				log.debug("setting [{}] property from param [{}] to value [{}]", () -> type, () -> name, property::getValue);
-				switch(type) {
-					case BOOLEAN:
-						msg.setBooleanProperty(name, property.asBooleanValue(false));
-						break;
-					case INTEGER:
-						msg.setIntProperty(name, property.asIntegerValue(0));
-						break;
-					case STRING:
-						msg.setStringProperty(name, property.asStringValue(""));
-						break;
-					default:
-						msg.setObjectProperty(name, property.getValue());
-						break;
+				switch (type) {
+					case BOOLEAN -> msg.setBooleanProperty(name, property.asBooleanValue(false));
+					case INTEGER -> msg.setIntProperty(name, property.asIntegerValue(0));
+					case STRING -> msg.setStringProperty(name, property.asStringValue(""));
+					default -> msg.setObjectProperty(name, property.getValue());
 				}
 			}
 		}

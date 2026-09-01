@@ -4,6 +4,7 @@ import static org.frankframework.testutil.mock.WaitUtils.waitForState;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -163,6 +164,9 @@ public class ReceiverSubAdapterTest {
 		when(listener.getName()).thenReturn(receiver.getName());
 		when(listener.getApplicationContext()).thenReturn(receiver.getApplicationContext());
 		when(listener.getConfigurationClassLoader()).thenReturn(receiver.getConfigurationClassLoader());
+
+		doCallRealMethod().when(listener).extractSessionKeyList();
+		listener.extractSessionKeyList();
 
 		return listener;
 	}

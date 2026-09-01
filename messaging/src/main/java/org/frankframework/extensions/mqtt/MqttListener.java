@@ -71,12 +71,12 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public void setHandler(IMessageHandler<MqttMessage> messageHandler) {
+	public void setHandler(@NonNull IMessageHandler<MqttMessage> messageHandler) {
 		this.messageHandler = messageHandler;
 	}
 
 	@Override
-	public void setExceptionListener(IbisExceptionListener ibisExceptionListener) {
+	public void setExceptionListener(@NonNull IbisExceptionListener ibisExceptionListener) {
 		this.ibisExceptionListener = ibisExceptionListener;
 	}
 
@@ -164,7 +164,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public RawMessageWrapper<MqttMessage> wrapRawMessage(MqttMessage message, PipeLineSession session) {
+	public RawMessageWrapper<MqttMessage> wrapRawMessage(@NonNull MqttMessage message, @NonNull PipeLineSession session) {
 		return new RawMessageWrapper<>(message, String.valueOf(message.getId()), null);
 	}
 
