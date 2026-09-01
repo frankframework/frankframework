@@ -71,6 +71,8 @@ import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.XmlWriter;
 
 /**
+ * AOP/AspectJ Pointcut methods for the Ladybug
+ *
  * @author Jaco de Groot
  * @author Niels Meijer
  */

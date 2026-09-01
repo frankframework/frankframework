@@ -27,6 +27,10 @@ import org.jspecify.annotations.Nullable;
 public class HttpHeaderUtils {
 	private static final CharsetEncoder ISO_8859_1_ENCODER = StandardCharsets.ISO_8859_1.newEncoder();
 
+	private HttpHeaderUtils() {
+		// NO OP constructor to prevent this class from being initialized.
+	}
+
 	/**
 	 * Matches the plain {@code filename=} parameter in a Content-Disposition header (case-insensitive), but NOT the extended {@code filename*=}
 	 * variant (RFC 5987), whose value is always percent-encoded and therefore safe.
