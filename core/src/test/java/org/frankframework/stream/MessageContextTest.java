@@ -16,8 +16,8 @@ public class MessageContextTest {
 	public void testEmpty() {
 		MessageContext context = new MessageContext();
 		context.withMimeType("multipart/related=text/xml"); // very invalid
-		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+		MimeType mimetype = context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 
 		assertNull(mimetype);
 		assertNull(charset);
@@ -27,8 +27,8 @@ public class MessageContextTest {
 	public void testMtomMultipartContentType() {
 		MessageContext context = new MessageContext();
 		context.withMimeType("multipart/related;boundary=4444ab3725b048db84aa8d60c8db9a76;type=application/xop+xml;start=rootpart@root.part;start-info=text/xml");
-		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+		MimeType mimetype = context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 
 		assertEquals("multipart/related", mimetype.getType() + "/" + mimetype.getSubtype());
 		assertNull(charset);
@@ -38,8 +38,8 @@ public class MessageContextTest {
 	public void testInvalidFileNameWithQuotes() {
 		MessageContext context = new MessageContext();
 		context.withMimeType("application/pdf;name=\"581031 23-019523BP Kwitantie bon_new.pdf\"");
-		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+		MimeType mimetype = context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 
 		assertEquals("application/pdf", mimetype.getType() + "/" + mimetype.getSubtype());
 		assertEquals("\"581031 23-019523BP Kwitantie bon_new.pdf\"", mimetype.getParameter("name"));
@@ -50,8 +50,8 @@ public class MessageContextTest {
 	public void testInvalidFileNameNoQuotes() {
 		MessageContext context = new MessageContext();
 		context.withMimeType("application/pdf;name=581031 23-019523BP Kwitantie bon_new.pdf");
-		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+		MimeType mimetype = context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 
 		assertEquals("application/pdf", mimetype.getType() + "/" + mimetype.getSubtype());
 		assertNull(mimetype.getParameter("name"));
@@ -62,8 +62,8 @@ public class MessageContextTest {
 	public void testValidMimeTypeWithCharset() {
 		MessageContext context = new MessageContext();
 		context.withMimeType("text/xml;charset=\"utf-8\";name=\"581031 23-019523BP Kwitantie bon_new.pdf\"");
-		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+		MimeType mimetype = context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 
 		assertEquals("text/xml", mimetype.getType() + "/" + mimetype.getSubtype());
 		assertEquals("\"581031 23-019523BP Kwitantie bon_new.pdf\"", mimetype.getParameter("name"));
@@ -74,8 +74,8 @@ public class MessageContextTest {
 	public void testMimeTypeWithCharsetAndInvalidName() {
 		MessageContext context = new MessageContext();
 		context.withMimeType("text/xml;charset=\"utf-8\";name=581031 23-019523BP Kwitantie bon_new.pdf");
-		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+		MimeType mimetype = context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 
 		assertEquals("text/xml", mimetype.getType() + "/" + mimetype.getSubtype());
 		assertNull(mimetype.getParameter("name"));
@@ -86,8 +86,8 @@ public class MessageContextTest {
 	public void testValidMimeTypeWithInvalidCharset() {
 		MessageContext context = new MessageContext();
 		context.withMimeType("text/xml;charset=\"text/xml\";name=\"tralala.xml\"");
-		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+		MimeType mimetype = context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 
 		assertEquals("text/xml", mimetype.getType() + "/" + mimetype.getSubtype());
 		assertNull(mimetype.getParameter("name"));
@@ -98,8 +98,8 @@ public class MessageContextTest {
 	public void jsonMimeTypeMayNotHaveCharset() {
 		MessageContext context = new MessageContext();
 		context.withMimeType("application/json;charset=\"utf-8\"");
-		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
-		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+		MimeType mimetype = context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 
 		assertEquals("application/json", mimetype.getType() + "/" + mimetype.getSubtype());
 		assertNull(charset);

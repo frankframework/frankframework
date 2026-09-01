@@ -39,7 +39,7 @@ public class OverflowToDiskOutputStreamTest {
 		oos.close();
 
 		Message msg = oos.toMessage();
-		String location = (String) msg.getContext().get(MessageContext.METADATA_LOCATION);
+		String location = msg.getContext().get(MessageContext.METADATA_LOCATION);
 		assertNull(location, "there should not be a file location, the file should be in memory");
 
 		assertEquals(testString+"00", msg.asString(), "contents of Message differs from the file");
@@ -61,7 +61,7 @@ public class OverflowToDiskOutputStreamTest {
 		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 
 		Message message = oos.toMessage();
-		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
+		String location = message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
@@ -90,7 +90,7 @@ public class OverflowToDiskOutputStreamTest {
 		Message message = oos.toMessage();
 		assertEquals(testString + testString, message.asString(), "contents of Message differs from the file");
 
-		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
+		String location = message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
@@ -116,7 +116,7 @@ public class OverflowToDiskOutputStreamTest {
 		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 
 		Message message = oos.toMessage();
-		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
+		String location = message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
@@ -143,7 +143,7 @@ public class OverflowToDiskOutputStreamTest {
 		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 
 		Message message = oos.toMessage();
-		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
+		String location = message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
@@ -180,7 +180,7 @@ public class OverflowToDiskOutputStreamTest {
 		assertTrue(Files.exists(files.getFirst()), "closing the OverflowOutputStream should not remove the file");
 
 		Message message = oos.toMessage();
-		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
+		String location = message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.getFirst().toString(), location, "the file location is incorrect");
 
 		assertInstanceOf(PathMessage.class, message);

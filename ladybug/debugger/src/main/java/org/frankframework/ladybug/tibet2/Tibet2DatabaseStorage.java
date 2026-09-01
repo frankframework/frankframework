@@ -287,7 +287,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 			throw new StorageException("Could not read metadata", e);
 		}
 		for (int i = 0; i < metadata.size(); i++) {
-			if (!SearchUtil.matches((List<Object>)metadata.get(i), regexSearchValues)) {
+			if (!SearchUtil.matches(metadata.get(i), regexSearchValues)) {
 				metadata.remove(i);
 				i--;
 			}

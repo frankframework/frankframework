@@ -77,7 +77,7 @@ public class XpsConverter extends AbstractConverter {
 			Message result = messageBuilder.build();
 			result.getContext().withMimeType(PDF_MIMETYPE).with("Pdf.Pages", numberOfPages);
 
-			String originalName = (String) message.getContext().get(MessageContext.METADATA_NAME);
+			String originalName = message.getContext().get(MessageContext.METADATA_NAME);
 			if (StringUtils.isNotEmpty(originalName)) {
 				result.getContext().withName(originalName);
 			}

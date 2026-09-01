@@ -379,7 +379,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
 		if (attachments != null) {
-			List<MailAttachmentStream> attachmentList = (List<MailAttachmentStream>) retrieveAttachments(attachments, session);
+			List<MailAttachmentStream> attachmentList = retrieveAttachments(attachments, session);
 			mailSession.setAttachmentList(attachmentList);
 		}
 

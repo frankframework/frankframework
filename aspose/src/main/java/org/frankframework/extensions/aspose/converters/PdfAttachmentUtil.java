@@ -56,7 +56,7 @@ public class PdfAttachmentUtil {
 		try (InputStream is = parent.asInputStream(); Document pdfDoc = new Document(is)) {
 			pdfDoc.setPageMode(PageMode.UseAttachments);
 
-			String location = (String) attachment.getContext().get(MessageContext.METADATA_LOCATION);
+			String location = attachment.getContext().get(MessageContext.METADATA_LOCATION);
 			if (location != null) {
 				pdfDoc.getEmbeddedFiles().add(new FileSpecification(location, attachmentName));
 			} else {
@@ -88,7 +88,7 @@ public class PdfAttachmentUtil {
 
 	// Not sure why we need to get the name trim the extension only to add it again, but for now leave it as is...
 	public static String getValidFileName(Message input, String fallbackName, String extension) {
-		String name = (String) input.getContext().get(MessageContext.METADATA_NAME);
+		String name = input.getContext().get(MessageContext.METADATA_NAME);
 		if (StringUtils.isBlank(name)) {
 			return StringUtils.substringBeforeLast(fallbackName, ".") + "." + extension;
 		}

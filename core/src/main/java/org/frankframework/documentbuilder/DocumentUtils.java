@@ -18,7 +18,6 @@ package org.frankframework.documentbuilder;
 import java.util.Map.Entry;
 
 import jakarta.json.JsonArray;
-import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
@@ -86,7 +85,7 @@ public class DocumentUtils {
 				objectBuilder.add(n, ((JsonString) v).getString());
 				break;
 			case NUMBER:
-				objectBuilder.add(n, ((JsonNumber) v).toString()); // works for XML, but will be quoted in JSON
+				objectBuilder.add(n, v.toString()); // works for XML, but will be quoted in JSON
 				break;
 			case FALSE:
 				objectBuilder.add(n, false);
@@ -121,7 +120,7 @@ public class DocumentUtils {
 				arrayBuilder.addElement(((JsonString) jValue).getString());
 				break;
 			case NUMBER:
-				arrayBuilder.addElement(((JsonNumber) jValue).toString()); // works for XML, but will be quoted in JSON
+				arrayBuilder.addElement(jValue.toString()); // works for XML, but will be quoted in JSON
 				break;
 			case FALSE:
 				arrayBuilder.addElement(false);
