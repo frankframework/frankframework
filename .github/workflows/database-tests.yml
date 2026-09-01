@@ -120,7 +120,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
       # Tests with proprietary dependencies don't work for some reason. Build only core and the modules that Core depends on. If JDBC is moved to another modules that module should be built as well.
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -pl core -am -Djdbc.hostname=database -Dgroups=database
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -pl core -am -Dgroups=database
 
     - name: Store Test Results
       if: failure()
