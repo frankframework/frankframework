@@ -38,8 +38,10 @@ import org.frankframework.management.Action;
 public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
 	private ScheduledThreadPoolExecutor executor;
-	private int scanInterval = 10;
 	private ScheduledFuture<?> future;
+
+	private int scanInterval = 10;
+	private long lastScanTime;
 
 	public ScanningDirectoryClassLoader(ClassLoader parent) {
 		super(parent);
@@ -51,6 +53,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
 		createTaskExecutor();
 
+		lastScanTime = System.currentTimeMillis();
 		if (scanInterval > 0) {
 			schedule();
 		}
@@ -61,21 +64,21 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 		ThreadFactory namedThreadFactory = runnable -> {
 			Thread thread = new Thread(runnable);
 			thread.setName(threadName);
-			thread.setDaemon(false);
+			thread.setDaemon(true);
 			return thread;
 		};
 		executor = new ScheduledThreadPoolExecutor(1, namedThreadFactory);
-		executor.setRemoveOnCancelPolicy(true);
+		executor.setRemoveOnCancelPolicy(false);
 		executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-		executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+		executor.setContinueExistingPeriodicTasksAfterShutdownPolicy(true);
 	}
 
 	@Override
-	public void destroy() {
+	public synchronized void destroy() {
 		super.destroy();
 
 		if (future != null) {
-			future.cancel(true);
+			future.cancel(false);
 			future = null;
 		}
 
@@ -105,24 +108,28 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	 * Create a new schedule to check if file in the given directory have been changed
 	 * @param delay cooldown/startup delay before the scheduler should start looking for file changes
 	 */
-	private void schedule(int delay) {
+	private synchronized void schedule(int delay) {
 		if (future != null) {
 			future.cancel(false);
 		}
 
+		if (executor == null) {
+			log.debug("Cannot reschedule tasks because executor is null");
+			return;
+		}
 		log.debug("starting new scheduler, interval [{}] delay [{}]", scanInterval, delay);
 		future = executor.scheduleAtFixedRate(ScanningDirectoryClassLoader.this::scan, delay, scanInterval, TimeUnit.SECONDS);
 	}
 
-	protected synchronized void scan() {
+	protected void scan() {
 		if (log.isTraceEnabled()) log.trace("running directory scanner on directory [{}]", getDirectory());
+		long scanTime = System.currentTimeMillis();
 		File[] files = getDirectory().listFiles();
 		if (hasBeenModified(files)) {
 			log.debug("detected file change, reloading configuration");
 			getIbisManager().handleAction(Action.RELOAD, getConfigurationName(), null, null, toString(), false);
-
-			schedule();
 		}
+		lastScanTime = scanTime;
 	}
 
 	/**
@@ -154,7 +161,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	 */
 	private boolean hasBeenModified(File file) {
 		if (log.isTraceEnabled()) log.trace("scanning file [{}] lastModDate [{}]", file.getName(), file.lastModified());
-		boolean modified = file.lastModified() + scanInterval*1000L >= System.currentTimeMillis();
+		boolean modified = file.lastModified() >= lastScanTime;
 
 		if (log.isDebugEnabled() && modified) {
 			log.debug("file [{}] has been changed in the last [{}] seconds", file.getAbsolutePath(), scanInterval);
