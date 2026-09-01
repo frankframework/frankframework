@@ -1481,7 +1481,7 @@ public class ApiListenerServletTest {
 		assertEquals("<headers>\n"
 				+ "	<header name=\""+headerName.trim()+"\">"+headerValue.trim()+"</header>\n"
 				+ "</headers>", headersXml);
-		String contextHeaderValue = (String) requestMessage.getContext().get("Header."+headerName.trim());
+		String contextHeaderValue = requestMessage.getContext().get("Header."+headerName.trim());
 		assertEquals(headerValue.trim(), contextHeaderValue, "header is incorrect or missing from MessageContext");
 		assertNull(result.getErrorMessage());
 	}

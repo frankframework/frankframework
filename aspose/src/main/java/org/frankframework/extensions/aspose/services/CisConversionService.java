@@ -38,7 +38,7 @@ public class CisConversionService {
 	}
 
 	public CisConversionResult convertToPdf(Message message) {
-		String filename = (String) message.getContext().get(MessageContext.METADATA_NAME);
+		String filename = message.getContext().get(MessageContext.METADATA_NAME);
 		MediaType mediaType = getMimeType(message, filename);
 
 		if (isPasswordProtected(mediaType)) {

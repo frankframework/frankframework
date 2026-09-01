@@ -87,7 +87,7 @@ public class CisConversionResult {
 				}
 			}
 		} else {
-			numberOfPages = (int) message.getContext().get("Pdf.Pages");
+			numberOfPages = message.getContext().get("Pdf.Pages");
 		}
 	}
 

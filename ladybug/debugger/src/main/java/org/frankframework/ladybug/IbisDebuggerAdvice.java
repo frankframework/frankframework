@@ -486,7 +486,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (StringUtils.isNotEmpty(inputFromFixedValue)) {
 			result = new Message(reportGenerator.getInputFromFixedValue(correlationId, inputFromFixedValue));
 		} else if (StringUtils.isNotEmpty(inputFromSessionKey)) {
-			result = (Message)reportGenerator.getInputFromSessionKey(correlationId, inputFromSessionKey, Message.asMessage(pipeLineSession.get(inputFromSessionKey)));
+			result = reportGenerator.getInputFromSessionKey(correlationId, inputFromSessionKey, Message.asMessage(pipeLineSession.get(inputFromSessionKey)));
 		} else {
 			result = input;
 		}

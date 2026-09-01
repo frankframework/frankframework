@@ -44,7 +44,7 @@ public class MessageDataSource implements DataSource {
 		}
 
 		this.message = message;
-		this.name = (String) message.getContext().get(MessageContext.METADATA_NAME);
+		this.name = message.getContext().get(MessageContext.METADATA_NAME);
 
 		determineContentType(newContentType);
 	}

@@ -82,7 +82,7 @@ public class ClassNameRewriter extends FullXmlFilter {
 		if (configWarning == null) {
 			log.warn(message);
 		} else {
-			configWarning.add((Object) null, log, message, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
+			configWarning.add(null, log, message, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
 	}
 

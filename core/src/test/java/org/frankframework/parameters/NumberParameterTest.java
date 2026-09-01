@@ -120,7 +120,7 @@ public class NumberParameterTest {
 
 		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
-		assertEquals("0000000005", (String) result);
+		assertEquals("0000000005", result);
 	}
 
 	@Test
@@ -136,7 +136,7 @@ public class NumberParameterTest {
 
 		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
-		assertEquals("0000000005", (String) result);
+		assertEquals("0000000005", result);
 
 		assertFalse(p.requiresInputValueForResolution());
 	}
@@ -154,7 +154,7 @@ public class NumberParameterTest {
 
 		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
-		assertEquals("0000000003", (String) result);
+		assertEquals("0000000003", result);
 	}
 
 	@Test
@@ -170,7 +170,7 @@ public class NumberParameterTest {
 
 		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
-		assertEquals("0000000005", (String) result);
+		assertEquals("0000000005", result);
 	}
 
 	@Test
@@ -187,7 +187,7 @@ public class NumberParameterTest {
 
 		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
-		assertEquals("00000005.8", (String) result);
+		assertEquals("00000005.8", result);
 	}
 
 	@Test

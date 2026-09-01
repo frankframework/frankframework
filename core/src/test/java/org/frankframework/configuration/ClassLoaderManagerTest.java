@@ -104,16 +104,16 @@ public class ClassLoaderManagerTest extends Mockito {
 	public void setUp() {
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
-		String configurationsNames = "";
+		StringBuilder configurationsNames = new StringBuilder();
 		for(Arguments a: data()) {
 			Object[] o = a.get();
-			configurationsNames += o[1]+",";
+			configurationsNames.append(o[1]).append(",");
 			if(o[0] != null) {
-				String value = "" + (String) o[0];
+				String value = "" + o[0];
 				setLocalProperty("configurations."+o[1]+".classLoaderType", value);
 			}
 		}
-		setLocalProperty("configurations.names", configurationsNames);
+		setLocalProperty("configurations.names", configurationsNames.toString());
 
 		manager = new ClassLoaderManager(ibisContext);
 	}
@@ -284,6 +284,6 @@ public class ClassLoaderManagerTest extends Mockito {
 	 */
 	@SuppressWarnings("deprecation")
 	private void setLocalProperty(String key, String value) {
-		appConstants.put(key, (Object) value);
+		appConstants.put(key, value);
 	}
 }

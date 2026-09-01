@@ -200,7 +200,7 @@ public class Message implements Serializable {
 	 */
 	@Nullable
 	public String getCharset() {
-		return (String) context.get(MessageContext.METADATA_CHARSET);
+		return context.get(MessageContext.METADATA_CHARSET);
 	}
 
 	public void setCharset(@Nullable String charset) {
@@ -534,7 +534,7 @@ public class Message implements Serializable {
 	 * @return Message size or -1 if it can't determine the size.
 	 */
 	public long size() {
-		Long sz = (Long) context.get(MessageContext.METADATA_SIZE);
+		Long sz = context.get(MessageContext.METADATA_SIZE);
 		if (sz != null) {
 			return sz;
 		}

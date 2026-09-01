@@ -136,7 +136,7 @@ public class SoapContext {
 
 	private String getSoapAction(MessageContext context) {
 		if(SOAPConstants.SOAP_1_1_PROTOCOL.equals(soapProtocol)) {
-			return unquote((String) context.get("Header.SOAPAction"));
+			return unquote(context.get("Header.SOAPAction"));
 		} else {
 			MimeType contentType = context.getMimeType();
 			if(contentType != null) {
