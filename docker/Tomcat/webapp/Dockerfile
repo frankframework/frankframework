@@ -56,7 +56,7 @@ RUN sed -i "s/<\/web-app>//g" /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml && 
     rm -f /scripts/web.xml
 
 # Ensure the container is healty
-HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 CMD curl --fail --silent http://localhost:8080/iaf/api || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 CMD curl --fail --silent http://localhost:8080/iaf/api/server/health || exit 1
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]
 CMD ["catalina.sh", "run"]
