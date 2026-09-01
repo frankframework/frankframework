@@ -15,11 +15,11 @@
 */
 package org.frankframework.receivers;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import lombok.Getter;
 
@@ -37,7 +37,7 @@ public class RawMessageWrapper<M> {
 	 * Additional information regarding the (raw) message. The information in this map will be added to the {@link PipeLineSession} by the
 	 * {@link Receiver}.
 	 */
-	protected @Getter @NonNull Map<String,Object> context = new LinkedHashMap<>();
+	protected @Getter @NonNull Map<String,Object> context = new LinkedCaseInsensitiveMap<>();
 
 	protected RawMessageWrapper() {
 		// For Serialisation
