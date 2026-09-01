@@ -31,7 +31,6 @@ import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.SpringUtils;
 
 class JmsSenderTest {
 	private TestConfiguration configuration;
@@ -65,7 +64,7 @@ class JmsSenderTest {
 
 	@AfterEach
 	void tearDown() {
-		SpringUtils.stopSilently(jmsSender, configuration);
+		configuration.stop();
 		CloseUtils.closeSilently(pipeLineSession, configuration);
 	}
 

@@ -18,7 +18,6 @@ package org.frankframework.util;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.Lifecycle;
 
 public class SpringUtils {
 
@@ -83,17 +82,5 @@ public class SpringUtils {
 	public static void registerSingleton(ApplicationContext applicationContext, String name, Object bean) {
 		ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
 		cbf.registerSingleton(name, bean);
-	}
-
-	public static void stopSilently(Lifecycle... beans) {
-		for (Lifecycle bean : beans) {
-			if (bean != null) {
-				try {
-					bean.stop();
-				} catch (Exception e) {
-					// Ignore error stopping
-				}
-			}
-		}
 	}
 }
