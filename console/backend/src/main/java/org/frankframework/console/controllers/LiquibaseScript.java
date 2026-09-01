@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.ApiException;
+import org.frankframework.console.Description;
 import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -50,6 +51,7 @@ public class LiquibaseScript {
 	}
 
 	@AllowAllIbisUserRoles
+	@Description("Download a database migration script")
 	@GetMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadScript(@RequestParam(value = "configuration", required = false) String configuration) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.JDBC_MIGRATION, BusAction.DOWNLOAD);
@@ -58,6 +60,7 @@ public class LiquibaseScript {
 	}
 
 	@AllowAllIbisUserRoles
+	@Description("generate SQL from a liquibase script")
 	@PostMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> generateSQL(GenerateSQLModel model) throws ApiException {
 		String configuration = RequestUtils.resolveRequiredProperty("configuration", model.configuration(), null);

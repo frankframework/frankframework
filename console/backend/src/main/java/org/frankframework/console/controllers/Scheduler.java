@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestUtils;
 import org.frankframework.management.bus.BusAction;
@@ -46,6 +47,7 @@ public class Scheduler {
 
 	@AllowAllIbisUserRoles
 	@Relation("schedules")
+	@Description("view all schedules")
 	@GetMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedules() {
 		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.GET));
@@ -53,6 +55,7 @@ public class Scheduler {
 
 	@AllowAllIbisUserRoles
 	@Relation("schedules")
+	@Description("view a specific schedule")
 	@GetMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getSchedule(SchedulerPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.FIND);
@@ -63,6 +66,7 @@ public class Scheduler {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
+	@Description("update the scheduler state")
 	@PutMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateScheduler(@RequestBody SchedulerModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
@@ -72,6 +76,7 @@ public class Scheduler {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
+	@Description("manage a specific schedule")
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> trigger(SchedulerPathVariables path, @RequestBody SchedulerModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.MANAGE);
@@ -85,6 +90,7 @@ public class Scheduler {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
+	@Description("create a schedule")
 	@PostMapping(value = "/schedules", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createSchedule(ScheduleMultipartModel model) {
 		String jobGroupName = RequestUtils.resolveRequiredProperty("group", model.group, null);
@@ -92,6 +98,7 @@ public class Scheduler {
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@Description("update a specific schedule")
 	@PutMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> updateSchedule(SchedulerPathVariables path,
 											ScheduleMultipartModel model) {
@@ -100,6 +107,7 @@ public class Scheduler {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
+	@Description("create a schedule in a specific group")
 	@PostMapping(value = "/schedules/{groupName}/jobs", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> createScheduleInJobGroup(SchedulerPathVariables path, ScheduleMultipartModel model) {
 		return createSchedule(path.groupName, model);
@@ -139,6 +147,7 @@ public class Scheduler {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("schedules")
+	@Description("delete a specific schedule")
 	@DeleteMapping(value = "/schedules/{groupName}/jobs/{jobName}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> deleteSchedules(SchedulerPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SCHEDULER, BusAction.DELETE);

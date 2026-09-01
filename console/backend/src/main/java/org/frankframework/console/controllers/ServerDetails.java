@@ -50,6 +50,7 @@ public class ServerDetails {
 	}
 
 	@AllowAllIbisUserRoles
+	@Description("view server information")
 	@GetMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerInformation() {
 		if (frankApiService.hasNoAvailableWorker()) {
@@ -61,6 +62,7 @@ public class ServerDetails {
 
 	@AllowAllIbisUserRoles
 	@Relation("configuration")
+	@Description("view all active configurations")
 	@GetMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAllConfigurations() {
 		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND));
@@ -85,6 +87,7 @@ public class ServerDetails {
 	}
 
 	@PermitAll
+	@Description("view application health")
 	@GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFrankHealth(@RequestParam(value = "strict", required = false, defaultValue = "true") boolean strictMode) {
 		if (frankApiService.hasNoAvailableWorker()) {

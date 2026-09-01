@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.frankframework.console.Description;
 import org.frankframework.util.Environment;
 
 @RestController
@@ -33,6 +34,7 @@ import org.frankframework.util.Environment;
 public class ConsoleDetails {
 
 	@PermitAll
+	@Description("view the console version")
 	@GetMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, String>> getConsoleVersion() {
 		Map<String, String> map = new HashMap<>();
