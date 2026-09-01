@@ -26,6 +26,6 @@ COPY --chown=tomcat target/dependencies/*.jar /opt/frank/drivers
 RUN mv /usr/local/tomcat/webapps/ROOT /usr/local/tomcat/webapps/iaf-test
 
 # Ensure the container is healty
-HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 CMD curl --fail --silent http://localhost:8080/iaf-test/iaf/api || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 CMD curl --fail --silent http://localhost:8080/iaf-test/iaf/api/server/health || exit 1
 
 # Note: Credentials need to be mounted in /opt/frank/secrets at runtime
