@@ -100,7 +100,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public SmbFile toFile(@Nullable String filename) throws FileSystemException {
+	public @NonNull SmbFile toFile(@Nullable String filename) throws FileSystemException {
 		if (filename == null) {
 			return null;
 		}
@@ -112,7 +112,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public SmbFile toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+	public @NonNull SmbFile toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return toFile(folder+"/"+filename);
 	}
 
@@ -143,7 +143,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public void createFile(SmbFile file, InputStream content) throws IOException {
+	public void createFile(@NonNull SmbFile file, InputStream content) throws IOException {
 		try (OutputStream out = new SmbFileOutputStream(file)) {
 			if (content != null) {
 				content.transferTo(out);
@@ -152,7 +152,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public void appendFile(SmbFile file, InputStream content) throws IOException {
+	public void appendFile(@NonNull SmbFile file, @Nullable InputStream content) throws IOException {
 		try (OutputStream out = new SmbFileOutputStream(file, true)) {
 			if (content != null) {
 				content.transferTo(out);
@@ -230,7 +230,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public SmbFile renameFile(SmbFile source, SmbFile destination) throws FileSystemException {
+	public SmbFile renameFile(@NonNull SmbFile source, @NonNull SmbFile destination) throws FileSystemException {
 		if (!exists(source)) {
 			throw new FileNotFoundException("Cannot find file [" + getName(source) + "], cannot rename.");
 		}

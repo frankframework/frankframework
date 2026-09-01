@@ -136,7 +136,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M toFile(@Nullable String filename) throws FileSystemException {
+	public @NonNull M toFile(@Nullable String filename) throws FileSystemException {
 		if (filename != null) {
 			checkOpen();
 			int slashPos = filename.lastIndexOf('/');
@@ -152,7 +152,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M toFile(@Nullable String folderName, @Nullable String filename) throws FileSystemException {
+	public @NonNull M toFile(@Nullable String folderName, @Nullable String filename) throws FileSystemException {
 		checkOpen();
 		MockFolder folder = getMockFolder(folderName);
 		if (folder == null) {
@@ -220,7 +220,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void createFile(MockFile f, InputStream content) throws IOException {
+	public void createFile(@NonNull MockFile f, InputStream content) throws IOException {
 		checkOpen();
 		f.getOwner().getFiles().put(f.getName(), f);
 		try (OutputStream out = f.getOutputStream(true)) {
@@ -229,7 +229,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void appendFile(MockFile f, InputStream content) throws IOException {
+	public void appendFile(@NonNull MockFile f, @Nullable InputStream content) throws IOException {
 		checkOpen();
 		if (f.getOwner() != null && f.getOwner().getFiles().containsKey(f.getName())) {
 			f = f.getOwner().getFiles().get(f.getName()); // append to existing file
@@ -259,7 +259,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public M renameFile(M source, M destination) throws FileSystemException {
+	public M renameFile(@NonNull M source, @NonNull M destination) throws FileSystemException {
 		checkOpenAndExists(source);
 		String sourceName = source.getName();
 		String destinationName = destination.getName();
@@ -405,28 +405,28 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void createFile(M file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException {
+	public void createFile(@NonNull M file, @Nullable InputStream contents, @NonNull Map<String, String> customFileAttributes) throws FileSystemException, IOException {
 		file.getCustomAttributes().putAll(customFileAttributes);
 
 		createFile(file, contents);
 	}
 
 	@Override
-	public M moveFile(M m, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
+	public M moveFile(@NonNull M m, @NonNull String destinationFolder, boolean createFolder, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		M result = moveFile(m, destinationFolder, createFolder);
 		result.getCustomAttributes().putAll(customFileAttributes);
 		return result;
 	}
 
 	@Override
-	public M copyFile(M m, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
+	public M copyFile(@NonNull M m, @NonNull String destinationFolder, boolean createFolder, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		M result = copyFile(m, destinationFolder, createFolder);
 		result.getCustomAttributes().putAll(customFileAttributes);
 		return result;
 	}
 
 	@Override
-	public M renameFile(M source, M destination, Map<String, String> customFileAttributes) throws FileSystemException {
+	public M renameFile(@NonNull M source, @NonNull M destination, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		M result = renameFile(source, destination);
 		result.getCustomAttributes().putAll(customFileAttributes);
 		return result;

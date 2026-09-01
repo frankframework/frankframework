@@ -18,6 +18,7 @@ package org.frankframework.validation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,11 +64,8 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 		this.rootValidations = rootValidations;
 		this.invalidRootNamespaces = invalidRootNamespaces;
 
-		if (ignoreUnknownNamespaces==null) {
-			this.ignoreUnknownNamespaces=false; // to avoid NullPointerException when not initialized
-		} else {
-			this.ignoreUnknownNamespaces = ignoreUnknownNamespaces;
-		}
+		// to avoid NullPointerException when not initialized
+		this.ignoreUnknownNamespaces = Objects.requireNonNullElse(ignoreUnknownNamespaces, false);
 	}
 
 	public void setXmlValidatorErrorHandler(XmlValidatorErrorHandler xmlValidatorErrorHandler) {

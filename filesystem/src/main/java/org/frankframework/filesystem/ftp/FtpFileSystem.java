@@ -76,12 +76,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFileRef toFile(@Nullable String filename) throws FileSystemException {
+	public @NonNull FTPFileRef toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public FTPFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+	public @NonNull FTPFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return new FTPFileRef(filename, folder);
 	}
 
@@ -119,14 +119,14 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public void createFile(FTPFileRef file, InputStream content) throws IOException {
+	public void createFile(@NonNull FTPFileRef file, InputStream content) throws IOException {
 		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
 			ftpClient.storeFile(file.getName(), isToUse);
 		}
 	}
 
 	@Override
-	public void appendFile(FTPFileRef file, InputStream content) throws IOException {
+	public void appendFile(@NonNull FTPFileRef file, @Nullable InputStream content) throws IOException {
 		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
 			ftpClient.appendFile(file.getName(), isToUse);
 		}
@@ -241,7 +241,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public FTPFileRef renameFile(FTPFileRef source, FTPFileRef destination) throws FileSystemException {
+	public FTPFileRef renameFile(@NonNull FTPFileRef source, @NonNull FTPFileRef destination) throws FileSystemException {
 		try {
 			ftpClient.rename(getCanonicalName(source), getCanonicalName(destination));
 		} catch (IOException e) {
