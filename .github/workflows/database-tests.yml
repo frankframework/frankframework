@@ -5,7 +5,7 @@ name: Database Tests
 
 env:
   JDK_VERSION: 25
-  PROFILES: frankframework,ci,skip-console-frontend,database-drivers
+  PROFILES: frankframework,ci,skip-console-frontend
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   PR_NUMBER: ${{ github.event.number || '' }}
@@ -71,6 +71,8 @@ jobs:
     services:
       database:
         image: ghcr.io/frankframework/dbms/${{ matrix.db }}:latest
+        options: >-
+          --publish-all
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -118,7 +120,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
       # Tests with proprietary dependencies don't work for some reason. Build only core and the modules that Core depends on. If JDBC is moved to another modules that module should be built as well.
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Djdbc.hostname=database -Dgroups=database
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -pl core -am -Djdbc.hostname=database -Dgroups=database
 
     - name: Store Test Results
       if: failure()
