@@ -15,7 +15,6 @@
 */
 package org.frankframework.jms;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -33,6 +32,7 @@ import jakarta.jms.InvalidDestinationException;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.MessageProducer;
+import jakarta.jms.ObjectMessage;
 import jakarta.jms.Queue;
 import jakarta.jms.QueueSender;
 import jakarta.jms.QueueSession;
@@ -727,18 +727,16 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	 * {@link jakarta.jms.TextMessage}s and {@link jakarta.jms.BytesMessage}.<br/><br/>
 	 */
 	public Message extractMessage(jakarta.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException, XmlException {
-		Message message;
-
-		if (jmsMessage instanceof TextMessage textMessage) {
-			message = new Message(textMessage.getText(), getContext(jmsMessage));
-		} else if (jmsMessage instanceof BytesMessage bytesMsg) {
-			InputStream input = new BytesMessageInputStream(bytesMsg);
-			message = new Message(new BufferedInputStream(input), getContext(jmsMessage));
-		} else if (jmsMessage == null) {
-			message = Message.nullMessage();
-		} else {
-			message = Message.asMessage(jmsMessage);
-		}
+		Message message = switch (jmsMessage) {
+			case TextMessage textMessage -> new Message(textMessage.getText(), getContext(jmsMessage));
+			case BytesMessage bytesMsg -> {
+				InputStream input = new BytesMessageInputStream(bytesMsg);
+				yield new Message(input, getContext(jmsMessage));
+			}
+			case ObjectMessage objectMessage -> Message.asMessage(objectMessage.getObject());
+			case null -> Message.nullMessage();
+			default -> Message.asMessage(jmsMessage);
+		};
 		if (!soap) {
 			return message;
 		}

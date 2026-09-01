@@ -70,7 +70,7 @@ import org.frankframework.util.RunStateEnquiring;
  *
  * </p>
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>jakarta.jms.TextMessage</code>s <br/><br/>
+ * <code>jakarta.jms.TextMessage</code>s or <code>jakarta.jms.BytesMessage</code>s <br/><br/>
  * </p>
  *
  * {@inheritClassDoc}
@@ -78,10 +78,11 @@ import org.frankframework.util.RunStateEnquiring;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
+@SuppressWarnings("removal")
 public class PullingJmsListener extends AbstractJmsListener implements IPullingListener<Message>, ICorrelatedPullingListener<Message>, RunStateEnquiring {
 
-	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
-	private RunStateEnquirer runStateEnquirer=null;
+	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY = "messageConsumer";
+	private RunStateEnquirer runStateEnquirer = null;
 
 	public PullingJmsListener() {
 		setTimeout(20000);
@@ -257,7 +258,7 @@ public class PullingJmsListener extends AbstractJmsListener implements IPullingL
 	}
 
 	@Override
-	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
+	public void setRunStateEnquirer(RunStateEnquirer enquirer) {
 		runStateEnquirer=enquirer;
 	}
 }

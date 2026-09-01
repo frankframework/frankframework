@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,5 +22,5 @@ package org.frankframework.util;
  */
 public interface RunStateEnquiring {
 
-	void SetRunStateEnquirer(RunStateEnquirer enquirer);
+	void setRunStateEnquirer(RunStateEnquirer enquirer);
 }
