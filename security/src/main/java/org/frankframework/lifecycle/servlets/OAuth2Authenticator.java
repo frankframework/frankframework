@@ -37,6 +37,7 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Getter;
@@ -120,6 +121,15 @@ public class OAuth2Authenticator extends AbstractOAuth2Authenticator {
 	private @Setter String baseUrl;
 
 	/**
+	 * When {@code true}, this authenticator additionally validates incoming bearer JWTs as an OAuth2
+	 * resource server (on top of the interactive browser login), so both a human in a browser (OIDC
+	 * login) and an external system presenting an {@code Authorization: Bearer <jwt>} token can access
+	 * the same endpoint. Requires {@code issuerUri} or {@code jwkSetUri} to be set. Defaults to
+	 * {@code false}, in which case behaviour is unchanged.
+	 */
+	private @Setter boolean allowBearerAuthentication = false;
+
+	/**
 	 * The client ID to use for the OAuth2 provider.
 	 */
 	private @Setter String clientId = null;
@@ -192,7 +202,9 @@ public class OAuth2Authenticator extends AbstractOAuth2Authenticator {
 	 * }</pre>
 	 */
 	private @Setter String roleMappingFile = "oauth-role-mapping.properties";
+
 	private URL roleMappingURL = null;
+
 	private OAuth2AuthorizedClientService clientService;
 
 	@Override
@@ -209,6 +221,17 @@ public class OAuth2Authenticator extends AbstractOAuth2Authenticator {
 				.authorizationEndpoint(this::getOauth2LoginConfigurer)
 				.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(authorityMapper))
 				.loginProcessingUrl(servletPath + "/oauth2/code/*"));
+
+		if (allowBearerAuthentication) {
+			// Also accept a bearer JWT (external systems). Both mechanisms then live on one chain: a request with an `Authorization: Bearer` header is
+			// validated statelessly by the resource server, a browser request without a token falls through to the oauth2Login redirect.
+			configureBearerTokenResourceServer(http);
+
+			// With both configured, unauthenticated requests must resolve to the right challenge:
+			// API/bearer clients get a 401 (WWW-Authenticate: Bearer), browsers get the login redirect.
+			http.exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+					new BearerTokenAuthenticationEntryPoint(), AuthenticatorUtils::isApiRequest));
+		}
 
 		return http.build();
 	}
@@ -286,8 +309,9 @@ public class OAuth2Authenticator extends AbstractOAuth2Authenticator {
 			default -> throw new IllegalStateException("unknown OAuth provider");
 		};
 
-		builder.clientId(credentials.getUsername()).clientSecret(credentials.getPassword());
-		builder.redirectUri(getRedirectUri());
+		builder.clientId(credentials.getUsername())
+				.clientSecret(credentials.getPassword())
+				.redirectUri(getRedirectUri());
 
 		return builder.build();
 	}
