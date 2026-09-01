@@ -44,7 +44,7 @@ public class CspFilter implements Filter {
 
 		List<String> policyDirectives = new ArrayList<>();
 		policyDirectives.add("default-src 'self';");
-		policyDirectives.add("style-src 'self' https://fonts.googleapis.com/css 'unsafe-inline';");
+		policyDirectives.add("style-src 'self' https://fonts.googleapis.com/ 'unsafe-inline';");
 		policyDirectives.add("font-src 'self' https://fonts.gstatic.com data:;");
 		// 'sha256-nTT9HlzZYsLZk5BbdhMKiMCvEgbfaqTeueMbRW8r6Ak=' belongs to larva
 		policyDirectives.add("script-src 'self' 'unsafe-eval' 'nonce-IE-warning' 'sha256-nTT9HlzZYsLZk5BbdhMKiMCvEgbfaqTeueMbRW8r6Ak=';");

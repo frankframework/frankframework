@@ -2,17 +2,18 @@ package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.SpringUtils;
 
 class AdapterTest {
-	private int pipeNr = 0;
 
 	@Test
 	void testComputeCombinedHideRegex() throws ConfigurationException {
@@ -62,7 +63,8 @@ class AdapterTest {
 
 	@Test
 	void testNoReceiverName() {
-		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean()) {
+		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean();
+			TestAppender appender = TestAppender.newBuilder().build()) {
 
 			// Add receive with default name of the 2nd receiver
 			adapter.addReceiver(createReceiver(adapter, "Receiver [2]"));
@@ -71,14 +73,18 @@ class AdapterTest {
 			// Add without name
 			adapter.addReceiver(SpringUtils.createBean(adapter));
 
-			assertEquals(1, config.getConfigurationWarnings().size());
-			assertEquals("Receiver does not have a name, using: 'Receiver [3]'", config.getConfigWarning(0));
+			assertEquals(0, config.getConfigurationWarnings().size());
+			Assertions.assertThat(appender.getLogLines())
+					.hasSize(3)
+					.contains("Receiver does not have a name, using: 'Receiver [3]'");
 		}
 	}
 
 	@Test
 	void testNoReceiverNameAndDuplicateName() {
-		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean()) {
+		try (TestConfiguration config = new TestConfiguration(); Adapter adapter = config.createBean();
+			TestAppender appender = TestAppender.newBuilder().build()) {
+			adapter.setId("adapterName");
 
 			adapter.addReceiver(createReceiver(adapter, "Receiver [1]"));
 			assertEquals(0, config.getConfigurationWarnings().size());
@@ -90,8 +96,14 @@ class AdapterTest {
 			// Add without name
 			adapter.addReceiver(SpringUtils.createBean(adapter));
 
-			assertEquals(2, config.getConfigurationWarnings().size());
-			assertEquals("Receiver does not have a name, using: 'Receiver [3]'", config.getConfigWarning(1));
+			assertEquals(1, config.getConfigurationWarnings().size());
+			Assertions.assertThat(appender.getLogLines())
+					.hasSize(5)
+					.contains("Adapter [adapterName] registered receiver [Receiver [1]]")
+					.contains("Receiver [Receiver [1]] name must be unique, using: 'Receiver [2]'")
+					.contains("Adapter [adapterName] registered receiver [Receiver [2]]")
+					.contains("Receiver does not have a name, using: 'Receiver [3]'")
+					.contains("Adapter [adapterName] registered receiver [Receiver [3]]");
 		}
 	}
 
@@ -104,7 +116,7 @@ class AdapterTest {
 
 	private @NonNull EchoPipe buildTestPipe(@NonNull PipeLine pipeLine) throws ConfigurationException {
 		EchoPipe pipe = new EchoPipe();
-		pipe.setName("Pipe" + ++pipeNr);
+		pipe.setName("Pipe" + System.identityHashCode(pipe));
 		pipeLine.addPipe(pipe);
 		return pipe;
 	}

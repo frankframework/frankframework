@@ -230,7 +230,7 @@ public class TestLogMessages {
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size());
 			String message = logEvents.getFirst();
-			assertEquals("DEBUG - Adapter Success ", message);
+			assertEquals("DEBUG - Adapter Success", message);
 		}
 	}
 }

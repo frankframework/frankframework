@@ -82,7 +82,8 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 
 	@Override
 	public URL getLocalResource(String name) {
-		File file = new File(directory, name);
+		String decoded = name.replace("%20", " ");
+		File file = new File(directory, decoded);
 		if (file.exists()) {
 			try {
 				return file.toURI().toURL();

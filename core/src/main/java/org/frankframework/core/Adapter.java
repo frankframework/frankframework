@@ -891,17 +891,17 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have a recursive call to logger when trace-level logging is enabled
 	public void addReceiver(Receiver<?> receiver) {
+		if (receivers.stream().map(HasName::getName).toList().contains(receiver.getName())) {
+			String newName = createReceiverName(receivers.size() + 1);
+			ConfigurationWarnings.add(receiver, log, "name must be unique, using: '%s'".formatted(newName));
+			receiver.setName(newName);
+		}
+
 		if (StringUtils.isBlank(receiver.getName())) {
 			String newName = createReceiverName(receivers.size() + 1);
 			// This will not contain the adapter name, as it's not present at this time yet which will make debugging this very difficult.
 			// Since we do need a name for each receiver, perhaps we should log this somewhere else to improve the dev-experience?
-			ConfigurationWarnings.add(receiver, log, "does not have a name, using: '%s'".formatted(newName));
-			receiver.setName(newName);
-		}
-
-		if (receivers.stream().map(HasName::getName).toList().contains(receiver.getName())) {
-			String newName = createReceiverName(receivers.size() + 1);
-			ConfigurationWarnings.add(receiver, log, "name must be unique, using: '%s'".formatted(newName));
+			log.info("Receiver does not have a name, using: '{}'", newName);
 			receiver.setName(newName);
 		}
 
