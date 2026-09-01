@@ -597,27 +597,19 @@ public class RecordTransformer extends AbstractRecordHandler {
 			if (compareValue.startsWith("{") && compareValue.endsWith("}")) {
 				String value = compareValue.substring(1, compareValue.length() - 1);
 				Stream<String> v = StringUtil.splitToStream(value, "|");
-				switch(comparator) {
-					case 1: // eq
-						return v.anyMatch(val::equals);
-					case 3: // sw
-						return v.anyMatch(val::startsWith);
-					case 4: // ns
-						return v.noneMatch(val::startsWith);
-					default: // ne
-						return v.noneMatch(val::equals);
-				}
+				return switch (comparator) {
+					case 1 -> v.anyMatch(val::equals); // eq
+					case 3 -> v.anyMatch(val::startsWith); // sw
+					case 4 -> v.noneMatch(val::startsWith); // ns
+					default -> v.noneMatch(val::equals); // ne
+				};
 			}
-			switch(comparator) {
-				case 1: // eq
-					return val.equals(compareValue);
-				case 3: // sw
-					return val.startsWith(compareValue);
-				case 4: // ns
-					return ! val.startsWith(compareValue);
-				default: // ne
-					return ! val.equals(compareValue);
-			}
+			return switch (comparator) {
+				case 1 -> val.equals(compareValue); // eq
+				case 3 -> val.startsWith(compareValue); // sw
+				case 4 -> !val.startsWith(compareValue); // ns
+				default -> !val.equals(compareValue); // ne
+			};
 		}
 
 		@Override

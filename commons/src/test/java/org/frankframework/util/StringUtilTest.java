@@ -282,18 +282,13 @@ class StringUtilTest {
 	}
 
 	static String mapChar(int chr) {
-		switch (chr) {
-			case '\t':
-				return "\\t";
-			case '\r':
-				return "\\r";
-			case '\n':
-				return "\\n";
-			case '\f':
-				return "\\f";
-			default:
-				return Character.toString((char) chr);
-		}
+		return switch (chr) {
+			case '\t' -> "\\t";
+			case '\r' -> "\\r";
+			case '\n' -> "\\n";
+			case '\f' -> "\\f";
+			default -> Character.toString((char) chr);
+		};
 	}
 
 	@Test

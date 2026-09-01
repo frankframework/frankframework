@@ -119,14 +119,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
-		switch (rsmeta.getColumnType(colNum)) {
-			case Types.LONGVARCHAR:
-			case Types.LONGNVARCHAR:
-			case Types.CLOB:
-				return true;
-			default:
-				return false;
-		}
+		return switch (rsmeta.getColumnType(colNum)) {
+			case Types.LONGVARCHAR, Types.LONGNVARCHAR, Types.CLOB -> true;
+			default -> false;
+		};
 	}
 
 	@Override
