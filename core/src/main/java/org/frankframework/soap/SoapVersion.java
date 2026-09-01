@@ -73,15 +73,11 @@ public enum SoapVersion implements DocumentedEnum {
 	}
 
 	public String getSchemaLocation() {
-		switch (this) {
-		case SOAP11:
-		case SOAP12:
-			return toString();
-		case AUTO:
-			return SOAP11 + " " + SOAP12;
-		default:
-			return "";
-		}
+		return switch (this) {
+			case SOAP11, SOAP12 -> toString();
+			case AUTO -> SOAP11 + " " + SOAP12;
+			default -> "";
+		};
 	}
 
 	@Override

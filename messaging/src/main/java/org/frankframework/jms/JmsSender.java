@@ -257,19 +257,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		if (getReplyToName() == null) {
 			replyCorrelationId = null;
 		} else {
-			switch (getLinkMethod()) {
-				case MESSAGEID:
-					replyCorrelationId = jmsMessageID;
-					break;
-				case CORRELATIONID:
-					replyCorrelationId = session == null ? null : session.getCorrelationId();
-					break;
-				case CORRELATIONID_FROM_MESSAGE:
-					replyCorrelationId = msg.getJMSCorrelationID();
-					break;
-				default:
-					throw new IllegalStateException("unknown linkMethod [" + getLinkMethod() + "]");
-			}
+			replyCorrelationId = switch (getLinkMethod()) {
+				case MESSAGEID -> jmsMessageID;
+				case CORRELATIONID -> session == null ? null : session.getCorrelationId();
+				case CORRELATIONID_FROM_MESSAGE -> msg.getJMSCorrelationID();
+			};
 		}
 		log.debug("[{}] start waiting for reply on [{}] requestMsgId [{}] replyCorrelationId [{}] for [{}] ms",
 				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);

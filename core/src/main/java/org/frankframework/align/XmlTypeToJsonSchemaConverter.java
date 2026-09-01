@@ -701,34 +701,16 @@ public class XmlTypeToJsonSchemaConverter  {
 	}
 
 	private SimpleType getSimpleType(short builtInKind){
-		switch(builtInKind) {
-			case XSConstants.BOOLEAN_DT:
-				return SimpleType.BOOLEAN;
-			case XSConstants.SHORT_DT:
-			case XSConstants.INT_DT:
-			case XSConstants.INTEGER_DT:
-			case XSConstants.NEGATIVEINTEGER_DT:
-			case XSConstants.NONNEGATIVEINTEGER_DT:
-			case XSConstants.NONPOSITIVEINTEGER_DT:
-			case XSConstants.POSITIVEINTEGER_DT:
-			case XSConstants.BYTE_DT:
-			case XSConstants.UNSIGNEDBYTE_DT:
-			case XSConstants.UNSIGNEDINT_DT:
-			case XSConstants.UNSIGNEDSHORT_DT:
-				return SimpleType.INTEGER;
-			case XSConstants.UNSIGNEDLONG_DT:
-			case XSConstants.LONG_DT:
-			case XSConstants.DECIMAL_DT:
-			case XSConstants.FLOAT_DT:
-			case XSConstants.DOUBLE_DT:
-				return SimpleType.NUMBER;
-			case XSConstants.DATE_DT:
-				return SimpleType.DATE;
-			case XSConstants.DATETIME_DT:
-				return SimpleType.DATETIME;
-			default:
-				return SimpleType.STRING;
-		}
+		return switch (builtInKind) {
+			case XSConstants.BOOLEAN_DT -> SimpleType.BOOLEAN;
+			case XSConstants.SHORT_DT, XSConstants.INT_DT, XSConstants.INTEGER_DT, XSConstants.NEGATIVEINTEGER_DT, XSConstants.NONNEGATIVEINTEGER_DT,
+			     XSConstants.NONPOSITIVEINTEGER_DT, XSConstants.POSITIVEINTEGER_DT, XSConstants.BYTE_DT, XSConstants.UNSIGNEDBYTE_DT,
+			     XSConstants.UNSIGNEDINT_DT, XSConstants.UNSIGNEDSHORT_DT -> SimpleType.INTEGER;
+			case XSConstants.UNSIGNEDLONG_DT, XSConstants.LONG_DT, XSConstants.DECIMAL_DT, XSConstants.FLOAT_DT, XSConstants.DOUBLE_DT -> SimpleType.NUMBER;
+			case XSConstants.DATE_DT -> SimpleType.DATE;
+			case XSConstants.DATETIME_DT -> SimpleType.DATETIME;
+			default -> SimpleType.STRING;
+		};
 	}
 
 }

@@ -238,17 +238,10 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	public IMessageBrowser.StorageType getStorageType(ProcessState state) {
-		switch (state) {
-		case AVAILABLE:
-		case INPROCESS:
-		case DONE:
-			return IMessageBrowser.StorageType.MESSAGELOG_RECEIVER;
-		case ERROR:
-		case HOLD:
-			return IMessageBrowser.StorageType.ERRORSTORAGE;
-		default:
-			throw new IllegalStateException("Unknown state ["+state+"]");
-		}
+		return switch (state) {
+			case AVAILABLE, INPROCESS, DONE -> IMessageBrowser.StorageType.MESSAGELOG_RECEIVER;
+			case ERROR, HOLD -> IMessageBrowser.StorageType.ERRORSTORAGE;
+		};
 	}
 
 	@Override

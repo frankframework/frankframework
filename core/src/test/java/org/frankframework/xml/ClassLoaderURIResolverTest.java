@@ -83,73 +83,58 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException {
-		URL result=null;
-		switch (baseType) {
-		case LOCAL:
-			return "/ClassLoader/Xslt/root.xsl";
-		case BYTES:
-			result = ClassLoaderUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
-			return result.toExternalForm();
-		case CLASSPATH:
-			return "classpath:ClassLoader/Xslt/root.xsl";
-		case FILE_SCHEME:
-			result = ClassLoaderUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
-			return result.toExternalForm();
-		case NULL:
-			return null;
-		default:
-			throw new ConfigurationException("getBase() appears to be missing case for baseType ["+baseType+"]");
-		}
+		URL result;
+		return switch (baseType) {
+			case LOCAL -> "/ClassLoader/Xslt/root.xsl";
+			case BYTES -> {
+				result = ClassLoaderUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
+				yield result.toExternalForm();
+			}
+			case CLASSPATH -> "classpath:ClassLoader/Xslt/root.xsl";
+			case FILE_SCHEME -> {
+				result = ClassLoaderUtils.getResourceURL(classLoaderProvider, "/ClassLoader/Xslt/root.xsl");
+				yield result.toExternalForm();
+			}
+			case NULL -> null;
+		};
 	}
 
 	private String getRef(BaseType baseType, RefType refType) throws ConfigurationException {
-		switch (refType) {
-		case ROOT:
-			return "/ClassLoaderTestFile.xml";
-		case ABS_PATH:
-			return "/ClassLoader/ClassLoaderTestFile.xml";
-		case DOTDOT:
-			if (baseType==BaseType.NULL) {
-				return null;
+		return switch (refType) {
+			case ROOT -> "/ClassLoaderTestFile.xml";
+			case ABS_PATH -> "/ClassLoader/ClassLoaderTestFile.xml";
+			case DOTDOT -> {
+				if (baseType == BaseType.NULL) {
+					yield null;
+				}
+				yield "../subfolder/ClassLoaderTestFile.xml";
 			}
-			return "../subfolder/ClassLoaderTestFile.xml";
-		case SAME_FOLDER:
-			if (baseType==BaseType.NULL) {
-				return null;
+			case SAME_FOLDER -> {
+				if (baseType == BaseType.NULL) {
+					yield null;
+				}
+				yield "names.xsl";
 			}
-			return "names.xsl";
-		case OVERRIDABLE:
-			return "/ClassLoader/overridablefile.xml";
-		case CLASSPATH:
-			return "classpath:/ClassLoader/overridablefile.xml";
-		case FILE_SCHEME:
-			return ClassLoaderUtils.getResourceURL("/ClassLoader/overridablefile.xml").toExternalForm();
-		default:
-			throw new ConfigurationException("getRef() appears to be missing case for refType ["+refType+"]");
-		}
+			case OVERRIDABLE -> "/ClassLoader/overridablefile.xml";
+			case CLASSPATH -> "classpath:/ClassLoader/overridablefile.xml";
+			case FILE_SCHEME -> ClassLoaderUtils.getResourceURL("/ClassLoader/overridablefile.xml").toExternalForm();
+		};
 	}
 
 	private String getExpected(BaseType baseType, RefType refType) throws ConfigurationException {
-		switch(refType) {
-		case ROOT:
-			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoaderTestFile.xml</file>";
-		case ABS_PATH:
-			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>";
-		case DOTDOT:
-			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/subfolder/ClassLoaderTestFile.xml</file>";
-		case SAME_FOLDER:
-			return null;
-		case OVERRIDABLE:
-		case CLASSPATH:
-			if (baseType==BaseType.BYTES) {
-				return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/overrideablefile.xml</file>";
+		return switch (refType) {
+			case ROOT -> "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoaderTestFile.xml</file>";
+			case ABS_PATH -> "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>";
+			case DOTDOT -> "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/subfolder/ClassLoaderTestFile.xml</file>";
+			case SAME_FOLDER -> null;
+			case OVERRIDABLE, CLASSPATH -> {
+				if (baseType == BaseType.BYTES) {
+					yield "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/overrideablefile.xml</file>";
+				}
+				yield "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>local:/overrideablefile.xml</file>";
 			}
-			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>local:/overrideablefile.xml</file>";
-		case FILE_SCHEME:
-			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>local:/overrideablefile.xml</file>";
-		default:
-			throw new ConfigurationException("getExpected() appears to be missing case for refType ["+refType+"]");
-		}
+			case FILE_SCHEME -> "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>local:/overrideablefile.xml</file>";
+		};
 	}
 
 	@ParameterizedTest
