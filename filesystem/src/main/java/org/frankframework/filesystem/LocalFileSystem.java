@@ -96,12 +96,12 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public Path toFile(@Nullable String filename) throws FileSystemException {
+	public @NonNull Path toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Path toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+	public @NonNull Path toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		if (filename == null) {
 			filename="";
 		}
@@ -160,14 +160,14 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public void createFile(Path file, InputStream content) throws IOException {
+	public void createFile(@NonNull Path file, @Nullable InputStream content) throws IOException {
 		try (OutputStream out = Files.newOutputStream(file)) {
 			StreamUtil.streamToStream(content, out);
 		}
 	}
 
 	@Override
-	public void createFile(Path file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException {
+	public void createFile(@NonNull Path file, @Nullable InputStream contents, @NonNull Map<String, String> customFileAttributes) throws FileSystemException, IOException {
 		try {
 			// Create the file first
 			createFile(file, contents);
@@ -226,7 +226,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public void appendFile(Path f, InputStream content) throws FileSystemException, IOException {
+	public void appendFile(@NonNull Path f, @Nullable InputStream content) throws FileSystemException, IOException {
 		try (OutputStream out = Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 			StreamUtil.streamToStream(content, out);
 		}
@@ -298,12 +298,12 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public Path renameFile(Path source, Path destination) throws FileSystemException {
+	public Path renameFile(@NonNull Path source, @NonNull Path destination) throws FileSystemException {
 		return renameFile(source, destination, Map.of());
 	}
 
 	@Override
-	public Path renameFile(Path source, Path destination, Map<String, String> customFileAttributes) throws FileSystemException {
+	public Path renameFile(@NonNull Path source, @NonNull Path destination, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		try {
 			Path result = Files.move(source, destination);
 			addCustomFileAttributes(result, customFileAttributes);
@@ -321,7 +321,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public Path moveFile(Path f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
+	public Path moveFile(@NonNull Path f, @NonNull String destinationFolder, boolean createFolder, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -346,7 +346,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public Path copyFile(Path f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
+	public Path copyFile(@NonNull Path f, @NonNull String destinationFolder, boolean createFolder, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));

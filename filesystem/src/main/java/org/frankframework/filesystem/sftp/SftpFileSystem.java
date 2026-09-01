@@ -90,12 +90,12 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef toFile(@Nullable String filename) throws FileSystemException {
+	public @NonNull SftpFileRef toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public SftpFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+	public @NonNull SftpFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return new SftpFileRef(filename, folder);
 	}
 
@@ -147,7 +147,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public void createFile(SftpFileRef file, InputStream content) throws FileSystemException {
+	public void createFile(@NonNull SftpFileRef file, @Nullable InputStream content) throws FileSystemException {
 		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
 			ftpClient.put(isToUse, file.getName());
 		} catch (IOException | SftpException e) {
@@ -156,7 +156,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public void appendFile(SftpFileRef file, InputStream content) throws FileSystemException {
+	public void appendFile(@NonNull SftpFileRef file, @Nullable InputStream content) throws FileSystemException {
 		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
 			ftpClient.put(isToUse, file.getName(), ChannelSftp.APPEND);
 		} catch (IOException | SftpException e) {
@@ -306,7 +306,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public SftpFileRef renameFile(SftpFileRef source, SftpFileRef destination) throws FileSystemException {
+	public SftpFileRef renameFile(@NonNull SftpFileRef source, @NonNull SftpFileRef destination) throws FileSystemException {
 		try {
 			ftpClient.rename(getCanonicalName(source), getCanonicalName(destination));
 		} catch (SftpException e) {

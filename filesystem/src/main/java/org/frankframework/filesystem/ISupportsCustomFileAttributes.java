@@ -89,27 +89,27 @@ public interface ISupportsCustomFileAttributes<F> {
 	 * @param contents Contents of the file
 	 * @param customFileAttributes Custom file attributes to apply to the file
 	 */
-	void createFile(F file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException;
+	void createFile(@NonNull F file, @Nullable InputStream contents, @NonNull Map<String, String> customFileAttributes) throws FileSystemException, IOException;
 
 	/**
 	 * Moves the file to another folder, adding the given custom file attributes to the file in the destination folder.
 	 * Does not need to check for existence of the source or non-existence of the destination.
 	 * Returns the moved file, or null if no file was moved or there is no reference to the moved file.<br/>
 	 */
-	F moveFile(F f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException;
+	F moveFile(@NonNull F f, @NonNull String destinationFolder, boolean createFolder, @NonNull Map<String, String> customFileAttributes) throws FileSystemException;
 
 	/**
 	 * Copies the file to another folder, adding the given custom file attributes to the file in the destination folder.
 	 * Does not need to check for existence of the source or non-existence of the destination.
 	 * Returns the copied file, or null if no file was copied or there is no reference to the copied file.
 	 */
-	F copyFile(F f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException;
+	F copyFile(@NonNull F f, @NonNull String destinationFolder, boolean createFolder, @NonNull Map<String, String> customFileAttributes) throws FileSystemException;
 
 	/**
 	 * Renames the file to a new name, possibly in another folder.
 	 * Does not need to check for the existence of the source or non-existence of the destination.
 	 */
-	F renameFile(F source, F destination, Map<String, String> customFileAttributes) throws FileSystemException;
+	F renameFile(@NonNull F source, @NonNull F destination, @NonNull Map<String, String> customFileAttributes) throws FileSystemException;
 
 	/**
 	 * Gets the value of the given custom file attribute on the given file. If the attribute does not exist, {@code null} is returned.

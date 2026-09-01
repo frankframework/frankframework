@@ -12,12 +12,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.unittest.TesterContext;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,13 +34,14 @@ import org.frankframework.util.ClassUtils;
 @Log4j2
 public class RoleGroupMapperTest {
 
+	@SuppressWarnings("DataFlowIssue")
 	private InMemoryDirectoryServer inMemoryDirectoryServer = null;
 	private static final String BASE_DN = "dc=myorg,dc=com";
 
-	private RoleToGroupMappingJndiRealm setupRoleToGroupMappingJndiRealm(Context context, String pathname) {
+	private RoleToGroupMappingJndiRealm setupRoleToGroupMappingJndiRealm(@Nullable Context context, @Nullable String pathname) {
 		RoleToGroupMappingJndiRealm realm = new RoleToGroupMappingJndiRealm() {
 			@Override
-			protected InputStream getResourceAsStream(@NonNull String resource) throws IOException {
+			protected InputStream getResourceAsStream(String resource) throws IOException {
 				String removeProtocol = "/" + StringUtils.substringAfter(resource, "classpath:");
 				URL url = RoleGroupMapperTest.class.getResource(removeProtocol);
 				if (url == null) {
@@ -62,11 +64,7 @@ public class RoleGroupMapperTest {
 
 		realm.setRoleName("memberOf");
 
-		if (context != null) {
-			realm.setContainer(context);
-		} else {
-			realm.setContainer(new TesterContext());
-		}
+		realm.setContainer(Objects.requireNonNullElseGet(context, TesterContext::new));
 
 		if (pathname != null) {
 			realm.setPathname(pathname);

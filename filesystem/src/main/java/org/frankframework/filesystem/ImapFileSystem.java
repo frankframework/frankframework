@@ -174,12 +174,12 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Message toFile(@Nullable String filename) throws FileSystemException {
+	public @NonNull Message toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Message toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException {
+	public @NonNull Message toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -228,7 +228,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public DirectoryStream<Message> list(Message foldername, @NonNull TypeFilter filter) throws FileSystemException {
+	public @NonNull DirectoryStream<Message> list(Message foldername, @NonNull TypeFilter filter) throws FileSystemException {
 		if (filter.includeFolders()) {
 			throw new FileSystemException("Filtering on folders is not supported");
 		}
