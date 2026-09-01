@@ -15,35 +15,8 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.FactorGrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimNames;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClient;
-
-import lombok.Setter;
 
 /**
  * Authenticator for bearer-only SSO authentication. This means that the application will not handle user login or logout, but expects the user to be
@@ -67,115 +40,9 @@ import lombok.Setter;
  */
 public class BearerOnlyAuthenticator extends AbstractOAuth2Authenticator {
 
-	/**
-	 * Sets the expected audience claim of the JWT token to validate.
-	 * If set, the JWT token must contain this value in its {@code aud} claim.
-	 */
-	@Setter
-	private String audience;
-
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		if (StringUtils.isAllBlank(issuerUri, jwkSetUri)) {
-			throw new IllegalArgumentException("Configuring issuerUri and/or jwkSetUri is mandatory to use BearerOnlyAuthenticator");
-		}
-
-		if (StringUtils.countMatches(authoritiesClaimName, ".") > 1) {
-			throw new IllegalArgumentException("The authoritiesClaimName must not contain more than one dot (.) to indicate a nested claim. Found: " + authoritiesClaimName);
-		}
-
-		if (StringUtils.isBlank(userNameAttributeName)) {
-			userNameAttributeName = JwtClaimNames.SUB;
-		}
-
-		http.oauth2ResourceServer(oauth2 -> oauth2
-				.jwt(jwt -> jwt.decoder(getJwtDecoder())
-						.jwtAuthenticationConverter(this::jwtAuthenticationTokenConverter)));
-
+		configureBearerTokenResourceServer(http);
 		return http.build();
-	}
-
-	/**
-	 * Our own implementation similar to Spring's {@link JwtAuthenticationConverter}.
-	 * Unlike Spring's Converter this one is capable of:
-	 * <ul>
-	 * <li>Enriching the JWT claimset by calling the 'UserInfo' endpoint.</li>
-	 * <li>Splitting nested roles, eg. {@code realm_access.roles}.</li>
-	 * <li>Splitting a claim String on both `comma's` and `spaces`.</li>
-	 * <li>Splitting a single entry Claim list on both `comma's` and `spaces`.</li>
-	 * <li>Validating if the found Authorities may access the target resource.</li>
-	 * </ul>
-	 */
-	protected AbstractAuthenticationToken jwtAuthenticationTokenConverter(Jwt jwt) {
-		if (StringUtils.isNotBlank(audience) && (jwt.getAudience() == null || !jwt.getAudience().contains(audience))) {
-			log.warn("JWT token audience [{}] does not contain the required audience [{}]", jwt.getAudience(), audience);
-			throw new InvalidBearerTokenException("JWT token audience does not match expected audience");
-		}
-
-		if (StringUtils.isNotBlank(userInfoUri)) {
-			log.debug("Fetching user roles from userInfoUri [{}]", userInfoUri);
-			jwt = updateJwtWithUserInfoUri(jwt);
-		}
-
-		Collection<GrantedAuthority> authorities = new HashSet<>(getGrantedAuthorities(jwt));
-		authorities.add(FactorGrantedAuthority.fromAuthority(FactorGrantedAuthority.BEARER_AUTHORITY));
-
-		String principalClaimValue = jwt.getClaimAsString(userNameAttributeName);
-		AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
-
-		// If Authorities are set, the user is authenticated if the user has at least one of the required roles
-		if (!getAuthorities().isEmpty()) {
-			boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
-			token.setAuthenticated(result);
-			log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", this::getAuthorities);
-		}
-
-		return token;
-	}
-
-	/**
-	 * <p>Determines the converter to use for extracting authorities from the JWT token.</p>
-	 * See {@link JwtGrantedAuthoritiesConverter} for the default implementation.
-	 * This one splits on both spaces and comma's, as well as a single line roles list.
-	 *
-	 * @return the converter to use for extracting authorities from the JWT token
-	 */
-	Collection<GrantedAuthority> getGrantedAuthorities(Jwt jwt) {
-		log.debug("Using custom Jwt to GrantedAuthorities converter for authoritiesClaimName [{}]", authoritiesClaimName);
-		return AuthorityMapperUtil.getRolesFromClaim(jwt, authoritiesClaimName).stream()
-				.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
-				.collect(Collectors.toList());
-	}
-
-	private Jwt updateJwtWithUserInfoUri(Jwt jwt) {
-		final Map<String, Object> userInfo;
-		try {
-			userInfo = RestClient.create()
-					.get()
-					.uri(userInfoUri)
-					.accept(MediaType.APPLICATION_JSON)
-					.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue())
-					.retrieve()
-					.body(new ParameterizedTypeReference<>() {
-					});
-		} catch (HttpClientErrorException e) {
-			log.warn("userInfo endpoint exception, status code [{}]", e.getStatusCode().value(), e);
-			return jwt;
-		}
-
-		log.debug("Fetched user info: {}", userInfo);
-		return new Jwt(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getHeaders(), userInfo);
-	}
-
-	private JwtDecoder getJwtDecoder() {
-		if (StringUtils.isNotBlank(issuerUri)) {
-			log.debug("Creating JwtDecoder from issuerUri [{}]", issuerUri);
-			return JwtDecoders.fromIssuerLocation(issuerUri);
-		} else if (StringUtils.isNotBlank(jwkSetUri)) {
-			log.debug("Creating JwtDecoder from jwkSetUri [{}]", jwkSetUri);
-			return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-		}
-
-		throw new IllegalArgumentException("Either issuerUri or jwkSetUri must be provided");
 	}
 }
