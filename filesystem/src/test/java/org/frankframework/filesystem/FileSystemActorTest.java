@@ -545,7 +545,6 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		assertEquals(contents, result.asString());
 	}
 
-	@SuppressWarnings("removal")
 	@Test
 	public void fileSystemActorReadWithCharsetUseIncompatible() throws Exception {
 		String filename = "sender" + FILE1;

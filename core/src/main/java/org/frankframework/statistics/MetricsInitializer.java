@@ -208,24 +208,16 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	private String getElementType(@NonNull FrankElement frankElement) {
-		if (frankElement instanceof Receiver) {
-			return "receiver";
-		} else if (frankElement instanceof PipeLine) {
-			return "pipeline";
-		} else if (frankElement instanceof IPipe) {
-			return "pipe";
-		} else if (frankElement instanceof Adapter) {
-			return "adapter";
-		} else if (frankElement instanceof ISender) {
-			return "sender";
-		} else if (frankElement instanceof AbstractJobDef) {
-			return "schedule";
-		} else if (frankElement instanceof HttpSession) {
-			// See `org.frankframework.http.HttpSessionBase.buildHttpClient` where this might use the HttpSession as frankElement
-			return "httpSession";
-		} else {
-			throw new IllegalStateException("meter type not configured");
-		}
+		return switch (frankElement) {
+			case Receiver ignored -> "receiver";
+			case PipeLine ignored -> "pipeline";
+			case IPipe ignored -> "pipe";
+			case Adapter ignored -> "adapter";
+			case ISender ignored -> "sender";
+			case AbstractJobDef ignored -> "schedule";
+			case HttpSession ignored -> "httpSession"; // See `org.frankframework.http.HttpSessionBase.buildHttpClient` where this might use the HttpSession as frankElement
+			default -> throw new IllegalStateException("meter type not configured");
+		};
 	}
 
 	private double[] getPercentiles() {

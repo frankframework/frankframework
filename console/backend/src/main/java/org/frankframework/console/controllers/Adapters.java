@@ -145,19 +145,13 @@ public class Adapters {
 											@RequestBody UpdateAdapterOrReceiverModel json) {
 
 		String value = json.action;
-		Action action = null;
-
-		if (StringUtils.isNotEmpty(value)) {
-			if (value.equals("stop")) {
-				action = Action.STOPRECEIVER;
-			} else if (value.equals("start")) {
-				action = Action.STARTRECEIVER;
-			} else if (value.equals("incthread")) {
-				action = Action.INCTHREADS;
-			} else if (value.equals("decthread")) {
-				action = Action.DECTHREADS;
-			}
-		}
+		Action action = switch (value) {
+			case "stop" -> Action.STOPRECEIVER;
+			case "start" -> Action.STARTRECEIVER;
+			case "incthread" -> Action.INCTHREADS;
+			case "decthread" -> Action.DECTHREADS;
+			case null, default -> null;
+		};
 
 		if (action == null) {
 			throw new ApiException("no or unknown action provided", HttpStatus.BAD_REQUEST);
