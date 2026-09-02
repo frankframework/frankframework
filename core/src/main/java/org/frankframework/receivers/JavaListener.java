@@ -138,7 +138,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 
 	// ### RequestProcessor
 	@Override
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings("unchecked")
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		try (PipeLineSession processContext = new PipeLineSession()) {
 			if (context != null) {
