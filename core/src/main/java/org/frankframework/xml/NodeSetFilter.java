@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019 Integration Partners, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -96,15 +96,15 @@ public class NodeSetFilter extends FullXmlFilter {
 		if (copying || includeRoot && globalLevel==0) {
 			super.endPrefixMapping(prefix);
 		} else {
-			if (pendingNamespaceDefinitions.size()<=0) {
+			if (pendingNamespaceDefinitions.isEmpty()) {
 				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix [{}]", prefix);
 				return;
 			}
-			PrefixMapping topMapping=pendingNamespaceDefinitions.removeLast();
-//			if (!prefix.equals(topMapping.getPrefix())) {
-//				// do this on debug, because removal is not always in order, but in order of definition in the element
-//				if (log.isTraceEnabled()) log.trace("prefixmapping to remove with prefix ["+prefix+"] does not match expected ["+topMapping.getPrefix()+"]");
-//			}
+			PrefixMapping topMapping = pendingNamespaceDefinitions.removeLast();
+			if (log.isTraceEnabled() && !prefix.equals(topMapping.getPrefix())) {
+				// do this on debug, because removal is not always in order, but in order of definition in the element
+				log.trace("prefixmapping to remove with prefix [{}] does not match expected [{}]", prefix, topMapping.getPrefix());
+			}
 		}
 	}
 
