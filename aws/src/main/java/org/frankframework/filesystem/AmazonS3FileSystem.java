@@ -228,7 +228,8 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	public boolean exists(S3FileRef f) throws FileSystemException {
 		try {
-			return getFileAttributes(f) != null;
+			getFileAttributes(f);
+			return true;
 		} catch (NoSuchKeyException e) {
 			return false;
 		} catch (AwsServiceException e) {

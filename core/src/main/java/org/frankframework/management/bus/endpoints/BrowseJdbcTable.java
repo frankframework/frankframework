@@ -22,7 +22,6 @@ import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -253,30 +252,28 @@ public class BrowseJdbcTable extends BusEndpointBase {
 		if(tableName == null) return false;
 
 		String table = tableName.toLowerCase();
-		List<String> rulesList = Arrays.asList(JDBC_PERMISSION_RULES.split("\\|"));
+		String[] rulesList = JDBC_PERMISSION_RULES.split("\\|");
 		for (String rule: rulesList) {
-			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
-			if (parts.size() != 3) {
-				log.debug("invalid rule [{}] contains {} part(s): {}", rule, parts.size(), parts);
+			String[] parts = rule.trim().split("\\s+");
+			if (parts.length != 3) {
+				log.debug("invalid rule [{}] contains {} part(s): {}", rule, parts.length, parts);
 				continue;
 			}
 
-			String tablePattern = parts.getFirst().toLowerCase();
-			if (tablePattern != null) {
-				String role = parts.get(1);
-				String type = parts.get(2);
-				log.debug("check allow read table [{}] with rule table [{}] role [{}] and type [{}]", table, tablePattern, role, type);
-				if ("*".equals(tablePattern) || table.equals(tablePattern)) {
-					log.debug("table match");
-					if ("*".equals(role) || BusMessageUtils.hasRole(role)) {
-						log.debug("role match, type [{}]", type);
-						if ("allow".equals(type)) {
-							return true;
-						} else if ("deny".equals(type)) {
-							return false;
-						} else {
-							log.error("invalid rule type");
-						}
+			String tablePattern = parts[0].toLowerCase();
+			String role = parts[1];
+			String type = parts[2];
+			log.debug("check allow read table [{}] with rule table [{}] role [{}] and type [{}]", table, tablePattern, role, type);
+			if ("*".equals(tablePattern) || table.equals(tablePattern)) {
+				log.debug("table match");
+				if ("*".equals(role) || BusMessageUtils.hasRole(role)) {
+					log.debug("role match, type [{}]", type);
+					if ("allow".equals(type)) {
+						return true;
+					} else if ("deny".equals(type)) {
+						return false;
+					} else {
+						log.error("invalid rule type");
 					}
 				}
 			}
