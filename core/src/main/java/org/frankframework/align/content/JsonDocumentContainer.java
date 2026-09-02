@@ -141,41 +141,40 @@ public class JsonDocumentContainer {
 
 	@SuppressWarnings("unchecked")
 	protected void toWriter(Writer w, Object item, int indentLevel) throws IOException {
-		if (item == null) {
-			w.append("null");
-		} else if (item instanceof String s) {
-			w.append(s);
-		} else if (item instanceof Map) {
-			w.append("{");
-			if (indentLevel >= 0) indentLevel++;
-			boolean first = true;
-			for (Entry<String, Object> entry : ((Map<String, Object>) item).entrySet()) {
-				if (!first) w.append(",");
-				first = false;
+		switch (item) {
+			case null -> w.append("null");
+			case String s -> w.append(s);
+			case Map<?,?> map -> {
+				w.append("{");
+				if (indentLevel >= 0) indentLevel++;
+				boolean first = true;
+				for (Entry<String, Object> entry : ((Map<String, Object>) map).entrySet()) {
+					if (!first) w.append(",");
+					first = false;
+					newLine(w, indentLevel);
+					w.append('"').append(entry.getKey()).append("\": ");
+					toWriter(w, entry.getValue(), indentLevel);
+				}
+				if (indentLevel >= 0) indentLevel--;
 				newLine(w, indentLevel);
-				w.append('"').append(entry.getKey()).append("\": ");
-				toWriter(w, entry.getValue(), indentLevel);
+				w.append("}");
 			}
-			if (indentLevel >= 0) indentLevel--;
-			newLine(w, indentLevel);
-			w.append("}");
-		} else if (item instanceof List<?> list) {
-			w.append("[");
-			if (indentLevel >= 0) indentLevel++;
-			boolean first = true;
-			for (Object subitem : list) {
-				if (!first) w.append(",");
-				first = false;
+			case List<?> list -> {
+				w.append("[");
+				if (indentLevel >= 0) indentLevel++;
+				boolean first = true;
+				for (Object subitem : list) {
+					if (!first) w.append(",");
+					first = false;
+					newLine(w, indentLevel);
+					toWriter(w, subitem, indentLevel);
+				}
+				if (indentLevel >= 0) indentLevel--;
 				newLine(w, indentLevel);
-				toWriter(w, subitem, indentLevel);
+				w.append("]");
 			}
-			if (indentLevel >= 0) indentLevel--;
-			newLine(w, indentLevel);
-			w.append("]");
-		} else if (item instanceof JsonElementContainer container) {
-			toWriter(w, container.getContent(), indentLevel);
-		} else {
-			throw new NotImplementedException("cannot handle class [" + item.getClass().getName() + "]");
+			case JsonElementContainer container -> toWriter(w, container.getContent(), indentLevel);
+			default -> throw new NotImplementedException("cannot handle class [" + item.getClass().getName() + "]");
 		}
 	}
 

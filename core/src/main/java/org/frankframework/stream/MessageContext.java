@@ -209,7 +209,7 @@ public class MessageContext implements Serializable {
 	}
 
 	public MimeType getMimeType() {
-		return (MimeType) get(METADATA_MIMETYPE);
+		return get(METADATA_MIMETYPE);
 	}
 	public MessageContext withSize(long size) {
 		if (size >= 0) {

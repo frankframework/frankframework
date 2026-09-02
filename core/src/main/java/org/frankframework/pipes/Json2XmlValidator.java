@@ -134,7 +134,7 @@ public class Json2XmlValidator extends XmlValidator {
 
 			if (!session.containsKey(sessionKey)) {
 				if(isAutoFormat()) {
-					String acceptHeaderValue = (String) input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
+					String acceptHeaderValue = input.getContext().get(MessageContext.HEADER_PREFIX + "Accept");
 					String determinedFormat = parseAcceptHeader(format, acceptHeaderValue);
 
 					log.debug("storing MessageContext inputFormat [{}] under session key [{}]", determinedFormat, sessionKey);

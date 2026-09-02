@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.Description;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.RequestMessageBuilder;
 
@@ -34,6 +35,7 @@ public class ConnectionOverview {
 	}
 
 	@AllowAllIbisUserRoles
+	@Description("view all connections")
 	@GetMapping(value = "/connections", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getConnections() {
 		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.CONNECTION_OVERVIEW));

@@ -16,7 +16,6 @@
 package org.frankframework.extensions.sap.jco3.tx;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -149,20 +148,18 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 		if (tids==null) {
 			return null;
 		}
-		return tids.get(tids.size()-1);
+		return tids.getLast();
 	}
 
 
 	public void commitAll() throws SapException {
-		for (Iterator<JCoDestination> itc = this.destinations.iterator(); itc.hasNext();) {
-			JCoDestination destination = itc.next();
+		for (JCoDestination destination : this.destinations) {
 			List<String> tids = this.tidsPerDestination.get(destination);
-			for (Iterator<String> itt = tids.iterator(); itt.hasNext();) {
-				String tid = itt.next();
+			for (String tid : tids) {
 				try {
 					destination.confirmTID(tid);
 				} catch (Throwable t) {
-					throw new SapException("Could not confirm TID ["+tid+"]");
+					throw new SapException("Could not confirm TID [" + tid + "]");
 				}
 			}
 		}

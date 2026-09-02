@@ -15,7 +15,6 @@
 */
 package org.frankframework.util;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -70,21 +69,19 @@ public class JtaUtil {
 		if (resources==null) {
 			result+="  map is null\n";
 		} else {
-			for (Iterator<Object> it=resources.keySet().iterator(); it.hasNext();) {
-				Object key = it.next();
+			for (Object key : resources.keySet()) {
 				Object resource = resources.get(key);
-				result += ClassUtils.nameOf(key)+"("+key+"): "+ClassUtils.nameOf(resource)+"("+resource+")\n";
+				result += ClassUtils.nameOf(key) + "(" + key + "): " + ClassUtils.nameOf(resource) + "(" + resource + ")\n";
 				if (resource instanceof JmsResourceHolder jrh) {
-					result+="  connection: "+jrh.getConnection()+", session: "+jrh.getSession()+"\n";
+					result += "  connection: " + jrh.getConnection() + ", session: " + jrh.getSession() + "\n";
 				}
 			}
 		}
 		if (syncActive) {
 			List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
 			result += "synchronizations:\n";
-			for (int i=0; i<synchronizations.size(); i++) {
-				TransactionSynchronization synchronization = synchronizations.get(i);
-				result += ClassUtils.nameOf(synchronization)+"("+synchronization+")\n";
+			for (TransactionSynchronization synchronization : synchronizations) {
+				result += ClassUtils.nameOf(synchronization) + "(" + synchronization + ")\n";
 			}
 		}
 		return result;

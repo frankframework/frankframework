@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
@@ -123,16 +122,11 @@ public class EscapePipe extends FixedForwardPipe {
 	}
 
 	private String handle(String input) {
-		switch (getDirection()) {
-			case ENCODE:
-				return XmlEncodingUtils.encodeChars(input);
-			case DECODE:
-				return XmlEncodingUtils.decodeChars(input);
-			case CDATA2TEXT:
-				return XmlUtils.cdataToText(input);
-			default:
-				throw new NotImplementedException("unknown direction [" + getDirection() + "]");
-		}
+		return switch (getDirection()) {
+			case ENCODE -> XmlEncodingUtils.encodeChars(input);
+			case DECODE -> XmlEncodingUtils.decodeChars(input);
+			case CDATA2TEXT -> XmlUtils.cdataToText(input);
+		};
 	}
 
 	// ESCAPE BETWEEN

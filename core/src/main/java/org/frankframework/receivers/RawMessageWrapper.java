@@ -30,7 +30,7 @@ public class RawMessageWrapper<M> {
 	/**
 	 * Raw message obtained from the {@link org.frankframework.core.IListener}.
 	 */
-	protected @Getter M rawMessage;
+	protected @Getter @Nullable M rawMessage;
 	protected @Getter @Nullable String id;
 	protected @Getter @Nullable String correlationId;
 	/**
@@ -48,7 +48,7 @@ public class RawMessageWrapper<M> {
 	 *
 	 * @param rawMessage The raw message data.
 	 */
-	public RawMessageWrapper(@NonNull M rawMessage) {
+	public RawMessageWrapper(@Nullable M rawMessage) {
 		this(rawMessage, null, null);
 	}
 
@@ -61,7 +61,7 @@ public class RawMessageWrapper<M> {
 	 * @param correlationId The Correlation ID of the message. May be null. If not null, will be copied to the
 	 *                       message context with the key {@link PipeLineSession#CORRELATION_ID_KEY}.
 	 */
-	public RawMessageWrapper(@NonNull M rawMessage, @Nullable String id, @Nullable String correlationId) {
+	public RawMessageWrapper(@Nullable M rawMessage, @Nullable String id, @Nullable String correlationId) {
 		this.rawMessage = rawMessage;
 		this.id = id;
 		this.correlationId = correlationId;
@@ -78,7 +78,7 @@ public class RawMessageWrapper<M> {
 	 * @param context Context for the message. If containing the keys {@link PipeLineSession#MESSAGE_ID_KEY} and / or
 	 *                {@link PipeLineSession#CORRELATION_ID_KEY}, these will be copied to their respective fields.
 	 */
-	public RawMessageWrapper(M rawMessage, @NonNull Map<String, Object> context) {
+	public RawMessageWrapper(@Nullable M rawMessage, @NonNull Map<String, Object> context) {
 		this(rawMessage);
 		this.context.putAll(context);
 		this.id = (String) context.get(PipeLineSession.MESSAGE_ID_KEY);

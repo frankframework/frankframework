@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -260,7 +261,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		IBasicFileSystem<?> fs = new LocalFileSystem() {
 
 			@Override
-			public DirectoryStream<Path> list(String folder, TypeFilter filter) {
+			public @NonNull DirectoryStream<Path> list(String folder, @NonNull TypeFilter filter) {
 				return FileSystemUtils.getDirectoryStream((Iterator<Path>) null);
 			}
 		};
@@ -274,7 +275,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		IBasicFileSystem<?> fs = new LocalFileSystem() {
 
 			@Override
-			public DirectoryStream<Path> list(String folder, TypeFilter filter) {
+			public @NonNull DirectoryStream<Path> list(String folder, @NonNull TypeFilter filter) {
 				return FileSystemUtils.getDirectoryStream(Collections.emptyIterator());
 			}
 		};

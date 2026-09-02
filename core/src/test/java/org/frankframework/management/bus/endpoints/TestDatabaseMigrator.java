@@ -71,7 +71,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 			}
 		}
 		assertEquals(1, changelogs.size());
-		Resource first = changelogs.remove(0);
+		Resource first = changelogs.removeFirst();
 		assertEquals("TestConfiguration-DatabaseChangelog.xml", first.getName());
 	}
 

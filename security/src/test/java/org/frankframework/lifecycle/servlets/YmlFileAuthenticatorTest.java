@@ -17,7 +17,7 @@ class YmlFileAuthenticatorTest extends ServletAuthenticatorTest<YmlFileAuthentic
 
 	@Test
 	public void cannotFindFile() throws Exception {
-		((YmlFileAuthenticator) authenticator).setFile("tralala");
+		authenticator.setFile("tralala");
 
 		// Arrange
 		ServletConfiguration config = createServletConfiguration();

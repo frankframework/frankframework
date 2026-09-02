@@ -1073,7 +1073,7 @@ public class ParameterTest {
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			String expectedDate = sdf.format(TimeProvider.nowAsDate());
-			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
+			assertEquals(expectedDate.substring(0, 10), result.substring(0, 10));
 		}
 	}
 

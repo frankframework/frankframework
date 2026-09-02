@@ -121,7 +121,7 @@ public class ReplacerPipe extends FixedForwardPipe {
 	}
 
 	private InputStream replaceParameters(InputStream replaceNonXmlInputStream, Message message, PipeLineSession session) throws PipeRunException {
-		if (getParameterList().size() == 0) {
+		if (getParameterList().isEmpty()) {
 			return replaceNonXmlInputStream;
 		}
 

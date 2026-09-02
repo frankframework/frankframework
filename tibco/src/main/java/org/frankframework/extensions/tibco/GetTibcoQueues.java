@@ -377,8 +377,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		Map<String, String> aclMap = getAclMap(admin, ldapSender);
 		Map<String, List<String>> consumersMap = getConnectedConsumersMap(admin);
 		QueueInfo[] qInfos = admin.getQueues();
-		for (int i = 0; i < qInfos.length; i++) {
-			QueueInfo qInfo = qInfos[i];
+		for (QueueInfo qInfo : qInfos) {
 			if (skipTemporaryQueues && qInfo.isTemporary()) {
 				// skip
 			} else {
@@ -464,8 +463,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		if (bta.length != 0) {
 			XmlBuilder bridgeTargetsXml = new XmlBuilder("bridgeTargets");
 			String btaString = null;
-			for (int j = 0; j < bta.length; j++) {
-				BridgeTarget bridgeTarget = bta[j];
+			for (BridgeTarget bridgeTarget : bta) {
 				if (btaString == null) {
 					btaString = bridgeTarget.toString();
 				} else {
@@ -482,8 +480,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		Map<String, String> userMap = new HashMap<>();
 		Map<String, String> aclMap = new HashMap<>();
 		ACLEntry[] aclEntries = admin.getACLEntries();
-		for (int j = 0; j < aclEntries.length; j++) {
-			ACLEntry aclEntry = aclEntries[j];
+		for (ACLEntry aclEntry : aclEntries) {
 			String destination = aclEntry.getDestination().getName();
 			String principal = aclEntry.getPrincipal().getName();
 			String permissions = aclEntry.getPermissions().toString();

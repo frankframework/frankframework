@@ -204,20 +204,11 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 	private Proxy getProxy() {
 		if (StringUtils.isNotEmpty(proxyHost)) {
-			Proxy.Type type;
-			switch (proxyTransportType) {
-			case DIRECT:
-				type = Proxy.Type.DIRECT;
-				break;
-			case SOCKS:
-				type = Proxy.Type.SOCKS;
-				break;
-			case HTTP:
-				type = Proxy.Type.HTTP;
-				break;
-			default:
-				throw new IllegalStateException("invalid proxy type");
-			}
+			Proxy.Type type = switch (proxyTransportType) {
+				case DIRECT -> Proxy.Type.DIRECT;
+				case SOCKS -> Proxy.Type.SOCKS;
+				case HTTP -> Proxy.Type.HTTP;
+			};
 			return new Proxy(type, new InetSocketAddress(host, port));
 		}
 		return null;

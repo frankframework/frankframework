@@ -207,12 +207,12 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public SmbFileRef toFile(@Nullable String filename) throws FileSystemException {
+	public @NonNull SmbFileRef toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public SmbFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+	public @NonNull SmbFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		return new SmbFileRef(filename != null ? filename : "", folder);
 	}
 
@@ -234,7 +234,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public void createFile(SmbFileRef file, InputStream content) throws IOException {
+	public void createFile(@NonNull SmbFileRef file, @Nullable InputStream content) throws IOException {
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
@@ -249,7 +249,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public void appendFile(SmbFileRef file, InputStream content) throws IOException {
+	public void appendFile(@NonNull SmbFileRef file, @Nullable InputStream content) throws IOException {
 		try (File smbFile = getFile(file, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF)) {
 			if (content != null) {
 				try (OutputStream out = smbFile.getOutputStream(true)) {
@@ -277,7 +277,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public SmbFileRef renameFile(SmbFileRef source, SmbFileRef destination) throws FileSystemException {
+	public SmbFileRef renameFile(@NonNull SmbFileRef source, @NonNull SmbFileRef destination) throws FileSystemException {
 		try (File file = getFile(source, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			file.rename(destination.getName(), true);
 		}

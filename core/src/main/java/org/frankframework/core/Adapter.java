@@ -534,13 +534,15 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	public void publishEvent(@NonNull ApplicationEvent event) {
-		if (event instanceof ContextStartedEvent) {
-			statsUpSince = System.currentTimeMillis(); // Update the adapter uptime.
-			publishEvent(new AdapterMessageEvent(this, "up and running"));
-		} else if (event instanceof ContextStoppedEvent) {
-			publishEvent(new AdapterMessageEvent(this, "stopped"));
-		} else if (event instanceof ContextClosedEvent) {
-			publishEvent(new AdapterMessageEvent(this, "closed"));
+		switch (event) {
+			case ContextStartedEvent ignored -> {
+				statsUpSince = System.currentTimeMillis(); // Update the adapter uptime.
+				publishEvent(new AdapterMessageEvent(this, "up and running"));
+			}
+			case ContextStoppedEvent ignored -> publishEvent(new AdapterMessageEvent(this, "stopped"));
+			case ContextClosedEvent ignored -> publishEvent(new AdapterMessageEvent(this, "closed"));
+			default -> {
+			}
 		}
 
 		super.publishEvent(event);
@@ -1027,15 +1029,21 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	private <T> T handleException(T result, Throwable t) {
-		if (t == null) {
-			return result;
-		}
-		if (t instanceof CompletionException ee) {
-			return handleException(result, ee.getCause());
-		} else if (t instanceof ExecutionException ee) {
-			return handleException(result, ee.getCause());
-		} else if (t instanceof ApplicationContextException ace) {
-			return handleException(result, ace.getCause());
+		switch (t) {
+			case null -> {
+				return result;
+			}
+			case CompletionException ee -> {
+				return handleException(result, ee.getCause());
+			}
+			case ExecutionException ee -> {
+				return handleException(result, ee.getCause());
+			}
+			case ApplicationContextException ace -> {
+				return handleException(result, ace.getCause());
+			}
+			default -> {
+			}
 		}
 
 		runState.setRunState(RunState.ERROR);

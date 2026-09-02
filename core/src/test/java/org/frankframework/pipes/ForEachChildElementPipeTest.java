@@ -149,15 +149,11 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 			if (sc!=null) sc.mark("out");
 			try {
 				if (message.asString().contains("error")) {
-					if (e!=null) {
-						if (e instanceof SenderException exception) {
-							throw exception;
-						}
-						if (e instanceof TimeoutException exception) {
-							throw exception;
-						}
-						if (e instanceof RuntimeException exception) {
-							throw exception;
+					switch (e) {
+						case SenderException exception -> throw exception;
+						case TimeoutException exception -> throw exception;
+						case RuntimeException exception -> throw exception;
+						case null, default -> {
 						}
 					}
 					throw new SenderException("Exception triggered", e);

@@ -285,7 +285,7 @@ public class StreamPipe extends FixedForwardPipe {
 		if (log.isDebugEnabled()) {
 			String message = "setting sessionKey [" + key + "] to ";
 			if (value instanceof PartMessage partMessage) {
-				String name = (String) partMessage.getContext().get(MessageContext.METADATA_NAME);
+				String name = partMessage.getContext().get(MessageContext.METADATA_NAME);
 				message = message + "input stream of file [" + name + "]";
 			} else {
 				message = message + "[" + value + "]";

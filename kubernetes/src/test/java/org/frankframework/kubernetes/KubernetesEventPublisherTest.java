@@ -15,8 +15,10 @@
 */
 package org.frankframework.kubernetes;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,7 +56,7 @@ class KubernetesEventPublisherTest {
 			ctx.register(KubernetesEventPublisher.class);
 			ctx.refresh();
 
-			assertTrue(ctx.getBean(KubernetesEventPublisher.class) != null);
+			assertNotNull(ctx.getBean(KubernetesEventPublisher.class));
 		}
 	}
 
@@ -116,8 +118,8 @@ class KubernetesEventPublisherTest {
 
 		List<Event> events = client.v1().events().inNamespace(namespace).list().getItems();
 		assertEquals(1, events.size());
-		assertEquals(KubernetesEventPublisher.REASON_ABORTED, events.get(0).getReason());
-		assertEquals("Warning", events.get(0).getType());
+		assertEquals(KubernetesEventPublisher.REASON_ABORTED, events.getFirst().getReason());
+		assertEquals("Warning", events.getFirst().getType());
 	}
 
 	@Test
@@ -133,8 +135,9 @@ class KubernetesEventPublisherTest {
 	@Test
 	void nullClientNoOps() {
 		KubernetesEventPublisher publisher = new KubernetesEventPublisher(null, POD_ENV);
+
 		// must not throw
-		publisher.onApplicationEvent(
-				event(ConfigurationMessageEvent.class, "Configuration [x] aborted starting; boom", MessageEventLevel.WARN));
+		assertDoesNotThrow(() -> publisher.onApplicationEvent(
+				event(ConfigurationMessageEvent.class, "Configuration [x] aborted starting; boom", MessageEventLevel.WARN)));
 	}
 }

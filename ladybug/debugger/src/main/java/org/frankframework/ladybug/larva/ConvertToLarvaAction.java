@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -218,11 +219,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		private String errorMessage;
 
 		public Scenario(Report report, Path baseDir, String pipelineName, int uuid) {
-			if (scenarioSuffix != null) {
-				suffix = scenarioSuffix;
-			} else {
-				suffix = Integer.toString(uuid, Character.MAX_RADIX);
-			}
+			suffix = Objects.requireNonNullElseGet(scenarioSuffix, () -> Integer.toString(uuid, Character.MAX_RADIX));
 
 			reportName = report.getName();
 
@@ -275,7 +272,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 			processCheckPoints(checkpoints, adapterNameWithoutSpaces, scenarioDirPath, scenarioDirPrefix);
 
-			String adapterOutputMessage = checkpoints.get(checkpoints.size() - 1).getMessage();
+			String adapterOutputMessage = checkpoints.getLast().getMessage();
 			String adapterOutputFileName = getFileName(++stepCounter, "adapter", adapterNameWithoutSpaces, false, adapterOutputMessage);
 			scenarioPropertiesMap.put(
 					"step" + stepCounter + ".adapter." + adapterNameWithoutSpaces + ".read",

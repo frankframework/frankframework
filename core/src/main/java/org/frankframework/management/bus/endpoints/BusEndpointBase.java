@@ -87,14 +87,11 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	@NonNull
 	protected MimeType getMediaTypeFromName(String name) {
 		String ext = FilenameUtils.getExtension(name);
-		switch (ext) {
-		case "xml":
-			return MediaType.APPLICATION_XML;
-		case "json":
-			return MediaType.APPLICATION_JSON;
-		default:
-			return MediaType.TEXT_PLAIN;
-		}
+		return switch (ext) {
+			case "xml" -> MediaType.APPLICATION_XML;
+			case "json" -> MediaType.APPLICATION_JSON;
+			default -> MediaType.TEXT_PLAIN;
+		};
 	}
 
 	@NonNull
