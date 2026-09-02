@@ -75,6 +75,7 @@ jobs:
         ports:
           - 5432:5432 # PostgreSQL
           - 3306:3306 # MariaDB
+          - 3307:3307 # MySQL          
           - 1433:1433 # MSSQL Server
           - 1521:1521 # Oracle
         #  - 50000:50000 # DB2
