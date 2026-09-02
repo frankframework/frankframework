@@ -18,6 +18,8 @@ package org.frankframework.console.controllers;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -66,7 +68,7 @@ public class Monitors {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("add a new monitor")
 	@PostMapping(value = {"", "/"}, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -89,7 +91,7 @@ public class Monitors {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("update a specific monitor")
 	@PutMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -105,7 +107,7 @@ public class Monitors {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed({"IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("delete a specific monitor")
 	@DeleteMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -115,7 +117,7 @@ public class Monitors {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("view specific monitor")
 	@GetMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -125,7 +127,7 @@ public class Monitors {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("update a specific monitors triggers")
 	@PostMapping(value = "/{monitorName}/triggers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -149,7 +151,7 @@ public class Monitors {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("update a specific monitor triggers")
 	@PutMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -162,7 +164,7 @@ public class Monitors {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed({"IbisAdmin", "IbisTester"})
 	@Relation("monitoring")
 	@Description("delete a specific monitor trigger")
 	@DeleteMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE)
