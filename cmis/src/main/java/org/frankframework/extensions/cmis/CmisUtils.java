@@ -946,8 +946,7 @@ public class CmisUtils {
 	public static void cmisObject2Xml(XmlBuilder cmisXml, CmisObject object) {
 		if(object.getProperties() != null) {
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<Property<?>> it = object.getProperties().iterator(); it.hasNext();) {
-				Property<?> property = it.next();
+			for (Property<?> property : object.getProperties()) {
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
 			}
 			cmisXml.addSubElement(propertiesXml);
@@ -1006,8 +1005,8 @@ public class CmisUtils {
 
 		if(object.getProperties() != null) {
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = object.getProperties().getPropertyList().iterator(); it.hasNext();) {
-				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
+			for (PropertyData<?> propertyData : object.getProperties().getPropertyList()) {
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(propertyData));
 			}
 			cmisXml.addSubElement(propertiesXml);
 		}

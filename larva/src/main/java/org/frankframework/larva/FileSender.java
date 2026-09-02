@@ -181,8 +181,8 @@ public class FileSender implements IConfigurable, FrankElement {
 
 	private boolean recursiveDelete(File path) {
 		String[] dirList = path.list();
-		for (int i = 0; i < dirList.length; i++) {
-			File newFile = new File(path, dirList[i]);
+		for (String s : dirList) {
+			File newFile = new File(path, s);
 			if (newFile.isDirectory()) {
 				recursiveDelete(path);
 			} else {
