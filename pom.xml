@@ -1450,7 +1450,7 @@
 							<configuration>
 								<rules>
 									<requireJavaVersion>
-										<version>[21,26)</version>
+										<version>[21,27)</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>
