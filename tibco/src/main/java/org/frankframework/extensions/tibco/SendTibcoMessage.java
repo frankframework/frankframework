@@ -16,7 +16,6 @@
 package org.frankframework.extensions.tibco;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 
@@ -231,17 +230,12 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 					connection.start();
 					jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeoutWork);
-					if (rawReplyMsg == null) {
-						throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeoutWork + "] ms");
-					}
-					if (rawReplyMsg instanceof TextMessage replyMsg) {
-						result = replyMsg.getText();
-					} else if (rawReplyMsg instanceof BytesMessage bytesMessage) {
-						InputStream inputStream = new BytesMessageInputStream(bytesMessage);
-						result = StreamUtil.streamToString(inputStream);
-					} else {
-						throw new PipeRunException(this, "Unsupported message type received: " + ClassUtils.classNameOf(rawReplyMsg));
-					}
+					result = switch (rawReplyMsg) {
+						case TextMessage replyMsg -> replyMsg.getText();
+						case BytesMessage bytesMessage -> StreamUtil.streamToString(new BytesMessageInputStream(bytesMessage));
+						case null -> throw new PipeRunException(this, "did not receive reply on [" + replyQueue + "] replyCorrelationId [" + replyCorrelationId + "] within [" + replyTimeoutWork + "] ms");
+						default -> throw new PipeRunException(this, "Unsupported message type received: " + ClassUtils.classNameOf(rawReplyMsg));
+					};
 				}
 
 			} else {

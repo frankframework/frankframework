@@ -112,45 +112,46 @@ public class IdocXmlHandler extends DefaultHandler {
 				if (parsingEdiDcHeader) {
 					if (log.isDebugEnabled()) log.debug("parsed header field [{}] value [{}]", currentField, value);
 					try {
-						if ("ARCKEY".equals(currentField)) 		{ doc.setArchiveKey(value); }
-						else if ("MANDT".equals(currentField))  { doc.setClient(value); }
-						else if ("CREDAT".equals(currentField)) { doc.setCreationDate(value); }
-						else if ("CRETIM".equals(currentField)) { doc.setCreationTime(value); }
-						else if ("DIRECT".equals(currentField)) { doc.setDirection(value); }
-						else if ("REFMES".equals(currentField)) { doc.setEDIMessage(value); }
-						else if ("REFGRP".equals(currentField)) { doc.setEDIMessageGroup(value); }
-						else if ("STDMES".equals(currentField)) { doc.setEDIMessageType(value); }
-						else if ("STD".equals(currentField))    { doc.setEDIStandardFlag(value); }
-						else if ("STDVRS".equals(currentField)) { doc.setEDIStandardVersion(value); }
-						else if ("REFINT".equals(currentField)) { doc.setEDITransmissionFile(value); }
-						// Not available anymore in JCo 3.0
-						// else if (currentField.equals("EXPRSS")) { doc.setExpressFlag(value); }
-						else if ("DOCTYP".equals(currentField)) { doc.setIDocCompoundType(value); }
-						else if ("DOCNUM".equals(currentField)) { doc.setIDocNumber(value); }
-						else if ("DOCREL".equals(currentField)) { doc.setIDocSAPRelease(value); }
-						else if ("IDOCTYP".equals(currentField)){ doc.setIDocType(value); }
-						else if ("CIMTYP".equals(currentField)) { doc.setIDocTypeExtension(value); }
-						else if ("MESCOD".equals(currentField)) { doc.setMessageCode(value); }
-						else if ("MESFCT".equals(currentField)) { doc.setMessageFunction(value); }
-						else if ("MESTYP".equals(currentField)) { doc.setMessageType(value); }
-						else if ("OUTMOD".equals(currentField)) { doc.setOutputMode(value); }
-						else if ("RCVSAD".equals(currentField)) { doc.setRecipientAddress(value); }
-						else if ("RCVLAD".equals(currentField)) { doc.setRecipientLogicalAddress(value); }
-						else if ("RCVPFC".equals(currentField)) { doc.setRecipientPartnerFunction(value); }
-						else if ("RCVPRN".equals(currentField)) { doc.setRecipientPartnerNumber(value); }
-						else if ("RCVPRT".equals(currentField)) { doc.setRecipientPartnerType(value); }
-						else if ("RCVPOR".equals(currentField)) { doc.setRecipientPort(value); }
-						else if ("SNDSAD".equals(currentField)) { doc.setSenderAddress(value); }
-						else if ("SNDLAD".equals(currentField)) { doc.setSenderLogicalAddress(value); }
-						else if ("SNDPFC".equals(currentField)) { doc.setSenderPartnerFunction(value); }
-						else if ("SNDPRN".equals(currentField)) { doc.setSenderPartnerNumber(value); }
-						else if ("SNDPRT".equals(currentField)) { doc.setSenderPartnerType(value); }
-						else if ("SNDPOR".equals(currentField)) { doc.setSenderPort(value); }
-						else if ("SERIAL".equals(currentField)) { doc.setSerialization(value); }
-						else if ("STATUS".equals(currentField)) { doc.setStatus(value); }
-						else if ("TEST".equals(currentField))   { doc.setTestFlag(value); }
-						else {
-							log.warn("header field [{}] value [{}] discarded", currentField, value);
+						switch (currentField) {
+							case "ARCKEY" -> doc.setArchiveKey(value);
+							case "MANDT" -> doc.setClient(value);
+							case "CREDAT" -> doc.setCreationDate(value);
+							case "CRETIM" -> doc.setCreationTime(value);
+							case "DIRECT" -> doc.setDirection(value);
+							case "REFMES" -> doc.setEDIMessage(value);
+							case "REFGRP" -> doc.setEDIMessageGroup(value);
+							case "STDMES" -> doc.setEDIMessageType(value);
+							case "STD" -> doc.setEDIStandardFlag(value);
+							case "STDVRS" -> doc.setEDIStandardVersion(value);
+							case "REFINT" -> doc.setEDITransmissionFile(value);
+
+							// Not available anymore in JCo 3.0
+							// else if (currentField.equals("EXPRSS")) { doc.setExpressFlag(value); }
+							case "DOCTYP" -> doc.setIDocCompoundType(value);
+							case "DOCNUM" -> doc.setIDocNumber(value);
+							case "DOCREL" -> doc.setIDocSAPRelease(value);
+							case "IDOCTYP" -> doc.setIDocType(value);
+							case "CIMTYP" -> doc.setIDocTypeExtension(value);
+							case "MESCOD" -> doc.setMessageCode(value);
+							case "MESFCT" -> doc.setMessageFunction(value);
+							case "MESTYP" -> doc.setMessageType(value);
+							case "OUTMOD" -> doc.setOutputMode(value);
+							case "RCVSAD" -> doc.setRecipientAddress(value);
+							case "RCVLAD" -> doc.setRecipientLogicalAddress(value);
+							case "RCVPFC" -> doc.setRecipientPartnerFunction(value);
+							case "RCVPRN" -> doc.setRecipientPartnerNumber(value);
+							case "RCVPRT" -> doc.setRecipientPartnerType(value);
+							case "RCVPOR" -> doc.setRecipientPort(value);
+							case "SNDSAD" -> doc.setSenderAddress(value);
+							case "SNDLAD" -> doc.setSenderLogicalAddress(value);
+							case "SNDPFC" -> doc.setSenderPartnerFunction(value);
+							case "SNDPRN" -> doc.setSenderPartnerNumber(value);
+							case "SNDPRT" -> doc.setSenderPartnerType(value);
+							case "SNDPOR" -> doc.setSenderPort(value);
+							case "SERIAL" -> doc.setSerialization(value);
+							case "STATUS" -> doc.setStatus(value);
+							case "TEST" -> doc.setTestFlag(value);
+							case null, default -> log.warn("header field [{}] value [{}] discarded", currentField, value);
 						}
 					} catch (IDocConversionException e) {
 						throw new SAXException("could not parse header field, idoc conversion exception", e);
@@ -178,7 +179,7 @@ public class IdocXmlHandler extends DefaultHandler {
 				parsingEdiDcHeader=false;
 			} else {
 				if (!segmentStack.isEmpty()) {
-					segmentStack.remove(segmentStack.size()-1);
+					segmentStack.removeLast();
 				}
 			}
 		}

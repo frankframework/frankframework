@@ -41,15 +41,17 @@ public class JdbcPoolUtil {
 	public static @Nullable String getConnectionPoolInfo(@Nullable DataSource datasource) {
 		StringBuilder info = new StringBuilder();
 
-		if (datasource instanceof OpenManagedDataSource<?> targetDataSource) {
-			addPoolMetadata(targetDataSource.getPool(), info);
-		} else if (datasource instanceof org.apache.tomcat.dbcp.dbcp2.PoolingDataSource) {
-			OpenPoolingDataSource<?> dataSource = (OpenPoolingDataSource<?>) datasource;
-			addPoolMetadata(dataSource.getPool(), info);
-		} else if (datasource instanceof DelegatingDataSource source) { // Perhaps it's wrapped?
-			return getConnectionPoolInfo(source.getTargetDataSource());
-		} else {
-			return null;
+		switch (datasource) {
+			case OpenManagedDataSource<?> targetDataSource -> addPoolMetadata(targetDataSource.getPool(), info);
+			case OpenPoolingDataSource<?> poolingDataSource -> {
+				addPoolMetadata(poolingDataSource.getPool(), info);
+			}
+			case DelegatingDataSource source -> {
+				return getConnectionPoolInfo(source.getTargetDataSource());  // Perhaps it's wrapped?
+			}
+			case null, default -> {
+				return null;
+			}
 		}
 
 		return info.toString();
