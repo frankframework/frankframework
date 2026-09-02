@@ -10,8 +10,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.mockrunner.mock.jms.MockQueue;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.statistics.MetricsInitializer;
@@ -22,7 +20,6 @@ import org.frankframework.util.CloseUtils;
 
 class MessageQueueSenderListenerTest {
 	private TestConfiguration configuration;
-	private MockQueue mockQueue;
 
 	private MessageQueueSender sender;
 	private MessageQueueListener listener;
@@ -37,7 +34,7 @@ class MessageQueueSenderListenerTest {
 		listenerSession = new PipeLineSession();
 
 		MockRunnerConnectionFactoryFactory mockFactory = new MockRunnerConnectionFactoryFactory();
-		mockQueue = mockFactory.getDestinationManager().createQueue("TestQueue");
+		mockFactory.getDestinationManager().createQueue("TestQueue");
 
 		sender = new MessageQueueSender();
 		sender.setQueueConnectionFactoryName("mock");

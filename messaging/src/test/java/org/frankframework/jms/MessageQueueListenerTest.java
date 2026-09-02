@@ -98,7 +98,7 @@ class MessageQueueListenerTest {
 
 	@ParameterizedTest
 	@MethodSource
-	void testReceiveMessage(jakarta.jms.Message message) throws Exception {
+	void testReceiveMessage(Message message) throws Exception {
 		// Arrange
 		mockQueue.addMessage(message);
 

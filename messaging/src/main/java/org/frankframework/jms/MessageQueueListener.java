@@ -33,6 +33,7 @@ import org.frankframework.doc.Protected;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
+import org.frankframework.util.RenamingObjectInputStream;
 
 /**
  * Listener that receives messages from a {@link MessageQueueSender} in another {@link org.frankframework.core.Adapter}.
@@ -75,7 +76,7 @@ public class MessageQueueListener extends PullingJmsListener {
 
 	private MessageWrapper<?> getMessageWrapperFromBytesMessage(BytesMessage bytesMessage) throws IOException, ClassNotFoundException, JMSException {
 		BytesMessageInputStream in = new BytesMessageInputStream(bytesMessage);
-		try (ObjectInputStream ois = new ObjectInputStream(in)) {
+		try (ObjectInputStream ois = new RenamingObjectInputStream(in)) {
 			return objectToMessageWrapper(ois.readObject());
 		} catch (StreamCorruptedException e) {
 			in.resetMessage();
