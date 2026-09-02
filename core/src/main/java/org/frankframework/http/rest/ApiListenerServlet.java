@@ -45,6 +45,7 @@ import org.apache.logging.log4j.ThreadContext;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
@@ -118,8 +119,9 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		super.destroy();
 	}
 
-	public void returnJson(HttpServletResponse response, int status, JsonObject json) throws IOException {
-		response.setStatus(status);
+	public void returnJson(HttpServletResponse response, JsonObject json) throws IOException {
+		response.setStatus(HttpStatus.OK.value());
+
 		Map<String, Boolean> config = new HashMap<>();
 		config.put(JsonGenerator.PRETTY_PRINTING, true);
 		JsonWriterFactory factory = Json.createWriterFactory(config);
@@ -145,7 +147,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		try {
 			method = EnumUtils.parse(ApiListener.HttpMethod.class, request.getMethod());
 		} catch (IllegalArgumentException e) {
-			response.setStatus(405);
+			response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
 			LOG.warn("{} method [{}] not allowed", () -> createAbortMessage(remoteUser, 405), request::getMethod);
 			return;
 		}
@@ -155,7 +157,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+ remoteUser +"]" : ""));
 
 		if (uri == null) {
-			response.setStatus(400);
+			response.setStatus(HttpStatus.BAD_REQUEST.value());
 			LOG.warn("{} empty uri", () -> createAbortMessage(remoteUser, 400));
 			return;
 		}
@@ -196,7 +198,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			return;
 		}
 		JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
-		returnJson(response, 200, jsonSchema);
+		returnJson(response, jsonSchema);
 	}
 
 	private void generateOpenApiSpec(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -217,7 +219,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			response.sendError(404, "OpenApi specification not found");
 			return;
 		}
-		returnJson(response, 200, jsonSchema);
+		returnJson(response, jsonSchema);
 	}
 
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, ApiListener.HttpMethod method, String uri) {
@@ -226,7 +228,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		ApiDispatchConfig config = dispatcher.findConfigForRequest(method, uri);
 		if (config == null) {
 			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
-			response.setStatus(404);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return;
 		}
 
@@ -243,7 +245,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		ApiListener listener = config.getApiListener(method);
 		if (listener == null) {
 			LOG.warn("{} method [{}] not found", ()-> createAbortMessage(remoteUser, 405), ()-> method);
-			response.setStatus(405);
+			response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
 			return;
 		}
 
@@ -294,7 +296,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 				if (!listener.isConsumable(request.getContentType())) {
 					LOG.warn("{} did not match consumes [{}] got [{}] instead", ()-> createAbortMessage(remoteUser, 415), listener::getConsumes, request::getContentType);
-					response.setStatus(415);
+					response.setStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
 					return;
 				}
 
@@ -401,9 +403,10 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 				/*
 				 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
+				 * Sets it as a response status if it's a valid HTTP status code.
 				 */
 				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
-				if (statusCode > 0) {
+				if (statusCode > 0 && HttpStatus.resolve(statusCode) != null) {
 					response.setStatus(statusCode);
 				}
 
@@ -453,7 +456,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 			// Only cut off OPTIONS (aka preflight) requests
 			if (method == ApiListener.HttpMethod.OPTIONS) {
-				response.setStatus(200);
+				response.setStatus(HttpStatus.OK.value());
 				LOG.trace("Aborting preflight request with status [200], method [{}]", method);
 				return true;
 			}
@@ -542,7 +545,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				CookieUtil.addCookie(request, response, authorizationCookie, 0);
 			}
 
-			response.setStatus(401);
+			response.setStatus(HttpStatus.UNAUTHORIZED.value());
 			LOG.warn("{} no (valid) credentials supplied", ()->createAbortMessage(request.getRemoteUser(), 401));
 			return null;
 		}
@@ -575,7 +578,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			if (method == ApiListener.HttpMethod.GET) {
 				String ifNoneMatch = request.getHeader("If-None-Match");
 				if (ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
-					response.setStatus(304);
+					response.setStatus(HttpStatus.NOT_MODIFIED.value());
 					if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", ()->createAbortMessage(remoteUser, 304), ()->ifNoneMatch);
 					return null;
 				}
@@ -583,7 +586,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			else {
 				String ifMatch = request.getHeader("If-Match");
 				if (ifMatch != null && !ifMatch.equals(cachedEtag)) {
-					response.setStatus(412);
+					response.setStatus(HttpStatus.PRECONDITION_FAILED.value());
 					LOG.warn("{} matched if-match [{}] method [{}]", ()->createAbortMessage(remoteUser, 412), ()->ifMatch, ()-> method);
 					return null;
 				}

@@ -31,6 +31,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.ThreadContext;
 import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import lombok.extern.log4j.Log4j2;
@@ -121,9 +122,10 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 
 			/*
 			 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
+			 * Sets it as a response status if it's a valid HTTP status code.
 			 */
 			int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
-			if (statusCode > 0) {
+			if (statusCode > 0 && HttpStatus.resolve(statusCode) != null) {
 				response.setStatus(statusCode);
 			}
 
