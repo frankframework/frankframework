@@ -15,7 +15,6 @@
 */
 package org.frankframework.jms;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -30,6 +29,8 @@ import org.jspecify.annotations.Nullable;
 import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Protected;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
@@ -46,7 +47,12 @@ public class MessageQueueSender extends JmsSender {
 	private @Getter String sessionKeys = "";
 
 	@Override
-	public jakarta.jms. @NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException, IOException {
+	public @NonNull Message sendMessage(@NonNull Message message, @NonNull PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
+		return super.sendMessage(message, pipeLineSession, soapHeader);
+	}
+
+	@Override
+	public jakarta.jms. @NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException {
 		MessageWrapper<?> wrapper = new MessageWrapper<>(message, null, correlationID);
 		if (pipeLineSession != null) {
 			wrapper.getContext().putAll(StringUtil.splitToStream(sessionKeys)

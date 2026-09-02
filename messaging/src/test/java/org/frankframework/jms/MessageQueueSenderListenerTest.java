@@ -10,10 +10,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.frankframework.util.CloseUtils;
@@ -25,6 +27,7 @@ class MessageQueueSenderListenerTest {
 	private MessageQueueListener listener;
 	private PipeLineSession senderSession;
 	private PipeLineSession listenerSession;
+	private Map<String, Object> threadContext;
 
 	@BeforeEach
 	void setUp() throws Exception {
@@ -44,9 +47,6 @@ class MessageQueueSenderListenerTest {
 		sender.setApplicationContext(configuration.getApplicationContext());
 		sender.setSessionKeys("a,b,c");
 
-		sender.configure();
-		sender.start();
-
 		listener = new MessageQueueListener();
 		listener.setQueueConnectionFactoryName("mock");
 		listener.setConnectionFactoryFactory(mockFactory);
@@ -55,10 +55,16 @@ class MessageQueueSenderListenerTest {
 
 		listener.configure();
 		listener.start();
+		threadContext = listener.openThread();
 	}
 
 	@AfterEach
 	void tearDown() {
+		try {
+			listener.closeThread(threadContext);
+		} catch (ListenerException e) {
+			// Ignore this exception
+		}
 		configuration.stop();
 		CloseUtils.closeSilently(listenerSession, senderSession, configuration);
 	}
@@ -73,9 +79,10 @@ class MessageQueueSenderListenerTest {
 		senderSession.put("d", "valueD");
 		senderSession.put(PipeLineSession.CORRELATION_ID_KEY, "myCorrelationID");
 
-		Message input = Message.asMessage("data".getBytes());
+		sender.configure();
+		sender.start();
 
-		Map<String, Object> threadContext = listener.openThread();
+		Message input = Message.asMessage("data".getBytes());
 
 		// Act
 		sender.sendMessage(input, senderSession);
@@ -91,7 +98,28 @@ class MessageQueueSenderListenerTest {
 				.doesNotContainKey("B")
 				.doesNotContainKey("d")
 				.contains(Map.entry(PipeLineSession.CORRELATION_ID_KEY, "myCorrelationID"));
+	}
 
-		listener.closeThread(threadContext);
+	@Test
+	void testSendReceiveMessageCIDFromParam() throws Exception {
+		// Arrange
+		sender.addParameter(ParameterBuilder.create(JmsSender.PARAM_CORRELATION_ID, "myParamCorrelationID"));
+		senderSession.put(PipeLineSession.CORRELATION_ID_KEY, "mySessionCorrelationID");
+
+		sender.configure();
+		sender.start();
+
+		Message input = Message.asMessage("data".getBytes());
+
+		// Act
+		sender.sendMessage(input, senderSession);
+		RawMessageWrapper<jakarta.jms.Message> rawMessage = listener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		Message result = listener.extractMessage(rawMessage, listenerSession);
+
+		// Assert
+		assertEquals("data", result.asString());
+		assertThat(listenerSession)
+				.contains(Map.entry(PipeLineSession.CORRELATION_ID_KEY, "myParamCorrelationID"));
 	}
 }

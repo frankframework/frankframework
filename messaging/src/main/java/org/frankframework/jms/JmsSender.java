@@ -34,6 +34,7 @@ import jakarta.jms.Session;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -74,6 +75,8 @@ import org.frankframework.util.XmlException;
  * @author Gerrit van Brakel
  */
 public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorrelatedSender {
+	static final String PARAM_CORRELATION_ID = "correlationId";
+
 	private @Getter String replyToName = null;
 	private @Getter DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
 	private @Getter String messageType = null;
@@ -172,15 +175,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		MessageProducer messageProducer = null;
 
 		checkTransactionManagerValidity();
-		ParameterValueList pvl;
-		try {
-			pvl = paramList.getValues(message, pipeLineSession);
-		} catch (ParameterException e) {
-			throw new SenderException("cannot extract parameters", e);
-		}
+		ParameterValueList pvl = getParameterValueList(message, pipeLineSession);
 
 		try {
-			String correlationID = pipeLineSession.getCorrelationId();
+			String correlationID = getCorrelationId(pvl, pipeLineSession);
 			if (isSoap()) {
 				if (soapHeader == null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
 					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());
@@ -204,7 +202,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 			// send message
 			send(messageProducer, messageToSend);
 			if (isSynchronous()) {
-				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
+				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession, pvl);
 			}
 			return new Message(messageToSend.getJMSMessageID(), getContext(messageToSend));
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException | XmlException e) {
@@ -213,6 +211,23 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 			CloseUtils.closeSilently(messageProducer);
 			closeSession(jmsSession);
 		}
+	}
+
+	private static @Nullable String getCorrelationId(@NonNull ParameterValueList pvl, @NonNull PipeLineSession pipeLineSession) {
+		if (pvl.contains(PARAM_CORRELATION_ID)) {
+			return pvl.getValue(PARAM_CORRELATION_ID);
+		}
+		return pipeLineSession.getCorrelationId();
+	}
+
+	private @NonNull ParameterValueList getParameterValueList(@NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws SenderException {
+		ParameterValueList pvl;
+		try {
+			pvl = paramList.getValues(message, pipeLineSession);
+		} catch (ParameterException e) {
+			throw new SenderException("cannot extract parameters", e);
+		}
+		return pvl;
 	}
 
 	protected void enhanceMessage(jakarta.jms.Message msg, MessageProducer messageProducer, ParameterValueList pvl, Session s) throws JMSException, JmsException {
@@ -246,7 +261,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		}
 	}
 
-	private Message waitAndHandleResponseMessage(jakarta.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
+	private Message waitAndHandleResponseMessage(jakarta.jms. @NonNull Message msg, @NonNull Destination replyQueue, @NonNull PipeLineSession session, @NonNull Session s, @NonNull ParameterValueList pvl) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
 		String jmsMessageID = msg.getJMSMessageID();
 		String replyCorrelationId;
 		if (getReplyToName() == null) {
@@ -254,7 +269,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		} else {
 			replyCorrelationId = switch (getLinkMethod()) {
 				case MESSAGEID -> jmsMessageID;
-				case CORRELATIONID -> session == null ? null : session.getCorrelationId();
+				case CORRELATIONID -> getCorrelationId(pvl, session);
 				case CORRELATIONID_FROM_MESSAGE -> msg.getJMSCorrelationID();
 			};
 		}

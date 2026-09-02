@@ -76,9 +76,12 @@ public class MessageQueueListener extends PullingJmsListener {
 
 	private MessageWrapper<?> getMessageWrapperFromBytesMessage(BytesMessage bytesMessage) throws IOException, ClassNotFoundException, JMSException {
 		BytesMessageInputStream in = new BytesMessageInputStream(bytesMessage);
+
+		// Try to read the message as an Object in the stream, as this is the expected format for this listener
 		try (ObjectInputStream ois = new RenamingObjectInputStream(in)) {
 			return objectToMessageWrapper(ois.readObject());
 		} catch (StreamCorruptedException e) {
+			// Stream was not a valid ObjectInputStream. Read it again as normal stream-data.
 			in.resetMessage();
 			return objectToMessageWrapper(Message.asMessage(in));
 		}
