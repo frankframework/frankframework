@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, effect } from '@angular/core';
 import { BaseIframeComponent } from '../iframe.base';
 import { TitleCasePipe } from '@angular/common';
 
@@ -10,8 +10,17 @@ import { TitleCasePipe } from '@angular/common';
   imports: [TitleCasePipe],
 })
 export class IframeLadybugComponent extends BaseIframeComponent implements OnInit, OnDestroy {
-  override ngOnInit(): void {
-    super.ngOnInit();
-    this.setFFIframeSource('ladybug');
+  constructor() {
+    super();
+    effect(() => {
+      const instanceName = this.appService.instanceName();
+      this.setLadybugSource(instanceName);
+    });
+  }
+
+  private setLadybugSource(instanceName: string): void {
+    const ladybugIframeSource =
+      instanceName === '-' ? 'ladybug' : `ladybug?filter-application=${encodeURIComponent(instanceName)}`;
+    this.setFFIframeSource(ladybugIframeSource);
   }
 }
