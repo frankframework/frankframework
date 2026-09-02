@@ -276,7 +276,7 @@ public class OpenApiGenerator {
 				return references.getFirst();
 			}
 
-			return references.get(references.size() - 1);
+			return references.getLast();
 		}
 	}
 

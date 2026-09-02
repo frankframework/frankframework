@@ -272,7 +272,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 
 			processCheckPoints(checkpoints, adapterNameWithoutSpaces, scenarioDirPath, scenarioDirPrefix);
 
-			String adapterOutputMessage = checkpoints.get(checkpoints.size() - 1).getMessage();
+			String adapterOutputMessage = checkpoints.getLast().getMessage();
 			String adapterOutputFileName = getFileName(++stepCounter, "adapter", adapterNameWithoutSpaces, false, adapterOutputMessage);
 			scenarioPropertiesMap.put(
 					"step" + stepCounter + ".adapter." + adapterNameWithoutSpaces + ".read",

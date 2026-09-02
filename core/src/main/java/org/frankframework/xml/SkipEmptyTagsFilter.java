@@ -86,7 +86,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 			super.endElement(uri, localName, qName);
 			elementSkipped=false;
 		} else {
-			pendingElements.remove(pendingElements.size()-1);
+			pendingElements.removeLast();
 			pendingWhitespace.setLength(0);
 			elementSkipped=true;
 		}
@@ -149,7 +149,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		if (pendingElements.isEmpty()) {
 			super.comment(ch, start, length);
 		} else {
-			pendingElements.get(pendingElements.size()-1).comments.write(ch,start,length);
+			pendingElements.getLast().comments.write(ch,start,length);
 		}
 	}
 

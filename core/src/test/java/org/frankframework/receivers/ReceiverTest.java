@@ -1223,7 +1223,7 @@ public class ReceiverTest {
 		assertEquals(expectedBackoffDelayMs, actualBackoffDelay);
 		if (expectConfigWarning) {
 			assertEquals(1, configWarnings.size(), "There should have been exactly 1 config warning");
-			assertThat(configWarnings.get(0), containsString("Maximum backoff delay reduced"));
+			assertThat(configWarnings.getWarnings().getFirst(), containsString("Maximum backoff delay reduced"));
 		} else {
 			assertTrue(configWarnings.isEmpty(), "There should not have been any config warnings");
 		}

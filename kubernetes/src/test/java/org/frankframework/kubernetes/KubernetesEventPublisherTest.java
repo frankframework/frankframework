@@ -118,7 +118,7 @@ class KubernetesEventPublisherTest {
 
 		List<Event> events = client.v1().events().inNamespace(namespace).list().getItems();
 		assertEquals(1, events.size());
-		assertEquals(KubernetesEventPublisher.REASON_ABORTED, events.get(0).getReason());
+		assertEquals(KubernetesEventPublisher.REASON_ABORTED, events.getFirst().getReason());
 		assertEquals("Warning", events.getFirst().getType());
 	}
 

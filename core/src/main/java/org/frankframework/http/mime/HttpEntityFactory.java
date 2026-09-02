@@ -185,7 +185,7 @@ public class HttpEntityFactory {
 				.map(this::encodeAsUrlParameter)
 				.collect(Collectors.toList());
 		if (StringUtils.isNotBlank(initialMessage)) {
-			params.add(0, initialMessage);
+			params.addFirst(initialMessage);
 		}
 		String msg = String.join("&", params);
 		return new ByteArrayEntity(msg.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), computeContentType(message));
