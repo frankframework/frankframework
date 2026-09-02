@@ -170,7 +170,7 @@ public class EhCacheTransformTest {
 	}
 
 	@Test
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("removal")
 	public void transformKeyUsesConfiguredKeyXPathWhenNoKeyParameterIsPresent() throws ConfigurationException {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-key-xpath-" + System.nanoTime());
@@ -186,7 +186,7 @@ public class EhCacheTransformTest {
 	}
 
 	@Test
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("removal")
 	public void transformValueUsesConfiguredValueXPathWhenNoValueParameterIsPresent() throws ConfigurationException {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-value-xpath-" + System.nanoTime());
@@ -203,7 +203,7 @@ public class EhCacheTransformTest {
 	}
 
 	@Test
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings("removal")
 	public void transformValueReturnsEmptyStringWhenConfiguredValueXPathIsEmptyAndCacheEmptyValuesIsTrue() throws ConfigurationException {
 		EhCache<String> cache = new EhCache<>();
 		cache.setName("transform-value-xpath-empty-" + System.nanoTime());

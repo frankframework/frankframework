@@ -136,7 +136,7 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 				logRequest = auditLogTp.transformToString("<dummy/>", parameterValues, true);
 			}
 			session = createSession();
-			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest));
+			jakarta.jms.Message msg = createMessage(session, null, new Message(logRequest), null);
 			String returnMessage = send(session, getDestination(), msg);
 			log.debug("{}sent message [{}] to [{}] msgID [{}] correlationID [{}]", getLogPrefix(), logRequest, getDestination(), msg.getJMSMessageID(), msg.getJMSCorrelationID());
 			return returnMessage;

@@ -112,7 +112,7 @@
 			<pipe name="DualXsltPipeBeforeUpdateBlob" className="org.frankframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1"/> <!-- forward to XsltPipe, that will provide OutputStream  -->
 			<pipe name="XsltPipeBeforeUpdateBlob" className="org.frankframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1" /> <!-- forward to FixedQuerySender, that will provide OutputStream  -->
 			<pipe name="UpdateBlob">
-				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=999 AND TCHAR='b' FOR UPDATE" queryType="updateBlob" blobCharset="utf8"/>
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=999 AND TCHAR='b' FOR UPDATE" queryType="updateBlob" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

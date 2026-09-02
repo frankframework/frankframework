@@ -108,7 +108,7 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 			ResultSet rs = Mockito.mock(ResultSet.class);
 			Mockito.doAnswer((Answer<Boolean>) invocation -> {
 				if (!rows.isEmpty()) {
-					row = rows.remove(0);
+					row = rows.removeFirst();
 					return true;
 				}
 				return false;

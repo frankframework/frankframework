@@ -132,13 +132,13 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	}
 
 	@Override
-	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<M> wrapRawMessage(@NonNull M rawMessage, @NonNull PipeLineSession session) {
 		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 
 	// ### RequestProcessor
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		try (PipeLineSession processContext = new PipeLineSession()) {
 			if (context != null) {
@@ -218,7 +218,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	}
 
 	@Override
-	public void setExceptionListener(IbisExceptionListener listener) {
+	public void setExceptionListener(@NonNull IbisExceptionListener listener) {
 		// do nothing, no exceptions known
 	}
 

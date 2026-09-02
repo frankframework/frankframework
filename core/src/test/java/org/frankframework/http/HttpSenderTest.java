@@ -42,7 +42,6 @@ import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 
-@SuppressWarnings("resource")
 public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Override

@@ -29,6 +29,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -100,7 +101,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	private @Getter String sessionKeys = null;
 	private @Getter boolean moveToMessageLog = true;
 
-	private List<String> sessionKeysList;
+	private @NonNull List<String> sessionKeysList = List.of();
 
 	public MessageStoreListener() {
 		setTableName(DEFAULT_TABLE_NAME);
@@ -172,7 +173,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 		}
 	}
 
-	private String getStringFieldOrNull(ResultSet rs, String columnLabel) throws SQLException {
+	private @Nullable String getStringFieldOrNull(ResultSet rs, String columnLabel) throws SQLException {
 		int columnIdx;
 		try {
 			columnIdx = rs.findColumn(columnLabel);
@@ -193,7 +194,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 			return message;
 		}
 		// Handle the Legacy CSV format
-		if (sessionKeysList != null && !sessionKeysList.isEmpty() && rawMessage instanceof String messageData) {
+		if (!sessionKeysList.isEmpty() && rawMessage instanceof String messageData) {
 			return convertFromCsv(messageData, context);
 		}
 		return Message.asMessage(rawMessage);
@@ -201,7 +202,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 
 	private Message convertFromCsv(@NonNull String messageData, Map<String, Object> threadContext) throws ListenerException {
 		Message message;
-		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
+		try (CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
 			CSVRecord csvRecord = parser.getRecords().getFirst();
 			message = new Message(csvRecord.get(0));
 			for (int i = 1; i < csvRecord.size(); i++) {
@@ -224,7 +225,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	public IMessageBrowser<Serializable> getMessageBrowser(ProcessState state) {
+	public @Nullable IMessageBrowser<Serializable> getMessageBrowser(ProcessState state) {
 		IMessageBrowser<Serializable> browser = super.getMessageBrowser(state);
 		if (browser!=null) {
 			return augmentMessageBrowser(browser);
@@ -251,7 +252,11 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	/**
-	 * Comma separated list of sessionKey's to be read together with the message. Please note: corresponding {@link MessageStoreSender} must have the same value for this attribute
+	 * Comma separated list of sessionKey's to be read together with the message.
+	 * @ff.info This is only required when messages are still stored in the old CSV format that was used by the {@link MessageStoreSender} before version 7.9. Generally,
+	 * you can leave this property away from the {@code MessageStoreListener}.
+	 * For messages stored by newer releases, all session keys stored by the corresponding {@link MessageStoreSender} will be added to the {@link PipeLineSession}.
+	 * The corresponding {@link MessageStoreSender} must have the desired keys listed.
 	 */
 	public void setSessionKeys(String sessionKeys) {
 		this.sessionKeys = sessionKeys;

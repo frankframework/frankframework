@@ -84,7 +84,7 @@ public class PushingListenerAdapter implements RequestReplyListener, IPushingLis
 
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+	public RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, @NonNull PipeLineSession session) {
 		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 
@@ -124,12 +124,12 @@ public class PushingListenerAdapter implements RequestReplyListener, IPushingLis
 	}
 
 	@Override
-	public void setHandler(IMessageHandler<Message> handler) {
+	public void setHandler(@NonNull IMessageHandler<Message> handler) {
 		this.handler=handler;
 	}
 
 	@Override
-	public void setExceptionListener(IbisExceptionListener exceptionListener) {
+	public void setExceptionListener(@NonNull IbisExceptionListener exceptionListener) {
 		// Not Implemented
 	}
 

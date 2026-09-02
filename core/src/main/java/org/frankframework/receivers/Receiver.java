@@ -2120,7 +2120,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	public void setListener(IListener<M> newListener) {
 		listener = newListener;
 		if (listener instanceof RunStateEnquiring enquiring)  {
-			enquiring.SetRunStateEnquirer(runState);
+			enquiring.setRunStateEnquirer(runState);
 		}
 	}
 

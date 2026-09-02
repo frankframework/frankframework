@@ -167,17 +167,17 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	 * This method may be used to upload a file to S3.
 	 */
 	@Override
-	public S3FileRef toFile(@Nullable String filename) {
+	public @NonNull S3FileRef toFile(@Nullable String filename) {
 		return new S3FileRef(filename, bucketName);
 	}
 
 	@Override
-	public S3FileRef toFile(@Nullable String folder, @Nullable String filename) {
+	public @NonNull S3FileRef toFile(@Nullable String folder, @Nullable String filename) {
 		return toFile(StringUtil.concatStrings(folder, FILE_DELIMITER, filename));
 	}
 
 	@Override
-	public DirectoryStream<S3FileRef> list(S3FileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
+	public @NonNull DirectoryStream<S3FileRef> list(S3FileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
 		List<S3Object> files = new ArrayList<>();
 		List<CommonPrefix> subFolders = new ArrayList<>();
 
@@ -242,12 +242,12 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public void createFile(S3FileRef f, InputStream content) throws FileSystemException, IOException {
+	public void createFile(@NonNull S3FileRef f, @Nullable InputStream content) throws FileSystemException, IOException {
 		createFile(f, content, Collections.emptyMap());
 	}
 
 	@Override
-	public void createFile(S3FileRef f, InputStream content, Map<String, String> customFileAttributes) throws FileSystemException, IOException {
+	public void createFile(@NonNull S3FileRef f, @Nullable InputStream content, @NonNull Map<String, String> customFileAttributes) throws FileSystemException, IOException {
 		String folder = getParentFolder(f);
 		if (folder != null && !folderExists(folder)) {
 			// AWS Supports the creation of (sub)folders when creating files, this check is purely here so all FileSystems have the same behavior
@@ -300,7 +300,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public void appendFile(S3FileRef file, InputStream content) throws FileSystemException, IOException {
+	public void appendFile(@NonNull S3FileRef file, @Nullable InputStream content) throws FileSystemException, IOException {
 		// Amazon S3 doesn't support append operation
 		throw new NotImplementedException();
 	}
@@ -474,12 +474,12 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	// rename is implemented via copy & delete
 	@Override
-	public S3FileRef renameFile(S3FileRef source, S3FileRef destination) throws FileSystemException {
+	public S3FileRef renameFile(@NonNull S3FileRef source, @NonNull S3FileRef destination) throws FileSystemException {
 		return renameFile(source, destination, Map.of());
 	}
 
 	@Override
-	public S3FileRef renameFile(S3FileRef source, S3FileRef destination, Map<String, String> customFileAttributes) throws FileSystemException {
+	public S3FileRef renameFile(@NonNull S3FileRef source, @NonNull S3FileRef destination, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		if (exists(destination)) {
 			throw new FileAlreadyExistsException("Target already exists");
 		}
@@ -510,7 +510,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public S3FileRef copyFile(S3FileRef s3Object, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
+	public S3FileRef copyFile(@NonNull S3FileRef s3Object, @NonNull String destinationFolder, boolean createFolder, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		if (!createFolder && !folderExists(destinationFolder)) {
 			throw new FolderNotFoundException("folder [" + destinationFolder + "] does not exist");
 		}
@@ -539,7 +539,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public S3FileRef moveFile(S3FileRef f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
+	public S3FileRef moveFile(@NonNull S3FileRef f, @NonNull String destinationFolder, boolean createFolder, @NonNull Map<String, String> customFileAttributes) throws FileSystemException {
 		return renameFile(f, toFile(destinationFolder, getName(f)), customFileAttributes);
 	}
 

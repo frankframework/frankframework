@@ -18,7 +18,6 @@ package org.frankframework.documentbuilder;
 import java.util.Map.Entry;
 
 import jakarta.json.JsonArray;
-import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
@@ -36,33 +35,22 @@ public class DocumentUtils {
 
 	public static void jsonValue2Document(JsonValue jValue, IDocumentBuilder documentBuilder) throws SAXException {
 		switch (jValue.getValueType()) {
-		case ARRAY:
-			try (ArrayBuilder arrayBuilder = documentBuilder.asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME)) {
-				jsonArray2Builder((JsonArray)jValue, arrayBuilder);
+			case ARRAY -> {
+				try (ArrayBuilder arrayBuilder = documentBuilder.asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME)) {
+					jsonArray2Builder((JsonArray) jValue, arrayBuilder);
+				}
 			}
-			break;
-		case OBJECT:
-			try (ObjectBuilder objectBuilder = documentBuilder.asObjectBuilder()) {
-				jsonObject2Builder((JsonObject)jValue, objectBuilder);
+			case OBJECT -> {
+				try (ObjectBuilder objectBuilder = documentBuilder.asObjectBuilder()) {
+					jsonObject2Builder((JsonObject) jValue, objectBuilder);
+				}
 			}
-			break;
-		case NUMBER:
-			documentBuilder.setValue(jValue.toString()); // works for XML, but will be quoted in JSON
-			break;
-		case STRING:
-			documentBuilder.setValue(((JsonString) jValue).getString());
-			break;
-		case FALSE:
-			documentBuilder.setValue(false);
-			break;
-		case TRUE:
-			documentBuilder.setValue(true);
-			break;
-		case NULL:
-			documentBuilder.setValue((String)null);
-			break;
-		default:
-			throw new NotImplementedException("not implemented ["+jValue.getValueType()+"]");
+			case NUMBER -> documentBuilder.setValue(jValue.toString()); // works for XML, but will be quoted in JSON
+			case STRING -> documentBuilder.setValue(((JsonString) jValue).getString());
+			case FALSE -> documentBuilder.setValue(false);
+			case TRUE -> documentBuilder.setValue(true);
+			case NULL -> documentBuilder.setValue((String) null);
+			default -> throw new NotImplementedException("not implemented [" + jValue.getValueType() + "]");
 		}
 	}
 
@@ -86,7 +74,7 @@ public class DocumentUtils {
 				objectBuilder.add(n, ((JsonString) v).getString());
 				break;
 			case NUMBER:
-				objectBuilder.add(n, ((JsonNumber) v).toString()); // works for XML, but will be quoted in JSON
+				objectBuilder.add(n, v.toString()); // works for XML, but will be quoted in JSON
 				break;
 			case FALSE:
 				objectBuilder.add(n, false);
@@ -121,7 +109,7 @@ public class DocumentUtils {
 				arrayBuilder.addElement(((JsonString) jValue).getString());
 				break;
 			case NUMBER:
-				arrayBuilder.addElement(((JsonNumber) jValue).toString()); // works for XML, but will be quoted in JSON
+				arrayBuilder.addElement(jValue.toString()); // works for XML, but will be quoted in JSON
 				break;
 			case FALSE:
 				arrayBuilder.addElement(false);

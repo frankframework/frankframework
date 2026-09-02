@@ -48,7 +48,7 @@ public class PartMessage extends Message {
 	public PartMessage(Part part, MessageContext context) throws MessagingException, IOException {
 		super(part.getInputStream(), context, part.getClass());
 
-		String charset = (String)context.get(MessageContext.METADATA_CHARSET);
+		String charset = context.get(MessageContext.METADATA_CHARSET);
 		if (StringUtils.isEmpty(charset)) { // If not explicitly set
 			try {
 				context.withMimeType(part.getContentType());

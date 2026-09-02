@@ -285,7 +285,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public MailItemId toFile(String id) throws FileSystemException {
+	public @NonNull MailItemId toFile(String id) throws FileSystemException {
 		if (StringUtils.isBlank(id)) {
 			throw new FileSystemException("no id or folder name provided");
 		}
@@ -307,7 +307,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public MailItemId toFile(String childFolderName, String id) throws FileSystemException {
+	public @NonNull MailItemId toFile(String childFolderName, String id) throws FileSystemException {
 		MailFolder folder = StringUtils.isBlank(childFolderName) ? mailFolder : findSubFolder(mailFolder, childFolderName);
 
 		if (StringUtils.isBlank(id)) {

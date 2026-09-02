@@ -26,7 +26,6 @@ public class LiquibaseLog4j2LogService extends AbstractLogService {
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
 	public Logger getLog(Class clazz) {
 		return new LiquibaseLog4j2Logger(clazz);
 	}

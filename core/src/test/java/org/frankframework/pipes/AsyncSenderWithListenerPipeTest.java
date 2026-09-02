@@ -80,7 +80,7 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		}
 
 		@Override
-		public Message extractMessage(RawMessageWrapper<String> rawMessage, Map<String, Object> context) throws ListenerException {
+		public Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 			return null;
 		}
 

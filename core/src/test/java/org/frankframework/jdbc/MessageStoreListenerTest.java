@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
@@ -25,6 +26,7 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.TimeProvider;
 
 @WithLiquibase(tableName = MessageStoreListenerTest.TEST_TABLE_NAME)
@@ -32,6 +34,7 @@ public class MessageStoreListenerTest {
 
 	private MessageStoreListener listener;
 	private JdbcTransactionalStorage storage;
+	private PipeLineSession pipeLineSession;
 	static final String TEST_TABLE_NAME = "JDBCTRANSACTIONALSTORAGETEST";
 	private static final String SLOT_ID = "slot";
 	private static final String MESSAGE_ID_FIELD = "MESSAGEID";
@@ -39,7 +42,7 @@ public class MessageStoreListenerTest {
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
 		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms()); // tests are based on H2 syntax queries
-		Receiver<Serializable> receiver = mock(Receiver.class);
+		Receiver<Serializable> receiver = mock();
 		when(receiver.isTransacted()).thenReturn(false);
 
 		listener = env.createBean(MessageStoreListener.class);
@@ -52,6 +55,8 @@ public class MessageStoreListenerTest {
 		storage.setTableName(TEST_TABLE_NAME);
 		storage.setIdField(MESSAGE_ID_FIELD);
 		storage.setSlotId(SLOT_ID);
+
+		pipeLineSession = new PipeLineSession();
 	}
 
 	@AfterEach
@@ -59,10 +64,12 @@ public class MessageStoreListenerTest {
 		if (listener != null) {
 			listener.stop(); // does this trigger an exception
 		}
+		CloseUtils.closeSilently(pipeLineSession);
 	}
 
 	private JdbcTableMessageBrowser<?> getMessageBrowser(ProcessState state) throws ConfigurationException {
 		JdbcTableMessageBrowser<?> browser = (JdbcTableMessageBrowser<?>) listener.getMessageBrowser(state);
+		assertNotNull(browser, () -> "Expected to have MessageBrowser for state [%s]".formatted(state));
 		browser.configure();
 		return browser;
 	}

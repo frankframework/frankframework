@@ -24,7 +24,6 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -333,25 +332,15 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 				cmisSession = globalSession;
 			}
 
-			switch (getAction()) {
-				case GET:
-					return sendMessageForActionGet(cmisSession, message, session, pvl);
-				case CREATE:
-					return sendMessageForActionCreate(cmisSession, message, session, pvl);
-				case DELETE:
-					return sendMessageForActionDelete(cmisSession, message, session);
-				case FIND:
-					return sendMessageForActionFind(cmisSession, message);
-				case UPDATE:
-					return sendMessageForActionUpdate(cmisSession, message);
-				case FETCH:
-					return sendMessageForDynamicActions(cmisSession, message, session);
-				case DYNAMIC:
-					return sendMessageForDynamicActions(cmisSession, message, session);
-
-				default:
-					throw new SenderException("unknown action [" + getAction() + "]");
-			}
+			return switch (getAction()) {
+				case GET -> sendMessageForActionGet(cmisSession, message, session, pvl);
+				case CREATE -> sendMessageForActionCreate(cmisSession, message, session, pvl);
+				case DELETE -> sendMessageForActionDelete(cmisSession, message, session);
+				case FIND -> sendMessageForActionFind(cmisSession, message);
+				case UPDATE -> sendMessageForActionUpdate(cmisSession, message);
+				case FETCH -> sendMessageForDynamicActions(cmisSession, message, session);
+				case DYNAMIC -> sendMessageForDynamicActions(cmisSession, message, session);
+			};
 		} finally {
 			if (cmisSession != null && runtimeSession) {
 				log.debug("Closing CMIS runtime session");
@@ -397,8 +386,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			}
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
-				Property<?> property = it.next();
+			for (Property<?> property : document.getProperties()) {
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
 			}
 			XmlBuilder cmisXml = new XmlBuilder("cmis");

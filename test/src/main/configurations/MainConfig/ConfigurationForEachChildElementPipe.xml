@@ -51,7 +51,7 @@
 
 	<Adapter name="ForEachChildElementPipe_ReturnedSessionKeys_Parent">
 		<Receiver>
-			<JavaListener serviceName="ibis4test-ForEachChildElementPipe_ReturnedSessionKeys" />
+			<JavaListener name="internalName-unused" serviceName="ibis4test-ForEachChildElementPipe_ReturnedSessionKeys" />
 		</Receiver>
 
 		<Pipeline>

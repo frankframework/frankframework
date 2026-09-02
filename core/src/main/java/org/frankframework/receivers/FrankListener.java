@@ -80,12 +80,12 @@ public class FrankListener implements RequestReplyListener, IPushingListener<Mes
 	}
 
 	@Override
-	public void setExceptionListener(IbisExceptionListener listener) {
+	public void setExceptionListener(@NonNull IbisExceptionListener listener) {
 		// Do nothing, does not throw exceptions for receiver
 	}
 
 	@Override
-	public MessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+	public MessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, @NonNull PipeLineSession session) {
 		return new MessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 

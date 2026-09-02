@@ -268,7 +268,7 @@ public class MessageUtils {
 			return null;
 		}
 
-		MimeType mimeType = (MimeType)message.getContext().get(MessageContext.METADATA_MIMETYPE);
+		MimeType mimeType = message.getContext().get(MessageContext.METADATA_MIMETYPE);
 		if (mimeType == null) {
 			LOG.trace("no mimetype found in MessageContext");
 			return null;
@@ -285,7 +285,7 @@ public class MessageUtils {
 
 	public static boolean isMimeType(@NonNull Message message, @Nullable MimeType compareTo) {
 		MessageContext context = message.getContext();
-		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		MimeType mimeType = context.get(MessageContext.METADATA_MIMETYPE);
 		return mimeType != null && mimeType.includes(compareTo);
 	}
 
@@ -322,7 +322,7 @@ public class MessageUtils {
 			return contextMimeType;
 		}
 
-		String name = (String) context.get(MessageContext.METADATA_NAME);
+		String name = context.get(MessageContext.METADATA_NAME);
 		if (StringUtils.isNotEmpty(filename)) {
 			LOG.trace("using filename from MessageContext [{}]", name);
 			name = filename;

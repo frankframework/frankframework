@@ -358,7 +358,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 */
 				long lastModDate = TimeProvider.now().toEpochMilli();
 				if(!Message.isEmpty(result)) {
-					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
+					String lastModified = result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
 						lastModDate = DateFormatUtils.parseToInstant(lastModified, DateFormatUtils.FULL_GENERIC_FORMATTER).toEpochMilli();
 					}

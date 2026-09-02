@@ -193,7 +193,8 @@ public class XsltSender extends AbstractSenderWithParameters {
 			String styleSheetNameToUse = session.getString(styleSheetNameSessionKey);
 			if (StringUtils.isNotEmpty(styleSheetNameToUse )) {
 				if (!dynamicTransformerPoolMap.containsKey(styleSheetNameToUse)) {
-					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse = TransformerPool.configureStyleSheetTransformer(this, styleSheetNameToUse, 0));
+					poolToUse = TransformerPool.configureStyleSheetTransformer(this, styleSheetNameToUse, 0);
+					dynamicTransformerPoolMap.put(styleSheetNameToUse, poolToUse);
 
 					poolToUse.open();
 				} else {

@@ -28,7 +28,7 @@ public class PipeTestBasedXmlValidatorTest extends PipeTestBase<XmlValidator> {
 		pipe.setSchemaLocation(SCHEMA_LOCATION_FACET_ERROR);
 		configureAndStartPipe();
 		assertEquals(1, getConfigurationWarnings().size());
-		String configurationWarning = getConfigurationWarnings().get(0);
+		String configurationWarning = getConfigurationWarnings().getWarnings().getFirst();
 		assertThat(configurationWarning, containsString("cos-applicable-facets"));
 		assertThat(configurationWarning, containsString("maxLength"));
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.jspecify.annotations.Nullable;
 
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
@@ -48,18 +50,17 @@ public class PipeLineSessionDebugger implements MethodHandler {
 	}
 
 	@Override
-	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
-		if ("put".equals(method.getName())) {
-			return put((String)args[0], args[1]);
-		}
-		if ("putAll".equals(method.getName())) {
-			putAll((Map<String,Object>)args[0]);
-			return null;
-		}
-		if("getMessage".equals(method.getName())) {
-			return getMessage((String)args[0]);
-		}
-		return method.invoke(pipeLineSession, args);
+	public @Nullable Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+		return switch (method.getName()) {
+			case "put" -> put((String) args[0], args[1]);
+			case "putAll" -> {
+				//noinspection unchecked
+				putAll((Map<String, Object>) args[0]);
+				yield null;
+			}
+			case "getMessage" -> getMessage((String) args[0]);
+			default -> method.invoke(pipeLineSession, args);
+		};
 	}
 
 	private Object getMessage(String name) {

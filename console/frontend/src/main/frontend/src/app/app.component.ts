@@ -186,11 +186,8 @@ export class AppComponent implements OnInit, OnDestroy {
   handleQueryParams(parameters: ParamMap): void {
     this.routeQueryParams = parameters;
     const uwu = parameters.get('uwu');
-    if (uwu === 'true') {
-      localStorage.setItem('uwu', uwu);
-    } else if (uwu === 'false') {
-      localStorage.removeItem('uwu');
-    }
+    if (uwu === 'false') localStorage.removeItem('uwu');
+    else if (uwu) localStorage.setItem('uwu', uwu);
   }
 
   initializeFrankConsole(): void {
@@ -351,7 +348,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.appService.removeAlerts(configuration);
         continue;
       }
-      if (Array.isArray(configuration) || typeof configuration !== 'object') {
+      if (typeof configuration !== 'object' || Array.isArray(configuration)) {
         delete configurations[index];
         continue;
       }
@@ -450,9 +447,28 @@ export class AppComponent implements OnInit, OnDestroy {
     this.processAdapters(data);
     this.appService.getClusterMembers().subscribe((data) => {
       this.clusterMembers = data;
-      if (data.length > 0) {
-        this.selectedClusterMember = data.find((member) => member.selectedMember) ?? null;
+      const wantedMemberName = this.routeQueryParams.get('member-name');
+      if (data.length === 0) {
+        this.initializeWebsocket();
+        if (wantedMemberName) {
+          this.router.navigate([], { relativeTo: this.route, queryParams: null });
+        }
+        return;
       }
+
+      const selectedMember = data.find((member) => member.selectedMember) ?? null;
+      if (wantedMemberName && selectedMember?.name !== wantedMemberName) {
+        const wantedMember = data.find((member) => member.name === wantedMemberName);
+        if (wantedMember) {
+          this.appService.updateSelectedClusterMember(wantedMember.id).subscribe(() => {
+            this.router.navigate([], { relativeTo: this.route, queryParams: null });
+            this.appService.triggerReload();
+          });
+          return;
+        }
+      }
+
+      this.selectedClusterMember = selectedMember;
       this.initializeWebsocket();
     });
   }

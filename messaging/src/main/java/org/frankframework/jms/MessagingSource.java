@@ -30,6 +30,8 @@ import jakarta.jms.TemporaryQueue;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -158,7 +160,7 @@ public class MessagingSource {
 		return globalConnection;
 	}
 
-	private void releaseConnection(Connection connection) {
+	private void releaseConnection(@Nullable Connection connection) {
 		if (connection != null && connectionsArePooled()) {
 			try {
 				connection.close();
@@ -169,7 +171,7 @@ public class MessagingSource {
 		}
 	}
 
-	public Session createSession(boolean transacted, int acknowledgeMode) throws IbisException {
+	public @NonNull Session createSession(boolean transacted, int acknowledgeMode) throws IbisException {
 		Connection connection;
 		Session session;
 		try {
@@ -190,7 +192,7 @@ public class MessagingSource {
 		}
 	}
 
-	public void releaseSession(Session session) {
+	public void releaseSession(@Nullable Session session) {
 		if (session == null) {
 			return;
 		}
