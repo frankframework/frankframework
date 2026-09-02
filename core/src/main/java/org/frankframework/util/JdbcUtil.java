@@ -270,9 +270,22 @@ public class JdbcUtil {
 					.setEncode(true)
 					.get());
 		}
-		Message intermediateMessage = new Message(blobInputStream, blobCharset);
-		if (!blobSmartGet) {
-			return intermediateMessage;
+		Message intermediateMessage;
+		try {
+			intermediateMessage = new Message(blobInputStream, blobCharset);
+			if (!blobSmartGet) {
+				return intermediateMessage;
+			}
+		} catch (ZipException | EOFException e) {
+			if (!blobSmartGet) {
+				throw e;
+			}
+			// Try again, but without compression. This of course means the flag `blobsCompressed` was set wrong, but this preserves backwards compatibility. Only when blobSmartGet=true
+			InputStream uncompressedStream = JdbcUtil.getBlobInputStream(dbmsSupport, rs, colNum, false);
+			if (uncompressedStream == null) {
+				return Message.nullMessage();
+			}
+			intermediateMessage = new Message(uncompressedStream, blobCharset);
 		}
 		Object result;
 		try (ObjectInputStream ois = new RenamingObjectInputStream(intermediateMessage.asInputStream())) {
