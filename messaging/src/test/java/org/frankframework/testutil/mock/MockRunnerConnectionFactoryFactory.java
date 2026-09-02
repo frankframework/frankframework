@@ -65,7 +65,7 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 		List<MockMessage> receivedMessageList = queue.getReceivedMessageList();
 		log.debug("{} messages on queue [{}]", receivedMessageList.size(), queueName);
 		assertFalse(receivedMessageList.isEmpty(), "No messages received, expected at least a single message on queue [" + queueName + "]");
-		return receivedMessageList.get(receivedMessageList.size() - 1);
+		return receivedMessageList.getLast();
 	}
 
 	public void addEchoReceiverOnQueue(String queueName) throws Exception {

@@ -184,7 +184,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			assertTrue(makeSureNoExceptionIsThrown);
 
 			List<LogEvent> log = appender.getLogEvents();
-			LogEvent firstLogEntry = log.get(log.size()-1);
+			LogEvent firstLogEntry = log.getLast();
 			assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.DEBUG, firstLogEntry.getLevel());
 			String msg = firstLogEntry.getMessage().getFormattedMessage();
@@ -214,7 +214,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			assertTrue(makeSureNoExceptionIsThrown);
 
 			List<LogEvent> log = appender.getLogEvents();
-			LogEvent firstLogEntry = log.get(log.size()-1);
+			LogEvent firstLogEntry = log.getLast();
 			assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.INFO, firstLogEntry.getLevel());
 
@@ -243,7 +243,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			assertNull(config);
 
 			List<LogEvent> log = appender.getLogEvents();
-			LogEvent firstLogEntry = log.get(log.size()-1);
+			LogEvent firstLogEntry = log.getLast();
 			assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.WARN, firstLogEntry.getLevel());
 			String msg = firstLogEntry.getMessage().getFormattedMessage();

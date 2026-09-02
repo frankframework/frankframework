@@ -100,7 +100,7 @@ public class NodeSetFilter extends FullXmlFilter {
 				log.warn("pendingNamespaceDefinitions empty, cannot remove prefix [{}]", prefix);
 				return;
 			}
-			PrefixMapping topMapping=pendingNamespaceDefinitions.remove(pendingNamespaceDefinitions.size()-1);
+			PrefixMapping topMapping=pendingNamespaceDefinitions.removeLast();
 //			if (!prefix.equals(topMapping.getPrefix())) {
 //				// do this on debug, because removal is not always in order, but in order of definition in the element
 //				if (log.isTraceEnabled()) log.trace("prefixmapping to remove with prefix ["+prefix+"] does not match expected ["+topMapping.getPrefix()+"]");

@@ -69,6 +69,6 @@ public abstract class MockListenerBase implements IListener<String> {
 	}
 
 	public PipeLine.ExitState getLastExitState() {
-		return exitStates.get(exitStates.size() - 1);
+		return exitStates.getLast();
 	}
 }

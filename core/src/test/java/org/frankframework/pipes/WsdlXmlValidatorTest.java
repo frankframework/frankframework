@@ -559,7 +559,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		assertEquals("""
 				WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl] already has a \
 				default value [http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]\
-				""", getConfigurationWarnings().get(0));
+				""", getConfigurationWarnings().getWarnings().getFirst());
 	}
 
 	@Test
@@ -577,7 +577,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		assertEquals("""
 				WsdlXmlValidator [WsdlXmlValidator under test] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://frankframework.org/XSD/Generic/MessageHeader/2 schema1\
 				 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]\
-				""", getConfigurationWarnings().get(0));
+				""", getConfigurationWarnings().getWarnings().getFirst());
 	}
 
 	@Test
@@ -593,7 +593,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		assertEquals("""
 				WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/SimpleWsdl/simple.wsdl]\
 				 should only be set when addNamespaceToSchema=true\
-				""", getConfigurationWarnings().get(0));
+				""", getConfigurationWarnings().getWarnings().getFirst());
 
 		pipe.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
 	}

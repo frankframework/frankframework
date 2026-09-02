@@ -186,7 +186,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum does not have an attribute [do-not-exist] to set to value [string value here]", configWarnings.get(0));
+		assertEquals("ClassWithEnum does not have an attribute [do-not-exist] to set to value [string value here]", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -198,7 +198,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [configWarningString]: my test warning", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [configWarningString]: my test warning", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -210,7 +210,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(2, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [queryType.INSERT] has been deprecated since v8.1.0: Use queryType 'OTHER' instead", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [queryType.INSERT] has been deprecated since v8.1.0: Use queryType 'OTHER' instead", configWarnings.getWarnings().getFirst());
 		assertEquals("ClassWithEnum attribute [queryType] already has a default value [INSERT]", configWarnings.get(1));
 	}
 
@@ -223,7 +223,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [queryType.SELECT]: Select might be slow", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [queryType.SELECT]: Select might be slow", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -235,7 +235,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningString] is deprecated: my deprecated test warning", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningString] is deprecated: my deprecated test warning", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -247,7 +247,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningSinceAndForRemoval] has been deprecated since v8.0.0 and has been marked for removal: this is since and for removal", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningSinceAndForRemoval] has been deprecated since v8.0.0 and has been marked for removal: this is since and for removal", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -259,7 +259,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningSince] has been deprecated since v8.0.0: this is since", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningSince] has been deprecated since v8.0.0: this is since", configWarnings.getWarnings().getFirst());
 	}
 	@Test
 	public void testDeprecatedAttributeWithConfigWarningForRemoval() throws Exception {
@@ -270,7 +270,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningForRemoval] is deprecated and has been marked for removal: this is for removal", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [deprecatedConfigWarningForRemoval] is deprecated and has been marked for removal: this is for removal", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -313,7 +313,7 @@ public class ValidateAttributeRuleTest {
 		// Assert
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(5, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.getWarnings().getFirst());
 		assertEquals("ClassWithEnum attribute [testInteger] already has a default value [1234]", configWarnings.get(1));
 		assertEquals("ClassWithEnum attribute [testLong] already has a default value [0]", configWarnings.get(2));
 		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(3));
@@ -360,7 +360,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testInteger]: value [a String] cannot be converted to a number [int]", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testInteger]: value [a String] cannot be converted to a number [int]", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -374,7 +374,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testIntegerWithoutGetter]: value [a String] cannot be converted to a number [int]", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testIntegerWithoutGetter]: value [a String] cannot be converted to a number [int]", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -386,7 +386,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testEnum]: unparsable value [notEnumValue]. Must be one of [ONE, TWO]", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testEnum]: unparsable value [notEnumValue]. Must be one of [ONE, TWO]", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -398,7 +398,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [enumWithDifferentName]: unparsable value [notEnumValue]. Must be one of [ONE, TWO]", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [enumWithDifferentName]: unparsable value [notEnumValue]. Must be one of [ONE, TWO]", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -410,7 +410,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("DeprecatedTestClass is deprecated: warning above deprecated test class", configWarnings.get(0));
+		assertEquals("DeprecatedTestClass is deprecated: warning above deprecated test class", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -422,7 +422,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ConfigWarningTestClass [name here] : warning above test class", configWarnings.get(0));
+		assertEquals("ConfigWarningTestClass [name here] : warning above test class", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -471,7 +471,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -484,7 +484,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum [testUnsafeAttribute] is unsafe and should not be used in a production environment", configWarnings.get(0));
+		assertEquals("ClassWithEnum [testUnsafeAttribute] is unsafe and should not be used in a production environment", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -497,7 +497,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testUnsafeAttributeWithDefault] already has a default value [default]", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [testUnsafeAttributeWithDefault] already has a default value [default]", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
@@ -510,7 +510,7 @@ public class ValidateAttributeRuleTest {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum [testUnsafeAttributeWithDefault] is unsafe and should not be used in a production environment", configWarnings.get(0));
+		assertEquals("ClassWithEnum [testUnsafeAttributeWithDefault] is unsafe and should not be used in a production environment", configWarnings.getWarnings().getFirst());
 	}
 
 	@Test
