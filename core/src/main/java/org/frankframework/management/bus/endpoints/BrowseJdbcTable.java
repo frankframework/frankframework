@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
@@ -248,10 +249,12 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				+ "</browseJdbcTableExecuteREQ>";
 	}
 
-	private boolean readAllowed(String tableName) {
-		if(tableName == null) return false;
-
-		String table = tableName.toLowerCase();
+	private boolean readAllowed(@Nullable String tableName) {
+		if (StringUtils.isBlank(tableName)) return false;
+		if (StringUtils.isBlank(JDBC_PERMISSION_RULES)) {
+			log.debug("No JDBC table permissions are defined, default deny");
+			return false;
+		}
 		String[] rulesList = JDBC_PERMISSION_RULES.split("\\|");
 		for (String rule: rulesList) {
 			String[] parts = rule.trim().split("\\s+");
@@ -260,17 +263,19 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				continue;
 			}
 
-			String tablePattern = parts[0].toLowerCase();
+			String tablePattern = parts[0];
 			String role = parts[1];
 			String type = parts[2];
-			log.debug("check allow read table [{}] with rule table [{}] role [{}] and type [{}]", table, tablePattern, role, type);
-			if ("*".equals(tablePattern) || table.equals(tablePattern)) {
+			log.debug("check allow read table [{}] with rule table [{}] role [{}] and type [{}]", tableName, tablePattern, role, type);
+			if ("*".equals(tablePattern) || tableName.equalsIgnoreCase(tablePattern)) {
 				log.debug("table match");
 				if ("*".equals(role) || BusMessageUtils.hasRole(role)) {
 					log.debug("role match, type [{}]", type);
-					if ("allow".equals(type)) {
+					if ("allow".equalsIgnoreCase(type)) {
+						log.debug("rule match, allow");
 						return true;
-					} else if ("deny".equals(type)) {
+					} else if ("deny".equalsIgnoreCase(type)) {
+						log.debug("rule match, deny");
 						return false;
 					} else {
 						log.error("invalid rule type");
@@ -279,7 +284,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			}
 		}
 
-		log.debug("deny");
+		log.debug("no rule match, deny");
 		return false;
 	}
 }
