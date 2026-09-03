@@ -37,7 +37,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 	public ToStringResult toString(Object message, String charset) {
 		if (message instanceof Message m) {
 			if (m.isNull()) {
-				return new ToStringResult(null, null, m.getRequestClass());
+				return new ToStringResult(null, null, null);
 			}
 			try {
 				final String type = m.isBinary() ? "UTF-8" : null;
