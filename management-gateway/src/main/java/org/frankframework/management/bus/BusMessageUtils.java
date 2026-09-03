@@ -198,8 +198,7 @@ public class BusMessageUtils {
 			String authority = grantedAuthority.getAuthority();
 			if (authority == null) continue;
 			String authorityName = authority.substring(5); // Chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
-			boolean granted = authorityName.equals(role);
-			if (granted) {
+			if (authorityName.equals(role)) {
 				return true;
 			}
 		}
