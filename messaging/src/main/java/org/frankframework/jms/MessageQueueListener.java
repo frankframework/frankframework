@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.StreamCorruptedException;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
@@ -50,7 +51,7 @@ public class MessageQueueListener extends PullingJmsListener {
 	public Message extractMessage(@NonNull RawMessageWrapper<jakarta.jms.Message> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		MessageWrapper<?> messageWrapper;
 		try {
-			messageWrapper = extractMessageWrapper(rawMessage.getRawMessage());
+			messageWrapper = extractMessageWrapper(Objects.requireNonNull(rawMessage.getRawMessage(), "Cannot perform this operation with NULL JMS Message"));
 		} catch (JMSException | IOException | ClassNotFoundException e) {
 			throw new ListenerException(e);
 		}
