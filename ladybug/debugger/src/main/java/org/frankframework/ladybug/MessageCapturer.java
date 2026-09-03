@@ -18,14 +18,15 @@ package org.frankframework.ladybug;
 import java.io.Writer;
 import java.util.function.Consumer;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.MessageCapturerImpl;
-
-import lombok.Setter;
 
 public class MessageCapturer extends MessageCapturerImpl {
 
-	private @Setter @Autowired int maxMessageLength;
+	private final int maxMessageLength;
+
+	public MessageCapturer(int maxMessageLength) {
+		this.maxMessageLength = maxMessageLength;
+	}
 
 	@Override
 	public StreamingType getStreamingType(Object message) {
