@@ -90,7 +90,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
-		if (input==null) {
+		if (Message.isEmpty(input)) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
 

@@ -47,7 +47,7 @@ public class BooleanParameter extends AbstractParameter<Boolean> {
 
 		log.debug("Parameter [{}] converting result [{}] to boolean", this::getName, () -> request);
 		String ob = request.asString();
-		if (ob == null) {
+		if (ob.isEmpty()) {
 			return Boolean.FALSE;
 		}
 		ob = ob.trim();
