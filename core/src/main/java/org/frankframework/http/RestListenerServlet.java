@@ -127,9 +127,7 @@ public class RestListenerServlet extends AbstractHttpServlet {
 				if (Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
 					int status = Integer.parseInt(("" + messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY)).trim());
 
-					if (HttpStatus.resolve(status) != null) {
-						response.setStatus(status);
-					}
+					response.setStatus(HttpStatusResolver.resolveHttpStatusCode(status));
 
 					log.trace("aborted request with status [{}]", status);
 					return;
@@ -139,14 +137,12 @@ public class RestListenerServlet extends AbstractHttpServlet {
 				if (StringUtils.isNotEmpty(etag))
 					response.setHeader("etag", etag);
 
-				int statusCode = 0;
-				if (messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY)) {
-					statusCode = Integer.parseInt(("" + messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY)).trim());
-				}
-
-				if (statusCode > 0 && HttpStatus.resolve(statusCode) != null) {
-					response.setStatus(statusCode);
-				}
+				/*
+				 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
+				 * Should always be a valid HTTP status code.
+				 */
+				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 200);
+				response.setStatus(HttpStatusResolver.resolveHttpStatusCode(statusCode));
 
 				if (Message.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
@@ -174,7 +170,7 @@ public class RestListenerServlet extends AbstractHttpServlet {
 			} catch (ListenerException e) {
 				if (!response.isCommitted()) {
 					log.warn("RestListenerServlet caught exception, return internal server error",e);
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
+					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
 				} else {
 					log.warn("RestListenerServlet caught exception, response already committed",e);
 					throw new ServletException("RestListenerServlet caught exception, response already committed",e);

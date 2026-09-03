@@ -55,6 +55,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.http.HttpHeaderUtils;
+import org.frankframework.http.HttpStatusResolver;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.http.mime.MultipartUtils.MultipartMessages;
 import org.frankframework.jwt.AuthorizationException;
@@ -148,7 +149,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			method = EnumUtils.parse(ApiListener.HttpMethod.class, request.getMethod());
 		} catch (IllegalArgumentException e) {
 			response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
-			LOG.warn("{} method [{}] not allowed", () -> createAbortMessage(remoteUser, 405), request::getMethod);
+			LOG.warn("{} method [{}] not allowed", () -> createAbortMessage(remoteUser, HttpStatus.METHOD_NOT_ALLOWED.value()), request::getMethod);
 			return;
 		}
 
@@ -158,7 +159,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 		if (uri == null) {
 			response.setStatus(HttpStatus.BAD_REQUEST.value());
-			LOG.warn("{} empty uri", () -> createAbortMessage(remoteUser, 400));
+			LOG.warn("{} empty uri", () -> createAbortMessage(remoteUser, HttpStatus.BAD_REQUEST.value()));
 			return;
 		}
 		if(uri.endsWith("/")) {
@@ -194,7 +195,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		final String cleanedUri = uri.substring(0, uri.lastIndexOf("/"));
 		ApiDispatchConfig apiConfig = dispatcher.findExactMatchingConfigForUri(cleanedUri);
 		if (apiConfig == null) {
-			response.sendError(404, "OpenApi specification not found");
+			response.sendError(HttpStatus.NOT_FOUND.value(), "OpenApi specification not found");
 			return;
 		}
 		JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
@@ -216,7 +217,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
 		}
 		if (jsonSchema == null) {
-			response.sendError(404, "OpenApi specification not found");
+			response.sendError(HttpStatus.NOT_FOUND.value(), "OpenApi specification not found");
 			return;
 		}
 		returnJson(response, jsonSchema);
@@ -227,7 +228,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 		ApiDispatchConfig config = dispatcher.findConfigForRequest(method, uri);
 		if (config == null) {
-			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
+			LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, HttpStatus.NOT_FOUND.value()), ()-> uri);
 			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return;
 		}
@@ -244,7 +245,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		 */
 		ApiListener listener = config.getApiListener(method);
 		if (listener == null) {
-			LOG.warn("{} method [{}] not found", ()-> createAbortMessage(remoteUser, 405), ()-> method);
+			LOG.warn("{} method [{}] not found", () -> createAbortMessage(remoteUser, HttpStatus.METHOD_NOT_ALLOWED.value()), ()-> method);
 			response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
 			return;
 		}
@@ -289,13 +290,13 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 */
 				final String acceptHeader = request.getHeader("Accept");
 				if (!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
-					LOG.warn("{} client expects Accept [{}] but listener can only provide [{}]", ()->createAbortMessage(request.getRemoteUser(), 406), ()-> acceptHeader, listener::getContentType);
-					response.sendError(406, "endpoint cannot provide the supplied MimeType");
+					LOG.warn("{} client expects Accept [{}] but listener can only provide [{}]", () -> createAbortMessage(request.getRemoteUser(), HttpStatus.NOT_ACCEPTABLE.value()), ()-> acceptHeader, listener::getContentType);
+					response.sendError(HttpStatus.NOT_ACCEPTABLE.value(), "endpoint cannot provide the supplied MimeType");
 					return;
 				}
 
 				if (!listener.isConsumable(request.getContentType())) {
-					LOG.warn("{} did not match consumes [{}] got [{}] instead", ()-> createAbortMessage(remoteUser, 415), listener::getConsumes, request::getContentType);
+					LOG.warn("{} did not match consumes [{}] got [{}] instead", ()-> createAbortMessage(remoteUser, HttpStatus.UNSUPPORTED_MEDIA_TYPE.value()), listener::getConsumes, request::getContentType);
 					response.setStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
 					return;
 				}
@@ -403,12 +404,10 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 				/*
 				 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
-				 * Sets it as a response status if it's a valid HTTP status code.
+				 * Should always be a valid HTTP status code.
 				 */
-				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
-				if (statusCode > 0 && HttpStatus.resolve(statusCode) != null) {
-					response.setStatus(statusCode);
-				}
+				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 200);
+				response.setStatus(HttpStatusResolver.resolveHttpStatusCode(statusCode));
 
 				if (method != ApiListener.HttpMethod.HEAD) {
 					/*
@@ -426,12 +425,12 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				LOG.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
 				try {
 					response.reset();
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-				}
-				catch (IOException | IllegalStateException ex) {
+					response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+
+				} catch (IOException | IllegalStateException ex) {
 					LOG.warn("an error occurred while trying to handle exception [{}]", e.getMessage(), ex);
 					// We're only informing the end user(s), no need to catch this error...
-					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+					response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 				}
 			}
 		}
@@ -500,11 +499,11 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
 					} catch (Exception e) {
 						LOG.warn("unable to validate jwt",e);
-						response.sendError(401, e.getMessage());
+						response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
 						return null;
 					}
 				} else {
-					response.sendError(401, "JWT is not provided as bearer token");
+					response.sendError(HttpStatus.UNAUTHORIZED.value(), "JWT is not provided as bearer token");
 					return null;
 				}
 				String requiredClaims = listener.getRequiredClaims();
@@ -527,7 +526,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						userPrincipal = new ApiPrincipal();
 					}
 				} catch (AuthorizationException e) {
-					response.sendError(403, e.getMessage());
+					response.sendError(HttpStatus.FORBIDDEN.value(), e.getMessage());
 					return null;
 				}
 
@@ -546,7 +545,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			}
 
 			response.setStatus(HttpStatus.UNAUTHORIZED.value());
-			LOG.warn("{} no (valid) credentials supplied", ()->createAbortMessage(request.getRemoteUser(), 401));
+			LOG.warn("{} no (valid) credentials supplied", () -> createAbortMessage(request.getRemoteUser(), HttpStatus.UNAUTHORIZED.value()));
 			return null;
 		}
 
@@ -579,7 +578,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				String ifNoneMatch = request.getHeader("If-None-Match");
 				if (ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 					response.setStatus(HttpStatus.NOT_MODIFIED.value());
-					if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", ()->createAbortMessage(remoteUser, 304), ()->ifNoneMatch);
+					if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", () -> createAbortMessage(remoteUser, HttpStatus.NOT_MODIFIED.value()), ()->ifNoneMatch);
 					return null;
 				}
 			}
@@ -587,7 +586,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				String ifMatch = request.getHeader("If-Match");
 				if (ifMatch != null && !ifMatch.equals(cachedEtag)) {
 					response.setStatus(HttpStatus.PRECONDITION_FAILED.value());
-					LOG.warn("{} matched if-match [{}] method [{}]", ()->createAbortMessage(remoteUser, 412), ()->ifMatch, ()-> method);
+					LOG.warn("{} matched if-match [{}] method [{}]", () -> createAbortMessage(remoteUser, HttpStatus.PRECONDITION_FAILED.value()), ()->ifMatch, ()-> method);
 					return null;
 				}
 			}
@@ -654,8 +653,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 			try {
 				return MessageUtils.parseContentAsMessage(request);
 			} catch (IOException e) {
-				LOG.warn(() -> "%s Could not read request: %s".formatted(createAbortMessage(remoteUser, 400), e.getMessage()), e);
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not read request");
+				LOG.warn(() -> "%s Could not read request: %s".formatted(createAbortMessage(remoteUser, HttpStatus.BAD_REQUEST.value()), e.getMessage()), e);
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "Could not read request");
 				return null;
 			}
 		}
@@ -674,9 +673,9 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				pipelineSession.put(fieldName, entry.getValue());
 			}
 			pipelineSession.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, parts.multipartXml());
-		} catch(IOException e) {
-			LOG.warn(() -> "%s Could not read mime multipart request: %s".formatted(createAbortMessage(remoteUser, 400), e.getMessage()), e);
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not read mime multipart request");
+		} catch (IOException e) {
+			LOG.warn(() -> "%s Could not read mime multipart request: %s".formatted(createAbortMessage(remoteUser, HttpStatus.BAD_REQUEST.value()), e.getMessage()), e);
+			response.sendError(HttpStatus.BAD_REQUEST.value(), "Could not read mime multipart request");
 			return null;
 		}
 

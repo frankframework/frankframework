@@ -24,6 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -37,7 +38,7 @@ public class CsrfCookieFilter extends OncePerRequestFilter {
 		if(csrfEnabled) {
 			CsrfToken csrfToken = (CsrfToken) request.getAttribute("_csrf");
 			if(csrfToken == null) {
-				response.sendError(500, "CSRF is enabled but cannot be found in the Spring Context");
+				response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "CSRF is enabled but cannot be found in the Spring Context");
 				return;
 			}
 
