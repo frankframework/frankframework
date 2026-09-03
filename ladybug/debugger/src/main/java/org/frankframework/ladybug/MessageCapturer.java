@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package org.frankframework.ladybug;
 
-import java.io.OutputStream;
 import java.io.Writer;
 import java.util.function.Consumer;
 
@@ -24,59 +23,27 @@ import org.wearefrank.ladybug.MessageCapturerImpl;
 
 import lombok.Setter;
 
-import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
-import org.frankframework.util.StreamUtil;
-
 public class MessageCapturer extends MessageCapturerImpl {
 
 	private @Setter @Autowired int maxMessageLength;
 
 	@Override
 	public StreamingType getStreamingType(Object message) {
-		if (message instanceof Message m) {
-			if (m.requiresStream()) {
-				return m.isBinary() ? StreamingType.BYTE_STREAM : StreamingType.CHARACTER_STREAM;
-			}
-		} else {
-			if (message instanceof WriterPlaceHolder) {
-				return StreamingType.CHARACTER_STREAM;
-			}
+		if (message instanceof WriterPlaceHolder) {
+			return StreamingType.CHARACTER_STREAM;
 		}
+
 		return super.getStreamingType(message);
 	}
 
 	@Override
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
-		if (message instanceof Message message1) {
-			try (writer) {
-				StreamUtil.copyPartialReader(message1.asReader(), writer, maxMessageLength, StreamUtil.BUFFER_SIZE);
-			} catch (Throwable t) {
-				exceptionNotifier.accept(t);
-				CloseUtils.closeSilently(writer);
-			}
-			return message;
-		}
 		if (message instanceof WriterPlaceHolder writerPlaceHolder) {
 			writerPlaceHolder.setWriter(writer);
 			writerPlaceHolder.setSizeLimit(maxMessageLength);
 			return message;
 		}
-		return super.toWriter(message, writer, exceptionNotifier);
-	}
 
-	@Override
-	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier, Consumer<Throwable> exceptionNotifier) {
-		if (message instanceof Message m) {
-			charsetNotifier.accept(m.getCharset());
-			try (outputStream) {
-				StreamUtil.copyPartialStream(m.asInputStream(), outputStream, maxMessageLength, StreamUtil.BUFFER_SIZE);
-			} catch (Throwable t) {
-				exceptionNotifier.accept(t);
-				CloseUtils.closeSilently(outputStream);
-			}
-			return message;
-		}
-		return super.toOutputStream(message, outputStream, charsetNotifier, exceptionNotifier);
+		return super.toWriter(message, writer, exceptionNotifier);
 	}
 }
