@@ -74,7 +74,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-sonarjs": "^4.2.0",
-    "eslint-plugin-unicorn": "^73.0.0",
+    "eslint-plugin-unicorn": "^74.0.0",
     "happy-dom": "^20.11.6",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3",

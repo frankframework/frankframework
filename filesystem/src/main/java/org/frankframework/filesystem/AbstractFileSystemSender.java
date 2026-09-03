@@ -100,9 +100,7 @@ public abstract class AbstractFileSystemSender<F, S extends IBasicFileSystem<F>>
 		ParameterValueList pvl = null;
 
 		try {
-			if (paramList !=null) {
-				pvl = paramList.getValues(message, session);
-			}
+			pvl = paramList.getValues(message, session);
 		} catch (ParameterException e) {
 			throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}

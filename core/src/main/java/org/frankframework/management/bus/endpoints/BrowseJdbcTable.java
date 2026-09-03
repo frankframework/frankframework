@@ -22,7 +22,6 @@ import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +34,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
 
@@ -249,40 +249,42 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				+ "</browseJdbcTableExecuteREQ>";
 	}
 
-	private boolean readAllowed(String tableName) {
-		if(tableName == null) return false;
-
-		String table = tableName.toLowerCase();
-		List<String> rulesList = Arrays.asList(JDBC_PERMISSION_RULES.split("\\|"));
+	private boolean readAllowed(@Nullable String tableName) {
+		if (StringUtils.isBlank(tableName)) return false;
+		if (StringUtils.isBlank(JDBC_PERMISSION_RULES)) {
+			log.debug("No JDBC table permissions are defined, default deny");
+			return false;
+		}
+		String[] rulesList = JDBC_PERMISSION_RULES.split("\\|");
 		for (String rule: rulesList) {
-			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
-			if (parts.size() != 3) {
-				log.debug("invalid rule [{}] contains {} part(s): {}", rule, parts.size(), parts);
+			String[] parts = rule.trim().split("\\s+");
+			if (parts.length != 3) {
+				log.debug("invalid rule [{}] contains {} part(s): {}", rule, parts.length, parts);
 				continue;
 			}
 
-			String tablePattern = parts.getFirst().toLowerCase();
-			if (tablePattern != null) {
-				String role = parts.get(1);
-				String type = parts.get(2);
-				log.debug("check allow read table [{}] with rule table [{}] role [{}] and type [{}]", table, tablePattern, role, type);
-				if ("*".equals(tablePattern) || table.equals(tablePattern)) {
-					log.debug("table match");
-					if ("*".equals(role) || BusMessageUtils.hasRole(role)) {
-						log.debug("role match, type [{}]", type);
-						if ("allow".equals(type)) {
-							return true;
-						} else if ("deny".equals(type)) {
-							return false;
-						} else {
-							log.error("invalid rule type");
-						}
+			String tablePattern = parts[0];
+			String role = parts[1];
+			String type = parts[2];
+			log.debug("check allow read table [{}] with rule table [{}] role [{}] and type [{}]", tableName, tablePattern, role, type);
+			if ("*".equals(tablePattern) || tableName.equalsIgnoreCase(tablePattern)) {
+				log.debug("table match");
+				if ("*".equals(role) || BusMessageUtils.hasRole(role)) {
+					log.debug("role match, type [{}]", type);
+					if ("allow".equalsIgnoreCase(type)) {
+						log.debug("rule match, allow");
+						return true;
+					} else if ("deny".equalsIgnoreCase(type)) {
+						log.debug("rule match, deny");
+						return false;
+					} else {
+						log.error("invalid rule type");
 					}
 				}
 			}
 		}
 
-		log.debug("deny");
+		log.debug("no rule match, deny");
 		return false;
 	}
 }

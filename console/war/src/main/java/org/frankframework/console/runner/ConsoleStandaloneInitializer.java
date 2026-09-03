@@ -128,9 +128,7 @@ public class ConsoleStandaloneInitializer {
 
 		@Override
 		public void onApplicationEvent(ApplicationFailedEvent event) {
-			if (event.getException() != null) {
-				log.fatal("unable to start application", event.getException());
-			}
+			log.fatal("unable to start application", event.getException());
 
 			System.exit(1); // Terminate the JVM
 		}
