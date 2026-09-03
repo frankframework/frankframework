@@ -30,7 +30,7 @@ import org.frankframework.stream.Message;
 public class MessageBrowsingUtil {
 	private static final Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
 
-	public static @Nullable String getMessageText(@Nullable RawMessageWrapper<?> rawMessageWrapper, IListener listener) throws IOException {
+	public static @Nullable String getMessageText(@Nullable RawMessageWrapper<?> rawMessageWrapper, IListener<?> listener) throws IOException {
 		if (rawMessageWrapper == null || rawMessageWrapper.getRawMessage() == null) {
 			return null;
 		}
@@ -39,7 +39,7 @@ public class MessageBrowsingUtil {
 			return messageWrapper.getMessage().asString();
 		}
 		Object rawMessage = rawMessageWrapper.getRawMessage();
-		if (rawMessage instanceof Message message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
+		if (rawMessage instanceof Message message) { // For backwards compatibility: earlier MessageLog messabges were stored as Message.
 			return message.asString();
 		} else if (rawMessage instanceof String string) { // For backwards compatibility: earlier MessageLog messages were stored as String.
 			return string;

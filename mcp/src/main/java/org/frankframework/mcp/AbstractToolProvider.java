@@ -146,7 +146,7 @@ public abstract class AbstractToolProvider implements McpToolProvider {
 	protected static Boolean booleanArg(CallToolRequest request, String name) {
 		Object value = request.arguments().get(name);
 		if (value == null) {
-			return null;
+			return Boolean.FALSE;
 		}
 		if (value instanceof Boolean bool) {
 			return bool;
