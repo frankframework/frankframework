@@ -41,6 +41,8 @@ import org.frankframework.util.StringUtil;
  * (the {@link org.frankframework.stream.MessageContext} of the input {@link Message}), and optionally
  * a number of {@link PipeLineSession} keys. This is the JMS-based alternative for the database-based
  * {@link org.frankframework.jdbc.MessageStoreSender}.
+ *
+ * {@inheritClassDoc}
  */
 public class MessageQueueSender extends JmsSender {
 

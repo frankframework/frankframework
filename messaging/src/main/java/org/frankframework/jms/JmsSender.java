@@ -71,6 +71,7 @@ import org.frankframework.util.XmlException;
  *
  * @ff.parameters All parameters present are set as message-properties.
  * @ff.parameter SoapAction Automatically filled from attribute <code>soapAction</code>
+ * @ff.parameter correlationId Sets the message correlationId from the parameter, instead of the pipeline session.
  *
  * @author Gerrit van Brakel
  */
