@@ -6,7 +6,7 @@ The reverse proxy can be used to test websockets and cors/csrf protection.
 
 ## Usage
 
-To start FF! Test the Nginx container, run the following command from the `docker` folder:
+To start FF! Test and the Nginx container together, run the following command from the `docker` folder:
 
 ```bash
 docker compose -f tomcat.yml -f nginx.yml up -d
