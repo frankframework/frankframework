@@ -4,9 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
+import java.io.ObjectInputStream;
 import java.util.Map;
 
-import jakarta.jms.ObjectMessage;
+import jakarta.jms.BytesMessage;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.RenamingObjectInputStream;
 
 class MessageQueueSenderTest {
 	private TestConfiguration configuration;
@@ -73,9 +75,12 @@ class MessageQueueSenderTest {
 
 		// Assert
 		jakarta.jms.Message message = mockQueue.getMessage();
+		BytesMessage bytesMessage = assertInstanceOf(BytesMessage.class, message);
 
-		ObjectMessage objectMessage = assertInstanceOf(ObjectMessage.class, message);
-		Object object = objectMessage.getObject();
+		// Read the data
+		BytesMessageInputStream bmis = new BytesMessageInputStream(bytesMessage);
+		ObjectInputStream ois = new RenamingObjectInputStream(bmis);
+		Object object = ois.readObject();
 
 		MessageWrapper<?> messageWrapper = assertInstanceOf(MessageWrapper.class, object);
 		Message result = messageWrapper.getMessage();
