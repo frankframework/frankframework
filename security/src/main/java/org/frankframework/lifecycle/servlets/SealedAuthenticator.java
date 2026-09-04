@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.jspecify.annotations.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -50,7 +51,7 @@ public class SealedAuthenticator extends AbstractServletAuthenticator {
 		@Override
 		public void commence(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull AuthenticationException authException) throws IOException {
 			// Block all requests
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access Denied, configure an authenticator to enable web access.");
+			response.sendError(HttpStatus.UNAUTHORIZED.value(), "Access Denied, configure an authenticator to enable web access.");
 		}
 	}
 }
