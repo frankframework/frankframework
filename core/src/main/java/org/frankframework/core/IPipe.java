@@ -113,8 +113,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	/**
 	 * If set, input is taken from this session key, instead of regular input. If the session-key does not exist or is empty, then the input will
 	 * instead be taken from the {@code defaultValue}.
-	 * If there is no {@code defaultValue} and the session-key is missing, then pipe that is not a {@link org.frankframework.pipes.FixedForwardPipe} will
-	 * throw an exception that the session-key is missing.
+	 * If there is no {@code defaultValue} and the session-key is missing, the pipe always throws an exception that the session-key is missing.
 	 */
 	void setGetInputFromSessionKey(String string);
 	String getGetInputFromSessionKey();
