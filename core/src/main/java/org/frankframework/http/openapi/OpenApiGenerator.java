@@ -221,7 +221,8 @@ public class OpenApiGenerator {
 			}
 
 			JsonObjectBuilder exit = Json.createObjectBuilder();
-			exit.add("description", HttpStatusResolver.resolveHttpStatus(exitCode).getReasonPhrase());
+			HttpStatusResolver.getReasonPhrase(exitCode)
+					.ifPresent(reasonPhrase -> exit.add("description", reasonPhrase));
 
 			Optional<Json2XmlValidator> outputValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, pipeLineExit.getName());
 			outputValidator.ifPresent(validator -> addComponentsToTheSchema(schemas, validator.getXSModels()));

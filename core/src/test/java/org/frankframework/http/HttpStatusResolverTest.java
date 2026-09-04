@@ -17,6 +17,9 @@ package org.frankframework.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,12 +27,27 @@ public class HttpStatusResolverTest {
 
 	@Test
 	void resolveHttpStatusCodeWithValidStatusCodeReturnsCorrectValue() {
-		int result = HttpStatusResolver.resolveHttpStatusCode(200);
+		int result = HttpStatusResolver.validateHttpStatusCode(200);
 		assertEquals(200, result);
 	}
 
 	@Test
+	void customHttpStatusCodeReturnsEmptyReasonPhrase() {
+		Optional<String> reasonPhrase = HttpStatusResolver.getReasonPhrase(599);
+
+		assertTrue(reasonPhrase.isEmpty());
+	}
+
+	@Test
+	void validHttpStatusCodeReturnsCorrectReasonPhrase() {
+		Optional<String> reasonPhrase = HttpStatusResolver.getReasonPhrase(200);
+
+		assertTrue(reasonPhrase.isPresent());
+		assertEquals("OK", reasonPhrase.get());
+	}
+
+	@Test
 	void resolveHttpStatusCodeWithInvalidStatusCodeThrowsException() {
-		assertThrows(IllegalArgumentException.class, () -> HttpStatusResolver.resolveHttpStatusCode(234));
+		assertThrows(IllegalArgumentException.class, () -> HttpStatusResolver.validateHttpStatusCode(80));
 	}
 }

@@ -407,7 +407,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * Should always be a valid HTTP status code.
 				 */
 				int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 200);
-				response.setStatus(HttpStatusResolver.resolveHttpStatusCode(statusCode));
+				response.setStatus(HttpStatusResolver.validateHttpStatusCode(statusCode));
 
 				if (method != ApiListener.HttpMethod.HEAD) {
 					/*
