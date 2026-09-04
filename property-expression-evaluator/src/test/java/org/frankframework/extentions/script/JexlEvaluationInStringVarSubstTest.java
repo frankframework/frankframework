@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -118,5 +119,21 @@ public class JexlEvaluationInStringVarSubstTest {
 
 		// Assert
 		assertEquals("true", result);
+	}
+
+	@Test
+	void testHiddenValue() {
+		// Arrange
+		Map<String, Object> vars = new HashMap<>();
+		vars.put("egel", "should-be-hidden");
+
+		String input = "${=egel}";
+
+		// Act
+		Set<String> hidden = Set.of("egel");
+		String result = StringResolver.substVars(input, vars, null, hidden);
+
+		// Assert
+		assertEquals("****************", result);
 	}
 }
