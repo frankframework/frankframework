@@ -67,7 +67,6 @@ import org.frankframework.core.IbisException;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jms.factory.IConnectionFactoryFactory;
@@ -570,7 +569,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return messageConsumer;
 	}
 
-	public @Nullable String send(@NonNull Session session, @Nullable Destination dest, String correlationId, Message message, PipeLineSession pipeLineSession, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
+	public @Nullable String send(@NonNull Session session, @Nullable Destination dest, String correlationId, Message message, PipeLineSession pipeLineSession, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, IOException {
 		jakarta.jms.Message msg = createMessage(session, correlationId, message, pipeLineSession);
 		try (MessageProducer mp = session.createProducer(dest)) {
 			if (messageType!=null) {

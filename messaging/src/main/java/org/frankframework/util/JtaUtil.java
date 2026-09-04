@@ -49,42 +49,53 @@ public class JtaUtil {
 //	}
 
 	public static String displayTransactionStatus(TransactionStatus txStatus) {
-		String result;
-		result="txName ["+TransactionSynchronizationManager.getCurrentTransactionName()+"]";
+		StringBuilder result;
+		result = new StringBuilder("txName [" + TransactionSynchronizationManager.getCurrentTransactionName() + "]");
 		if (txStatus!=null) {
-			result+=" status new ["+txStatus.isNewTransaction()+"]";
-			result+=" status completeted ["+txStatus.isCompleted()+"]";
-			result+=" status rollbackOnly ["+txStatus.isRollbackOnly()+"]";
-			result+=" status hasSavepoint ["+txStatus.hasSavepoint()+"]";
+			result.append(" status new [").append(txStatus.isNewTransaction()).append("]");
+			result.append(" status completeted [").append(txStatus.isCompleted()).append("]");
+			result.append(" status rollbackOnly [").append(txStatus.isRollbackOnly()).append("]");
+			result.append(" status hasSavepoint [").append(txStatus.hasSavepoint()).append("]");
 		} else {
-			result+=" currently not in a transaction";
+			result.append(" currently not in a transaction");
 		}
-		result+=" isolation ["+TransactionSynchronizationManager.getCurrentTransactionIsolationLevel()+"]";
-		result+=" active ["+TransactionSynchronizationManager.isActualTransactionActive()+"]";
+		result.append(" isolation [").append(TransactionSynchronizationManager.getCurrentTransactionIsolationLevel()).append("]");
+		result.append(" active [").append(TransactionSynchronizationManager.isActualTransactionActive()).append("]");
 		boolean syncActive=TransactionSynchronizationManager.isSynchronizationActive();
-		result+=" synchronization active ["+syncActive+"]";
-		result+="\n";
+		result.append(" synchronization active [").append(syncActive).append("]");
+		result.append("\n");
+
 		Map<Object, Object> resources = TransactionSynchronizationManager.getResourceMap();
-		result += "resources:\n";
-		if (resources==null) {
-			result+="  map is null\n";
+		result.append("resources:\n");
+
+		if (resources.isEmpty()) {
+			result.append("  map is null\n");
 		} else {
-			for (Object key : resources.keySet()) {
-				Object resource = resources.get(key);
-				result += ClassUtils.nameOf(key) + "(" + key + "): " + ClassUtils.nameOf(resource) + "(" + resource + ")\n";
+			for (Map.Entry<Object, Object> entry : resources.entrySet()) {
+				Object key = entry.getKey();
+				Object resource = entry.getValue();
+
+				result.append(ClassUtils.nameOf(key))
+						.append("(")
+						.append(key)
+						.append("): ")
+						.append(ClassUtils.nameOf(resource))
+						.append("(")
+						.append(resource)
+						.append(")\n");
 				if (resource instanceof JmsResourceHolder jrh) {
-					result += "  connection: " + jrh.getConnection() + ", session: " + jrh.getSession() + "\n";
+					result.append("  connection: ").append(jrh.getConnection()).append(", session: ").append(jrh.getSession()).append("\n");
 				}
 			}
 		}
 		if (syncActive) {
 			List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
-			result += "synchronizations:\n";
+			result.append("synchronizations:\n");
 			for (TransactionSynchronization synchronization : synchronizations) {
-				result += ClassUtils.nameOf(synchronization) + "(" + synchronization + ")\n";
+				result.append(ClassUtils.nameOf(synchronization)).append("(").append(synchronization).append(")\n");
 			}
 		}
-		return result;
+		return result.toString();
 	}
 
 
