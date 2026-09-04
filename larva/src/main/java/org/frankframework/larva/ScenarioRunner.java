@@ -16,6 +16,7 @@
 package org.frankframework.larva;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +36,8 @@ import org.springframework.context.ApplicationContext;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaScenarioAction;
@@ -328,10 +331,10 @@ public class ScenarioRunner {
 		return LarvaTool.RESULT_ERROR;
 	}
 
-	private int executeActionReadStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, String fileName, Message expected) {
+	int executeActionReadStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, String fileName, Message expected) {
 		String actionName = step.getActionTarget();
 		try {
-			Message message = scenarioAction.executeRead(step.getStepParameters());
+			Message message = executeReadUntilWaitForConditionMetOrTimeout(scenario, step, scenarioAction, fileName, expected);
 			if (message == null) {
 				if (StringUtils.isEmpty(fileName)) {
 					return LarvaTool.RESULT_OK;
@@ -353,6 +356,43 @@ public class ScenarioRunner {
 		}
 
 		return LarvaTool.RESULT_ERROR;
+	}
+
+	/**
+	 * Reads once, then -- only when {@code waitfor.timeout} is set and this is a real comparison step (not a null-message,
+	 * empty-fileName, or ignored-fileName step) -- polls on {@code waitfor.interval} until either the wait condition is met
+	 * or the timeout elapses. The wait condition is {@code waitfor.xPath} evaluated against the actual result when set,
+	 * otherwise a silent full-content comparison against {@code expected}. Either way, the last read message is returned
+	 * for the caller to report exactly once via the normal (full-content) {@link LarvaTool#compareResult} path.
+	 */
+	private Message executeReadUntilWaitForConditionMetOrTimeout(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, String fileName, Message expected)
+			throws SenderException, IOException, TimeoutException, ListenerException {
+		Message message = scenarioAction.executeRead(step.getStepParameters());
+
+		long waitForTimeoutMillis = step.getWaitForTimeoutMillis();
+		if (waitForTimeoutMillis <= 0 || message == null || StringUtils.isEmpty(fileName) || fileName.endsWith("ignore")) {
+			return message;
+		}
+
+		long deadline = System.currentTimeMillis() + waitForTimeoutMillis;
+		while (!isWaitForConditionMet(scenario, step, fileName, expected, message) && System.currentTimeMillis() < deadline) {
+			try {
+				Thread.sleep(step.getWaitForIntervalMillis());
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				break;
+			}
+			message = scenarioAction.executeRead(step.getStepParameters());
+		}
+		return message;
+	}
+
+	private boolean isWaitForConditionMet(Scenario scenario, Step step, String fileName, Message expected, Message message) {
+		String waitForXPath = step.getWaitForXPath();
+		if (waitForXPath != null) {
+			return larvaTool.evaluateWaitForExpression(waitForXPath, message);
+		}
+		return larvaTool.isResultEqual(scenario, step, fileName, expected, message);
 	}
 
 	private void scenarioError(Scenario scenario, String message, Exception e) {
