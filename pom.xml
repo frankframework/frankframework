@@ -20,7 +20,7 @@
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -76,7 +76,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- NB: We need to stay on target JDK21 as long as the JBoss / WildFly images we build for our Larva tests do not support JDK25 -->
 		<maven.compiler.target>21</maven.compiler.target>
-		<!-- Need this property for the Jenkins build system to determine correct build JDK version, which needs to be JDK25 for Frank!Doc (and JDK25 changes in JavaDoc) -->
+		<!-- Need this property for the Jenkins build system to determine correct build JDK version, which needs to be JDK25 for Frank!Doc (and JDK25 changes in Javadoc) -->
 		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<lombok.version>1.18.46</lombok.version>
