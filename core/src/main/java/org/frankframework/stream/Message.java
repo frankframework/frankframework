@@ -455,7 +455,7 @@ public class Message implements Serializable {
 			case URL rL -> new UrlMessage(rL);
 			case File file -> new FileMessage(file);
 			case Path path -> new PathMessage(path);
-			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
+			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / unwrapping should be done via Listener.");
 			default -> // Constructor will reject unsupported types
 					new Message(new MessageContext(), object);
 		};

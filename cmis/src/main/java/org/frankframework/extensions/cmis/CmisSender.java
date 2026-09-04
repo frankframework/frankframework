@@ -24,7 +24,6 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -387,8 +386,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			}
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
-				Property<?> property = it.next();
+			for (Property<?> property : document.getProperties()) {
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
 			}
 			XmlBuilder cmisXml = new XmlBuilder("cmis");

@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.67.0</version>
+			<version>6.69.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-core-http-okhttp</artifactId>
-			<version>1.13.6</version>
+			<version>1.13.7</version>
 			<scope>test</scope>
 		</dependency>
 

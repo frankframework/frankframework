@@ -155,7 +155,7 @@ public class Json2Xml extends XmlAligner {
 		if (potentialRootElements.isEmpty()) {
 			throw new SAXException("Cannot determine XML root element, neither from attribute rootElement, nor from JSON node");
 		}
-		if(potentialRootElements.size() == 1) {
+		if (potentialRootElements.size() == 1) {
 			setRootElement(potentialRootElements.getFirst());
 		} else {
 			String namesList = potentialRootElements.stream().limit(5).collect(Collectors.joining(","));
@@ -205,20 +205,18 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-	private String getNodeText(JsonValue node) throws SAXException {
-		String result;
-		if (node instanceof JsonString string) {
-			result=string.getString();
-		} else if (node instanceof JsonArray) {
-			throw new SAXException("Expected simple element, got instead an array-value: [" + node + "]");
-		} else if (node instanceof JsonObject jsonObject) { // this happens when override key is present without a value
-			if (!jsonObject.isEmpty()) {
-				throw new SAXException("Expected simple element, got instead an object-value: [" + node + "]");
+	private @Nullable String getNodeText(JsonValue node) throws SAXException {
+		String result = switch (node) {
+			case JsonString string -> string.getString();
+			case JsonArray ignored -> throw new SAXException("Expected simple element, got instead an array-value: [" + node + "]");
+			case JsonObject jsonObject -> {
+				if (!jsonObject.isEmpty()) {
+					throw new SAXException("Expected simple element, got instead an object-value: [" + node + "]");
+				}
+				yield null;
 			}
-			result=null;
-		} else {
-			result=node.toString();
-		}
+			default -> node.toString();
+		};
 		if ("{}".equals(result)) {
 			result="";
 		}
@@ -513,22 +511,28 @@ public class Json2Xml extends XmlAligner {
 			return;
 		}
 		visitedTypes.add(particle);
-		if (term instanceof XSModelGroup modelGroup) {
-			XSObjectList modelGroupParticles = modelGroup.getParticles();
-			for (Object childObject : modelGroupParticles) {
-				XSParticle childParticle = (XSParticle) childObject;
-				getChildElementNamesRecursive(childParticle, names, visitedTypes);
+		switch (term) {
+			case XSModelGroup modelGroup -> {
+				XSObjectList modelGroupParticles = modelGroup.getParticles();
+				for (Object childObject : modelGroupParticles) {
+					XSParticle childParticle = (XSParticle) childObject;
+					getChildElementNamesRecursive(childParticle, names, visitedTypes);
+				}
 			}
-		} else if (term instanceof XSElementDeclaration elementDeclaration) {
-			XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
-			if (typeDefinition.getTypeCategory()!=XSTypeDefinition.SIMPLE_TYPE) {
-				XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
-				getChildElementNamesRecursive(complexTypeDefinition.getParticle(), names, visitedTypes);
+			case XSElementDeclaration elementDeclaration -> {
+				XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
+				if (typeDefinition.getTypeCategory() != XSTypeDefinition.SIMPLE_TYPE) {
+					XSComplexTypeDefinition complexTypeDefinition = (XSComplexTypeDefinition) typeDefinition;
+					getChildElementNamesRecursive(complexTypeDefinition.getParticle(), names, visitedTypes);
+				}
 			}
-		} else if (term instanceof XSWildcard wildcard) {
-			log.debug("XSD contains wildcard element [{}], constraint [{}]/[{}]", term.getName(), wildcard.getConstraintType(), wildcard.getNsConstraintList());
-			// Not sure what to do here to realistically restrict possible child-elements and I'm afraid it can balloon into a lot of unneeded code.
-			names.add(XSD_WILDCARD_ELEMENT_TOKEN);
+			case XSWildcard wildcard -> {
+				log.debug("XSD contains wildcard element [{}], constraint [{}]/[{}]", term.getName(), wildcard.getConstraintType(), wildcard.getNsConstraintList());
+				// Not sure what to do here to realistically restrict possible child-elements and I'm afraid it can balloon into a lot of unneeded code.
+				names.add(XSD_WILDCARD_ELEMENT_TOKEN);
+			}
+			default -> {
+			}
 		}
 	}
 

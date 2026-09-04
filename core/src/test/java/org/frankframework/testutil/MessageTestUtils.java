@@ -32,7 +32,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.StreamUtil;
 
-@SuppressWarnings("resource")
 public class MessageTestUtils {
 	public enum MessageType {
 		CHARACTER_UTF8("/Util/MessageUtils/utf8-with-bom.txt"),

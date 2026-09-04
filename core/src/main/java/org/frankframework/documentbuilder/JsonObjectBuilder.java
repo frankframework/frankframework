@@ -17,7 +17,6 @@ package org.frankframework.documentbuilder;
 
 import org.xml.sax.SAXException;
 
-@SuppressWarnings("resource")
 public class JsonObjectBuilder extends ObjectBuilder {
 
 	private final JsonEventHandler handler;

@@ -206,7 +206,6 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 
-	@SuppressWarnings("removal")
 	@ReferTo(FileSystemActor.class)
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
