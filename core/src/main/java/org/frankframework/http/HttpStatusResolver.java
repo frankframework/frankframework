@@ -28,14 +28,12 @@ import lombok.experimental.UtilityClass;
 public class HttpStatusResolver {
 
 	/**
-	 * Tries to resolve the given status code to a valid HTTP status code. Throws an IllegalArgumentException if it's not valid.
+	 * Tries to resolve the given status code to a HTTP status code.
 	 */
 	public static @NonNull HttpStatusCode getHttpStatusCode(int statusCode) {
-		// Asset here since HttpStatusCode.valueOf() validates status codes >= 600 as valid
-		Assert.isTrue(statusCode >= 100 && statusCode <= 599,
-				() -> "Status code '" + statusCode + "' should be a three-digit positive integer between 100 and 599");
-
-		return HttpStatusCode.valueOf(statusCode);
+		return HttpStatusCode.valueOf(
+				validateHttpStatusCode(statusCode)
+		);
 	}
 
 	/**
@@ -50,9 +48,13 @@ public class HttpStatusResolver {
 	}
 
 	/**
-	 * Tries to resolve the given status code to a valid HTTP status code. Returns the int value if it's valid.
+	 * Validates that the given status code is a three-digit positive integer between 100 and 599. If the status code is invalid thows IllegalArgumentException.
 	 */
 	public static int validateHttpStatusCode(int statusCode) {
-		return getHttpStatusCode(statusCode).value();
+		// Asset here since HttpStatusCode.valueOf() validates status codes >= 600 as valid
+		Assert.isTrue(statusCode >= 100 && statusCode <= 599,
+				() -> "Status code '" + statusCode + "' should be a three-digit positive integer between 100 and 599");
+
+		return statusCode;
 	}
 }
