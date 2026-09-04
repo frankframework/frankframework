@@ -9,7 +9,7 @@ services:
       active.amqp: true
 
   activemq:
-    image: private.docker.nexus.frankframework.org/ff-test/mq/activemq
+    image: ghcr.io/frankframework/mq/activemq
     ports:
       - "5672:5672"
       - "61616:61616"
