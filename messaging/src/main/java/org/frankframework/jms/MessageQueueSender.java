@@ -15,10 +15,14 @@
 */
 package org.frankframework.jms;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.ObjectMessage;
 import jakarta.jms.Session;
@@ -54,7 +58,7 @@ public class MessageQueueSender extends JmsSender {
 	}
 
 	@Override
-	public jakarta.jms. @NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException {
+	public jakarta.jms. @NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException, SenderException {
 		MessageWrapper<?> wrapper = new MessageWrapper<>(message, null, correlationID);
 		if (pipeLineSession != null) {
 			wrapper.getContext().putAll(StringUtil.splitToStream(sessionKeys)
@@ -66,11 +70,18 @@ public class MessageQueueSender extends JmsSender {
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 		}
 
-		ObjectMessage objectMessage = session.createObjectMessage(wrapper);
+		BytesMessage bytesMessage = session.createBytesMessage();
 		if (correlationID != null) {
-			objectMessage.setJMSCorrelationID(correlationID);
+			bytesMessage.setJMSCorrelationID(correlationID);
 		}
-		return objectMessage;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+			oos.writeObject(wrapper);
+		} catch (IOException e) {
+			throw new SenderException(e);
+		}
+		bytesMessage.writeBytes(bos.toByteArray());
+		return bytesMessage;
 	}
 
 	/**
