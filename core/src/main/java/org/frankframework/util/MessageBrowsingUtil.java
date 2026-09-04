@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IListener;
+import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -35,17 +36,17 @@ public class MessageBrowsingUtil {
 			return null;
 		}
 
-		if (rawMessageWrapper instanceof MessageWrapper messageWrapper) {
+		if (rawMessageWrapper instanceof MessageWrapper<?> messageWrapper) {
 			return messageWrapper.getMessage().asString();
 		}
 		Object rawMessage = rawMessageWrapper.getRawMessage();
-		if (rawMessage instanceof Message message) { // For backwards compatibility: earlier MessageLog messabges were stored as Message.
+		if (rawMessage instanceof Message message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
 			return message.asString();
 		} else if (rawMessage instanceof String string) { // For backwards compatibility: earlier MessageLog messages were stored as String.
 			return string;
 		} else if (listener != null) {
 			try {
-				String msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
+				String msg = extractMessage(rawMessageWrapper, listener).asString();
 				if (StringUtils.isNotEmpty(msg)) {
 					return msg;
 				}
@@ -55,5 +56,13 @@ public class MessageBrowsingUtil {
 		}
 
 		return MessageUtils.asString(rawMessage);
+	}
+
+	/**
+	 * Use an intermediate method to avoid unchecked cast and avoid that the compiler can't verify the types
+	 */
+	@SuppressWarnings("unchecked")
+	private static <M> Message extractMessage(RawMessageWrapper<?> rawMessageWrapper, IListener<M> listener) throws ListenerException {
+		return listener.extractMessage((RawMessageWrapper<M>) rawMessageWrapper, new HashMap<>());
 	}
 }

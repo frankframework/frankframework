@@ -297,7 +297,7 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'" + status + "')", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'" + status + "')", null);
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
@@ -374,7 +374,7 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TCLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TCLOB) VALUES (10,1,'TEST')", null);
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
@@ -393,13 +393,13 @@ public class JdbcTableListenerTest {
 
 		try(Connection connection = env.getConnection()) {
 			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CONVERT(VARBINARY,'TEST'))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CONVERT(VARBINARY,'TEST'))", null);
 			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,utl_raw.cast_to_raw('TEST'))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,utl_raw.cast_to_raw('TEST'))", null);
 			} else if (env.getDbmsSupport().getDbms() == Dbms.DB2) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CAST('TEST' AS BLOB))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,CAST('TEST' AS BLOB))", null);
 			} else {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,'TEST')", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBLOB) VALUES (10,1,'TEST')", null);
 			}
 		}
 
@@ -416,7 +416,7 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10,1,'TEST')", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10,1,'TEST')", null);
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
@@ -495,7 +495,7 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'A')", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10," + status + ",'A')", null);
 		}
 
 		JdbcTableMessageBrowser<String> browser = getMessageBrowser(state);
@@ -545,7 +545,7 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10," + status + ")", null);
 		}
 
 		boolean actual = listener.hasRawMessageAvailable();
@@ -585,7 +585,7 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB) VALUES (10,1,'fakeMid','fakeCid')", null);
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
@@ -607,7 +607,7 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10,1,'Message 1')", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (10,1,'Message 1')", null);
 		}
 
 		try (Connection connection1 = env.getConnection()) {
@@ -623,7 +623,7 @@ public class JdbcTableListenerTest {
 			}
 
 			try(Connection connection = env.getConnection()) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (11,1,'Message 2')", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (11,1,'Message 2')", null);
 			}
 			RawMessageWrapper<String> rawMessage2 = listener.getRawMessage(new HashMap<>());
 
@@ -642,8 +642,8 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "DELETE FROM " + TEST_TABLE + " WHERE TKEY=10", null, new PipeLineSession());
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "DELETE FROM " + TEST_TABLE + " WHERE TKEY=10", null);
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null);
 		}
 
 		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(env::getConnection);
@@ -734,7 +734,7 @@ public class JdbcTableListenerTest {
 
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null);
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
@@ -758,7 +758,7 @@ public class JdbcTableListenerTest {
 		listener.start();
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null);
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
@@ -773,7 +773,7 @@ public class JdbcTableListenerTest {
 			}
 
 			try (Connection connection = env.getConnection()) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (11,1)", null);
 			}
 			// Clean connection status before we assert
 			if (shouldStillCommitBeforeClose) {
@@ -796,7 +796,7 @@ public class JdbcTableListenerTest {
 		RawMessageWrapper<String> rawMessage;
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null);
 		}
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
@@ -832,7 +832,7 @@ public class JdbcTableListenerTest {
 		String key = rawMessage.getRawMessage();
 		assertEquals("10", key);
 		try (Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "UPDATE " + TEST_TABLE + " SET TINT=4 WHERE TKEY=10", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "UPDATE " + TEST_TABLE + " SET TINT=4 WHERE TKEY=10", null);
 		} catch (Exception e) {
 			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
 				log.info("Allow MSSQL to fail concurrent update with an exception (happens in case 3, 4 and 5): " + e.getMessage());
@@ -860,7 +860,7 @@ public class JdbcTableListenerTest {
 		boolean secondaryRead = false;
 
 		try(Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
+			JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (10,1)", null);
 		}
 
 		try (Connection connection = env.getConnection()) {
@@ -975,13 +975,13 @@ public class JdbcTableListenerTest {
 
 		try(Connection connection = env.getConnection()) {
 			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',convert(varbinary, 'fBLOB'))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',convert(varbinary, 'fBLOB'))", null);
 			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',utl_raw.cast_to_raw('fBLOB'))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',utl_raw.cast_to_raw('fBLOB'))", null);
 			} else if (env.getDbmsSupport().getDbms() == Dbms.DB2) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',CAST('fBLOB' AS BLOB))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',CAST('fBLOB' AS BLOB))", null);
 			} else {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null);
 			}
 		}
 
@@ -1012,13 +1012,13 @@ public class JdbcTableListenerTest {
 
 		try(Connection connection = env.getConnection()) {
 			if (env.getDbmsSupport().getDbms() == Dbms.MSSQL) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',convert(varbinary, 'fBLOB'))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',convert(varbinary, 'fBLOB'))", null);
 			} else if (env.getDbmsSupport().getDbms() == Dbms.ORACLE) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',utl_raw.cast_to_raw('fBLOB'))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',utl_raw.cast_to_raw('fBLOB'))", null);
 			} else if (env.getDbmsSupport().getDbms() == Dbms.DB2) {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',CAST('fBLOB' AS BLOB))", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message',CAST('fBLOB' AS BLOB))", null);
 			} else {
-				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null, new PipeLineSession());
+				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR,TCLOB,TBLOB) VALUES (10,1,'fVC','message','fBLOB')", null);
 			}
 		}
 		Map<String, Object> threadContext = listener.openThread();
