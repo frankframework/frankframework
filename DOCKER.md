@@ -187,14 +187,14 @@ In Docker compose that can be done by adding a `tmpfs` for each directory:
 
 ```yaml
 services:
-	frankframework:
-		# ...
-		read_only: true
-		tmpfs:
-			- /usr/local/tomcat/logs
-			- /usr/local/tomcat/temp
-			- /usr/local/tomcat/conf/Catalina/localhost
-			- /usr/local/tomcat/work/Catalina/localhost
+  frankframework:
+    # ...
+    read_only: true
+    tmpfs:
+      - /usr/local/tomcat/logs
+      - /usr/local/tomcat/temp
+      - /usr/local/tomcat/conf/Catalina/localhost
+      - /usr/local/tomcat/work/Catalina/localhost
 ```
 
 ---
