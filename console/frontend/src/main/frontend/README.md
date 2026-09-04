@@ -1,31 +1,67 @@
-# FF Console
+# FF! Console GUI
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.2.9.
+The Angular frontend for the Frank!Framework management console.
 
-## Analysis
+## Prerequisites
 
-Run `pnpm run build:analysis` and upload `target/frontend/stats.json` to [esbuild analyze (also for vite)](https://esbuild.github.io/analyze/).
+- **Node.js**
+- **pnpm** (run `corepack enable` to use it)
+
+Install dependencies:
+
+```bash
+pnpm install
+```
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+Start a local dev server with hot reload:
 
-## Code scaffolding
+```bash
+pnpm start          # ng serve
+pnpm start:example  # ng serve against the FF! Example backend
+pnpm start:test     # ng serve against the FF! Test backend
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Building
 
-## Build
+```bash
+pnpm build            # production build
+pnpm watch            # development build, rebuilds on change
+pnpm build:analysis   # build with bundle stats for analysis
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+### Bundle analysis
 
-## Running unit tests
+After running `pnpm build:analysis`, upload `target/frontend/stats.json` to
+[esbuild analyze](https://esbuild.github.io/analyze/) to inspect the bundle.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Testing
 
-## Running end-to-end tests
+Unit tests run with [Vitest](https://vitest.dev/):
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+```bash
+pnpm test       # watch mode
+pnpm test:ci    # single run (CI)
+```
 
-## Further help
+End-to-end tests:
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+```bash
+pnpm e2e        # run e2e tests
+pnpm e2e:ci     # run e2e tests (CI configuration)
+```
+
+### Cypress
+
+```bash
+pnpm cypress:open   # open the Cypress test runner
+pnpm cypress:run    # run Cypress tests headless
+pnpm cypress:ci     # run Cypress against the iaf-test gui
+```
+
+## Linting
+
+```bash
+pnpm lint   # ng lint (ESLint + Prettier)
+```

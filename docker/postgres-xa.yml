@@ -8,6 +8,6 @@ services:
       active.storedProcedureTests: true
 
   postgres:
-    image: private.docker.nexus.frankframework.org/ff-test/dbms/postgresql
+    image: ghcr.io/frankframework/dbms/postgresql
     ports:
       - "5432:5432"
