@@ -37,6 +37,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -77,7 +78,7 @@ public class CommonsPkiUtil {
 		return tmFactory.getTrustManagers();
 	}
 
-	public static KeyStore createKeyStore(final URL url, final String password, KeystoreType keystoreType) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+	public static KeyStore createKeyStore(final URL url, final String password, @NonNull KeystoreType keystoreType) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		if (url == null) {
 			throw new IllegalArgumentException("Keystore url may not be null");
 		}

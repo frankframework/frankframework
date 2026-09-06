@@ -60,9 +60,13 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	private ITopic<Message<?>> requestTopic;
 
 	private JwtVerifier jwtVerifier;
+	private boolean isLocalEnvironment;
 
 	@Value("${instance.name:}")
 	private String instanceName;
+
+	@Value("${dtap.stage:}")
+	private String dtapStage;
 
 	@Override
 	protected void onInit() {
@@ -77,6 +81,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 
 		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
 		jwtVerifier = new JwtVerifier(() -> config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET));
+		isLocalEnvironment = "LOC".equalsIgnoreCase(dtapStage);
 
 		setRequestChannel(getRequestChannel(getApplicationContext()));
 		setErrorChannel(null); // no ErrorChannel means throw the exception, we catch it later in #processMessage(Message, String)
@@ -194,12 +199,12 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	}
 
 	private Authentication createAuthenticationToken(Object authenticationObject) throws IOException {
-		if(authenticationObject instanceof Authentication authentication) {
+		if(isLocalEnvironment && authenticationObject instanceof Authentication authentication) {
 			return authentication;
 		} else if(authenticationObject instanceof String jwt) {
 			return jwtVerifier.verify(jwt);
 		}
 
-		throw new IOException("no authentication object found");
+		throw new IOException("rejected unsecure message, no authentication object found");
 	}
 }

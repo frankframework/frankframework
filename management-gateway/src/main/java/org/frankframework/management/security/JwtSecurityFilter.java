@@ -15,7 +15,7 @@
 */
 package org.frankframework.management.security;
 
-import static org.frankframework.management.security.JwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM;
+import static org.frankframework.management.security.DefaultJwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM;
 
 import java.io.IOException;
 import java.net.URI;

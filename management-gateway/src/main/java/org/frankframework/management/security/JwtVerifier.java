@@ -58,7 +58,7 @@ public class JwtVerifier extends DefaultJWTProcessor<SecurityContext> {
 	private static class LazyLoadingJwkSource extends JWSVerificationKeySelector<SecurityContext> {
 
 		public LazyLoadingJwkSource(Supplier<String> supply) {
-			super(JwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM, createKeySource(supply));
+			super(DefaultJwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM, createKeySource(supply));
 		}
 
 		private static JWKSource<SecurityContext> createKeySource(Supplier<String> supply) {

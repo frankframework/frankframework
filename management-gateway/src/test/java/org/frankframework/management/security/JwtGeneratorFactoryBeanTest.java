@@ -49,9 +49,9 @@ class JwtGeneratorFactoryBeanTest {
 	@Test
 	void defaultReturnsJwtKeyGenerator() {
 		JwtGeneratorFactoryBean factory = new JwtGeneratorFactoryBean();
-		AbstractJwtKeyGenerator obj = factory.getObject();
+		AbstractJwtGenerator obj = factory.getObject();
 		assertNotNull(obj, "Factory should not return null");
-		assertTrue(obj instanceof JwtKeyGenerator, "Should return default JwtKeyGenerator");
+		assertTrue(obj instanceof DefaultJwtKeyGenerator, "Should return default JwtKeyGenerator");
 	}
 
 	@Test
@@ -68,10 +68,10 @@ class JwtGeneratorFactoryBeanTest {
 			mocked.when(() -> CommonsPkiUtil.createKeyStore(ksFile.toURI().toURL(), factory.keyStorePassword, null))
 					.thenReturn(ks);
 
-			AbstractJwtKeyGenerator generator = factory.getObject();
+			AbstractJwtGenerator generator = factory.getObject();
 			assertNotNull(generator);
-			assertTrue(generator instanceof KeystoreJwtKeyGenerator);
-			assertEquals(KeystoreJwtKeyGenerator.class, factory.getObjectType());
+			assertTrue(generator instanceof KeystoreJwtGenerator);
+			assertEquals(KeystoreJwtGenerator.class, factory.getObjectType());
 			assertSame(generator, factory.getObject());
 		}
 	}
@@ -87,9 +87,9 @@ class JwtGeneratorFactoryBeanTest {
 							new java.net.URI(factory.keyStoreLocation).toURL(), factory.keyStorePassword, null))
 					.thenThrow(new IOException("Should throw exception"));
 
-			AbstractJwtKeyGenerator generator = factory.getObject();
+			AbstractJwtGenerator generator = factory.getObject();
 			assertNull(generator);
-			assertEquals(AbstractJwtKeyGenerator.class, factory.getObjectType());
+			assertEquals(AbstractJwtGenerator.class, factory.getObjectType());
 		}
 	}
 }

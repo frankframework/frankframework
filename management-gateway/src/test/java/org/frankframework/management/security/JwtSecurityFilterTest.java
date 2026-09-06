@@ -40,12 +40,12 @@ class JwtSecurityFilterTest {
 	@TempDir
 	private File tempDirectory;
 
-	private JwtKeyGenerator keyGenerator;
+	private DefaultJwtKeyGenerator keyGenerator;
 	private String jwksUrl;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		keyGenerator = new JwtKeyGenerator();
+		keyGenerator = new DefaultJwtKeyGenerator();
 		File jwksFile = new File(tempDirectory, "jwks.txt");
 		try (OutputStream fileOut = Files.newOutputStream(jwksFile.toPath())) {
 			StreamUtil.streamToStream(new ByteArrayInputStream(keyGenerator.getPublicJwkSet().getBytes(StandardCharsets.UTF_8)), fileOut);
@@ -76,7 +76,7 @@ class JwtSecurityFilterTest {
 		JwtSecurityFilter filter = new JwtSecurityFilter();
 		filter.setJwksEndpoint(jwksUrl);
 		filter.afterPropertiesSet();
-		String jwt = keyGenerator.create();
+		String jwt = keyGenerator.createJWT();
 		assertNotNull(jwt);
 
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");

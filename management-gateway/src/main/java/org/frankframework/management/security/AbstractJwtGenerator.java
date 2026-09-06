@@ -19,55 +19,121 @@ package org.frankframework.management.security;
 import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.Environment;
 import org.frankframework.util.TimeProvider;
 import org.frankframework.util.UUIDUtil;
 
 
 @Log4j2
-public abstract class AbstractJwtKeyGenerator {
+public abstract class AbstractJwtGenerator<T extends JWK> implements InitializingBean, ApplicationContextAware {
+
+	public static final JWSAlgorithm JWT_DEFAULT_SIGNING_ALGORITHM = JWSAlgorithm.RS512;
+	private final String generatorVersion;
+	private @Setter ApplicationContext applicationContext;
 
 	protected JWSHeader jwtHeader;
+
+	private JWSSigner signer;
 
 	@Getter
 	protected String publicJwkSet;
 
-	abstract JWSSigner getSigner() throws GeneralSecurityException;
+	protected AbstractJwtGenerator() {
+		generatorVersion = Environment.getModuleVersion("iaf-management-gateway");
+		log.info("Initializing GeneratedJwtKeyGenerator version [{}]", generatorVersion);
+	}
 
-	public @NonNull String create() {
+	@Override
+	public void afterPropertiesSet() {
+		final T jwk;
+		try {
+			jwk = getJwk();
+			signer = getSigner(jwk);
+		} catch (GeneralSecurityException | JOSEException e) {
+			throw new AuthenticationServiceException("unable to create JWT signer", e);
+		}
+
+		try {
+			jwtHeader = createJwsHeader(jwk.getKeyID());
+
+			publicJwkSet = new JWKSet(jwk.toPublicJWK()).toString();
+		} catch (Exception e) {
+			throw new IllegalStateException("unable to generate JWT key", e);
+		}
+	}
+
+	protected abstract T getJwk() throws GeneralSecurityException, JOSEException;
+
+	protected abstract JWSSigner getSigner(T jwkKey) throws JOSEException;
+
+	private JWSHeader createJwsHeader(String keyId) {
+		return new JWSHeader.Builder(JWT_DEFAULT_SIGNING_ALGORITHM)
+				.type(JOSEObjectType.JWT)
+				.customParam("version", generatorVersion)
+				.keyID(keyId)
+				.build();
+	}
+
+	/**
+	 * Uses the Spring Authentication object to create a signed JWT.
+	 */
+	public final @NonNull String createJWT() {
+		return createJWT(null);
+	}
+
+	/**
+	 * Uses the Spring Authentication object to create a signed JWT.
+	 * Allows users to provide additional JWT claims.
+	 */
+	public final @NonNull String createJWT(Consumer<JWTClaimsSet.Builder> additionalClaims) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null) {
 			throw new AuthenticationServiceException("no Authentication object found in SecurityContext");
 		}
 
-		JWTClaimsSet claims = createClaimsSet(authentication);
+		JWTClaimsSet claims = createClaimsSet(authentication, additionalClaims);
 		return createJwtToken(claims);
 	}
 
-	private @NonNull JWTClaimsSet createClaimsSet(Authentication authentication) {
+	private @NonNull JWTClaimsSet createClaimsSet(Authentication authentication, Consumer<JWTClaimsSet.Builder> claims) {
 		try {
 			JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder()
 					.subject(getPrincipalName(authentication))
 					.expirationTime(Date.from(TimeProvider.now().plusSeconds(120)))
 					.issueTime(Date.from(TimeProvider.now()))
 					.jwtID(UUIDUtil.createRandomUUID())
-					.claim("scope", mapAuthorities(authentication));
+					.claim("scope", mapAuthorities(authentication))
+					.issuer(applicationContext.getDisplayName());
 
-			addCustomClaims(builder, authentication);
+			if (claims != null) {
+				claims.accept(builder);
+			}
+
 			return builder.build();
 		} catch (Exception e) {
 			throw new AuthenticationServiceException("Unable to generate JWT ClaimsSet", e);
@@ -84,14 +150,10 @@ public abstract class AbstractJwtKeyGenerator {
 				.toList();
 	}
 
-	private void addCustomClaims(JWTClaimsSet.Builder builder, Authentication authentication) {
-		// Optional: overridden in subclasses
-	}
-
-	protected @NonNull String createJwtToken(@NonNull JWTClaimsSet claims) {
+	private @NonNull String createJwtToken(@NonNull JWTClaimsSet claims) {
 		SignedJWT signedJWT = new SignedJWT(jwtHeader, claims);
 		try {
-			signedJWT.sign(getSigner());
+			signedJWT.sign(signer);
 			String jwt = signedJWT.serialize();
 			log.trace("Generated JWT token [{}]", jwt);
 			return jwt;

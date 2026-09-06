@@ -49,7 +49,7 @@ import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
-import org.frankframework.management.security.JwtKeyGenerator;
+import org.frankframework.management.security.AbstractJwtGenerator;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
@@ -62,7 +62,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private ITopic<Message<?>> requestTopic;
 
 	@Autowired
-	private JwtKeyGenerator jwtGenerator;
+	private AbstractJwtGenerator<?> jwtGenerator;
 
 	@Override
 	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
@@ -75,7 +75,11 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
 
 		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
-		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtGenerator.getPublicJwkSet());
+		String jwks = config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET);
+		if (StringUtils.isBlank(jwks)) {
+			// If there's already a main controller, don't overwrite it...
+			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtGenerator.getPublicJwkSet());
+		}
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
 
@@ -172,7 +176,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	}
 
 	private @NonNull String getAuthentication() {
-		return jwtGenerator.create();
+		return jwtGenerator.createJWT();
 	}
 
 	private long receiveTimeout(Message<?> requestMessage) {
