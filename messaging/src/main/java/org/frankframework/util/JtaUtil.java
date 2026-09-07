@@ -71,10 +71,7 @@ public class JtaUtil {
 		if (resources.isEmpty()) {
 			result.append("  map is null\n");
 		} else {
-			for (Map.Entry<Object, Object> entry : resources.entrySet()) {
-				Object key = entry.getKey();
-				Object resource = entry.getValue();
-
+			resources.forEach((key,resource) -> {
 				result.append(ClassUtils.nameOf(key))
 						.append("(")
 						.append(key)
@@ -86,8 +83,9 @@ public class JtaUtil {
 				if (resource instanceof JmsResourceHolder jrh) {
 					result.append("  connection: ").append(jrh.getConnection()).append(", session: ").append(jrh.getSession()).append("\n");
 				}
-			}
+			});
 		}
+
 		if (syncActive) {
 			List<TransactionSynchronization> synchronizations = TransactionSynchronizationManager.getSynchronizations();
 			result.append("synchronizations:\n");
@@ -97,7 +95,6 @@ public class JtaUtil {
 		}
 		return result.toString();
 	}
-
 
 	/**
 	 * returns true if the current thread is associated with a transaction

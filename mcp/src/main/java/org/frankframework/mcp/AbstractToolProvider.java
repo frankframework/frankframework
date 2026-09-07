@@ -143,7 +143,7 @@ public abstract class AbstractToolProvider implements McpToolProvider {
 		return value;
 	}
 
-	protected static Boolean booleanArg(CallToolRequest request, String name) {
+	protected static boolean booleanArg(CallToolRequest request, String name) {
 		Object value = request.arguments().get(name);
 		if (value == null) {
 			return Boolean.FALSE;
@@ -151,7 +151,7 @@ public abstract class AbstractToolProvider implements McpToolProvider {
 		if (value instanceof Boolean bool) {
 			return bool;
 		}
-		return Boolean.valueOf(value.toString());
+		return Boolean.parseBoolean(value.toString());
 	}
 
 	protected static Integer integerArg(CallToolRequest request, String name) {
