@@ -72,16 +72,17 @@ public class MessageQueueSender extends JmsSender {
 		}
 
 		BytesMessage bytesMessage = session.createBytesMessage();
-		if (correlationID != null) {
-			bytesMessage.setJMSCorrelationID(correlationID);
-		}
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		try (DeflaterOutputStream dos = new DeflaterOutputStream(bos); ObjectOutputStream oos = new ObjectOutputStream(dos)) {
+		try (ObjectOutputStream oos = new ObjectOutputStream(new DeflaterOutputStream(bos))) {
 			oos.writeObject(wrapper);
 		} catch (IOException e) {
 			throw new SenderException(e);
 		}
 		bytesMessage.writeBytes(bos.toByteArray());
+
+		if (correlationID != null) {
+			bytesMessage.setJMSCorrelationID(correlationID);
+		}
 		return bytesMessage;
 	}
 
