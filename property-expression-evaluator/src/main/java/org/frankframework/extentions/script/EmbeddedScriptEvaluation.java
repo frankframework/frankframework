@@ -200,7 +200,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 				.filter(Objects::nonNull)
 				.map(Object::toString)
 				.sorted(Comparator.comparing(String::length))
-				.toList().reversed(); // Sort by longest string first
+				.toList().reversed(); // Sort by longest string first to properly hide partially overlapping values
 		if (propValuesToHide.isEmpty()) {
 			return value;
 		}

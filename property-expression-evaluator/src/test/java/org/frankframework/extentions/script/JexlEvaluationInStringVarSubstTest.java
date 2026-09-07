@@ -126,15 +126,33 @@ public class JexlEvaluationInStringVarSubstTest {
 		// Arrange
 		Map<String, Object> vars = new HashMap<>();
 		vars.put("egel", "should-be-hidden");
-		vars.put("also-hide", "hidden");
+		vars.put("also-hide", "hidden"); // shorter secret value shouldn't reveal overlapping longer secret value
 
-		String input = "${=egel}";
+		String input = "${= 'I have a secret ' + egel  + ', don\\'t tell!'}";
 
 		// Act
 		Set<String> hidden = Set.of("egel", "also-hide");
 		String result = StringResolver.substVars(input, vars, null, hidden);
 
 		// Assert
-		assertEquals("****************", result);
+		assertEquals("I have a secret ****************, don't tell!", result);
+	}
+
+	@Test
+	void testHiddenValueCanStillBeUsedInExpression() {
+		// Arrange
+		Map<String, Object> vars = new HashMap<>();
+		vars.put("eagle1", "should-be-hidden");
+		vars.put("eagle2", "should-not-be-hidden");
+		vars.put("also-hide", "hidden");
+
+		String input = "${=eagle1.equals(eagle2)}";
+
+		// Act
+		Set<String> hidden = Set.of("egel", "also-hide");
+		String result = StringResolver.substVars(input, vars, null, hidden);
+
+		// Assert
+		assertEquals("false", result);
 	}
 }
