@@ -65,3 +65,7 @@ pnpm cypress:ci     # run Cypress against the iaf-test gui
 ```bash
 pnpm lint   # ng lint (ESLint + Prettier)
 ```
+
+---
+
+Last checked for correctness: 2026-09-04
