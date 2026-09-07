@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.zip.DeflaterOutputStream;
 
 import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
@@ -75,7 +76,7 @@ public class MessageQueueSender extends JmsSender {
 			bytesMessage.setJMSCorrelationID(correlationID);
 		}
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+		try (DeflaterOutputStream dos = new DeflaterOutputStream(bos); ObjectOutputStream oos = new ObjectOutputStream(dos)) {
 			oos.writeObject(wrapper);
 		} catch (IOException e) {
 			throw new SenderException(e);
