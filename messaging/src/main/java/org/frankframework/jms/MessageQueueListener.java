@@ -21,6 +21,7 @@ import java.io.StreamCorruptedException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipException;
 
 import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
@@ -80,7 +81,7 @@ public class MessageQueueListener extends PullingJmsListener {
 		// Try to read the message as an Object in the stream, as this is the expected format for this listener
 		try (ObjectInputStream ois = new RenamingObjectInputStream(new InflaterInputStream(in))) {
 			return objectToMessageWrapper(ois.readObject());
-		} catch (StreamCorruptedException e) {
+		} catch (StreamCorruptedException | ZipException e) {
 			// Stream was not a valid ObjectInputStream. Read it again as normal stream-data.
 			in.resetMessage();
 			return objectToMessageWrapper(Message.asMessage(in));

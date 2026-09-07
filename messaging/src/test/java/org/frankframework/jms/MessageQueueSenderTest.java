@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import java.io.ObjectInputStream;
 import java.util.Map;
+import java.util.zip.InflaterInputStream;
 
 import jakarta.jms.BytesMessage;
 
@@ -79,7 +80,7 @@ class MessageQueueSenderTest {
 
 		// Read the data
 		BytesMessageInputStream bmis = new BytesMessageInputStream(bytesMessage);
-		ObjectInputStream ois = new RenamingObjectInputStream(bmis);
+		ObjectInputStream ois = new RenamingObjectInputStream(new InflaterInputStream(bmis));
 		Object object = ois.readObject();
 
 		MessageWrapper<?> messageWrapper = assertInstanceOf(MessageWrapper.class, object);
