@@ -21,6 +21,7 @@ import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.util.MimeType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -66,7 +67,7 @@ public class SoapContext {
 
 	private boolean createdMessageId = false;
 
-	public SoapContext(Message body) throws SOAPException {
+	public SoapContext(@NonNull Message body) throws SOAPException {
 		// Let's parse the entire request in order to find out the protocol, action e.d.
 		// As well as validating that it is a valid SOAP Message.
 		SoapNamespaceUriExtractor nsUriHandler = new SoapNamespaceUriExtractor(null);

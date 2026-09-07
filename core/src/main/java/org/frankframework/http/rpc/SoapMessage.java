@@ -75,7 +75,7 @@ public class SoapMessage {
 		return parts.multipartXml();
 	}
 
-	public @NonNull Message getBody() {
+	public @Nullable Message getBody() {
 		return parts.body();
 	}
 }
