@@ -23,7 +23,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.context.Lifecycle;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
@@ -227,24 +226,16 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 
 	void setSkipOnEmptyInput(boolean b);
 
-	@Deprecated(forRemoval = true)
-	@ConfigurationWarning("Use the IfPipe and/or SwitchPipe instead of IfParam to control application flow")
 	void setIfParam(String string);
 
-	@Deprecated(forRemoval = true)
-	@ConfigurationWarning("Use the IfPipe and/or SwitchPipe instead of IfValue to control application flow")
 	void setIfValue(String string);
 
 	void setOnlyIfSessionKey(String onlyIfSessionKey);
 
-	@Deprecated(forRemoval = true)
-	@ConfigurationWarning("Use the IfPipe and/or SwitchPipe instead of OnlyIfValue to control application flow")
 	void setOnlyIfValue(String onlyIfValue);
 
 	void setUnlessSessionKey(String unlessSessionKey);
 
-	@Deprecated(forRemoval = true)
-	@ConfigurationWarning("Use the IfPipe and/or SwitchPipe instead of unlessValue to control application flow")
 	void setUnlessValue(String unlessValue);
 
 	boolean isSkipOnEmptyInput();
