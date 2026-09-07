@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IListener;
+import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -30,12 +31,12 @@ import org.frankframework.stream.Message;
 public class MessageBrowsingUtil {
 	private static final Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
 
-	public static @Nullable String getMessageText(@Nullable RawMessageWrapper<?> rawMessageWrapper, IListener listener) throws IOException {
+	public static @Nullable String getMessageText(@Nullable RawMessageWrapper<?> rawMessageWrapper, IListener<?> listener) throws IOException {
 		if (rawMessageWrapper == null || rawMessageWrapper.getRawMessage() == null) {
 			return null;
 		}
 
-		if (rawMessageWrapper instanceof MessageWrapper messageWrapper) {
+		if (rawMessageWrapper instanceof MessageWrapper<?> messageWrapper) {
 			return messageWrapper.getMessage().asString();
 		}
 		Object rawMessage = rawMessageWrapper.getRawMessage();
@@ -45,7 +46,7 @@ public class MessageBrowsingUtil {
 			return string;
 		} else if (listener != null) {
 			try {
-				String msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
+				String msg = extractMessage(rawMessageWrapper, listener).asString();
 				if (StringUtils.isNotEmpty(msg)) {
 					return msg;
 				}
@@ -55,5 +56,13 @@ public class MessageBrowsingUtil {
 		}
 
 		return MessageUtils.asString(rawMessage);
+	}
+
+	/**
+	 * Use an intermediate method to avoid unchecked cast and avoid that the compiler can't verify the types
+	 */
+	@SuppressWarnings("unchecked")
+	private static <M> Message extractMessage(RawMessageWrapper<?> rawMessageWrapper, IListener<M> listener) throws ListenerException {
+		return listener.extractMessage((RawMessageWrapper<M>) rawMessageWrapper, new HashMap<>());
 	}
 }
