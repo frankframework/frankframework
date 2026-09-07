@@ -24,7 +24,6 @@ import java.util.Objects;
 import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.ObjectMessage;
-import jakarta.jms.StreamMessage;
 import jakarta.jms.TextMessage;
 
 import org.jspecify.annotations.NonNull;
@@ -67,9 +66,8 @@ public class MessageQueueListener extends PullingJmsListener {
 
 	private MessageWrapper<?> getMessageWrapper(jakarta.jms.@NonNull Message rawMessage) throws JMSException, IOException, ClassNotFoundException, ListenerException {
 		return switch (rawMessage) {
-			case ObjectMessage objectMessage -> objectToMessageWrapper(objectMessage.getObject());
+			case ObjectMessage objectMessage -> objectToMessageWrapper(objectMessage.getObject()); // Seems like ideal type but ActiveMQ has errors reading stream?
 			case BytesMessage bytesMessage -> getMessageWrapperFromBytesMessage(bytesMessage);
-			case StreamMessage streamMessage -> objectToMessageWrapper(streamMessage.readObject());
 			case TextMessage textMessage -> objectToMessageWrapper(textMessage.getText());
 			default -> throw new ListenerException("Unsupported JMS Message type [" + rawMessage.getClass().getName() + "]");
 		};

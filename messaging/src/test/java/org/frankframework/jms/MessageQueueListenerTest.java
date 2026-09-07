@@ -11,7 +11,6 @@ import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.ObjectMessage;
-import jakarta.jms.StreamMessage;
 import jakarta.jms.TextMessage;
 
 import org.junit.jupiter.api.AfterEach;
@@ -23,7 +22,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.mockrunner.mock.jms.MockBytesMessage;
 import com.mockrunner.mock.jms.MockObjectMessage;
 import com.mockrunner.mock.jms.MockQueue;
-import com.mockrunner.mock.jms.MockStreamMessage;
 import com.mockrunner.mock.jms.MockTextMessage;
 
 import org.frankframework.core.ListenerException;
@@ -81,17 +79,12 @@ class MessageQueueListenerTest {
 		bytesMessage.writeBytes("data".getBytes());
 		bytesMessage.reset();
 
-		StreamMessage streamMessage = new MockStreamMessage();
-		streamMessage.writeObject("data");
-		streamMessage.reset();
-
 		TextMessage textMessage = new MockTextMessage();
 		textMessage.setText("data");
 
 		return Stream.of(
 				arguments(objectMessage),
 				arguments(bytesMessage),
-				arguments(streamMessage),
 				arguments(textMessage)
 		);
 	}
