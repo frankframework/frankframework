@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
 
@@ -107,7 +108,7 @@ public class LarvaServlet extends AbstractHttpServlet {
 				return;
 			}
 		}
-		resp.sendError(404, "resource not found");
+		resp.sendError(HttpStatus.NOT_FOUND.value(), "resource not found");
 	}
 
 	@Override
@@ -121,17 +122,17 @@ public class LarvaServlet extends AbstractHttpServlet {
 			return;
 		}
 
-		resp.sendError(404, "resource not found");
+		resp.sendError(HttpStatus.NOT_FOUND.value(), "resource not found");
 	}
 
 	private void handleAsset(Assets asset, HttpServletResponse resp) throws IOException {
 		resp.setContentType(asset.getContentType());
 
-		try(InputStream in = asset.openStream()) {
+		try (InputStream in = asset.openStream()) {
 			IOUtils.copy(in, resp.getOutputStream());
 		} catch (IOException e) {
 			log.warn("error reading or writing resource to servlet", e);
-			resp.sendError(500, e.getMessage());
+			resp.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
 			return;
 		}
 

@@ -40,6 +40,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.http.HttpEntityType;
+import org.frankframework.http.HttpStatusResolver;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.http.mime.HttpEntityFactory;
 import org.frankframework.http.mime.MultipartUtils;
@@ -121,11 +122,10 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 
 			/*
 			 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
+			 * Should always be a valid HTTP status code.
 			 */
-			int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
-			if (statusCode > 0) {
-				response.setStatus(statusCode);
-			}
+			int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 200);
+			response.setStatus(HttpStatusResolver.validateHttpStatusCode(statusCode));
 
 			final boolean outputWritten = writeToResponseStream(response, result, listener, pipelineSession);
 			if (!outputWritten) {

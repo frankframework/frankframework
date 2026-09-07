@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsUtils;
 
@@ -94,7 +95,7 @@ public class CorsFilter implements Filter {
 				} else { // If origin has been set, but has not been whitelisted, report the request in security log.
 					secLog.info(SEC_LOG_MESSAGE, request::getRemoteHost, request::getPathInfo, () -> originHeader, () -> "BLOCKED", () -> allowedCorsOrigins);
 					log.warn("blocked request with origin [{}]", originHeader);
-					response.setStatus(400);
+					response.setStatus(HttpStatus.BAD_REQUEST.value());
 					return; // Actually block the request
 				}
 			} else if (origin == null) { // FLAG the request
@@ -109,7 +110,7 @@ public class CorsFilter implements Filter {
 		// Return standard response if OPTIONS request w/o Origin header
 		if(CorsUtils.isPreFlightRequest(request)) {
 			response.setHeader("Allow", allowedCorsMethods);
-			response.setStatus(200);
+			response.setStatus(HttpStatus.OK.value());
 		} else {
 			chain.doFilter(request, response);
 		}
