@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -45,7 +46,7 @@ public class StringResolverTest {
 		String substString = "${" + envVarName + "}";
 
 		// Act
-		String result = StringResolver.substVars(substString, null);
+		String result = StringResolver.substVars(substString, Map.of());
 
 		// Assert
 		assertNotNull(result);
@@ -53,7 +54,7 @@ public class StringResolverTest {
 		assertTrue(result.contains(File.pathSeparator));
 
 		// Act
-		result = StringResolver.substVars(substString, null, true);
+		result = StringResolver.substVars(substString, Map.of(), true);
 
 		// Assert
 		assertTrue(result.startsWith("${" + envVarName + ":-"));
@@ -361,6 +362,23 @@ public class StringResolverTest {
 
 		// Assert
 		assertEquals("blalblalab ${key1:-******}", result);
+	}
+
+	@Test
+	void testHiddenValue() {
+		// Arrange
+		Map<String, Object> vars = new HashMap<>();
+		vars.put("my.value", "${egel}");
+		vars.put("egel", "should-be-hidden");
+
+		String input = "${my.value}";
+
+		// Act
+		Set<String> hidden = Set.of("egel");
+		String result = StringResolver.substVars(input, vars, null, hidden);
+
+		// Assert
+		assertEquals("****************", result);
 	}
 
 	@Test
