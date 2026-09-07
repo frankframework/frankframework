@@ -46,7 +46,7 @@ public class StringResolverTest {
 		String substString = "${" + envVarName + "}";
 
 		// Act
-		String result = StringResolver.substVars(substString, null);
+		String result = StringResolver.substVars(substString, Map.of());
 
 		// Assert
 		assertNotNull(result);
@@ -54,7 +54,7 @@ public class StringResolverTest {
 		assertTrue(result.contains(File.pathSeparator));
 
 		// Act
-		result = StringResolver.substVars(substString, null, true);
+		result = StringResolver.substVars(substString, Map.of(), true);
 
 		// Assert
 		assertTrue(result.startsWith("${" + envVarName + ":-"));
