@@ -122,7 +122,7 @@ public class StringResolver {
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
-	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, @Nullable Map<?, ?> props2, @Nullable Set<String> propsToHide, String delimStart, String delimStop) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, delimStart, delimStop, false);
 	}
 
@@ -183,7 +183,7 @@ public class StringResolver {
 		String key = val.substring(ctx.pointer, ctx.tail);
 		ctx.propertyComposer = key;
 		if (key.contains(ctx.delimStart)) {
-			key = substVars(key, props1, props2, ctx.resolveWithPropertyName);
+			key = substVars(key, props1, props2, ctx.propsToHide, ctx.resolveWithPropertyName);
 			if (key.contains(VALUE_SEPARATOR) && ctx.resolveWithPropertyName) {
 				ctx.propertyComposer = key;
 				key = extractKeyValue(key, ctx);
@@ -253,7 +253,7 @@ public class StringResolver {
 			// x1=${x2}
 			// x2=p2
 			if (!replacementValue.equals(expression) && !replacementValue.contains(ctx.delimStart + key + ctx.delimStop)) {
-				String recursiveReplacement = substVars(replacementValue, props1, props2, ctx.resolveWithPropertyName);
+				String recursiveReplacement = substVars(replacementValue, props1, props2, ctx.propsToHide, ctx.resolveWithPropertyName);
 				sb.append(recursiveReplacement);
 			} else {
 				sb.append(replacementValue);
@@ -461,7 +461,7 @@ public class StringResolver {
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
-	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, boolean resolveWithPropertyName) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, @Nullable Map<?, ?> props2, @Nullable Set<String> propsToHide, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, resolveWithPropertyName);
 	}
 
