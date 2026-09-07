@@ -16,6 +16,7 @@
 package org.frankframework.http.rpc;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Map.Entry;
 
 import jakarta.servlet.ServletConfig;
@@ -58,6 +59,7 @@ import org.frankframework.util.XmlBuilder;
 @Log4j2
 @IbisInitializer
 public class WebServiceListenerServlet extends AbstractHttpServlet implements DynamicRegistration.Servlet {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private transient ServiceDispatcher sd;
 
@@ -74,7 +76,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 		String uri = cleanseURL(request.getPathInfo());
 		final SoapMessage soapMessage;
 		WebServiceListener listener;

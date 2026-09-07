@@ -44,6 +44,7 @@ import org.frankframework.http.rest.IApiCache;
 import org.frankframework.stream.Message;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -161,7 +162,10 @@ public class RestServiceDispatcher {
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName())) {
-			boolean writeToSecLog = false;
+			String messageId = MessageUtils.generateMessageId(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX + "REST[" + listener.getName() + "]");
+			context.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+			ctc.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+			boolean writeToSecLog;
 			if (listener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
 				try {
 					InputStreamDataSource dataSource = new InputStreamDataSource(httpServletRequest.getContentType(), httpServletRequest.getInputStream()); // The entire InputStream will be read here!

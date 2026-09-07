@@ -49,6 +49,7 @@ import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 
 
 /**
@@ -147,7 +148,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			try {
 				Message message = new Message(rawMessage);
-				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext);
+				Message result = processRequest(new MessageWrapper<>(message, MessageUtils.generateMessageId(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX + "JavaService[" + getServiceName() + "]"), correlationId), processContext);
 				return result.asString();
 			} finally {
 				if (context != null) {
@@ -166,7 +167,8 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	// ### ServiceClient
 	@Override
 	public Message processRequest(Message message, @NonNull PipeLineSession session) throws ListenerException {
-		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, session.getMessageId(), session.getCorrelationId());
+		String messageId = session.getMessageId() != null ? session.getMessageId() : MessageUtils.generateMessageId(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX + "JavaLocal[" + getName() + "]");
+		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, messageId, session.getCorrelationId());
 		return processRequest(messageWrapper, session);
 	}
 
@@ -177,6 +179,9 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 		log.debug("JavaListener [{}] processing correlationId [{}]", this::getName, messageWrapper::getCorrelationId);
 
 		try (PipeLineSession session = new PipeLineSession(parentSession)) {
+			if (!session.containsKey(PipeLineSession.MESSAGE_ID_KEY)) {
+				session.put(PipeLineSession.MESSAGE_ID_KEY, messageWrapper.getId());
+			}
 			try {
 				return handler.processRequest(this, messageWrapper, session);
 			} finally {

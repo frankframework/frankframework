@@ -63,7 +63,7 @@ public class SoapMessage {
 		}
 	}
 
-	public @Nullable Map<String, Message> getAttachments() {
+	public @NonNull Map<String, Message> getAttachments() {
 		return parts.messages();
 	}
 

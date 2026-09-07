@@ -103,12 +103,12 @@ public class SoapContext {
 
 	private String generateMessageId() {
 		createdMessageId = true;
-		return MessageUtils.generateMessageId();
+		return MessageUtils.generateMessageId(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX + "SOAP[" + getSoapAction() + "]");
 	}
 
 	/**
 	 * If a MessageID was provided, ensure we return a 'RelatesTo' header conform the ws-addr specification.
-	 * If the MessageID is a FallbackID, do nothing.
+	 * If the MessageID is a FallbackID or internally generated, do nothing.
 	 */
 	public Message setMessageId(Message output) throws SOAPException {
 		if (MessageUtils.isFallbackMessageId(messageId) || createdMessageId) {
