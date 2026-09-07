@@ -126,11 +126,12 @@ public class JexlEvaluationInStringVarSubstTest {
 		// Arrange
 		Map<String, Object> vars = new HashMap<>();
 		vars.put("egel", "should-be-hidden");
+		vars.put("also-hide", "hidden");
 
 		String input = "${=egel}";
 
 		// Act
-		Set<String> hidden = Set.of("egel");
+		Set<String> hidden = Set.of("egel", "also-hide");
 		String result = StringResolver.substVars(input, vars, null, hidden);
 
 		// Assert
