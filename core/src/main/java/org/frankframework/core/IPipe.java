@@ -219,7 +219,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	void setLogIntermediaryResults(String string);
 	String getLogIntermediaryResults();
 
-	/**j
+	/**
 	 * Called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
 	 */
 	boolean skipPipe(Message input, PipeLineSession session) throws PipeRunException;
