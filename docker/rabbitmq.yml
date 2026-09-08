@@ -8,6 +8,6 @@ services:
       active.jms: true
       transactionmanager.narayana.jms.connection.maxPoolSize: 1
   rabbitmq:
-    image: private.docker.nexus.frankframework.org/ff-test/mq/rabbitmq:latest
+    image: ghcr.io/frankframework/mq/rabbitmq:latest
     ports:
       - "5672:5672"

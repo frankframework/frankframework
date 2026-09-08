@@ -1,11 +1,10 @@
-
-
 # How to contribute
 
 Thanks for reading this we're glad you're taking an interest in contributing to our framework.
 We want you working on things you're excited about, there are however plenty of [issues](https://github.com/frankframework/frankframework/issues) that can be picked up.
 
 Before getting started it's recommended to get acquainted with the core classes in the framework. They've been documented pretty well, check out:
+
 * Receiver: org.frankframework.receivers.Receiver
 * Listener: org.frankframework.core.IPullingListener and org.frankframework.core.IPushingListener
 * Adapter: org.frankframework.core.Adapter
@@ -71,21 +70,21 @@ can also set it to resolved to ease the review process.
 
 Start reading our code, and you'll get the hang of it. We optimize for readability:
 
-  * We indent using tabs, not spaces.
-  * We ALWAYS put spaces after list items and method parameters (`[1, 2, 3]`, not `[1,2,3]`) and around operators (`x += 1`, not `x+=1`).
-  * When you have long method calls or method definitions, please keep them on one line. When you have many similar lines of long method calls,
+* We indent using tabs, not spaces.
+* We ALWAYS put spaces after list items and method parameters (`[1, 2, 3]`, not `[1,2,3]`) and around operators (`x += 1`, not `x+=1`).
+* When you have long method calls or method definitions, please keep them on one line. When you have many similar lines of long method calls,
   they are easier to read without artificial line breaks. Lines are allowed to be as long as 150 characters.
-  * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
-  * Use Unix style newlines.
-  * Each class that can be used in a configuration must contain the following documentation:
-    - Class level Frank!Doc, not larger than 5 to 10 lines
-    - For each configurable attribute, Frank!Doc must not be larger than 2 lines
-    - Any examples and more detailed information, that has to be incorporated in to the Frank!Manual, should be provided as a separate file(s) attached to the pull request
-  * In JavaDoc comments, do not use the `’` character. It breaks the Frank!Doc. You can use `'` instead.
-  * Please do not modify files purely for the sake of formatting, or do so in a dedicated pull request. Formatting changes make a pull request harder to understand for reviewers.
-  * You can experiment with Eclipse's formatting capabilities. In the preferences window, search for the string "tab". You will get an overview of all the options about formatting. The following options are interesting in particular:
-    - There are many screens in which you can define that you use tabs instead of spaces for indentation. Please visit them all to configure that you use tabs.
-    - In Java | Code Style, you can define your own named code style. When you open the dialog, you see many options on how to format Java code. You can set the maximum length of lines here, for example, to avoid artificial line breaks.
+* This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
+* Use Unix style newlines.
+* Each class that can be used in a configuration must contain the following documentation:
+	- Class level Frank!Doc, not larger than 5 to 10 lines
+	- For each configurable attribute, Frank!Doc must not be larger than 2 lines
+	- Any examples and more detailed information, that has to be incorporated in to the Frank!Manual, should be provided as a separate file(s) attached to the pull request
+* In JavaDoc comments, do not use the `’` character. It breaks the Frank!Doc. You can use `'` instead.
+* Please do not modify files purely for the sake of formatting, or do so in a dedicated pull request. Formatting changes make a pull request harder to understand for reviewers.
+* You can experiment with Eclipse's formatting capabilities. In the preferences window, search for the string "tab". You will get an overview of all the options about formatting. The following options are interesting in particular:
+	- There are many screens in which you can define that you use tabs instead of spaces for indentation. Please visit them all to configure that you use tabs.
+	- In Java | Code Style, you can define your own named code style. When you open the dialog, you see many options on how to format Java code. You can set the maximum length of lines here, for example, to avoid artificial line breaks.
 
 The Frank!Framework community has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
 
@@ -95,6 +94,7 @@ The Frank!Framework community has introduced [Project Lombok](https://projectlom
 The project uses the Error Prone checker with the NullAway plugin, and JSpecify annotations for nullability.
 Please pay attention to the warnings they generate in the Maven output if you do not have an integration with these tools in your IDE.
 For more information on these tools, you can check their documentation at:
+
 - [Error Prone](https://errorprone.info/index)
 - [NullAway](https://github.com/uber/NullAway)
 - [JSpecify](https://jspecify.dev/docs/applying/)
@@ -107,11 +107,11 @@ See our [Additional Coding Guidelines](AdditionalCodingGuidelines.md) for code e
 
 ## Testing
 
-Before creating a pull request with your changes, please run the iaf-test module's test scenarios. If all tests pass, the chance of Frank developers running into unexpected errors will be reduced to a minimum. Instructions on how to run the iaf-test scenarios can be found [here](TESTING_WITH_IAF-TEST.md).
+Before creating a pull request with your changes, please run the frankframework-test module's test scenarios. If all tests pass, the chance of Frank developers running into unexpected errors will be reduced to a minimum. Instructions on how to run the frankframework-test scenarios can be found [here](TESTING_WITH_IAF-TEST.md).
 
 ### Checking differences within Larva
 
-The iaf-test module runs Larva tests, see https://frank-manual.readthedocs.io/en/latest/gettingStarted/testPipelines.html. Larva tests
+The frankframework-test module runs Larva tests, see https://frank-manual.readthedocs.io/en/latest/gettingStarted/testPipelines.html. Larva tests
 execute some system-under-test, for example a Frank configuration. The
 output of the system-under-test is often compared to some expected value.
 The Graphical User Interface of Larva shows these differences, but sometimes
@@ -125,21 +125,23 @@ If you are developing under Windows, you can do the following to set this up:
 - Lookup the path to the WinMerge executable. You may do this by viewing the system path.
 - In the Eclipse Project Explorer, you have a folder "Servers". Your Tomcat installation appears as a subfolder. Under that subfolder, open file `catalina.properties`.
 - In `catalina.properties`, add: `larva.windiff.command=c:/Program Files (x86)/WinMerge/winmergeu`, but replace the value after the `=` by the path to WinMerge on your laptop.
-- Start module iaf-test.
+- Start module frankframework-test.
 - If you see a "Differences:" panel, you have a button "windiff" above it. Please press it to see the differences in WinMerge. NOTE: You only see a "Differences:" panel if you select a low log level. Mind the pull-down menu labeled "Log level".
-- If all your tests succeed, you do not have "Differences:" panels, and you have no "windiff" buttons. To test your WinMerge integration, you may have to temporarily edit a test scenario to make it fail. 
+- If all your tests succeed, you do not have "Differences:" panels, and you have no "windiff" buttons. To test your WinMerge integration, you may have to temporarily edit a test scenario to make it fail.
 
-## Setup Node.js and pnpm 
+## Setup Node.js and pnpm
+
 Regardless of which IDE you use, you will need Node.js and pnpm.
 
 ### Install the Latest LTS Version of Node.js
+
 * Download the latest [LTS version of Node.js](https://nodejs.org/en), or refer to the [Angular version compatibility guide](https://angular.dev/reference/versions) to choose the appropriate version.
 * To verify your installation, open a terminal or command prompt and run `node -v`. If installed correctly, this will display the Node.js version without errors.
 
-### Instal PNPM 
+### Install PNPM
+
 * We use [PNPM](https://pnpm.io/) as our package manager. You will need to install corepack first with `npm install --global corepack@latest` to enable pnpm by running `corepack enable pnpm`, or follow the [PNPM installation guide](https://pnpm.io/installation).
 * Confirm PNPM is installed by running `pnpm -v`, similar to the Node.js check.
-
 
 ## Developing with Eclipse
 
@@ -147,9 +149,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 ### Install Eclipse
 
-- Open the webpage with [downloads of Eclipse](https://www.eclipse.org/downloads/packages/). At the top of this page, you see a link to download an installer. We recommend that you do not use an installer, because you can also download a .zip file with the sources of Eclipse. When you use a zip file instead of an installer, it is easier to have different versions of Eclipse on your development computer.
-- Click the link "Eclipse IDE for Enterprise Java and Web Developers". A page opens with a big Download button to the right. Skip that one because it is an installer. Click a link to the left of that, under "Download Links". We tested our instructions with version 2021-12, but older versions should also work. To install Eclipse, just unzip your download to a directory of your choice.
-- You may get an error "path too long". You can fix that by giving your .zip file a shorter name and trying again.
+Instructions for the Eclipse installer can be found here: https://www.eclipse.org/downloads/packages/installer.
 
 ### Configure Eclipse
 
@@ -159,72 +159,72 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Make sure that the default text file line delimiter is set to Unix and default encoding is set to UTF-8: Window, Preferences, General, Workspace, New text file line delimiter: Unix, Text file encoding: UTF-8.
 - We prefer to run the Frank!Framework on Java 25. Please install a Java 25 JDK in addition to the JRE that is included in your Eclipse installation. You can find it [here](https://adoptium.net/temurin/releases/?package=jdk&version=25). This is a distribution of the OpenJDK, so no issues with copyright. After downloading, install it in Windows | Preferences | Java | Installed JREs. (You may have to delete the JRE that came with Eclipse there.)
 
-*Note: the Frank!Console is an NPM project, if you choose to import this module (in a later step) you will need to run 'Run as -> Maven install'*
+*Note: the Frank!Console is an NPM project, if you choose to import this module (in a later step) you will need to run 'Run as → Maven install'*
 
 ### Set up Lombok in Eclipse
+
 - Download the [Lombok dependency](https://projectlombok.org/). Please open it as a Java application.
 - You see a GUI. The GUI may automatically find your Eclipse installation. If this does not work, use the button "Specify location".
 - Press Install / Update.
 - If you have trouble with these instructions, then you can get help on the https://projectlombok.org/ site. On the top menu, choose "install" | "Eclipse".
 - You must restart Eclipse to start using the Lombok integration.
 
-
 ### Import the source code
 
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
 - Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/frankframework/frankframework.git, Next, Next, Finish.
 - Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
-- In the Git Perspective, right-click the IAF Repository and click 'Import Projects...'
+- In the Git Perspective, right-click the FF! Repository and click 'Import Projects...'
 - The Import wizard appears which allows you to import many different kinds of projects.
-- **deselect**: iaf-sap, iaf-tibco, iaf-idin, docker\* and ear (unless you have access to the proprietary repository), Finish.
+- **deselect**: frankframework-sap, frankframework-tibco, frankframework-idin, docker\* and ear (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
-- Right click iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
-
+- Right click frankframework, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
 
 ### Set up a Tomcat server in Eclipse
 
-- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v10.1 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) version 11.0.15 or a later version of Tomcat 11), OK, Finish.
-- Double click Tomcat v11.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
+- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v11.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/), check the `tomcat.version` in the [pom.xml](https://github.com/frankframework/frankframework/blob/master/pom.xml) to see which version should be used), OK, Finish.
+- Double click Tomcat v11.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., frankframework-example, OK, File, Save
 - Right click Tomcat v11.0 Server at localhost, Start.
-- Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
+- Browse the FF! console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
 
 ### In some cases you might want/need to:
 
-- Right click iaf, Maven, Update Project..., OK.
-- Delete .setting folder(s) in broken iaf module(s), followed by right click iaf, Maven, Update Project..., OK.
+- Right click frankframework, Maven, Update Project..., OK.
+- Delete .setting folder(s) in broken frankframework module(s), followed by right click frankframework, Maven, Update Project..., OK.
 - Enable Project, Build Automatically
 - Right click Tomcat Server at localhost, Clean...
 - Change newlines in .classpath and org.eclipse.wst.common.component files back to Unix newlines.
-- Right click pom.xml (in iaf), Run As, Maven build..., JRE, make sure a JDK (not a JRE) is used, Refresh, Refresh resources upon completion, Specific resources, Specify Resources..., iaf (Using "The project containing the selected resource" doesn't seem to work), Finish, Run.
+- Right click pom.xml (in frankframework), Run As, Maven build..., JRE, make sure a JDK (not a JRE) is used, Refresh, Refresh resources upon completion, Specific resources, Specify Resources..., frankframework (Using "The project containing the selected resource" doesn't seem to work), Finish, Run.
 - The local Maven repository might contain corrupt jar files which for example will result in java.lang.NoClassDefFoundError: org/aspectj/lang/ProceedingJoinPoint when starting Tomcat. Remove the jar file from the repository to make Maven download the file again.
-- When changing IAF versions Eclipse doesn't always automatically clean the  tomcat deploy folder (wtpwebapps). Right click project, Run As, Maven Clean, followed by  Right click Tomcat v11.0 Server at localhost, Clean...
+- When changing FF! versions Eclipse doesn't always automatically clean the tomcat deploy folder (wtpwebapps). Right click project, Run As, Maven Clean, followed by Right click Tomcat v11.0 Server at localhost, Clean...
 - Check the deployment assemblies:
-  - Right-click iaf-webapp and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
-    - `src/main/webapp` to `/`
-    - `target/m2e-wtp/web-resources` to `/`
-    - `iaf-akamai` to `WEB-INF/lib/frankframework-akamai-X.Y-SNAPSHOT.jar`
-    - ...
-    - `iaf-larva `to `WEB-INF/lib/frankframework-larva-X.Y-SNAPSHOT.jar`
-    - `Maven Dependencies` to `WEB-INF/lib`
-  - Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
-  - Right-click iaf-example and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
-    - `/src/main/java` to `WEB-INF/classes`
-    - `/src/main/resources` to `WEB-INF/classes`
-    - `/src/main/webapp` to `/`
-    - `/target/m2e-wtp/web-resources` to `/`
-    - `iaf-core` to `WEB-INF/lib/frankframework-core-X.Y-SNAPSHOT.jar`
-    - `iaf-example` to -
-    - ...
-    - `iaf-webapp` to -
-    - `Maven Dependencies` to `WEB-INF/lib`
-  - Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
-- When running Tomcat v8.5 or higher, you can disable its pluggability scans to prevent unnecessarily long startup times. Background info: https://tomcat.apache.org/tomcat-10.0-doc/config/jar-scan-filter.html 
+	- Right-click frankframework-webapp and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
+		- `src/main/webapp` to `/`
+		- `target/m2e-wtp/web-resources` to `/`
+		- `frankframework-akamai` to `WEB-INF/lib/frankframework-akamai-X.Y-SNAPSHOT.jar`
+		- ...
+		- `frankframework-larva `to `WEB-INF/lib/frankframework-larva-X.Y-SNAPSHOT.jar`
+		- `Maven Dependencies` to `WEB-INF/lib`
+	- Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
+	- Right-click frankframework-example and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
+		- `/src/main/java` to `WEB-INF/classes`
+		- `/src/main/resources` to `WEB-INF/classes`
+		- `/src/main/webapp` to `/`
+		- `/target/m2e-wtp/web-resources` to `/`
+		- `frankframework-core` to `WEB-INF/lib/frankframework-core-X.Y-SNAPSHOT.jar`
+		- `frankframework-example` to -
+		- ...
+		- `frankframework-webapp` to -
+		- `Maven Dependencies` to `WEB-INF/lib`
+	- Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
+- When running Tomcat v8.5 or higher, you can disable its pluggability scans to prevent unnecessarily long startup times. Background info: https://tomcat.apache.org/tomcat-10.0-doc/config/jar-scan-filter.html
   To do this, add the following element within the Context element of your Tomcat server's _context.xml_ file:
-######
-    <JarScanner>
-        <JarScanFilter defaultPluggabilityScan="false" />
-    </JarScanner>
-- In case Eclipse is continuously downloading javadoc and source files, you might need to upgrade your M2E installation.
+  ```xml
+  <JarScanner>
+	  <JarScanFilter defaultPluggabilityScan="false" />
+  </JarScanner>
+  ```
+- In case Eclipse is continuously downloading Javadoc and source files, you might need to upgrade your M2E installation.
 
 ### Let Eclipse check Javadoc comments
 
@@ -247,59 +247,63 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 This guide assumes that you are using IntelliJ Ultimate, because application servers and WAR exploded are not included in the community edition.
 
 - Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
-- If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
+- If you cloned from the command line, then: From File → Open... Select frankframework folder and import it as a Maven project.
 - When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
 - Make sure to select Java 25 as a default JDK.
 - In the Maven tool window, open the "Profiles" section and make sure to select the profile `database-drivers` amongst other profiles that are selected by default.
   After doing this, make sure to reload the Maven project to add the extra dependencies from this profile to your project classpath.
-- You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it. 
+- You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it.
   If the plugin is installed you may get a notification from IntelliJ when the project is built that annotation processing needs to be enabled in the project for Lombok to work, enable this.
 - This project uses Error Prone and NullAway in the Maven build.
   You can add Error Prone to the IntelliJ build with the "Error Prone Compiler" plugin.
   After installing this plugin, you should go to IntelliJ Settings | Build, Execution, Deployment | Compiler | Java Compiler and set the Java Compiler to "Javac with Error Prone", and set the compiler-options to the Error Prone flags from the POM file:
   `-XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN`
   This may however give you Internal Compiler Errors from the build, in which case you have to switch back to the regular Javac compiler.
-- Download the latest version of Tomcat 11.0 from https://tomcat.apache.org/download-11.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users), 
+- Download the latest version of Tomcat 11.0 from https://tomcat.apache.org/download-11.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users),
   or install it via `brew` (on macOS) or `sdkman`.
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
 - Open Settings | Build, Execution, Deployment | Application Servers, add the Tomcat installation you just did.
 - A run configuration can be created for each individual project. Provided are examples for the example project and test project, but these can be adapted to work for other projects as well.
 	- **Example project:**
-      - Create a run configuration for a Tomcat server.
-      - In the tab "Deployments", choose the module "frankframework-example:war exploded". Make sure that it is a war exploded and not a war.
-      - Set the context to `/iaf-example`.
-      - Set the following VM options: `-Ddtap.stage=LOC`.
-      - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
-      - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
-        1. Build console-frontend
-        2. Build the war exploded artifact.
-      - Name your configuration and save it.
-    - **Test project:**
-      - [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md) contains detailed information on how to use this project.
-      - Create a run configuration for a Tomcat server.
-      - In the tab "Deployments", choose the module "frankframework-test:war exploded". Make sure that it is a war exploded and not a war.
-      - Set the context to `/iaf-test`.
-		__NB__: This is very important, otherwise a lot of tests will fail!
-      - Set the following VM options:
-        `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 
-      -DcredentialFactory.class=org.frankframework.credentialprovider.PropertyFileCredentialFactory -DcredentialFactory.map.properties=/<path to source>/test/src/main/secrets/credentials.properties`
-	  - In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
-      - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
-          1. Build console-frontend
-          2. Build the war exploded artifact.
-      - Name your configuration and save it.
+		- Create a run configuration for a Tomcat server.
+		- In the tab "Deployments", choose the module "frankframework-example:war exploded". Make sure that it is a war exploded and not a war.
+		- Set the following VM options: `-Ddtap.stage=LOC`.
+		- In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+		- Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
+			1. Build console-frontend
+			2. Build the war exploded artifact.
+		- Name your configuration and save it.
+	- **Test project:**
+		- [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md) contains detailed information on how to use this project.
+		- Create a run configuration for a Tomcat server.
+		- In the tab "Deployments", choose the module "frankframework-test:war exploded". Make sure that it is a war exploded and not a war.
+		- Set the context to `/iaf-test`.
+		  __NB__: This is very important, otherwise a lot of tests will fail!
+		- Set the following VM options:
+		  `-Ddtap.stage=LOC -DauthAliases.expansion.allowed=testalias -Dweb.port=8080 
+		-DcredentialFactory.class=org.frankframework.credentialprovider.PropertyFileCredentialFactory -DcredentialFactory.map.properties=/<path to source>/test/src/main/secrets/credentials.properties`
+		- In the "On Update" section, select "Update Classes and Resources", so classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
+		- Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend". These build steps should be in the following order:
+			1. Build console-frontend
+			2. Build the war exploded artifact.
+		- Name your configuration and save it.
 - Run your configuration and you are ready to go. The IAF-Test configuration has all scenarios built-in for testing the Frank!Framework from the Larva test-tool.
 
-# Frank!Doc - Documentation for Frank developers
+# FF! Reference - Documentation for Frank!Developers
 
-The Frank!Framework is used by Frank developers. They write XML files (Frank configurations) to solve software integration problems. These XML files are translated to Java objects that will collaborate to do the intended job. The Java objects have the types that are available in this repository. For example, when a Frank configuration contains a tag `<XsltPipe>`, an object of type `XsltPipe` is instantiated.
+The Frank!Framework is used by Frank!Developers. They write XML files (FF! Configurations) to solve software integration problems. These XML files are translated to Java objects that will collaborate to do the intended job. The Java objects have the types that are available in this repository. For example, when an FF! Configuration contains a tag `<XsltPipe>`, an object of type `XsltPipe` is instantiated.
 
-The syntax and the meaning of Frank configurations are documented in the following files (the Frank!Doc):
-* `./target/frankDoc/js/frankDoc.json`. This file is read by a web application implemented in sub-project `webapp`. This web application will render the information in the JSON file. Frank developers use the website as a reference manual. See https://frankdoc.frankframework.org.
-* `./target/frankDoc/xml/xsd/FrankConfig-strict.xsd`. This file is given to Frank developers. They reference this XSD in their Frank config XML files. When they open an XML file, their text editor will use `FrankConfig-strict.xsd` to support autocomplete and to provide tooltip information.
-* `./target/frankDoc/xml/xsd/FrankConfig-compatibility.xsd`. This file is added to the Frank!Framework .jar file during the Maven build. The file is then used at runtime to parse Frank configurations.
+The syntax and the meaning of FF! Configurations are documented in the following files:
 
-The Frank!Doc is created by a doclet (see https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/doclet/overview.html) that is implemented in our project https://github.com/frankframework/frank-doc. The doclet is executed during the Maven build of this project. The information in the Frank!Doc is based on the Java source files in this repository. As a developer of the F!F, please take care that the Frank!Doc remains correct and helpful for Frank developers. For further instructions, see [FRANKDOC.md](./FRANKDOC.md).
+* `./target/frankDoc/js/frankDoc.json`. This file is read by a web application implemented in subproject `webapp`. This web application will render the information in the JSON file. Frank!Developers use the website as a reference manual. See https://reference.frankframework.org.
+* `./target/frankDoc/xml/xsd/FrankConfig-strict.xsd`. This file is given to Frank!Developers. They reference this XSD in their FF! Configuration XML files. When they open an XML file, their text editor will use `FrankConfig-strict.xsd` to support autocomplete and to provide tooltip information.
+* `./target/frankDoc/xml/xsd/FrankConfig-compatibility.xsd`. This file is added to the Frank!Framework .jar file during the Maven build. The file is then used at runtime to parse FF! Configurations.
+
+The FF! Reference is created by a Doclet (see https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/doclet/overview.html) that is implemented in our project https://github.com/frankframework/frank-doc. The Doclet is executed during the Maven build of this project. The information in the FF! Reference is based on the Java source files in this repository. As a developer of the FF!, please take care that the FF! Reference remains correct and helpful for Frank!Developers. For further instructions, see [FF-REFERENCE.md](./FF-REFERENCE.md).
 
 Thanks,
 The Frank!Framework Team
+
+---
+
+Last checked for correctness: 2026-09-04

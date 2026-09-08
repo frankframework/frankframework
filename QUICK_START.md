@@ -17,6 +17,8 @@ You may either use our pre-built Docker images or deploy it as an EAR or WAR arc
       * [Directory structure](#directory-structure)
       * [Docker Compose file](#docker-compose-file)
       * [Running the setup](#running-the-setup)
+        * [Alternative: start with `--watch` flag](#alternative-start-with---watch-flag)
+        * [Alternative: plain volume mount](#alternative-plain-volume-mount)
       * [What's next](#whats-next)
     * [Mounting files](#mounting-files)
       * [Directories](#directories)
@@ -34,6 +36,7 @@ As a Maven project the easiest way to use our framework is to use one of our sta
 By using either our minimal or full bundle you don't have the overhead of defining the required modules your self, as well as (transient) dependency version 'locks' required for certain application servers.
 
 ```xml
+
 <parent>
 	<groupId>org.frankframework</groupId>
 	<artifactId>frankframework-bundle-minimal</artifactId>
@@ -44,6 +47,7 @@ By using either our minimal or full bundle you don't have the overhead of defini
 Or the full bundle which contains almost every module:
 
 ```xml
+
 <parent>
 	<groupId>org.frankframework</groupId>
 	<artifactId>frankframework-bundle-full</artifactId>
@@ -54,6 +58,7 @@ Or the full bundle which contains almost every module:
 If you wish to use `CMIS` or `Aspose` you will need to manually add those dependencies as such:
 
 ```xml
+
 <dependency>
 	<groupId>org.frankframework</groupId>
 	<artifactId>frankframework-aspose</artifactId>
@@ -62,6 +67,7 @@ If you wish to use `CMIS` or `Aspose` you will need to manually add those depend
 ```
 
 Note:
+
 - The versions of the parent and other framework modules need to match.
 - We have example modules such as `test` and `ear` in case you would like some reference material.
 
@@ -207,7 +213,7 @@ If you cannot use `docker compose watch` (e.g., your Docker Compose version is o
 ```yaml
 services:
   frankframework:
-    ...
+    # ...
     volumes:
       - ./configurations/:/opt/frank/configurations
 ```
@@ -224,15 +230,16 @@ Changes to the `configurations/` directory will still be picked up, but performa
 
 Once the services are running, the following endpoints will be available:
 
-| URL                       | Description                                                            |
-|---------------------------|------------------------------------------------------------------------|
-| http://localhost:8080     | **Frank!Framework console** – monitor and manage your Frank application |
-| http://localhost:8081     | **Frank!Flow** – visual configuration editor                           |
-| http://localhost:8082     | **Swagger UI** – browse and test the API                               |
+| URL                   | Description                                                             |
+|-----------------------|-------------------------------------------------------------------------|
+| http://localhost:8080 | **Frank!Framework console** – monitor and manage your Frank application |
+| http://localhost:8081 | **Frank!Flow** – visual configuration editor                            |
+| http://localhost:8082 | **Swagger UI** – browse and test the API                                |
 
 Open http://localhost:8080 in your browser to access the Frank!Framework console. Frank!Flow is also accessible from the console sidebar under the "Frank!Flow" menu item.
 
 From here you can:
+
 - Place your Frank configuration files in the `configurations/` directory and they will be synced into the running container automatically.
 - Explore the Frank!Framework console to monitor adapters, view logs, and test your configurations.
 - Use Frank!Flow to visually create and edit configurations.
@@ -244,23 +251,23 @@ The Frank!Framework container uses several well-known directories and files. You
 
 #### Directories
 
-| Directory                   | Description                                                                                                                                                                                                                                                                                                                                                                                   |
-|-----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Directory                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `/opt/frank/configurations` | For configurations; may contain a directory with files per configuration or a JAR containing a directory per configuration. When `Configuration.xml` is not located at `<configurationName>/Configuration.xml`, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml. Configurations found are loaded automatically. Can be disabled by setting `configurations.directory.autoLoad=false`. |
-| `/opt/frank/resources`      | For application-wide properties; may contain files or a JAR with all files. Minimum required properties are `instance.name` and `configurations.names`, which can also be set using environment variables.                                                                                                                                                                                    |
-| `/opt/frank/testtool`       | For Larva tests included in the image.                                                                                                                                                                                                                                                                                                                                                        |
-| `/opt/frank/testtool-ext`   | For Larva tests mounted from the environment.                                                                                                                                                                                                                                                                                                                                                 |
-| `/opt/frank/secrets`        | Credential storage (`credentials.properties` will be read by default). See [Secrets](DOCKER.md#secrets).                                                                                                                                                                                                                                                                                     |
-| `/opt/frank/drivers`        | Contains driver JARs. See [Drivers](DOCKER.md#drivers).                                                                                                                                                                                                                                                                                                                                       |
-| `/opt/frank/plugins`        | Contains plugin JARs.                                                                                                                                                                                                                                                                                                                                                                         |
-| `/usr/local/tomcat/logs`    | Log directory.                                                                                                                                                                                                                                                                                                                                                                                |
+| `/opt/frank/resources`      | For application-wide properties; may contain files or a JAR with all files. Minimum required properties are `instance.name` and `configurations.names`, which can also be set using environment variables.                                                                                                                                                                                                                                                                         |
+| `/opt/frank/testtool`       | For Larva tests included in the image.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `/opt/frank/testtool-ext`   | For Larva tests mounted from the environment.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `/opt/frank/secrets`        | Credential storage (`credentials.properties` will be read by default). See [Secrets](DOCKER.md#secrets).                                                                                                                                                                                                                                                                                                                                                                           |
+| `/opt/frank/drivers`        | Contains driver JARs. See [Drivers](DOCKER.md#drivers).                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `/opt/frank/plugins`        | Contains plugin JARs.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `/usr/local/tomcat/logs`    | Log directory.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 To mount additional directories, add volume or watch entries to the `frankframework` service in `compose.yaml`. For example, to mount a `resources/` directory:
 
 ```yaml
 services:
   frankframework:
-    ...
+    # ...
     volumes:
       - ./resources/:/opt/frank/resources
 ```
@@ -279,11 +286,11 @@ develop:
 
 #### Files
 
-| File                                       | Description                                                                                                                                               |
-|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/opt/frank/resources/resources.yml`       | Mount or copy of your `resources.yml`. Use hostname `host.docker.internal` to reach the host machine for local testing. Changes require a container restart (when using volumes, use the `sync+restart` watch action instead). |
-| `/usr/local/tomcat/conf/server.xml`        | Mount or copy of your `server.xml`. Contains the default Tomcat server configuration; replace to secure your application.                                 |
-| `/usr/local/tomcat/conf/catalina.properties` | Server properties containing default framework values. Do not replace this file; use [environment variables](#environment-variables) or append to it instead. |
+| File                                         | Description                                                                                                                                                                                                                    |
+|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/opt/frank/resources/resources.yml`         | Mount or copy of your `resources.yml`. Use hostname `host.docker.internal` to reach the host machine for local testing. Changes require a container restart (when using volumes, use the `sync+restart` watch action instead). |
+| `/usr/local/tomcat/conf/server.xml`          | Mount or copy of your `server.xml`. Contains the default Tomcat server configuration; replace to secure your application.                                                                                                      |
+| `/usr/local/tomcat/conf/catalina.properties` | Server properties containing default framework values. Do not replace this file; use [environment variables](#environment-variables) or append to it instead.                                                                  |
 
 ### Environment variables
 
@@ -294,7 +301,7 @@ Set environment variables in `compose.yaml` under the `environment` key:
 ```yaml
 services:
   frankframework:
-    ...
+    # ...
     environment:
       instance.name: my-frank-app
       dtap.stage: LOC
@@ -321,7 +328,7 @@ You can add a `healthcheck` to the service in `compose.yaml`:
 ```yaml
 services:
   frankframework:
-    ...
+    # ...
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/iaf/api/server/health"]
       interval: 10s
@@ -337,3 +344,7 @@ services:
 - [Helm charts](https://github.com/frankframework/charts) – for Kubernetes deployments
 - [Contributing](CONTRIBUTING.md) – how to contribute to the Frank!Framework
 - [Code of Conduct](CODE_OF_CONDUCT.md) – our community standards
+
+---
+
+Last checked for correctness: 2026-09-04
