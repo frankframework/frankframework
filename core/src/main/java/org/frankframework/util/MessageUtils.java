@@ -523,14 +523,14 @@ public class MessageUtils {
 	}
 
 	/**
-	 * Generate a message-id prefixed with {@value DEFAULT_MESSAGE_ID_PREFIX}
+	 * Generate a randomised message-id prefixed with {@value DEFAULT_MESSAGE_ID_PREFIX}
 	 */
 	public static @NonNull String generateMessageId1() {
 		return generateMessageId3(DEFAULT_MESSAGE_ID_PREFIX);
 	}
 
 	/**
-	 * Generate a message-id prefixed with {@value DEFAULT_MESSAGE_ID_PREFIX}, then your custom message-prefix. The total
+	 * Generate a randomised message-id prefixed with {@value DEFAULT_MESSAGE_ID_PREFIX}, then your custom message-prefix. The total
 	 * length of the message-id is capped at 100 characters.
 	 * @param prefix Custom prefix which will follow the {@literal DEFAULT_MESSAGE_ID_PREFIX}
 	 */
@@ -539,7 +539,7 @@ public class MessageUtils {
 	}
 
 	/**
-	 * Generate a message-id prefixed with just your custom message-prefix (no default prefix). The total length of the message-id is capped at 100 characters.
+	 * Generate a randomised message-id prefixed with just your custom message-prefix (no default prefix). The total length of the message-id is capped at 100 characters.
 	 * @param prefix Custom prefix to the message-id
 	 */
 	public static @NonNull String generateMessageId3(String prefix) {
