@@ -39,9 +39,9 @@
 		</module>
 		<module name="IllegalImport">
 			<property name="illegalPkgs" value="
+			org.jetbrains.annotations,
 			org.wildfly.common.annotation,
 			reactor.util.annotation,
-			org.springframework.lang,
 			com.mongodb.lang,
 			io.micrometer.common.lang,
 			org.checkerframework.checker.nullness.qual,
@@ -56,6 +56,10 @@
 			com.unboundid.util.NotNull,
 			jakarta.annotation.Nonnull,
 			jakarta.annotation.Nullable,
+			org.springframework.lang.NonNull,
+			org.springframework.lang.NonNullApi,
+			org.springframework.lang.NonNullFields,
+			org.springframework.lang.Nullable,
 			" />
 		</module>
 		<module name="IllegalImport">
