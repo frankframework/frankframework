@@ -21,6 +21,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.JdbcUtil;
 
+@SuppressWarnings("SqlSourceToSinkFlow") // Don't warn about SQL Injection Attacks for this test-util class
 @Log4j2
 public class JdbcTestUtil {
 
