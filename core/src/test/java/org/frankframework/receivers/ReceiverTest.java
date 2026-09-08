@@ -1254,7 +1254,7 @@ public class ReceiverTest {
 
 		// Act
 		for (int i = 0; i < 20; ++i) {
-			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("error-"), MessageUtils.generateMessageId()), new PipeLineSession()));
+			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId2("error-"), MessageUtils.generateMessageId1()), new PipeLineSession()));
 		}
 
 		// Assert
@@ -1272,7 +1272,7 @@ public class ReceiverTest {
 		reset(receiver);
 
 		// Act
-		receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("success-"), MessageUtils.generateMessageId()), new PipeLineSession());
+		receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId2("success-"), MessageUtils.generateMessageId1()), new PipeLineSession());
 
 		// Assert
 		// Verify that the backoff-delay has been reset after a successful request
@@ -1282,7 +1282,7 @@ public class ReceiverTest {
 		// Repeat the errors and verify error behaviour occurs again after errors
 		// Act
 		for (int i = 0; i < 20; ++i) {
-			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("error-"), MessageUtils.generateMessageId()), new PipeLineSession()));
+			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId2("error-"), MessageUtils.generateMessageId1()), new PipeLineSession()));
 		}
 
 		// Assert

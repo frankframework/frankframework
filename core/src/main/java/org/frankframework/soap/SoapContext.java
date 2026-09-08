@@ -104,7 +104,7 @@ public class SoapContext {
 
 	private String generateMessageId() {
 		createdMessageId = true;
-		return MessageUtils.generateMessageId(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX + "SOAP[" + getSoapAction() + "]");
+		return MessageUtils.generateMessageId2("SOAP[" + getSoapAction() + "]");
 	}
 
 	/**

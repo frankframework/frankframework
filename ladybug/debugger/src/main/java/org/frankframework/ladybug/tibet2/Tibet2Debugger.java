@@ -74,7 +74,7 @@ public class Tibet2Debugger extends LadybugDebugger {
 			pipeLineSession.put("principal", BusMessageUtils.getUserPrincipalName());
 			pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
-			String messageId = MessageUtils.generateMessageId("tibet2-resend");
+			String messageId = MessageUtils.generateMessageId3("tibet2-resend");
 
 			PipeLineResult processResult = adapter.processMessageDirect(messageId, new Message(inputMessage), pipeLineSession);
 			String stringResult = processResult.getResult().asString();

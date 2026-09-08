@@ -67,7 +67,7 @@ public class SendMessageJob extends AbstractJobDef {
 	public void execute() throws JobExecutionException, TimeoutException {
 		try (PipeLineSession session = new PipeLineSession()) {
 			// Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
-			session.put(PipeLineSession.CORRELATION_ID_KEY, MessageUtils.generateMessageId("FF-SCHEDULER"));
+			session.put(PipeLineSession.CORRELATION_ID_KEY, MessageUtils.generateMessageId3("FF-SCHEDULER"));
 
 			localSender.start();
 			Message toSendMessage = getMessage() == null ? Message.nullMessage() : new Message(getMessage());

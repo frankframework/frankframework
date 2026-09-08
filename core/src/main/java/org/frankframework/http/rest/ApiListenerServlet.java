@@ -340,7 +340,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 */
 				pipelineSession.put("allowedMethods", buildAllowedMethodsHeader(config.getMethods()));
 
-				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), () -> MessageUtils.generateMessageId(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX + "HTTP[" + listener.getName() + "]"));
+				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), () -> MessageUtils.generateMessageId2("HTTP[" + listener.getName() + "]"));
 				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), () -> messageId);
 				PipeLineSession.updateListenerParameters(pipelineSession, messageId, correlationId);
 

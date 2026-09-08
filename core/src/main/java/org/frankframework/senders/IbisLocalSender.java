@@ -249,7 +249,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 			} catch (ParameterException e) {
 				throw new SenderException("exception evaluating parameters", e);
 			}
-			subAdapterSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId());
+			subAdapterSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId1());
 			final ServiceClient serviceClient;
 			try {
 				serviceClient = getServiceImplementation(session);

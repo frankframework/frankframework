@@ -434,7 +434,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 			valueMap.remove(SCOPE_PARAM_NAME);
 			childSession.putAll(valueMap);
 		}
-		childSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId());
+		childSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId1());
 	}
 
 	private ServiceClient getJvmDispatcherServiceClient(Scope scope, String target) throws SenderException {

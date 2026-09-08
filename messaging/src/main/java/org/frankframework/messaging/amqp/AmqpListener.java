@@ -88,7 +88,7 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	@Override
 	public RawMessageWrapper<Message<?>> wrapRawMessage(@NonNull Message<?> rawMessage, @NonNull PipeLineSession session) throws ListenerException {
 		try {
-			String messageId = Objects.toString(rawMessage.messageId(), MessageUtils.generateMessageId(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX + "AMQP[" + (name != null ? name : address) + "]"));
+			String messageId = Objects.toString(rawMessage.messageId(), MessageUtils.generateMessageId2("AMQP[" + (name != null ? name : address) + "]"));
 			String correlationId = Objects.toString(rawMessage.correlationId(), null);
 			PipeLineSession.updateListenerParameters(session, messageId, correlationId);
 			return new RawMessageWrapper<>(rawMessage, messageId, correlationId);
