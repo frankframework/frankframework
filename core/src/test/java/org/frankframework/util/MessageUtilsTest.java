@@ -305,6 +305,9 @@ public class MessageUtilsTest {
 		request.addHeader("User-Agent", "double-o-seven");
 		Message message = MessageUtils.parseContentAsMessage(request);
 
+		assertNotNull(message);
+		//noinspection deprecation
+		assertNull(message.asObject());
 		assertTrue(Message.isEmpty(message));
 		assertTrue(Message.isNull(message));
 		assertEquals(0L, message.size());

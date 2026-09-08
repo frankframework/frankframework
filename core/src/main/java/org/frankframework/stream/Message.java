@@ -473,7 +473,7 @@ public class Message implements Serializable {
 		return message == null || message.isEmpty();
 	}
 
-	@Contract(value = "null -> true; !null -> false")
+	@Contract(value = "null -> true")
 	public static boolean isNull(@Nullable Message message) {
 		return message == null || message.isNull();
 	}
