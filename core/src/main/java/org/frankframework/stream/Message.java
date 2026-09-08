@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -467,10 +468,12 @@ public class Message implements Serializable {
 	 * @param message Message to check. Can be {@code null}.
 	 * @return Returns {@code true} if the message is {@code null}, otherwise the result of {@link Message#isEmpty()}.
 	 */
+	@Contract(value = "null -> true")
 	public static boolean isEmpty(@Nullable Message message) {
 		return message == null || message.isEmpty();
 	}
 
+	@Contract(value = "null -> true; !null -> false")
 	public static boolean isNull(@Nullable Message message) {
 		return message == null || message.isNull();
 	}
