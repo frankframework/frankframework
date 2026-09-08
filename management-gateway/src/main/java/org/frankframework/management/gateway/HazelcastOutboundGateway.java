@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -45,6 +46,7 @@ import com.hazelcast.topic.ITopic;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusException;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
@@ -110,7 +112,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 
 		Message<I> requestMessage = HazelcastMessageBuilder.fromMessage(in)
 				.setReplyChannelName(tempReplyChannelName)
-				.setAuthentication(getAuthentication())
+				.setAuthentication(getAuthentication(in))
 				.build();
 		requestTopic.publish(requestMessage);
 
@@ -175,8 +177,13 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		return cm;
 	}
 
-	private @NonNull String getAuthentication() {
-		return jwtGenerator.createJWT();
+	private @NonNull String getAuthentication(Message<?> message) {
+		return jwtGenerator.createJWT(builder -> {
+			UUID target = message.getHeaders().get(BusMessageUtils.HEADER_TARGET_KEY, UUID.class);
+			if (target != null) {
+				builder.audience(target.toString());
+			}
+		});
 	}
 
 	private long receiveTimeout(Message<?> requestMessage) {
@@ -198,7 +205,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		log.debug("sending asynchronous request to topic [{}] message [{}]", requestTopicName, in);
 		Message<I> requestMessage = HazelcastMessageBuilder.fromMessage(in)
 				.setReplyChannelName(null)
-				.setAuthentication(getAuthentication())
+				.setAuthentication(getAuthentication(in))
 				.build();
 
 		requestTopic.publishAsync(requestMessage);

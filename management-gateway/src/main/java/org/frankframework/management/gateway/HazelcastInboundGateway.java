@@ -114,7 +114,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 
 		log.trace("received message with id [{}] from member [{}]", () -> messageId, () -> rawMessage.getPublishingMember().getUuid());
 
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("mid", messageId.toString())) {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("mid", String.valueOf(messageId))) {
 			String tempReplyChannel = (String) message.getHeaders().getReplyChannel();
 
 			log.debug("received message [{}] {} reply-channel", message, tempReplyChannel == null ? "without" : "with");
@@ -155,7 +155,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 			}
 		} catch (Exception e) {
 			// Log other exceptions normally.
-			log.error("error processing", headers.getId(), e);
+			log.error("error processing [{}]", headers.getId(), e);
 		}
 	}
 

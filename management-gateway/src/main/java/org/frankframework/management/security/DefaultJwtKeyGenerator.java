@@ -17,6 +17,7 @@
 package org.frankframework.management.security;
 
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.jwk.Curve;
@@ -30,7 +31,7 @@ public class DefaultJwtKeyGenerator extends AbstractJwtGenerator<ECKey> {
 	private static final Curve JWT_DEFAULT_CURVE = Curve.P_384;
 
 	public DefaultJwtKeyGenerator() {
-		super();
+		super(JWSAlgorithm.ES384);
 	}
 
 	@Override

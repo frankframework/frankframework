@@ -51,12 +51,12 @@ public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtGenerator
 				try {
 					KeyStore keystore = CommonsPkiUtil.createKeyStore(URI.create(keyStoreLocation).toURL(), keyStorePassword, KeystoreType.JKS);
 					jwtKeyGenerator = new KeystoreJwtGenerator(keystore);
+					return jwtKeyGenerator;
 				} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
 					log.error("Something went wrong trying to load keystore from: {}", keyStoreLocation, e);
 				}
-			} else {
-				jwtKeyGenerator = new DefaultJwtKeyGenerator();
 			}
+			jwtKeyGenerator = new DefaultJwtKeyGenerator();
 		}
 		return jwtKeyGenerator;
 	}

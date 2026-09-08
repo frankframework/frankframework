@@ -24,6 +24,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Enumeration;
 
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -35,7 +36,7 @@ public class KeystoreJwtGenerator extends AbstractJwtGenerator<RSAKey> {
 	private final KeyStore keyStore;
 
 	protected KeystoreJwtGenerator(KeyStore keyStore) {
-		super();
+		super(JWSAlgorithm.RS512);
 		this.keyStore = keyStore;
 	}
 

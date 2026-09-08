@@ -25,6 +25,7 @@ import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -33,6 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 
 class JwtSecurityFilterTest {
@@ -46,6 +48,12 @@ class JwtSecurityFilterTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		keyGenerator = new DefaultJwtKeyGenerator();
+
+		GenericApplicationContext ac = new GenericApplicationContext();
+		ac.setDisplayName("bla bla appl");
+		ac.refresh();
+		SpringUtils.autowireByType(ac, keyGenerator);
+
 		File jwksFile = new File(tempDirectory, "jwks.txt");
 		try (OutputStream fileOut = Files.newOutputStream(jwksFile.toPath())) {
 			StreamUtil.streamToStream(new ByteArrayInputStream(keyGenerator.getPublicJwkSet().getBytes(StandardCharsets.UTF_8)), fileOut);

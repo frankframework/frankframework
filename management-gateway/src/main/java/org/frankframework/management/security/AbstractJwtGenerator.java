@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -53,6 +54,7 @@ import org.frankframework.util.UUIDUtil;
 public abstract class AbstractJwtGenerator<T extends JWK> implements InitializingBean, ApplicationContextAware {
 
 	public static final JWSAlgorithm JWT_DEFAULT_SIGNING_ALGORITHM = JWSAlgorithm.RS512;
+	private final JWSAlgorithm algorithm;
 	private final String generatorVersion;
 	private @Setter ApplicationContext applicationContext;
 
@@ -63,8 +65,10 @@ public abstract class AbstractJwtGenerator<T extends JWK> implements Initializin
 	@Getter
 	protected String publicJwkSet;
 
-	protected AbstractJwtGenerator() {
-		generatorVersion = Environment.getModuleVersion("iaf-management-gateway");
+	protected AbstractJwtGenerator(JWSAlgorithm algorithm) {
+		this.algorithm = algorithm;
+		String version = Environment.getModuleVersion("iaf-management-gateway");
+		generatorVersion = StringUtils.isBlank(version) ? "unknown" : version;
 		log.info("Initializing GeneratedJwtKeyGenerator version [{}]", generatorVersion);
 	}
 
@@ -81,10 +85,14 @@ public abstract class AbstractJwtGenerator<T extends JWK> implements Initializin
 		try {
 			jwtHeader = createJwsHeader(jwk.getKeyID());
 
-			publicJwkSet = new JWKSet(jwk.toPublicJWK()).toString();
+			publicJwkSet = createJwkSet(jwk);
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to generate JWT key", e);
 		}
+	}
+
+	protected String createJwkSet(T jwk) {
+		return new JWKSet(jwk.toPublicJWK()).toString();
 	}
 
 	protected abstract T getJwk() throws GeneralSecurityException, JOSEException;
@@ -92,11 +100,14 @@ public abstract class AbstractJwtGenerator<T extends JWK> implements Initializin
 	protected abstract JWSSigner getSigner(T jwkKey) throws JOSEException;
 
 	private JWSHeader createJwsHeader(String keyId) {
-		return new JWSHeader.Builder(JWT_DEFAULT_SIGNING_ALGORITHM)
+		JWSHeader.Builder header = new JWSHeader.Builder(algorithm)
 				.type(JOSEObjectType.JWT)
-				.customParam("version", generatorVersion)
-				.keyID(keyId)
-				.build();
+				.keyID(keyId);
+
+		header.customParam("version", generatorVersion);
+		header.customParam("iss", applicationContext.getDisplayName());
+
+		return header.build();
 	}
 
 	/**
@@ -127,8 +138,7 @@ public abstract class AbstractJwtGenerator<T extends JWK> implements Initializin
 					.expirationTime(Date.from(TimeProvider.now().plusSeconds(120)))
 					.issueTime(Date.from(TimeProvider.now()))
 					.jwtID(UUIDUtil.createRandomUUID())
-					.claim("scope", mapAuthorities(authentication))
-					.issuer(applicationContext.getDisplayName());
+					.claim("scope", mapAuthorities(authentication));
 
 			if (claims != null) {
 				claims.accept(builder);
