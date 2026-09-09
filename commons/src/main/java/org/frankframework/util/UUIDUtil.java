@@ -89,7 +89,7 @@ public class UUIDUtil {
 	 * @return the ip address of the machine that the program runs on, as {@code byte[]}.
 	 */
 	private static byte[] getIPAddress() {
-		InetAddress inetAddress = null;
+		InetAddress inetAddress;
 
 		try {
 			inetAddress = InetAddress.getLocalHost();

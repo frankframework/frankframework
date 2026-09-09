@@ -81,7 +81,7 @@ public class CypherAES256 implements CypherInterface
 
     public byte[] calculateHMAC(byte[] key, byte[] data) throws IOException
     {
-        byte[] computedMac = null;
+        byte[] computedMac;
 
         try
         {
@@ -128,7 +128,7 @@ public class CypherAES256 implements CypherInterface
 
     public byte[] pad(byte[] cleartext) throws IOException
     {
-        byte[] padded = null;
+        byte[] padded;
 
         try
         {
@@ -193,7 +193,7 @@ public class CypherAES256 implements CypherInterface
     @Override
 	public byte[] decrypt(byte[] encryptedData, String password) throws IOException
     {
-        byte[] decrypted = null;
+        byte[] decrypted;
 
         if (!hasValidAESProvider())
         {

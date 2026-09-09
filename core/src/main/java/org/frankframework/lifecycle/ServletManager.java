@@ -158,7 +158,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		AppConstants appConstants = AppConstants.getInstance();
 		String properyPrefix = "application.security.http.authenticators."+authenticatorName+".";
 		String type = AppConstants.getInstance().getProperty(properyPrefix+"type");
-		AuthenticationType auth = null;
+		AuthenticationType auth;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
 		} catch (IllegalArgumentException e) {

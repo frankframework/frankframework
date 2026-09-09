@@ -375,7 +375,7 @@ public class LockerTest {
 
 	@TxManagerTest
 	public void testLockerUnlock(DatabaseTestEnvironment env) throws Exception {
-		String lockObjectId = null;
+		String lockObjectId;
 
 		locker.setTransactionAttribute(TransactionAttribute.REQUIRED);
 		locker.setObjectId("myLocker");

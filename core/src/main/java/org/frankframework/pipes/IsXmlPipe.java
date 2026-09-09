@@ -47,7 +47,7 @@ public class IsXmlPipe extends AbstractPipe {
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
-		String forward = "";
+		String forward;
 		Objects.requireNonNull(message, "Message may not be null");
 		if (Message.isEmpty(message)) {
 			if (isElseForwardOnEmptyInput()) {

@@ -88,7 +88,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 
 		String uriPatternSessionKey = null;
-		ParameterValueList pvl = null;
+		ParameterValueList pvl;
 		ParameterList parameterList = getParameterList();
 		try {
 			pvl = parameterList.getValues(message, session);
@@ -101,7 +101,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 
 		// hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
-		String cacheKey = null;
+		String cacheKey;
 		if(uriPatternSessionKey != null && !uriPatternSessionKey.isEmpty())
 			cacheKey = getRestPath()+"_"+uriPatternSessionKey.toLowerCase();
 		else
