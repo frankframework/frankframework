@@ -79,7 +79,7 @@
 		<!-- Need this property for the Jenkins build system to determine correct build JDK version, which needs to be JDK25 for Frank!Doc (and JDK25 changes in Javadoc) -->
 		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
-		<lombok.version>1.18.46</lombok.version>
+		<lombok.version>1.18.48</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
 		<log4j2.version>2.26.1</log4j2.version>
 
@@ -276,7 +276,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.36.0</version>
+				<version>4.36.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
