@@ -17,8 +17,6 @@ package org.frankframework.configuration.digester;
 
 import java.util.HashMap;
 
-import org.xml.sax.SAXException;
-
 import lombok.Getter;
 
 /**
@@ -37,7 +35,7 @@ public class FrankDigesterRules extends AbstractDigesterRulesHandler {
 	private final HashMap<String, DigesterRule> parsedPatterns = new HashMap<>();
 
 	@Override
-	protected void handle(DigesterRule rule) throws SAXException {
+	protected void handle(DigesterRule rule) {
 		log.trace("adding digesterRule {}", rule::toString);
 
 		String pattern = rule.getPattern();

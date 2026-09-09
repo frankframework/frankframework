@@ -61,7 +61,7 @@ public class TransformerErrorListener implements ErrorListener {
 	}
 
 	@Override
-	public void warning(TransformerException transformerException) throws TransformerException {
+	public void warning(TransformerException transformerException) {
 		log.warn("Nonfatal transformation warning: {}", transformerException.getMessageAndLocation());
 	}
 

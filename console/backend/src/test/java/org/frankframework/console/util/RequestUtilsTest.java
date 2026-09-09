@@ -25,7 +25,7 @@ import org.frankframework.console.ApiException;
 public class RequestUtilsTest {
 
 	@Test
-	public void testResolveRequiredProperty() throws Exception {
+	public void testResolveRequiredProperty() {
 		assertEquals("value", RequestUtils.resolveRequiredProperty("testKey", "value", "default"));
 		assertEquals("", RequestUtils.resolveRequiredProperty("testKey", "", "default"));
 		assertEquals("default", RequestUtils.resolveRequiredProperty("testKey", null, "default"));

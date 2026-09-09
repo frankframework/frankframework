@@ -39,7 +39,7 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 	}
 
 	@Override
-	public boolean hasNext() throws ListenerException {
+	public boolean hasNext() {
 		return iterator !=null && iterator.hasNext();
 	}
 

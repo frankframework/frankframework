@@ -51,7 +51,7 @@ public abstract class SchedulerTestBase {
 		return jobDataMap;
 	}
 
-	protected JobDetail createConfiguredJob(String jobName) throws SchedulerException, ParseException {
+	protected JobDetail createConfiguredJob(String jobName) {
 		return createConfiguredJob(jobName, SchedulerHelper.DEFAULT_GROUP);
 	}
 

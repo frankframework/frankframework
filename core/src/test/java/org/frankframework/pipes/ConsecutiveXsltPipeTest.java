@@ -16,7 +16,7 @@ import org.frankframework.testutil.MatchUtils;
 public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
 	@Override
-	public XsltPipe createPipe() throws ConfigurationException {
+	public XsltPipe createPipe() {
 		return new XsltPipe();
 	}
 

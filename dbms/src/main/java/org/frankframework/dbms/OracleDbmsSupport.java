@@ -17,7 +17,6 @@ package org.frankframework.dbms;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.SQLType;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,25 +108,25 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobUpdateHandle) throws SQLException {
+	public void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobUpdateHandle) {
 		// updateClob is not required for Oracle
 		// rs.updateClob(column, (Clob)clobUpdateHandle);
 	}
 
 	@Override
-	public void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobUpdateHandle) throws SQLException {
+	public void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobUpdateHandle) {
 		// updateClob is not required for Oracle
 		// rs.updateClob(column, (Clob)clobUpdateHandle);
 	}
 
 	@Override
-	public void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) throws SQLException {
+	public void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) {
 		// updateBlob is not required for Oracle
 		// rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}
 
 	@Override
-	public void updateBlob(@NonNull ResultSet rs, @NonNull String column, @NonNull Object blobUpdateHandle) throws SQLException {
+	public void updateBlob(@NonNull ResultSet rs, @NonNull String column, @NonNull Object blobUpdateHandle) {
 		// updateBlob is not required for Oracle
 		// rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}

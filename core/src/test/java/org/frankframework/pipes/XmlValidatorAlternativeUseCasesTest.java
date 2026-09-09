@@ -15,7 +15,7 @@ import org.frankframework.validation.ValidatorTestBase;
 public class XmlValidatorAlternativeUseCasesTest extends PipeTestBase<XmlValidator> {
 
 	@Override
-	public XmlValidator createPipe() throws ConfigurationException {
+	public XmlValidator createPipe() {
 		return new XmlValidator();
 	}
 

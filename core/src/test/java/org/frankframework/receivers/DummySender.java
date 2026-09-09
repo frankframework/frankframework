@@ -6,12 +6,9 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ICorrelatedSender;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 
 public class DummySender implements ICorrelatedSender {
@@ -21,7 +18,7 @@ public class DummySender implements ICorrelatedSender {
 	private @Getter boolean closed = false;
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		// Nothing to configure
 	}
 
@@ -41,7 +38,7 @@ public class DummySender implements ICorrelatedSender {
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) {
 		return new SenderResult(message);
 	}
 

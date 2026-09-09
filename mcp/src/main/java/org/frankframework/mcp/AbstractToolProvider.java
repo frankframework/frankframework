@@ -92,7 +92,7 @@ public abstract class AbstractToolProvider implements McpToolProvider {
 	/** The logic behind a tool: it receives the (validated) request and produces the textual result. */
 	@FunctionalInterface
 	protected interface ToolCall {
-		String apply(CallToolRequest request) throws Exception; // NOSONAR allow tools to signal any failure
+		String apply(CallToolRequest request); // NOSONAR allow tools to signal any failure
 	}
 
 	/**

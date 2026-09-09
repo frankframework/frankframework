@@ -709,7 +709,7 @@ public class JdbcTableListenerTest {
 		}
 
 		@Override
-		public void initAction(Connection conn) throws SQLException, DbmsException {
+		public void initAction(Connection conn) throws DbmsException {
 			String rawQuery = "UPDATE " + TEST_TABLE + " SET TINT=3 WHERE TINT!=3 AND TKEY=10";
 			query = env.getDbmsSupport().convertQuery(rawQuery, "Oracle");
 		}

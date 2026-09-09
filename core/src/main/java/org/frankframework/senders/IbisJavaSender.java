@@ -34,7 +34,6 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Forward;
 import org.frankframework.receivers.JavaListener;
@@ -101,7 +100,7 @@ public class IbisJavaSender extends AbstractSenderWithParameters implements HasP
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		String result;
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
 			HashMap<String,Object> processContext = new HashMap<>();

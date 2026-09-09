@@ -24,7 +24,6 @@ import java.sql.SQLException;
 import org.jspecify.annotations.NonNull;
 
 import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.XmlBuilder;
 
@@ -62,7 +61,7 @@ public class BlobOutputStream extends FilterOutputStream {
 				resultSet.updateRow();
 
 				JdbcUtil.warningsToXml(resultSet.getWarnings(), warnings);
-			} catch (JdbcException | SQLException e) {
+			} catch (SQLException e) {
 				throw new IOException("cannot write BLOB",e);
 			} finally {
 				JdbcUtil.fullClose(null, resultSet);

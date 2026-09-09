@@ -2,7 +2,6 @@ package org.frankframework.testutil.mock;
 
 import java.io.InputStream;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -58,32 +57,32 @@ public abstract class PreparedStatementMock extends Mockito implements PreparedS
 	}
 
 	@Override
-	public int executeUpdate() throws SQLException {
+	public int executeUpdate() {
 		return 1;
 	}
 
 	@Override
-	public void setNull(int parameterIndex, int sqlType) throws SQLException {
+	public void setNull(int parameterIndex, int sqlType) {
 		parameterMap.put(parameterIndex, null);
 	}
 
 	@Override
-	public void setString(int parameterIndex, String x) throws SQLException {
+	public void setString(int parameterIndex, String x) {
 		parameterMap.put(parameterIndex, x);
 	}
 
 	@Override
-	public void clearParameters() throws SQLException {
+	public void clearParameters() {
 		parameterMap.clear();
 	}
 
 	@Override
-	public void setObject(int parameterIndex, Object x) throws SQLException {
+	public void setObject(int parameterIndex, Object x) {
 		parameterMap.put(parameterIndex, x);
 	}
 
 	@Override
-	public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
+	public void setBinaryStream(int parameterIndex, InputStream x) {
 		parameterMap.put(parameterIndex, x);
 	}
 }

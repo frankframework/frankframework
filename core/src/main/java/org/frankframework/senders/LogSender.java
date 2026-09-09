@@ -28,7 +28,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
@@ -68,7 +67,7 @@ public class LogSender extends AbstractSenderWithParameters {
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		ParameterValueList pvl = getParameterValueList(message, session);
 		String calculatedLevel = getParameterOverriddenAttributeValue(pvl, LOG_LEVEL_ATTRIBUTE_NAME, logLevel);
 		Level level = Level.toLevel(calculatedLevel, defaultLogLevel);

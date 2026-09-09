@@ -77,7 +77,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 	@Override
-	public HttpSender createSender() throws Exception {
+	public HttpSender createSender() {
 		HttpSender httpSender = new HttpSender();
 		httpSender.setName("senderAuthenticationTest");
 		return httpSender;
@@ -350,7 +350,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 
 	@Test
-	void testOAuthAuthenticationNoCredentials() throws Exception {
+	void testOAuthAuthenticationNoCredentials() {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.OAUTH_PATH);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);

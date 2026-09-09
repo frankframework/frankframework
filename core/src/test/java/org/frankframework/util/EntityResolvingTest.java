@@ -138,7 +138,7 @@ public class EntityResolvingTest {
 			boolean elementOpen;
 
 			@Override
-			public void characters(char[] ch, int start, int length) throws SAXException {
+			public void characters(char[] ch, int start, int length) {
 				if (elementOpen) {
 					sb.append(">");
 					elementOpen=false;
@@ -147,7 +147,7 @@ public class EntityResolvingTest {
 			}
 
 			@Override
-			public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+			public void startElement(String uri, String localName, String qName, Attributes atts) {
 				sb.append("<").append(localName);
 				sb.append(" xmlns=\"").append(uri).append("\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
 				for (int i=0;i<atts.getLength();i++) {
@@ -157,7 +157,7 @@ public class EntityResolvingTest {
 			}
 
 			@Override
-			public void endElement(String uri, String localName, String qName) throws SAXException {
+			public void endElement(String uri, String localName, String qName) {
 				if (elementOpen) {
 					sb.append("/>");
 					elementOpen=false;
@@ -168,7 +168,7 @@ public class EntityResolvingTest {
 
 
 			@Override
-			public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+			public void ignorableWhitespace(char[] ch, int start, int length) {
 				// ignore
 			}
 

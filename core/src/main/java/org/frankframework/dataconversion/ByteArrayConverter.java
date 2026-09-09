@@ -16,7 +16,6 @@
 package org.frankframework.dataconversion;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 class ByteArrayConverter implements TypedBinaryDataConverter<byte[]> {
@@ -27,12 +26,12 @@ class ByteArrayConverter implements TypedBinaryDataConverter<byte[]> {
 	}
 
 	@Override
-	public byte[] asByteArray(byte[] data) throws IOException {
+	public byte[] asByteArray(byte[] data) {
 		return data;
 	}
 
 	@Override
-	public InputStream asInputStream(byte[] data) throws IOException {
+	public InputStream asInputStream(byte[] data) {
 		return new ByteArrayInputStream(data);
 	}
 }

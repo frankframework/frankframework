@@ -266,7 +266,7 @@ public class Trigger implements ITrigger {
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		log.info("removing trigger [{}]", this);
 	}
 }

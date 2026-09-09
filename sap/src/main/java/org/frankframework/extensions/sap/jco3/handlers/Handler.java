@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.sap.conn.jco.JCoMetaData;
@@ -48,7 +47,7 @@ public abstract class Handler extends DefaultHandler {
 
 
 	@Override
-	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
+	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) {
 		if (childHandler != null) {
 			childHandler.startElement(namespaceURI, localName, qName, atts);
 		} else {
@@ -67,7 +66,7 @@ public abstract class Handler extends DefaultHandler {
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length) throws SAXException {
+	public void characters(char[] ch, int start, int length) {
 		if (childHandler != null) {
 			childHandler.characters(ch, start, length);
 		} else {
@@ -78,7 +77,7 @@ public abstract class Handler extends DefaultHandler {
 	}
 
 	@Override
-	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+	public void endElement(String namespaceURI, String localName, String qName) {
 		if (childHandler != null) {
 			childHandler.endElement(namespaceURI, localName, qName);
 			if (childHandler.done()) {
