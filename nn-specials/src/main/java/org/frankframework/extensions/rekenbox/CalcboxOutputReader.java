@@ -16,7 +16,6 @@
 package org.frankframework.extensions.rekenbox;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -60,7 +59,7 @@ public class CalcboxOutputReader implements XMLReader {
 
 	/** Parse the input (CalcBox Message Format) */
 	@Override
-	public void parse(InputSource input) throws IOException, SAXException {
+	public void parse(InputSource input) {
 		try {
 			// If we have no handler we can stop
 			if(handler == null) {
@@ -78,7 +77,7 @@ public class CalcboxOutputReader implements XMLReader {
 			BufferedReader br = new RekenboxLineReader(r);
 
 			// Read the file and output it's contents.
-			String line = "";
+			String line;
 			while(null != (line = br.readLine())) {
 
 				// get everything before :
@@ -195,7 +194,7 @@ public class CalcboxOutputReader implements XMLReader {
 	// =============================================
 	/** Parse an XML document from a system identifier (URI). */
 	@Override
-	public void parse(String systemId) throws IOException, SAXException {
+	public void parse(String systemId) {
 	}
 
 	/** Return the current DTD handler. */
@@ -247,7 +246,7 @@ public class CalcboxOutputReader implements XMLReader {
 		// XXXXX Strip numbers
 
 		boolean containstrailingnumbers = false;
-		int j = 0;
+		int j;
 		for(j = str.length(); j > 0; j--) {
 			if(Character.isDigit(str.charAt(j - 1))) {
 				containstrailingnumbers = true;

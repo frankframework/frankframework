@@ -22,7 +22,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.Lifecycle;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
@@ -83,11 +82,10 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 * Register a PipeForward object to this Pipe. Global Forwards are added
 	 * by the PipeLine. If a forward is already registered, it logs a warning.
 	 *
-	 * @throws ConfigurationException If the forward target cannot be registered.
 	 * @see PipeLine
 	 * @see PipeForward
 	 */
-	void addForward(PipeForward forward) throws ConfigurationException;
+	void addForward(PipeForward forward);
 
 	/**
 	 * Perform necessary action to start the pipe. This method is executed

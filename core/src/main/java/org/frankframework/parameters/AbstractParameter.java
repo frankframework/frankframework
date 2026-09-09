@@ -895,8 +895,12 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	/**
-	 * Key of {@link org.frankframework.stream.MessageContext} variable to use as source, instead of the {@link Message} found from input message or sessionKey itself. Use a {@literal *}
+	 * Key of a {@link org.frankframework.stream.MessageContext} variable to use, instead of the Parameter value found from the input message or sessionKey. Use a {@literal *}
 	 * to get an XML or JSON document containing all values from the {@link org.frankframework.stream.MessageContext}.
+	 * This assumes that the input of this parameter is a {@link Message}, in which the contextKey will be looked up.
+	 * <p>
+	 * For instance: {@code <Param name="context.value" sessionKey="originalMessage" contextKey="Header.content-type" />} - this will look up the value of the
+	 * context variable "Header.content-type" from the message found in the session variable "originalMessage".
 	 */
 	public void setContextKey(@Nullable String string) {
 		contextKey = string;

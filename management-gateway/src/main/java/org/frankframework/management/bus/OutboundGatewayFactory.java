@@ -41,7 +41,7 @@ public class OutboundGatewayFactory implements InitializingBean, ApplicationCont
 	private @Setter String gatewayClassname = null;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(StringUtils.isBlank(gatewayClassname)) {
 			throw new IllegalStateException("no outbound gateway class specified. Please set ["+GATEWAY_CLASS_KEY+"]");
 		}

@@ -13,7 +13,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.senders.EchoSender;
@@ -31,7 +30,7 @@ public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 		result.setSender(new EchoSender() {
 
 			@Override
-			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 				try {
 					return new SenderResult("{ \"input\": \""+message.asString()+"\"}");
 				} catch (IOException e) {

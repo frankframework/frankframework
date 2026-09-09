@@ -41,7 +41,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	private static final String RESULT_SENDER_NAME = "resultSender";
 
 	@Override
-	public ShadowSender createSender() throws Exception {
+	public ShadowSender createSender() {
 		ShadowSender ps = new ShadowSender();
 
 		ps.setOriginalSender(ORIGINAL_SENDER_NAME);
@@ -78,7 +78,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	private ISender createOriginalSender() {
 		EchoSender originalSender = new EchoSender() {
 			@Override
-			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) {
 				return new SenderResult(ORIGINAL_SENDER_RESULT);
 			}
 		};
@@ -271,14 +271,14 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	@Test
 	@Override
 	@Disabled("Test not suited for ShadowSender")
-	public void testSingleExceptionHandling() throws Exception {
+	public void testSingleExceptionHandling() {
 		// Test not suited for ShadowSender
 	}
 
 	@Test
 	@Override
 	@Disabled("Test not suited for ShadowSender")
-	public void testExceptionHandling() throws Exception {
+	public void testExceptionHandling() {
 		// Test not suited for ShadowSender
 	}
 

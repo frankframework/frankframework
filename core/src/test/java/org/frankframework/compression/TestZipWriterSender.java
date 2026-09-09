@@ -22,7 +22,7 @@ import org.frankframework.util.StreamUtil;
 class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 
 	@Override
-	public ZipWriterSender createSender() throws Exception {
+	public ZipWriterSender createSender() {
 		ZipWriterSender zipSender = new ZipWriterSender();
 		zipSender.setCollectionName("zipwriterhandle");
 		return zipSender;

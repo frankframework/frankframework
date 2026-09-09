@@ -1,8 +1,9 @@
 Frank!Framework Release Notes
 ===================================
 
-Please note that this file is not actively maintained any more. Please visit https://insights.frankframework.org/ for our releases and their planning. Breaking changes
-which require manual changes in your configuration are now mentioned in [BREAKING.md](BREAKING.md)
+> [!NOTE]\
+> Please note that this file is not actively maintained anymore. Please visit https://insights.frankframework.org/ for our releases and their planning. Breaking changes
+> which require manual changes in your configuration are now mentioned in [BREAKING.md](BREAKING.md)
 
 * [Tags](https://github.com/frankframework/frankframework/releases)
 * [JavaDocs](https://javadoc.frankframework.org/)
@@ -13,23 +14,23 @@ which require manual changes in your configuration are now mentioned in [BREAKIN
 [Commits](https://github.com/frankframework/frankframework/compare/release/9.3...release/9.4)
 
 - When an exception occurs during pipeline execution, and the pipe does not have an 'exception' forward defined, and there's a Global-Forward named 'exception', this 'exception' Global Forward will be used (just like the behaviour of 7.7 and older). In addition, if there is a pipe in the pipeline named 'exception', and there is no 'exception forward' on the pipe and no Global-Forward named 'exception', then exceptions in pipes will be send to the pipe named 'exception'. This pipe name 'exception' should not be of the type 'ExceptionPipe'.
- This could potentially change the exception handling in your pipelines, so check if there are pipes with the exact name 'exception' and verify that there are no undesired changes in behaviour.
+  This could potentially change the exception handling in your pipelines, so check if there are pipes with the exact name 'exception' and verify that there are no undesired changes in behaviour.
 - Only the H2 database driver is provided in the Docker image. This means that drivers for other databases (e.g. PostgreSQL, Oracle, MSSQL, MySQL/MariaDB) are not provided any more and should be provided by the user when using those databases. There are no JMS drivers provided any more either.\
-The intended use is that you provide your own drivers by mounting them into the Docker container in the folder `/opt/frank/drivers/`. The Frank!Framework will automatically load any `.jar` files found in this folder during startup.
+  The intended use is that you provide your own drivers by mounting them into the Docker container in the folder `/opt/frank/drivers/`. The Frank!Framework will automatically load any `.jar` files found in this folder during startup.
 
 9.2.0 - July 9, 2025
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/release/9.1...release/9.2)
-- `JdbcTableMessageBrowser` now will only show the configured columns in your configuration. This means that previously all columns were shown, but now you'll only see the columns specified in the configuration. 
+
+- `JdbcTableMessageBrowser` now will only show the configured columns in your configuration. This means that previously all columns were shown, but now you'll only see the columns specified in the configuration.
 
 9.1.0 - April 10, 2025
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/v9.0.0...release/9.1)
 
 - Removed deprecated pipes with 'since' 7.8 or older. This means that the following pipes are now removed:
-  -  FileLineIteratorPipe, FilenameSwitch, PostboxRetrieverPipe, PutParametersInSession, Stream2StringPipe, XmlBuilderPipe, XmlFileElementIteratorPipe
+	- FileLineIteratorPipe, FilenameSwitch, PostboxRetrieverPipe, PutParametersInSession, Stream2StringPipe, XmlBuilderPipe, XmlFileElementIteratorPipe
 - MqttSender and MqttListener now require a resource to be registered in resources.yml. This allows multiple senders/listeners to use the same connection at the same time.
-
 
 9.0.0 - Jan 06, 2025
 --------------
@@ -40,7 +41,6 @@ The intended use is that you provide your own drivers by mounting them into the 
 - Receiver configuration property `maxDeliveries` has been deprecated. Instead, configure `maxRetries`. For backwards compatibility, if you have configured `maxDeliveries` this will set `maxRetries` to the same value. See the Frank!Doc for these properties in the Receiver for more information.
 - Fix the exponential delay after errors in message processing. This feature has not worked for an unknown time. There might be potential problems with transactions having an unexpected timeout due to this increased delay, which could result in an unrecoverable error situation. For this reason the delay is maximum half of the configured transaction timeout duration. However, this might not always be sufficient for each process and the transaction timeout can not always be determined so please watch out for transaction timeout errors that might happen after a number of retries and see the next bullet point for remediation.
 - To avoid the above unexpected transaction timeouts, the maximum delay after errors has been made configurable. This can be configured for the whole configuration with the property `receiver.defaultMaxBackoffDelay`, or per receiver with the attribute `maxBackoffDelay`. The value is in seconds. The default is 100 seconds.
-
 
 8.3.0 - Oct 10th, 2024
 --------------
@@ -60,6 +60,7 @@ Requires JDK 17 or later, tested on JDK 17 and 21.
 Changed default log level from DEBUG to INFO, for environments that are not configured with `dtap.stage` at value: `ACC` or `PRD`. These are by default on WARN level.
 
 ### Non backwards compatible changes
+
 - Transaction Manager BTM is removed. Switch over to Narayana Transaction Manager.
 - Only supports Tomcat 10.x or later. Tomcat 9.x or lower version, are no longer supported.
 - FileSystemPipes and FileSystemSenders now have new forwards for `fileNotFound`, `folderNotFound`, `fileAlreadyExists`, `folderAlreadyExists`. Some actions, such as removing a non-existing folder, were previously ignored but can now trigger one of these forwards. If such a forward is not defined, then the pipe or sender will go to the `exception` forward or if that is not defined either, trigger an exception, which was previously ignored. Adding the specific exception forward and pointing it to the next pipe will solve this.
@@ -73,6 +74,7 @@ Changed default log level from DEBUG to INFO, for environments that are not conf
 Requires JDK 17 or later, tested on JDK 17 and 21.
 
 ### Non backwards compatible changes
+
 - Larva package is renamed from `testtool` to `larva`. References inside the Larva property files to the `testtool` package should be updated to larva. Such as: `org.frankframework.testtool.FileSender` -> `org.frankframework.larva.FileSender`. It still works with the old package name in 8.1, as a compatibility feature.
 - CompressPipe pattern attributes have been deprecated, please use the appropriate parameters and resolve the pattern in there instead. The result has now also by default been changed to the file/zip-entry instead of a file location.
 - By default, the Param substitution delimiter has been changed from `${` to `?{` so it's consistent with the `FixedQuerySender`. Backwards compatibility key `useOldSubstitutionStartDelimiter` has been added so minimal change is required during upgrades. Note that when using caches in combination with `diskPersistent="true"` you may need to purge your cache!
@@ -87,6 +89,7 @@ Removed many deprecated features.
 Inside Larva configuration XML files, the `nl.nn.adapterframework.` package must be replaced with `org.frankframework.`. This is due to the package name change in the framework.
 
 ### Non backwards compatible changes
+
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
 - IBulkDataListener has been removed. This feature was only supported through custom listeners and not tested.
 - IbisTester class has been moved from the CORE module to LARVA
@@ -110,27 +113,26 @@ Front-end Console fixes.
 - IbisLocalSender no longer throws exceptions if exit.state="ERROR" situations, but provides forwardName 'exception'. The sessionKey 'originalResult' is no longer used.
 - For sending replies from the JmsListener to a fixed destination the attribute 'replyDestinationName' should be used instead of a nested JmsSender, to avoid clutter in the debugger reports
 - Session variable 'id' has been renamed 'mid', session variables 'messageId' and 'tcid' have been removed.
- - Session variable 'exitcode' has been renamed to 'exitCode'.
-- Duplicate detection might fail for messages received after an upgrade if the earlier version of the message was received before the upgrade. 
+- Session variable 'exitcode' has been renamed to 'exitCode'.
+- Duplicate detection might fail for messages received after an upgrade if the earlier version of the message was received before the upgrade.
   This is in cases where a received (JMS) correlationId is used to send a response.
 - The ZipWriterPipe and ZipWriterSender have undergone major changes. In order to help the upgrading processes they both have a backwardsCompatibility attribute to revert to the old behavior. Please migrate away from this as soon as possible.
-    - The ZipWriterPipe with action=WRITE does no longer has its input as its response, but rather a null message. If necessary, the previous behavior can be obtained by setting preserveInput=true.
-    - The ZipWriterSender with no content parameter does no longer has its input as its response, but rather a null message.
-    - The ZipWriterPipe CLOSE action will now return the ZIP archive! It is no longer required to create a file first (with action OPEN) nor is it required to specify a filename on the OPEN action.
+	- The ZipWriterPipe with action=WRITE does no longer has its input as its response, but rather a null message. If necessary, the previous behavior can be obtained by setting preserveInput=true.
+	- The ZipWriterSender with no content parameter does no longer has its input as its response, but rather a null message.
+	- The ZipWriterPipe CLOSE action will now return the ZIP archive! It is no longer required to create a file first (with action OPEN) nor is it required to specify a filename on the OPEN action.
 
 - Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by settin: defaultValueMethod="input".
-- Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
+- Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'.
 - Larva default timeout has been decreased to 10s, and to 2s for local tests
 - The CMIS, Aspose and AWS modules have been added to our webapp artifact. The servlet endpoints are disabled by default.
-    - In order to enable the CMIS endpoints either of the following properties must be set:
-    `servlet.AtomPub10.enabled=true`,
-    `servlet.AtomPub11.enabled=true`,
-    `servlet.WebServices10.enabled=true`,
-    `servlet.WebServices11.enabled=true` or 
-    `servlet.BrowserBinding.enabled=true`
+	- In order to enable the CMIS endpoints either of the following properties must be set:
+	  `servlet.AtomPub10.enabled=true`,
+	  `servlet.AtomPub11.enabled=true`,
+	  `servlet.WebServices10.enabled=true`,
+	  `servlet.WebServices11.enabled=true` or
+	  `servlet.BrowserBinding.enabled=true`
 - Some API endpoints have been deprecated. Users are encouraged to change over to the new API, however in order to restore the deprecated functionality the property 'iaf-api.allowDeprecated' can be set to true.
 - ApiListener eTag generation has been disabled by default, set api.etag.enabled=true to enable default etag generation.
-
 
 7.8-RC1
 ---
@@ -189,7 +191,6 @@ Performance enhancements
 - Disable Configuration name and version attributes (#3614)
 - Disable presumedTimeOutInterval by default (#3644)
 
-
 ### Non backwards compatible changes
 
 - HttpSender no longer treats input message as parameters by default. For 7.7 compatibility, set attribute treatInputMessageAsParameters=true
@@ -201,11 +202,10 @@ Performance enhancements
 - Larva uses different correlationId in the format *Test Tool correlation id(${counter})* for each scenario.
 - To use files in ZipIteratorPipe and UnzipPipe the attribute processFilename="true" must be set. Otherwise the data will not be interpreted as a filename, but as data.
 - JsonPipe version 1 has been removed. Json to Xml conversion has slightly changed:
-  - null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
-  - default array element containers are '<item>' instead of '<array>'
-  - multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
+	- null values are rendered as '<elem nil="true"/>' instead of '<elem>null</elem>'
+	- default array element containers are '<item>' instead of '<array>'
+	- multidimensional arrays with scalar values are not flattened into one dimensional arrays any more
 - MessageSendingPipe and descendants (like SenderPipe and ForEachChildElementPipe) no longer set presumedTimeOutInterval by default.
-
 
 7.7
 ---
@@ -214,20 +214,20 @@ Performance enhancements
 
 - New FrankDoc XSD and website
 - LCM Dependencies
-  - Apache Commons Lang
-  - Apache Commons Digester
-  - Apache Commons Beanutils
-  - Apache Commons Fileupload
-  - Apache Commons IO
-  - Apache Commons Codec
-  - Apache Http Components
-  - Apache Ant
-  - Apache CXF
-  - EhCache
-  - Quartz
-  - Log4J2
-  - Spring 5
-  - Jackson JSON Provider
+	- Apache Commons Lang
+	- Apache Commons Digester
+	- Apache Commons Beanutils
+	- Apache Commons Fileupload
+	- Apache Commons IO
+	- Apache Commons Codec
+	- Apache Http Components
+	- Apache Ant
+	- Apache CXF
+	- EhCache
+	- Quartz
+	- Log4J2
+	- Spring 5
+	- Jackson JSON Provider
 - Add Narayana Transaction Manager
 - Create new Spring context per configuration
 - SoapErrorMessage has been renamed to SoapErrorMessageFormatter
@@ -267,7 +267,6 @@ Performance enhancements
 - Add JDK 11 support
 - Add link with configuration and line to configuration warnings
 
-
 ### Non backwards compatible changes
 
 - IbisTester is the only role that can execute test-a-pipeline
@@ -275,12 +274,10 @@ Performance enhancements
 - JsonPipe produces json without root element by default. The previous behaviour can be obtained by setting version="1" (deprecated)
 - CompareStringPipe xml=true, now does an (actual) XML compare; ignoring attribute order and whitespaces.
 - Remove Struts management console (including the IAF-WebControl Configuration)
-- Server healthcheck at /iaf/api/server/health is now publicly accessible. 
+- Server healthcheck at /iaf/api/server/health is now publicly accessible.
   It will return 200 when all adapters are up, 503 when one or more are stopped. Previously, 401 was returned in all cases when called unauthenticated
-- Property references like `${property}` in configuration files are now resolved *after* the XML is parsed, and should therefor no longer contain characters that 
+- Property references like `${property}` in configuration files are now resolved *after* the XML is parsed, and should therefor no longer contain characters that
   are invalid in XML encoded as entities. So characters like '<', '>' and '"' should appear 'as is' in properties, not as '&lt;', '&gt' and '&quot'.
-
-
 
 7.6.2
 --------
@@ -315,7 +312,6 @@ Performance enhancements
 - Fix tiff file conversion (Aspose) (#2371)
 - Fix incompatible types for the inputstream parameters (#2368)
 
-
 7.6
 --------
 [Commits](https://github.com/frankframework/frankframework/compare/v7.6-RC2...v7.6)
@@ -331,7 +327,6 @@ Performance enhancements
 - Add option to use ServerFileName as the filename to FxfWrapperPipe (#2019)
 - Throw exception when unable to load Promise.JS (#2037)
 - Skip ACL when no user or empty username is found (#2062)
-
 
 7.6-RC2
 --------
@@ -359,9 +354,6 @@ Performance enhancements
 - Show error warning only when server in state error (#1860)
 - Trim columnsReturned in FixedQuerySender (#1870)
 
-
-
-
 7.6-RC1
 --------
 [Commits](https://github.com/frankframework/frankframework/compare/v7.5...v7.6-RC1)
@@ -377,7 +369,7 @@ Performance enhancements
 - Add SignaturePipe
 - Support automatic closing of streams
 - Support generation of SQL update script from Liquibase
-- Rework Locker 
+- Rework Locker
 - Full DBMS support for H2, Oracle, MSSql, MySql, MariaDB and PostgreSQL
 - Use Message as primary input-output object for, e.g. for Pipes and Senders
 - Introduce RetryFlag, set as session variable if a message is retried
@@ -428,9 +420,6 @@ Performance enhancements
 - Fix #1201 Correct ExchangeMailListeners handling of embedded CDATA (#1206)
 - Fix test-pipeline zip handling when unable to determine zip entry size (#1259)
 
-
-
-
 7.5-RC4
 --------
 
@@ -440,13 +429,13 @@ Performance enhancements
 - Set property to disable SecurityManager (#746)
 - Update login view and make it more usable (#786)
 - Multiple GUI fixes (#818)
-  - version of Frank (ear) does not show in info screen of the new GUI (#784)
-  - test-pipeline does not work with file upload (#798)
-  - Fix errorStorage deleteSelected (#810)
-  - Webservices page, ibisdoc link missing "/rest" part in the url (#795)
-  - Improve hover over message status
-  - Add jdbc query cookie and update manual url's
-  - Add errorstorage select messages
+	- version of Frank (ear) does not show in info screen of the new GUI (#784)
+	- test-pipeline does not work with file upload (#798)
+	- Fix errorStorage deleteSelected (#810)
+	- Webservices page, ibisdoc link missing "/rest" part in the url (#795)
+	- Improve hover over message status
+	- Add jdbc query cookie and update manual url's
+	- Add errorstorage select messages
 - Fix auto choose sql querytype (select or other) (#821)
 - Fix maxThreadCount + cleanup old adapters in GUI 3.0 (#845)
 - Remove authentication for the base url and redirect to status (#847)
@@ -465,9 +454,6 @@ Performance enhancements
 - Cleanup and correct RestListener ibisdoc (#1012)
 - Fix enddate copy paste typo (#1024)
 - Add gui notification when connection drops (#979)
-
-
-
 
 7.5-RC3
 --------
@@ -491,8 +477,6 @@ Performance enhancements
 - Let JdbcTransactionalStorage return uniform responses for all dbmses #706
 - Update ladybug #708
 - Fix GUI 3.0 caching issues #722
-
-
 
 7.5-RC2
 --------
@@ -520,8 +504,6 @@ Performance enhancements
 - Receivers/Listeners using JMS should support credentials #491
 - HttpSender ContentType getter method type is not the same as the setter #492
 
-
-
 7.5-RC1
 --------
 
@@ -530,8 +512,8 @@ Performance enhancements
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
 - Enable to specify a namespace without a prefix in attribute namespaceDefs, to help simplify xpathExpressions e.g. into '/root/sub' instead of '/\*[local-name()='root']/\*[local-name()='sub'.
-- Make ForEachChildElementPipe optionally streaming when using elementXPathExpression too. N.B. This requires an XsltProcessor that properly supports streaming. The versions of Saxon and Xalan that we currently employ do not; 
-  Add options 'targetElement' and 'containerElement' to ForEachChildElementPipe to enable processing of very large files, avoiding memory problems that still exist with 
+- Make ForEachChildElementPipe optionally streaming when using elementXPathExpression too. N.B. This requires an XsltProcessor that properly supports streaming. The versions of Saxon and Xalan that we currently employ do not;
+  Add options 'targetElement' and 'containerElement' to ForEachChildElementPipe to enable processing of very large files, avoiding memory problems that still exist with
   xpath expressions for very large files;
   Make Xslt streaming default for xsltVersion=1
 - Bugfix (un)loading configs in JmxMbeanHelper
@@ -567,7 +549,7 @@ Performance enhancements
 - Fix and Cleanup MailSender and MailSenderBase
 - Upgrade ladybug to version 2.0.9
 - Namespace support for skip empty tags
-- Base64 encode and decode option for FileSystemPipe, FileSystemSender and descendants 
+- Base64 encode and decode option for FileSystemPipe, FileSystemSender and descendants
 - Add option to rotate by size, number of files or number of days to FileSystemPipe, FileSystemSender and descendants
 - FileSystemSenders now return an InputStream when action=read
 - XsltSender, XsltPipe, JsonXsltSender, JsonXsltPipe accept streaming inputs
@@ -582,15 +564,13 @@ Performance enhancements
 
 ### Non backwards compatible changes
 
-- Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList, 
+- Make DirectoryListener extend FileSystemListener. It no longer supports attributes fileList,
   fileListForcedAfter, outputFilenamePattern, passWithoutDirectory, numberOfBackups and random.
 - Remove attribute 'count' from result of iterating pipes like ForEachChildElementPipe, to enable streaming output.
 - The MailSender displayName element no longer exist, please use attribute `name` on the from/to elements instead.
 - jdbc.convertFieldnamesToUppercase has been set to true by default
 - FileSystemSenders with read action no longer encode base64 by default.
 - HttpSender, WebServiceSender and descendants no longer support attribute xmlTag
-
-
 
 7.4
 --------
@@ -600,8 +580,8 @@ Performance enhancements
 - Improve validation config warnings
 - ShowConfigurationStatus - improve error view
 - Possibility to add new domains independently of ear file
-    - UploadConfigService adapter
-    - Facility to (de)activate configs
+	- UploadConfigService adapter
+	- Facility to (de)activate configs
 - Add Samba2Filesystem, used in SambaSender, SambaPipe and SambaListener
 - Fix scheduler seconds/miliseconds bug
 - Fix ability to run xslt1 xPath expressions with the xsltpipe and sender
@@ -609,8 +589,6 @@ Performance enhancements
 - Upgrade javassist dependency version to support java 8+
 - Make sure FlowDiagrams are rendered upon ibis startup
 - Add possibility for execute Oracle queries for H2 database
-
-
 
 7.3
 --------
@@ -620,8 +598,6 @@ Performance enhancements
 - Refactor CmisListener to an event based listener, you can now have multiple listeners listening to different events
 - The cmis bridge functionality on the sender has been removed. In order to use the bridge you need to configure properties in the WAR/EAR file. See CmisSessionBuilder for more information about the properties that can be set
 - Several bugfixes and performance improvements
-
-
 
 7.3-RC1
 --------
@@ -636,13 +612,13 @@ Performance enhancements
 - Use VizJs to generate flow diagrams
 - Improve 'error' handling in Show Security Items
 - Upgrade Ladybug Test Tool to version 2.0.7
-    - Make it possible to specify a transformation per report
-    - Fix selecting root node on refresh at some parts of tree of Test tab
-    - Return to previous active tab after closing tab
-    - Show Compare button after run in Test tab
-    - Display run result error (if any) on run in Test tab
-    - Fix error on selecting checkpoint with null message
-    - Fix error on selecting different stub strategy
+	- Make it possible to specify a transformation per report
+	- Fix selecting root node on refresh at some parts of tree of Test tab
+	- Return to previous active tab after closing tab
+	- Show Compare button after run in Test tab
+	- Display run result error (if any) on run in Test tab
+	- Fix error on selecting checkpoint with null message
+	- Fix error on selecting different stub strategy
 - Add ability to use nullvalues on cmis properties
 - Show class in IbisDoc html
 - Show FileHandler properties in IbisDoc for FilePipe
@@ -654,17 +630,14 @@ Performance enhancements
 - Add option to add custom views to GUI 3.0
 - Remove xslt2=true attribute, xslt version is now automatically detected. You may override this setting by specifying the xsltVersion attribute
 - Fix potential memory leaks when:
-    - NDC stacks are not cleaned up after processing messages
-    - using the hideRegex attribute on pipes/adapters
-    - consecutively processing multiple large messages in a row
-
+	- NDC stacks are not cleaned up after processing messages
+	- using the hideRegex attribute on pipes/adapters
+	- consecutively processing multiple large messages in a row
 
 ### Non backwards compatible changes
 
 - The dateformat in the CmisSender has been modified to `yyyy-MM-dd'T'HH:mm:ss.SSSZ` in order to use the old format, set the `jcmissender.processproperties.legacydateformat` property to true
 - **Upgrade minimum require Java version from 6 to 7**. Java sources are still Java 1.6 compatible at this stage.
-
-
 
 7.2
 --------
@@ -674,20 +647,18 @@ Performance enhancements
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
 - Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)
 - Upgrade Ladybug Test Tool to version 2.0.6
-    - Prevent error on reselect node after Delete and Replace
-    - Refresh after upload
-    - Limit the use of special chars in normalized path
-    - Normalize path on save in report component
-    - Don't show null in path label
-    - Make report xml read-only in Edit mode
-    - Show line numbers on report description too
-    - Don't use TextArea for description in Read-only mode
-    - Don't log all error messages to log file
-    - Fix ClassCastException in Test tab for reports with description
-    - Prevent losing typed data in edit mode on close or select node in tree
-    - Copy report name from original report on Replace
-
-
+	- Prevent error on reselect node after Delete and Replace
+	- Refresh after upload
+	- Limit the use of special chars in normalized path
+	- Normalize path on save in report component
+	- Don't show null in path label
+	- Make report xml read-only in Edit mode
+	- Show line numbers on report description too
+	- Don't use TextArea for description in Read-only mode
+	- Don't log all error messages to log file
+	- Fix ClassCastException in Test tab for reports with description
+	- Prevent losing typed data in edit mode on close or select node in tree
+	- Copy report name from original report on Replace
 
 7.1
 --------
@@ -704,33 +675,27 @@ Performance enhancements
 - Fix NPE in ErrorMessageFormatter when used with dynamic configurations
 - Fix some bugs in CMIS error handling
 - Update to latest Ladybug Test Tool version
-    - Refactor code for errorLabel, okayLabel and getReport
-    - Fix NPE on Open report (from Test tab), Edit, Save 
-    - Show reports in child folders too in Test tab
-    - Run reports in Test tab in background
-    - Add (de)select all to Test tab
-    - Make it possible to search case sensitive
-    - Add ProgressBar to Test tab
-
-
+	- Refactor code for errorLabel, okayLabel and getReport
+	- Fix NPE on Open report (from Test tab), Edit, Save
+	- Show reports in child folders too in Test tab
+	- Run reports in Test tab in background
+	- Add (de)select all to Test tab
+	- Make it possible to search case sensitive
+	- Add ProgressBar to Test tab
 
 7.1-B4
 ---
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.1-B3...v7.1-B4)
 
-
 - Prevent poll guard to stop and start listener when recovering
 - Upgrade Ladybug to fix rerun, title tag and rerun of saved test report
 - Replace old Apache RPCRouter with CXF WebService provider
 - Make rowlock optional in MS SQL prepareQueryTextForWorkQueueReading
 
-
 ### Non backwards compatible changes
 
 - In order for CXF to use the Java standard WebServices it requires the `javax.xml.ws.WebServicePermission publishEndpoint` permission!
-
-
 
 7.1-B3
 ---
@@ -748,8 +713,6 @@ Performance enhancements
 - Restore destroy application context on full reload
 - Fix CMIS CXF bus not using the IbisContext
 - Fix NPE in IAF API when fetching errorstore count with a faulty database/table
-
-
 
 7.1-B2
 ---
@@ -770,15 +733,14 @@ Performance enhancements
 - Add WebAppClassLoader as default configuration classloader
 - Add forgotten struts2rest services to web.xml LoginFilter
 - Upgrade Bitronix to version 3.0.0-MK1
-    The latest version has fixed the possiblity to set a dataSource bean on poolingDataSource and a connectionFactory bean on poolingConnectionFactory instead of using driverProperties.
-    As well as many other bugfixes and improvements, see https://github.com/bitronix/btm for more info.
+  The latest version has fixed the possiblity to set a dataSource bean on poolingDataSource and a connectionFactory bean on poolingConnectionFactory instead of using driverProperties.
+  As well as many other bugfixes and improvements, see https://github.com/bitronix/btm for more info.
 - LCM update quartz scheduler to use a slightly newer version
-    Version 1.7.2 requires java 1.5.x, which is probably the reason the older version 1.6.6 was used. Version 1.6.6 is not hosted on maven central, which is the reason for this LCM upgrade.
-    For the Quartz release notes see: https://web.archive.org/web/20100721184042/http://quartz-scheduler.org:80/
+  Version 1.7.2 requires java 1.5.x, which is probably the reason the older version 1.6.6 was used. Version 1.6.6 is not hosted on maven central, which is the reason for this LCM upgrade.
+  For the Quartz release notes see: https://web.archive.org/web/20100721184042/http://quartz-scheduler.org:80/
 - Remove custom ibis modules
-    These modules were introduced due to java 4 and 5 compilation issues and runtime issues on WAS4 and WAS5.
+  These modules were introduced due to java 4 and 5 compilation issues and runtime issues on WAS4 and WAS5.
 - Mavenize Ladybug
-
 
 7.1-B1
 ---
@@ -838,10 +800,10 @@ Performance enhancements
 - Fix stale connections not being cleaned up by the ConnectionPoolManager. See: https://issues.apache.org/jira/browse/HTTPCLIENT-1609
 - Fix multipart parsing issues
 - Update to latest Ladybug Test Tool version
-    - Add custom XmlDecoder for testtool imports
-    - Display escaped characters with different background color
-    - Support Unicode supplementary characters (don't handle a smiley as two characters)
-    - Change colors to be IAF GUI 3.0 friendly
+	- Add custom XmlDecoder for testtool imports
+	- Display escaped characters with different background color
+	- Support Unicode supplementary characters (don't handle a smiley as two characters)
+	- Change colors to be IAF GUI 3.0 friendly
 - Prevent Show Tibco Queues to still fail when passive servers in server url
 - Fix servlets in web.xml causing errors when cmis dependency is missing
 - Bugfix error "ShowConfigurationStatus.xsl line [683]: Cannot convert string to double"
@@ -850,21 +812,18 @@ Performance enhancements
 - Bugfix multiple WebServiceSender and MTOM related issues
 - Add IAF-TEST module for IAF integration tests
 - Update to latest Ladybug Test Tool version
-    - Bugfix pipe description from old configuration (before reload) being showed
-    - Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
-    - Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
-    - Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
+	- Bugfix pipe description from old configuration (before reload) being showed
+	- Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
+	- Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
+	- Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
 - Add LarvaPipe
 - Fix sub-resources eTag handling for ApiListener
 - Add wssPasswordDigest attribute to WebServiceSender
 - Add collectFileContents(Base64Encoded) to UnzipPipe
 
-
 ### Non backwards compatible changes
 
 - ADDITIONAL.PROPERTIES.FILE.SUFFIX has been made obsolete. Users are adviced to remove suffix files as soon as possible.
-
-
 
 7.0-RC3
 ---
@@ -876,12 +835,10 @@ Performance enhancements
 - Support document(), xsl:import, and xsl:include with config in database
 - Fix NPE in ApiEhCache after a full reload
 - Update to latest Ladybug Test Tool version
-    - Bugfix pipe description from old configuration (before reload) being showed
-    - Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
-    - Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
-    - Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
-
-
+	- Bugfix pipe description from old configuration (before reload) being showed
+	- Release old configuration objects when reloaded (new object was only used when pipe description not in cache)
+	- Bugfix pipe description being showed from other configuration when both configurations contain the same adapter and pipe name
+	- Show resources from schema, wsdl, fileName and schemaLocation attributes too in pipe description
 
 7.0-RC2
 ---
@@ -899,8 +856,6 @@ Performance enhancements
 - Drastically improved GUI 3.0 performance
 - Fix recursive scheduleworker thread name
 
-
-
 7.0-RC1
 ---
 
@@ -913,7 +868,7 @@ Performance enhancements
 - Fix jsonpipe adding root elements when direction is xml2json
 - Fix JdbcQuery, TestService and SendJmsMessage pages to log messages when sec.log.includeMessage=true
 - First steps towards unit testing without application server
-- Add attribute soapBodyNamespace to WsdlXmlValidator 
+- Add attribute soapBodyNamespace to WsdlXmlValidator
 - Add Akamai Sender module
 - Support multiple configuration directories for DirectoryClassLoader
 - Add rootDir property to AkamaiSender
@@ -952,8 +907,6 @@ Performance enhancements
 - Add JsonXsltPipe
 - Add Spring config for Tomcat in combination with Tibco
 
-
-
 7.0-B3
 ---
 
@@ -976,14 +929,12 @@ Performance enhancements
 - Show "Test a PipeLine" pipeline logging (bugfix)
 - Hide strings in IBIS console messages too (same as in logging)
 - Move config warning "Element not in list of available root elements" to startup
-- Larva: add possibility to overwrite windiff command 
+- Larva: add possibility to overwrite windiff command
 - Add IbisWebService constraint to /rest/* endpoint
 - Remove "webContent.dir" bean from spring configuration
 - Larva: add possiblity to autosave TestTool differences
 - Fix stackoverflow on regex validation with Xerces parser
 - Add attachment sessionKey attribute to MailSender
-
-
 
 7.0-B2
 ---
@@ -1004,7 +955,7 @@ Performance enhancements
 - Add attribute mtomEnabled to HttpSender (to support MTOM in requests)
 - Introduction of the pipe IfMultipart
 - Add attribute elseForwardOnEmptyInput to IsXmlIfPipe
-- Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart) 
+- Add attributes extractFirstStringPart and multipartXmlSessionKey to StreamPipe (to support multipart)
 - Fix splitting messagingLayer made configurable in EsbSoapWrapper
 - Add commons-validator dependency for Jboss servers
 - Fix fieldnames in query result are now automatically capitalized
@@ -1020,7 +971,7 @@ Performance enhancements
 - Avoid NPE in "Show Scheduler Status"
 - Add IbisTester role to IBIS LoginFilter
 - Add queueConnectionFactoryName to XmlJmsBrowserSender possible input elements
-- Make xmlStreamWriter in ScanTibcoSolutionPipe use central 
+- Make xmlStreamWriter in ScanTibcoSolutionPipe use central
 - Create XMLStreamWriter with XmlUtils.OUTPUT_FACTORY in all classes (ScanTibcoSolutionPipe didn't use XmlUtils.OUTPUT_FACTORY yet)
 - Set log.dir automatically for Vanilla/Eclipse Tomcat too
 - Add testtool.enabled property to enable the testtool on ACC and PRD
@@ -1041,7 +992,7 @@ Performance enhancements
 - Add custom SSLSocketFactory to CmisSender
 - Fix JDBC driver default date format to yyyy-MM-dd
 - Fix JDBC driver default timestamp format to yyyy-MM-dd HH:mm:ss
-- Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name." 
+- Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name."
 - Add DllServiceDispatcher see [ibis-servicedispatcher](https://github.com/frankframework/servicedispatcher/commit/f759f897b063757bcc7a50229715035159d79dd5)
 - Bugfix in ShowIbisstoreSummary (caused 2014-11-26)
 - Fix connection leak in DomainTransformerPipe
@@ -1054,15 +1005,11 @@ Performance enhancements
 - Add option to use Memcached as etag caching server
 - Fix made IAF backwards compatible with ibis-servicedispatcher v1.3
 
-
-
 ### Non backwards compatible changes
 
 - The default JDBC timestamp value has been set to yyyy-MM-dd HH:mm:ss, to disable this set the jdbc.timestampFormat property to an empty value
 - The default JDBC date value has been set to yyyy-MM-dd, to disable this set the jdbc.dateFormat property to an empty value
 - The security log has been activated by default. It is no longer possible to disable the security log!
-
-
 
 7.0-B1
 ---
@@ -1085,15 +1032,15 @@ Performance enhancements
 - Sort jobs in "Show Scheduler Status"
 - Change Larva default timeout from 30 seconds to 5 seconds
 - Update to latest Ladybug Test Tool version
-    - Fix ibistesttool.defaultView
-    - Support IAF change to support multiple configurations
+	- Fix ibistesttool.defaultView
+	- Support IAF change to support multiple configurations
 - Refactor in response to Ladybug multiple configurations support and testing
-    - Use properties.hide for configuration showed by Ladybug
-    - Improve example configuration
-    - Fix classloader related issue in loadConfigurationFile
-    - Cache original and loaded configuration
-    - Add getConfiguration to Adapter
-    - Add getIbisManager to Configuration
+	- Use properties.hide for configuration showed by Ladybug
+	- Improve example configuration
+	- Fix classloader related issue in loadConfigurationFile
+	- Cache original and loaded configuration
+	- Add getConfiguration to Adapter
+	- Add getIbisManager to Configuration
 - Make it possible to stop and start all adapters per configuration
 - Add "*ALL*" link in "Show configuration status"
 - Add attribute transformNullMessage to PipeLine
@@ -1116,7 +1063,7 @@ Performance enhancements
 - Add DatabaseClassLoader
 - Improve special class loaders error handling
 - Instantiate all query senders with Spring (make Spring aware of all database actions) (make defaultDataSource of example webapp work for all database actions)
-- Add hideMethod attribute for masking strings in ErrorStore and MessageLog 
+- Add hideMethod attribute for masking strings in ErrorStore and MessageLog
 - Add hostname property to AppConstants properties
 - Improve PassordHash with PBKDF2WithHmacSHA1 after consulting security (SHA1 is not a problem in the context of PBKDF2, see OWASP.org)
 - Add roundsSessionKey attribute PasswordHashPipe and set to default value for Rounds to 40.000
@@ -1225,8 +1172,6 @@ Performance enhancements
 
 - The IBIS console functions "Call an IFSA Service" and "Show Monitors" have been deactivated. To activate them again add properties active.ifsa=true and monitoring.enabled=true
 
-
-
 6.1
 ---
 
@@ -1250,8 +1195,8 @@ Performance enhancements
 - Create directory in UploadFilePipe if it doesn't exist
 - Upgrade Spring from release 2.5.6SEC03 to 3.2.16
 - Update to latest Ladybug Test Tool version
-    - Fix checkpoints not visible for uploaded reports
-    - Add rerun functionality (principal, okay message, getEmptyInputReplacement)
+	- Fix checkpoints not visible for uploaded reports
+	- Add rerun functionality (principal, okay message, getEmptyInputReplacement)
 - Bugfix schemaSessionKey in XmlValidator not working (caused in v6.0-RC1)
 - Support for new ESB standard (without ServiceContext)
 - Bugfix ignoreUnknownNamespaces default not true when noNamespaceSchemaLocation is being used
@@ -1273,13 +1218,13 @@ Performance enhancements
 - Remove obsolete files in WEB-INF
 - Move REST services from default security role IbisWebService to IbisObserver
 - Update to latest Ladybug Test Tool version
-    - Make use of AppConstants properties which are now provided by IAF
-    - Support new IAF feature to make springCustom.xml obsolete to load springIbisTestTool[name].xml
-    - Add springIbisTestToolApi.xml
-    - Merge springIbisTestTool.xml and springIbisTestToolTibet2.xml from IJA_Tibet2 (solve different rerunRoles on echo2Application in springIbisTestTool.xml in a different way)
-    - Disable "Rerun didn't trigger any checkpoint" check when report generator is not enabled
-    - Fix scope for instances of Views and View which implements BeanParent and should be prototype. Because View was singleton the isChangeReportGeneratorEnabledAllowed() call in TibetView was called on the wrong Echo2Application instance
-- Add possibility to write a record with specified sessionKeys to security log file after a successful pipe run 
+	- Make use of AppConstants properties which are now provided by IAF
+	- Support new IAF feature to make springCustom.xml obsolete to load springIbisTestTool[name].xml
+	- Add springIbisTestToolApi.xml
+	- Merge springIbisTestTool.xml and springIbisTestToolTibet2.xml from IJA_Tibet2 (solve different rerunRoles on echo2Application in springIbisTestTool.xml in a different way)
+	- Disable "Rerun didn't trigger any checkpoint" check when report generator is not enabled
+	- Fix scope for instances of Views and View which implements BeanParent and should be prototype. Because View was singleton the isChangeReportGeneratorEnabledAllowed() call in TibetView was called on the wrong Echo2Application instance
+- Add possibility to write a record with specified sessionKeys to security log file after a successful pipe run
 - `(end of v6.1-RC2)`
 - Bugfix growing thread names (in logging and Ladybug TestTool)
 - Change xsd schemaLocations in spring files to classpath protocol to prevent 'failed to read schema document'
@@ -1289,14 +1234,11 @@ Performance enhancements
 - Upgrade from Java 5 to Java 6
 - `(end of v6.1-RC3)`
 
-
 ### Non backwards compatible changes
 
 - Don't add namespace to schema by default when targetNamespace present and default namespace is not. This is probably rarely the case. It doesn't make sense to change the default value in this case (only). Explicitly set addNamespaceToSchema to true when needed
-  - ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``  
+	- ``src-resolve.4.1: Error resolving component '...'. It was detected that '...' has no namespace, but components with no target namespace are not referenceable from schema document 'null'. If '...' is intended to have a namespace, perhaps a prefix needs to be provided. If it is intended that '...' has no namespace, then an 'import' without a "namespace" attribute should be added to 'null'.``
 - When present remove springIbisTestTool[name].xml and add property ibistesttool.custom=[name] to DeploymentSpecifics.properties. The springIbisTestTool[name].xml should now be present in IAF jars, mail springIbisTestTool[name].xml to Jaco or Peter to double check
-
-
 
 6.0
 ---
@@ -1315,7 +1257,7 @@ Performance enhancements
 - Added parameter pattern 'uuid' (which can be used instead of the combination of 'hostname' and 'uid')
 - Add preemptive authentication to prevent “httpstatus 407: Proxy Authentication Required" when proxy is used without an user in a http call
 - Make the IBIS console function "Browse a Jdbc table" capable for MQ SQL (next to Oracle)
-- Performance fix for the IBIS console function "Browse a Jdbc table" 
+- Performance fix for the IBIS console function "Browse a Jdbc table"
 - Add queue info when getting queue messages (currently used in "ShowTibcoQueues" in IJA_TiBeT2)
 - Add possibility to wait for a database row to be locked (instead of always skipping locked records)
 - Add functionality to temporarily move and/or chomp received messages for memory purposes
@@ -1389,8 +1331,8 @@ Performance enhancements
 - Avoid exception "RestListener for uriPattern [...] method [...] already configured" for ConfigurationServlet
 - Add returnResults to ManageDatabase
 - Update to latest Ladybug Test Tool version
-    - Show error message for Rerun on Report level too
-    - Show error message for Run in Test tab
+	- Show error message for Rerun on Report level too
+	- Show error message for Run in Test tab
 - Adjust IBIS console classic theme to look more like bootstrap theme
 - `(end of v6.0-RC2)`
 - Add WebServiceListener to ManageDatabase to generate WSDL (on LOC, DEV and TST)
@@ -1461,40 +1403,35 @@ Performance enhancements
 - Remove obsolete/broken repositories from pom.xml
 - Improve validation (also to support backward compatibility)
 - Improve validation on root, soapBody and soapHeader
-    - Add configuration warning when root not specified
-    - Add configuration warning when soapBody not specified
-    - Add configuration warning when root, soapBody and soapHeader not found in available XSD's
-    - Don't allow any element when soapHeader not specified
-    - Don't allow any element when soapBody not specified
-    - Don't allow soapHeader or soapBody to have soap namespace (e.g. when element doesn't have an xmlns attribute)
+	- Add configuration warning when root not specified
+	- Add configuration warning when soapBody not specified
+	- Add configuration warning when root, soapBody and soapHeader not found in available XSD's
+	- Don't allow any element when soapHeader not specified
+	- Don't allow any element when soapBody not specified
+	- Don't allow soapHeader or soapBody to have soap namespace (e.g. when element doesn't have an xmlns attribute)
 - `(end of v6.0)`
 - Prevent warnings about root elements which are actually available in imports and/or includes
 - Add option to specify root elements as comma separated list of names to choose from (only one is allowed)
 - Prevent warnings about root elements which are actually available in redefines
 
-
 ### Non backwards compatible changes
 
 - The use of 'xsd:import' and 'xsd:include' in xsd files in XmlValidator (and subclasses) has become more strictly.
-  - ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
-  When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.~~
-  - ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
-  For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
-  - ``Circural dependencies between schemas.``  
-  Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
+	- ~~``sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of 'http://nn/nl/XSD/Generic/MessageHeader/1, ...'.``  
+	  When using the EsbSoapValidator, don't import the CommonMessageHeader xsd in a main xsd but only import the namespace (because this xsd already exists within IAF). For using a deviating CommonMessageHeader xsd, use the SoapValidator.~~
+	- ``src-resolve: Cannot resolve the name 'cmh:Result' to a(n) 'element declaration' component.``  
+	  For validating ESB SOAP messages use the EsbSoapValidator and not the XmlValidator.
+	- ``Circural dependencies between schemas.``  
+	  Unused imported or included schemas can be ignored by using the validator attributes importedSchemaLocationsToIgnore and importedNamespacesToIgnore.
 - The use of 'xsd:redefine' doesn't work for schemaLocation anymore (still works for schema). It's deprecated in the latest specification (http://www.w3.org/TR/xmlschema11-1/#modify-schema) and difficult to support in WSDL generation.
 - (from RC5) From now all files in the log directory are in lower cases. This can affect applications which are case sensitive and use one or more files from the IBIS log directory.
-
-
 
 5.6.1
 ---
 
 [Commits](https://github.com/frankframework/frankframework/compare/v5.6...v5.6.1)
 
-- Fixed bug in EsbSoapWrapper where Result element was inserted instead of Status element 
-
-
+- Fixed bug in EsbSoapWrapper where Result element was inserted instead of Status element
 
 5.6
 ---
@@ -1521,8 +1458,6 @@ Performance enhancements
 - Attribute enforceMQCompliancy on JmsSender has been removed, use nl.nn.adapterframework.extensions.ibm.MQSender instead of nl.nn.adapterframework.jms.JmsSender when setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ) is needed.
 - Support for FXF 1 and 2 has been dropped.
 
-
-
 5.5
 ---
 
@@ -1530,29 +1465,27 @@ Performance enhancements
 
 - Also when not transacted don't retrow exception caught in JMS listener (caused connection to be closed and caused possible other threads on the same listener to experience "javax.jms.IllegalStateException: Consumer closed").
 - Tweaked error logging and configuration warnings about transactional processing.
-    - Show requirement for errorStorage on FF EsbJmsListener as configuration warning instead of log warning on every failed message.
-    - Removed logging error "not transacted, ... will not be retried" and warning "has no errorSender or errorStorage, message ... will be lost" (when a listener should run under transaction control (ITransactionRequirements) a configuration warning is already shown).
-    - Removed logging error "message ... had error in processing; current retry-count: 0" (on error in pipeline an appropriate action (e.g. logging) should already been done).
-    - Don't throw RCV_MESSAGE_TO_ERRORSTORE_EVENT and don't log "moves ... to errorSender/errorStorage" when no errorSender or errorStorage present.
-    - Removed some unused code and comments like ibis42compatibility.
-    - Renamed var retry to manualRetry for better code readability.
+	- Show requirement for errorStorage on FF EsbJmsListener as configuration warning instead of log warning on every failed message.
+	- Removed logging error "not transacted, ... will not be retried" and warning "has no errorSender or errorStorage, message ... will be lost" (when a listener should run under transaction control (ITransactionRequirements) a configuration warning is already shown).
+	- Removed logging error "message ... had error in processing; current retry-count: 0" (on error in pipeline an appropriate action (e.g. logging) should already been done).
+	- Don't throw RCV_MESSAGE_TO_ERRORSTORE_EVENT and don't log "moves ... to errorSender/errorStorage" when no errorSender or errorStorage present.
+	- Removed some unused code and comments like ibis42compatibility.
+	- Renamed var retry to manualRetry for better code readability.
 - Prevent java.io.NotSerializableException when the application server wants to persist sessions.
 - Prevent problems with control characters in Test Tool GUI (replace them with inverted question mark + "#" + number of character + ";").
 - Alpha version of new design Ibis console.
 - Better support for Active Directory and other LdapSender improvements.
-    - Make "filter" on LDAP error/warning messages work for AD too.
-    - Added unicodePwd encoding.
-    - Added changeUnicodePwd operation.
-    - Added challenge operation to LdapSender (LdapChallengePipe has been deprecated).
-    - Made it possible to specify principal and credentials as parameters.
-    - Set errorSessionKey to errorReason by default.
-    - Cleaned debug logging code and exclude password from being logged.
+	- Make "filter" on LDAP error/warning messages work for AD too.
+	- Added unicodePwd encoding.
+	- Added changeUnicodePwd operation.
+	- Added challenge operation to LdapSender (LdapChallengePipe has been deprecated).
+	- Made it possible to specify principal and credentials as parameters.
+	- Set errorSessionKey to errorReason by default.
+	- Cleaned debug logging code and exclude password from being logged.
 - Fixed a lot of javadoc warnings.
 - Introduction of XmlFileElementIteratorPipe; streamed processing of (very large) xml files
 - Better integration of Maven and Eclipse (using Kepler SR2).
 - added "Transaction Service" to console function "Show Security Items", and added configuration warning "receiver/pipeline transaction timeout exceeds system transaction timeout"
-
-
 
 5.4
 ---
@@ -1571,8 +1504,6 @@ Performance enhancements
 - Bugfix addRootNamespace.
 - Made it possible to override the address location in the generated WSDL.
 - Possibility to dynamically load adapters.
-
-
 
 5.3
 ---

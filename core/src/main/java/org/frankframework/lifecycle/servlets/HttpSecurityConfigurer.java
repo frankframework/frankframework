@@ -63,7 +63,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 	private @Setter @Autowired ServletContext servletContext;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(servletManager == null) {
 			throw new IllegalStateException("unable to initialize Spring Security, ServletManager not set");
 		}

@@ -51,7 +51,7 @@ public class NetStorageRequest {
 
 	private int version = 1;
 	private Message file = null;
-	private Action action = null;
+	private Action action;
 	private @Setter HashAlgorithm hashAlgorithm = null;
 	private final Map<String, String> actionHeader = new HashMap<>();
 	private final HttpRequestBase method;
@@ -129,7 +129,7 @@ public class NetStorageRequest {
 	}
 
 	private void generateHash(ParameterValueList pvl) throws SenderException {
-		String hash = null;
+		String hash;
 		String algorithm = hashAlgorithm.name().toLowerCase();
 		if(pvl.contains(NetStorageSender.HASHVALUE_PARAM_KEY)) {
 			hash = pvl.get(NetStorageSender.HASHVALUE_PARAM_KEY).asStringValue(null);

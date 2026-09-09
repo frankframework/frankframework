@@ -14,7 +14,6 @@ import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -68,7 +67,7 @@ public class JdbcTestUtil {
 		}
 	}
 
-	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
+	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues) throws JdbcException {
 		log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try {
 			PreparedStatement stmt = connection.prepareStatement(query);
@@ -79,7 +78,7 @@ public class JdbcTestUtil {
 		}
 	}
 
-	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
+	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues) throws JdbcException {
 		JdbcTestUtil.log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList());

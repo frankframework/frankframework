@@ -59,7 +59,6 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
@@ -179,7 +178,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	@Override
 	@NonNull
-	public SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		MongoAction mongoAction = getAction();
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();

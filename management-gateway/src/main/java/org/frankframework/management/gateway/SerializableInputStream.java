@@ -102,7 +102,7 @@ public class SerializableInputStream extends InputStream implements Externalizab
 	}
 
 	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+	public void readExternal(ObjectInput in) throws IOException {
 		try (OutputStream fos = Files.newOutputStream(tmpFile)) {
 			copyStream(in, fos);
 		}

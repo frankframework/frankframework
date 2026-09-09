@@ -61,7 +61,6 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.encryption.HasKeystore;
@@ -316,7 +315,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		CloseableCmisSession cmisSession = null;
 		try {
 			ParameterValueList pvl;
@@ -345,7 +344,6 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			if (cmisSession != null && runtimeSession) {
 				log.debug("Closing CMIS runtime session");
 				session.scheduleCloseOnSessionExit(cmisSession);
-				cmisSession = null;
 			}
 		}
 	}
@@ -540,7 +538,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		if (Message.isEmpty(message)) {
 			throw new SenderException("input string cannot be empty but must contain a documentId");
 		}
-		CmisObject object = null;
+		CmisObject object;
 		try {
 			object = getCmisObject(cmisSession, message);
 		} catch (CmisObjectNotFoundException e) {
@@ -558,7 +556,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	}
 
 	private SenderResult sendMessageForActionFind(Session cmisSession, Message message) throws SenderException {
-		Element queryElement = null;
+		Element queryElement;
 		try {
 			if (XmlUtils.isWellFormed(message, "query")) {
 				queryElement = XmlUtils.buildElement(message);
@@ -655,7 +653,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	private SenderResult sendMessageForDynamicActions(Session cmisSession, Message message, PipeLineSession session) throws SenderException {
 
 		XmlBuilder resultXml = new XmlBuilder("cmis");
-		Element requestElement = null;
+		Element requestElement;
 		try {
 			if (XmlUtils.isWellFormed(message, "cmis")) {
 				requestElement = XmlUtils.buildElement(message);
@@ -851,7 +849,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	}
 
 	private SenderResult sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException{
-		String objectId = null;
+		String objectId;
 		Map<String, Object> props = new HashMap<>();
 		Element cmisElement;
 		try {
@@ -870,7 +868,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			throw new SenderException("exception parsing [" + message + "]", e);
 		}
 
-		CmisObject object = null;
+		CmisObject object;
 		try {
 			object = cmisSession.getObject(cmisSession.createObjectId(objectId));
 		} catch (CmisObjectNotFoundException e) {

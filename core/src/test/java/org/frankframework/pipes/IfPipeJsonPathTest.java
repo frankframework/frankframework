@@ -11,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
@@ -55,7 +54,7 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 	private PipeRunResult pipeRunResult;
 
 	@Override
-	public IfPipe createPipe() throws ConfigurationException {
+	public IfPipe createPipe() {
 		IfPipe ifPipe = new IfPipe();
 
 		// Add default forwards

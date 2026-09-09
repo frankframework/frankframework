@@ -41,7 +41,7 @@ public class CalcboxContentHandler implements ContentHandler {
 	int level = 0;
 	org.w3c.dom.Document document;
 
-	private String stringResult = null;
+	private String stringResult;
 
 	CalcboxContentHandler(String string) throws Exception {
 		document = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder().newDocument();

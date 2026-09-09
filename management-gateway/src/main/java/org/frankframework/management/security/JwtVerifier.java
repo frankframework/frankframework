@@ -109,7 +109,7 @@ public class JwtVerifier {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() {
 			// Nothing to do here
 		}
 	}

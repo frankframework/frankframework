@@ -20,6 +20,7 @@ import lombok.Getter;
 import org.frankframework.collection.AbstractCollectorPipe;
 import org.frankframework.collection.CollectionException;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
@@ -27,7 +28,7 @@ import org.frankframework.stream.Message;
  * Pipe that creates a ZIP archive (on action close).
  * <p>
  * A chain of zipWriterPipes can be used to create a ZIP archive. You can use the pipe with different actions (see specified below).
- * Action <code>CLOSE</code> will generate the ZIP archive which is returned as the pipe ouput.
+ * Action <code>CLOSE</code> will generate the ZIP archive which is returned as the pipe output.
  * </p>
  *
  * @ff.parameter filename only for <code>action=WRITE</code>: the filename of the zip-entry
@@ -49,6 +50,10 @@ public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEn
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ZipWriter.validateParametersForAction(getAction(), getParameterList());
+
+		if (getAction() == Action.OPEN && getParameterList().hasParameter(ZipWriter.PARAMETER_FILENAME)) {
+			ConfigurationWarnings.add(this, "parameter '"+ZipWriter.PARAMETER_FILENAME+"' should be used for ZipEntries and not for the zip location.");
+		}
 	}
 
 	@Override

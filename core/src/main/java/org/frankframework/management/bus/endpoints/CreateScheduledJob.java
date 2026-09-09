@@ -141,7 +141,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 
 		// Save the job in the database
 		if(AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
-			boolean success = false;
+			boolean success;
 			FixedQuerySender qs = createBean(FixedQuerySender.class);
 			qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");

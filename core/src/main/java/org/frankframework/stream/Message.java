@@ -265,13 +265,14 @@ public class Message implements Serializable {
 	 * @param <T> Requested type of the value
 	 */
 	@SafeVarargs
+	@SuppressWarnings("java:S2637")
 	public final <T> T getValueAsType(T... reified) {
 		Class<T> type = ClassUtils.getClassOf(reified);
 		if (!isRequestOfType(type)) {
 			throw new IllegalStateException("Value is not of [" + type.getName() + "], check first Message#isRequestOfType before calling this method");
 		}
-		//noinspection unchecked,DataFlowIssue
-		return (T)request.asRawObject();
+		// noinspection unchecked, DataFlowIssue
+		return (T) request.asRawObject();
 	}
 
 	public boolean isBinary() {

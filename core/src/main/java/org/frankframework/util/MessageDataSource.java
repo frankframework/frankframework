@@ -95,7 +95,7 @@ public class MessageDataSource implements DataSource {
 	}
 
 	@Override
-	public OutputStream getOutputStream() throws IOException {
+	public OutputStream getOutputStream() {
 		throw new UnsupportedOperationException();
 	}
 }

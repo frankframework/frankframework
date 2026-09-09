@@ -161,7 +161,7 @@ public class TibcoUtils {
 			String userName, String password, String queueName,
 			String messageSelector) throws JMSException {
 		Connection connection = null;
-		Session jSession = null;
+		Session jSession;
 		try {
 			connection = getConnection(provUrl, authAlias, userName, password);
 			jSession = connection.createSession(false,
@@ -205,7 +205,7 @@ public class TibcoUtils {
 		}
 	}
 
-	protected static @Nullable TibjmsAdmin getActiveServerAdmin(String url, CredentialFactory cf, Map<String, Object> connectionProperties) throws TibjmsAdminException {
+	protected static @Nullable TibjmsAdmin getActiveServerAdmin(String url, CredentialFactory cf, Map<String, Object> connectionProperties) {
 		TibjmsAdminException lastException = null;
 		TibjmsAdmin admin = null;
 		String[] uws = url.split(",");

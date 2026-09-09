@@ -6,7 +6,7 @@ import org.frankframework.core.IScopeProvider;
 
 public class TestScopeProvider implements IScopeProvider {
 
-	private @Getter ClassLoader configurationClassLoader = null;
+	private @Getter ClassLoader configurationClassLoader;
 
 	public TestScopeProvider() {
 		this(Thread.currentThread().getContextClassLoader());

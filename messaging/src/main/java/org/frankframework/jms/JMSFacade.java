@@ -369,7 +369,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return started;
 	}
 
-	public jakarta.jms.@NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException, IOException {
+	public jakarta.jms.@NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException, IOException, SenderException {
 		return switch (getMessageClass()) {
 			case TEXT -> createTextMessage(session, correlationID, message);
 			case BYTES -> createBytesMessage(session, correlationID, message);
@@ -570,7 +570,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return messageConsumer;
 	}
 
-	public @Nullable String send(@NonNull Session session, @Nullable Destination dest, String correlationId, Message message, PipeLineSession pipeLineSession, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
+	public @Nullable String send(@NonNull Session session, @Nullable Destination dest, String correlationId, Message message, PipeLineSession pipeLineSession, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, IOException, SenderException {
 		jakarta.jms.Message msg = createMessage(session, correlationId, message, pipeLineSession);
 		try (MessageProducer mp = session.createProducer(dest)) {
 			if (messageType!=null) {
@@ -756,7 +756,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return messageText;
 	}
 
-	protected Message extractMessageBody(Message message, Map<String, Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException, XmlException {
+	protected Message extractMessageBody(Message message, Map<String, Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
 		if (context instanceof PipeLineSession session) {
 			return soapWrapper.getBody(message, false, session);
 		}

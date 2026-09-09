@@ -43,7 +43,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		// Override prepareStatement(String query) and return a mock to validate the parameters
 		doAnswer(new Answer<PreparedStatementMock>() {
 			@Override
-			public PreparedStatementMock answer(InvocationOnMock invocation) throws Throwable {
+			public PreparedStatementMock answer(InvocationOnMock invocation) {
 				String query = (String) invocation.getArguments()[0];
 				stmt = PreparedStatementMock.newInstance(query);
 				return stmt;

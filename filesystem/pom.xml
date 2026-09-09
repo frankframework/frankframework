@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.67.0</version>
+			<version>6.69.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.18.5</version>
+			<version>1.18.6</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>

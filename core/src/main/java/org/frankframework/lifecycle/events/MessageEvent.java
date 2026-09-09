@@ -16,6 +16,7 @@
 package org.frankframework.lifecycle.events;
 
 import java.io.Serial;
+import java.time.Instant;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -83,5 +84,9 @@ public abstract class MessageEvent<T extends ApplicationContext> extends Applica
 
 		this.message = m.toString();
 		this.level = level;
+	}
+
+	public Instant getEventTime() {
+		return Instant.ofEpochMilli(getTimestamp());
 	}
 }

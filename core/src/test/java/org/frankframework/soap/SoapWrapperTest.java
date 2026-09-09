@@ -358,7 +358,7 @@ public class SoapWrapperTest {
 
 			String digestString = Base64.getEncoder().encodeToString(digestBytes);
 
-			String result = "";
+			String result;
 			if (digestString.equals(passwordDigest)) {
 				result = "valid";
 			} else {

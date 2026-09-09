@@ -48,7 +48,7 @@ public class PipeLineExit implements IForwardTarget {
 	private @Getter boolean skipWrapping = false;
 
 	public boolean isSuccessExit() {
-		return getState()==ExitState.SUCCESS;
+		return state.isSuccess();
 	}
 
 	/**
@@ -78,7 +78,8 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state <code>SUCCESS</code>, the last for the other exits.
+	 * Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains
+	 * multiple (comma separated) values, the first will be used for the exits with state <code>SUCCESS</code>, the last for the other exits.
 	 */
 	public void setResponseRoot(String responseRoot) {
 		this.responseRoot = responseRoot;

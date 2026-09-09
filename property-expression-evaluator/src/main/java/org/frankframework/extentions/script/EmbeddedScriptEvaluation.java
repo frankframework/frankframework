@@ -18,9 +18,12 @@ package org.frankframework.extentions.script;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -176,7 +179,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 			if (result == null) {
 				return Optional.empty();
 			} else {
-				return Optional.of(result.toString());
+				return Optional.of(applyPropsToHide(result.toString(), context, propsToHide));
 			}
 		} catch (JexlException.Cancel c) {
 			log.warn("Script execution has been cancelled because thread was interrupted.", c);
@@ -186,6 +189,29 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 			log.error(() -> "Cannot evaluate JEXL expression [%s]".formatted(key), e);
 			return Optional.empty();
 		}
+	}
+
+	private String applyPropsToHide(String value, JexlContext context, @Nullable Set<String> propsToHide) {
+		if (propsToHide == null || propsToHide.isEmpty()) {
+			return value;
+		}
+		List<String> propValuesToHide = propsToHide.stream()
+				.map(context::get)
+				.filter(Objects::nonNull)
+				.map(Object::toString)
+				.sorted(Comparator.comparing(String::length))
+				.toList().reversed(); // Sort by longest string first to properly hide partially overlapping values
+		if (propValuesToHide.isEmpty()) {
+			return value;
+		}
+
+		String result = value;
+		for (String propValue : propValuesToHide) {
+			if (result.contains(propValue)) {
+				result = result.replace(propValue, "*".repeat(propValue.length()));
+			}
+		}
+		return result;
 	}
 
 	private static JexlContext createScriptContext(Map<String, Object> props1, @Nullable Map<String, Object> props2) {

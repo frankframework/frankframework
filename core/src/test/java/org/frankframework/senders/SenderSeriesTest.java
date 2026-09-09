@@ -23,7 +23,7 @@ public class SenderSeriesTest extends SenderTestBase<SenderSeries> {
 	private static final String BASEPATH = "/Senders/SenderSeries/";
 
 	@Override
-	public SenderSeries createSender() throws Exception {
+	public SenderSeries createSender() {
 		return new SenderSeries();
 	}
 
@@ -32,7 +32,7 @@ public class SenderSeriesTest extends SenderTestBase<SenderSeries> {
 	}
 
 	@Test
-	public void test0SubSenders() throws Exception {
+	public void test0SubSenders() {
 		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
 		assertEquals("must have at least a sender configured", e.getMessage());
 	}
@@ -132,7 +132,7 @@ public class SenderSeriesTest extends SenderTestBase<SenderSeries> {
 
 	private static class ErrorReturningSender extends AbstractSender {
 		@Override
-		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
+		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) {
 			return new SenderResult(false, message, "fakeError", "fakeError");
 		}
 	}

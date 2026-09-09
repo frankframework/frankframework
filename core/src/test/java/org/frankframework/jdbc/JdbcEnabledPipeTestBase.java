@@ -52,7 +52,7 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
 		pipe = null;

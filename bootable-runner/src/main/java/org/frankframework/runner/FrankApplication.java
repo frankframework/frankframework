@@ -175,7 +175,7 @@ public class FrankApplication {
 
 	public static class NoopCredentialFactory implements ISecretProvider {
 		@Override
-		public void initialize() throws Exception {
+		public void initialize() {
 			getApplicationLogger().info("!! no credentialprovider configured !!");
 			// Nothing to initialize
 		}
@@ -337,7 +337,7 @@ public class FrankApplication {
 
 	private static class LadybugInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
+		public void onStartup(@NonNull ServletContext servletContext) {
 			try {
 				System.setProperty("ladybug.jdbc.datasource", "");
 				if (ClassUtils.isClassPresent("org.frankframework.ladybug.runner.LadybugWarInitializer")) {
@@ -353,7 +353,7 @@ public class FrankApplication {
 
 	private static class ConsoleInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
+		public void onStartup(@NonNull ServletContext servletContext) {
 			try {
 				if (ClassUtils.isClassPresent("org.frankframework.console.runner.ConsoleWarInitializer")) {
 					SpringBootServletInitializer initializer = ClassUtils.newInstance("org.frankframework.console.runner.ConsoleWarInitializer", SpringBootServletInitializer.class);

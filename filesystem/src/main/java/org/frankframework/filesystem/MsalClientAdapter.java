@@ -239,7 +239,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() {
 			msal.stop();
 		}
 	}

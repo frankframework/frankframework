@@ -132,7 +132,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(objectLocators == null) {
 			throw new IllegalStateException("no objectLocators set, unable to perform lookup using ["+this.getClass().getSimpleName()+"]");
 		}

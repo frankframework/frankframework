@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.jspecify.annotations.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -36,7 +37,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SealedAuthenticator extends AbstractServletAuthenticator {
 
 	@Override
-	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+	public SecurityFilterChain configure(HttpSecurity http) {
 		http.httpBasic(basic -> basic.authenticationEntryPoint(new Http401EntryPoint())); // Uses a BasicAuthenticationEntryPoint to force users to log in
 
 		InMemoryUserDetailsManager udm = new InMemoryUserDetailsManager(); // Create an UserDetailsManager without any users.
@@ -50,7 +51,7 @@ public class SealedAuthenticator extends AbstractServletAuthenticator {
 		@Override
 		public void commence(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull AuthenticationException authException) throws IOException {
 			// Block all requests
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access Denied, configure an authenticator to enable web access.");
+			response.sendError(HttpStatus.UNAUTHORIZED.value(), "Access Denied, configure an authenticator to enable web access.");
 		}
 	}
 }

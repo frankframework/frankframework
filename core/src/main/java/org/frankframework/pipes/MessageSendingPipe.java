@@ -496,7 +496,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 		return sendResult;
 	}
 
-	private String logToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws TransformerException, IOException, SAXException, SenderException {
+	private String logToMessageLog(final Message input, final PipeLineSession session, final Message originalMessage, final String messageID, String correlationID) throws SenderException {
 		if (getMessageLog() == null) {
 			return correlationID;
 		}

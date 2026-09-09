@@ -1,7 +1,6 @@
 package org.frankframework.testutil.junit;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +51,7 @@ public class DatabaseTestEnvironment implements AutoCloseable {
 	 * <b>Make sure to close this!</b>
 	 * @return a new Connection each time this method is called
 	 */
-	public Connection getConnection() throws SQLException {
+	public Connection getConnection() {
 		connectionCount.incrementAndGet();
 		try {
 			return wrapCountingConnectionDelegate(dataSource.getConnection());

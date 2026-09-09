@@ -31,7 +31,6 @@ import jakarta.json.JsonObjectBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.util.MimeType;
 
 import lombok.NoArgsConstructor;
@@ -40,6 +39,7 @@ import org.frankframework.align.XmlTypeToJsonSchemaConverter;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
+import org.frankframework.http.HttpStatusResolver;
 import org.frankframework.http.rest.ApiDispatchConfig;
 import org.frankframework.http.rest.ApiListener;
 import org.frankframework.http.rest.ApiServiceDispatcher;
@@ -221,12 +221,8 @@ public class OpenApiGenerator {
 			}
 
 			JsonObjectBuilder exit = Json.createObjectBuilder();
-
-			// Make sure that we don't fail here because HttpStatus is missing a status
-			HttpStatus status = HttpStatus.resolve(exitCode);
-			if (status != null) {
-				exit.add("description", status.getReasonPhrase());
-			}
+			HttpStatusResolver.getReasonPhrase(exitCode)
+					.ifPresent(reasonPhrase -> exit.add("description", reasonPhrase));
 
 			Optional<Json2XmlValidator> outputValidator = ApiServiceDispatcher.getJsonOutputValidator(pipeline, pipeLineExit.getName());
 			outputValidator.ifPresent(validator -> addComponentsToTheSchema(schemas, validator.getXSModels()));

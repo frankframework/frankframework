@@ -20,7 +20,7 @@
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -76,10 +76,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- NB: We need to stay on target JDK21 as long as the JBoss / WildFly images we build for our Larva tests do not support JDK25 -->
 		<maven.compiler.target>21</maven.compiler.target>
-		<!-- Need this property for the Jenkins build system to determine correct build JDK version, which needs to be JDK25 for Frank!Doc (and JDK25 changes in JavaDoc) -->
+		<!-- Need this property for the Jenkins build system to determine correct build JDK version, which needs to be JDK25 for Frank!Doc (and JDK25 changes in Javadoc) -->
 		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
-		<lombok.version>1.18.46</lombok.version>
+		<lombok.version>1.18.48</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
 		<log4j2.version>2.26.1</log4j2.version>
 
@@ -123,7 +123,7 @@
 		<mongodb.driver.version>5.11.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>6.3.1</activemq.driver.version>
+		<activemq.driver.version>6.3.2</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.35.0</rabbitmq.driver.version>
@@ -276,7 +276,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.36.0</version>
+				<version>4.36.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -828,7 +828,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.15.0</version>
+					<version>3.16.0</version>
 					<configuration>
 						<release>${maven.compiler.target}</release>
 						<compilerArgs>
@@ -850,7 +850,7 @@
 							<path>
 								<groupId>com.uber.nullaway</groupId>
 								<artifactId>nullaway</artifactId>
-								<version>0.14.0</version>
+								<version>0.14.1</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>
@@ -1219,7 +1219,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>14.0.0</version>
+							<version>14.1.0</version>
 						</dependency>
 					</dependencies>
 					<executions>

@@ -34,7 +34,7 @@ import com.sap.conn.jco.JCoTable;
  */
 public class TableHandler extends Handler {
 
-	private JCoTable table = null;
+	private JCoTable table;
 	private boolean parsedItem = false;
 
 	public TableHandler(JCoTable table) {

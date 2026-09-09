@@ -177,7 +177,7 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message<?>> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message<?>> rawMessage, PipeLineSession pipeLineSession) {
 		// No-op
 	}
 
