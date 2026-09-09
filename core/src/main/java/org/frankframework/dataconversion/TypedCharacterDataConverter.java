@@ -35,9 +35,9 @@ import org.xml.sax.InputSource;
  */
 interface TypedCharacterDataConverter<T> extends TypedConverter<T> {
 
-	String asString(T data) throws IOException;
+	String asString(T data);
 
-	Reader asReader(T data) throws IOException;
+	Reader asReader(T data);
 
 	InputStream asInputStream(T data, String encodingCharset) throws IOException;
 

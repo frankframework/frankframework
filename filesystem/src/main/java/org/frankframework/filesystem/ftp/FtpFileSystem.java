@@ -81,7 +81,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public @NonNull FTPFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+	public @NonNull FTPFileRef toFile(@Nullable String folder, @Nullable String filename) {
 		return new FTPFileRef(filename, folder);
 	}
 

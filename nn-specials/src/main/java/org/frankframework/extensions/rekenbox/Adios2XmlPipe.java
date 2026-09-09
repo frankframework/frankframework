@@ -341,7 +341,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	 * the most difficult format used is record[recordindex],label[index]:waarde;
 	 * mind the delimiters,where a record has or hasnot an indexnummer and a label likewise.
 	 */
-	public String makeXml(String s, PipeLineSession session) throws PipeRunException {
+	public String makeXml(String s, PipeLineSession session) {
 
 		XmlBuilder bericht = new XmlBuilder("adios");
 		bericht.addAttribute("type", "rekenuitvoer");

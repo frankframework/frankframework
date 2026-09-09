@@ -61,7 +61,6 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.encryption.HasKeystore;
@@ -316,7 +315,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		CloseableCmisSession cmisSession = null;
 		try {
 			ParameterValueList pvl;

@@ -12,7 +12,6 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -29,7 +28,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	private final List<PipeLine.ExitState> exitStates = Collections.synchronizedList(new ArrayList<>());
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		// Nothing to configure
 	}
 

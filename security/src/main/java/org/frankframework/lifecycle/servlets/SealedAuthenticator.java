@@ -37,7 +37,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SealedAuthenticator extends AbstractServletAuthenticator {
 
 	@Override
-	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+	public SecurityFilterChain configure(HttpSecurity http) {
 		http.httpBasic(basic -> basic.authenticationEntryPoint(new Http401EntryPoint())); // Uses a BasicAuthenticationEntryPoint to force users to log in
 
 		InMemoryUserDetailsManager udm = new InMemoryUserDetailsManager(); // Create an UserDetailsManager without any users.

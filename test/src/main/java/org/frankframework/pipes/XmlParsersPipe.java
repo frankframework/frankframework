@@ -20,7 +20,6 @@ import java.util.Map;
 import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
@@ -33,7 +32,7 @@ public class XmlParsersPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 		Map<String, String> xmlInfo = XmlUtils.getVersionInfo();
 		XmlBuilder builder = new XmlBuilder("parsers");
 		for (Map.Entry<String, String> entry : xmlInfo.entrySet()) {

@@ -107,7 +107,7 @@ public class AsposeLicenseLoader {
 
 	private static class CellsLicenseWrapper implements LicenseWrapper {
 		@Override
-		public void loadLicense(InputStream licenseInputStream) throws Exception {
+		public void loadLicense(InputStream licenseInputStream) {
 			com.aspose.cells.License asposeLicense = new com.aspose.cells.License();
 			asposeLicense.setLicense(licenseInputStream);
 		}
@@ -123,7 +123,7 @@ public class AsposeLicenseLoader {
 		private com.aspose.email.License asposeLicense;
 
 		@Override
-		public void loadLicense(InputStream licenseInputStream) throws Exception {
+		public void loadLicense(InputStream licenseInputStream) {
 			try {
 				asposeLicense = new com.aspose.email.License();
 				asposeLicense.setLicense(licenseInputStream);
@@ -165,7 +165,7 @@ public class AsposeLicenseLoader {
 		private final com.aspose.slides.License asposeLicense = new com.aspose.slides.License();
 
 		@Override
-		public void loadLicense(InputStream licenseInputStream) throws Exception {
+		public void loadLicense(InputStream licenseInputStream) {
 			asposeLicense.setLicense(licenseInputStream);
 		}
 
@@ -180,7 +180,7 @@ public class AsposeLicenseLoader {
 		private com.aspose.imaging.License asposeLicense;
 
 		@Override
-		public void loadLicense(InputStream licenseInputStream) throws Exception {
+		public void loadLicense(InputStream licenseInputStream) {
 			try {
 				asposeLicense = new com.aspose.imaging.License();
 				asposeLicense.setLicense(licenseInputStream);

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import jakarta.jms.Destination;
@@ -207,7 +206,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
 			}
 			return new Message(messageToSend.getJMSMessageID(), getContext(messageToSend));
-		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException | XmlException e) {
+		} catch (JMSException | IOException | SAXException | TransformerException | JmsException | XmlException e) {
 			throw new SenderException(e);
 		} finally {
 			CloseUtils.closeSilently(messageProducer);
@@ -284,7 +283,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		}
 	}
 
-	public Destination getDestination(@NonNull ParameterValueList pvl) throws JmsException, NamingException, JMSException {
+	public Destination getDestination(@NonNull ParameterValueList pvl) throws JmsException {
 		if (StringUtils.isNotEmpty(getDestinationParam())) {
 			String destinationName = pvl.getValue(getDestinationParam());
 			if (StringUtils.isNotEmpty(destinationName)) {

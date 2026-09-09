@@ -32,7 +32,7 @@ public interface IBlockEnabledSender<H> extends ISenderWithParameters {
 	 * close the resource that is opened by {@link #openBlock(PipeLineSession)}. It is important that this method is always called
 	 * after processing with the blockHandle ends. It should effectively be called in a finally clause of a try around the openBlock.
 	 */
-	void closeBlock(H blockHandle, PipeLineSession session) throws SenderException;
+	void closeBlock(H blockHandle, PipeLineSession session);
 
 	SenderResult sendMessage(H blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException;
 }

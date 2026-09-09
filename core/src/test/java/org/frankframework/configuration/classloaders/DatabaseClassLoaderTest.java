@@ -106,7 +106,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		@SuppressWarnings("rawtypes") // IbisContext.log is a void method
 		Answer answer = new Answer() {
 			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
+			public Object answer(InvocationOnMock invocation) {
 				String message = invocation.getArgument(0);
 				MessageEventLevel level = invocation.getArgument(1);
 				Exception exception = invocation.getArgument(2);

@@ -30,7 +30,7 @@ public interface SchemasProvider {
 	/*
 	 * Id of schemas to load at initialisation time.
 	 */
-	String getSchemasId() throws ConfigurationException;
+	String getSchemasId();
 
 	/*
 	 * Schemas to load at initialisation time.

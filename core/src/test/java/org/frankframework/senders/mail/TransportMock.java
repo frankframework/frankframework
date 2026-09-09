@@ -2,7 +2,6 @@ package org.frankframework.senders.mail;
 
 import jakarta.mail.Address;
 import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.URLName;
@@ -16,23 +15,23 @@ public class TransportMock extends Transport {
 	}
 
 	@Override
-	public void connect(String host, String username, String password) throws MessagingException {
+	public void connect(String host, String username, String password) {
 		session.getProperties().put("login.user", username);
 		session.getProperties().put("login.pass", password);
 	}
 
 	@Override
-	public synchronized void connect(String host, int port, String username, String password) throws MessagingException {
+	public synchronized void connect(String host, int port, String username, String password) {
 		session.getProperties().put("login.user", username);
 		session.getProperties().put("login.pass", password);
 	}
 
 	@Override
-	public void sendMessage(Message msg, Address[] addresses) throws MessagingException {
+	public void sendMessage(Message msg, Address[] addresses) {
 		session.getProperties().put("MimeMessage", msg);
 	}
 
 	@Override
-	public synchronized void close() throws MessagingException {
+	public synchronized void close() {
 	}
 }

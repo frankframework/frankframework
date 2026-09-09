@@ -41,7 +41,7 @@ public interface IRecordHandler extends IConfigurable, FrankElement, NameAware {
 	 *
 	 * @return List with String values for each inputfield
 	 */
-	List<String> parse(PipeLineSession session, String record) throws Exception;
+	List<String> parse(PipeLineSession session, String record);
 
 	/**
 	 * Perform an action on the array of fields.
@@ -50,7 +50,7 @@ public interface IRecordHandler extends IConfigurable, FrankElement, NameAware {
 	 */
 	String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception;
 
-	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List<String> prevRecord, List<String> curRecord) throws Exception;
+	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List<String> prevRecord, List<String> curRecord);
 
 	public String getRecordType(List<String> record);
 

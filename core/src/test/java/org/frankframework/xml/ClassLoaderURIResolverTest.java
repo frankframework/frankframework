@@ -22,7 +22,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
@@ -82,7 +81,7 @@ public class ClassLoaderURIResolverTest {
 		return scopeProvider;
 	}
 
-	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException {
+	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) {
 		URL result;
 		return switch (baseType) {
 			case LOCAL -> "/ClassLoader/Xslt/root.xsl";
@@ -99,7 +98,7 @@ public class ClassLoaderURIResolverTest {
 		};
 	}
 
-	private String getRef(BaseType baseType, RefType refType) throws ConfigurationException {
+	private String getRef(BaseType baseType, RefType refType) {
 		return switch (refType) {
 			case ROOT -> "/ClassLoaderTestFile.xml";
 			case ABS_PATH -> "/ClassLoader/ClassLoaderTestFile.xml";
@@ -121,7 +120,7 @@ public class ClassLoaderURIResolverTest {
 		};
 	}
 
-	private String getExpected(BaseType baseType, RefType refType) throws ConfigurationException {
+	private String getExpected(BaseType baseType, RefType refType) {
 		return switch (refType) {
 			case ROOT -> "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoaderTestFile.xml</file>";
 			case ABS_PATH -> "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>";
@@ -215,7 +214,7 @@ public class ClassLoaderURIResolverTest {
 	}
 
 	@Test
-	public void classLoaderURIResolverCannotLoadExternalEntities() throws Exception {
+	public void classLoaderURIResolverCannotLoadExternalEntities() {
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(scopeProvider);
 
 		URL url = this.getClass().getResource("/ClassLoader/request-ftp.xsd");

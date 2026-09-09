@@ -35,7 +35,7 @@ public class MessageBrowsingFilterTest {
 	static final String tableName = "MESSAGEBROWSINGFILTERTEST";
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws Exception {
+	public void setup(DatabaseTestEnvironment env) {
 		filter = env.createBean(MessageBrowsingFilter.class);
 		storage = env.createBean(JdbcTransactionalStorage.class);
 		storage.setSlotId("MessageBrowsingFilter");

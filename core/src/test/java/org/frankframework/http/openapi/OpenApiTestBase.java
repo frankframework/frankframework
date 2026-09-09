@@ -114,7 +114,7 @@ public class OpenApiTestBase extends Mockito {
 		return service(createRequest("get", uri + "/openapi.json"));
 	}
 
-	protected String service(HttpServletRequest request) throws ServletException, IOException {
+	protected String service(HttpServletRequest request) throws ServletException {
 		try {
 			MockHttpServletResponse response = new MockHttpServletResponse();
 			ApiListenerServlet servlet = servlets.get();

@@ -63,7 +63,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 
 	private static SoftReference<Properties> propertiesRef = null;
 
-	public FrankPropertyLookupProvider() throws IOException {
+	public FrankPropertyLookupProvider() {
 		getProperties(); // Load once, throw potential errors if any...
 	}
 

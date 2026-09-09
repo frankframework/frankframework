@@ -48,7 +48,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	}
 
 	@Override
-	public String getId() throws ListenerException {
+	public String getId() {
 		return fileSystem.getName(item.getRawMessage());
 	}
 

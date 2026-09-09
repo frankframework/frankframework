@@ -75,7 +75,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		ftpClient.disconnect();
 	}
 

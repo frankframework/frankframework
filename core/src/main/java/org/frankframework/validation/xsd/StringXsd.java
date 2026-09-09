@@ -15,7 +15,6 @@
 */
 package org.frankframework.validation.xsd;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -37,12 +36,12 @@ public class StringXsd extends AbstractXSD {
 	}
 
 	@Override
-	public Reader getReader() throws IOException {
+	public Reader getReader() {
 		return new StringReader(contents);
 	}
 
 	@Override
-	public @NonNull String asString() throws IOException {
+	public @NonNull String asString() {
 		return contents;
 	}
 }

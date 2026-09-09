@@ -64,7 +64,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private IFlowGenerator flowGenerator;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(applicationContext == null) {
 			throw new IllegalStateException("ApplicationContext has not been autowired, cannot instantiate IFlowDiagram");
 		}

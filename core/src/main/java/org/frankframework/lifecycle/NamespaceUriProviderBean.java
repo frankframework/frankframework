@@ -60,7 +60,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		if(namespaceRouter != null && namespaceRouter.isPublished()) {
 			namespaceRouter.stop();
 		}
@@ -69,7 +69,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		// TODO look into NamespaceHandlerResolver
 		Bus bus = (Bus) applicationContext.getBean("cxf");
 		if(bus instanceof SpringBus) {

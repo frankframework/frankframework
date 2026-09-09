@@ -20,7 +20,6 @@ import org.jspecify.annotations.NonNull;
 import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
@@ -47,7 +46,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 
 		String result = null;
 		if (getType()==Type.ALPHANUMERIC) {
