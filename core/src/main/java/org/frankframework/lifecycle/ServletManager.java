@@ -116,7 +116,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	}
 
 	@Override // After initialization but before other servlets are wired
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(servletContext == null) {
 			throw new IllegalStateException("not ServletContext configured");
 		}

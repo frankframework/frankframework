@@ -30,7 +30,6 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -62,7 +61,7 @@ public class JsonXslt3XmlReader implements XMLReader {
 		}
 	}
 
-	public boolean parse(String key, JsonParser parser) throws IOException, SAXException {
+	public boolean parse(String key, JsonParser parser) throws SAXException {
 		Event event = parser.next();
 		if (event == Event.START_OBJECT) {
 			startElement("map", key);
@@ -193,12 +192,12 @@ public class JsonXslt3XmlReader implements XMLReader {
 	}
 
 	@Override
-	public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
+	public Object getProperty(String name) throws SAXNotRecognizedException {
 		throw new SAXNotRecognizedException("Property not recognized [" + name + "]");
 	}
 
 	@Override
-	public void setProperty(String name, Object value) throws SAXNotRecognizedException, SAXNotSupportedException {
+	public void setProperty(String name, Object value) throws SAXNotRecognizedException {
 		throw new SAXNotRecognizedException("Property not recognized [" + name + "]");
 	}
 

@@ -24,7 +24,7 @@ public class ServiceDispatcherTest {
 	private final ServiceDispatcher serviceDispatcher = ServiceDispatcher.getInstance();
 
 	@BeforeEach
-	public void setUp() throws Exception {
+	public void setUp() {
 		// Add in non-alphabetical order for testing getListenerNames()
 
 		// TEST-CLIENT-2 will always return a NULL message
@@ -68,7 +68,7 @@ public class ServiceDispatcherTest {
 	}
 
 	@Test
-	public void dispatchRequestServiceNotRegistered() throws ListenerException {
+	public void dispatchRequestServiceNotRegistered() {
 		// Arrange
 		Message message = new Message("MESSAGE");
 
@@ -97,7 +97,7 @@ public class ServiceDispatcherTest {
 	}
 
 	@Test
-	public void registerServiceClient() throws ListenerException {
+	public void registerServiceClient() {
 		// Arrange
 		assertFalse(serviceDispatcher.isRegisteredServiceListener("TEST-CLIENT-3"), "Expected not to have service-name [TEST-CLIENT-3] before registration");
 

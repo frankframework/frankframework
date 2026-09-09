@@ -39,7 +39,7 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 public class NoOpAuthenticator extends AbstractServletAuthenticator {
 
 	@Override
-	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+	public SecurityFilterChain configure(HttpSecurity http) {
 		http.anonymous(anonymous -> anonymous.authorities(getAuthorities()).principal("anonymous"));
 		return http.build();
 	}

@@ -1,6 +1,5 @@
 package org.frankframework.filesystem.smb;
 
-import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -58,7 +57,7 @@ public class Samba2ListenerTest extends WritableFileSystemListenerTest<SmbFileRe
 	}
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() throws IOException {
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		if (!runWithDocker) {
 			return new LocalFileSystemTestHelper(fs.getTestDirectory());
 		}

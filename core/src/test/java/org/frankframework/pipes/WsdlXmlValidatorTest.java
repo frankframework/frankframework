@@ -531,7 +531,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	}
 
 	@Test
-	public void wSoapBodyExistsMultipleTimes() throws Exception {
+	public void wSoapBodyExistsMultipleTimes() {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(DOUBLE_BODY);
 		val.setSoapHeader("MessageHeader");

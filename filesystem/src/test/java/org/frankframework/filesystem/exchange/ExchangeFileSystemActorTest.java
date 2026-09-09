@@ -145,7 +145,7 @@ public class ExchangeFileSystemActorTest extends FileSystemActorTest<MailItemId,
 	@Test
 	@Disabled("files get a new id, we don't check the subject, each mail is unique.")
 	@Override
-	public void fileSystemActorMoveActionFailsIfTargetExists() throws Exception {
+	public void fileSystemActorMoveActionFailsIfTargetExists() {
 		fail();
 	}
 }

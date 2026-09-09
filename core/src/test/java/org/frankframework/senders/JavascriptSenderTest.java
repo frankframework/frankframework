@@ -183,7 +183,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// A ConfigurationException is given when a non existing file is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void invalidFileGivenException(JavaScriptEngines engine) throws Exception {
+	void invalidFileGivenException(JavaScriptEngines engine) {
 		sender.setJsFileName("Nonexisting.js");
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
@@ -195,7 +195,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// A ConfigurationException is given when an empty string is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void emptyFileNameGivenException(JavaScriptEngines engine) throws Exception {
+	void emptyFileNameGivenException(JavaScriptEngines engine) {
 		sender.setJsFileName("");
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
@@ -223,7 +223,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// A ConfigurationException is given when an empty string is given as FunctionName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void emptyFunctionGivenException(JavaScriptEngines engine) throws Exception {
+	void emptyFunctionGivenException(JavaScriptEngines engine) {
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("");
 		sender.setEngineName(engine);
@@ -235,7 +235,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// If there is a syntax error in the given Javascript file a SenderException is thrown.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void invalidJavascriptSyntax(JavaScriptEngines engine) throws ConfigurationException, SenderException {
+	void invalidJavascriptSyntax(JavaScriptEngines engine) throws ConfigurationException {
 		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/IncorrectJavascript.js");
 		sender.setEngineName(engine);
@@ -250,7 +250,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// is thrown if the used javascript function gives an error.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void errorInJavascriptCode(JavaScriptEngines engine) throws ConfigurationException, SenderException {
+	void errorInJavascriptCode(JavaScriptEngines engine) throws ConfigurationException {
 		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/IncorrectJavascript2.js");
 		sender.setEngineName(engine);
@@ -264,7 +264,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// The input is expected to be of type integer but an input of type Sting is given.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void wrongInputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException, SenderException {
+	void wrongInputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException {
 		dummyInput = new Message("Stringinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f2");

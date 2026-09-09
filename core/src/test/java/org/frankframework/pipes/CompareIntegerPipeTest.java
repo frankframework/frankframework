@@ -19,7 +19,7 @@ class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 	}
 
 	@Test
-	void noSessionKey() throws ConfigurationException {
+	void noSessionKey() {
 		pipe.addForward(new PipeForward("lessthan", null));
 		pipe.addForward(new PipeForward("greaterthan", null));
 		pipe.addForward(new PipeForward("equals", null));

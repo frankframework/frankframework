@@ -265,7 +265,7 @@ public class ConfigurationUtils {
 		return null;
 	}
 
-	public static Map<String, String> processMultiConfigZipFile(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException, ConfigurationException {
+	public static Map<String, String> processMultiConfigZipFile(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException {
 		Map<String, String> result = new LinkedHashMap<>();
 		if (file.available() > 0) {
 			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {

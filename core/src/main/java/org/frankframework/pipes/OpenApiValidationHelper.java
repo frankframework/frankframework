@@ -67,7 +67,7 @@ public class OpenApiValidationHelper {
 	 * Determine whether to validate as input or output and calls the appropriate method. For response validation, the schema to validate against can be
 	 * determined based on the exit code in the session, and the path and method defined in the pipe configuration.
 	 */
-	OpenApiValidator.SchemaValidationResult validateMessage(Message message, PipeLineSession session) throws IOException {
+	OpenApiValidator.SchemaValidationResult validateMessage(Message message, PipeLineSession session) {
 		Schema jsonSchema = resolveJsonSchema(operation, session);
 
 		try {
