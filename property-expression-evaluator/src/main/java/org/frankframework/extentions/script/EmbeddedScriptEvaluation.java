@@ -18,14 +18,18 @@ package org.frankframework.extentions.script;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.collections4.map.CompositeMap;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -173,7 +177,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 			if (result == null) {
 				return Optional.empty();
 			} else {
-				return Optional.of(result.toString());
+				return Optional.of(applyPropsToHide(result.toString(), context, propsToHide));
 			}
 		} catch (Exception e) {
 			// Script was probably valid but not in the context of variables given
@@ -183,7 +187,30 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 	}
 
 	@Nonnull
-	private static JexlContext createScriptContext(Map<String, Object> props1, Map<String, Object> props2) {
+	private String applyPropsToHide(String value, JexlContext context, @Nullable Set<String> propsToHide) {
+		if (propsToHide == null || propsToHide.isEmpty()) {
+			return value;
+		}
+		List<String> propValuesToHide = propsToHide.stream()
+				.map(context::get)
+				.filter(Objects::nonNull)
+				.map(Object::toString)
+				.sorted(Collections.reverseOrder(Comparator.comparing(String::length)))
+				.toList(); // Sort by longest string first to properly hide partially overlapping values
+		if (propValuesToHide.isEmpty()) {
+			return value;
+		}
+
+		String result = value;
+		for (String propValue : propValuesToHide) {
+			if (result.contains(propValue)) {
+				result = result.replace(propValue, "*".repeat(propValue.length()));
+			}
+		}
+		return result;
+	}
+
+	private static JexlContext createScriptContext(Map<String, Object> props1, @Nullable Map<String, Object> props2) {
 		// Create basic context
 		CompositeMap<String, Object> contextMap = createContextMap(props1, props2);
 		JexlContext context = new FrankScriptContext(contextMap);
