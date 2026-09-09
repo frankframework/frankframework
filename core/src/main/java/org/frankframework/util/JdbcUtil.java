@@ -450,17 +450,27 @@ public class JdbcUtil {
 	public static @Nullable String getBlobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
 			return getBlobAsString(blobStream, Integer.toString(column), charset, blobSmartGet, encodeBlobBase64);
-		} // if any decompression exception occurs in getBlobInputStream
-		// then 'blobSmartGet' will try again to retrieve the stream, but then without decompressing
-
+		} catch (ZipException | EOFException e) {    // if any decompression exception occurs in getBlobInputStream
+			if (blobSmartGet && blobIsCompressed) { // then 'blobSmartGet' will try again to retrieve the stream, but then without decompressing
+				try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, false)) {
+					return getBlobAsString(blobStream, Integer.toString(column), charset, blobSmartGet, encodeBlobBase64);
+				}
+			}
+			throw e;
+		}
 	}
 
 	public static String getBlobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, String column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
 			return getBlobAsString(blobStream, column, charset, blobSmartGet, encodeBlobBase64);
-		} // if any decompression exception occurs in getBlobInputStream
-		// then 'blobSmartGet' will try again to retrieve the stream, but then without decompressing
-
+		} catch (ZipException | EOFException e) {    // if any decompression exception occurs in getBlobInputStream
+			if (blobSmartGet && blobIsCompressed) { // then 'blobSmartGet' will try again to retrieve the stream, but then without decompressing
+				try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, false)) {
+					return getBlobAsString(blobStream, column, charset, blobSmartGet, encodeBlobBase64);
+				}
+			}
+			throw e;
+		}
 	}
 
 	private static @Nullable String getBlobAsString(@Nullable final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException {
