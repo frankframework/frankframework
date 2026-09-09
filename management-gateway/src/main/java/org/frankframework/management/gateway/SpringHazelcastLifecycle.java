@@ -58,7 +58,7 @@ public class SpringHazelcastLifecycle implements Lifecycle, Phased, DisposableBe
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		lifecycle.terminate();
 	}
 }

@@ -24,7 +24,6 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.pipes.AbstractValidator;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Locker;
@@ -46,7 +45,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	}
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		// Do not configure, also do not (re)configure owner
 	}
 

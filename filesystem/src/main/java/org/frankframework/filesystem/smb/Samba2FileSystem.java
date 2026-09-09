@@ -212,13 +212,13 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public @NonNull SmbFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+	public @NonNull SmbFileRef toFile(@Nullable String folder, @Nullable String filename) {
 		return new SmbFileRef(filename != null ? filename : "", folder);
 	}
 
 	@NonNull
 	@Override
-	public DirectoryStream<SmbFileRef> list(SmbFileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<SmbFileRef> list(SmbFileRef folder, @NonNull TypeFilter filter) {
 		String folderName = folder != null ? getCanonicalName(folder) : null;
 		return FileSystemUtils.getDirectoryStream(new FilesIterator(folderName, filter, diskShare.list(folderName)));
 	}
@@ -277,7 +277,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public SmbFileRef renameFile(@NonNull SmbFileRef source, @NonNull SmbFileRef destination) throws FileSystemException {
+	public SmbFileRef renameFile(@NonNull SmbFileRef source, @NonNull SmbFileRef destination) {
 		try (File file = getFile(source, AccessMask.GENERIC_ALL, SMB2CreateDisposition.FILE_OPEN)) {
 			file.rename(destination.getName(), true);
 		}
@@ -331,7 +331,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public boolean folderExists(String folder) throws FileSystemException {
+	public boolean folderExists(String folder) {
 		try {
 			return diskShare.folderExists(folder);
 		} catch (SMBApiException e) {

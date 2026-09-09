@@ -25,7 +25,6 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
@@ -51,13 +50,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		assertNotNull(applicationContext);
 		configured = true;
 	}
 
 	@Override
-	public void open() throws FileSystemException {
+	public void open() {
 		if (!configured) {
 			throw new IllegalStateException("Not yet configured");
 		}
@@ -68,7 +67,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void close() throws FileSystemException {
+	public void close() {
 		if (!opened) {
 			log.warn("closed before opened");
 		}
@@ -405,7 +404,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public void createFile(@NonNull M file, @Nullable InputStream contents, @NonNull Map<String, String> customFileAttributes) throws FileSystemException, IOException {
+	public void createFile(@NonNull M file, @Nullable InputStream contents, @NonNull Map<String, String> customFileAttributes) throws IOException {
 		file.getCustomAttributes().putAll(customFileAttributes);
 
 		createFile(file, contents);

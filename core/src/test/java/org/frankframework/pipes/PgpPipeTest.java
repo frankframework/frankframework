@@ -106,7 +106,7 @@ public class PgpPipeTest {
 	 * Creates pipes and pipeline session base for testing.
 	 */
 	@BeforeEach
-	public void setup() throws ConfigurationException {
+	public void setup() {
 		// Load BouncyCastle if not already set.
 		new LoadBouncyCastleBean().afterPropertiesSet();
 

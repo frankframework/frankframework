@@ -17,11 +17,10 @@ package org.frankframework.jdbc.transformer;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 public class QueryOutputToCSV extends AbstractQueryOutputTransformer {
-	public QueryOutputToCSV() throws SAXException {
+	public QueryOutputToCSV() {
 		super();
 	}
 

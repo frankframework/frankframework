@@ -33,8 +33,8 @@ public class NodeSetFilter extends FullXmlFilter {
 
 	private String targetNamespace;
 	private String targetElement;
-	private boolean includeTarget=false;
-	private boolean includeRoot=false;
+	private boolean includeTarget;
+	private boolean includeRoot;
 
 	private int level;
 	private int globalLevel;

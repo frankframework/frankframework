@@ -25,7 +25,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 
@@ -62,7 +61,7 @@ public abstract class AbstractCollectorSender<C extends ICollector<P>, P> extend
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		try {
 			Collection<C, P> collection = getCollection(session);
 			collection.add(message, session, getParameterValueList(message, session));

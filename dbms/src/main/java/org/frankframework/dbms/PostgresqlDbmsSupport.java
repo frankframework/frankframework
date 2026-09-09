@@ -161,12 +161,12 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public @NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException {
 		return createLob(rs.getStatement());
 	}
 
 	@Override
-	public @NonNull Object getClobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException, DbmsException {
+	public @NonNull Object getClobHandle(@NonNull PreparedStatement stmt, int column) {
 		return createLob(stmt);
 	}
 
@@ -178,17 +178,17 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	@SneakyThrows(UnsupportedEncodingException.class)
-	public @NonNull Writer getClobWriter(@NonNull PreparedStatement stmt, int column, @NonNull Object clobHandle) throws SQLException {
+	public @NonNull Writer getClobWriter(@NonNull PreparedStatement stmt, int column, @NonNull Object clobHandle) {
 		return new OutputStreamWriter(openLobOutputStream(stmt, clobHandle), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
 	@Override
-	public void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException, DbmsException {
+	public void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException {
 		updateLob(rs, column, clobHandle, false);
 	}
 
 	@Override
-	public void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobHandle) throws SQLException, DbmsException {
+	public void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobHandle) throws SQLException {
 		updateLob(rs, column, clobHandle, false);
 	}
 
@@ -214,12 +214,12 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public @NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException {
 		return createLob(rs.getStatement());
 	}
 
 	@Override
-	public @NonNull Object getBlobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException, DbmsException {
+	public @NonNull Object getBlobHandle(@NonNull PreparedStatement stmt, int column) {
 		return createLob(stmt);
 	}
 
@@ -229,17 +229,17 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public @NonNull OutputStream getBlobOutputStream(@NonNull PreparedStatement stmt, int column, @NonNull Object blobHandle) throws SQLException {
+	public @NonNull OutputStream getBlobOutputStream(@NonNull PreparedStatement stmt, int column, @NonNull Object blobHandle) {
 		return openLobOutputStream(stmt, blobHandle);
 	}
 
 	@Override
-	public void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobHandle) throws SQLException, DbmsException {
+	public void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobHandle) throws SQLException {
 		updateLob(rs, column, blobHandle, true);
 	}
 
 	@Override
-	public void updateBlob(@NonNull ResultSet rs, @NonNull String column, @NonNull Object blobHandle) throws SQLException, DbmsException {
+	public void updateBlob(@NonNull ResultSet rs, @NonNull String column, @NonNull Object blobHandle) throws SQLException {
 		updateLob(rs, column, blobHandle, true);
 	}
 

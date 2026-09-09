@@ -109,21 +109,17 @@ public class OpenApiValidator extends AbstractValidator {
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
-		try {
-			if (messageToValidate.isEmpty()) {
-				messageToValidate = new Message("{}");
-			}
-
-			SchemaValidationResult result = openApiValidationHelper.validateMessage(messageToValidate, session);
-
-			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-				session.put(getReasonSessionKey(), result.validationMessages.toString());
-			}
-
-			return determineForward(result.result, useAsOutputValidator, result.validationMessages::toString);
-		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot validate", e);
+		if (messageToValidate.isEmpty()) {
+			messageToValidate = new Message("{}");
 		}
+
+		SchemaValidationResult result = openApiValidationHelper.validateMessage(messageToValidate, session);
+
+		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+			session.put(getReasonSessionKey(), result.validationMessages.toString());
+		}
+
+		return determineForward(result.result, useAsOutputValidator, result.validationMessages::toString);
 	}
 
 	private OpenAPI readOpenApiDefinition() throws IOException {

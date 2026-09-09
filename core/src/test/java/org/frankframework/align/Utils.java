@@ -109,12 +109,12 @@ public class Utils {
 			}
 
 			@Override
-			public void fatalError(SAXParseException e) throws SAXException {
+			public void fatalError(SAXParseException e) {
 				LOG.error(prefix+"validation fatalError: "+e);
 			}
 
 			@Override
-			public void warning(SAXParseException e) throws SAXException {
+			public void warning(SAXParseException e) {
 				LOG.warn(prefix+"validation warning: "+e);
 			}
 

@@ -67,7 +67,7 @@ public class CmisHttpInvokerTest {
 		};
 	}
 
-	private Output createOutputFromFile(String file) throws IOException {
+	private Output createOutputFromFile(String file) {
 		URL url = TestFileUtils.getTestFileURL(file);
 		assertNotNull(url, "unable to find test file");
 

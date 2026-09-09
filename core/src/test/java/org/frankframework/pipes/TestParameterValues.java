@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
@@ -15,7 +14,7 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 	 * Test all possible options for FixedForwardPipe#getParameterValue(ParameterValueList, String)
 	 */
 	@Override
-	public ParameterValueTestPipe createPipe() throws ConfigurationException {
+	public ParameterValueTestPipe createPipe() {
 		return new ParameterValueTestPipe();
 	}
 

@@ -435,17 +435,17 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 
 		@Override
-		public boolean hasNext() throws ListenerException {
+		public boolean hasNext() {
 			return !items.isEmpty();
 		}
 
 		@Override
-		public IMessageBrowsingIteratorItem next() throws ListenerException {
+		public IMessageBrowsingIteratorItem next() {
 			return items.poll();
 		}
 
 		@Override
-		public void close() throws ListenerException {
+		public void close() {
 			items.clear();
 		}
 
@@ -467,7 +467,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 
 		@Override
-		public IMessageBrowsingIteratorItem answer(InvocationOnMock invocation) throws Throwable {
+		public IMessageBrowsingIteratorItem answer(InvocationOnMock invocation) {
 			messageId = (String) invocation.getArguments()[0];
 			return this;
 		}

@@ -228,12 +228,12 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) {
 		// do nothing
 	}
 
 	@Override
-	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

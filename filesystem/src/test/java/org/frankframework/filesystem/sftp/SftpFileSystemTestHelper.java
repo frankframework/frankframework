@@ -75,7 +75,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		ftpClient.disconnect();
 	}
 
@@ -223,7 +223,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public boolean _folderExists(String folder) throws Exception {
-		String pwd = null;
+		String pwd;
 		try {
 			pwd = ftpClient.pwd();
 			try {

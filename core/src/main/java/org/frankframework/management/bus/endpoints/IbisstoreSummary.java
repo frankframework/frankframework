@@ -65,7 +65,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 
 	// Protected for testing purposes only!
 	protected StringMessage execute(String datasource, String query) {
-		String result = "";
+		String result;
 		try {
 			IbisstoreSummaryQuerySender qs;
 			qs = createBean(IbisstoreSummaryQuerySender.class);

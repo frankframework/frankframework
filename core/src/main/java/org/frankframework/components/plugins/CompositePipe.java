@@ -73,7 +73,7 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 	private @Getter @Setter Adapter adapter;
 	private FrankPlugin frankPlugin;
 
-	public CompositePipe() throws SecurityException, ReflectiveOperationException {
+	public CompositePipe() throws SecurityException {
 		// NOOP for Spring to initialize
 	}
 

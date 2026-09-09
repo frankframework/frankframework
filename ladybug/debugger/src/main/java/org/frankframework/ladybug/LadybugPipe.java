@@ -43,7 +43,6 @@ import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Forward;
 import org.frankframework.pipes.FixedForwardPipe;
@@ -91,7 +90,7 @@ public class LadybugPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 		XmlBuilder results = new XmlBuilder("Results");
 		int reportsPassed = 0;
 

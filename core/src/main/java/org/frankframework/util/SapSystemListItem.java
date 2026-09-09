@@ -55,7 +55,7 @@ public abstract class SapSystemListItem implements NameAware, HasName {
 	 * that returns an object of its own type.
 	 */
 	protected static SapSystemListItem getItem(String itemName) {
-		SapSystemListItem result = null;
+		SapSystemListItem result;
 
 		result = items.get(itemName);
 		if (result==null) {

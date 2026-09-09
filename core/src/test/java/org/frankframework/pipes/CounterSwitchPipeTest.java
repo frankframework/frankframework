@@ -12,7 +12,7 @@ import org.frankframework.core.PipeRunResult;
 public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 
 	@Override
-	public CounterSwitchPipe createPipe() throws ConfigurationException {
+	public CounterSwitchPipe createPipe() {
 		CounterSwitchPipe pipe = new CounterSwitchPipe();
 		pipe.addForward(new PipeForward("1", null));
 		pipe.addForward(new PipeForward("2", null));
@@ -28,7 +28,7 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 	}
 
 	@Test
-	public void testDivisorLessThanTwo() throws Exception {
+	public void testDivisorLessThanTwo() {
 		pipe.setDivisor(1);
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertEquals("Exception configuring CounterSwitchPipe [CounterSwitchPipe under test]: divisor [1] should be greater than or equal to 2", ex.getMessage());
@@ -43,7 +43,7 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 	}
 
 	@Test
-	public void testNonExistingForward() throws Exception {
+	public void testNonExistingForward() {
 		pipe.setDivisor(3);
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertEquals("Exception configuring CounterSwitchPipe [CounterSwitchPipe under test]: forward [3] is not defined", ex.getMessage());

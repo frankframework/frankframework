@@ -380,7 +380,7 @@ public class PDFUtil {
    /**
 	* This method saves each page of the pdf as image
    */
-	private List<String> saveAsImage(String file, int startPage, int endPage) throws IOException{
+	private List<String> saveAsImage(String file, int startPage, int endPage) {
 
 		logger.info("file : " + file + ", startPage: " + startPage + ", endPage: " + endPage);
 
@@ -454,7 +454,7 @@ public class PDFUtil {
 		return this.convertToImageAndCompare(file1, file2, this.startPage, this.endPage);
 	}
 
-	private double convertToImageAndCompare(String file1, String file2, int startPage, int endPage) throws IOException{
+	private double convertToImageAndCompare(String file1, String file2, int startPage, int endPage) {
 
 		double result = 0d;
 
@@ -492,9 +492,8 @@ public class PDFUtil {
    * @param file Absolute file path of the file
    * @param startPage Starting page number of the document
    * @return List list of image file names with absolute path
-   * @throws java.io.IOException when file is not found.
-   */
-	public List<String> extractImages(String file, int startPage) throws IOException{
+	*/
+	public List<String> extractImages(String file, int startPage) {
 		return this.extractimages(file, startPage, -1);
 	}
 
@@ -505,9 +504,8 @@ public class PDFUtil {
    * @param startPage Starting page number of the document
    * @param endPage Ending page number of the document
    * @return List list of image file names with absolute path
-   * @throws java.io.IOException when file is not found.
-   */
-	public List<String> extractImages(String file, int startPage, int endPage) throws IOException{
+	*/
+	public List<String> extractImages(String file, int startPage, int endPage) {
 		return this.extractimages(file, startPage, endPage);
 	}
 
@@ -516,9 +514,8 @@ public class PDFUtil {
    *
    * @param file Absolute file path of the file
    * @return List list of image file names with absolute path
-   * @throws java.io.IOException when file is not found.
-   */
-	public List<String> extractImages(String file) throws IOException{
+	*/
+	public List<String> extractImages(String file) {
 		return this.extractimages(file, -1, -1);
 	}
 

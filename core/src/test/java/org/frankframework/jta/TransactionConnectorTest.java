@@ -276,7 +276,7 @@ public class TransactionConnectorTest {
 		return isTxActive.get();
 	}
 
-	public void displayTransaction() throws SystemException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	public void displayTransaction() throws SystemException, IllegalArgumentException, SecurityException, NoSuchFieldException {
 		if (txManager == null) {
 			return;
 		}

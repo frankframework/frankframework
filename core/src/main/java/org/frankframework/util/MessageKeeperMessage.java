@@ -40,7 +40,7 @@ public class MessageKeeperMessage {
 
 	public static MessageKeeperMessage fromEvent(MessageEvent<?> event) {
 		MessageKeeper.MessageKeeperLevel level = EnumUtils.parse(MessageKeeper.MessageKeeperLevel.class, event.getLevel().name());
-		return new MessageKeeperMessage(event.getMessage(), Instant.ofEpochMilli(event.getTimestamp()), level);
+		return new MessageKeeperMessage(event.getMessage(), event.getEventTime(), level);
 	}
 
 	/**

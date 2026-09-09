@@ -57,7 +57,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	}
 
 	@Override
-	public void beforeAll(ExtensionContext context) throws Exception {
+	public void beforeAll(ExtensionContext context) {
 		Class<?> templateClass = context.getRequiredTestClass();
 		List<WithLiquibase> annotations = findRepeatableAnnotations(templateClass, WithLiquibase.class);
 		storeAnnotations(context, annotations);
@@ -135,7 +135,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 
 	/** Runs directly after a test, before the test-teardown or any other afterEach annotations. */
 	@Override
-	public void afterTestExecution(@NonNull ExtensionContext context) throws Exception {
+	public void afterTestExecution(@NonNull ExtensionContext context) {
 		List<WithLiquibase> annotations = getAnnotations(context);
 		if(annotations.isEmpty()) {
 			return;

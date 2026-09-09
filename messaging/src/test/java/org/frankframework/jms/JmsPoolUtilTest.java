@@ -104,7 +104,7 @@ public class JmsPoolUtilTest {
 		}
 
 		@Override
-		public Connection createConnection(String userName, String password) throws JMSException {
+		public Connection createConnection(String userName, String password) {
 			throw new IllegalAccessError(); // Should be called when using 'reflectionToString'.
 		}
 
@@ -134,7 +134,7 @@ public class JmsPoolUtilTest {
 		}
 
 		@Override
-		public XAConnection createXAConnection(String userName, String password) throws JMSException {
+		public XAConnection createXAConnection(String userName, String password) {
 			throw new IllegalAccessError(); // Should be called when using 'reflectionToString'.
 		}
 

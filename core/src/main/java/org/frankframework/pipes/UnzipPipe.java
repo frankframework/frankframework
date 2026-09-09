@@ -198,7 +198,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 					if(!zipEntry.isDirectory()) {
 						// split the entry name and the extension
-						String entryNameWithoutExtension=null;
+						String entryNameWithoutExtension;
 						String extension=null;
 						int dotPos=entryName.lastIndexOf('.');
 						if (dotPos>=0) {
@@ -215,7 +215,7 @@ public class UnzipPipe extends FixedForwardPipe {
 							inputStream = new ByteArrayInputStream(fileContentBytes);
 						}
 
-						File tmpFile = null;
+						File tmpFile;
 						if (isKeepOriginalFileName()) {
 							String filename = isKeepOriginalFilePath() ? entryName : new File(entryName).getName();
 							tmpFile = new File(targetDir.toFile(), filename);
