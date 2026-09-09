@@ -89,12 +89,12 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@NonNull
 	@Override
-	public Map<String,Object> openThread() throws ListenerException {
+	public Map<String,Object> openThread() {
 		return new LinkedHashMap<>();
 	}
 
 	@Override
-	public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@NonNull Map<String, Object> threadContext) {
 		// No-op
 	}
 

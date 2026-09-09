@@ -75,7 +75,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 	}
 
 	@AfterEach
-	public void tearDown() throws ListenerException {
+	public void tearDown() {
 		if (listener != null) {
 			listener.stop();
 			listener = null;

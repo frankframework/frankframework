@@ -301,7 +301,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public void appendFile(@NonNull S3FileRef file, @Nullable InputStream content) throws FileSystemException, IOException {
+	public void appendFile(@NonNull S3FileRef file, @Nullable InputStream content) {
 		// Amazon S3 doesn't support append operation
 		throw new NotImplementedException();
 	}

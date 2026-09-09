@@ -26,7 +26,7 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 	Map<String, Serializable> mockMessageStore = new HashMap<>();
 
 	@Override
-	public MessageStoreSender createSender() throws Exception {
+	public MessageStoreSender createSender() {
 		return new MessageStoreSender() {
 			@Override public void configure() { } // Suppress configure as it's will do a JNDI lookup
 			@Override public void start() { } // Suppress start as it's will do a JNDI lookup

@@ -177,12 +177,12 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@NonNull
 	@Override
-	public Map<String,Object> openThread() throws ListenerException {
+	public Map<String,Object> openThread() {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@NonNull Map<String, Object> threadContext) {
 		// nothing special
 	}
 
@@ -374,7 +374,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) {
 		// required action already done via ChangeProcessState()
 	}
 

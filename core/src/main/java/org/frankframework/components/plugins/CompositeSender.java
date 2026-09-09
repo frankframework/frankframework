@@ -74,7 +74,7 @@ public class CompositeSender extends AbstractSenderWithParameters implements Ini
 	private @Getter @Setter Adapter adapter;
 	private FrankPlugin frankPlugin;
 
-	public CompositeSender() throws SecurityException, ReflectiveOperationException {
+	public CompositeSender() throws SecurityException {
 		// NOOP for Spring to initialize
 	}
 

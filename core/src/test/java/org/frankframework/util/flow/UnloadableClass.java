@@ -1,6 +1,5 @@
 package org.frankframework.util.flow;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 
 public class UnloadableClass implements IConfigurable {
@@ -11,7 +10,7 @@ public class UnloadableClass implements IConfigurable {
 	}
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		// No-op
 	}
 }

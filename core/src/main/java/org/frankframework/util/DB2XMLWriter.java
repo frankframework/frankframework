@@ -180,7 +180,7 @@ public class DB2XMLWriter {
 		StoredProcedureResultWrapper resultWrapper;
 		ResultSetMetaData metaData;
 		try {
-			resultWrapper = new StoredProcedureResultWrapper(dbmsSupport, callableStatement, callableStatement.getParameterMetaData(), outputParameters);
+			resultWrapper = new StoredProcedureResultWrapper(dbmsSupport, callableStatement, outputParameters);
 			metaData = resultWrapper.getMetaData();
 		} catch (SQLException e) {
 			log.warn("Error get stored procedure result data", e);

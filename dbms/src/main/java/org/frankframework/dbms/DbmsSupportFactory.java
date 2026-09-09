@@ -56,7 +56,7 @@ public class DbmsSupportFactory {
 		}
 	}
 
-	public @NonNull IDbmsSupport getDbmsSupport(@NonNull Connection connection) throws SQLException {
+	public @NonNull IDbmsSupport getDbmsSupport(@NonNull Connection connection) {
 		try {
 			DatabaseMetaData md = connection.getMetaData();
 

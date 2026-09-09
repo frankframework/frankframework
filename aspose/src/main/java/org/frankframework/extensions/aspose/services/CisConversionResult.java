@@ -155,7 +155,7 @@ public class CisConversionResult {
 	/**
 	 * Append this result to the parent
 	 */
-	public void toXML(XmlBuilder xmlResult) throws IOException {
+	public void toXML(XmlBuilder xmlResult) {
 		xmlResult.addAttribute("conversionOption", getConversionOption().getValue());
 		xmlResult.addAttribute("mediaType", getMediaType().toString());
 		xmlResult.addAttribute("documentName", getDocumentName());

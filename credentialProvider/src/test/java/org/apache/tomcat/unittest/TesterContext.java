@@ -42,7 +42,6 @@ import org.apache.catalina.Cluster;
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Loader;
@@ -329,22 +328,22 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public void init() throws LifecycleException {
+	public void init() {
 		// NO-OP
 	}
 
 	@Override
-	public void start() throws LifecycleException {
+	public void start() {
 		// NO-OP
 	}
 
 	@Override
-	public void stop() throws LifecycleException {
+	public void stop() {
 		// NO-OP
 	}
 
 	@Override
-	public void destroy() throws LifecycleException {
+	public void destroy() {
 		// NO-OP
 	}
 

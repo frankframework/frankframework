@@ -111,7 +111,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	protected ConfigurationException configurationException;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		SpringUtils.autowireByName(getApplicationContext(), validator);
 	}
 

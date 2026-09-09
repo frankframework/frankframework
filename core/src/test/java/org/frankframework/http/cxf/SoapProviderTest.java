@@ -49,7 +49,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.PushingListenerAdapter;
@@ -368,7 +367,7 @@ public class SoapProviderTest {
 
 		PushingListenerAdapter listener = new PushingListenerAdapter() {
 			@Override
-			public @Nullable Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
+			public @Nullable Message processRequest(Message message, PipeLineSession pipelineSession) {
 				try {
 					MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
 

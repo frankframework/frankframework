@@ -16,7 +16,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 	private PipeRunResult pipeRunResult;
 
 	@Override
-	public RegExPipe createPipe() throws ConfigurationException {
+	public RegExPipe createPipe() {
 		RegExPipe pipe = new RegExPipe();
 
 		// Add default pipes

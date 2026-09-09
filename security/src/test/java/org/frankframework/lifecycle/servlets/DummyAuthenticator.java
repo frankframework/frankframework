@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class DummyAuthenticator extends AbstractServletAuthenticator {
 
 	@Override
-	protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+	protected SecurityFilterChain configure(HttpSecurity http) {
 		return http.build();
 	}
 

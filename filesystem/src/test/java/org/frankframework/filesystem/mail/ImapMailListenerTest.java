@@ -1,7 +1,6 @@
 package org.frankframework.filesystem.mail;
 
 import jakarta.mail.Message;
-import jakarta.mail.NoSuchProviderException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -53,7 +52,7 @@ public class ImapMailListenerTest extends BasicFileSystemListenerTest<Message, I
 			public ImapFileSystem createFileSystem() {
 				return new ImapFileSystem() {
 					@Override
-					protected String getStoreName() throws NoSuchProviderException {
+					protected String getStoreName() {
 						return "imap";
 					}
 				};

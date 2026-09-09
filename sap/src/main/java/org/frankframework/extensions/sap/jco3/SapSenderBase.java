@@ -105,7 +105,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return getSapSystem(SapSystemName);
 	}
 
-	public JCoDestination getDestination(PipeLineSession session, SapSystemImpl sapSystem) throws SenderException, SapException, JCoException {
+	public JCoDestination getDestination(PipeLineSession session, SapSystemImpl sapSystem) throws SenderException, JCoException {
 		JCoDestination result;
 		if (isSynchronous()) {
 			if (StringUtils.isNotEmpty(getLuwHandleSessionKey())) {
@@ -129,7 +129,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return result;
 	}
 
-	public @Nullable String getTid(JCoDestination destination, SapSystemImpl sapSystem) throws SapException, JCoException {
+	public @Nullable String getTid(JCoDestination destination, SapSystemImpl sapSystem) throws JCoException {
 		if (isSynchronous()) {
 			return null;
 		}

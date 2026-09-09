@@ -123,7 +123,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 	public static class ObjectIdMock implements Answer<ObjectId> {
 		@Override
-		public ObjectId answer(InvocationOnMock invocation) throws Throwable {
+		public ObjectId answer(InvocationOnMock invocation) {
 			String id = (String) invocation.getArguments()[0];
 			return new ObjectIdImpl(id);
 		}

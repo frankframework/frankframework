@@ -37,7 +37,6 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineExits;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
@@ -265,7 +264,7 @@ public class ReceiverSubAdapterTest {
 		AtomicInteger fails = new AtomicInteger();
 		AtomicInteger succeeds = new AtomicInteger();
 
-		FailurePipe() throws ConfigurationException {
+		FailurePipe() {
 			addForward(failureForward);
 			addForward(successForward);
 			setName("fail");
@@ -273,7 +272,7 @@ public class ReceiverSubAdapterTest {
 
 		@NonNull
 		@Override
-		public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
+		public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 			runs.incrementAndGet();
 			int result = doFail ? fails.incrementAndGet() : succeeds.incrementAndGet();
 			return new PipeRunResult(doFail ? failureForward : successForward, result);

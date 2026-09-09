@@ -18,7 +18,6 @@ package org.frankframework.pipes;
 import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ProcessMetrics;
@@ -45,7 +44,7 @@ public class IbisMetricsPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 		return new PipeRunResult(getSuccessForward(), ProcessMetrics.toXml());
 	}
 

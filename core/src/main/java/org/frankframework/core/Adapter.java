@@ -368,7 +368,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if (isActive()) {
 			throw new LifecycleException("unable to refresh, AdapterContext is already active");
 		}

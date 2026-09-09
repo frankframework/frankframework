@@ -95,7 +95,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public @NonNull SftpFileRef toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
+	public @NonNull SftpFileRef toFile(@Nullable String folder, @Nullable String filename) {
 		return new SftpFileRef(filename, folder);
 	}
 

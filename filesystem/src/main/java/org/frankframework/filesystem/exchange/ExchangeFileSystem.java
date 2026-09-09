@@ -319,7 +319,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public boolean exists(MailItemId file) throws FileSystemException {
+	public boolean exists(MailItemId file) {
 		try {
 			if (file instanceof MailMessage message) {
 				return client.getMailMessage(message) != null;
@@ -334,7 +334,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public boolean isFolder(MailItemId file) throws FileSystemException {
+	public boolean isFolder(MailItemId file) {
 		return file instanceof MailFolder;
 	}
 
@@ -348,7 +348,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public Message readFile(MailItemId file, String charset) throws FileSystemException, IOException {
+	public Message readFile(MailItemId file, String charset) throws FileSystemException {
 		MailMessage msg = getMailMessage(file);
 		return new Message(msg.getBody().getContent(), FileSystemUtils.getContext(this, msg, charset));
 	}
@@ -446,7 +446,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public String getCanonicalName(MailItemId file) throws FileSystemException {
+	public String getCanonicalName(MailItemId file) {
 		return file.getUrl();
 	}
 
@@ -621,7 +621,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public void forwardMail(MailItemId emailMessage, String destination) throws FileSystemException {
+	public void forwardMail(MailItemId emailMessage, String destination) {
 		throw new NotImplementedException();
 	}
 
@@ -636,42 +636,42 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public @Nullable Iterator<MailMessage> listAttachments(MailItemId f) throws FileSystemException {
+	public @Nullable Iterator<MailMessage> listAttachments(MailItemId f) {
 		return null;
 	}
 
 	@Override
-	public String getAttachmentName(MailMessage a) throws FileSystemException {
+	public String getAttachmentName(MailMessage a) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public Message readAttachment(MailMessage a) throws FileSystemException, IOException {
+	public Message readAttachment(MailMessage a) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public long getAttachmentSize(MailMessage a) throws FileSystemException {
+	public long getAttachmentSize(MailMessage a) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public String getAttachmentContentType(MailMessage a) throws FileSystemException {
+	public String getAttachmentContentType(MailMessage a) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public String getAttachmentFileName(MailMessage a) throws FileSystemException {
+	public String getAttachmentFileName(MailMessage a) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public @Nullable MailItemId getFileFromAttachment(MailMessage a) throws FileSystemException {
+	public @Nullable MailItemId getFileFromAttachment(MailMessage a) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public Map<String, Object> getAdditionalAttachmentProperties(MailMessage a) throws FileSystemException {
+	public Map<String, Object> getAdditionalAttachmentProperties(MailMessage a) {
 		throw new NotImplementedException();
 	}
 

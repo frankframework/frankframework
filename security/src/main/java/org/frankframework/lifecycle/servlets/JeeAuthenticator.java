@@ -66,7 +66,7 @@ import org.frankframework.util.SpringUtils;
 public class JeeAuthenticator extends AbstractServletAuthenticator {
 
 	@Override
-	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+	public SecurityFilterChain configure(HttpSecurity http) {
 		AuthenticationManager authManager = getAuthenticationManager(http);
 		http.addFilter(getProcessingFilter(authManager));
 		http.authenticationManager(authManager);

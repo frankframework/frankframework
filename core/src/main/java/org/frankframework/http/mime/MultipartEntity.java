@@ -64,7 +64,7 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 	}
 
 	@Override
-	public void consumeContent() throws IOException, UnsupportedOperationException {
+	public void consumeContent() throws UnsupportedOperationException {
 		if (isStreaming()) {
 			throw new UnsupportedOperationException("Streaming entity does not implement #consumeContent()");
 		}

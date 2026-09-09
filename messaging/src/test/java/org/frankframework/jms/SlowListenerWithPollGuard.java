@@ -18,7 +18,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IPushingListener;
@@ -48,7 +47,7 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
 	private SpringJmsConnector mockConnector;
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		DefaultMessageListenerContainer mockContainer = mock(DefaultMessageListenerContainer.class);
 		mockConnector = mock(SpringJmsConnector.class);
 		when(mockConnector.getLastPollFinishedTime()).thenAnswer(invocationOnMock -> System.currentTimeMillis() - mockLastPollDelayMs);

@@ -103,12 +103,12 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public Queue getQueue() throws JMSException {
+		public Queue getQueue() {
 			return queue;
 		}
 
 		@Override
-		public @Nullable String getMessageSelector() throws JMSException {
+		public @Nullable String getMessageSelector() {
 			return null;
 		}
 
@@ -126,7 +126,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public void close() throws JMSException {
+		public void close() {
 			// Nothing to close
 		}
 	}
@@ -144,7 +144,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public void send(Destination destination, Message message) throws JMSException {
+		public void send(Destination destination, Message message) {
 			payload = message;
 		}
 
@@ -154,7 +154,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public Message receive(long timeout) throws JMSException {
+		public Message receive(long timeout) {
 			return payload == null ? TextMessageMock.newInstance() : payload;
 		}
 	}
@@ -166,7 +166,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public Enumeration<String> getPropertyNames() throws JMSException {
+		public Enumeration<String> getPropertyNames() {
 			return Collections.emptyEnumeration();
 		}
 	}

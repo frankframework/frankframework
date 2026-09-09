@@ -27,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.http.HttpSenderTestBase;
@@ -57,7 +56,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public NetStorageSender createSender() {
 		return spy(new NetStorageSender() {
 			@Override
-			public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
+			public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws IOException {
 				return new Message( getResponseBodyAsString(responseHandler, true) );
 			}
 		});

@@ -1,6 +1,5 @@
 package org.frankframework.filesystem.sftp;
 
-import java.io.IOException;
 
 import org.apache.sshd.server.SshServer;
 import org.junit.jupiter.api.AfterAll;
@@ -61,7 +60,7 @@ public class SftpFileSystemListenerTest extends WritableFileSystemListenerTest<S
 	}
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() throws IOException {
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new SftpFileSystemTestHelper(username, password, host, remoteDirectory, port);
 	}
 

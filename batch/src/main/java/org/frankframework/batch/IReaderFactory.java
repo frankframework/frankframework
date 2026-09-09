@@ -18,7 +18,6 @@ package org.frankframework.batch;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.FrankDocGroup;
@@ -31,7 +30,7 @@ import org.frankframework.doc.FrankDocGroupValue;
 @FrankDocGroup(FrankDocGroupValue.BATCH)
 public interface IReaderFactory {
 
-	void configure() throws ConfigurationException;
+	void configure();
 
 	/**
 	 * Obtain a Reader that reads lines in the given characterset.

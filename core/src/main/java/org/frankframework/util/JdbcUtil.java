@@ -473,7 +473,7 @@ public class JdbcUtil {
 		}
 	}
 
-	private static @Nullable String getBlobAsString(@Nullable final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException {
+	private static @Nullable String getBlobAsString(@Nullable final InputStream blobInputStream, String column, String charset, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException {
 		if (blobInputStream == null) {
 			log.debug("no blob found in column [{}]", column);
 			return null;

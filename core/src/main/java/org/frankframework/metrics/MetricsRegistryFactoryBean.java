@@ -96,7 +96,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		createRegistry();
 		Assert.notNull(registry, "unable to create registry");
 
@@ -151,7 +151,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		try {
 			if(jvmGcMetrics != null) jvmGcMetrics.close();
 			if(log4j2Metrics != null) log4j2Metrics.close();

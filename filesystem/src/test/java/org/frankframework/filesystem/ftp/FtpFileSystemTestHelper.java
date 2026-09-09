@@ -47,7 +47,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		FtpSession.close(ftpClient);
 	}
 
@@ -95,7 +95,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public boolean _fileExists(String folder, String filename) throws IOException, FileSystemException {
+	public boolean _fileExists(String folder, String filename) throws FileSystemException {
 		try {
 			String path = folder != null ? folder + "/" + filename : filename;
 			FTPFile[] files = ftpClient.listFiles(path, f -> fileNameFilter(f, filename));

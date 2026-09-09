@@ -15,7 +15,6 @@
 */
 package org.frankframework.http;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -46,7 +45,7 @@ public class InputStreamDataSource implements DataSource {
 	}
 
 	@Override
-	public InputStream getInputStream() throws IOException {
+	public InputStream getInputStream() {
 		return inputStream;
 	}
 
@@ -56,7 +55,7 @@ public class InputStreamDataSource implements DataSource {
 	}
 
 	@Override
-	public @Nullable OutputStream getOutputStream() throws IOException {
+	public @Nullable OutputStream getOutputStream() {
 		return null;
 	}
 }

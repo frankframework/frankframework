@@ -61,7 +61,7 @@ public class JdbcTransactionalStorageTest {
 	private final String keyField = "MESSAGEKEY";
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws Exception {
+	public void setup(DatabaseTestEnvironment env) {
 		this.env = env;
 		storage = env.createBean(JdbcTransactionalStorage.class);
 		storage.setTableName(tableName);

@@ -126,7 +126,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public @NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException {
 		return rs.getClob(column);
 	}
 
@@ -136,17 +136,17 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException, DbmsException {
+	public void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException {
 		rs.updateClob(column, (Clob) clobHandle);
 	}
 
 	@Override
-	public void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobHandle) throws SQLException, DbmsException {
+	public void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobHandle) throws SQLException {
 		rs.updateClob(column, (Clob) clobHandle);
 	}
 
 	@Override
-	public @NonNull Object getClobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException, DbmsException {
+	public @NonNull Object getClobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException {
 		return stmt.getConnection().createClob();
 	}
 
@@ -193,7 +193,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public @NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException {
 		return rs.getBlob(column);
 	}
 
@@ -202,22 +202,22 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public @NonNull OutputStream getBlobOutputStream(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) throws SQLException, DbmsException {
+	public @NonNull OutputStream getBlobOutputStream(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) throws SQLException {
 		return getBlobOutputStream(rs, blobUpdateHandle);
 	}
 
 	@Override
-	public void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) throws SQLException, DbmsException {
+	public void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobUpdateHandle) throws SQLException {
 		rs.updateBlob(column, (Blob) blobUpdateHandle);
 	}
 
 	@Override
-	public void updateBlob(@NonNull ResultSet rs, @NonNull String column, @NonNull Object blobUpdateHandle) throws SQLException, DbmsException {
+	public void updateBlob(@NonNull ResultSet rs, @NonNull String column, @NonNull Object blobUpdateHandle) throws SQLException {
 		rs.updateBlob(column, (Blob) blobUpdateHandle);
 	}
 
 	@Override
-	public @NonNull Object getBlobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException, DbmsException {
+	public @NonNull Object getBlobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException {
 		return stmt.getConnection().createBlob();
 	}
 

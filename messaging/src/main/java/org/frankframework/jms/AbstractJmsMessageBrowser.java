@@ -102,7 +102,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 	}
 
 	@Override
-	public boolean containsCorrelationId(String correlationId) throws ListenerException {
+	public boolean containsCorrelationId(String correlationId) {
 		log.warn("could not determine correct presence of a message with correlationId [{}], assuming it does not exist", correlationId);
 		// TODO: check presence of a message with correlationId
 		return false;

@@ -141,7 +141,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public String createFile(final String folderName, final String filename, String contents) throws IOException {
+	public String createFile(final String folderName, final String filename, String contents) {
 		String filePath = folderName == null ? filename : folderName + "/" + filename;
 
 		if(StringUtils.isNotEmpty(contents)) {
@@ -201,7 +201,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public void _deleteFolder(String folderName) throws Exception {
+	public void _deleteFolder(String folderName) {
 		String folder = null;
 		if (folderName != null) {
 			folder = folderName.endsWith("/") ? folderName : folderName + "/";

@@ -35,7 +35,6 @@ import jakarta.mail.Message;
 import jakarta.mail.Message.RecipientType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
-import jakarta.mail.NoSuchProviderException;
 import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
@@ -86,7 +85,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	/**
 	 * For test purposes only. Defaults to IMAPS, but tests use IMAP
 	 */
-	protected String getStoreName() throws NoSuchProviderException {
+	protected String getStoreName() {
 		return "imaps";
 	}
 
@@ -208,7 +207,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public boolean isFolder(Message message) throws FileSystemException {
+	public boolean isFolder(Message message) {
 		return false;  // Currently only supports messages
 	}
 

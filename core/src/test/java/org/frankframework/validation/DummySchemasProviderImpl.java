@@ -26,7 +26,6 @@ import org.jspecify.annotations.Nullable;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
@@ -46,7 +45,7 @@ public class DummySchemasProviderImpl implements SchemasProvider {
 	}
 
 	@Override
-	public String getSchemasId() throws ConfigurationException {
+	public String getSchemasId() {
 		return id;
 	}
 
@@ -67,12 +66,12 @@ public class DummySchemasProviderImpl implements SchemasProvider {
 	}
 
 	@Override
-	public @Nullable String getSchemasId(PipeLineSession session) throws PipeRunException {
+	public @Nullable String getSchemasId(PipeLineSession session) {
 		return null;
 	}
 
 	@Override
-	public @Nullable List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
+	public @Nullable List<Schema> getSchemas(PipeLineSession session) {
 		return null;
 	}
 

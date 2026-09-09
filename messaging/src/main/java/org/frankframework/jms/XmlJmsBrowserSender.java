@@ -23,7 +23,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.jms.JMSFacade.JmsDestinationType;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
@@ -90,7 +89,7 @@ public class XmlJmsBrowserSender extends AbstractSenderWithParameters {
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException("unable to process message, no input provided");
 		}

@@ -286,7 +286,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	// Can throw FileSystemException from a Lambda
-	private Optional<F> findFirstStableFile(Stream<F> ds) throws FileSystemException {
+	private Optional<F> findFirstStableFile(Stream<F> ds) {
 		long stabilityLimit = getMinStableTime();
 		if (stabilityLimit <= 0L) {
 			return ds.findFirst();

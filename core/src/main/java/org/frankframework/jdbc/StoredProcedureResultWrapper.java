@@ -67,12 +67,10 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	 * @param delegate The {@link CallableStatement} to be wrapped
 	 * @param parameterPositions The position of each output-parameter in the overal list of stored procedure parameters
 	 */
-	public StoredProcedureResultWrapper(
-			@NonNull IDbmsSupport dbmsSupport,
-			@NonNull CallableStatement delegate, @NonNull ParameterMetaData parameterMetaData, @NonNull Map<Integer, IParameter> parameterPositions) {
+	public StoredProcedureResultWrapper(@NonNull IDbmsSupport dbmsSupport, @NonNull CallableStatement delegate, @NonNull Map<Integer, IParameter> parameterPositions) throws SQLException {
 		this.dbmsSupport = dbmsSupport;
 		this.delegate = delegate;
-		this.parameterMetaData = parameterMetaData;
+		this.parameterMetaData = delegate.getParameterMetaData();
 		this.parameterPositions = parameterPositions.entrySet()
 				.stream()
 				.sorted(Map.Entry.comparingByKey())
@@ -81,7 +79,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public boolean next() throws SQLException {
+	public boolean next() {
 		if (hasNext) {
 			hasNext = false;
 			return true;
@@ -275,7 +273,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public ResultSetMetaData getMetaData() throws SQLException {
+	public ResultSetMetaData getMetaData() {
 		return new MyResultSetMetaData();
 	}
 
@@ -352,12 +350,12 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public boolean first() throws SQLException {
+	public boolean first() {
 		return true;
 	}
 
 	@Override
-	public boolean last() throws SQLException {
+	public boolean last() {
 		return false;
 	}
 
@@ -367,17 +365,17 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public boolean absolute(int row) throws SQLException {
+	public boolean absolute(int row) {
 		return true;
 	}
 
 	@Override
-	public boolean relative(int rows) throws SQLException {
+	public boolean relative(int rows) {
 		return true;
 	}
 
 	@Override
-	public boolean previous() throws SQLException {
+	public boolean previous() {
 		return true;
 	}
 
@@ -402,7 +400,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public int getType() throws SQLException {
+	public int getType() {
 		return ResultSet.TYPE_FORWARD_ONLY;
 	}
 
@@ -652,7 +650,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public Statement getStatement() throws SQLException {
+	public Statement getStatement() {
 		return delegate;
 	}
 
@@ -757,22 +755,22 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public void updateBlob(int columnIndex, Blob x) throws SQLException {
+	public void updateBlob(int columnIndex, Blob x) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateBlob(String columnLabel, Blob x) throws SQLException {
+	public void updateBlob(String columnLabel, Blob x) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateClob(int columnIndex, Clob x) throws SQLException {
+	public void updateClob(int columnIndex, Clob x) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateClob(String columnLabel, Clob x) throws SQLException {
+	public void updateClob(String columnLabel, Clob x) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
@@ -927,22 +925,22 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
+	public void updateBlob(int columnIndex, InputStream inputStream, long length) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
+	public void updateBlob(String columnLabel, InputStream inputStream, long length) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
+	public void updateClob(int columnIndex, Reader reader, long length) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
+	public void updateClob(String columnLabel, Reader reader, long length) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
@@ -997,22 +995,22 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
+	public void updateBlob(int columnIndex, InputStream inputStream) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
+	public void updateBlob(String columnLabel, InputStream inputStream) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateClob(int columnIndex, Reader reader) throws SQLException {
+	public void updateClob(int columnIndex, Reader reader) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 
 	@Override
-	public void updateClob(String columnLabel, Reader reader) throws SQLException {
+	public void updateClob(String columnLabel, Reader reader) {
 		throw CANNOT_UPDATE_RESULTS_EXCEPTION;
 	}
 

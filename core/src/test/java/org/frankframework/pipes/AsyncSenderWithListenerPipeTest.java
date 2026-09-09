@@ -18,10 +18,8 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ICorrelatedPullingListener;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
@@ -29,7 +27,7 @@ import org.frankframework.stream.Message;
 public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWithListenerPipe<String>> {
 
 	@Override
-	public AsyncSenderWithListenerPipe<String> createPipe() throws ConfigurationException {
+	public AsyncSenderWithListenerPipe<String> createPipe() {
 		return new AsyncSenderWithListenerPipe<String>();
 	}
 
@@ -56,17 +54,17 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		private @Setter @Getter String name;
 
 		@Override
-		public @NonNull Map<String, Object> openThread() throws ListenerException {
+		public @NonNull Map<String, Object> openThread() {
 			return new HashMap<String, Object>();
 		}
 
 		@Override
-		public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
+		public void closeThread(@NonNull Map<String, Object> threadContext) {
 			// NO OP
 		}
 
 		@Override
-		public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
+		public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) {
 			return null;
 		}
 
@@ -81,22 +79,22 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		}
 
 		@Override
-		public @Nullable Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
+		public @Nullable Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) {
 			return null;
 		}
 
 		@Override
-		public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) {
 			// NO OP
 		}
 
 		@Override
-		public void configure() throws ConfigurationException {
+		public void configure() {
 			// NO OP
 		}
 
 		@Override
-		public @Nullable RawMessageWrapper<String> getRawMessage(String correlationId, Map<String, Object> threadContext) throws ListenerException, TimeoutException {
+		public @Nullable RawMessageWrapper<String> getRawMessage(String correlationId, Map<String, Object> threadContext) {
 			return null;
 		}
 	}

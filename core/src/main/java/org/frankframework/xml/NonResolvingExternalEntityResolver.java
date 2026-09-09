@@ -42,12 +42,12 @@ public class NonResolvingExternalEntityResolver implements EntityResolver2 {
 	}
 
 	@Override
-	public @Nullable InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
+	public @Nullable InputSource getExternalSubset(String name, String baseURI) {
 		return null;
 	}
 
 	@Override
-	public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
+	public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) {
 		log.warn("Resolving entity with name [{}], public id [{}], base uri [{}] and system id [{}] to an empty string", name, publicId, baseURI, systemId);
 		return new InputSource(new StringReader(""));
 	}

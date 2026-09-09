@@ -15,9 +15,7 @@ import org.jspecify.annotations.Nullable;
 import org.mockito.Mockito;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -65,17 +63,17 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 	}
 
 	@Override
-	public @Nullable Connection openBlock(PipeLineSession session) throws SenderException, TimeoutException {
+	public @Nullable Connection openBlock(PipeLineSession session) {
 		return null;
 	}
 
 	@Override
-	public void closeBlock(Connection connection, PipeLineSession session) throws SenderException {
+	public void closeBlock(Connection connection, PipeLineSession session) {
 		// ignore
 	}
 
 	@Override
-	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) {
 		Message mockResult = mocks.get(getName());
 		if(!Message.isNull(mockResult)) {
 			return new SenderResult(mockResult);

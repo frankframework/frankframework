@@ -97,7 +97,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 		return null;
 	}
 
-	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<NameValuePair> formParameters) throws HttpAuthenticationException {
+	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<NameValuePair> formParameters) {
 		UrlEncodedFormEntity body = new UrlEncodedFormEntity(formParameters, StreamUtil.DEFAULT_CHARSET);
 
 		HttpPost request = new HttpPost(uri);

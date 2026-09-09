@@ -50,7 +50,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Override
-	public GetPrincipalPipe createPipe() throws ConfigurationException {
+	public GetPrincipalPipe createPipe() {
 		return new GetPrincipalPipe();
 	}
 

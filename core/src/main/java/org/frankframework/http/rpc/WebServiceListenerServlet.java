@@ -74,7 +74,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 		String uri = cleanseURL(request.getPathInfo());
 		final SoapMessage soapMessage;
 		WebServiceListener listener;

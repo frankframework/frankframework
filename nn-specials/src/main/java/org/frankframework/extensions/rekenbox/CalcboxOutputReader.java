@@ -16,7 +16,6 @@
 package org.frankframework.extensions.rekenbox;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -61,7 +60,7 @@ public class CalcboxOutputReader implements XMLReader {
 
 	/** Parse the input (CalcBox Message Format) */
 	@Override
-	public void parse(InputSource input) throws IOException, SAXException {
+	public void parse(InputSource input) {
 		try {
 			// If we have no handler we can stop
 			if(handler == null) {
@@ -196,7 +195,7 @@ public class CalcboxOutputReader implements XMLReader {
 	// =============================================
 	/** Parse an XML document from a system identifier (URI). */
 	@Override
-	public void parse(String systemId) throws IOException, SAXException {
+	public void parse(String systemId) {
 	}
 
 	/** Return the current DTD handler. */

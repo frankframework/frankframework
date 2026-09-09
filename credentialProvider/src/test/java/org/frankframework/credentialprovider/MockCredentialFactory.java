@@ -1,6 +1,5 @@
 package org.frankframework.credentialprovider;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -66,7 +65,7 @@ public class MockCredentialFactory extends HashMap<String, ISecret> implements I
 		private final String password;
 
 		@Override
-		public String getField(@Nullable String fieldname) throws IOException {
+		public String getField(@Nullable String fieldname) {
 			if ("username".equals(fieldname) && username != null) {
 				return username;
 			}

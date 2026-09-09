@@ -49,7 +49,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
@@ -82,7 +81,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	@Getter @Setter private String root;
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		// No Action is required
 	}
 
@@ -167,7 +166,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public void createFile(@NonNull Path file, @Nullable InputStream contents, @NonNull Map<String, String> customFileAttributes) throws FileSystemException, IOException {
+	public void createFile(@NonNull Path file, @Nullable InputStream contents, @NonNull Map<String, String> customFileAttributes) {
 		try {
 			// Create the file first
 			createFile(file, contents);
@@ -226,7 +225,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public void appendFile(@NonNull Path f, @Nullable InputStream content) throws FileSystemException, IOException {
+	public void appendFile(@NonNull Path f, @Nullable InputStream content) throws IOException {
 		try (OutputStream out = Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 			StreamUtil.streamToStream(content, out);
 		}

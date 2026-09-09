@@ -15,7 +15,6 @@
 */
 package org.frankframework.configuration.classloaders;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -101,7 +100,7 @@ public class ClassLoaderMock extends ClassLoader {
 	}
 
 	@Override
-	public Enumeration<URL> getResources(String name) throws IOException {
+	public Enumeration<URL> getResources(String name) {
 		Vector<URL> urls = new Vector<>();
 
 		URL basePathUrl = getResource(name);

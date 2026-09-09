@@ -205,7 +205,7 @@ public class TibcoUtils {
 		}
 	}
 
-	protected static @Nullable TibjmsAdmin getActiveServerAdmin(String url, CredentialFactory cf, Map<String, Object> connectionProperties) throws TibjmsAdminException {
+	protected static @Nullable TibjmsAdmin getActiveServerAdmin(String url, CredentialFactory cf, Map<String, Object> connectionProperties) {
 		TibjmsAdminException lastException = null;
 		TibjmsAdmin admin = null;
 		String[] uws = url.split(",");
