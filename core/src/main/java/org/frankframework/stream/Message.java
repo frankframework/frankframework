@@ -386,7 +386,7 @@ public class Message implements Serializable {
 	/**
 	 * Check if a message is empty. If message size cannot be determined, check if any data can be read from the message.
 	 *
-	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size if larger than 0 or data can be read from it.
+	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size is larger than 0 or data can be read from it.
 	 */
 	public boolean isEmpty() {
 		return request.isEmpty();
