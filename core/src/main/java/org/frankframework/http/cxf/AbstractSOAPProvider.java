@@ -215,7 +215,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 			log.warn("determined we should read the WSA [MessageID] element but was unable to", e);
 		}
 
-		return MessageUtils.generateMessageId2("SOAP");
+		return MessageUtils.generateMessageId("SOAP");
 	}
 
 	/**

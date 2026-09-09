@@ -525,8 +525,8 @@ public class MessageUtils {
 	/**
 	 * Generate a randomised message-id prefixed with {@value DEFAULT_MESSAGE_ID_PREFIX}
 	 */
-	public static @NonNull String generateMessageId1() {
-		return generateMessageId3(DEFAULT_MESSAGE_ID_PREFIX);
+	public static @NonNull String generateDefaultMessageId() {
+		return generatePrefixedMessageId(DEFAULT_MESSAGE_ID_PREFIX);
 	}
 
 	/**
@@ -534,15 +534,15 @@ public class MessageUtils {
 	 * length of the message-id is capped at 100 characters.
 	 * @param prefix Custom prefix which will follow the {@literal DEFAULT_MESSAGE_ID_PREFIX}
 	 */
-	public static @NonNull String generateMessageId2(String prefix) {
-		return generateMessageId3(DEFAULT_MESSAGE_ID_PREFIX + "-" + prefix);
+	public static @NonNull String generateMessageId(String prefix) {
+		return generatePrefixedMessageId(DEFAULT_MESSAGE_ID_PREFIX + "-" + prefix);
 	}
 
 	/**
 	 * Generate a randomised message-id prefixed with just your custom message-prefix (no default prefix). The total length of the message-id is capped at 100 characters.
 	 * @param prefix Custom prefix to the message-id
 	 */
-	public static @NonNull String generateMessageId3(String prefix) {
+	public static @NonNull String generatePrefixedMessageId(String prefix) {
 		String uuid = UUIDUtil.createNumericUUID();
 		return StringUtils.truncate(prefix, 99 - uuid.length()) + "-" + uuid;
 	}
@@ -551,7 +551,7 @@ public class MessageUtils {
 	 * Generate a message-id prefixed with {@value FALLBACK_MESSAGE_ID_PREFIX}
 	 */
 	public static @NonNull String generateFallbackMessageId() {
-		return generateMessageId3(FALLBACK_MESSAGE_ID_PREFIX);
+		return generatePrefixedMessageId(FALLBACK_MESSAGE_ID_PREFIX);
 	}
 
 	public static boolean isFallbackMessageId(@NonNull String messageId) {

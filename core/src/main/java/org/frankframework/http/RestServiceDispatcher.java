@@ -163,7 +163,7 @@ public class RestServiceDispatcher {
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName())) {
-			String messageId = MessageUtils.generateMessageId2("REST[" + listener.getName() + "]");
+			String messageId = MessageUtils.generateMessageId("REST[" + listener.getName() + "]");
 			context.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
 			ctc.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
 			boolean writeToSecLog;

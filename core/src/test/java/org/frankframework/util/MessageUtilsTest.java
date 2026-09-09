@@ -396,9 +396,9 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	void testGenerateMessageId1() {
+	void testGenerateDefaultMessageId() {
 		// Act
-		String msgId = MessageUtils.generateMessageId1();
+		String msgId = MessageUtils.generateDefaultMessageId();
 
 		// Assert
 		Assertions.assertThat(msgId)
@@ -409,9 +409,9 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	void testGenerateMessageId2() {
+	void testGenerateMessageId() {
 		// Act
-		String msgId = MessageUtils.generateMessageId2("short-prefix");
+		String msgId = MessageUtils.generateMessageId("short-prefix");
 
 		// Assert
 		Assertions.assertThat(msgId)
@@ -422,9 +422,9 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	void testGenerateMessageId3() {
+	void testGeneratePrefixedMessageId() {
 		// Act
-		String msgId = MessageUtils.generateMessageId3("short-prefix");
+		String msgId = MessageUtils.generatePrefixedMessageId("short-prefix");
 
 		// Assert
 		Assertions.assertThat(msgId)
@@ -435,9 +435,9 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	void testGenerateMessageId3WithVeryLongPrefix() {
+	void testGeneratePrefixedMessageIdWithVeryLongPrefix() {
 		// Act
-		String msgId = MessageUtils.generateMessageId3("long-prefix".repeat(100));
+		String msgId = MessageUtils.generatePrefixedMessageId("long-prefix".repeat(100));
 
 		// Assert
 		Assertions.assertThat(msgId)

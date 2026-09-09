@@ -133,7 +133,7 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 		}
 
 		try (PipeLineSession childSession = createChildSession(pvl, parentSession)) {
-			PipeLineResult pipelineResult = frankPlugin.process(null, MessageUtils.generateMessageId1(), message, childSession);
+			PipeLineResult pipelineResult = frankPlugin.process(null, MessageUtils.generateDefaultMessageId(), message, childSession);
 
 			PipeForward forward = getExitCodeForward(childSession);
 			return new PipeRunResult(forward, pipelineResult.getResult());

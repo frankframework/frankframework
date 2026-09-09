@@ -148,7 +148,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			try {
 				Message message = new Message(rawMessage);
-				Message result = processRequest(new MessageWrapper<>(message, MessageUtils.generateMessageId2("JavaService[" + getServiceName() + "]"), correlationId), processContext);
+				Message result = processRequest(new MessageWrapper<>(message, MessageUtils.generateMessageId("JavaService[" + getServiceName() + "]"), correlationId), processContext);
 				return result.asString();
 			} finally {
 				if (context != null) {
@@ -167,7 +167,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	// ### ServiceClient
 	@Override
 	public Message processRequest(Message message, @NonNull PipeLineSession session) throws ListenerException {
-		String messageId = session.getMessageId() != null ? session.getMessageId() : MessageUtils.generateMessageId2("JavaLocal[" + getName() + "]");
+		String messageId = session.getMessageId() != null ? session.getMessageId() : MessageUtils.generateMessageId("JavaLocal[" + getName() + "]");
 		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, messageId, session.getCorrelationId());
 		return processRequest(messageWrapper, session);
 	}
