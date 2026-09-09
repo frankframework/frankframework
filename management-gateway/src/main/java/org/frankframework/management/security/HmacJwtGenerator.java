@@ -40,12 +40,6 @@ public class HmacJwtGenerator extends AbstractJwtGenerator<OctetSequenceKey> {
 		this.secret = secret;
 	}
 
-
-	@Override
-	protected String createJwkSet(OctetSequenceKey jwk) {
-		return null;
-	}
-
 	@Override
 	protected OctetSequenceKey getJwk() throws JOSEException {
 		return new OctetSequenceKeyGenerator(512).generate();

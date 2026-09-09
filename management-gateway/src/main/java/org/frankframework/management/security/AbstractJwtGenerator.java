@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -37,7 +38,6 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
@@ -53,7 +53,6 @@ import org.frankframework.util.UUIDUtil;
 @Log4j2
 public abstract class AbstractJwtGenerator<T extends JWK> implements InitializingBean, ApplicationContextAware {
 
-	public static final JWSAlgorithm JWT_DEFAULT_SIGNING_ALGORITHM = JWSAlgorithm.RS512;
 	private final JWSAlgorithm algorithm;
 	private final String generatorVersion;
 	private @Setter ApplicationContext applicationContext;
@@ -62,8 +61,8 @@ public abstract class AbstractJwtGenerator<T extends JWK> implements Initializin
 
 	private JWSSigner signer;
 
-	@Getter
-	protected String publicJwkSet;
+	@Getter @Nullable
+	protected JWK publicJwk;
 
 	protected AbstractJwtGenerator(JWSAlgorithm algorithm) {
 		this.algorithm = algorithm;
@@ -84,15 +83,10 @@ public abstract class AbstractJwtGenerator<T extends JWK> implements Initializin
 
 		try {
 			jwtHeader = createJwsHeader(jwk.getKeyID());
-
-			publicJwkSet = createJwkSet(jwk);
+			publicJwk = jwk.toPublicJWK();
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to generate JWT key", e);
 		}
-	}
-
-	protected String createJwkSet(T jwk) {
-		return new JWKSet(jwk.toPublicJWK()).toString();
 	}
 
 	protected abstract T getJwk() throws GeneralSecurityException, JOSEException;

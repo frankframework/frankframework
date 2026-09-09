@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.gateway;
 
+import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -42,6 +44,8 @@ import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -55,13 +59,22 @@ import org.frankframework.management.security.AbstractJwtGenerator;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
-public class HazelcastOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway {
+public class HazelcastOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway, DisposableBean {
 	private HazelcastInstance hzInstance;
 	private ApplicationContext applicationContext;
 
 	private static final RandomStringUtils NUMBER_GENERATOR = RandomStringUtils.insecure();
-	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
+	private final String requestTopicName;
 	private ITopic<Message<?>> requestTopic;
+
+	public HazelcastOutboundGateway() {
+		this(HazelcastConfig.REQUEST_TOPIC_NAME);
+	}
+
+	// Testable
+	protected HazelcastOutboundGateway(String requestTopicName) {
+		this.requestTopicName = requestTopicName;
+	}
 
 	@Autowired
 	private AbstractJwtGenerator<?> jwtGenerator;
@@ -76,11 +89,9 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.CONTROLLER, Collections.emptyMap());
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
 
-		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
-		String jwks = config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET);
-		if (StringUtils.isBlank(jwks)) {
-			// If there's already a main controller, don't overwrite it...
-			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtGenerator.getPublicJwkSet());
+		JWK jwk = jwtGenerator.getPublicJwk();
+		if (jwk != null) {
+			updateJwks(jwk);
 		}
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
@@ -98,6 +109,40 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 			}
 
 		});
+	}
+
+	/**
+	 * Update JWKS for new worker nodes.
+	 */
+	private void updateJwks(@NonNull JWK jwk) throws ParseException {
+		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
+		String jwks = config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET);
+
+		if (StringUtils.isBlank(jwks)) {
+			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, new JWKSet(jwk).toString());
+		} else {
+			List<JWK> existingJwks = JWKSet.parse(jwks).getKeys();
+			existingJwks.add(jwk);
+			JWKSet updatedJwks = new JWKSet(existingJwks);
+			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, updatedJwks.toString());
+		}
+	}
+
+	/**
+	 * Remove old JWK when no longer needed.
+	 */
+	@Override
+	public void destroy() throws Exception {
+		JWK jwk = jwtGenerator.getPublicJwk();
+		if (jwk != null) {
+			IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
+			String jwks = config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET);
+
+			List<JWK> existingJwks = JWKSet.parse(jwks).getKeys();
+			existingJwks.remove(jwk);
+			JWKSet updatedJwks = new JWKSet(existingJwks);
+			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, updatedJwks.toString());
+		}
 	}
 
 	@Override

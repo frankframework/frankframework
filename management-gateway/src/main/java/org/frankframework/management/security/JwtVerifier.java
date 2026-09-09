@@ -16,6 +16,7 @@
 package org.frankframework.management.security;
 
 import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.function.Supplier;
 
@@ -33,7 +34,6 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
-import com.nimbusds.jose.proc.JWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -42,21 +42,23 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 public class JwtVerifier {
 	private final DefaultJWTProcessor<SecurityContext> jwtProcessor  = new DefaultJWTProcessor<>();
 
+	// Hazelcast / JWKS
 	public JwtVerifier(Supplier<String> supply) {
-		try {
-			jwtProcessor.setJWSKeySelector(JWSAlgorithmFamilyJWSKeySelector.fromJWKSource(createKeySource(supply)));
-		} catch (KeySourceException e) {
-			throw new IllegalStateException("unable to initialize JWT verifier", e);
-		}
+		jwtProcessor.setJWSKeySelector(new LazyLoadingKeySelector(supply));
 	}
 
+	/**
+	 * Validate the target JWT with a provided SECRET.
+	 */
 	public JwtVerifier(byte[] secret) {
 		ImmutableSecret<SecurityContext> jwkSet = new ImmutableSecret<>(secret);
 		jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(JWSAlgorithm.Family.HMAC_SHA, jwkSet));
 	}
 
-	public JwtVerifier(JWSKeySelector<SecurityContext> jwsKeySelector) {
-		jwtProcessor.setJWSKeySelector(jwsKeySelector);
+	// URL via RemoteJWKSet
+	// URLBasedJWKSetSource
+	public JwtVerifier(URL url) throws KeySourceException {
+		jwtProcessor.setJWSKeySelector(JWSAlgorithmFamilyJWSKeySelector.fromJWKSetURL(url));
 	}
 
 	/**
@@ -77,8 +79,15 @@ public class JwtVerifier {
 		}
 	}
 
-	private static JWKSource<SecurityContext> createKeySource(Supplier<String> supply) {
-		return JWKSourceBuilder.create(new LazyLoadingJwkSetSource(supply)).cacheForever().build();
+	private static class LazyLoadingKeySelector extends JWSVerificationKeySelector<SecurityContext> {
+
+		public LazyLoadingKeySelector(Supplier<String> supply) {
+			super(DefaultJwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM, createJwkSetSource(supply));
+		}
+
+		private static JWKSource<SecurityContext> createJwkSetSource(Supplier<String> supply) {
+			return JWKSourceBuilder.create(new LazyLoadingJwkSetSource(supply)).cacheForever().build();
+		}
 	}
 
 	private static class LazyLoadingJwkSetSource implements JWKSetSource<SecurityContext> {

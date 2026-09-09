@@ -37,7 +37,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
-import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 
@@ -110,6 +109,6 @@ public class JwtSecurityFilter implements Filter, InitializingBean { // Should w
 		}
 
 		URL url = new URI(jwksEndpoint).toURL();
-		jwtVerifier = new JwtVerifier(JWSAlgorithmFamilyJWSKeySelector.fromJWKSetURL(url));
+		jwtVerifier = new JwtVerifier(url);
 	}
 }

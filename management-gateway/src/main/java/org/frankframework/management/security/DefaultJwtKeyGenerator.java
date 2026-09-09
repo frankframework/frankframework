@@ -28,10 +28,11 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class DefaultJwtKeyGenerator extends AbstractJwtGenerator<ECKey> {
+	public static final JWSAlgorithm JWT_DEFAULT_SIGNING_ALGORITHM = JWSAlgorithm.ES384;
 	private static final Curve JWT_DEFAULT_CURVE = Curve.P_384;
 
 	public DefaultJwtKeyGenerator() {
-		super(JWSAlgorithm.ES384);
+		super(JWT_DEFAULT_SIGNING_ALGORITHM);
 	}
 
 	@Override
