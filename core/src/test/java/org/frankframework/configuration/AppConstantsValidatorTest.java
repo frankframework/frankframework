@@ -18,8 +18,8 @@ package org.frankframework.configuration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.credentialprovider.util.CredentialConstants;
-import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.AppConstants;
 
 public class AppConstantsValidatorTest {
@@ -109,17 +108,13 @@ public class AppConstantsValidatorTest {
 	}
 
 	@Test
-	public void testInstanceNameNotMatchingRegexLogsWarning() {
+	public void testInstanceNameNotMatchingRegex() {
 		// Arrange
 		appConstants.setProperty("instance.name", "invalid instance name");
 
 		// Act
-		try (TestAppender testAppender = TestAppender.newBuilder().build()) {
-			AppConstantsValidator.validate();
-
-			// Assert
-			assertThat(testAppender.getLogLines(), hasItem(containsString("does not match the expected pattern")));
-		}
+		// Assert
+		assertThrows(IllegalStateException.class, AppConstantsValidator::validate);
 	}
 
 	@Test
