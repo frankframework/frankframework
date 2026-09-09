@@ -37,7 +37,6 @@ public class AppConstantsValidatorTest {
 
 	@BeforeEach
 	public void setUp() {
-		ApplicationWarnings.removeInstance(); // Ensure a clean list of warnings for every test
 		appConstants = AppConstants.getInstance();
 	}
 
@@ -50,6 +49,7 @@ public class AppConstantsValidatorTest {
 
 		CredentialConstants.getInstance().remove(CredentialFactory.CREDENTIAL_FACTORY_KEY);
 		ApplicationWarnings.removeInstance();
+		AppConstants.removeInstance();
 	}
 
 	@Test
