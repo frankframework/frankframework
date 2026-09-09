@@ -258,15 +258,15 @@ public class ConfigurationUtils {
 	 * @return name of the configuration if successful SQL update
 	 * @throws ConfigurationException when SQL error occurs or filename validation fails
 	 */
-	public static @Nullable String addConfigToDatabase(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
+	public static @Nullable String addConfigToDatabase(ApplicationContext applicationContext, String datasource, boolean activateConfig, boolean automaticReload, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		BuildInfoValidator configDetails = new BuildInfoValidator(file);
-		if (addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
+		if (addConfigToDatabase(applicationContext, datasource, activateConfig, automaticReload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
 			return configDetails.getName() +": "+ configDetails.getVersion();
 		}
 		return null;
 	}
 
-	public static Map<String, String> processMultiConfigZipFile(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, InputStream file, String ruser) throws IOException {
+	public static Map<String, String> processMultiConfigZipFile(ApplicationContext applicationContext, String datasource, boolean activateConfig, boolean automaticReload, InputStream file, String ruser) throws IOException {
 		Map<String, String> result = new LinkedHashMap<>();
 		if (file.available() > 0) {
 			try (ZipInputStream zipInputStream = new ZipInputStream(file)) {
@@ -274,7 +274,7 @@ public class ConfigurationUtils {
 				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
 					try {
-						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, CloseUtils.dontClose(zipInputStream), ruser);
+						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activateConfig, automaticReload, entryName, CloseUtils.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
 						log.error("an error occurred while trying to store new configuration using datasource [{}]", datasource, e);

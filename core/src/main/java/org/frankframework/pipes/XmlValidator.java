@@ -481,7 +481,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
 		List<Schema> xsds = new ArrayList<>();
 		String schemaLocation = getSchemasId(session);
-		if (getSchemaSessionKey() != null) {
+		if (schemaLocation != null) {
 			final URL url = ClassLoaderUtils.getResourceURL(this, schemaLocation);
 			if (url == null) {
 				throw new PipeRunException(this, "could not find schema at [" + schemaLocation + "]");

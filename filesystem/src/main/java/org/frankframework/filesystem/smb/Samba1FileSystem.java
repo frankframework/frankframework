@@ -346,7 +346,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public String getName(SmbFile f) {
+	public String getName(@NonNull SmbFile f) {
 		if(f.getName().endsWith("/")) {
 			return StringUtils.chop(f.getName());
 		}
@@ -354,7 +354,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public String getParentFolder(SmbFile f) {
+	public String getParentFolder(@NonNull SmbFile f) {
 		return f.getParent();
 	}
 

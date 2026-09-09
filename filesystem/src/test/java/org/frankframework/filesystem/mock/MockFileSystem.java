@@ -324,12 +324,12 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public String getName(M f) {
+	public String getName(@NonNull M f) {
 		return f.getName();
 	}
 
 	@Override
-	public String getParentFolder(M f) {
+	public String getParentFolder(@NonNull M f) {
 		return f.getOwner().getName();
 	}
 

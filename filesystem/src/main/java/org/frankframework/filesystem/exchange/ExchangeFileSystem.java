@@ -267,7 +267,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 
 	@Override
-	public String getName(MailItemId msg) {
+	public String getName(@NonNull MailItemId msg) {
 		if (msg instanceof MailFolder folder) {
 			return folder.getName();
 		}
@@ -276,7 +276,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public String getParentFolder(MailItemId msg) throws FileSystemException {
+	public String getParentFolder(@NonNull MailItemId msg) throws FileSystemException {
 		MailFolder parentMailFolder = msg.getMailFolder();
 		if (parentMailFolder == null) {
 			throw new FileSystemException("unknown");
@@ -446,7 +446,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public @NonNull String getCanonicalName(@NonNull MailItemId file) {
+	public @Nullable String getCanonicalName(@NonNull MailItemId file) {
 		return file.getUrl();
 	}
 

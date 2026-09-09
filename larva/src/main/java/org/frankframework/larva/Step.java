@@ -16,10 +16,12 @@
 package org.frankframework.larva;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -98,12 +100,13 @@ public class Step implements Comparable<Step> {
 		if (isInline() || isIgnore()) {
 			return new Message(value);
 		}
-		Message fileMessage = LarvaUtil.readFile(getStepDataFile());
+		String stepDataFile = Objects.requireNonNull(getStepDataFile(), "Step data file should not be NULL when not inline and not ignore");
+		Message fileMessage = LarvaUtil.readFile(stepDataFile);
 		if (!scenario.isResolvePropertiesInScenarioFiles()) {
 			return fileMessage;
 		}
 		String fileData = fileMessage.asString();
-		if (fileData == null) {
+		if (StringUtils.isBlank(fileData)) {
 			throw new LarvaException("Failed to resolve properties in input file [" + value + "] for step " + index);
 		}
 		return new Message(StringResolver.substVars(fileData, appConstants), fileMessage.copyContext());

@@ -366,7 +366,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public @Nullable String getName(SftpFileRef file) {
+	public @Nullable String getName(@NonNull SftpFileRef file) {
 		String name = file.getFilename();
 		if (StringUtils.isNotEmpty(name)) {
 			return name;
@@ -381,12 +381,12 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public String getParentFolder(SftpFileRef file) {
+	public String getParentFolder(@NonNull SftpFileRef file) {
 		return file.getFolder();
 	}
 
 	@Override
-	public @NonNull String getCanonicalName(@NonNull SftpFileRef f) {
+	public @NonNull @Nullable String getCanonicalName(@NonNull SftpFileRef f) {
 		return f.getName();  // Should include folder structure if known
 	}
 

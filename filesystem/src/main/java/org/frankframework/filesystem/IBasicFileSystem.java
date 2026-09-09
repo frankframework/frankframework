@@ -69,8 +69,8 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 * Must pair up with the implementation of {@link #toFile(String)}.
 	 * Can reflect name a file has in its folder, is not expected to be unique over folders.
 	 */
-	String getName(F f);
-	String getParentFolder(F f) throws FileSystemException;
+	String getName(@NonNull F f);
+	String getParentFolder(@NonNull F f) throws FileSystemException;
 	/**
 	 * Get a file 'F' representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #getName(Object)}.
@@ -106,7 +106,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 
 
 	long getFileSize(F f) throws FileSystemException;
-	@NonNull String getCanonicalName(@NonNull F f) throws FileSystemException;
+	@Nullable String getCanonicalName(@NonNull F f) throws FileSystemException;
 	Date getModificationTime(F f) throws FileSystemException;
 	Map<String, Object> getAdditionalFileProperties(F f) throws FileSystemException;
 
@@ -120,7 +120,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 * @param f File for which to try to get canonical name
 	 * @return Either the canonical name of the file, or an error.
 	 */
-	default @NonNull String getCanonicalNameOrErrorMessage(@NonNull F f) {
+	default @Nullable String getCanonicalNameOrErrorMessage(@NonNull F f) {
 		try {
 			return getCanonicalName(f);
 		} catch (FileSystemException e) {
