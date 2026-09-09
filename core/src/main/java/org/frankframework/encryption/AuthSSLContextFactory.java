@@ -198,7 +198,7 @@ public class AuthSSLContextFactory {
 	 * @author John Dekker
 	 */
 	class SelfSignedCertificateAcceptingTrustManagerWrapper implements X509TrustManager {
-		private X509TrustManager trustManager = null;
+		private X509TrustManager trustManager;
 
 		SelfSignedCertificateAcceptingTrustManagerWrapper(KeyStore truststore, TrustManager[] trustmanagers) throws NoSuchAlgorithmException, KeyStoreException {
 			if (trustmanagers == null || trustmanagers.length == 0) {

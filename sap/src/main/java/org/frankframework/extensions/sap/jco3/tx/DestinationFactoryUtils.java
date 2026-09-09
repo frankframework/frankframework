@@ -157,7 +157,7 @@ public abstract class DestinationFactoryUtils {
 			resourceHolderToUse = new JcoResourceHolder(sapSystem);
 		}
 		JCoDestination destination = resourceFactory.getDestination(resourceHolderToUse);
-		String tid = null;
+		String tid;
 		boolean isExistingDestination = destination != null;
 		if (!isExistingDestination) {
 			destination = resourceFactory.createDestination();
@@ -206,7 +206,7 @@ public abstract class DestinationFactoryUtils {
 		if (resourceHolderToUse == null) {
 			resourceHolderToUse = new JcoResourceHolder(sapSystem);
 		}
-		JCoDestination destination=null;
+		JCoDestination destination;
 		destination = resourceFactory.createDestination();
 		resourceHolderToUse.addDestination(destination);
 		if (resourceHolderToUse != resourceHolder) {

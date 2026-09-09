@@ -51,7 +51,7 @@ public class ApiEhcache implements IApiCache {
 	private int diskExpiryThreadIntervalSeconds=600;
 
 	private Ehcache cache;
-	private IbisCacheManager cacheManager=null;
+	private IbisCacheManager cacheManager;
 
 	public ApiEhcache() {
 		cacheManager = IbisCacheManager.getInstance();

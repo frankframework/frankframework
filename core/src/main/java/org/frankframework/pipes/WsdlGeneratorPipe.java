@@ -57,7 +57,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe implements AdapterAware 
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
-		String result = null;
+		String result;
 		Adapter adapter;
 		try {
 			if ("input".equals(getFrom())) {

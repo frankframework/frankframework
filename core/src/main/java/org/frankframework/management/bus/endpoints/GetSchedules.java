@@ -93,7 +93,7 @@ public class GetSchedules extends BusEndpointBase {
 		String jobName = BusMessageUtils.getHeader(message, "job");
 		String groupName = BusMessageUtils.getHeader(message, "group");
 
-		Map<String, Object> returnMap = new HashMap<>();
+		Map<String, Object> returnMap;
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
 
 		try {

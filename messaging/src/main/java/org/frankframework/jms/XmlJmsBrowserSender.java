@@ -96,11 +96,11 @@ public class XmlJmsBrowserSender extends AbstractSenderWithParameters {
 		}
 
 		Element queueBrowserElement;
-		String root = null;
-		String jmsRealm = null;
-		String queueConnectionFactoryName = null;
-		String destinationName = null;
-		JmsDestinationType destinationType = null;
+		String root;
+		String jmsRealm;
+		String queueConnectionFactoryName;
+		String destinationName;
+		JmsDestinationType destinationType;
 		try {
 			queueBrowserElement = XmlUtils.buildElement(message.asString());
 			root = queueBrowserElement.getTagName();

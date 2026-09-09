@@ -1078,19 +1078,19 @@ public class TransformerHandlerImpl
   private Locator m_locator = null;
 
   /** The entity resolver to aggregate to. */
-  private EntityResolver m_entityResolver = null;
+  private EntityResolver m_entityResolver;
 
   /** The DTD handler to aggregate to. */
-  private DTDHandler m_dtdHandler = null;
+  private DTDHandler m_dtdHandler;
 
   /** The content handler to aggregate to. */
-  private ContentHandler m_contentHandler = null;
+  private ContentHandler m_contentHandler;
 
   /** The error handler to aggregate to. */
-  private ErrorHandler m_errorHandler = null;
+  private ErrorHandler m_errorHandler;
 
   /** The lexical handler to aggregate to. */
-  private LexicalHandler m_lexicalHandler = null;
+  private LexicalHandler m_lexicalHandler;
 
 	/** The decl handler to aggregate to. */
 	private final DeclHandler m_declHandler = null;

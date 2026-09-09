@@ -49,7 +49,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 
-		String result = null;
+		String result;
 		if (getType()==Type.ALPHANUMERIC) {
 			result = UUIDUtil.createUUID();
 		} else {
