@@ -128,9 +128,6 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	@Override
 	public int getMessageCount() throws ListenerException {
 		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
-			if (ds==null) {
-				return -1;
-			}
 			return (int) StreamSupport.stream(ds.spliterator(), false).count();
 		} catch (IOException | FileSystemException e) {
 			throw new ListenerException(e);
