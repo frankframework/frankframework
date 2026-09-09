@@ -27,6 +27,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -70,7 +71,7 @@ public class PipeDescriptionProvider {
 
 	private static record PipeInfo(String checkpointName, String xpathExpression) {
 
-		public String getXPath(PipeLine pipeLine) {
+		public @Nullable String getXPath(PipeLine pipeLine) {
 			if (xpathExpression == null) {
 				return null;
 			}
@@ -193,7 +194,7 @@ public class PipeDescriptionProvider {
 		}
 	}
 
-	private Node doXPath(Document document, String xpathExpression) {
+	private @Nullable Node doXPath(Document document, String xpathExpression) {
 		XPath xPath = XmlUtils.getXPathFactory().newXPath();
 		try {
 			XPathExpression xPathExpression = xPath.compile(xpathExpression);

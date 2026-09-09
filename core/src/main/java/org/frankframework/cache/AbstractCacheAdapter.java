@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -102,7 +103,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 	protected abstract V toValue(Message value);
 
 	@Override
-	public String transformKey(String input, PipeLineSession session) {
+	public @Nullable String transformKey(String input, PipeLineSession session) {
 		// Tries to get the parameter with name 'key', or else falls back to the deprecated way of determining the key (using keyXPath or keyStyleSheet)
 		if (getParameterList().hasParameter(PARAM_KEY)) {
 			// To behave like the original flow, this obscure logic needs to remain
@@ -127,7 +128,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 		return deprecatedGetKey(input, session);
 	}
 
-	private String deprecatedGetKey(String input, PipeLineSession session) {
+	private @Nullable String deprecatedGetKey(String input, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getKeyInputSessionKey()) && session != null) {
 			input = session.getString(getKeyInputSessionKey());
 		}
@@ -151,7 +152,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 	}
 
 	@Override
-	public V transformValue(Message value, PipeLineSession session) {
+	public @Nullable V transformValue(Message value, PipeLineSession session) {
 		// Tries to get the parameter with name 'value', or else falls back to the deprecated way of determining the value
 
 		Message returnMessage = null;
@@ -180,7 +181,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 		return toValue(returnMessage);
 	}
 
-	private Message deprecatedGetValue(Message value, PipeLineSession session) {
+	private @Nullable Message deprecatedGetValue(Message value, PipeLineSession session) {
 		if (StringUtils.isNotEmpty(getValueInputSessionKey()) && session != null) {
 			value = session.getMessage(getValueInputSessionKey());
 		}

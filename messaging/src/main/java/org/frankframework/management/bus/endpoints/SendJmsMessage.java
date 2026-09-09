@@ -18,6 +18,7 @@ package org.frankframework.management.bus.endpoints;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -101,7 +102,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		return qms;
 	}
 
-	private Message<?> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
+	private @Nullable Message<?> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
 		try(PipeLineSession session = new PipeLineSession()) {
 			qms.start();
 			org.frankframework.stream.Message responseMessage = qms.sendMessageOrThrow(org.frankframework.stream.Message.asMessage(requestMessage), session);

@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springdoc.core.providers.JavadocProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,7 +56,7 @@ public class OpenApiConfiguration {
 
 			// Creates the `tags` in the spec and adds a description to it.
 			@Override
-			public String getClassJavadoc(Class<?> cl) {
+			public @Nullable String getClassJavadoc(Class<?> cl) {
 				Description description = cl.getAnnotation(Description.class);
 
 				return description != null ? formatString(description.value()) : null;
@@ -67,14 +68,14 @@ public class OpenApiConfiguration {
 			}
 
 			@Override
-			public String getMethodJavadocDescription(Method method) {
+			public @Nullable String getMethodJavadocDescription(Method method) {
 				Description description = method.getAnnotation(Description.class);
 
 				return description != null ? formatString(description.value()) : null;
 			}
 
 			@Override
-			public String getMethodJavadocReturn(Method method) {
+			public @Nullable String getMethodJavadocReturn(Method method) {
 				return null;
 			}
 
@@ -85,18 +86,18 @@ public class OpenApiConfiguration {
 			}
 
 			@Override
-			public String getParamJavadoc(Method method, String name) {
+			public @Nullable String getParamJavadoc(Method method, String name) {
 				return null;
 			}
 
 			@Override
-			public String getFieldJavadoc(Field field) {
+			public @Nullable String getFieldJavadoc(Field field) {
 				return null;
 			}
 
 			// Creates a summary element, which we don't need to use as our descriptions are small enough.
 			@Override
-			public String getFirstSentence(String text) {
+			public @Nullable String getFirstSentence(String text) {
 				return null;
 			}
 		};

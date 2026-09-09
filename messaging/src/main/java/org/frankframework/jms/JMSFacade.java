@@ -617,7 +617,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	public String send(MessageProducer messageProducer, jakarta.jms.Message message) throws JMSException {
 		return send(messageProducer, message, false);
 	}
-	public String send(MessageProducer messageProducer, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
+	public @Nullable String send(MessageProducer messageProducer, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		logMessageDetails(message, messageProducer);
 		try {
 			messageProducer.send(message);
@@ -667,7 +667,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return send(session, dest, message, false);
 	}
 
-	public String send(Session session, Destination dest, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
+	public @Nullable String send(Session session, Destination dest, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		try (MessageProducer mp = session.createProducer(dest)) {
 			logMessageDetails(message, mp);
 			mp.send(message);

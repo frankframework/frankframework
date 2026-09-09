@@ -16,6 +16,7 @@
 package org.frankframework.jta;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
@@ -61,7 +62,7 @@ public class TransactionConnector implements AutoCloseable {
 	 * TODO: This also means that objects further downstream might need to restore the transaction context before they can add new transactional resources.
 	 * This is currently not implemented; therefore a FixedQuerySender providing an UpdateClob or UpdateBlob outputstream might behave incorrectly.
 	 */
-	public static <T,R> TransactionConnector getInstance(IThreadConnectableTransactionManager txManager, Object owner, String description) {
+	public static <T,R> @Nullable TransactionConnector getInstance(IThreadConnectableTransactionManager txManager, Object owner, String description) {
 		if (txManager==null) {
 			return null;
 		}

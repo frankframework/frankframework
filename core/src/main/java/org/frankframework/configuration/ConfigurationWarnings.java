@@ -95,7 +95,7 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	}
 
 	// Helper method to retrieve ConfigurationWarnings from the Configuration Context
-	private static ConfigurationWarnings getInstance(@Nullable HasApplicationContext source) {
+	private static @Nullable ConfigurationWarnings getInstance(@Nullable HasApplicationContext source) {
 		if(source == null) {
 			IllegalArgumentException e = new IllegalArgumentException("no source provided");
 			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to log notification in it's proper context", e);

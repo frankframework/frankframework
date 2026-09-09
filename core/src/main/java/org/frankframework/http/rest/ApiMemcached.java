@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.ConnectionFactory;
@@ -99,7 +100,7 @@ public class ApiMemcached implements IApiCache {
 	}
 
 	@Override
-	public Object get(String key) {
+	public @Nullable Object get(String key) {
 		try {
 			return client.get(key);
 		}

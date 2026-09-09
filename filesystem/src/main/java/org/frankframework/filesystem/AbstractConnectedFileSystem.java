@@ -20,6 +20,7 @@ import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -95,7 +96,7 @@ public abstract class AbstractConnectedFileSystem<F,C> extends AbstractFileSyste
 	/**
 	 * Get a Connection from the pool, or the global shared connection.
 	 */
-	protected C getConnection() throws FileSystemException {
+	protected @Nullable C getConnection() throws FileSystemException {
 		log.trace("Get Connection from FS, pooled: {}", this::isPooledConnection);
 		try {
 			return isPooledConnection()

@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -65,7 +66,7 @@ public class Step implements Comparable<Step> {
 		return STEP_PARSE_RE.matcher(stepLine).matches();
 	}
 
-	public String getStepDataFile() {
+	public @Nullable String getStepDataFile() {
 		if (isInline() || isIgnore()) {
 			return null;
 		}

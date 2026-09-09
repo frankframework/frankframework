@@ -230,7 +230,7 @@ public class TestPipeline extends BusEndpointBase {
 	/**
 	 * Checks if the input is valid XML, and returns processing instructions if any
 	 */
-	private String findProcessingInstructions(String input) {
+	private @Nullable String findProcessingInstructions(String input) {
 		if (StringUtils.isEmpty(input) || !XmlUtils.isWellFormed(input)) {
 			return null;
 		}

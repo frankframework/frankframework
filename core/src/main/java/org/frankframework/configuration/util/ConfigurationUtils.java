@@ -36,6 +36,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -214,7 +215,7 @@ public class ConfigurationUtils {
 		}
 	}
 
-	private static Map<String, Object> extractConfigurationFromResultSetRow (ResultSet rs) throws SQLException {
+	private static @Nullable Map<String, Object> extractConfigurationFromResultSetRow (ResultSet rs) throws SQLException {
 		Map<String, Object> configuration = HashMap.newHashMap(5);
 		byte[] jarBytes = rs.getBytes(1);
 		if (jarBytes == null) return null;
@@ -242,7 +243,7 @@ public class ConfigurationUtils {
 		}
 	}
 
-	private static Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
+	private static @Nullable Map<String, Object> extractConfigurationFromResultSet(PreparedStatement stmt, String name, String version) throws SQLException {
 		try(ResultSet rs = stmt.executeQuery()) {
 			if (!rs.next()) {
 				log.error("no configuration found in database with name [{}] {}", name, version != null ? "version [" + version + "]" : "activeconfig [TRUE]");
@@ -257,7 +258,7 @@ public class ConfigurationUtils {
 	 * @return name of the configuration if successful SQL update
 	 * @throws ConfigurationException when SQL error occurs or filename validation fails
 	 */
-	public static String addConfigToDatabase(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
+	public static @Nullable String addConfigToDatabase(ApplicationContext applicationContext, String datasource, boolean activate_config, boolean automatic_reload, String fileName, InputStream file, String ruser) throws ConfigurationException {
 		BuildInfoValidator configDetails = new BuildInfoValidator(file);
 		if (addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, configDetails.getName(), configDetails.getVersion(), fileName, configDetails.getJar(), ruser)) {
 			return configDetails.getName() +": "+ configDetails.getVersion();

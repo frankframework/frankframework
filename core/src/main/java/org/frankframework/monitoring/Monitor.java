@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -200,7 +201,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 		return monitor;
 	}
 
-	public String getDestinationsAsString() {
+	public @Nullable String getDestinationsAsString() {
 		if (destinations.isEmpty()) return null;
 		return String.join(",", destinations);
 	}

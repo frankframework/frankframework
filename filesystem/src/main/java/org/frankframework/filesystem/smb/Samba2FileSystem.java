@@ -396,7 +396,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public String getName(SmbFileRef file) {
+	public @Nullable String getName(SmbFileRef file) {
 		String name = file.getFilename();
 		if(StringUtils.isNotEmpty(name)) {
 			return name;

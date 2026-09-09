@@ -225,7 +225,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 		return xmlMimeHeaders;
 	}
 
-	private static String cleanseURL(String pathInfo) {
+	private static @Nullable String cleanseURL(String pathInfo) {
 		if (pathInfo == null) {
 			return null;
 		}

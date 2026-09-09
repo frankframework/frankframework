@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
@@ -211,7 +212,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		return findAdapter(adapterName);
 	}
 
-	private Adapter findAdapter(String adapterName) {
+	private @Nullable Adapter findAdapter(String adapterName) {
 		for(Configuration config : getIbisManager().getActiveConfigurations()) {
 			Adapter adapter = config.getRegisteredAdapter(adapterName);
 			if (adapterName.equals(adapter.getName())) {

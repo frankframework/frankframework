@@ -559,7 +559,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public String getParentFolder(S3FileRef f) {
+	public @Nullable String getParentFolder(S3FileRef f) {
 		int lastSlashPos = f.getKey().lastIndexOf('/');
 		return lastSlashPos > 1 ? f.getKey().substring(0, lastSlashPos) : null;
 	}

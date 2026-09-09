@@ -228,7 +228,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public @NonNull DirectoryStream<Message> list(Message foldername, @NonNull TypeFilter filter) throws FileSystemException {
+	public @Nullable DirectoryStream<Message> list(Message foldername, @NonNull TypeFilter filter) throws FileSystemException {
 		if (filter.includeFolders()) {
 			throw new FileSystemException("Filtering on folders is not supported");
 		}
@@ -263,7 +263,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public @Nullable Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -291,7 +291,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public @Nullable Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -380,7 +380,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Iterator<MimeBodyPart> listAttachments(Message f) throws FileSystemException {
+	public @Nullable Iterator<MimeBodyPart> listAttachments(Message f) throws FileSystemException {
 		try {
 			String contentType = f.getContentType();
 			if (!contentType.contains("multipart")) {
@@ -437,7 +437,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public org.frankframework.stream.Message readAttachment(MimeBodyPart a) {
+	public org.frankframework.stream.@Nullable Message readAttachment(MimeBodyPart a) {
 		// TODO Auto-generated method stub
 		return null;
 	}

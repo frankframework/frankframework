@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -67,7 +68,7 @@ public class Result2Filewriter extends ResultWriter {
 	}
 
 	@Override
-	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
+	public @Nullable String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		log.debug("finalizeResult [{}]", streamId);
 		super.finalizeResult(session,streamId, error);
 		super.closeDocument(session,streamId);

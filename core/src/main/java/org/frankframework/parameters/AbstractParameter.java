@@ -814,7 +814,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		}
 	}
 
-	private Object getSubstitutionValueFromSession(PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
+	private @Nullable Object getSubstitutionValueFromSession(PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
 		Object substitutionValue = session.get(substitutionPattern.name);
 		return switch (substitutionValue) {
 			case null -> null;

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -186,7 +187,7 @@ public class CalcboxOutputReader implements XMLReader {
 
 	/** Return the current error handler. */
 	@Override
-	public ErrorHandler getErrorHandler() {
+	public @Nullable ErrorHandler getErrorHandler() {
 		return null;
 	}
 
@@ -200,13 +201,13 @@ public class CalcboxOutputReader implements XMLReader {
 
 	/** Return the current DTD handler. */
 	@Override
-	public DTDHandler getDTDHandler() {
+	public @Nullable DTDHandler getDTDHandler() {
 		return null;
 	}
 
 	/** Return the current entity resolver. */
 	@Override
-	public EntityResolver getEntityResolver() {
+	public @Nullable EntityResolver getEntityResolver() {
 		return null;
 	}
 
@@ -222,7 +223,7 @@ public class CalcboxOutputReader implements XMLReader {
 
 	/** Look up the value of a property. */
 	@Override
-	public Object getProperty(String name) {
+	public @Nullable Object getProperty(String name) {
 		return null;
 	}
 

@@ -38,6 +38,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.util.EntityUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
@@ -166,7 +167,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		}
 
 		@SuppressWarnings("unchecked")
-		public <T> T execute(HttpRequestBase httpRequestBase, Class<T> dto) throws IOException {
+		public <T> @Nullable T execute(HttpRequestBase httpRequestBase, Class<T> dto) throws IOException {
 			httpRequestBase.addHeader("Authorization", msal.getAuthenticationToken());
 			HttpResponse response;
 			try {

@@ -100,7 +100,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public @NonNull SmbFile toFile(@Nullable String filename) throws FileSystemException {
+	public @Nullable SmbFile toFile(@Nullable String filename) throws FileSystemException {
 		if (filename == null) {
 			return null;
 		}

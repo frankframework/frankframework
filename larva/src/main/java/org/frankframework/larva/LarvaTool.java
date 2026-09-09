@@ -1009,7 +1009,7 @@ public class LarvaTool {
 	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
 	*/
-	public static List<String> findAttributesForIgnore(String propertyName) {
+	public static @Nullable List<String> findAttributesForIgnore(String propertyName) {
 		return switch (propertyName) {
 			case "decodeUnzipContentBetweenKeys" -> List.of("key1", "key2", "replaceNewlines");
 			case "canonicaliseFilePathContentBetweenKeys", "replaceRegularExpressionKeys", "ignoreContentBetweenKeys", "ignoreKeysAndContentBetweenKeys",

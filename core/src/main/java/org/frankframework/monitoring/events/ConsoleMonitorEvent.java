@@ -15,6 +15,7 @@
 */
 package org.frankframework.monitoring.events;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -37,7 +38,7 @@ public class ConsoleMonitorEvent extends MonitorEvent {
 			}
 
 			@Override
-			public ApplicationContext getApplicationContext() {
+			public @Nullable ApplicationContext getApplicationContext() {
 				return null;
 			}
 		};

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -65,7 +66,7 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		}
 
 		@Override
-		public RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
+		public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
 			return null;
 		}
 
@@ -80,7 +81,7 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		}
 
 		@Override
-		public Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
+		public @Nullable Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 			return null;
 		}
 
@@ -95,7 +96,7 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		}
 
 		@Override
-		public RawMessageWrapper<String> getRawMessage(String correlationId, Map<String, Object> threadContext) throws ListenerException, TimeoutException {
+		public @Nullable RawMessageWrapper<String> getRawMessage(String correlationId, Map<String, Object> threadContext) throws ListenerException, TimeoutException {
 			return null;
 		}
 	}

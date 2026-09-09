@@ -20,6 +20,7 @@ import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.jspecify.annotations.Nullable;
 
 import com.sap.conn.idoc.IDocRepository;
 import com.sap.conn.idoc.jco.JCoIDoc;
@@ -161,7 +162,7 @@ public abstract class SapSystemImpl extends SapSystemListItem implements ISapSys
 	}
 
 	@Override
-	public String getDestinationAsString() {
+	public @Nullable String getDestinationAsString() {
 		try {
 			return getDestination().toString();
 		} catch (JCoException exception) {

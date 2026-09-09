@@ -8,6 +8,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -24,9 +25,8 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 	@Override
 	public FixedForwardPipe createPipe() throws ConfigurationException {
 		return new FixedForwardPipe() {
-			@NonNull
 			@Override
-			public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
+			public @Nullable PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 				return null;
 			}
 		};

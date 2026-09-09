@@ -26,6 +26,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
@@ -176,7 +177,7 @@ public class Utils {
 		return new InputSource(new StringReader(xml));
 	}
 
-	public static Document string2Dom(String xml) {
+	public static @Nullable Document string2Dom(String xml) {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		try {
 			dbf.setNamespaceAware(true);
@@ -197,7 +198,7 @@ public class Utils {
 		return source2String(new SAXSource(reader, inputSource));
 	}
 
-	public static String source2String(Source source) {
+	public static @Nullable String source2String(Source source) {
 		try {
 			StringWriter writer = new StringWriter();
 			StreamResult result = new StreamResult(writer);
@@ -212,7 +213,7 @@ public class Utils {
 		}
 	}
 
-	public static String dom2String2(Document document) {
+	public static @Nullable String dom2String2(Document document) {
 		DOMImplementationRegistry registry;
 		try {
 			registry = DOMImplementationRegistry.newInstance();

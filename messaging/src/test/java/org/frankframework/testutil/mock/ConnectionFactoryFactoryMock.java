@@ -108,7 +108,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public String getMessageSelector() throws JMSException {
+		public @Nullable String getMessageSelector() throws JMSException {
 			return null;
 		}
 

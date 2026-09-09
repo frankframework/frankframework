@@ -636,7 +636,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public Iterator<MailMessage> listAttachments(MailItemId f) throws FileSystemException {
+	public @Nullable Iterator<MailMessage> listAttachments(MailItemId f) throws FileSystemException {
 		return null;
 	}
 

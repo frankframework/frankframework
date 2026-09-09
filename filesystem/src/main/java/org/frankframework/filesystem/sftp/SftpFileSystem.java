@@ -124,7 +124,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 		return sftpFileRef.isDirectory();
 	}
 
-	private SftpFileRef findFile(SftpFileRef file) throws SftpException {
+	private @Nullable SftpFileRef findFile(SftpFileRef file) throws SftpException {
 		try {
 			List<LsEntry> files = listFolder(file);
 			if (!files.isEmpty()) {
@@ -366,7 +366,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public String getName(SftpFileRef file) {
+	public @Nullable String getName(SftpFileRef file) {
 		String name = file.getFilename();
 		if (StringUtils.isNotEmpty(name)) {
 			return name;

@@ -16,6 +16,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -82,7 +83,7 @@ public class ClassLoaderURIResolverTest {
 		return scopeProvider;
 	}
 
-	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException {
+	private @Nullable String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException {
 		URL result;
 		return switch (baseType) {
 			case LOCAL -> "/ClassLoader/Xslt/root.xsl";
@@ -99,7 +100,7 @@ public class ClassLoaderURIResolverTest {
 		};
 	}
 
-	private String getRef(BaseType baseType, RefType refType) throws ConfigurationException {
+	private @Nullable String getRef(BaseType baseType, RefType refType) throws ConfigurationException {
 		return switch (refType) {
 			case ROOT -> "/ClassLoaderTestFile.xml";
 			case ABS_PATH -> "/ClassLoader/ClassLoaderTestFile.xml";
@@ -121,7 +122,7 @@ public class ClassLoaderURIResolverTest {
 		};
 	}
 
-	private String getExpected(BaseType baseType, RefType refType) throws ConfigurationException {
+	private @Nullable String getExpected(BaseType baseType, RefType refType) throws ConfigurationException {
 		return switch (refType) {
 			case ROOT -> "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoaderTestFile.xml</file>";
 			case ABS_PATH -> "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>";

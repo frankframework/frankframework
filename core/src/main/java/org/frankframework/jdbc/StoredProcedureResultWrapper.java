@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.parameters.IParameter;
@@ -1114,7 +1115,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 		}
 
 		@Override
-		public String getSchemaName(int column) {
+		public @Nullable String getSchemaName(int column) {
 			return null;
 		}
 
@@ -1129,12 +1130,12 @@ public class StoredProcedureResultWrapper implements ResultSet {
 		}
 
 		@Override
-		public String getTableName(int column) {
+		public @Nullable String getTableName(int column) {
 			return null;
 		}
 
 		@Override
-		public String getCatalogName(int column) {
+		public @Nullable String getCatalogName(int column) {
 			return null;
 		}
 
@@ -1170,7 +1171,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 		}
 
 		@Override
-		public <T> T unwrap(Class<T> iface) {
+		public <T> @Nullable T unwrap(Class<T> iface) {
 			return null;
 		}
 

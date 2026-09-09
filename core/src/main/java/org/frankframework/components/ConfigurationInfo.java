@@ -81,7 +81,7 @@ public class ConfigurationInfo extends ComponentInfo {
 		return null;
 	}
 
-	private static Instant parseBuildInfoDate(String timestamp) {
+	private static @Nullable Instant parseBuildInfoDate(String timestamp) {
 		if (StringUtils.isBlank(timestamp)) {
 			log.info("configuration has no timestamp");
 			return null;

@@ -293,7 +293,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public String getName(FTPFileRef file) {
+	public @Nullable String getName(FTPFileRef file) {
 		String name = file.getFileName();
 		if(StringUtils.isNotEmpty(name)) {
 			return name;

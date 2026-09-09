@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.OutputStream;
 import java.net.URL;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -30,7 +31,7 @@ public class MtomResponseWrapperTest {
 		return TestFileUtils.getTestFile(request_out, "UTF-8");
 	}
 
-	private static String getBoundary(String contentType) {
+	private static @Nullable String getBoundary(String contentType) {
 		int partIndex = contentType.indexOf("=_Part_");
 		if(partIndex > 0) {
 			String boundary = contentType.substring(partIndex+7);

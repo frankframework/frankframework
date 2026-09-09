@@ -17,6 +17,8 @@ package org.frankframework.http;
 
 import jakarta.servlet.http.HttpServlet;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.lifecycle.DynamicRegistration;
 
 /**
@@ -34,7 +36,7 @@ public abstract class AbstractHttpServlet extends HttpServlet implements Dynamic
 	}
 
 	@Override
-	public String[] getAccessGrantingRoles() {
+	public String @Nullable [] getAccessGrantingRoles() {
 		return null;
 	}
 }

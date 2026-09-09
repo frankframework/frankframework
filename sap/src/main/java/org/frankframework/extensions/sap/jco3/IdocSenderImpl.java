@@ -16,6 +16,7 @@
 package org.frankframework.extensions.sap.jco3;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocException;
@@ -90,7 +91,7 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 	}
 
 	@Override
-	protected String getFunctionName() {
+	protected @Nullable String getFunctionName() {
 		return null;
 	}
 }

@@ -27,6 +27,7 @@ import javax.xml.transform.TransformerException;
 import jakarta.jms.JMSException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import com.tibco.tibjms.TibjmsMapMessage;
@@ -45,7 +46,7 @@ public class TibcoLogJmsListener extends JmsListener {
 	private static final String[] LOGLEVELS_TEXT = { "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL" };
 
 	@Override
-	public Message extractMessage(jakarta.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public @Nullable Message extractMessage(jakarta.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		TibjmsMapMessage tjmMessage;
 		try {
 			tjmMessage = (TibjmsMapMessage) rawMessage;
@@ -113,7 +114,7 @@ public class TibcoLogJmsListener extends JmsListener {
 		return new Message(DateFormatUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb);
 	}
 
-	private String logLevelToText(int logLevel) {
+	private @Nullable String logLevelToText(int logLevel) {
 		for (int i = 0; i < LOGLEVELS.length; i++) {
 			if (logLevel == LOGLEVELS[i]) {
 				return LOGLEVELS_TEXT[i];

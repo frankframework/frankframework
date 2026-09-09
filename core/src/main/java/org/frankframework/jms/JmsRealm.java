@@ -21,6 +21,7 @@ import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasName;
@@ -167,7 +168,7 @@ public class JmsRealm {
 		return providerURL;
 	}
 
-	public String retrieveConnectionFactoryName() {
+	public @Nullable String retrieveConnectionFactoryName() {
 		if (queueConnectionFactoryName != null) {
 			return queueConnectionFactoryName;
 		} else if (topicConnectionFactoryName != null) {

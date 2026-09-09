@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Setter;
@@ -162,7 +163,7 @@ public class ScenarioRunner {
 	 * @param flushLogsForEveryScenarioStep if true, the log will be flushed after every scenario step
 	 * @return {@code null} when scenario finishes successful, otherwise the reason why the scenario failed.
 	 */
-	public String runOneFile(Scenario scenario, boolean flushLogsForEveryScenarioStep) {
+	public @Nullable String runOneFile(Scenario scenario, boolean flushLogsForEveryScenarioStep) {
 		long scenarioStart = System.currentTimeMillis();
 		int scenarioResult = LarvaTool.RESULT_ERROR;
 

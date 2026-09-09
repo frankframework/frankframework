@@ -378,7 +378,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public String getName(Path f) {
+	public @Nullable String getName(Path f) {
 		if(f.getFileName() != null) {
 			return f.getFileName().toString();
 		}

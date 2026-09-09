@@ -34,6 +34,7 @@ import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
 import org.apache.wss4j.dom.message.WSSecUsernameToken;
 import org.apache.xml.security.algorithms.JCEMapper;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -165,7 +166,7 @@ public class SoapWrapper {
 		return allowPlainXml ? message : Message.nullMessage();
 	}
 
-	private Message extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
+	private @Nullable Message extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
 		// If SOAP version is already determined in the session, directly use the SOAP 1.2 transformer
 		SoapVersion soapVersion = getSoapVersionFromSession(session);
 		Message extractedMessage;
@@ -206,7 +207,7 @@ public class SoapWrapper {
 		return null;
 	}
 
-	private SoapVersion getSoapVersionFromSession(final PipeLineSession session) {
+	private @Nullable SoapVersion getSoapVersionFromSession(final PipeLineSession session) {
 		if (session == null) return null;
 		Object soapVersionObject = session.getOrDefault(SoapWrapper.SOAP_VERSION_SESSION_KEY, null);
 		if (soapVersionObject instanceof SoapVersion version) {
@@ -234,7 +235,7 @@ public class SoapWrapper {
 		return Integer.parseInt(faultCount.trim());
 	}
 
-	private String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session) throws IOException, TransformerException, SAXException {
+	private @Nullable String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session) throws IOException, TransformerException, SAXException {
 		Message result = extractMessageWithTransformers(transformerS11, transformerS12, message, session, null);
 		return Message.isEmpty(result) ? null : result.asString();
 	}

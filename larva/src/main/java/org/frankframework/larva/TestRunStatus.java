@@ -80,7 +80,7 @@ public class TestRunStatus {
 	 *
 	 * @return Returns the path to the active / selected scenario root directory.
 	 */
-	public String initScenarioDirectories() {
+	public @Nullable String initScenarioDirectories() {
 		String realPath = LarvaUtil.getParentOfWebappRoot();
 		if (realPath == null) {
 			larvaTool.errorMessage("Could not read webapp real path");

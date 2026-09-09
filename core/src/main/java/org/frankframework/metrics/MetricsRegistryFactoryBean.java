@@ -78,7 +78,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 		this.registry = compositeRegistry;
 	}
 
-	private AbstractMetricsRegistryConfigurator<?> loadMeterRegistry(Properties metricProperties, String product) {
+	private @Nullable AbstractMetricsRegistryConfigurator<?> loadMeterRegistry(Properties metricProperties, String product) {
 		final String configuratorClassNamePropertyKey = AbstractMetricsRegistryConfigurator.METRICS_EXPORT_PROPERTY_PREFIX+product+CONFIGURATOR_CLASS_SUFFIX;
 		final String configuratorClassName = metricProperties.getProperty(configuratorClassNamePropertyKey);
 		if (StringUtils.isEmpty(configuratorClassName)) {

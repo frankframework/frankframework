@@ -323,7 +323,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 
 
 	@Override
-	public String getSchemasId() {
+	public @Nullable String getSchemasId() {
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			return getNoNamespaceSchemaLocation();
 		} else if (StringUtils.isNotEmpty(getSchemaLocation())) {
@@ -466,7 +466,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	@Override
-	public String getSchemasId(PipeLineSession session) throws PipeRunException {
+	public @Nullable String getSchemasId(PipeLineSession session) throws PipeRunException {
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {

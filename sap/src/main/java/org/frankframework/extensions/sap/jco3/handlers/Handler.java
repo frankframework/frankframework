@@ -18,6 +18,7 @@ package org.frankframework.extensions.sap.jco3.handlers;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -127,7 +128,7 @@ public abstract class Handler extends DefaultHandler {
 		return getHandler(jcoRecord, fieldName, false);
 	}
 
-	protected Handler getHandler(JCoRecord jcoRecord, String fieldName, boolean warnWhenNoHandler) {
+	protected @Nullable Handler getHandler(JCoRecord jcoRecord, String fieldName, boolean warnWhenNoHandler) {
 		int jcoMetaDataType = jcoRecord.getMetaData().getType(fieldName);
 		if (jcoMetaDataType == JCoMetaData.TYPE_TABLE) {
 			if(log.isTraceEnabled()) log.trace("new TableHandler for '{}'", fieldName);

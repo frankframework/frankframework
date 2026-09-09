@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.zip.DeflaterOutputStream;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -160,7 +161,7 @@ public class JdbcTransactionalStorageTest {
 		assertEquals(message, o);
 	}
 
-	private String insertARecord(boolean blobsCompressed, String message, char type) throws SQLException, IOException {
+	private @Nullable String insertARecord(boolean blobsCompressed, String message, char type) throws SQLException, IOException {
 		try (Connection connection = env.getConnection()) {
 			try (PreparedStatement stmt = prepareStatement(connection, type)) {
 

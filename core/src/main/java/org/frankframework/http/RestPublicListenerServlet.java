@@ -15,6 +15,8 @@
 */
 package org.frankframework.http;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.lifecycle.IbisInitializer;
 
 @IbisInitializer
@@ -26,7 +28,7 @@ public class RestPublicListenerServlet extends RestListenerServlet {
 	}
 
 	@Override
-	public String[] getAccessGrantingRoles() {
+	public String @Nullable [] getAccessGrantingRoles() {
 		return null;
 	}
 }

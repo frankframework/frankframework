@@ -27,6 +27,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -202,7 +203,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		return client;
 	}
 
-	private Proxy getProxy() {
+	private @Nullable Proxy getProxy() {
 		if (StringUtils.isNotEmpty(proxyHost)) {
 			Proxy.Type type = switch (proxyTransportType) {
 				case DIRECT -> Proxy.Type.DIRECT;

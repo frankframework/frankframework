@@ -7,6 +7,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Test utility class to produce large amounts of valid structured data (such as JSON or XML) from fixed blocks: opening block for start of document,
@@ -156,7 +157,7 @@ public class LargeStructuredMockData {
 			return dataToCopy;
 		}
 
-		private char[] findNextBuffer() {
+		private char @Nullable [] findNextBuffer() {
 			// Intentionally comparing with the '==' operator!
 			if (currentBuffer == null || currentBuffer == closingBlock) {
 				return null;
@@ -222,7 +223,7 @@ public class LargeStructuredMockData {
 			return dataToCopy;
 		}
 
-		private byte[] findNextBuffer() {
+		private byte @Nullable [] findNextBuffer() {
 			// Intentionally comparing with the '==' operator!
 			if (currentBuffer == null || currentBuffer == closingBlock) {
 				return null;

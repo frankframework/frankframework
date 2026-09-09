@@ -19,6 +19,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import com.sap.conn.jco.ext.DestinationDataEventListener;
 import com.sap.conn.jco.ext.DestinationDataProvider;
@@ -53,7 +54,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 	}
 
 	@Override
-	public Properties getDestinationProperties(String destinationName) {
+	public @Nullable Properties getDestinationProperties(String destinationName) {
 		SapSystemImpl sapSystem = SapSystemImpl.getSystem(destinationName);
 		if (sapSystem == null) {
 			log.warn("Could not find destination name");

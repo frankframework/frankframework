@@ -28,6 +28,7 @@ import jakarta.jms.QueueSession;
 import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -157,7 +158,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		return (J)doBrowse("JMSMessageID", messageId);
 	}
 
-	protected jakarta.jms.Message doBrowse(Map<String,String> selectors) throws ListenerException {
+	protected jakarta.jms.@Nullable Message doBrowse(Map<String,String> selectors) throws ListenerException {
 		QueueSession session=null;
 		QueueBrowser queueBrowser=null;
 		try {

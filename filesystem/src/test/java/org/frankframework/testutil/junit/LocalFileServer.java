@@ -44,6 +44,7 @@ import org.filesys.smb.server.SMBConfigSection;
 import org.filesys.smb.server.SMBServer;
 import org.filesys.smb.server.SMBSrvSession;
 import org.filesys.smb.server.disk.original.JavaFileDiskDriver;
+import org.jspecify.annotations.Nullable;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.element.GenericConfigElement;
 
@@ -158,7 +159,7 @@ public class LocalFileServer implements AutoCloseable {
 		}
 	}
 
-	private String getLicense() throws IOException {
+	private @Nullable String getLicense() throws IOException {
 		URL license = Samba2FileSystemTest.class.getResource("/jfileserver.lic");
 		if(license != null && ClassUtils.isClassPresent("org.filesys.smb.server.EnterpriseSMBServer")) {
 			return StreamUtil.streamToString(license.openStream());
