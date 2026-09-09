@@ -369,7 +369,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return started;
 	}
 
-	public jakarta.jms.@NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException, IOException {
+	public jakarta.jms.@NonNull Message createMessage(@NonNull Session session, @Nullable String correlationID, @NonNull Message message, @Nullable PipeLineSession pipeLineSession) throws JMSException, IOException, SenderException {
 		return switch (getMessageClass()) {
 			case TEXT -> createTextMessage(session, correlationID, message);
 			case BYTES -> createBytesMessage(session, correlationID, message);

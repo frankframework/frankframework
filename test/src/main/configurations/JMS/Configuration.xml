@@ -11,4 +11,5 @@
 	<Include ref="ConfigurationAwsSqsJmsListenerSender.xml"/>
 	<Include ref="ConfigurationPubSub.xml"/>
 	<Include ref="ConfigurationMessageStoreListeners.xml"/>
+	<Include ref="ConfigurationMessageQueueSenderAndListener.xml"/>
 </Configuration>

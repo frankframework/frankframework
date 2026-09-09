@@ -30,7 +30,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
  *
  * @param <V> Type of the values in the map.
  */
-public class NestedLookupMap<V> extends LinkedCaseInsensitiveMap<V> {
+public class NestedLookupMap<V> extends LinkedCaseInsensitiveMap<@NonNull V> {
 	/**
 	 * Overridden `get` method to supported dot-separated keys to get values from nested sub-maps.
 	 * @param key the key whose associated value is to be returned. A {@code NULL} key always returns value NULL.
