@@ -49,7 +49,7 @@ public class ProcessUtil {
 		StringBuilder result = new StringBuilder();
 
 		BufferedReader bufferedReader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
-		String line = null;
+		String line;
 		// read() instead of readLine() results in JVM core dumps (this
 		// also happens when using InputStream or BufferedInputStream)
 		// using WebSphere Studio Application Developer (Windows)

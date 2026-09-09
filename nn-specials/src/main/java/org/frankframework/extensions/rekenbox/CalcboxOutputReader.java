@@ -77,7 +77,7 @@ public class CalcboxOutputReader implements XMLReader {
 			BufferedReader br = new RekenboxLineReader(r);
 
 			// Read the file and output it's contents.
-			String line = "";
+			String line;
 			while(null != (line = br.readLine())) {
 
 				// get everything before :
@@ -246,7 +246,7 @@ public class CalcboxOutputReader implements XMLReader {
 		// XXXXX Strip numbers
 
 		boolean containstrailingnumbers = false;
-		int j = 0;
+		int j;
 		for(j = str.length(); j > 0; j--) {
 			if(Character.isDigit(str.charAt(j - 1))) {
 				containstrailingnumbers = true;

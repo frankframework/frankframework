@@ -36,8 +36,8 @@ public class ClassLoaderMock extends ClassLoader {
 	public static final String ROOTDIR = "/dummy/directory/";
 	public static final String BASEPATH = "basepath/";
 
-	private Map<String, URL> URLs = null;
-	private Map<String, URL> parentURLs = null;
+	private Map<String, URL> URLs;
+	private Map<String, URL> parentURLs;
 
 	public ClassLoaderMock() {
 		// we don't call super(); we mock all requests!

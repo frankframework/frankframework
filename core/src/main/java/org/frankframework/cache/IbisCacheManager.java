@@ -40,7 +40,7 @@ public class IbisCacheManager {
 	private static final String CACHE_DIR_KEY="cache.dir";
 
 	private static IbisCacheManager self;
-	private CacheManager cacheManager=null;
+	private CacheManager cacheManager;
 
 	private IbisCacheManager() {
 		Configuration cacheManagerConfig = new Configuration();

@@ -45,7 +45,7 @@ public class CheckMessageSizePipeProcessor extends AbstractPipeProcessor {
 	private void checkMessageSize(long messageLength, PipeLine pipeLine, IPipe pipe, boolean input) {
 		if(messageLength > -1) {
 			if (pipe.sizeStatisticsEnabled()) {
-				DistributionSummary sizeStat = null;
+				DistributionSummary sizeStat;
 				if (input) {
 					sizeStat = pipeLine.getPipeSizeInStatistics(pipe);
 				} else {

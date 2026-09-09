@@ -189,7 +189,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 		String message = mailSession.getMessage();
 		String messageType = mailSession.getMessageType();
 
-		String messageContent = null;
+		String messageContent;
 		if (StringUtils.isNotEmpty(message)) {
 			Content content = new Content();
 			if (mailSession.isMessageBase64()) {

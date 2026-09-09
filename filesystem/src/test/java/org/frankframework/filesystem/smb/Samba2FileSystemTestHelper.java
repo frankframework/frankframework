@@ -70,12 +70,12 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	private Connection connection;
 	private Session session;
 	private DiskShare diskShare;
-	private String shareName = null;
-	private String userName = null;
-	private String password = null;
-	private String host = null;
-	private Integer port = null;
-	private String domain = null;
+	private String shareName;
+	private String userName;
+	private String password;
+	private String host;
+	private Integer port;
+	private String domain;
 
 	public Samba2FileSystemTestHelper(String host, Integer port, String shareFolder, String userName, String password, String domain) {
 		this.shareName = shareFolder;

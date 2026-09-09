@@ -161,7 +161,7 @@ public class TibcoUtils {
 			String userName, String password, String queueName,
 			String messageSelector) throws JMSException {
 		Connection connection = null;
-		Session jSession = null;
+		Session jSession;
 		try {
 			connection = getConnection(provUrl, authAlias, userName, password);
 			jSession = connection.createSession(false,
