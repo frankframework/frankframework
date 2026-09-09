@@ -1836,6 +1836,15 @@ If not specified, the default is INPUT.</xs:documentation>
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="MessageQueueSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MessageQueueSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="MessageStoreSender">
         <xs:complexType>
           <xs:complexContent>
@@ -3001,11 +3010,7 @@ You no longer need to use a filename handle.</xs:documentation>
   <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
     <xs:attribute ref="messageClass" />
     <xs:attribute ref="jndiContextPrefix" />
-    <xs:attribute name="destinationName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="destinationName" />
     <xs:attribute ref="destinationType" />
     <xs:attribute ref="acknowledgeMode" />
     <xs:attribute ref="subscriberType" />
@@ -4815,6 +4820,57 @@ is upgraded to ssl by using startTls if #useSsl is true Default: 25</xs:document
     <xs:attributeGroup ref="AbstractMailSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="MessageQueueSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JmsSenderCumulativeChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="MessageQueueSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.MessageQueueSender" />
+  </xs:complexType>
+  <xs:attributeGroup name="MessageQueueSenderDeclaredAttributeGroup">
+    <xs:attribute name="sessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. In the MessageQueueListener,
+all these keys and values will be added to the PipeLineSession on invocation.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="MessageQueueSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="MessageQueueSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JmsSenderDeclaredAttributeGroup" />
+    <xs:attribute ref="jndiContextPrefix" />
+    <xs:attribute ref="destinationName" />
+    <xs:attribute ref="destinationType" />
+    <xs:attribute ref="acknowledgeMode" />
+    <xs:attribute ref="subscriberType" />
+    <xs:attribute ref="queueConnectionFactoryName" />
+    <xs:attribute ref="topicConnectionFactoryName" />
+    <xs:attribute name="transacted" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether messages are send under transaction control.
+If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back under control of an XA-transaction. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="correlationIdToHex" />
+    <xs:attribute ref="correlationIdToHexPrefix" />
+    <xs:attribute ref="messageTimeToLive" />
+    <xs:attribute ref="correlationIdMaxLength" />
+    <xs:attribute ref="messageSelector" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain credentials for authentication to JMS server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="MessageStoreSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -6426,6 +6482,15 @@ Alternatively, warnings can be switched off using suppression properties Suppres
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="KafkaListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="MessageQueueListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MessageQueueListenerType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
             </xs:extension>
           </xs:complexContent>
@@ -8056,6 +8121,49 @@ for instance: &lt;code&gt;example.*&lt;/code&gt;.</xs:documentation>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:complexType name="MessageQueueListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="MessageQueueListenerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.MessageQueueListener" />
+  </xs:complexType>
+  <xs:attributeGroup name="MessageQueueListenerDeclaredAttributeGroup" />
+  <xs:attributeGroup name="MessageQueueListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractJmsListenerDeclaredAttributeGroup" />
+    <xs:attribute ref="jndiContextPrefix" />
+    <xs:attribute ref="destinationName" />
+    <xs:attribute ref="destinationType" />
+    <xs:attribute ref="acknowledgeMode" />
+    <xs:attribute ref="subscriberType" />
+    <xs:attribute ref="queueConnectionFactoryName" />
+    <xs:attribute ref="topicConnectionFactoryName" />
+    <xs:attribute name="transacted" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether messages are send under transaction control.
+If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back under control of an XA-transaction. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="correlationIdToHex" />
+    <xs:attribute ref="correlationIdToHexPrefix" />
+    <xs:attribute ref="messageTimeToLive" />
+    <xs:attribute ref="correlationIdMaxLength" />
+    <xs:attribute ref="messageSelector" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain credentials for authentication to JMS server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="MessageStoreListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -8073,7 +8181,7 @@ for instance: &lt;code&gt;example.*&lt;/code&gt;.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="sessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of sessionKey's to be read together with the message. Please note: corresponding MessageStoreSender must have the same value for this attribute</xs:documentation>
+        <xs:documentation>Comma separated list of sessionKey's to be read together with the message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="tableName" type="xs:string">
@@ -8671,6 +8779,15 @@ This is slightly different from the namespaceURI which routes messages based on 
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MQSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="MessageQueueSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MessageQueueSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
             </xs:extension>
           </xs:complexContent>
@@ -11154,6 +11271,15 @@ is handled as a block. Default: true</xs:documentation>
   </xs:group>
   <xs:group name="ListenerElementGroupBase_2">
     <xs:choice>
+      <xs:element name="MessageQueueListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MessageQueueListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="PullingJmsListener">
         <xs:complexType>
           <xs:complexContent>
@@ -17898,6 +18024,11 @@ Defaults to MessageClass#AUTO, unless the default is overridden in AppConstants 
     </xs:simpleType>
   </xs:attribute>
   <xs:attribute name="jndiContextPrefix" type="xs:string" />
+  <xs:attribute name="destinationName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="destinationType">
     <xs:annotation>
       <xs:documentation>Type of the messaging destination.

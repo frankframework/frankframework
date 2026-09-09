@@ -155,7 +155,7 @@ public abstract class AbstractCacheAdapter<V> implements ICache<String, V>, Fran
 	public @Nullable V transformValue(Message value, PipeLineSession session) {
 		// Tries to get the parameter with name 'value', or else falls back to the deprecated way of determining the value
 
-		Message returnMessage = null;
+		Message returnMessage;
 
 		if (getParameterList().hasParameter(PARAM_VALUE)) {
 			Message resolvedValue = getParameter(PARAM_VALUE, value, session);

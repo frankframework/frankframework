@@ -59,7 +59,7 @@ public class AsposeFontManager {
 	private final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
 	public AsposeFontManager(String fontsDirectory) throws IOException {
-		File rootDirectory = null;
+		File rootDirectory;
 		if (StringUtils.isNotEmpty(fontsDirectory)) {
 			rootDirectory = new File(fontsDirectory);
 

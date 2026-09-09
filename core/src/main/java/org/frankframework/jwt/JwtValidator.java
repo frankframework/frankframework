@@ -50,7 +50,7 @@ public class JwtValidator<C extends SecurityContext> {
 	private @Getter int connectTimeout=2000;
 	private @Getter int readTimeout=2000;
 
-	private @Getter ConfigurableJWTProcessor<C> jwtProcessor = null;
+	private @Getter ConfigurableJWTProcessor<C> jwtProcessor;
 
 	public JwtValidator() {
 		jwtProcessor = new DefaultJWTProcessor<>();
@@ -88,7 +88,7 @@ public class JwtValidator<C extends SecurityContext> {
 	}
 
 	protected JWKSource<C> getKeySource(URL jwksURL) throws IOException, ParseException {
-		JWKSource<C> keySource = null;
+		JWKSource<C> keySource;
 		if("file".equals(jwksURL.getProtocol()) || "jar".equals(jwksURL.getProtocol())) {
 			JWKSet set = JWKSet.load(jwksURL.openStream());
 			keySource = new ImmutableJWKSet<>(set);

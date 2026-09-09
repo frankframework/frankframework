@@ -162,7 +162,7 @@ public class RestServiceDispatcher {
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName())) {
-			boolean writeToSecLog = false;
+			boolean writeToSecLog;
 			if (listener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
 				try {
 					InputStreamDataSource dataSource = new InputStreamDataSource(httpServletRequest.getContentType(), httpServletRequest.getInputStream()); // The entire InputStream will be read here!

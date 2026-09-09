@@ -105,7 +105,7 @@ public class ApiStreamPipe extends StreamPipe {
 			}
 
 			String slotId = AppConstants.getInstance().getProperty("instance.name") + "/" + session.get("operation");
-			String selectMessageKeyResult = null;
+			String selectMessageKeyResult;
 			try {
 				selectMessageKeyResult = selectMessageKey(slotId, messageId);
 			} catch (Exception e) {
@@ -114,7 +114,7 @@ public class ApiStreamPipe extends StreamPipe {
 			if (StringUtils.isEmpty(selectMessageKeyResult)) {
 				throw new PipeRunException(this, "Could not find message in MessageStore for slotId [" + slotId + "] and messageId [" + messageId + "]");
 			}
-			String selectMessageResult = null;
+			String selectMessageResult;
 			try {
 				selectMessageResult = selectMessage(selectMessageKeyResult);
 			} catch (Exception e) {

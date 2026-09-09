@@ -57,9 +57,9 @@ public class SendJmsMessage {
 	@Relation("jms")
 	@Description("put a JMS message on a queue")
 	public ResponseEntity<?> putJmsMessage(@ModelAttribute JmsMessageModel model) throws ApiException {
-		String message = null;
-		String fileName = null;
-		InputStream file = null;
+		String message;
+		String fileName;
+		InputStream file;
 
 		String fileEncoding = RequestUtils.resolveRequiredProperty("encoding", model.encoding(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		String connectionFactory = RequestUtils.resolveRequiredProperty("connectionFactory", model.connectionFactory(), null);
@@ -123,7 +123,7 @@ public class SendJmsMessage {
 			if (size > 0) {
 				byte[] b = new byte[size];
 				int rb = 0;
-				int chunk = 0;
+				int chunk;
 				while ((size - rb) > 0) {
 					chunk = archive.read(b, rb, size - rb);
 					if (chunk == -1) {

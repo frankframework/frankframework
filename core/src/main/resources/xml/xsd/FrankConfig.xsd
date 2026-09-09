@@ -2225,6 +2225,24 @@ currently use unless you wish to participate in this development.</xs:documentat
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="MessageQueueListener">
+        <xs:annotation>
+          <xs:documentation>Listener that receives messages from a MessageQueueSender in another org.frankframework.core.Adapter.
+Any org.frankframework.core.PipeLineSession keys sent by the source adapter will be in the receiving &lt;code&gt;PipeLineSession&lt;/code&gt;.
+This listener is the JMS-based equivalent of the org.frankframework.jdbc.MessageStoreListener.
+&lt;p&gt;
+    If the message received is not in the expected format produced by the MessageQueueSender, the listener will still do
+    its best to convert it to a regular input-message, so it can also be used with a regular JmsSender, or other JMS sources.
+&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MessageQueueListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="MessageStoreListener">
         <xs:annotation>
           <xs:documentation>Read messages from the IBISSTORE database table previously stored by a MessageStoreSender.
@@ -2323,7 +2341,7 @@ flag can be used to set the disk storage location.</xs:documentation>
 
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
- &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
+ &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s or &lt;code&gt;jakarta.jms.BytesMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
 Provides functions for jms connections, queues and topics and acts as a facade
@@ -3186,11 +3204,7 @@ When set to &lt;code&gt;true&lt;/code&gt;, the messageID is used as Correlation-
   <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
     <xs:attribute ref="messageClass" />
     <xs:attribute ref="jndiContextPrefix" />
-    <xs:attribute name="destinationName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="destinationName" />
     <xs:attribute ref="destinationType" />
     <xs:attribute ref="acknowledgeMode" />
     <xs:attribute ref="subscriberType" />
@@ -4072,6 +4086,45 @@ for instance: &lt;code&gt;example.*&lt;/code&gt;.</xs:documentation>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:complexType name="MessageQueueListenerType">
+    <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
+    <xs:attributeGroup ref="MessageQueueListenerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.MessageQueueListener" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="MessageQueueListenerDeclaredAttributeGroup" />
+  <xs:attributeGroup name="MessageQueueListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractJmsListenerDeclaredAttributeGroup" />
+    <xs:attribute ref="jndiContextPrefix" />
+    <xs:attribute ref="destinationName" />
+    <xs:attribute ref="destinationType" />
+    <xs:attribute ref="acknowledgeMode" />
+    <xs:attribute ref="subscriberType" />
+    <xs:attribute ref="queueConnectionFactoryName" />
+    <xs:attribute ref="topicConnectionFactoryName" />
+    <xs:attribute name="transacted" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether messages are send under transaction control.
+If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back under control of an XA-transaction. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="correlationIdToHex" />
+    <xs:attribute ref="correlationIdToHexPrefix" />
+    <xs:attribute ref="messageTimeToLive" />
+    <xs:attribute ref="correlationIdMaxLength" />
+    <xs:attribute ref="messageSelector" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain credentials for authentication to JMS server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="MessageStoreListenerType">
     <xs:group ref="JdbcFacadeDeclaredChildGroup" />
     <xs:attributeGroup ref="MessageStoreListenerCumulativeAttributeGroup" />
@@ -4085,7 +4138,7 @@ for instance: &lt;code&gt;example.*&lt;/code&gt;.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="sessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of sessionKey's to be read together with the message. Please note: corresponding MessageStoreSender must have the same value for this attribute</xs:documentation>
+        <xs:documentation>Comma separated list of sessionKey's to be read together with the message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="tableName" type="xs:string">
@@ -4637,6 +4690,21 @@ This class sends messages with JMS.</xs:documentation>
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="MessageQueueSender">
+        <xs:annotation>
+          <xs:documentation>Send messages to another org.frankframework.core.Adapter, including message-metadata
+(the org.frankframework.stream.MessageContext of the input Message), and optionally
+a number of PipeLineSession keys. This is the JMS-based alternative for the database-based
+org.frankframework.jdbc.MessageStoreSender.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MessageQueueSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
     </xs:choice>
   </xs:group>
   <xs:complexType name="EsbJmsSenderType">
@@ -4782,6 +4850,53 @@ This class sends messages with JMS.</xs:documentation>
     <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.ibm.MQSender" use="prohibited" />
   </xs:complexType>
+  <xs:complexType name="MessageQueueSenderType">
+    <xs:group ref="JmsSenderCumulativeChildGroup" />
+    <xs:attributeGroup ref="MessageQueueSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.MessageQueueSender" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="MessageQueueSenderDeclaredAttributeGroup">
+    <xs:attribute name="sessionKeys" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma separated list of sessionKey's to be stored together with the message. In the MessageQueueListener,
+all these keys and values will be added to the PipeLineSession on invocation.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="MessageQueueSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="MessageQueueSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="JmsSenderDeclaredAttributeGroup" />
+    <xs:attribute ref="jndiContextPrefix" />
+    <xs:attribute ref="destinationName" />
+    <xs:attribute ref="destinationType" />
+    <xs:attribute ref="acknowledgeMode" />
+    <xs:attribute ref="subscriberType" />
+    <xs:attribute ref="queueConnectionFactoryName" />
+    <xs:attribute ref="topicConnectionFactoryName" />
+    <xs:attribute name="transacted" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Controls whether messages are send under transaction control.
+If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back under control of an XA-transaction. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="correlationIdToHex" />
+    <xs:attribute ref="correlationIdToHexPrefix" />
+    <xs:attribute ref="messageTimeToLive" />
+    <xs:attribute ref="correlationIdMaxLength" />
+    <xs:attribute ref="messageSelector" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias used to obtain credentials for authentication to JMS server</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
   <xs:group name="ErrorStorageElementGroup">
     <xs:choice>
       <xs:element name="ErrorStorage">
@@ -7725,6 +7840,24 @@ N.B. the default values shown can be overridden using properties in appConstants
   </xs:group>
   <xs:group name="ListenerElementGroupBase_2">
     <xs:choice>
+      <xs:element name="MessageQueueListener">
+        <xs:annotation>
+          <xs:documentation>Listener that receives messages from a MessageQueueSender in another org.frankframework.core.Adapter.
+Any org.frankframework.core.PipeLineSession keys sent by the source adapter will be in the receiving &lt;code&gt;PipeLineSession&lt;/code&gt;.
+This listener is the JMS-based equivalent of the org.frankframework.jdbc.MessageStoreListener.
+&lt;p&gt;
+    If the message received is not in the expected format produced by the MessageQueueSender, the listener will still do
+    its best to convert it to a regular input-message, so it can also be used with a regular JmsSender, or other JMS sources.
+&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MessageQueueListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="PullingJmsListener">
         <xs:annotation>
           <xs:documentation>A true multi-threaded Listener-class.
@@ -7754,7 +7887,7 @@ N.B. the default values shown can be overridden using properties in appConstants
 
  &lt;/p&gt;
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
- &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
+ &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s or &lt;code&gt;jakarta.jms.BytesMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
 Provides functions for jms connections, queues and topics and acts as a facade
@@ -8923,6 +9056,21 @@ Otherwise, errors like the following might occur: &lt;code&gt;NoClassDefFoundExc
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="MailSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="MessageQueueSender">
+        <xs:annotation>
+          <xs:documentation>Send messages to another org.frankframework.core.Adapter, including message-metadata
+(the org.frankframework.stream.MessageContext of the input Message), and optionally
+a number of PipeLineSession keys. This is the JMS-based alternative for the database-based
+org.frankframework.jdbc.MessageStoreSender.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="MessageQueueSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -22075,6 +22223,11 @@ Useful when sending messages to MQ which expects this value to be in hexadecimal
   <xs:attribute name="lookupDestination" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the destinationName is used directly instead of performing a JNDI lookup Default: true</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="destinationName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="authentication" type="xs:string">

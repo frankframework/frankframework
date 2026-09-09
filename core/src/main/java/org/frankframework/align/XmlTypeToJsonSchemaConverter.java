@@ -453,7 +453,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			log.trace("XSElementDeclaration element [{}][{}]", elementName, ToStringBuilder.reflectionToString(elementDeclaration, ToStringStyle.MULTI_LINE_STYLE));
 
 		XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
-		JsonObject definition = null;
+		JsonObject definition;
 		if (elementTypeDefinition.getAnonymous() || XML_SCHEMA_NS.equals(elementTypeDefinition.getNamespace())) {
 			definition = getDefinition(elementTypeDefinition, shouldCreateReferences);
 		} else {

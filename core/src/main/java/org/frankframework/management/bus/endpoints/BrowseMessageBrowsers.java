@@ -173,7 +173,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		String receiverName = BusMessageUtils.getHeader(message, HEADER_RECEIVER_NAME_KEY);
 
 		IListener<?> listener = null;
-		IMessageBrowser<?> storage = null;
+		IMessageBrowser<?> storage;
 		Map<ProcessState, ProcessStateDTO> targetPSInfo = null;
 		if(StringUtils.isNotEmpty(pipeName)) {
 			storage = getStorageFromPipe(adapter, pipeName);

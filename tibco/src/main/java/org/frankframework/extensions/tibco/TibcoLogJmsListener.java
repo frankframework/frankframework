@@ -61,7 +61,7 @@ public class TibcoLogJmsListener extends JmsListener {
 		Iterator it = list.iterator();
 		StringBuilder sb = new StringBuilder();
 		long creationTimes = 0;
-		int severity = 0;
+		int severity;
 		String severityStr = null;
 		String msg = null;
 		String engineName = null;

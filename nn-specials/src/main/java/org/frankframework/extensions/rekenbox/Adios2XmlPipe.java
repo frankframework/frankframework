@@ -255,24 +255,23 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 					throw new ConfigurationException("cannot find adios definitions from resource [" + getAdiosDefinities() + "]");
 				}
 				BufferedReader bufinput = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(url.openStream()));
-				String line, labelnr, waarde;
+				String line, waarde;
 
 				line = bufinput.readLine();
 
-				labelnr = "";
 				waarde = "";
 
 				// read in the rubrieken
-				while(line != null && !waarde.equals(recordIdentifier)) {
+				while (line != null && !waarde.equals(recordIdentifier)) {
 					StringTokenizer st = new StringTokenizer(line, "{};= \n");
 					if(st.countTokens() >= 1) {
 						waarde = st.nextToken();
 						if(!waarde.equals(recordIdentifier)) {
 							waarde = waarde.substring(3);
 						}
-						if(st.hasMoreTokens()) {
-							labelnr = st.nextToken();
-							if(alldigits(labelnr)) {
+						if (st.hasMoreTokens()) {
+							String labelnr = st.nextToken();
+							if (alldigits(labelnr)) {
 								// als de key al bestaat betekend dit dat er een fout zit in de invoer
 								if(nummer2rubriek.containsKey(labelnr)) {
 									throw new ConfigurationException("rubriek [" + labelnr + "] komt meermaals voor. Waarde1: [" + nummer2rubriek.get(labelnr) + "], Waarde2: [" + waarde + "]");
@@ -289,12 +288,12 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				// Read in the records
 				while(line != null) {
 					StringTokenizer st1 = new StringTokenizer(line, "{};= \n");
-					if(st1.countTokens() >= 1) {
+					if (st1.countTokens() >= 1) {
 						waarde = st1.nextToken();
 						waarde = waarde.substring(3);
-						if(st1.hasMoreTokens()) {
-							labelnr = st1.nextToken();
-							if(alldigits(labelnr)) {
+						if (st1.hasMoreTokens()) {
+							String labelnr = st1.nextToken();
+							if (alldigits(labelnr)) {
 								// labeln = Integer.parseInt(labelnr);
 								if(nummer2record.containsKey(labelnr)) {
 									throw new ConfigurationException("record [" + labelnr + "] komt meermaals voor. Waarde1: [" + nummer2record.get(labelnr) + "], Waarde2: [" + waarde + "]");
@@ -393,7 +392,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	public void addItem(String item, XmlBuilder builder, Map nummer2naam, String naamLabel, String nummerLabel, String indexLabel) {
 
 		String nummer;
-		String naam = null;
+		String naam;
 		String index=null;
 
 		if (item.indexOf('[')<0) {

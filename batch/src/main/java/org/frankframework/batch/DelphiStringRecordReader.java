@@ -103,7 +103,7 @@ public class DelphiStringRecordReader extends Reader {
 				pos+=bytesRead;
 				bytesToRead-=bytesRead;
 			} else {
-				String currentResult=null;
+				String currentResult;
 				try {
 					currentResult=new String(buf,charsetName);
 				} catch (Exception e) {

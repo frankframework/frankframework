@@ -170,7 +170,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	 */
 	@Test
 	public void testExceptionHandlingDEBUG() throws Exception {
-		boolean makeSureNoExceptionIsThrown = false;
+		boolean makeSureNoExceptionIsThrown;
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
@@ -200,7 +200,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	 */
 	@Test
 	public void testExceptionHandlingINFO() throws Exception {
-		boolean makeSureNoExceptionIsThrown = false;
+		boolean makeSureNoExceptionIsThrown;
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
