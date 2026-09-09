@@ -32,7 +32,7 @@
       <field name="TVARCHAR" null="true" />
       <field name="TVARCHAR2">just a third text</field>
       <field name="TINT" null="true" />
-      <field name="TDATETIME">2018-04-12 03:05:06</field>
+      <field name="TDATETIME">2018-04-12T03:05:06</field>
       <field name="TBLOB" null="true"/>
       <field name="TCLOB" null="true"/>
     </row>
@@ -50,7 +50,7 @@
       <field name="TVARCHAR">5th text</field>
       <field name="TVARCHAR2" null="true" />
       <field name="TINT">15092002</field>
-      <field name="TDATETIME">2018-04-12 03:05:06</field>
+      <field name="TDATETIME">2018-04-12T03:05:06</field>
       <field name="TBLOB">Stream on a String</field>
       <field name="TCLOB">Reader on a String</field>
     </row>
