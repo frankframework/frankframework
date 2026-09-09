@@ -106,7 +106,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 
 
 	long getFileSize(F f) throws FileSystemException;
-	String getCanonicalName(F f) throws FileSystemException;
+	@NonNull String getCanonicalName(@NonNull F f) throws FileSystemException;
 	Date getModificationTime(F f) throws FileSystemException;
 	Map<String, Object> getAdditionalFileProperties(F f) throws FileSystemException;
 
@@ -120,7 +120,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 * @param f File for which to try to get canonical name
 	 * @return Either the canonical name of the file, or an error.
 	 */
-	default String getCanonicalNameOrErrorMessage(F f) {
+	default @NonNull String getCanonicalNameOrErrorMessage(@NonNull F f) {
 		try {
 			return getCanonicalName(f);
 		} catch (FileSystemException e) {

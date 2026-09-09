@@ -94,7 +94,7 @@ public abstract class AbstractConnectedFileSystem<F,C> extends AbstractFileSyste
 
 
 	/**
-	 * Get a Connection from the pool, or the global shared connection.
+	 * Get a Connection from the pool, or the global shared connection. Returns NULL if the filesystem has not been opened yet.
 	 */
 	protected @Nullable C getConnection() throws FileSystemException {
 		log.trace("Get Connection from FS, pooled: {}", this::isPooledConnection);

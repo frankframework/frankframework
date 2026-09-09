@@ -227,13 +227,14 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public @Nullable DirectoryStream<Message> list(Message foldername, @NonNull TypeFilter filter) throws FileSystemException {
+	public @NonNull DirectoryStream<Message> list(Message foldername, @NonNull TypeFilter filter) throws FileSystemException {
 		if (filter.includeFolders()) {
 			throw new FileSystemException("Filtering on folders is not supported");
 		}
 		IMAPFolder baseFolder = getConnection();
 		if (baseFolder == null) {
-			return null;
+			// No connection available; filesystem has not yet been opened. Valid situation, should return empty iterator (not NULL).
+			return FileSystemUtils.getDirectoryStream(List.of());
 		}
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -505,7 +506,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public String getCanonicalName(Message f) {
+	public @NonNull String getCanonicalName(@NonNull Message f) {
 		return getName(f);
 	}
 

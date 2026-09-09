@@ -416,7 +416,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public String getCanonicalName(SmbFileRef f) {
+	public @NonNull String getCanonicalName(@NonNull SmbFileRef f) {
 		return f.getName(); // Should include folder structure if known
 	}
 

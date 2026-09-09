@@ -446,7 +446,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public String getCanonicalName(MailItemId file) {
+	public @NonNull String getCanonicalName(@NonNull MailItemId file) {
 		return file.getUrl();
 	}
 

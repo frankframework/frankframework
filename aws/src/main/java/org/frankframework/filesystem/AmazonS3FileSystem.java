@@ -565,7 +565,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public String getCanonicalName(S3FileRef f) {
+	public @NonNull String getCanonicalName(@NonNull S3FileRef f) {
 		return f.getBucketName() + S3FileRef.BUCKET_OBJECT_SEPARATOR + f.getKey();
 	}
 

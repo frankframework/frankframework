@@ -390,7 +390,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public String getCanonicalName(Path f) throws FileSystemException {
+	public @NonNull String getCanonicalName(@NonNull Path f) throws FileSystemException {
 		try {
 			return f.toFile().getCanonicalPath();
 		} catch (IOException e) {

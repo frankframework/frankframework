@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -100,12 +101,9 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public @Nullable SmbFile toFile(@Nullable String filename) throws FileSystemException {
-		if (filename == null) {
-			return null;
-		}
+	public @NonNull SmbFile toFile(@Nullable String filename) throws FileSystemException {
 		try {
-			return new SmbFile(smbContext, filename);
+			return new SmbFile(smbContext, Objects.requireNonNullElse(filename, ""));
 		} catch (IOException e) {
 			throw new FileSystemException("unable to get SMB file [" + filename + "]", e);
 		}
@@ -361,7 +359,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public String getCanonicalName(SmbFile f) {
+	public @NonNull String getCanonicalName(@NonNull SmbFile f) {
 		return f.getCanonicalPath();
 	}
 

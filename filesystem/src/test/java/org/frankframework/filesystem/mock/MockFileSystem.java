@@ -334,7 +334,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public String getCanonicalName(M f) {
+	public @NonNull String getCanonicalName(@NonNull M f) {
 		if (f.getOwner() == null) {
 			return f.getName();
 		}
