@@ -33,16 +33,16 @@ public class MessageToStringResolver implements AdditionalStringResolver {
 				.or(() -> getMessageFromMap(key, props2));
 	}
 
-	private Optional<String> getMessageFromMap(String key, Map<?, ?> map) {
+	private Optional<String> getMessageFromMap(@Nullable String key, Map<?, ?> map) {
 		if (map == null || !map.containsKey(key)) {
 			return Optional.empty();
 		}
 		Object val = map.get(key);
-		if (!(val instanceof Message)) {
+		if (!(val instanceof Message msg)) {
 			return Optional.empty();
 		}
 		try {
-			return Optional.ofNullable(((Message) val).asString());
+			return Optional.of(msg.asString());
 		} catch (IOException e) {
 			// Do not get Logger early as this code might run during logger configuration.
 			LogUtil.getLogger(MessageToStringResolver.class).error("Cannot get String representation for key [{}] of Message:", key, e);
