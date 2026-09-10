@@ -79,7 +79,6 @@ public class HazelcastMultiNodeEndToEndTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testMultipleNodesHazelcastMessage() throws ParseException {
 		// Arrange
@@ -105,7 +104,6 @@ public class HazelcastMultiNodeEndToEndTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testWithMultipleClusters() throws ParseException {
 		// Arrange

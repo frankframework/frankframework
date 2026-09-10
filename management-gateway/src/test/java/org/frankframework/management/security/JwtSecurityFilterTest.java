@@ -104,6 +104,7 @@ class JwtSecurityFilterTest {
 		// Assert
 		verify(chain, times(1)).doFilter(any(ServletRequest.class), any(ServletResponse.class));
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		assertNotNull(authentication);
 		List<String> authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 		assertAll(
 				() -> assertInstanceOf(JwtAuthenticationToken.class, authentication),

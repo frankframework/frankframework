@@ -44,15 +44,15 @@ public class OutboundGatewayFactory implements InitializingBean, SmartLifecycle,
 
 	@Override
 	public void afterPropertiesSet() {
-		if(StringUtils.isBlank(gatewayClassname)) {
-			throw new IllegalStateException("no outbound gateway class specified. Please set ["+GATEWAY_CLASS_KEY+"]");
+		if (StringUtils.isBlank(gatewayClassname)) {
+			throw new IllegalStateException("no outbound gateway class specified. Please set [" + GATEWAY_CLASS_KEY + "]");
 		}
 		log.info("attempting to initialize using gateway class [{}]", gatewayClassname);
 
 		Class<?> gatewayClass = ClassUtils.resolveClassName(gatewayClassname, applicationContext.getClassLoader());
 
-		if(!OutboundGateway.class.isAssignableFrom(gatewayClass)) {
-			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] does not implement type IntegrationGateway");
+		if (!OutboundGateway.class.isAssignableFrom(gatewayClass)) {
+			throw new IllegalArgumentException("gateway [" + gatewayClassname + "] does not implement type IntegrationGateway");
 		}
 
 		gateway = (OutboundGateway) SpringUtils.createBean(applicationContext, gatewayClass);
@@ -70,10 +70,6 @@ public class OutboundGatewayFactory implements InitializingBean, SmartLifecycle,
 	}
 
 	@Override
-	public boolean isSingleton() {
-		return true;
-	}
-	@Override
 	public void start() {
 		if (gateway instanceof SmartLifecycle lifecycleGateway) {
 			lifecycleGateway.start();
@@ -86,6 +82,7 @@ public class OutboundGatewayFactory implements InitializingBean, SmartLifecycle,
 			lifecycleGateway.stop();
 		}
 	}
+
 	@Override
 	public boolean isRunning() {
 		if (gateway instanceof SmartLifecycle lifecycleGateway) {
