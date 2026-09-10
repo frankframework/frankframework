@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
@@ -85,7 +86,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	 * Optional IFlowGenerator. If not present, the FlowDiagramManager should still be
 	 * able to generate dot files and return the `noImageAvailable` image.
 	 */
-	protected IFlowGenerator createFlowGenerator(String generatorBeanClass) {
+	protected @Nullable IFlowGenerator createFlowGenerator(String generatorBeanClass) {
 		log.debug("trying to initialize FlowGenerator [{}]", generatorBeanClass);
 		try {
 			Class<?> clazz = ClassUtils.loadClass(generatorBeanClass);
@@ -102,7 +103,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		return null;
 	}
 
-	public InputStream get(Adapter adapter) throws IOException {
+	public @Nullable InputStream get(Adapter adapter) throws IOException {
 		File destFile = retrieveAdapterFlowFile(adapter);
 
 		if(destFile == null || !destFile.exists()) {
@@ -112,7 +113,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		return new FileInputStream(destFile);
 	}
 
-	public InputStream get(Configuration configuration) throws IOException {
+	public @Nullable InputStream get(Configuration configuration) throws IOException {
 		File destFile = retrieveConfigurationFlowFile(configuration);
 
 		if(destFile == null || !destFile.exists()) {
@@ -122,7 +123,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		return new FileInputStream(destFile);
 	}
 
-	public InputStream get(List<Configuration> configurations) throws IOException {
+	public @Nullable InputStream get(List<Configuration> configurations) throws IOException {
 		File destFile = retrieveAllConfigurationsFlowFile();
 
 		if(destFile == null || !destFile.exists()) {
@@ -196,7 +197,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		return retrieveFlowFile(adapterFlowDir, adapter.getName());
 	}
 
-	private File retrieveConfigurationFlowFile(Configuration configuration) {
+	private @Nullable File retrieveConfigurationFlowFile(Configuration configuration) {
 		String filename = configuration.getName();
 		if(StringUtils.isEmpty(filename)) {
 			log.warn("cannot generate FlowFile, configuration name is null");
@@ -209,7 +210,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		return retrieveFlowFile(configFlowDir, "_ALL_");
 	}
 
-	private File retrieveFlowFile(File parent, String fileName) {
+	private @Nullable File retrieveFlowFile(File parent, String fileName) {
 		if(flowGenerator == null) { // fail fast check to see if an IFlowGenerator is available.
 			log.debug("cannot retrieve Flow file, no generator found");
 			return null;

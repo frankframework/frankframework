@@ -35,6 +35,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -77,7 +78,7 @@ public class RestServiceDispatcher {
 		return self;
 	}
 
-	public String findMatchingPattern(String uri) {
+	public @Nullable String findMatchingPattern(String uri) {
 		if (uri==null) {
 			return null;
 		}
@@ -121,7 +122,7 @@ public class RestServiceDispatcher {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse) throws ListenerException {
+	public @Nullable Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		log.trace("searching listener for uri [{}] method [{}]", uri, method);
 

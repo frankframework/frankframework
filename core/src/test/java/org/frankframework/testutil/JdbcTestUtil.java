@@ -79,7 +79,7 @@ public class JdbcTestUtil {
 		}
 	}
 
-	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues) throws JdbcException {
+	public static @Nullable Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues) throws JdbcException {
 		JdbcTestUtil.log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList());
@@ -194,7 +194,7 @@ public class JdbcTestUtil {
 	 * @return Query result as string, or {@literal  NULL}. The result is taken from only the first result-row, first column.
 	 * @throws DbmsException if there is an error in query execution or parameter mapping
 	 */
-	public static String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
+	public static @Nullable String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayQueryParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt, params);

@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -67,7 +68,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	private final List<IOutputField> outputFields = new ArrayList<>();
 
 	@Override
-	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
+	public @Nullable String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		StringBuilder output = new StringBuilder();
 		Stack<IOutputField> conditions = new Stack<>();
 
@@ -324,7 +325,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
+		public @Nullable IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			result.append(toValue(inputFields));
 			return null;
 		}
@@ -354,7 +355,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
+		public @Nullable IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			String val = super.toValue(inputFields).trim();
 
 			if (startIndex >= val.length()) {
@@ -394,7 +395,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
+		public @Nullable IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			String val = super.toValue(inputFields).trim();
 			align(result, val, length, leftAlign, fillChar);
 			return null;
@@ -413,7 +414,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) {
+		public @Nullable IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) {
 			result.append(fixedOutput);
 			return null;
 		}
@@ -452,7 +453,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
+		public @Nullable IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			String inVal = super.toValue(inputFields);
 			String outVal = null;
 			if (inVal != null) {
@@ -485,7 +486,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
+		public @Nullable IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ConfigurationException {
 			result.append(outputFormatter.format(getInstant(inputFields)));
 
 			return null;
@@ -523,7 +524,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		private boolean output;
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws Exception {
+		public @Nullable IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws Exception {
 			// first call, check wether the condition is true or false
 			if (this == curFunction) {
 				output = conditionIsTrue(inputFields);
@@ -656,7 +657,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		@Override
-		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) {
+		public @Nullable IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) {
 			String transform = delegate.transform(getInputFieldIndex(), inputFields, params);
 			result.append(transform);
 			return null;

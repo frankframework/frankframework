@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Map;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -94,19 +95,19 @@ public class MessageBrowsingUtilTest {
 		}
 
 		@Override
-		public String getName() {
+		public @Nullable String getName() {
 			// No-op
 			return null;
 		}
 
 		@Override
-		public ApplicationContext getApplicationContext() {
+		public @Nullable ApplicationContext getApplicationContext() {
 			// No-op
 			return null;
 		}
 
 		@Override
-		public ClassLoader getConfigurationClassLoader() {
+		public @Nullable ClassLoader getConfigurationClassLoader() {
 			// No-op
 			return null;
 		}

@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -106,7 +107,7 @@ public class JwtValidator<C extends SecurityContext> {
 		return keySource;
 	}
 
-	protected C createSecurityContext(String idToken) {
+	protected @Nullable C createSecurityContext(String idToken) {
 		return null;  // optional context parameter, not required here
 	}
 

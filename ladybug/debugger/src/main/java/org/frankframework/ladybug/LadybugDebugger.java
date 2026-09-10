@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -133,7 +134,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	}
 
 	@Override
-	public String rerun(String correlationId, Report originalReport, SecurityContext ingored, ReportRunner reportRunner) {
+	public @Nullable String rerun(String correlationId, Report originalReport, SecurityContext ingored, ReportRunner reportRunner) {
 		if (!isAllowed()) {
 			return "Not allowed";
 		}

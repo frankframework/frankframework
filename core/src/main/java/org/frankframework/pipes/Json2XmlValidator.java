@@ -303,7 +303,7 @@ public class Json2XmlValidator extends XmlValidator {
 		};
 	}
 
-	protected RootValidations getJsonRootValidations(boolean responseMode) {
+	protected @Nullable RootValidations getJsonRootValidations(boolean responseMode) {
 		if (isValidateJsonToRootElementOnly()) {
 			String root=getMessageRoot(responseMode);
 			if (StringUtils.isEmpty(root)) {

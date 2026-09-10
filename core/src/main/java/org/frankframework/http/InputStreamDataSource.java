@@ -20,6 +20,8 @@ import java.io.OutputStream;
 
 import jakarta.activation.DataSource;
 
+import org.jspecify.annotations.Nullable;
+
 public class InputStreamDataSource implements DataSource {
 	private final String contentType;
 	private final InputStream inputStream;
@@ -48,12 +50,12 @@ public class InputStreamDataSource implements DataSource {
 	}
 
 	@Override
-	public String getName() {
+	public @Nullable String getName() {
 		return null;
 	}
 
 	@Override
-	public OutputStream getOutputStream() {
+	public @Nullable OutputStream getOutputStream() {
 		return null;
 	}
 }

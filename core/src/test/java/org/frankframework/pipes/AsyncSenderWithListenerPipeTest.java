@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -63,7 +64,7 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		}
 
 		@Override
-		public RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) {
+		public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) {
 			return null;
 		}
 
@@ -78,7 +79,7 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		}
 
 		@Override
-		public Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) {
+		public @Nullable Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) {
 			return null;
 		}
 
@@ -93,7 +94,7 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 		}
 
 		@Override
-		public RawMessageWrapper<String> getRawMessage(String correlationId, Map<String, Object> threadContext) {
+		public @Nullable RawMessageWrapper<String> getRawMessage(String correlationId, Map<String, Object> threadContext) {
 			return null;
 		}
 	}

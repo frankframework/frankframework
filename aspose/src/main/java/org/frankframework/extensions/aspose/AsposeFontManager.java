@@ -35,6 +35,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import com.aspose.cells.FontConfigs;
 import com.aspose.slides.FontsLoader;
@@ -191,7 +192,7 @@ public class AsposeFontManager {
 	 * @param fontFile File location of the font to be loaded
 	 * @return the font or <code>null</code>.
 	 */
-	private Font createFont(File fontFile) {
+	private @Nullable Font createFont(File fontFile) {
 		String name = fontFile.getName();
 		if (!name.toLowerCase().endsWith(TRUETYPE_FONT_EXT)) {
 			throw new IllegalArgumentException("Unexpected extension! (file: " + name + " expected extension: " + TRUETYPE_FONT_EXT + ")");

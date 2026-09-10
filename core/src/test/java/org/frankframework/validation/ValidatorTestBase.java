@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
@@ -214,12 +215,12 @@ public abstract class ValidatorTestBase {
 			}
 
 			@Override
-			public String getSchemasId(PipeLineSession session) {
+			public @Nullable String getSchemasId(PipeLineSession session) {
 				return null;
 			}
 
 			@Override
-			public List<Schema> getSchemas(PipeLineSession session) {
+			public @Nullable List<Schema> getSchemas(PipeLineSession session) {
 				return null;
 			}
 

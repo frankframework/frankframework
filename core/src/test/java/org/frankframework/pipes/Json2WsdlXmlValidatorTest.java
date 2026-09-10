@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeForward;
@@ -23,7 +24,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	WsdlXmlValidator validator;
 
 	@Override
-	public ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
+	public @Nullable ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
 									 boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) {
 		// TODO Auto-generated method stub
 		fail("method not implemented");

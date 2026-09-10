@@ -16,6 +16,7 @@
 package org.frankframework.extensions.esb;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -378,7 +379,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 		return getParameterValue(OPERATIONVERSION_PARAMETER_NAME);
 	}
 
-	public String getDestination() {
+	public @Nullable String getDestination() {
 		IParameter p = getParameterList().findParameter(DESTINATION_PARAMETER_NAME);
 		return p == null ? null : p.getValue();
 	}

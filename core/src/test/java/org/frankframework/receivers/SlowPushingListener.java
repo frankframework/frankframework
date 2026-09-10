@@ -16,6 +16,7 @@
 package org.frankframework.receivers;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -35,7 +36,7 @@ public class SlowPushingListener extends SlowListenerBase implements IPushingLis
 	}
 
 	@Override
-	public RawMessageWrapper<String> wrapRawMessage(@NonNull String rawMessage, @NonNull PipeLineSession session) {
+	public @Nullable RawMessageWrapper<String> wrapRawMessage(@NonNull String rawMessage, @NonNull PipeLineSession session) {
 		return null;
 	}
 }

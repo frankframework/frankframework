@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 
 import lombok.extern.log4j.Log4j2;
@@ -53,7 +54,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	 * running out of heapspace, it will remove the IFlowGenerator. This method makes sure,
 	 * as long as the IFlowGenerator bean can initialize, always a valid instance is returned.
 	 */
-	protected GraphvizEngine getGraphvizEngine() {
+	protected @Nullable GraphvizEngine getGraphvizEngine() {
 		SoftReference<GraphvizEngine> reference = GRAPHVIZ_ENGINES.get();
 		if(reference == null || reference.get() == null) {
 			GraphvizEngine generator = createGraphvizEngine();
@@ -68,7 +69,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 		return reference.get();
 	}
 
-	private GraphvizEngine createGraphvizEngine() {
+	private @Nullable GraphvizEngine createGraphvizEngine() {
 		try {
 			return new GraphvizEngine();
 		} catch (Throwable t) {

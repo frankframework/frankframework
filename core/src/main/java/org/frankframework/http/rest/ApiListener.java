@@ -331,7 +331,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 *
 	 * @return null if no pattern is found
 	 */
-	public String getCleanPattern() {
+	public @Nullable String getCleanPattern() {
 		String pattern = getUriPattern();
 		if (StringUtils.isEmpty(pattern))
 			return null;
@@ -495,7 +495,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.multipartBodyName = multipartBodyName;
 	}
 
-	public String getMultipartBodyName() {
+	public @Nullable String getMultipartBodyName() {
 		if (StringUtils.isNotEmpty(multipartBodyName)) {
 			return multipartBodyName;
 		}

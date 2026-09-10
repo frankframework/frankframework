@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import net.sf.ehcache.Cache;
 
@@ -148,7 +149,7 @@ class KeyTransformer extends AbstractCacheAdapter {
 	}
 
 	@Override
-	protected Serializable getElement(String arg0) {
+	protected @Nullable Serializable getElement(String arg0) {
 		return null;
 	}
 

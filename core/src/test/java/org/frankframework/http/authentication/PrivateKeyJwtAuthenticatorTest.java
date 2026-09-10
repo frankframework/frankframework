@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -144,7 +145,7 @@ class PrivateKeyJwtAuthenticatorTest {
 				"Expected ConfigurationException when private key is missing");
 	}
 
-	private String extractParam(String body, String paramName) {
+	private @Nullable String extractParam(String body, String paramName) {
 		for (String part : body.split("&")) {
 			if (part.startsWith(paramName + "=")) {
 				return part.substring(paramName.length() + 1);

@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -100,7 +101,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Abstra
 		}
 	}
 
-	public String read(String filename) {
+	public @Nullable String read(String filename) {
 		Path file = Paths.get(filename);
 		if (!Files.exists(file)) {
 			return null;

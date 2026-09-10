@@ -31,6 +31,7 @@ import org.apache.qpid.protonj2.client.SaslOptions;
 import org.apache.qpid.protonj2.client.Session;
 import org.apache.qpid.protonj2.client.SessionOptions;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 
 import lombok.extern.log4j.Log4j2;
@@ -163,7 +164,7 @@ public class AmqpConnectionFactory implements DisposableBean {
 		}
 
 		@Override
-		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		public @Nullable Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			if (method.getName().equals("close") || method.getName().equals("closeAsync")) {
 				if (!closed) {
 					borrowCount.decrementAndGet();

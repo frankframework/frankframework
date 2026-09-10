@@ -17,6 +17,8 @@ package org.frankframework.cache;
 
 import java.io.IOException;
 
+import org.jspecify.annotations.Nullable;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -128,7 +130,7 @@ public class EhCache<V> extends AbstractCacheAdapter<V> {
 	}
 
 	@Override
-	protected V getElement(String key) {
+	protected @Nullable V getElement(String key) {
 		Element element = cache.get(key);
 
 		if (element == null) {
@@ -150,7 +152,7 @@ public class EhCache<V> extends AbstractCacheAdapter<V> {
 	}
 
 	@Override
-	protected V toValue(Message value) {
+	protected @Nullable V toValue(Message value) {
 		try {
 			return (V)value.asString();
 		} catch (IOException e) {
