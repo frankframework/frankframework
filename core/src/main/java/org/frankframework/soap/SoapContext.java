@@ -21,6 +21,7 @@ import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.util.MimeType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -66,7 +67,7 @@ public class SoapContext {
 
 	private boolean createdMessageId = false;
 
-	public SoapContext(Message body) throws SOAPException {
+	public SoapContext(@NonNull Message body) throws SOAPException {
 		// Let's parse the entire request in order to find out the protocol, action e.d.
 		// As well as validating that it is a valid SOAP Message.
 		SoapNamespaceUriExtractor nsUriHandler = new SoapNamespaceUriExtractor(null);
@@ -103,12 +104,12 @@ public class SoapContext {
 
 	private String generateMessageId() {
 		createdMessageId = true;
-		return MessageUtils.generateMessageId();
+		return MessageUtils.generateMessageId("SOAP[" + getSoapAction() + "]");
 	}
 
 	/**
 	 * If a MessageID was provided, ensure we return a 'RelatesTo' header conform the ws-addr specification.
-	 * If the MessageID is a FallbackID, do nothing.
+	 * If the MessageID is a FallbackID or internally generated, do nothing.
 	 */
 	public Message setMessageId(Message output) throws SOAPException {
 		if (MessageUtils.isFallbackMessageId(messageId) || createdMessageId) {

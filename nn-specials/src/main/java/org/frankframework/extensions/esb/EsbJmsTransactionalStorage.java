@@ -150,8 +150,8 @@ public class EsbJmsTransactionalStorage extends JmsTransactionalStorage {
 	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws JMSException {
 		Map<String,Object> parameterValues = new HashMap<>();
 		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
-		parameterValues.put("conversationId", 	MessageUtils.generateMessageId());
-		parameterValues.put("messageId", 		MessageUtils.generateMessageId());
+		parameterValues.put("conversationId", 	MessageUtils.generateDefaultMessageId());
+		parameterValues.put("messageId", 		MessageUtils.generateDefaultMessageId());
 		parameterValues.put("timestamp", 		DateFormatUtils.now(DateFormatUtils.FULL_ISO_FORMATTER));
 		parameterValues.put("msgMessageId", 	messageId);
 		parameterValues.put("msgCorrelationId", correlationId);

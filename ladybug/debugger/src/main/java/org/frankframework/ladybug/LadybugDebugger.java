@@ -74,7 +74,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	private @Setter ApplicationContext applicationContext;
 	private @Setter ApplicationEventPublisher applicationEventPublisher;
 
-	protected Set<String> inRerun = new HashSet<>();
+	protected final Set<String> inRerun = new HashSet<>();
 
 	/**
 	 * TestTool can't be wired by name or type. We must fetch it from a parent (SpringBoot) context.
@@ -176,7 +176,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 								}
 							}
 							// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
-							String messageId = MessageUtils.generateMessageId("ladybug-testmessage");
+							String messageId = MessageUtils.generateMessageId("ladybug");
 							pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 							adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
 						}
