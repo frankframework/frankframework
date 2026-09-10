@@ -21,7 +21,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -102,13 +101,13 @@ public class Step implements Comparable<Step> {
 		}
 		String stepDataFile = Objects.requireNonNull(getStepDataFile(), "Step data file should not be NULL when not inline and not ignore");
 		Message fileMessage = LarvaUtil.readFile(stepDataFile);
-		if (!scenario.isResolvePropertiesInScenarioFiles()) {
+		if (fileMessage.isNull()) {
+			throw new LarvaException("Failed to read input file [" + value + "] for step " + index);
+		}
+		if (!scenario.isResolvePropertiesInScenarioFiles() || fileMessage.isEmpty()) {
 			return fileMessage;
 		}
 		String fileData = fileMessage.asString();
-		if (StringUtils.isBlank(fileData)) {
-			throw new LarvaException("Failed to resolve properties in input file [" + value + "] for step " + index);
-		}
 		return new Message(StringResolver.substVars(fileData, appConstants), fileMessage.copyContext());
 	}
 
