@@ -32,6 +32,7 @@ import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.SOAPException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
@@ -207,7 +208,7 @@ public class MultipartUtils {
 		return null;
 	}
 
-	public record MultipartMessages(Message multipartXml, Message body, Map<String, Message> messages) {
+	public record MultipartMessages(@Nullable Message multipartXml, @Nullable Message body, @NonNull Map<String, Message> messages) {
 		public MultipartMessages(Message body) {
 			this(null, body, Map.of());
 		}
@@ -226,7 +227,7 @@ public class MultipartUtils {
 				final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 				final String fieldName = getFieldName(bodyPart);
 				if (StringUtils.isEmpty(fieldName)) {
-					log.info("unable to determine fieldname skipping part");
+					log.info("unable to determine fieldname, skipping part");
 					continue;
 				}
 

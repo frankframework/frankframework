@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -386,7 +387,7 @@ public class Message implements Serializable {
 	/**
 	 * Check if a message is empty. If message size cannot be determined, check if any data can be read from the message.
 	 *
-	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size if larger than 0 or data can be read from it.
+	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size is larger than 0 or data can be read from it.
 	 */
 	public boolean isEmpty() {
 		return request.isEmpty();
@@ -467,10 +468,12 @@ public class Message implements Serializable {
 	 * @param message Message to check. Can be {@code null}.
 	 * @return Returns {@code true} if the message is {@code null}, otherwise the result of {@link Message#isEmpty()}.
 	 */
+	@Contract(value = "null -> true")
 	public static boolean isEmpty(@Nullable Message message) {
 		return message == null || message.isEmpty();
 	}
 
+	@Contract(value = "null -> true")
 	public static boolean isNull(@Nullable Message message) {
 		return message == null || message.isNull();
 	}

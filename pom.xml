@@ -112,7 +112,7 @@
 		<javadoc-plugin.version>3.12.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.4.240</h2.driver.version>
+		<h2.driver.version>2.5.250</h2.driver.version>
 		<db2.driver.version>12.1.5.0</db2.driver.version>
 		<oracle.driver.version>23.26.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
@@ -485,7 +485,7 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>2.0.18</version>
+				<version>2.0.19</version>
 			</dependency>
 
 			<!-- the bcpg depends on the other two modules, however to ensure we're using the latest version, explicitly define them here, dependabot will take care of the rest -->
@@ -838,7 +838,7 @@
 							<arg>--should-stop=ifError=FLOW</arg>
 							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
 							<!-- Flags to enable ErrorProne, and options for ErrorProne. Should be given in the same arg parameter otherwise it doesn't seem to work. -->
-							<arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN -Xep:InlineMeSuggester:OFF</arg>
+							<arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=org.frankframework -XepOpt:NullAway:CustomContractAnnotations=org.springframework.lang.Contract -XepOpt:NullAway:JSpecifyMode=true -XepOpt:NullAway:JSpecifyJDKModels=true -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN -Xep:InlineMeSuggester:OFF</arg>
 						</compilerArgs>
 						<annotationProcessorPaths>
 							<path>
@@ -1002,7 +1002,7 @@
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
 					<artifactId>spotless-maven-plugin</artifactId>
-					<version>3.10.1</version>
+					<version>3.10.2</version>
 					<configuration>
 						<java>
 							<removeUnusedImports />

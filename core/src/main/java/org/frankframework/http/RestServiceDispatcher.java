@@ -45,6 +45,7 @@ import org.frankframework.http.rest.IApiCache;
 import org.frankframework.stream.Message;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -55,6 +56,7 @@ import org.frankframework.util.StringUtil;
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
  */
+@SuppressWarnings("removal")
 public class RestServiceDispatcher {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
@@ -162,6 +164,9 @@ public class RestServiceDispatcher {
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName())) {
+			String messageId = MessageUtils.generateMessageId("REST[" + listener.getName() + "]");
+			context.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+			ctc.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
 			boolean writeToSecLog;
 			if (listener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
 				try {

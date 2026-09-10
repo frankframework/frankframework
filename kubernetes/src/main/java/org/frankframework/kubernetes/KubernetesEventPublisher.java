@@ -15,7 +15,6 @@
 */
 package org.frankframework.kubernetes;
 
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -134,7 +133,7 @@ public class KubernetesEventPublisher implements ApplicationListener<MessageEven
 	}
 
 	static Event toEvent(MessageEvent<?> event, String podName, String namespace) {
-		String time = K8S_TIME.format(Instant.ofEpochMilli(event.getTimestamp()));
+		String time = K8S_TIME.format(event.getEventTime());
 		return new EventBuilder()
 				.withNewMetadata()
 					.withGenerateName("frankframework-")
