@@ -12,5 +12,5 @@ CMD ["java", \
 	"--add-opens", "java.management/sun.management=ALL-UNNAMED", \
 	"--add-opens", "jdk.management/com.sun.management.internal=ALL-UNNAMED", \
 	"--sun-misc-unsafe-memory-access=allow", \
-	"-jar", "/app/frankframework-console-webapp.war"
+	"-jar", "/app/frankframework-console-webapp.war" \
 ]
