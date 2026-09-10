@@ -112,7 +112,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		}
 	}
 
-	protected RawMessageWrapper<String> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
+	protected @Nullable RawMessageWrapper<String> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		String query = getSelectQuery();
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);

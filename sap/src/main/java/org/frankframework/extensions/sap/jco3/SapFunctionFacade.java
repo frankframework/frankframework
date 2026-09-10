@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import com.sap.conn.jco.JCoFunction;
@@ -226,7 +227,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 		}
 	}
 
-	public String getCorrelationIdFromField(JCoFunction function) {
+	public @Nullable String getCorrelationIdFromField(JCoFunction function) {
 		JCoParameterList input = function.getImportParameterList();
 		int correlationIdFieldIndex = findFieldIndex(input, getCorrelationIdFieldIndex(), getCorrelationIdFieldName());
 		if (correlationIdFieldIndex>0 && input!=null) {

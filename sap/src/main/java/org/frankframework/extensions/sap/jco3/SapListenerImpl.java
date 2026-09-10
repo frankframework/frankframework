@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocDocumentIterator;
@@ -346,7 +347,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	 * We don't use functions when receiving SAP messages
 	 */
 	@Override
-	protected String getFunctionName() {
+	protected @Nullable String getFunctionName() {
 		return null;
 	}
 

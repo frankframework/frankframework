@@ -498,7 +498,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 		}
 	}
 
-	private String checkIfMessageIdAlreadyStored(Connection conn, String messageId, Serializable message) throws SQLException {
+	private @Nullable String checkIfMessageIdAlreadyStored(Connection conn, String messageId, Serializable message) throws SQLException {
 		log.debug("Preparing select key statement [{}]", selectKeyForMessageQuery);
 		try (PreparedStatement stmt = conn.prepareStatement(selectKeyForMessageQuery)) {
 			stmt.setString(1, getSlotId());
@@ -613,7 +613,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 	}
 
 	@SuppressWarnings("unchecked")
-	private RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	private @Nullable RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream == null) {
 				return null;

@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import org.jspecify.annotations.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,12 +34,12 @@ public class MockDataSource implements DataSource {
 	}
 
 	@Override
-	public Logger getParentLogger() {
+	public @Nullable Logger getParentLogger() {
 		return null;
 	}
 
 	@Override
-	public <T> T unwrap(Class<T> iface) {
+	public <T> @Nullable T unwrap(Class<T> iface) {
 		return null;
 	}
 
@@ -47,7 +49,7 @@ public class MockDataSource implements DataSource {
 	}
 
 	@Override
-	public PrintWriter getLogWriter() {
+	public @Nullable PrintWriter getLogWriter() {
 		return null;
 	}
 

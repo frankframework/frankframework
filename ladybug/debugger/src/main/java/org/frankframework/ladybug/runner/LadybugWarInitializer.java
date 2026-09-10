@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -146,7 +147,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		return "loc".equals(dtapStage) || "xxx".equals(dtapStage) || dtapStage.isEmpty();
 	}
 
-	private String getConfigFile(String file) {
+	private @Nullable String getConfigFile(String file) {
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		URL fileURL = classLoader.getResource(file);
 		if(fileURL == null) {

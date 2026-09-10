@@ -35,6 +35,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -44,6 +45,7 @@ import org.frankframework.http.rest.IApiCache;
 import org.frankframework.stream.Message;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -54,6 +56,7 @@ import org.frankframework.util.StringUtil;
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
  */
+@SuppressWarnings("removal")
 public class RestServiceDispatcher {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
@@ -75,7 +78,7 @@ public class RestServiceDispatcher {
 		return self;
 	}
 
-	public String findMatchingPattern(String uri) {
+	public @Nullable String findMatchingPattern(String uri) {
 		if (uri==null) {
 			return null;
 		}
@@ -119,7 +122,7 @@ public class RestServiceDispatcher {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse) throws ListenerException {
+	public @Nullable Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse) throws ListenerException {
 		String method = httpServletRequest.getMethod();
 		log.trace("searching listener for uri [{}] method [{}]", uri, method);
 
@@ -161,6 +164,9 @@ public class RestServiceDispatcher {
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName())) {
+			String messageId = MessageUtils.generateMessageId("REST[" + listener.getName() + "]");
+			context.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+			ctc.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
 			boolean writeToSecLog;
 			if (listener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
 				try {

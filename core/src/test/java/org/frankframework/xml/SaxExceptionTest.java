@@ -14,6 +14,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.core.IsInstanceOf;
 import org.hamcrest.core.StringContains;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -175,7 +176,7 @@ public class SaxExceptionTest {
 		assertThat(se.toString(), StringContains.containsString(EXPECTED_LOCATION_MESSAGE_PART));
 	}
 
-	public Exception createCause() {
+	public @Nullable Exception createCause() {
 		try {
 			catchAndRethrow();
 			fail("Expected exception");

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Disabled;
 
 import org.frankframework.core.HasName;
@@ -32,7 +33,7 @@ public class ClassUtilsTest {
 		assertEquals("ClassUtilsTest", ClassUtils.nameOf(this.getClass()));
 		assertEquals("org.frankframework.util.ClassUtilsTest$1", ClassUtils.nameOf(new HasName() {
 			@Override
-			public String getName() {
+			public @Nullable String getName() {
 				return null;
 			}
 		}));

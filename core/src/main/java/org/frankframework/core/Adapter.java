@@ -1180,7 +1180,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		return sb.toString();
 	}
 
-	private String getFileSizeAsBytes(Message message) {
+	private @Nullable String getFileSizeAsBytes(Message message) {
 		if (Message.isEmpty(message)) {
 			return null;
 		}

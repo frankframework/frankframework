@@ -19,13 +19,15 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.jspecify.annotations.Nullable;
+
 public class CookieUtil {
 
 	private CookieUtil() {
 		// Private constructor so that the utility-class cannot be instantiated.
 	}
 
-	public static Cookie getCookie(HttpServletRequest request, String name) {
+	public static @Nullable Cookie getCookie(HttpServletRequest request, String name) {
 		Cookie[] cookies = request.getCookies();
 		if(cookies != null) {
 			for (Cookie cookie : cookies) {

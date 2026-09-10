@@ -1,5 +1,7 @@
 package org.frankframework.javascript;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.flow.ResultHandler;
@@ -28,7 +30,7 @@ public class FakeEngine implements JavascriptEngine<String> {
 	}
 
 	@Override
-	public Object executeFunction(String name, Object... parameters) {
+	public @Nullable Object executeFunction(String name, Object... parameters) {
 		return null;
 	}
 

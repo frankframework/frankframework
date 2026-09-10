@@ -377,7 +377,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public String getName(Path f) {
+	public @Nullable String getName(@NonNull Path f) {
 		if(f.getFileName() != null) {
 			return f.getFileName().toString();
 		}
@@ -385,12 +385,12 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public String getParentFolder(Path f) throws FileSystemException {
+	public String getParentFolder(@NonNull Path f) throws FileSystemException {
 		return getCanonicalName(f.getParent());
 	}
 
 	@Override
-	public String getCanonicalName(Path f) throws FileSystemException {
+	public @NonNull String getCanonicalName(@NonNull Path f) throws FileSystemException {
 		try {
 			return f.toFile().getCanonicalPath();
 		} catch (IOException e) {

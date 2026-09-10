@@ -15,6 +15,7 @@
 */
 package org.frankframework.extensions.sap.jco3.tx;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
@@ -132,7 +133,7 @@ public abstract class DestinationFactoryUtils {
 	 * @return the transactional String, or <code>null</code> if none found
 	 * @throws JCoException in case of failure
 	 */
-	public static String doGetTransactionalTid(SapSystemImpl sapSystem, ResourceFactory resourceFactory)
+	public static @Nullable String doGetTransactionalTid(SapSystemImpl sapSystem, ResourceFactory resourceFactory)
 			throws JCoException {
 
 		Assert.notNull(sapSystem, "SapSystem must not be null");
@@ -184,7 +185,7 @@ public abstract class DestinationFactoryUtils {
 	 * @return the transactional JCoDestination, or <code>null</code> if none found
 	 * @throws JCoException in case of failure
 	 */
-	public static JCoDestination doGetTransactionalDestination(SapSystemImpl sapSystem, ResourceFactory resourceFactory) throws JCoException {
+	public static @Nullable JCoDestination doGetTransactionalDestination(SapSystemImpl sapSystem, ResourceFactory resourceFactory) throws JCoException {
 
 		Assert.notNull(sapSystem, "SapSystem must not be null");
 		Assert.notNull(resourceFactory, "ResourceFactory must not be null");

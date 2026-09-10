@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -84,7 +85,7 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 	}
 
 	@Override
-	public InputStream _readFile(String folderName, String filename) {
+	public @Nullable InputStream _readFile(String folderName, String filename) {
 		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
 		if (folder==null) {
 			return null;

@@ -17,6 +17,7 @@ package org.frankframework.components.plugins;
 
 import java.lang.reflect.Modifier;
 
+import org.jspecify.annotations.Nullable;
 import org.pf4j.Plugin;
 import org.pf4j.PluginFactory;
 import org.pf4j.PluginWrapper;
@@ -38,7 +39,7 @@ public class SpringAutowireCapablePluginFactory implements PluginFactory {
 	}
 
 	@Override
-	public Plugin create(PluginWrapper pluginWrapper) {
+	public @Nullable Plugin create(PluginWrapper pluginWrapper) {
 		String pluginClassName = pluginWrapper.getDescriptor().getPluginClass();
 		log.debug("Create instance for plugin '{}'", pluginClassName);
 

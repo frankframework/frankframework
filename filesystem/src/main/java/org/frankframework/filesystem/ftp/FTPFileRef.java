@@ -18,6 +18,7 @@ package org.frankframework.filesystem.ftp;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPFile;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -78,7 +79,7 @@ public class FTPFileRef extends FTPFile {
 
 	/** Returns the canonical name inclusive file path when present */
 	@Override
-	public String getName() {
+	public @Nullable String getName() {
 		String prefix = folder != null ? folder + "/" : "";
 		if (StringUtils.isNotEmpty(prefix) || super.getName() != null) {
 			return prefix + super.getName();

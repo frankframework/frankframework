@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.content.ContentBody;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
@@ -103,7 +104,7 @@ public class MessageContentBody implements ContentBody {
 	}
 
 	@Override
-	public String getCharset() {
+	public @Nullable String getCharset() {
 		if(message.isBinary()) {
 			return null;
 		}

@@ -17,6 +17,7 @@ package org.frankframework.extensions.sap.jco3;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.sap.conn.jco.JCoDestination;
@@ -128,7 +129,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return result;
 	}
 
-	public String getTid(JCoDestination destination, SapSystemImpl sapSystem) throws JCoException {
+	public @Nullable String getTid(JCoDestination destination, SapSystemImpl sapSystem) throws JCoException {
 		if (isSynchronous()) {
 			return null;
 		}

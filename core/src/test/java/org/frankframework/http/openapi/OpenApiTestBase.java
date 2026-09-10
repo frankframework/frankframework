@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -114,7 +115,7 @@ public class OpenApiTestBase extends Mockito {
 		return service(createRequest("get", uri + "/openapi.json"));
 	}
 
-	protected String service(HttpServletRequest request) throws ServletException {
+	protected @Nullable String service(HttpServletRequest request) throws ServletException {
 		try {
 			MockHttpServletResponse response = new MockHttpServletResponse();
 			ApiListenerServlet servlet = servlets.get();

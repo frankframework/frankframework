@@ -27,6 +27,7 @@ import java.util.Map;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.ServletContext;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.web.context.WebApplicationContext;
@@ -119,7 +120,7 @@ public class ServerStatistics extends BusEndpointBase {
 		return new JsonMessage(returnMap);
 	}
 
-	static Long getFileSystemTotalSpace() {
+	static @Nullable Long getFileSystemTotalSpace() {
 		try {
 			File systemDir = getSystemDir();
 			return systemDir.getTotalSpace();
@@ -129,7 +130,7 @@ public class ServerStatistics extends BusEndpointBase {
 		}
 	}
 
-	static Long getFileSystemFreeSpace() {
+	static @Nullable Long getFileSystemFreeSpace() {
 		try {
 			File systemDir = getSystemDir();
 			return systemDir.getFreeSpace();

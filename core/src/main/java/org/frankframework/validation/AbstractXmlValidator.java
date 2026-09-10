@@ -28,6 +28,7 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSModel;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 import org.xml.sax.InputSource;
@@ -136,7 +137,7 @@ public abstract class AbstractXmlValidator implements FrankElement, Lifecycle {
 		return started;
 	}
 
-	public AbstractValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
+	public @Nullable AbstractValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			log.debug("{} removing contents of sessionKey [{}]", logPrefix, getReasonSessionKey());

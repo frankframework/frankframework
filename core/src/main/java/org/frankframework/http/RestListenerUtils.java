@@ -17,6 +17,8 @@ package org.frankframework.http;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.core.PipeLineSession;
 
 /**
@@ -26,7 +28,7 @@ import org.frankframework.core.PipeLineSession;
  */
 public class RestListenerUtils {
 
-	public static String retrieveRequestURL(PipeLineSession session) {
+	public static @Nullable String retrieveRequestURL(PipeLineSession session) {
 		HttpServletRequest request = (HttpServletRequest) session.get(PipeLineSession.HTTP_REQUEST_KEY);
 		if (request != null) {
 			return request.getRequestURL().toString();

@@ -24,6 +24,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 
+import org.jspecify.annotations.Nullable;
+
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -56,7 +58,7 @@ class DbmsUtil {
 	 * @return Query result as string, or {@literal  NULL}. The result is taken from only the first result-row, first column.
 	 * @throws DbmsException if there is an error in query execution or parameter mapping
 	 */
-	static String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
+	static @Nullable String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayQueryParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt, params);

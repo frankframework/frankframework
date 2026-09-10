@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
@@ -41,7 +42,7 @@ public class NonResolvingExternalEntityResolver implements EntityResolver2 {
 	}
 
 	@Override
-	public InputSource getExternalSubset(String name, String baseURI) {
+	public @Nullable InputSource getExternalSubset(String name, String baseURI) {
 		return null;
 	}
 

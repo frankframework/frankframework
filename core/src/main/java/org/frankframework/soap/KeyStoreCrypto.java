@@ -96,7 +96,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		this(keystore, getDefaultTruststore());
 	}
 
-	private static KeyStore getDefaultTruststore() {
+	private static @Nullable KeyStore getDefaultTruststore() {
 		if (StringUtils.isBlank(CA_CERTS_PATH) || StringUtils.isBlank(CA_CERTS_PASSWORD)) {
 			throw new IllegalStateException("CA CERTS file or password not provided");
 		}
@@ -902,7 +902,7 @@ public class KeyStoreCrypto extends CryptoBase {
 	 * @param store The KeyStore to search
 	 * @return An implementation-specific identifier that corresponds to the X509Certificate
 	 */
-	private String getIdentifier(X509Certificate cert, KeyStore store) throws WSSecurityException {
+	private @Nullable String getIdentifier(X509Certificate cert, KeyStore store) throws WSSecurityException {
 		try {
 			for (Enumeration<String> e = store.aliases(); e.hasMoreElements();) {
 				String alias = e.nextElement();
@@ -926,7 +926,7 @@ public class KeyStoreCrypto extends CryptoBase {
 		return null;
 	}
 
-	private String getIdentifier(PublicKey publicKey, KeyStore store) throws WSSecurityException {
+	private @Nullable String getIdentifier(PublicKey publicKey, KeyStore store) throws WSSecurityException {
 		try {
 			for (Enumeration<String> e = store.aliases(); e.hasMoreElements();) {
 				String alias = e.nextElement();

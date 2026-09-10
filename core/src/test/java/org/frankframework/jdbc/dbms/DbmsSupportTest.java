@@ -23,6 +23,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
@@ -735,7 +736,7 @@ public class DbmsSupportTest {
 		return executeTranslatedQuery(connection, query, queryType, false);
 	}
 
-	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
+	protected @Nullable PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 
 		log.debug("executing translated query [{}]", translatedQuery);

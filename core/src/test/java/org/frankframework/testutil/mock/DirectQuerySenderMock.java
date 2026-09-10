@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.mockito.Mockito;
 
 import org.frankframework.core.PipeLineSession;
@@ -62,7 +63,7 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 	}
 
 	@Override
-	public Connection openBlock(PipeLineSession session) {
+	public @Nullable Connection openBlock(PipeLineSession session) {
 		return null;
 	}
 

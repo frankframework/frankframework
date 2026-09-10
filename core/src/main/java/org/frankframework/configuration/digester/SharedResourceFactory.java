@@ -18,6 +18,7 @@ package org.frankframework.configuration.digester;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 
@@ -31,7 +32,7 @@ import org.frankframework.util.SpringUtils;
 public class SharedResourceFactory extends AbstractSpringPoweredDigesterFactory {
 
 	@Override
-	public String getSuggestedBeanName() {
+	public @Nullable String getSuggestedBeanName() {
 		return null;
 	}
 

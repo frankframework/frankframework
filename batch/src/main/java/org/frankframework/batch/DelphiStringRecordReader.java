@@ -23,6 +23,7 @@ import java.io.Reader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.util.LogUtil;
@@ -86,7 +87,7 @@ public class DelphiStringRecordReader extends Reader {
 	/*
 	 * read a single string from the input, then skip to stringLength.
 	 */
-	private String readString() throws IOException {
+	private @Nullable String readString() throws IOException {
 		int len;
 		len=in.read(); // first read the byte that holds the length of the string
 		if (len<0) {

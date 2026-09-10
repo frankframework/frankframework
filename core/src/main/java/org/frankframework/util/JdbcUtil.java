@@ -466,7 +466,7 @@ public class JdbcUtil {
 		return result;
 	}
 
-	public static String getClobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
+	public static @Nullable String getClobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
 		Reader reader = dbmsSupport.getClobReader(rs, columnIndex);
 		if (reader == null) {
 			return null;

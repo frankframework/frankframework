@@ -15,13 +15,13 @@
 */
 package org.frankframework.kubernetes;
 
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -133,7 +133,7 @@ public class KubernetesEventPublisher implements ApplicationListener<MessageEven
 	}
 
 	static Event toEvent(MessageEvent<?> event, String podName, String namespace) {
-		String time = K8S_TIME.format(Instant.ofEpochMilli(event.getTimestamp()));
+		String time = K8S_TIME.format(event.getEventTime());
 		return new EventBuilder()
 				.withNewMetadata()
 					.withGenerateName("frankframework-")
@@ -159,7 +159,7 @@ public class KubernetesEventPublisher implements ApplicationListener<MessageEven
 				.build();
 	}
 
-	private static KubernetesClient buildInClusterClientOrNull() {
+	private static @Nullable KubernetesClient buildInClusterClientOrNull() {
 		if (!AppConstants.getInstance().getBoolean(ENABLED_KEY, true)) {
 			return null;
 		}
