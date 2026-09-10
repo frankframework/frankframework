@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
@@ -28,7 +29,6 @@ import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -265,9 +265,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					// noinspection DataFlowIssue
-					if (rawMessageWrapper.getRawMessage() instanceof jakarta.jms.Message) {
-						jakarta.jms.Message messageReceived = rawMessageWrapper.getRawMessage();
+					if (rawMessageWrapper.getRawMessage() instanceof jakarta.jms.Message messageReceived) {
 						long expiration = messageReceived.getJMSExpiration();
 						if (expiration != 0) {
 							timeToLive = expiration - TimeProvider.nowAsMillis();
@@ -327,8 +325,9 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 		return isTransacted() || getAcknowledgeMode() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 
-	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws ListenerException, JMSException, IOException, SenderException {
-		Session session = (Session) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in PipeLineSession by JmsConnector
+	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, @NonNull PipeLineSession pipeLineSession, @NonNull Map<String, Object> properties) throws ListenerException, JMSException, IOException, SenderException {
+		Session session = pipeLineSession.getAsType(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in PipeLineSession by JmsConnector
+		Objects.requireNonNull(session, "JMS Session was not found in PipeLineSession");
 		send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), pipeLineSession, getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 	}
 
@@ -345,13 +344,8 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	 * @return a map with headers to set to the JMS response, or {@code null} if there was
 	 * no session or no parameters.
 	 */
-	protected @Nullable Map<String, Object> getMessageProperties(@Nullable PipeLineSession session) {
-
-		if (session != null) {
-			return new HashMap<>(evaluateParameters(session));
-		}
-
-		return null;
+	protected @NonNull Map<String, Object> getMessageProperties(@NonNull PipeLineSession session) {
+		return new HashMap<>(evaluateParameters(session));
 	}
 
 	@Override

@@ -178,7 +178,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected static Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(String classLoaderType) {
+	protected static Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(@NonNull String classLoaderType) {
 		try {
 			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 

@@ -32,6 +32,8 @@ import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
 
+import org.jspecify.annotations.NonNull;
+
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -221,13 +223,10 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	protected Map<String, Object> getMessageProperties(PipeLineSession session) {
+	protected @NonNull Map<String, Object> getMessageProperties(@NonNull PipeLineSession session) {
 		Map<String, Object> properties = super.getMessageProperties(session);
 
-		if (isCopyAEProperties() && session != null) {
-			if(properties == null)
-				properties = new HashMap<>();
-
+		if (isCopyAEProperties()) {
 			properties.putAll(session.entrySet().stream()
 					.filter(entry -> entry.getKey().startsWith("ae_"))
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
