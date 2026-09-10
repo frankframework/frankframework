@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.sql.DataSource;
 
@@ -172,13 +173,14 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return databaseConfigurations;
 	}
 
-	private Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType() {
-		String classLoaderType = APP_CONSTANTS.getString("configurations.directory.classLoaderType", DirectoryClassLoader.class.getCanonicalName());
+	private @NonNull Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType() {
+		String canonicalName = Objects.requireNonNull(DirectoryClassLoader.class.getCanonicalName());
+		String classLoaderType = APP_CONSTANTS.getString("configurations.directory.classLoaderType", canonicalName);
 		return getDefaultDirectoryClassLoaderType(classLoaderType);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected static Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(@NonNull String classLoaderType) {
+	protected static @NonNull Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(@NonNull String classLoaderType) {
 		try {
 			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 
