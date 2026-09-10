@@ -48,7 +48,7 @@ class KeystoreJwtGeneratorTest {
 
 		assertNotNull(generator.jwtHeader, "jwtHeader should be set");
 		assertEquals("RS512", generator.jwtHeader.getAlgorithm().getName(), "Should use RS512");
-		assertNotNull(generator.getPublicJwkSet(), "JwkSet should be populated");
+		assertNotNull(generator.getPublicJwk(), "Jwk should be present");
 		Map<String, Object> claims = SignedJWT.parse(jwt).getPayload().toJSONObject();
 		assertEquals("user", claims.get("sub"));
 		assertEquals("[ROLE_USER]", claims.get("scope").toString());

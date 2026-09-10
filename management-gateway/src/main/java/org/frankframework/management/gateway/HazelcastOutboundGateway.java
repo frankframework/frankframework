@@ -16,10 +16,9 @@
 package org.frankframework.management.gateway;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -30,18 +29,17 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.core.GenericMessagingTemplate;
 
 import com.hazelcast.cluster.Member;
-import com.hazelcast.cluster.MembershipEvent;
-import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.LifecycleService;
 import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
 import com.nimbusds.jose.jwk.JWK;
@@ -53,14 +51,13 @@ import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
-import org.frankframework.management.gateway.events.ClusterMemberEvent;
-import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
 import org.frankframework.management.security.AbstractJwtGenerator;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
-public class HazelcastOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway, DisposableBean {
+public class HazelcastOutboundGateway implements ApplicationContextAware, OutboundGateway, SmartLifecycle, DisposableBean {
 	private HazelcastInstance hzInstance;
+	private LifecycleService lifecycle;
 	private ApplicationContext applicationContext;
 
 	private static final RandomStringUtils NUMBER_GENERATOR = RandomStringUtils.insecure();
@@ -85,46 +82,45 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void start() {
 		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.CONTROLLER, Collections.emptyMap());
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
+		lifecycle = hzInstance.getLifecycleService();
+
+		requestTopic = hzInstance.getTopic(requestTopicName);
+
+		hzInstance.getCluster().addMembershipListener(new HazelcastMembershipListener(applicationContext));
 
 		JWK jwk = jwtGenerator.getPublicJwk();
 		if (jwk != null) {
 			updateJwks(jwk);
 		}
-
-		requestTopic = hzInstance.getTopic(requestTopicName);
-
-		hzInstance.getCluster().addMembershipListener(new MembershipListener() {
-
-			@Override
-			public void memberAdded(MembershipEvent e) {
-				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.ADD_MEMBER, mapMember(e.getMember())));
-			}
-
-			@Override
-			public void memberRemoved(MembershipEvent e) {
-				applicationContext.publishEvent(new ClusterMemberEvent(applicationContext, EventType.REMOVE_MEMBER, mapMember(e.getMember())));
-			}
-
-		});
 	}
 
 	/**
 	 * Update JWKS for new worker nodes.
 	 */
-	private void updateJwks(@NonNull JWK jwk) throws ParseException {
+	private void updateJwks(@NonNull JWK jwk) {
 		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
 		String jwks = config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET);
 
 		if (StringUtils.isBlank(jwks)) {
 			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, new JWKSet(jwk).toString());
 		} else {
-			List<JWK> existingJwks = JWKSet.parse(jwks).getKeys();
+			List<JWK> existingJwks = getJwks(jwks);
+
 			existingJwks.add(jwk);
 			JWKSet updatedJwks = new JWKSet(existingJwks);
 			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, updatedJwks.toString());
+		}
+	}
+
+	private static @NonNull List<JWK> getJwks(String jwks) {
+		try {
+			return new ArrayList<>(JWKSet.parse(jwks).getKeys());
+		} catch (ParseException e) {
+			log.error("unable to parse JWK set, creating a new one...", e);
+			return new ArrayList<>();
 		}
 	}
 
@@ -132,17 +128,28 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	 * Remove old JWK when no longer needed.
 	 */
 	@Override
-	public void destroy() throws Exception {
+	public void stop() {
 		JWK jwk = jwtGenerator.getPublicJwk();
 		if (jwk != null) {
 			IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
 			String jwks = config.get(HazelcastConfig.FRANK_APPLICATION_KEYSET);
-
-			List<JWK> existingJwks = JWKSet.parse(jwks).getKeys();
+			List<JWK> existingJwks = getJwks(jwks);
 			existingJwks.remove(jwk);
 			JWKSet updatedJwks = new JWKSet(existingJwks);
 			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, updatedJwks.toString());
 		}
+
+		lifecycle.shutdown();
+	}
+
+	@Override
+	public boolean isRunning() {
+		return lifecycle != null && lifecycle.isRunning();
+	}
+
+	@Override
+	public void destroy() {
+		lifecycle.terminate();
 	}
 
 	@Override
@@ -199,27 +206,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	@Override
 	public List<ClusterMember> getMembers() {
 		Set<Member> members = hzInstance.getCluster().getMembers();
-		return members.stream().map(this::mapMember).toList();
-	}
-
-	private ClusterMember mapMember(Member member) {
-		ClusterMember cm = new ClusterMember();
-		cm.setAddress(member.getSocketAddress().getHostName() + ":" + member.getSocketAddress().getPort());
-		cm.setId(member.getUuid());
-		Map<String, String> attrs = new HashMap<>(member.getAttributes());
-		String type = attrs.remove(HazelcastConfig.ATTRIBUTE_TYPE_KEY);
-		if (StringUtils.isNotBlank(type)) {
-			if (InstanceType.WORKER.name().equals(type)) {
-				cm.setType("worker");
-			} else {
-				cm.setType("console");
-			}
-		}
-		cm.setAttributes(attrs);
-		cm.setLocalMember(member.localMember());
-		cm.setName(attrs.containsKey(HazelcastConfig.ATTRIBUTE_APPLICATION_KEY) ? attrs.get(HazelcastConfig.ATTRIBUTE_APPLICATION_KEY) : member.getUuid()
-				.toString());
-		return cm;
+		return members.stream().map(HazelcastMembershipListener::mapMember).toList();
 	}
 
 	private @NonNull String getAuthentication(Message<?> message) {

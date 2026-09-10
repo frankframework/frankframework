@@ -18,10 +18,12 @@ package org.frankframework.management.bus;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.util.ClassUtils;
 
 import lombok.Setter;
@@ -31,7 +33,7 @@ import org.frankframework.util.SpringUtils;
 /**
  * Allows the creation of outbound integration gateways.
  */
-public class OutboundGatewayFactory implements InitializingBean, ApplicationContextAware, FactoryBean<OutboundGateway> {
+public class OutboundGatewayFactory implements InitializingBean, SmartLifecycle, DisposableBean, ApplicationContextAware, FactoryBean<OutboundGateway> {
 
 	private final Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
@@ -70,5 +72,32 @@ public class OutboundGatewayFactory implements InitializingBean, ApplicationCont
 	@Override
 	public boolean isSingleton() {
 		return true;
+	}
+	@Override
+	public void start() {
+		if (gateway instanceof SmartLifecycle lifecycleGateway) {
+			lifecycleGateway.start();
+		}
+	}
+
+	@Override
+	public void stop() {
+		if (gateway instanceof SmartLifecycle lifecycleGateway) {
+			lifecycleGateway.stop();
+		}
+	}
+	@Override
+	public boolean isRunning() {
+		if (gateway instanceof SmartLifecycle lifecycleGateway) {
+			return lifecycleGateway.isRunning();
+		}
+		return false;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		if (gateway instanceof DisposableBean disposableBean) {
+			disposableBean.destroy();
+		}
 	}
 }

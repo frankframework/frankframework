@@ -34,6 +34,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 
@@ -55,8 +58,11 @@ class JwtSecurityFilterTest {
 		SpringUtils.autowireByType(ac, keyGenerator);
 
 		File jwksFile = new File(tempDirectory, "jwks.txt");
+		JWK jwk = keyGenerator.getPublicJwk();
+		assertNotNull(jwk);
+		String jwks = new JWKSet(jwk).toString();
 		try (OutputStream fileOut = Files.newOutputStream(jwksFile.toPath())) {
-			StreamUtil.streamToStream(new ByteArrayInputStream(keyGenerator.getPublicJwkSet().getBytes(StandardCharsets.UTF_8)), fileOut);
+			StreamUtil.streamToStream(new ByteArrayInputStream(jwks.getBytes(StandardCharsets.UTF_8)), fileOut);
 		}
 		jwksUrl = jwksFile.toURI().toURL().toExternalForm();
 
