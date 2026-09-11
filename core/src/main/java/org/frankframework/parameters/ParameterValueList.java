@@ -24,9 +24,9 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.springframework.lang.Contract;
 
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;

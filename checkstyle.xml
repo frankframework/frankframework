@@ -39,7 +39,6 @@
 		</module>
 		<module name="IllegalImport">
 			<property name="illegalPkgs" value="
-			org.jetbrains.annotations,
 			org.wildfly.common.annotation,
 			reactor.util.annotation,
 			com.mongodb.lang,
