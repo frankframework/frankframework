@@ -24,9 +24,9 @@ import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
