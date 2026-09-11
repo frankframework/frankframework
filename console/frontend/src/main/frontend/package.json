@@ -68,7 +68,7 @@
     "@types/markdown-it": "^14.2.0",
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.7",
-    "@vitest/browser-webdriverio": "^4.1.11",
+    "@vitest/browser-webdriverio": "^5.0.0",
     "angular-eslint": "22.1.0",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
