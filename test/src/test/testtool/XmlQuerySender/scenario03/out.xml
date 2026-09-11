@@ -37,8 +37,8 @@
           <field name="TVARCHAR">dit is een test</field>
           <field name="TNUMBER">123</field>
           <field name="TDATETIME" null="true"/>
-          <field name="TTIMESTAMP">2009-08-26T09:20:41.016</field>
-          <field name="TDATE">2022-01-14</field>
+          <field name="TTIMESTAMP">2009-08-26 09:20:41</field>
+          <field name="TDATE">2022-01-14 15:09:55</field>
           <field name="TTIME" null="true"/>
           <field name="TBLOB">hallo---------1</field>
           <field name="TCLOB">changed------9</field>
