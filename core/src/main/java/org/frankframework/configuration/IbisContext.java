@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -266,9 +267,9 @@ public class IbisContext extends IbisApplicationContext {
 	 *
 	 * @see ClassLoaderManager#get(String)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
-	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
+	 * @see #createAndConfigureConfigurationWithClassLoader(AbstractClassLoader, String, ClassLoaderException)
 	 */
-	public void load(String configurationName) {
+	public void load(@Nullable String configurationName) {
 		boolean configFound = false;
 
 		// We have an ordered list with all configurations, lets loop through!
@@ -286,9 +287,9 @@ public class IbisContext extends IbisApplicationContext {
 				try {
 					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
 
-					// An error occurred but we don't want to throw any exceptions.
+					// An error occurred, but we don't want to throw any exceptions.
 					// Skip configuration digesting so it can be done at a later time.
-					if(classLoader == null)
+					if (classLoader == null)
 						continue;
 
 				} catch (ClassLoaderException e) {
@@ -314,7 +315,7 @@ public class IbisContext extends IbisApplicationContext {
 		generateFlow();
 		// Check if the configuration we try to reload actually exists
 		if (!configFound && configurationName != null) {
-			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageEventLevel.ERROR);
+			log(configurationName + " not found in ["+ allConfigNamesItems.keySet() +"]", MessageEventLevel.ERROR);
 		}
 	}
 
@@ -327,7 +328,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Create a new configuration through Spring, and explicitly set the ClassLoader before initializing it.
 	 * If no ClassLoader or ClassLoader is not IConfigurationClassLoader return an error.
 	 */
-	private Configuration createConfiguration(String name, @NonNull AbstractClassLoader classLoader) {
+	private Configuration createConfiguration(@NonNull String name, @Nullable AbstractClassLoader classLoader) {
 		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);
 		Configuration configuration = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
@@ -342,7 +343,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
-	private void createAndConfigureConfigurationWithClassLoader(AbstractClassLoader classLoader, String currentConfigurationName, ClassLoaderException classLoaderException) {
+	private void createAndConfigureConfigurationWithClassLoader(@Nullable AbstractClassLoader classLoader, @NonNull String currentConfigurationName, @Nullable ClassLoaderException classLoaderException) {
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration [{}]", currentConfigurationName);
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
@@ -359,7 +360,7 @@ public class IbisContext extends IbisApplicationContext {
 				configuration = new Configuration();
 				configuration.setName(currentConfigurationName);
 				ibisManager.addConfiguration(configuration); // Manually add the configuration else it will be GC'd
-				if(classLoaderException != null) {
+				if (classLoaderException != null) {
 					classLoaderException.addSuppressed(e);
 					throw new ClassLoaderException("error instantiating ClassLoader", classLoaderException);
 				}
@@ -374,7 +375,9 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.error("unable to configure configuration [{}]", currentConfigurationName, e);
 		} catch (Exception e) {
 			// Something is wrong, unable to create configuration.
-			configuration.setConfigurationException(new ConfigurationException(e));
+			if (configuration != null) {
+				configuration.setConfigurationException(new ConfigurationException(e));
+			}
 			log("exception loading configuration ["+currentConfigurationName+"]", MessageEventLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
