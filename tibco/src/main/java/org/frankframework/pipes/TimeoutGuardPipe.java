@@ -79,7 +79,8 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			}
 		} finally {
 			if (tg.cancel()) {
-				// noinspection ReturnInsideFinallyBlock
+				// For maintaining functionality of not throwing on timeout but still properly reacting to the condition of timeout, we must return a value from the finally-block
+				// noinspection ReturnInsideFinallyBlock,java:S1143
 				return handleTimeout(guardTimeout);
 			}
 		}
@@ -90,6 +91,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		String msgString = "TimeOutException";
 		Exception e = new TimeoutException("exceeds timeout of [" + guardTimeout + "] s, interupting");
 		if (isThrowException()) {
+			// Hide throwing the exception from finally block inside this method
 			throw new PipeRunException(this, msgString, e);
 		} else {
 			// This is used for the old console, where a message is displayed

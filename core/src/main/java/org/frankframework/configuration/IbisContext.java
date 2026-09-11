@@ -375,9 +375,8 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.error("unable to configure configuration [{}]", currentConfigurationName, e);
 		} catch (Exception e) {
 			// Something is wrong, unable to create configuration.
-			if (configuration != null) {
-				configuration.setConfigurationException(new ConfigurationException(e));
-			}
+			assert configuration != null; // Different code analysis tools have different results for wether `configuration` can be null here or not; overall it cannot be but we make the assert to satisfy all tools.
+			configuration.setConfigurationException(new ConfigurationException(e));
 			log("exception loading configuration ["+currentConfigurationName+"]", MessageEventLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
