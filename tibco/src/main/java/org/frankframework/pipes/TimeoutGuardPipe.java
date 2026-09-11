@@ -43,6 +43,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
+	@SuppressWarnings({ "ReturnInsideFinallyBlock", "java:S1143" }) // Ugly, but we must
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;
 		try {
@@ -80,7 +81,6 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		} finally {
 			if (tg.cancel()) {
 				// For maintaining functionality of not throwing on timeout but still properly reacting to the condition of timeout, we must return a value from the finally-block
-				// noinspection ReturnInsideFinallyBlock,java:S1143
 				return handleTimeout(guardTimeout);
 			}
 		}
