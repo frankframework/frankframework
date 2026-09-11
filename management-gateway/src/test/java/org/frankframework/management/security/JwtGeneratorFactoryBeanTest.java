@@ -1,6 +1,7 @@
 package org.frankframework.management.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -70,7 +71,7 @@ class JwtGeneratorFactoryBeanTest {
 
 			AbstractJwtKeyGenerator generator = factory.getObject();
 			assertNotNull(generator);
-			assertTrue(generator instanceof KeystoreJwtKeyGenerator);
+			assertInstanceOf(KeystoreJwtKeyGenerator.class, generator);
 			assertEquals(KeystoreJwtKeyGenerator.class, factory.getObjectType());
 			assertSame(generator, factory.getObject());
 		}

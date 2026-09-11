@@ -64,9 +64,6 @@ public abstract class SapSystemListItem implements NameAware, HasName {
 		if (StringUtils.isNotEmpty(result.getAliasFor())) {
 			String aliasName = result.getAliasFor();
 			result=getItem(aliasName);
-			if (result==null) {
-				throw new NullPointerException("no alias ["+aliasName+"] list item found for name ["+itemName+"] ");
-			}
 		}
 		return result;
 	}
