@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import org.jspecify.annotations.NonNull;
 
+import lombok.Getter;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -36,8 +38,8 @@ import org.frankframework.task.TimeoutGuard;
 @Deprecated
 public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 
-	private boolean throwException = true;
-	private int timeout = 30;
+	private @Getter boolean throwException = true;
+	private @Getter int timeout = 30;
 
 	@NonNull
 	@Override
@@ -53,6 +55,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		log.debug("setting timeout of [{}] s", guardTimeout);
 
 		TimeoutGuard tg = new TimeoutGuard(guardTimeout, getName()) {
+			@SuppressWarnings("deprecation")
 			@Override
 			protected void abort() {
 				// The guard automatically kills the current thread, additional threads maybe 'killed' by implementing killPipe.
@@ -60,9 +63,8 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			}
 		};
 
-		PipeRunResult result;
 		try {
-			result = doPipeWithTimeoutGuarded(message, session);
+			return doPipeWithTimeoutGuarded(message, session);
 		} catch (Exception e) {
 			String msg = e.getClass().getName();
 
@@ -77,10 +79,10 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			}
 		} finally {
 			if (tg.cancel()) {
-				result = handleTimeout(guardTimeout);
+				// noinspection ReturnInsideFinallyBlock
+				return handleTimeout(guardTimeout);
 			}
 		}
-		return result;
 	}
 
 	private @NonNull PipeRunResult handleTimeout(int guardTimeout) throws PipeRunException {
@@ -116,14 +118,6 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	 */
 	public void setThrowException(boolean b) {
 		throwException = b;
-	}
-
-	public boolean isThrowException() {
-		return throwException;
-	}
-
-	public int getTimeout() {
-		return timeout;
 	}
 
 	/**
