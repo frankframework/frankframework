@@ -19,3 +19,5 @@ overrides:
 minimumReleaseAgeExclude:
   # Renovate security update: pnpm@11.25.0
   - pnpm@11.25.0
+  # Renovate security update: @angular/common@22.1.6
+  - "@angular/common@22.1.6"
