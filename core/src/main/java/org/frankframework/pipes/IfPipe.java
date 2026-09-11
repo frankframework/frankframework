@@ -383,7 +383,7 @@ public class IfPipe extends AbstractPipe {
 	/**
 	 *  A string to compare to the result of the xpathExpression / jsonPathExpression, or to the string-value of the input message itself if neither the xpathExpression nor the
 	 *  jsonPathExpression is set.
-	 *  <br/
+	 *  <br/>
 	 *  If set, this must be an exact match.
 	 *  <br/>
 	 *  If not set, then any result that is not {@code null} or {@code "false"} leads to the 'then' forward, and a result that is {@code null} or a zero-length string leads to the 'else' forward.
