@@ -45,6 +45,10 @@ final class DateTimeConversions {
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT).withZone(ZoneId.systemDefault());
 	private static final DateTimeFormatter DATE_TIME_TZ_FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_TZ_FORMAT);
 
+	private DateTimeConversions() {
+		// Private constructor to prevent instance creation
+	}
+
 	static final class TemporalAccessorConverter extends StringableDataConverter<TemporalAccessor> {
 		@Override
 		public String asString(TemporalAccessor data) {
