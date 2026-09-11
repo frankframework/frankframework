@@ -49,7 +49,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 		String paramValue = pvl.getValue("timeout");
-		int guardTimeout = paramValue == null ? getTimeout() : Integer.valueOf(paramValue);
+		int guardTimeout = paramValue == null ? getTimeout() : Integer.parseInt(paramValue);
 		log.debug("setting timeout of [{}] s", guardTimeout);
 
 		TimeoutGuard tg = new TimeoutGuard(guardTimeout, getName()) {
@@ -60,8 +60,9 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			}
 		};
 
+		PipeRunResult result;
 		try {
-			return doPipeWithTimeoutGuarded(message, session);
+			result = doPipeWithTimeoutGuarded(message, session);
 		} catch (Exception e) {
 			String msg = e.getClass().getName();
 
@@ -75,20 +76,25 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 				return new PipeRunResult(getSuccessForward(), errorMessage);
 			}
 		} finally {
-			if(tg.cancel()) {
-				// Throw a TimeOutException
-				String msgString = "TimeOutException";
-				Exception e = new TimeoutException("exceeds timeout of [" + guardTimeout + "] s, interupting");
-				if (isThrowException()) {
-					throw new PipeRunException(this, msgString, e);
-				} else {
-					// This is used for the old console, where a message is displayed
-					log.error(msgString, e);
-					String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
-					Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
-					return new PipeRunResult(getSuccessForward(), errorMessage);
-				}
+			if (tg.cancel()) {
+				result = handleTimeout(guardTimeout);
 			}
+		}
+		return result;
+	}
+
+	private @NonNull PipeRunResult handleTimeout(int guardTimeout) throws PipeRunException {
+		// Throw a TimeOutException
+		String msgString = "TimeOutException";
+		Exception e = new TimeoutException("exceeds timeout of [" + guardTimeout + "] s, interupting");
+		if (isThrowException()) {
+			throw new PipeRunException(this, msgString, e);
+		} else {
+			// This is used for the old console, where a message is displayed
+			log.error(msgString, e);
+			String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
+			Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
+			return new PipeRunResult(getSuccessForward(), errorMessage);
 		}
 	}
 
