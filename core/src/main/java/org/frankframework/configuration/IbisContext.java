@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -32,6 +33,7 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
+import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
@@ -280,7 +282,7 @@ public class IbisContext extends IbisApplicationContext {
 				configFound = true;
 
 				ClassLoaderException classLoaderException = null;
-				ClassLoader classLoader = null;
+				AbstractClassLoader classLoader = null;
 				try {
 					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
 
@@ -325,11 +327,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Create a new configuration through Spring, and explicitly set the ClassLoader before initializing it.
 	 * If no ClassLoader or ClassLoader is not IConfigurationClassLoader return an error.
 	 */
-	private Configuration createConfiguration(String name, ClassLoader classLoader) {
-		if(!(classLoader instanceof IConfigurationClassLoader)) {
-			throw new IllegalStateException("no IConfigurationClassLoader set");
-		}
-
+	private Configuration createConfiguration(String name, @NonNull AbstractClassLoader classLoader) {
 		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);
 		Configuration configuration = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
@@ -344,7 +342,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
-	private void createAndConfigureConfigurationWithClassLoader(ClassLoader classLoader, String currentConfigurationName, ClassLoaderException classLoaderException) {
+	private void createAndConfigureConfigurationWithClassLoader(AbstractClassLoader classLoader, String currentConfigurationName, ClassLoaderException classLoaderException) {
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration [{}]", currentConfigurationName);
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();

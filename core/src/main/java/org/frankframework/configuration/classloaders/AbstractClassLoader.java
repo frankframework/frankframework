@@ -70,7 +70,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		this(Thread.currentThread().getContextClassLoader());
 	}
 
-	protected AbstractClassLoader(ClassLoader parent) {
+	protected AbstractClassLoader(@Nullable ClassLoader parent) {
 		super(parent);
 	}
 
