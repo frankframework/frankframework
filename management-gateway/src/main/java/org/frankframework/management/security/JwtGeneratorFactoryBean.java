@@ -30,39 +30,40 @@ import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.encryption.CommonsPkiUtil;
+import org.frankframework.encryption.KeystoreType;
 
 
 @Log4j2
-public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGenerator> {
+public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtGenerator<?>> {
 
 	@Value("${client.ssl.key-store}")
 	String keyStoreLocation;
 	@Value("${client.ssl.key-store-password}")
 	String keyStorePassword;
 
-	private AbstractJwtKeyGenerator jwtKeyGenerator;
+	private AbstractJwtGenerator<?> jwtKeyGenerator;
 
 	@NonNull
 	@Override
-	public AbstractJwtKeyGenerator getObject() {
+	public AbstractJwtGenerator<?> getObject() {
 		if (jwtKeyGenerator == null) {
-			if (keyStoreLocation != null || keyStorePassword != null) {
+			if (keyStoreLocation != null && keyStorePassword != null) {
 				try {
-					KeyStore keystore = CommonsPkiUtil.createKeyStore(URI.create(keyStoreLocation).toURL(), keyStorePassword, null);
-					jwtKeyGenerator = new KeystoreJwtKeyGenerator(keystore);
+					KeyStore keystore = CommonsPkiUtil.createKeyStore(URI.create(keyStoreLocation).toURL(), keyStorePassword, KeystoreType.JKS);
+					jwtKeyGenerator = new KeystoreJwtGenerator(keystore);
+					return jwtKeyGenerator;
 				} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
 					log.error("Something went wrong trying to load keystore from: {}", keyStoreLocation, e);
 				}
-			} else {
-				jwtKeyGenerator = new JwtKeyGenerator();
 			}
+			jwtKeyGenerator = new DefaultJwtKeyGenerator();
 		}
 		return jwtKeyGenerator;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return (jwtKeyGenerator != null) ? jwtKeyGenerator.getClass() : AbstractJwtKeyGenerator.class;
+		return (jwtKeyGenerator != null) ? jwtKeyGenerator.getClass() : AbstractJwtGenerator.class;
 	}
 
 	@Override

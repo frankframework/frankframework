@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,34 +16,58 @@
 package org.frankframework.management.security;
 
 import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.Authentication;
 
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.KeySourceException;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.jwk.source.JWKSetCacheRefreshEvaluator;
 import com.nimbusds.jose.jwk.source.JWKSetSource;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
-public class JwtVerifier extends DefaultJWTProcessor<SecurityContext> {
+public class JwtVerifier {
+	private final DefaultJWTProcessor<SecurityContext> jwtProcessor  = new DefaultJWTProcessor<>();
 
+	// Hazelcast / JWKS
 	public JwtVerifier(Supplier<String> supply) {
-		setJWSKeySelector(new LazyLoadingJwkSource(supply));
+		jwtProcessor.setJWSKeySelector(new LazyLoadingKeySelector(supply));
 	}
 
-	public Authentication verify(String jwt) throws IOException {
+	/**
+	 * Validate the target JWT with a provided SECRET.
+	 */
+	public JwtVerifier(byte[] secret) {
+		ImmutableSecret<SecurityContext> jwkSet = new ImmutableSecret<>(secret);
+		jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(JWSAlgorithm.Family.HMAC_SHA, jwkSet));
+	}
+
+	// URL via RemoteJWKSet
+	// URLBasedJWKSetSource
+	public JwtVerifier(URL url) throws KeySourceException {
+		jwtProcessor.setJWSKeySelector(JWSAlgorithmFamilyJWSKeySelector.fromJWKSetURL(url));
+	}
+
+	/**
+	 * Validate and convert the given JWT to a Spring {@link Authentication Authenticaiton} object.
+	 */
+	public final @NonNull Authentication verify(String jwt) throws IOException {
 		JWTClaimsSet claimsSet;
 		try {
-			claimsSet = process(jwt, null);
+			claimsSet = jwtProcessor.process(jwt, null);
 		} catch (JOSEException | ParseException | BadJOSEException e) {
 			throw new IOException("unable to parse JWT", e);
 		}
@@ -55,13 +79,13 @@ public class JwtVerifier extends DefaultJWTProcessor<SecurityContext> {
 		}
 	}
 
-	private static class LazyLoadingJwkSource extends JWSVerificationKeySelector<SecurityContext> {
+	private static class LazyLoadingKeySelector extends JWSVerificationKeySelector<SecurityContext> {
 
-		public LazyLoadingJwkSource(Supplier<String> supply) {
-			super(JwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM, createKeySource(supply));
+		public LazyLoadingKeySelector(Supplier<String> supply) {
+			super(DefaultJwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM, createJwkSetSource(supply));
 		}
 
-		private static JWKSource<SecurityContext> createKeySource(Supplier<String> supply) {
+		private static JWKSource<SecurityContext> createJwkSetSource(Supplier<String> supply) {
 			return JWKSourceBuilder.create(new LazyLoadingJwkSetSource(supply)).cacheForever().build();
 		}
 	}

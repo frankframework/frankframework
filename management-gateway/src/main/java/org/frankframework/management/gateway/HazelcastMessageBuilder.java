@@ -18,6 +18,7 @@ package org.frankframework.management.gateway;
 import java.io.InputStream;
 import java.io.Serializable;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.integration.support.BaseMessageBuilder;
 import org.springframework.messaging.Message;
@@ -56,7 +57,7 @@ public class HazelcastMessageBuilder<T> extends BaseMessageBuilder<T, HazelcastM
 	}
 
 	@Override
-	public Message<T> build() {
+	public @NonNull Message<T> build() {
 		return new ImmutableMessage<>(getPayload(), getHeaders());
 	}
 }

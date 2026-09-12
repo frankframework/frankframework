@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x500.X500Name;
@@ -20,12 +22,14 @@ class SelfSignedCertGenerator {
 	}
 
 	static X509Certificate generate(String dn, KeyPair pair, int days) throws CertificateException, OperatorCreationException {
-		long now = System.currentTimeMillis();
-		Date notBefore = new Date(now);
-		Date notAfter = new Date(now + days * 86_400_000L);
+		BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
+		Instant validFrom = Instant.now();
+		Instant validTo = validFrom.plus(days, ChronoUnit.DAYS);
 		X500Name subject = new X500Name(dn);
+
 		X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
-				subject, BigInteger.valueOf(now), notBefore, notAfter, subject, pair.getPublic());
+				subject, serial, Date.from(validFrom),
+				Date.from(validTo), subject, pair.getPublic());
 		ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA").build(pair.getPrivate());
 		return new JcaX509CertificateConverter().getCertificate(builder.build(signer));
 	}

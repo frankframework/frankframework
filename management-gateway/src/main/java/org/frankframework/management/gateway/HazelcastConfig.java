@@ -81,7 +81,7 @@ public class HazelcastConfig {
 		WORKER
 	}
 
-	private static String computeName() {
+	private static synchronized String computeName() {
 		int instanceNum = FACTORY_ID_GEN.incrementAndGet();
 		return MobyNames.getRandomName(instanceNum);
 	}

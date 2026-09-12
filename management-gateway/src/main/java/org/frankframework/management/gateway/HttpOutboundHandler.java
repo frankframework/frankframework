@@ -41,14 +41,14 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.security.JwtKeyGenerator;
+import org.frankframework.management.security.DefaultJwtKeyGenerator;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 
 public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
 	@Autowired
-	private JwtKeyGenerator jwtGenerator;
+	private DefaultJwtKeyGenerator jwtGenerator;
 
 	public HttpOutboundHandler(String endpoint) {
 		super(endpoint);
@@ -117,14 +117,14 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	}
 
 	/**
-	 * Add authentication JWT, see {@link JwtKeyGenerator}.
+	 * Add authentication JWT, see {@link DefaultJwtKeyGenerator}.
 	 */
 	@NonNull
 	@Override
 	protected HttpHeaders mapHeaders(@NonNull Message<?> message) {
 		HttpHeaders headers = super.mapHeaders(message);
 
-		headers.add("Authentication", "Bearer " + jwtGenerator.create());
+		headers.add("Authentication", "Bearer " + jwtGenerator.createJWT());
 		return headers;
 	}
 

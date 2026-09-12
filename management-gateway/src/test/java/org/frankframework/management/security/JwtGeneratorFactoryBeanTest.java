@@ -1,10 +1,8 @@
 package org.frankframework.management.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +21,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import org.frankframework.encryption.CommonsPkiUtil;
+import org.frankframework.encryption.KeystoreType;
 
 class JwtGeneratorFactoryBeanTest {
 
@@ -49,9 +48,7 @@ class JwtGeneratorFactoryBeanTest {
 	@Test
 	void defaultReturnsJwtKeyGenerator() {
 		JwtGeneratorFactoryBean factory = new JwtGeneratorFactoryBean();
-		AbstractJwtKeyGenerator obj = factory.getObject();
-		assertNotNull(obj, "Factory should not return null");
-		assertTrue(obj instanceof JwtKeyGenerator, "Should return default JwtKeyGenerator");
+		assertInstanceOf(DefaultJwtKeyGenerator.class, factory.getObject());
 	}
 
 	@Test
@@ -65,13 +62,11 @@ class JwtGeneratorFactoryBeanTest {
 		factory.keyStorePassword = String.valueOf(pw);
 
 		try (MockedStatic<CommonsPkiUtil> mocked = Mockito.mockStatic(CommonsPkiUtil.class)) {
-			mocked.when(() -> CommonsPkiUtil.createKeyStore(ksFile.toURI().toURL(), factory.keyStorePassword, null))
+			mocked.when(() -> CommonsPkiUtil.createKeyStore(ksFile.toURI().toURL(), factory.keyStorePassword, KeystoreType.JKS))
 					.thenReturn(ks);
 
-			AbstractJwtKeyGenerator generator = factory.getObject();
-			assertNotNull(generator);
-			assertTrue(generator instanceof KeystoreJwtKeyGenerator);
-			assertEquals(KeystoreJwtKeyGenerator.class, factory.getObjectType());
+			KeystoreJwtGenerator generator = assertInstanceOf(KeystoreJwtGenerator.class, factory.getObject());
+			assertEquals(KeystoreJwtGenerator.class, factory.getObjectType());
 			assertSame(generator, factory.getObject());
 		}
 	}
@@ -84,12 +79,12 @@ class JwtGeneratorFactoryBeanTest {
 
 		try (MockedStatic<CommonsPkiUtil> mocked = Mockito.mockStatic(CommonsPkiUtil.class)) {
 			mocked.when(() -> CommonsPkiUtil.createKeyStore(
-							new java.net.URI(factory.keyStoreLocation).toURL(), factory.keyStorePassword, null))
+							new java.net.URI(factory.keyStoreLocation).toURL(), factory.keyStorePassword, KeystoreType.JKS))
 					.thenThrow(new IOException("Should throw exception"));
 
-			AbstractJwtKeyGenerator generator = factory.getObject();
-			assertNull(generator);
-			assertEquals(AbstractJwtKeyGenerator.class, factory.getObjectType());
+			assertEquals(AbstractJwtGenerator.class, factory.getObjectType());
+			assertInstanceOf(DefaultJwtKeyGenerator.class, factory.getObject());
+			assertEquals(DefaultJwtKeyGenerator.class, factory.getObjectType());
 		}
 	}
 }
