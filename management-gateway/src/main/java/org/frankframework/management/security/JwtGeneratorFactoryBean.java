@@ -23,7 +23,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -42,7 +42,7 @@ public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGenera
 
 	private AbstractJwtKeyGenerator jwtKeyGenerator;
 
-	@NonNull
+	@Nullable
 	@Override
 	public AbstractJwtKeyGenerator getObject() {
 		if (jwtKeyGenerator == null) {

@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import org.jspecify.annotations.NonNull;
 
+import lombok.Getter;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -36,11 +38,12 @@ import org.frankframework.task.TimeoutGuard;
 @Deprecated
 public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 
-	private boolean throwException = true;
-	private int timeout = 30;
+	private @Getter boolean throwException = true;
+	private @Getter int timeout = 30;
 
 	@NonNull
 	@Override
+	@SuppressWarnings({ "ReturnInsideFinallyBlock", "java:S1143" }) // Ugly, but we must
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;
 		try {
@@ -49,10 +52,11 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 		String paramValue = pvl.getValue("timeout");
-		int guardTimeout = paramValue == null ? getTimeout() : Integer.valueOf(paramValue);
+		int guardTimeout = paramValue == null ? getTimeout() : Integer.parseInt(paramValue);
 		log.debug("setting timeout of [{}] s", guardTimeout);
 
 		TimeoutGuard tg = new TimeoutGuard(guardTimeout, getName()) {
+			@SuppressWarnings("deprecation")
 			@Override
 			protected void abort() {
 				// The guard automatically kills the current thread, additional threads maybe 'killed' by implementing killPipe.
@@ -75,20 +79,26 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 				return new PipeRunResult(getSuccessForward(), errorMessage);
 			}
 		} finally {
-			if(tg.cancel()) {
-				// Throw a TimeOutException
-				String msgString = "TimeOutException";
-				Exception e = new TimeoutException("exceeds timeout of [" + guardTimeout + "] s, interupting");
-				if (isThrowException()) {
-					throw new PipeRunException(this, msgString, e);
-				} else {
-					// This is used for the old console, where a message is displayed
-					log.error(msgString, e);
-					String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
-					Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
-					return new PipeRunResult(getSuccessForward(), errorMessage);
-				}
+			if (tg.cancel()) {
+				// For maintaining functionality of not throwing on timeout but still properly reacting to the condition of timeout, we must return a value from the finally-block
+				return handleTimeout(guardTimeout);
 			}
+		}
+	}
+
+	private @NonNull PipeRunResult handleTimeout(int guardTimeout) throws PipeRunException {
+		// Throw a TimeOutException
+		String msgString = "TimeOutException";
+		Exception e = new TimeoutException("exceeds timeout of [" + guardTimeout + "] s, interupting");
+		if (isThrowException()) {
+			// Hide throwing the exception from finally block inside this method
+			throw new PipeRunException(this, msgString, e);
+		} else {
+			// This is used for the old console, where a message is displayed
+			log.error(msgString, e);
+			String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
+			Message errorMessage = new Message("<error>" + msgCdataString + "</error>");
+			return new PipeRunResult(getSuccessForward(), errorMessage);
 		}
 	}
 
@@ -110,14 +120,6 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	 */
 	public void setThrowException(boolean b) {
 		throwException = b;
-	}
-
-	public boolean isThrowException() {
-		return throwException;
-	}
-
-	public int getTimeout() {
-		return timeout;
 	}
 
 	/**

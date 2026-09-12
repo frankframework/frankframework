@@ -1,7 +1,7 @@
 package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ import org.frankframework.stream.Message;
 public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 	private static final String SUCCESS_MESSAGE = "did not timeout!";
 
-	public class GuardTestPipe extends TimeoutGuardPipe {
+	public static class GuardTestPipe extends TimeoutGuardPipe {
 		public GuardTestPipe() {
 			setTimeout(1); // Set default on 1 second
 		}
@@ -63,7 +63,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 
 			fail("an exception should occur!");
 		} catch(PipeRunException e) {
-			assertTrue(e.getCause() instanceof TimeoutException);
+			assertInstanceOf(TimeoutException.class, e.getCause());
 		}
 	}
 

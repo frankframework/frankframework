@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -137,6 +138,7 @@ public class ParameterValue {
 	 * @param defaultValue returned if value is null
 	 * @return convert the value to a string
 	 */
+	@Contract("!null -> !null")
 	public @Nullable String asStringValue(@Nullable String defaultValue) {
 		return value != null ? valueAsString() : defaultValue;
 	}
