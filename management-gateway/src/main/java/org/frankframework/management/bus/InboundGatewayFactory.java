@@ -75,14 +75,14 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 
 	/**
 	 * It is possible multiple inbound gateways are specified using a comma separated list.
-	 * Also always adds the local bus for internal traffic as well as the Frank!Console backend.
+	 * Also, always adds the local bus for internal traffic as well as the Frank!Console backend.
 	 */
 	private Set<String> getInboundGateways() {
 		if(StringUtils.isBlank(gatewayClassnames)) {
 			return Collections.emptySet();
 		}
 
-		// Ensure an unique list of gateways.
+		// Ensure a unique list of gateways.
 		Set<String> gateways = new TreeSet<>(Arrays.asList(gatewayClassnames.split(",")));
 		return Collections.unmodifiableSet(gateways);
 	}

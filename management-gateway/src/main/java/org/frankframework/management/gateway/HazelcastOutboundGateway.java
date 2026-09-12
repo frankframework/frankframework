@@ -139,7 +139,9 @@ public class HazelcastOutboundGateway implements ApplicationContextAware, Outbou
 			config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, updatedJwks.toString());
 		}
 
-		lifecycle.shutdown();
+		if (lifecycle != null) {
+			lifecycle.shutdown();
+		}
 	}
 
 	@Override
@@ -149,7 +151,9 @@ public class HazelcastOutboundGateway implements ApplicationContextAware, Outbou
 
 	@Override
 	public void destroy() {
-		lifecycle.terminate();
+		if (lifecycle != null) {
+			lifecycle.terminate();
+		}
 	}
 
 	@Override
@@ -205,6 +209,10 @@ public class HazelcastOutboundGateway implements ApplicationContextAware, Outbou
 	@NonNull
 	@Override
 	public List<ClusterMember> getMembers() {
+		if (hzInstance == null) {
+			return Collections.emptyList();
+		}
+
 		Set<Member> members = hzInstance.getCluster().getMembers();
 		return members.stream().map(HazelcastMembershipListener::mapMember).toList();
 	}
