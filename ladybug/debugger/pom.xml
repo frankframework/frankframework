@@ -91,7 +91,7 @@
 				</repository>
 				<repository>
 					<id>frankframework</id>
-					<url>https://nexus.frankframework.org/content/groups/public</url>
+					<url>https://nexus.frankframework.org/content/repositories/thirdparty</url>
 				</repository>
 			</repositories>
 		</profile>

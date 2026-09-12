@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,69 +15,90 @@
 */
 package org.frankframework.ladybug;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BoundedInputStream;
-import org.apache.commons.io.input.BoundedReader;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MessageEncoderImpl;
 
 import org.frankframework.stream.Message;
+import org.frankframework.util.EnumUtils;
 
 public class MessageEncoder extends MessageEncoderImpl {
 
-	private @Autowired int maxMessageLength;
+	private final int maxMessageLength;
+
+	public MessageEncoder(int maxMessageLength) {
+		this.maxMessageLength = maxMessageLength;
+	}
 
 	@Override
 	public ToStringResult toString(Object message, String charset) {
 		if (message instanceof Message m) {
-			if (charset==null) {
-				charset = m.getCharset();
+			if (m.isNull()) {
+				return new ToStringResult(null, null, null);
 			}
-			if (m.requiresStream()) {
-				if (m.isBinary()) {
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					try (InputStream inputStream = m.asInputStream()) {
-						IOUtils.copy(new BoundedInputStream(inputStream, maxMessageLength), baos, maxMessageLength);
-						ToStringResult result = super.toString(baos.toByteArray(), charset);
-						result.setMessageClassName(m.getObjectId());
-						return result;
-					} catch (IOException e) {
-						return super.toString(e, null);
-					}
-				}
-				StringWriter writer = new StringWriter();
-				try (Reader reader = m.asReader()){
-					IOUtils.copy(new BoundedReader(reader, maxMessageLength), writer);
-				} catch (IOException e) {
-					return super.toString(e, null);
-				}
-				return new ToStringResult(writer.toString(), null, m.getObjectId());
+			try {
+				final String type = m.isBinary() ? "UTF-8" : null;
+				return new ToStringResult(m.peek(maxMessageLength), type, m.getRequestClass());
+			} catch (IOException e) {
+				StringWriter stringWriter = new StringWriter();
+				e.printStackTrace(new PrintWriter(stringWriter));
+				return new ToStringResult(stringWriter.toString(), THROWABLE_ENCODER);
 			}
-			ToStringResult r = super.toString(m.asObject(), charset);
-			r.setMessageClassName(m.getObjectId());
-			return r;
+		} else if (message instanceof Boolean b) {
+			return new ToStringResult(b.toString(), null, Boolean.class.getTypeName());
+		} else if (message instanceof Enum<?> e) {
+			return new ToStringResult(e.name(), null, e.getClass().getTypeName());
 		}
-		if (message instanceof WriterPlaceHolder) {
-			return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, "request to provide outputstream");
-		}
+
 		return super.toString(message, charset);
 	}
 
 	@Override
 	public Object toObject(Checkpoint checkpoint) {
-		return Message.asMessage(super.toObject(checkpoint));
+		return toObject(checkpoint, null);
 	}
 
+	/**
+	 * @param originalCheckpoint the checkpoint from the original report that will be used as a stub for the
+	 *                           counterpart checkpoint in the report in progress. The original checkpoint holds the
+	 *                           string representation and the encoding method used when the original message was
+	 *                           encoded and possible other relevant information to determine the original object type.
+	 *                           It can be null when the original checkpoint cannot be found (in that case the decision
+	 *                           to stub is not based on the original checkpoint but based on a stubbing strategy that
+	 *                           stubs certain types of checkpoints). When null the default implementation
+	 *                           {@link MessageEncoderImpl} will return the default stub message
+	 *                           <p>
+	 *                           {@link TestTool#DEFAULT_STUB_MESSAGE}
+	 *
+	 * @param messageToStub      The message in the report in progress that needs to be stubbed.
+	 *                           Only used to determine the class' type.
+	 * @param <T>                Unused
+	 *
+	 * @return                   In the case of a {@code Writer} of {@code OutputStream}, the stubbed message must be written to it, and it must be returned.
+	 *                           Else the {@code originalCheckpoint.getMessage()} must be converted to {@code THIS} type and returned.
+	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
-		return (T) Message.asMessage(super.toObject(originalCheckpoint, messageToStub));
+		T stub = super.toObject(originalCheckpoint, messageToStub);
+
+		if (messageToStub instanceof Enum<?> enumType) {
+			// Probably shouldn't happen but...
+			return (T) EnumUtils.parse(enumType.getDeclaringClass(), "" + stub);
+		} else if (messageToStub instanceof Message) {
+			// String encoding = originalCheckpoint.getEncoding();
+			// If the type is Message, and it's encoded, assume the original was binary.
+			// For now, it doesn't matter I suppose?
+
+			// Checked
+			return (T) Message.asMessage(stub);
+		}
+
+		// Unchecked unsafe...
+		return stub;
 	}
 
 }
