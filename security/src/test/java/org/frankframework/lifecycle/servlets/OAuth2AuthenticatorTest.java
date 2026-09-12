@@ -2,6 +2,7 @@ package org.frankframework.lifecycle.servlets;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -18,6 +19,10 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
 
 import org.frankframework.credentialprovider.ICredentials;
 
@@ -192,5 +197,25 @@ public class OAuth2AuthenticatorTest extends ServletAuthenticatorTest<OAuth2Auth
 			assertEquals("preferred_username", registration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName());
 			assertTrue(registration.getScopes().containsAll(Set.of("openid", "profile", "email")));
 		}
+	}
+
+	@Test
+	void testInteractiveLoginChainIsStateful() throws Exception {
+		// Arrange
+		authenticator.setClientId("clientID");
+		authenticator.setClientSecret("clientSecret");
+		authenticator.setProvider("github");
+
+		ServletConfiguration config = createServletConfiguration();
+		config.setUrlMapping("/webcontent/*");
+		config.setSecurityRoles(new String[]{ "IbisTester" });
+		authenticator.registerServlet(config);
+
+		// Act
+		authenticator.configureHttpSecurity(httpSecurity);
+
+		// Assert: the login chain saves the requested URL and persists the authentication
+		assertInstanceOf(HttpSessionRequestCache.class, httpSecurity.getSharedObject(RequestCache.class));
+		assertInstanceOf(HttpSessionSecurityContextRepository.class, httpSecurity.getSharedObject(SecurityContextRepository.class));
 	}
 }

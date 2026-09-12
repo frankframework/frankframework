@@ -23,6 +23,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -39,6 +40,9 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -210,6 +214,15 @@ public class OAuth2Authenticator extends AbstractOAuth2Authenticator {
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		configure();
+
+		// The authorization-code flow needs a session: to replay the originally requested URL
+		// after the IdP redirect, and to keep the authentication between requests.
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+		http.requestCache(cache -> cache.requestCache(new HttpSessionRequestCache()));
+		// Shared object too: the oauth2Login filter takes its repository from there.
+		HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+		http.setSharedObject(SecurityContextRepository.class, securityContextRepository);
+		http.securityContext(context -> context.securityContextRepository(securityContextRepository));
 
 		AuthorityMapper authorityMapper = new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties(), authoritiesClaimName);
 
