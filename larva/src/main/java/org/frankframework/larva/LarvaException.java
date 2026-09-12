@@ -19,4 +19,8 @@ public class LarvaException extends RuntimeException {
 	public LarvaException(String message) {
 		super(message);
 	}
+
+	public LarvaException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }
