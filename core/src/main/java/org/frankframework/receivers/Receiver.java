@@ -1351,9 +1351,17 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						result = pipeLineResult.getResult();
 
 						statusMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { // Since we can determine the size, assume the message is preserved
+						long resultSize = Message.isEmpty(result) ? 0 : result.size();
+						if(resultSize > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { // Since we can determine the size, assume the message is preserved
 							String resultString = result.asString();
 							statusMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length(), resultString.length()));
+						} else if(resultSize > 0) {
+							// Small result of a known size: store its actual text so the error-store comment
+							// is legible (e.g. a business error message the pipeline produced), rather than
+							// Message.toString()'s "Message[<id>] size [N]" descriptor. Unknown-size (streaming,
+							// size()<0) and empty results fall through and keep the safe descriptor below,
+							// so an unbounded stream is never materialised into the comment.
+							statusMessage += result.asString();
 						} else {
 							statusMessage += result;
 						}
