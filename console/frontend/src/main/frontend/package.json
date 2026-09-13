@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@angular-devkit/core": "^22.1.7",
-    "@angular-eslint/builder": "22.1.0",
+    "@angular-eslint/builder": "22.5.0",
     "@angular/build": "^22.1.7",
     "@angular/cli": "^22.1.7",
     "@angular/compiler-cli": "^22.1.5",
@@ -69,8 +69,8 @@
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.7",
     "@vitest/browser-webdriverio": "^4.1.11",
-    "angular-eslint": "22.1.0",
-    "eslint": "^10.9.1",
+    "angular-eslint": "22.5.0",
+    "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-sonarjs": "^4.2.0",
@@ -78,7 +78,7 @@
     "happy-dom": "^20.11.6",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3",
-    "typescript-eslint": "8.68.0",
+    "typescript-eslint": "8.70.0",
     "vitest": "^5.0.0"
   },
   "packageManager": "pnpm@11.25.0+sha512.5cde925b4f075f725eb71fbae18a42ffe784524789f19b61c731cb8721ec28aaee160e01a8d5af4fedb2a42cdbf300efe23db356b0d4a17b4d63e11f8ab7c956"
