@@ -553,7 +553,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @param paramWhitelist Comma-separated list of allowed HTTP parameters.
 	 */
 	public void setAllowedParameters(@Nullable String paramWhitelist) {
-		this.allowedParameterSet = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toCollection(HashSet::new));
+		this.allowedParameterSet = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toCollection(HashSet::new)); // The set needs to be mutable while in configuration()
 	}
 
 	/**
