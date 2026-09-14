@@ -270,7 +270,9 @@ public class SoapUtils {
 	}
 
 	public enum KeyEncryptionAlgorithm {
-		RSA_OAEP(WSS4JConstants.KEYTRANSPORT_RSAOAEP);
+		RSA_15(WSS4JConstants.KEYTRANSPORT_RSA15),
+		RSA_OAEP(WSS4JConstants.KEYTRANSPORT_RSAOAEP),
+		RSA_OAEP_ENC11(WSS4JConstants.KEYTRANSPORT_RSAOAEP_XENC11);
 
 		@Getter
 		private final String algorithm;
@@ -281,6 +283,8 @@ public class SoapUtils {
 	}
 
 	public enum DataEncryptionAlgorithm {
+		AES_128(WSS4JConstants.AES_128),
+		AES_192(WSS4JConstants.AES_192),
 		AES_256(WSS4JConstants.AES_256);
 
 		@Getter
@@ -292,12 +296,32 @@ public class SoapUtils {
 	}
 
 	public enum KeyIdentifierType {
+		/** In contrast to BST_DIRECT_REFERENCE only the `issuer name` and the `serial number` of the signing certificate are sent to the receiver. */
 		ISSUER_SERIAL(WSConstants.ISSUER_SERIAL),
+
+		/** In contrast to BST_DIRECT_REFERENCE only the `issuer name` and the `serial number` of the signing certificate are sent to the receiver. */
 		ISSUER_SERIAL_QUOTE_FORMAT(WSConstants.ISSUER_SERIAL_QUOTE_FORMAT),
+
+		/**
+		 * The signing method takes the signing certificate, converts it to a BinarySecurityToken, puts it in the security header,
+		 * and inserts a Reference to the binary security token into the wsse:SecurityReferenceToken.
+		 * The X.509 profile recommends to use `ISSUER_SERIAL` instead of sending the whole certificate.
+		 */
 		BST_DIRECT_REFERENCE(WSConstants.BST_DIRECT_REFERENCE),
+
+		/**
+		 * The certificate is converted into a `KeyIdentifier` token and the complete certificate data is transferred to receiver.
+		 * The X.509 profile recommends to use `ISSUER_SERIAL` instead of sending the whole certificate.
+		 */
 		X509_KEY_IDENTIFIER(WSConstants.X509_KEY_IDENTIFIER),
-		THUMBPRINT_IDENTIFIER(WSConstants.THUMBPRINT_IDENTIFIER),
-		SKI_KEY_IDENTIFIER(WSConstants.SKI_KEY_IDENTIFIER),
+
+		/** This identifier uses the SHA-1 digest of a security token to identify the security token. */
+		THUMBPRINT_SHA1(WSConstants.THUMBPRINT_IDENTIFIER),
+
+		/** Identify the X.509 signing certificate using its 'SubjectKey'. */
+		SUBJECT_KEY_IDENTIFIER(WSConstants.SKI_KEY_IDENTIFIER),
+
+		/** Used to set a ds:KeyInfo/ds:KeyValue element to refer to either an RSA or DSA public key.*/
 		KEY_VALUE(WSConstants.KEY_VALUE);
 
 		@Getter
