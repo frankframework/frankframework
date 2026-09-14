@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -67,8 +66,7 @@ public class GetFromSessionPipe extends FixedForwardPipe {
 			if (getType()==ParameterType.MAP && result instanceof Map) {
 				Map<String, String> items = (Map<String, String>) result;
 				XmlBuilder itemsXml = new XmlBuilder("items");
-				for (Iterator<String> it = items.keySet().iterator(); it.hasNext();) {
-					String item = it.next();
+				for (String item : items.keySet()) {
 					XmlBuilder itemXml = new XmlBuilder("item");
 					itemXml.addAttribute("name", item);
 					itemXml.setValue(items.get(item));

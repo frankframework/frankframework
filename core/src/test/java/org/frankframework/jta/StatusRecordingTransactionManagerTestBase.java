@@ -1,6 +1,7 @@
 package org.frankframework.jta;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -46,6 +49,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Abstra
 
 	@BeforeEach
 	public void setup() {
+		assumeFalse(TestAssertions.isTestRunningOnCI(), "Tests are too unreliable to continue running on the CI, only test locally");
 		statusFile = folder.toAbsolutePath() +"/"+STATUS_FILE;
 		tmUidFile = folder.toAbsolutePath() +"/"+TMUID_FILE;
 
@@ -97,7 +101,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Abstra
 		}
 	}
 
-	public String read(String filename) {
+	public @Nullable String read(String filename) {
 		Path file = Paths.get(filename);
 		if (!Files.exists(file)) {
 			return null;

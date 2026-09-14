@@ -1,5 +1,5 @@
-Frank!Framework
-===============
+# Frank!Framework
+
 **Exchange, modify and aggregate messages between systems!**
 
 ![frank-framework-github-banner](frank-framework-github-banner.png)
@@ -17,16 +17,18 @@ Frank!Framework
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffrankframework%2Ffrankframework?ref=badge_shield&issueType=security)
 [![Dependency Vulnerabilities](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DDependencyVulnerabilities%26pid%3Dxbuzi9hbw%26)](https://app.soos.io/research/repositories/github/frankframework/frankframework?attributionFormat=soosissues)
 
-
 ## Open-Source, Low-Code & Stateless
+
 The Frank!Framework is a framework that is completely configurable through XML configurations. Each Frank!Application may contain multiple configurations, and each configuration can consist of multiple end-to-end connections which we call 'adapters'. Configurations may be (re)loaded conditionally or individually for optimal performance and customizability.
 The application may be managed and monitored through a web interface or REST API.
 See it in action: https://frank2example.frankframework.org
 
-## Running the Frank-Framework 
-The Frank!Framework can run on any java runtime version 25 and up, either as a standalone Spring Boot application or as a WAR file deployed inside an application server.
+## Running the Frank-Framework
+
+The Frank!Framework can run on any Java runtime version 25 and up, either as a standalone Spring Boot application or as a WAR file deployed inside an application server.
 
 ### Application Server Support
+
 The Frank!Framework can be deployed as a WAR file in any application server supporting WAR file deployment. In our CI we test every PR and Release against Tomcat, Wildfly and JBoss, all these application servers are supported by us for use in production environments.
 Other application servers should work but are untested by us.
 You may [create containers](/docker/README.md) to run the framework using the beforementioned application servers. Please note that they are for development use only, more info about using and creating them can be found in [DOCKER.md](DOCKER.md).
@@ -34,39 +36,48 @@ You may [create containers](/docker/README.md) to run the framework using the be
 All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/frankframework/charts).
 
 ### JDBC and Database support
+
 The Frank!Framework is built using the features of JDBC4.2 and has built-in support for MS SQL Server, Oracle, PostgreSQL, MariaDB and MySQL. Every PR and Release is tested against these databases.
 Support for DB2 is provided on an as-is basis.
 
 ### JMS support
+
 The Frank!Framework is built using the JMS 3.1 API and should be compatible with JMS client implementations that fully implement this specification. In our CI we test each PR and each Release against Apache ActiveMQ and Apache ActiveMQ Artemis client and server.
 If you need JMS support in your Frank!Framework deployment, make sure that the Messaging module is included in your deployment, or your project dependencies.
 
 ## Rebranding
+
 The Ibis Adapter Framework has been renamed to "Frank!Framework". The migration is a work in progress, which is why you may encounter some old(er) names throughout our source code. Don't worry, everything will remain fully backwards compatible!
 
 ## Releases
+
 All our releases can be found on Maven central. Individual builds can be found on our Nexus repository [here](https://nexus.frankframework.org).
 For more information about our releases, please visit [Insights](https://insights.frankframework.org/). Breaking changes can be found in [BREAKING.md](BREAKING.md).
 
 ## Security
+
 It is important to remember that the security of your Frank!Application is the result of the overall security of the hosting stack; the Java runtime, Application Server, Frank!Framework and your configuration.
 
 It is our responsibility that there are no vulnerabilities in the Frank!Framework itself and all it's Java dependencies. In turn, it is your responsibility to keep your Frank!Framework version up to date and ensure there are no vulnerabilities in your configuration.
 More information about reporting vulnerabilities, supported versions and how we deal with CVE's can be found in our [Security Policy](SECURITY.md).
 
 ## Feedback
-For bug reports and feature requests, create a new issue at <https://github.com/frankframework/frankframework/issues>. 
-For general questions feel free to post them on our [discussions forum](https://github.com/frankframework/frankframework/discussions) here on GitHub. 
+
+For bug reports and feature requests, create a new issue at <https://github.com/frankframework/frankframework/issues>.
+For general questions feel free to post them on our [discussions forum](https://github.com/frankframework/frankframework/discussions) here on GitHub.
 If you would like to report a vulnerability, or have security concerns regarding the Frank!Framework, please email security@frankframework.org and include the word "SECURITY" in the subject line.
 
 ## Frank!Docs
+
 In need of help? You can find our docs portal at [docs.frankframework.org](https://docs.frankframework.org/).
 If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions). If you want to contribute to our manual, the sources can be found [here](https://github.com/frankframework/frank-manual).
 
 ## Contributing
-Eager to help us expand or enhance our framework? 
+
+Eager to help us expand or enhance our framework?
 Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before [Contributing](CONTRIBUTING.md).
 
 ## Show Your Support
+
 Star the repository to stay current with our newest updates and enhancements!
 ![Animated star badge to show support for the repository](https://github.com/user-attachments/assets/a094486b-cabb-48a1-8718-37072162fa50)

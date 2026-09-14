@@ -107,7 +107,7 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 
 	@SneakyThrows
 	@Override
-	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
+	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) {
 		Message result = input;
 		try {
 			if (operations.contains(Operation.VERIFY)) {

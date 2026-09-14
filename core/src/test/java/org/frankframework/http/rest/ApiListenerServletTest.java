@@ -930,7 +930,7 @@ public class ApiListenerServletTest {
 	public void customExitCode() throws IOException, ConfigurationException {
 		String uri="/exitcode";
 		new ApiListenerBuilder(uri, List.of(HttpMethod.GET))
-			.withExitCode(234)
+			.withExitCode(204)
 			.build();
 
 		Map<String, String> headers = new HashMap<>();
@@ -938,7 +938,7 @@ public class ApiListenerServletTest {
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri, HttpMethod.GET, null, headers));
 
-		assertEquals(234, result.getStatus());
+		assertEquals(204, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}

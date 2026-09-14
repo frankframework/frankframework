@@ -130,7 +130,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	}
 
 	@Test
-	public void fileSystemSenderMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
+	public void fileSystemSenderMoveActionTestRootToFolderFailIfolderDoesNotExist() {
 		Exception e = assertThrows(Exception.class, () -> fileSystemSenderMoveActionTest(null, FOLDER_NAME, false, false));
 		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File ["));
 		assertThat(e.getMessage(), containsString("]: destination folder [folder] does not exist"));

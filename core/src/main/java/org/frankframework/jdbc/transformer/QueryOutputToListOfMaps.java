@@ -32,7 +32,7 @@ public class QueryOutputToListOfMaps extends AbstractQueryOutputTransformer {
 	private List<Map<String, String>> rowset;
 	private Map<String, String> currentRow;
 
-	public QueryOutputToListOfMaps() throws SAXException {
+	public QueryOutputToListOfMaps() {
 		super();
 	}
 

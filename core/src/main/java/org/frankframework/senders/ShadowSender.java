@@ -129,7 +129,7 @@ public class ShadowSender extends ParallelSenders {
 	 * Override this from the parallel sender as it should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		Phaser primaryGuard = new Phaser(2); // Itself and the added originalSender
 		Phaser shadowGuard = new Phaser(getSecondarySenders().size() + 1); // Itself and all secondary senders
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();

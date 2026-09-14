@@ -24,6 +24,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.util.LogUtil;
 
@@ -49,7 +50,7 @@ public class SapSystemFactory {
 		return self;
 	}
 
-	public String getSapSystemInfo(String sapSystemName) {
+	public @Nullable String getSapSystemInfo(String sapSystemName) {
 		Object sapSystem = sapSystems.get(sapSystemName);
 		if (sapSystem == null) {
 			log.error("no SapSystem found under name [{}], factory contents [{}]", sapSystem, this);

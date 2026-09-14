@@ -51,7 +51,7 @@ public class InboundGatewayFactory implements InitializingBean, ApplicationConte
 	private @Setter String gatewayClassnames;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		Set<String> gateways = getInboundGateways();
 		if(gateways.isEmpty()) {
 			log.info("did not find any inbound gateways to initialize");

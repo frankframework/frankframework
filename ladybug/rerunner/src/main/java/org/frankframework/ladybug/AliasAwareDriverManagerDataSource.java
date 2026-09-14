@@ -30,7 +30,7 @@ public class AliasAwareDriverManagerDataSource extends DriverManagerDataSource i
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if (StringUtils.isNotBlank(authAlias)) {
 			ICredentials credentials = CredentialFactory.getCredentials(authAlias, getUsername(), getPassword());
 

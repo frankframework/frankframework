@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -65,7 +66,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	}
 
 	@Override
-	public String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
+	public @Nullable String finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		log.debug("finalizeResult [{}]", streamId);
 		write(session,streamId,replacePattern(getOnCloseDocument(),streamId));
 		return null;
@@ -111,7 +112,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 
-	protected String replacePattern(String target, String blockName) {
+	protected @Nullable String replacePattern(String target, String blockName) {
 		if (StringUtils.isEmpty(target)) {
 			return null;
 		}
@@ -131,7 +132,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		write(session,streamId, replacePattern(getOnCloseBlock(),blockName));
 	}
 
-	protected Writer getWriter(PipeLineSession session, String streamId, boolean create) throws Exception {
+	protected @Nullable Writer getWriter(PipeLineSession session, String streamId, boolean create) throws Exception {
 		Writer writer = openWriters.get(streamId);
 		if (writer != null) {
 			return writer;

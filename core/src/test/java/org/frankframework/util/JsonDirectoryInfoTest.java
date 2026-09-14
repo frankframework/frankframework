@@ -133,7 +133,7 @@ public class JsonDirectoryInfoTest {
 	}
 
 	@Test
-	public void testFolderDoesNotExist() throws IOException {
+	public void testFolderDoesNotExist() {
 		IOException e = assertThrows(IOException.class, () -> new JsonDirectoryInfo(basePath+"ik-besta-niet", "*", true, 100));
 		assertTrue(e.getMessage().contains("DirectoryClassLoaderRootik-besta-niet] does not exist or is not a valid directory"));
 	}

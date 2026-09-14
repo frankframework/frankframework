@@ -17,13 +17,12 @@ package org.frankframework.jdbc.transformer;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 public class QueryOutputToJson extends AbstractQueryOutputTransformer {
 	private boolean rowsExist = false;
 
-	public QueryOutputToJson() throws SAXException {
+	public QueryOutputToJson() {
 		super();
 	}
 	public QueryOutputToJson(XMLReader parent) {

@@ -73,7 +73,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 	}
 
 	@Override
-	public MailSender createSender() throws Exception {
+	public MailSender createSender() {
 		MailSender mailSender = new MailSender() {
 			Session mailSession;
 			@Override

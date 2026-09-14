@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import lombok.SneakyThrows;
 
@@ -24,7 +25,7 @@ public class TestFileUtils {
 		return getTestFile(file, "UTF-8");
 	}
 
-	public static String getTestFile(String file, String charset) throws IOException {
+	public static @Nullable String getTestFile(String file, String charset) throws IOException {
 		URL url = getTestFileURL(file);
 		if (url == null) {
 			LOG.error("file [" + file + "] not found");
@@ -40,7 +41,7 @@ public class TestFileUtils {
 		return url;
 	}
 
-	public static String getTestFile(URL url, String charset) throws IOException {
+	public static @Nullable String getTestFile(URL url, String charset) throws IOException {
 		if (url == null) {
 			return null;
 		}

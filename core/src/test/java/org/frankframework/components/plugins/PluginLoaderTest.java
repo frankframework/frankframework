@@ -49,7 +49,7 @@ public class PluginLoaderTest {
 	}
 
 	@Test
-	public void testEvents() throws Exception {
+	public void testEvents() {
 		TestConfiguration config = new TestConfiguration();
 		PluginLoader loader = createPluginLoader();
 		config.autowireByType(loader);

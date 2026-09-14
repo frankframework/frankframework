@@ -61,7 +61,7 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 			log.warn("Could not determine webapp.realpath");
 		}
 
-		ApplicationContext parentContext = null;
+		ApplicationContext parentContext;
 		try {
 			parentContext = WebApplicationContextUtils.getWebApplicationContext(servletContext); // This can throw many different types of errors!
 			if(parentContext == null) {

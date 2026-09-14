@@ -384,7 +384,7 @@ public class Monitoring extends BusEndpointBase {
 			alarm.put("severity", monitor.getAlarmSeverity());
 			MonitorEvent source = monitor.getRaisedBy();
 			if(source != null) {
-				String name = "";
+				String name;
 				if(source.getAdapterName() != null) { // Null when a ConsoleMonitorEvent
 					name = "%s / %s".formatted(source.getAdapterName(), source.getEventSourceName());
 				} else {

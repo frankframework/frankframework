@@ -17,13 +17,13 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.spec.SecretKeySpec;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -132,7 +132,7 @@ public class HashPipe extends FixedForwardPipe {
 		}
 	}
 
-	private SecretKeySpec getSecretKeySpec(Message message, PipeLineSession session) throws PipeRunException, UnsupportedEncodingException {
+	private @Nullable SecretKeySpec getSecretKeySpec(Message message, PipeLineSession session) throws PipeRunException {
 		if (!algorithm.isSecretRequired()) {
 			return null;
 		}

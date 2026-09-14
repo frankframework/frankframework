@@ -90,7 +90,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 
 	@Override
 	protected BufferedReader getReader(String streamId, Message message, PipeLineSession session) throws PipeRunException {
-		Connection connection = null;
+		Connection connection;
 		try {
 			connection = querySender.getConnection();
 			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message);

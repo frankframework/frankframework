@@ -26,7 +26,6 @@ import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Optional;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
@@ -87,7 +86,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		try {
 			String topic = getTopic();
 			IParameter topicParameter = getParameterList().findParameter(TOPIC_PARAMETER_NAME);

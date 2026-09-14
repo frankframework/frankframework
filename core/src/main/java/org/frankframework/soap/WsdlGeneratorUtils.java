@@ -25,6 +25,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.util.XMLChar;
+import org.jspecify.annotations.Nullable;
 
 import javanet.staxutils.IndentingXMLStreamWriter;
 
@@ -55,7 +56,7 @@ public class WsdlGeneratorUtils {
 		return result;
 	}
 
-	public static String getEsbSoapParadigm(IXmlValidator xmlValidator) {
+	public static @Nullable String getEsbSoapParadigm(IXmlValidator xmlValidator) {
 		String soapBody = xmlValidator.getMessageRoot();
 		if(soapBody != null) {
 			int i = soapBody.lastIndexOf('_');
@@ -66,7 +67,7 @@ public class WsdlGeneratorUtils {
 		return null;
 	}
 
-	public static String getFirstNamespaceFromSchemaLocation(IXmlValidator inputValidator) {
+	public static @Nullable String getFirstNamespaceFromSchemaLocation(IXmlValidator inputValidator) {
 		String schemaLocation = inputValidator.getSchemaLocation();
 		if(schemaLocation != null) {
 			String[] split = schemaLocation.trim().split("\\s+");
@@ -99,7 +100,7 @@ public class WsdlGeneratorUtils {
 		return buf.toString();
 	}
 
-	static String validUri(String uri) {
+	static @Nullable String validUri(String uri) {
 		return uri == null ? null : uri.replace(" ", "_");
 	}
 

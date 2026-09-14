@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -265,13 +266,14 @@ public class Message implements Serializable {
 	 * @param <T> Requested type of the value
 	 */
 	@SafeVarargs
+	@SuppressWarnings("java:S2637")
 	public final <T> T getValueAsType(T... reified) {
 		Class<T> type = ClassUtils.getClassOf(reified);
 		if (!isRequestOfType(type)) {
 			throw new IllegalStateException("Value is not of [" + type.getName() + "], check first Message#isRequestOfType before calling this method");
 		}
-		//noinspection unchecked,DataFlowIssue
-		return (T)request.asRawObject();
+		// noinspection unchecked, DataFlowIssue
+		return (T) request.asRawObject();
 	}
 
 	public boolean isBinary() {
@@ -385,7 +387,7 @@ public class Message implements Serializable {
 	/**
 	 * Check if a message is empty. If message size cannot be determined, check if any data can be read from the message.
 	 *
-	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size if larger than 0 or data can be read from it.
+	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size is larger than 0 or data can be read from it.
 	 */
 	public boolean isEmpty() {
 		return request.isEmpty();
@@ -454,7 +456,7 @@ public class Message implements Serializable {
 			case URL rL -> new UrlMessage(rL);
 			case File file -> new FileMessage(file);
 			case Path path -> new PathMessage(path);
-			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
+			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / unwrapping should be done via Listener.");
 			default -> // Constructor will reject unsupported types
 					new Message(new MessageContext(), object);
 		};
@@ -466,10 +468,12 @@ public class Message implements Serializable {
 	 * @param message Message to check. Can be {@code null}.
 	 * @return Returns {@code true} if the message is {@code null}, otherwise the result of {@link Message#isEmpty()}.
 	 */
+	@Contract(value = "null -> true")
 	public static boolean isEmpty(@Nullable Message message) {
 		return message == null || message.isEmpty();
 	}
 
+	@Contract(value = "null -> true")
 	public static boolean isNull(@Nullable Message message) {
 		return message == null || message.isNull();
 	}

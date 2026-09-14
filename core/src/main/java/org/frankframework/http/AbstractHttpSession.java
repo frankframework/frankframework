@@ -377,11 +377,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			httpClientBuilder.setProxy(proxy);
 		}
 
-		try {
-			setupAuthentication(pcf, proxy, requestConfigBuilder);
-		} catch (HttpAuthenticationException e) {
-			throw new ConfigurationException("exception configuring authentication", e);
-		}
+		setupAuthentication(pcf, proxy, requestConfigBuilder);
 
 		httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
@@ -575,7 +571,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		}
 	}
 
-	private void setupAuthentication(CredentialFactory proxyCredentials, HttpHost proxy, RequestConfig.Builder requestConfigBuilder) throws HttpAuthenticationException {
+	private void setupAuthentication(CredentialFactory proxyCredentials, HttpHost proxy, RequestConfig.Builder requestConfigBuilder) {
 		Assert.notNull(defaultHttpClientContext, "no HttpClientContext created during configure"); // This should be set in #configure()
 
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();

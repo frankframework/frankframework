@@ -8,6 +8,6 @@ services:
       active.storedProcedureTests: true
 
   mssql:
-    image: private.docker.nexus.frankframework.org/ff-test/dbms/mssqlserver
+    image: ghcr.io/frankframework/dbms/mssqlserver
     ports:
       - "1433:1433"

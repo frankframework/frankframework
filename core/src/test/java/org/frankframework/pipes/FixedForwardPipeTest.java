@@ -8,12 +8,12 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
@@ -22,11 +22,10 @@ import org.frankframework.stream.Message;
 public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 
 	@Override
-	public FixedForwardPipe createPipe() throws ConfigurationException {
+	public FixedForwardPipe createPipe() {
 		return new FixedForwardPipe() {
-			@NonNull
 			@Override
-			public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
+			public @Nullable PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 				return null;
 			}
 		};

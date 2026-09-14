@@ -262,9 +262,9 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			} else {
 				F file = fileSystem.toFile(getInputFolder());
 				if (file != null && fileSystem.exists(file)) {
-					throw new FileAlreadyExistsException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(fileSystem.toFile(getInputFolder()))+"], does not exist as a folder, but is a file");
+					throw new FileAlreadyExistsException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(file)+"], does not exist as a folder, but is a file");
 				}
-				throw new FolderNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(fileSystem.toFile(getInputFolder()))+"], does not exist");
+				throw new FolderNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(file)+"], does not exist");
 			}
 		}
 	}
@@ -317,7 +317,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return fileSystem.toFile(filenameWithFolder);
 	}
 
-	private String determineInputFolderName(Message input, ParameterValueList pvl) throws FileSystemException {
+	private @Nullable String determineInputFolderName(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			return getInputFolder();
 		}
@@ -361,7 +361,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Message doAction(@NonNull Message input, ParameterValueList pvl, @NonNull PipeLineSession session) throws FileSystemException {
+	public @Nullable Message doAction(@NonNull Message input, ParameterValueList pvl, @NonNull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
 			action = getAction(pvl);

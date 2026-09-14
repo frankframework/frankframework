@@ -228,7 +228,8 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	public boolean exists(S3FileRef f) throws FileSystemException {
 		try {
-			return getFileAttributes(f) != null;
+			getFileAttributes(f);
+			return true;
 		} catch (NoSuchKeyException e) {
 			return false;
 		} catch (AwsServiceException e) {
@@ -300,7 +301,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public void appendFile(@NonNull S3FileRef file, @Nullable InputStream content) throws FileSystemException, IOException {
+	public void appendFile(@NonNull S3FileRef file, @Nullable InputStream content) {
 		// Amazon S3 doesn't support append operation
 		throw new NotImplementedException();
 	}
@@ -553,18 +554,18 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public String getName(S3FileRef f) {
+	public String getName(@NonNull S3FileRef f) {
 		return f.getName();
 	}
 
 	@Override
-	public String getParentFolder(S3FileRef f) {
+	public @Nullable String getParentFolder(@NonNull S3FileRef f) {
 		int lastSlashPos = f.getKey().lastIndexOf('/');
 		return lastSlashPos > 1 ? f.getKey().substring(0, lastSlashPos) : null;
 	}
 
 	@Override
-	public String getCanonicalName(S3FileRef f) {
+	public @NonNull String getCanonicalName(@NonNull S3FileRef f) {
 		return f.getBucketName() + S3FileRef.BUCKET_OBJECT_SEPARATOR + f.getKey();
 	}
 

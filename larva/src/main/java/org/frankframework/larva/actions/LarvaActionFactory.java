@@ -92,16 +92,12 @@ public class LarvaActionFactory {
 
 	private LarvaScenarioAction create(Scenario scenario, IConfigurable configurable, Properties actionProperties, String correlationId) {
 
-		final AbstractLarvaAction<?> larvaAction;
-		if (configurable instanceof IPullingListener<?> pullingListener) {
-			larvaAction = new PullingListenerAction(pullingListener);
-		} else if (configurable instanceof IPushingListener<?> pushingListener) {
-			larvaAction = new LarvaPushingListenerAction(pushingListener);
-		} else if (configurable instanceof ISender sender) {
-			larvaAction = new SenderAction(sender);
-		} else {
-			larvaAction = new LarvaAction(configurable);
-		}
+		final AbstractLarvaAction<?> larvaAction = switch (configurable) {
+			case IPullingListener<?> pullingListener -> new PullingListenerAction(pullingListener);
+			case IPushingListener<?> pushingListener -> new LarvaPushingListenerAction(pushingListener);
+			case ISender sender -> new SenderAction(sender);
+			case null, default -> new LarvaAction(configurable);
+		};
 
 		larvaAction.setTimeoutMillis(getTimeoutMillis(scenario, actionProperties));
 		larvaAction.invokeSetters(actionProperties);

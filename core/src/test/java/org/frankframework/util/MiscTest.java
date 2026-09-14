@@ -43,7 +43,7 @@ public class MiscTest {
 	 * Method: toFileSize(long value)
 	 */
 	@Test
-	public void testToFileSizeValue() throws Exception {
+	public void testToFileSizeValue() {
 		String kbIecUnits = Misc.toFileSize(150000, false, false);
 		String mbIecUnits = Misc.toFileSize(15000000, true);
 		String gbIecUnits = Misc.toFileSize(Long.parseLong("3221225472"));

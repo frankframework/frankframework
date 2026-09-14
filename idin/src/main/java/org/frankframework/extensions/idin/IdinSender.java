@@ -31,6 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
@@ -584,7 +585,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	public void setKeyStoreAuthAlias(String keyStoreAuthAlias) {
 		this.keyStoreCredentials = new CredentialFactory(keyStoreAuthAlias);
 	}
-	public String getKeyStorePassword() {
+	public @Nullable String getKeyStorePassword() {
 		if(keyStoreCredentials == null)
 			return null;
 
@@ -619,7 +620,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	public void setMerchantCertificateAuthAlias(String merchantCertificateAuthAlias) {
 		this.merchantCertificateCredentials = new CredentialFactory(merchantCertificateAuthAlias);
 	}
-	public String getMerchantCertificatePassword() {
+	public @Nullable String getMerchantCertificatePassword() {
 		if(merchantCertificateCredentials == null)
 			return null;
 
@@ -679,7 +680,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	public void setSAMLCertificateAuthAlias(String samlCertificateAuthAlias) {
 		this.samlCertificateCredentials = new CredentialFactory(samlCertificateAuthAlias);
 	}
-	public String getSAMLCertificatePassword() {
+	public @Nullable String getSAMLCertificatePassword() {
 		if(samlCertificateCredentials == null)
 			return null;
 

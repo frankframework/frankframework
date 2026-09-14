@@ -24,7 +24,6 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -89,7 +88,7 @@ public class TestMonitoring extends BusTestBase {
 			private @Getter @Setter String name = "mockDestination";
 
 			@Override
-			public void configure() throws ConfigurationException {
+			public void configure() {
 				// Nothing to configure, dummy class
 			}
 

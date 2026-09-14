@@ -41,7 +41,7 @@ public class YamlParser {
 		Yaml yaml = new Yaml();
 
 		Map<String, Object> obj = yaml.loadAs(reader, Map.class);
-		obj.entrySet().forEach(entry -> handleRawValue(entry.getKey(), entry.getValue()));
+		obj.forEach(this::handleRawValue);
 
 		return properties;
 	}
@@ -62,7 +62,7 @@ public class YamlParser {
 
 		// Due to how the parser works, ArrayList may encapsulate a map.
 		// Key doesn't need to be updated
-		else if (value instanceof List list) {
+		else if (value instanceof List<?> list) {
 			handleListValue(key, list);
 		}
 
@@ -97,7 +97,7 @@ public class YamlParser {
 		String name = (String) map.remove("name");
 		String updatedKey = StringUtils.isNotEmpty(name) ? (key + "." + name) : key;
 
-		map.entrySet().forEach(entry -> handleRawValue(updatedKey + "." + entry.getKey(), entry.getValue()));
+		map.forEach((key1, value) -> handleRawValue(updatedKey + "." + key1, value));
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class YamlParser {
 	 * Delegate the map to {@link #handleMapValue(String, Map)}.
 	 */
 	@SuppressWarnings("unchecked")
-	private void handleListValue(String key, List<Object> list) {
+	private void handleListValue(String key, List<?> list) {
 		List<String> listProperty = new ArrayList<>();
 		for (Object object : list) {
 			if (object instanceof Map) {

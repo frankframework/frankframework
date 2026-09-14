@@ -9,7 +9,7 @@ services:
       active.amqp: true
 
   artemis:
-    image: private.docker.nexus.frankframework.org/ff-test/mq/artemis
+    image: ghcr.io/frankframework/mq/artemis
     ports:
       - "5672:5672"
       - "8160:8160"

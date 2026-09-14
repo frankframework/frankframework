@@ -151,13 +151,13 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public @NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException {
 		return rs.getStatement().getConnection().createClob();
 	}
 
 
 	@Override
-	public @NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
+	public @NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException {
 		return rs.getStatement().getConnection().createBlob();
 	}
 

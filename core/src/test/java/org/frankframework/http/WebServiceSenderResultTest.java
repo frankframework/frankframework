@@ -139,7 +139,7 @@ public class WebServiceSenderResultTest {
 	}
 
 	@Test
-	void simpleSoapMultiPartResponseMocked500StatusCode() throws IOException, ConfigurationException, SenderException {
+	void simpleSoapMultiPartResponseMocked500StatusCode() throws IOException, ConfigurationException {
 		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 500);
 
 		sender.configure();

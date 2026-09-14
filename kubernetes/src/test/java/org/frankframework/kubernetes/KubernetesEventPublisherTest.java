@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,7 @@ class KubernetesEventPublisherTest {
 		// ApplicationEvent and must not be stubbed (a mock returns 0, which is unused here).
 		when(event.getMessage()).thenReturn(message);
 		when(event.getLevel()).thenReturn(level);
+		when(event.getEventTime()).thenReturn(Instant.now());
 		return event;
 	}
 
@@ -118,7 +120,7 @@ class KubernetesEventPublisherTest {
 
 		List<Event> events = client.v1().events().inNamespace(namespace).list().getItems();
 		assertEquals(1, events.size());
-		assertEquals(KubernetesEventPublisher.REASON_ABORTED, events.get(0).getReason());
+		assertEquals(KubernetesEventPublisher.REASON_ABORTED, events.getFirst().getReason());
 		assertEquals("Warning", events.getFirst().getType());
 	}
 

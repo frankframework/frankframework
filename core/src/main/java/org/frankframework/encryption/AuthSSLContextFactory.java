@@ -198,7 +198,7 @@ public class AuthSSLContextFactory {
 	 * @author John Dekker
 	 */
 	class SelfSignedCertificateAcceptingTrustManagerWrapper implements X509TrustManager {
-		private X509TrustManager trustManager = null;
+		private X509TrustManager trustManager;
 
 		SelfSignedCertificateAcceptingTrustManagerWrapper(KeyStore truststore, TrustManager[] trustmanagers) throws NoSuchAlgorithmException, KeyStoreException {
 			if (trustmanagers == null || trustmanagers.length == 0) {
@@ -225,8 +225,7 @@ public class AuthSSLContextFactory {
 		public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
 			try {
 				if (certificates != null) {
-					for (int i = 0; i < certificates.length; i++) {
-						X509Certificate certificate = certificates[i];
+					for (X509Certificate certificate : certificates) {
 						certificate.checkValidity();
 					}
 				}

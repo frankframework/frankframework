@@ -16,6 +16,7 @@
 package org.frankframework.http.rpc;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Map.Entry;
 
 import jakarta.servlet.ServletConfig;
@@ -40,6 +41,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.http.HttpEntityType;
+import org.frankframework.http.HttpStatusResolver;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.http.mime.HttpEntityFactory;
 import org.frankframework.http.mime.MultipartUtils;
@@ -57,6 +59,7 @@ import org.frankframework.util.XmlBuilder;
 @Log4j2
 @IbisInitializer
 public class WebServiceListenerServlet extends AbstractHttpServlet implements DynamicRegistration.Servlet {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private transient ServiceDispatcher sd;
 
@@ -73,7 +76,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 		String uri = cleanseURL(request.getPathInfo());
 		final SoapMessage soapMessage;
 		WebServiceListener listener;
@@ -121,11 +124,10 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 
 			/*
 			 * Check if an 'exitcode' has been defined or if a status-code has been added to the messageContext.
+			 * Should always be a valid HTTP status code.
 			 */
-			int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
-			if (statusCode > 0) {
-				response.setStatus(statusCode);
-			}
+			int statusCode = pipelineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 200);
+			response.setStatus(HttpStatusResolver.validateHttpStatusCode(statusCode));
 
 			final boolean outputWritten = writeToResponseStream(response, result, listener, pipelineSession);
 			if (!outputWritten) {
@@ -225,7 +227,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 		return xmlMimeHeaders;
 	}
 
-	private static String cleanseURL(String pathInfo) {
+	private static @Nullable String cleanseURL(String pathInfo) {
 		if (pathInfo == null) {
 			return null;
 		}

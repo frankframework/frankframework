@@ -77,7 +77,7 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 	}
 
 	@Override
-	public void _deleteFile(String folderName, String filename) throws Exception {
+	public void _deleteFile(String folderName, String filename) {
 		// not implemented
 	}
 

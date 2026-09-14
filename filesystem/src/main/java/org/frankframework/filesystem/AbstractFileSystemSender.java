@@ -97,12 +97,10 @@ public abstract class AbstractFileSystemSender<F, S extends IBasicFileSystem<F>>
 
 	@Override
 	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
-		ParameterValueList pvl = null;
+		ParameterValueList pvl;
 
 		try {
-			if (paramList !=null) {
-				pvl = paramList.getValues(message, session);
-			}
+			pvl = paramList.getValues(message, session);
 		} catch (ParameterException e) {
 			throw new SenderException("Sender [" + getName() + "] caught exception evaluating parameters", e);
 		}

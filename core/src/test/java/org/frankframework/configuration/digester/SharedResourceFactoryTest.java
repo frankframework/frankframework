@@ -14,7 +14,6 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.CanUseSharedResource;
 import org.frankframework.core.SharedResource;
 import org.frankframework.testutil.TestConfiguration;
@@ -108,7 +107,7 @@ public class SharedResourceFactoryTest {
 		private @Getter @Setter String localResource;
 
 		@Override
-		public void configure() throws ConfigurationException {
+		public void configure() {
 			// Nothing to configure
 		}
 
@@ -146,7 +145,7 @@ public class SharedResourceFactoryTest {
 		private @Getter @Setter Boolean localResource;
 
 		@Override
-		public void configure() throws ConfigurationException {
+		public void configure() {
 			// Nothing to configure
 		}
 

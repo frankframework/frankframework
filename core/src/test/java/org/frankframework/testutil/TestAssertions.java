@@ -29,6 +29,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -60,7 +61,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		assertEquals(removeRegexCharactersFromInput(a, "[\\n\\t\\r ]"), removeRegexCharactersFromInput(b, "[\\n\\t\\r ]"));
 	}
 
-	private static String removeRegexCharactersFromInput(String input, String regex) {
+	private static @Nullable String removeRegexCharactersFromInput(String input, String regex) {
 		if(input == null) {
 			return null;
 		}

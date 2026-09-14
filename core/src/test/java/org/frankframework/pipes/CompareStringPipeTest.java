@@ -25,7 +25,7 @@ class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 	private static final String EQUALS = "equals";
 
 	@Override
-	public CompareStringPipe createPipe() throws ConfigurationException {
+	public CompareStringPipe createPipe() {
 		CompareStringPipe pipe = new CompareStringPipe();
 
 		pipe.addForward(new PipeForward(LESS_THAN, null));

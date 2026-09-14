@@ -41,7 +41,7 @@ public class ResolveConfigurationFileTest {
 	}
 
 	@BeforeEach
-	public void setUp() throws Exception {
+	public void setUp() {
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
 	}

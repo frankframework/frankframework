@@ -215,7 +215,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 			log.warn("determined we should read the WSA [MessageID] element but was unable to", e);
 		}
 
-		return MessageUtils.generateMessageId();
+		return MessageUtils.generateMessageId("SOAP");
 	}
 
 	/**
@@ -348,7 +348,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 	/**
 	 * Actually process the request
-	 * @param SOAPMessage message that was received
+	 * @param request SOAPMessage message that was received
 	 * @param pipelineSession messageContext (containing attachments if available)
 	 * @return response to send back
 	 */

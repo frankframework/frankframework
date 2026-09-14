@@ -22,7 +22,7 @@ import org.frankframework.pipes.XsltPipe;
 public class IbisThrowablePatternConverterTest {
 
 	@Test
-	public void testPatternOfaNestedEx() throws PipeRunException {
+	public void testPatternOfaNestedEx() {
 //		final String[] options = {"filters(org.junit.runners)"};
 //		final ThrowablePatternConverter converter = ExtendedThrowablePatternConverter.newInstance(null, options);
 		final String[] options = {};

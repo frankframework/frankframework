@@ -196,27 +196,21 @@ public class CmisUtils {
 		propertyXml.addAttribute("localName", property.getLocalName());
 		propertyXml.addAttribute("queryName", property.getQueryName());
 
-		PropertyType propertyType = PropertyType.STRING;
-		if(property instanceof Property<?> property1) {
+		PropertyType propertyType;
+		if (property instanceof Property<?> property1) {
 			propertyType = property1.getType();
 		} else {
-			if(property instanceof PropertyId) {
-				propertyType = PropertyType.ID;
-			} else if(property instanceof PropertyBoolean) {
-				propertyType = PropertyType.BOOLEAN;
-			} else if(property instanceof PropertyUri) {
-				propertyType = PropertyType.URI;
-			} else if(property instanceof PropertyInteger) {
-				propertyType = PropertyType.INTEGER;
-			} else if(property instanceof PropertyHtml) {
-				propertyType = PropertyType.HTML;
-			} else if(property instanceof PropertyDecimal) {
-				propertyType = PropertyType.DECIMAL;
-			} else if(property instanceof PropertyString) {
-				propertyType = PropertyType.STRING;
-			} else if(property instanceof PropertyDateTime) {
-				propertyType = PropertyType.DATETIME;
-			}
+			propertyType = switch (property) {
+				case PropertyId ignored -> PropertyType.ID;
+				case PropertyBoolean ignored -> PropertyType.BOOLEAN;
+				case PropertyUri ignored -> PropertyType.URI;
+				case PropertyInteger ignored -> PropertyType.INTEGER;
+				case PropertyHtml ignored -> PropertyType.HTML;
+				case PropertyDecimal ignored -> PropertyType.DECIMAL;
+				case PropertyDateTime ignored -> PropertyType.DATETIME;
+				case PropertyString ignored -> PropertyType.STRING;
+				default -> PropertyType.STRING;
+			};
 		}
 		// If it's not a property, what would it be? assume it's a string...
 
@@ -952,8 +946,7 @@ public class CmisUtils {
 	public static void cmisObject2Xml(XmlBuilder cmisXml, CmisObject object) {
 		if(object.getProperties() != null) {
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<Property<?>> it = object.getProperties().iterator(); it.hasNext();) {
-				Property<?> property = it.next();
+			for (Property<?> property : object.getProperties()) {
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
 			}
 			cmisXml.addSubElement(propertiesXml);
@@ -1012,8 +1005,8 @@ public class CmisUtils {
 
 		if(object.getProperties() != null) {
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = object.getProperties().getPropertyList().iterator(); it.hasNext();) {
-				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
+			for (PropertyData<?> propertyData : object.getProperties().getPropertyList()) {
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(propertyData));
 			}
 			cmisXml.addSubElement(propertiesXml);
 		}

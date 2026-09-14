@@ -49,7 +49,7 @@ public class BytesResource extends Resource {
 	}
 
 	@Override
-	public InputStream openStream() throws IOException {
+	public InputStream openStream() {
 		return new ByteArrayInputStream(bytes);
 	}
 

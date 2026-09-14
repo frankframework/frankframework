@@ -61,7 +61,7 @@ public class JavaListenerTest {
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		CloseUtils.closeSilently(session, adapter, configuration);
 	}
 

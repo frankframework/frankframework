@@ -13,7 +13,7 @@ import org.frankframework.core.PipeRunResult;
 public class XQueryPipeTest extends PipeTestBase<XQueryPipe> {
 
 	@Override
-	public XQueryPipe createPipe() throws ConfigurationException {
+	public XQueryPipe createPipe() {
 		return new XQueryPipe();
 	}
 

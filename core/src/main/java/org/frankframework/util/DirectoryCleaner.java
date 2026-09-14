@@ -50,8 +50,7 @@ public class DirectoryCleaner {
 				} else {
 					File[] files = dir.listFiles();
 					if (files != null) {
-						for (int i = 0; i < files.length; i++) {
-							File file = files[i];
+						for (File file : files) {
 							cleanupFile(file, lastModifiedDelta);
 						}
 					}
@@ -68,8 +67,7 @@ public class DirectoryCleaner {
 				log.debug("Cleanup subdirectory [{}]", file.getAbsolutePath());
 				File[] files = file.listFiles();
 				if (files != null) {
-					for (int i = 0; i < files.length; i++) {
-						File file2 = files[i];
+					for (File file2 : files) {
 						cleanupFile(file2, lastModifiedDelta);
 					}
 				}

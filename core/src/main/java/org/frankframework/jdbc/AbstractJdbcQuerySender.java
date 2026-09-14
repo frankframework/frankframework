@@ -192,14 +192,14 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			try {
 				convertedResultQuery = convertQuery(getResultQuery());
 				if (log.isDebugEnabled()) log.debug("converted result query into [{}]", convertedResultQuery);
-			} catch (JdbcException | SQLException e) {
+			} catch (DbmsException e) {
 				throw new LifecycleException("Cannot convert result query",e);
 			}
 		}
 	}
 
 	@NonNull
-	protected String convertQuery(@NonNull String query) throws SQLException, DbmsException {
+	protected String convertQuery(@NonNull String query) throws DbmsException {
 		if (StringUtils.isEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getTargetSqlDialect())) {
 			return query;
 		}

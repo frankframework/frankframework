@@ -11,7 +11,7 @@ import org.frankframework.stream.Message;
 public class CmisEventListenerTest extends ListenerTestBase<Message, CmisEventListener> {
 
 	@Override
-	public CmisEventListener createListener() throws Exception {
+	public CmisEventListener createListener() {
 		return new CmisEventListener();
 	}
 

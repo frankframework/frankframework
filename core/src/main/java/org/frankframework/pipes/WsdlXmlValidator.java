@@ -48,6 +48,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -390,7 +391,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	/**
 	 * Make sure to get the right namespace to init, or use the configurable fallback namespace for complex wsdl/with schema constructions
 	 */
-	private String getNamespaceToInit(Map<Schema, String> filteredNamespaces, Schema schema) {
+	private @Nullable String getNamespaceToInit(Map<Schema, String> filteredNamespaces, Schema schema) {
 		if (StringUtils.isNotEmpty(getSchemaLocation())) {
 			return filteredNamespaces.get(schema);
 		}

@@ -1,6 +1,5 @@
 package org.frankframework.testutil;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -19,7 +18,7 @@ public class VirtualReader extends Reader {
 	}
 
 	@Override
-	public int read(@NonNull final char[] cbuf, final int off, final int len) throws IOException {
+	public int read(@NonNull final char[] cbuf, final int off, final int len) {
 		if (charsRead.longValue() >= streamSize) {
 			log.info("{}: VirtualReader EOF after {} characters", Thread.currentThread().getName(), charsRead.longValue());
 			return -1;
@@ -34,7 +33,7 @@ public class VirtualReader extends Reader {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 
 	}
 }

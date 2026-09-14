@@ -53,10 +53,10 @@ public class UrlMessageTest {
 	@Test
 	public void testDeserializationCompatibility() throws Exception {
 
-		for (int i=0; i < wires.length; i++) {
-			String label = wires[i][0];
-			log.debug("testDeserializationCompatibility() "+label);
-			byte[] wire = Hex.decodeHex(wires[i][1]);
+		for (String[] strings : wires) {
+			String label = strings[0];
+			log.debug("testDeserializationCompatibility() " + label);
+			byte[] wire = Hex.decodeHex(strings[1]);
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(UrlMessage.class, out.getClass());

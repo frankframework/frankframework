@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -83,7 +84,7 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 						return false;
 					}
 				})
-				.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable)(e.getValue())));
+				.collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable)(e.getValue()), (prev, next) -> prev, LinkedCaseInsensitiveMap::new));
 		stream.writeObject(serializableData);
 		stream.writeObject(id);
 		stream.writeObject(message);

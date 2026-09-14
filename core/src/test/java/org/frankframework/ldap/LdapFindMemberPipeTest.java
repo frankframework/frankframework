@@ -27,7 +27,7 @@ public class LdapFindMemberPipeTest extends PipeTestBase<LdapFindMemberPipe> {
 	private static final String NOT_FOUND_FORWARD = "notFound";
 
 	@Override
-	public LdapFindMemberPipe createPipe() throws ConfigurationException {
+	public LdapFindMemberPipe createPipe() {
 		var pipe = spy(new LdapFindMemberPipe());
 		pipe.addForward(new PipeForward(SUCCESS_FORWARD, SUCCESS_FORWARD));
 		pipe.addForward(new PipeForward(NOT_FOUND_FORWARD, NOT_FOUND_FORWARD));

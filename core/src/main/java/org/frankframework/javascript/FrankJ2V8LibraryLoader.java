@@ -62,7 +62,7 @@ class FrankJ2V8LibraryLoader {
 		String libShortName = computeLibraryShortName();
 		String libFullName = computeLibraryFullName();
 		String ideLocation = System.getProperty("user.dir") + SEPARATOR + "jni" + SEPARATOR + computeLibraryFullName();
-		String path = null;
+		String path;
 
 		/* Try loading library from java library path */
 		if (load(libShortName, message)) {

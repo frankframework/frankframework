@@ -38,7 +38,7 @@ class ZipIteratorPipeTest extends PipeTestBase<ZipIteratorPipe> {
 			</results>""";
 
 	@Override
-	public ZipIteratorPipe createPipe() throws ConfigurationException {
+	public ZipIteratorPipe createPipe() {
 		return new ZipIteratorPipe();
 	}
 

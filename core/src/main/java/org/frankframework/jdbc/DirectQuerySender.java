@@ -88,7 +88,7 @@ public class DirectQuerySender extends AbstractJdbcQuerySender<Connection> {
 	}
 
 	@Override
-	public void closeBlock(Connection connection, PipeLineSession session) throws SenderException {
+	public void closeBlock(Connection connection, PipeLineSession session) {
 		super.closeConnectionForSendMessage(connection, session);
 	}
 

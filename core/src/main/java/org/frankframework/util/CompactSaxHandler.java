@@ -103,12 +103,12 @@ public class CompactSaxHandler extends FullXmlFilter {
 	}
 
 	@Override
-	public void startCDATA() throws SAXException {
+	public void startCDATA() {
 		inCDATASection = true;
 	}
 
 	@Override
-	public void endCDATA() throws SAXException {
+	public void endCDATA() {
 		// No-op
 	}
 

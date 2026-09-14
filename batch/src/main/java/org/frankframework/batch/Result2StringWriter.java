@@ -30,7 +30,7 @@ import org.frankframework.core.PipeLineSession;
 public class Result2StringWriter extends ResultWriter {
 
 	@Override
-	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
+	protected Writer createWriter(PipeLineSession session, String streamId) {
 		return new StringWriter();
 	}
 

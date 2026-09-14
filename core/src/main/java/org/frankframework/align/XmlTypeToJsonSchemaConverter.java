@@ -45,6 +45,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -97,7 +98,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		this(models, skipArrayElementContainers, false, null, definitionsPath);
 	}
 
-	public JsonStructure createJsonSchema(String elementName, String namespace) {
+	public @Nullable JsonStructure createJsonSchema(String elementName, String namespace) {
 		XSElementDeclaration elementDecl=findElementDeclaration(elementName, namespace);
 		if (elementDecl==null && namespace!=null) {
 			elementDecl=findElementDeclaration(elementName, null);
@@ -113,7 +114,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		return createJsonSchema(elementName, elementDecl);
 	}
 
-	private XSElementDeclaration findElementDeclaration(String elementName, String namespace) {
+	private @Nullable XSElementDeclaration findElementDeclaration(String elementName, String namespace) {
 		for (XSModel model:models) {
 			if (log.isDebugEnabled()) log.debug("search for element [{}] in namespace [{}]", elementName, namespace);
 			XSElementDeclaration elementDecl = model.getElementDeclaration(elementName, namespace);
@@ -332,45 +333,38 @@ public class XmlTypeToJsonSchemaConverter  {
 			throw new NullPointerException("particle is null");
 		}
 		XSTerm term = particle.getTerm();
-		if (term==null) {
-			throw new NullPointerException("particle.term is null");
-		}
-		if (term instanceof XSModelGroup group) {
-			handleModelGroup(builder, group, attributeUses, forProperties);
-			return;
-		}
-		if (term instanceof XSElementDeclaration elementDeclaration) {
-			boolean multiOccurring = particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1;
-			if (elementDeclaration.getScope()==XSConstants.SCOPE_GLOBAL) {
-				String elementName = elementDeclaration.getName();
-				if(forOneOf) {
-					JsonArrayBuilder requiredArrayBuilder = Json.createArrayBuilder();
-					requiredArrayBuilder.add(elementName);
-					builder.add("required", requiredArrayBuilder);
-				} else {
-					JsonObject typeDefininition = Json.createObjectBuilder().add("$ref", definitionsPath+elementName).build();
-					if (multiOccurring) {
-						JsonObjectBuilder arrayBuilder = Json.createObjectBuilder();
-						addType(arrayBuilder, "array", particle);
-						arrayBuilder.add("items", typeDefininition);
-
-						builder.add(elementName, arrayBuilder.build());
+		switch (term) {
+			case null -> throw new NullPointerException("particle.term is null");
+			case XSModelGroup group -> handleModelGroup(builder, group, attributeUses, forProperties);
+			case XSElementDeclaration elementDeclaration -> {
+				boolean multiOccurring = particle.getMaxOccursUnbounded() || particle.getMaxOccurs() > 1;
+				if (elementDeclaration.getScope() == XSConstants.SCOPE_GLOBAL) {
+					String elementName = elementDeclaration.getName();
+					if (forOneOf) {
+						JsonArrayBuilder requiredArrayBuilder = Json.createArrayBuilder();
+						requiredArrayBuilder.add(elementName);
+						builder.add("required", requiredArrayBuilder);
 					} else {
-						builder.add(elementName, typeDefininition);
+						JsonObject typeDefininition = Json.createObjectBuilder().add("$ref", definitionsPath + elementName).build();
+						if (multiOccurring) {
+							JsonObjectBuilder arrayBuilder = Json.createObjectBuilder();
+							addType(arrayBuilder, "array", particle);
+							arrayBuilder.add("items", typeDefininition);
+
+							builder.add(elementName, arrayBuilder.build());
+						} else {
+							builder.add(elementName, typeDefininition);
+						}
 					}
+				} else if (forOneOf) {
+					handleElementDeclarationForOneOf(builder, elementDeclaration);
+				} else {
+					handleElementDeclaration(builder, elementDeclaration, multiOccurring, true);
 				}
-			} else if(forOneOf){
-				handleElementDeclarationForOneOf(builder, elementDeclaration);
-			} else {
-				handleElementDeclaration(builder, elementDeclaration, multiOccurring, true);
 			}
-			return;
+			case XSWildcard wildcard -> handleWildcard(wildcard);
+			default -> throw new IllegalStateException("handleTerm unknown Term type ["+term.getClass().getName()+"]");
 		}
-		if (term instanceof XSWildcard wildcard) {
-			handleWildcard(wildcard);
-			return;
-		}
-		throw new IllegalStateException("handleTerm unknown Term type ["+term.getClass().getName()+"]");
 	}
 
 	private void handleModelGroup(JsonObjectBuilder builder, XSModelGroup modelGroup, XSObjectList attributeUses, boolean forProperties) {
@@ -459,7 +453,7 @@ public class XmlTypeToJsonSchemaConverter  {
 			log.trace("XSElementDeclaration element [{}][{}]", elementName, ToStringBuilder.reflectionToString(elementDeclaration, ToStringStyle.MULTI_LINE_STYLE));
 
 		XSTypeDefinition elementTypeDefinition = elementDeclaration.getTypeDefinition();
-		JsonObject definition = null;
+		JsonObject definition;
 		if (elementTypeDefinition.getAnonymous() || XML_SCHEMA_NS.equals(elementTypeDefinition.getNamespace())) {
 			definition = getDefinition(elementTypeDefinition, shouldCreateReferences);
 		} else {

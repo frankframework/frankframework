@@ -25,7 +25,7 @@ public class TestUpdateLogSettings extends BusTestBase {
 
 	@Test
 	@WithMockUser(roles = { "IbisTester" })
-	public void getLogSettings() throws Exception {
+	public void getLogSettings() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_CONFIGURATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 		String json = (String) response.getPayload();

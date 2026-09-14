@@ -33,6 +33,7 @@ import org.apache.xml.dtm.ref.IncrementalSAXSource_Filter;
 import org.apache.xml.dtm.ref.sax2dtm.SAX2DTM;
 import org.apache.xml.serializer.SerializationHandler;
 import org.apache.xpath.XPathContext;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -241,7 +242,7 @@ public class TransformerHandlerImpl
    *            new InputSource.
    * @see org.xml.sax.EntityResolver#resolveEntity
    */
-  public InputSource resolveEntity(String publicId, String systemId)
+  public @Nullable InputSource resolveEntity(String publicId, String systemId)
           throws SAXException, IOException
   {
 
@@ -1078,19 +1079,19 @@ public class TransformerHandlerImpl
   private Locator m_locator = null;
 
   /** The entity resolver to aggregate to. */
-  private EntityResolver m_entityResolver = null;
+  private EntityResolver m_entityResolver;
 
   /** The DTD handler to aggregate to. */
-  private DTDHandler m_dtdHandler = null;
+  private DTDHandler m_dtdHandler;
 
   /** The content handler to aggregate to. */
-  private ContentHandler m_contentHandler = null;
+  private ContentHandler m_contentHandler;
 
   /** The error handler to aggregate to. */
-  private ErrorHandler m_errorHandler = null;
+  private ErrorHandler m_errorHandler;
 
   /** The lexical handler to aggregate to. */
-  private LexicalHandler m_lexicalHandler = null;
+  private LexicalHandler m_lexicalHandler;
 
 	/** The decl handler to aggregate to. */
 	private final DeclHandler m_declHandler = null;

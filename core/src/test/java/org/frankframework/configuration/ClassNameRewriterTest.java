@@ -39,7 +39,7 @@ public class ClassNameRewriterTest {
 		String expected = "[%s] has been renamed to [%s]. Please use the new syntax or change the className attribute."
 				.formatted(newClassName, expectedClassName);
 
-		assertEquals(expected, configuration.getConfigurationWarnings().get(0));
+		assertEquals(expected, configuration.getConfigurationWarnings().getWarnings().getFirst());
 	}
 
 	public static Stream<Arguments> testImplicitClassName() {

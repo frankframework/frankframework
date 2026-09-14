@@ -93,7 +93,7 @@ public class GetSchedules extends BusEndpointBase {
 		String jobName = BusMessageUtils.getHeader(message, "job");
 		String groupName = BusMessageUtils.getHeader(message, "group");
 
-		Map<String, Object> returnMap = new HashMap<>();
+		Map<String, Object> returnMap;
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
 
 		try {
@@ -279,10 +279,10 @@ public class GetSchedules extends BusEndpointBase {
 		List<Map<String, Object>> jobDataMap = new ArrayList<>();
 		String[] keys = jobData.getKeys();
 
-		for (int z = 0; z < keys.length; z++) {
+		for (String key : keys) {
 			Map<String, Object> property = HashMap.newHashMap(3);
 
-			String name = keys[z];
+			String name = key;
 			Object value = jobData.get(name);
 
 			if (value != null) {

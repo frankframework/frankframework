@@ -15,11 +15,12 @@
 */
 package org.frankframework.http;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import jakarta.activation.DataSource;
+
+import org.jspecify.annotations.Nullable;
 
 public class InputStreamDataSource implements DataSource {
 	private final String contentType;
@@ -44,17 +45,17 @@ public class InputStreamDataSource implements DataSource {
 	}
 
 	@Override
-	public InputStream getInputStream() throws IOException {
+	public InputStream getInputStream() {
 		return inputStream;
 	}
 
 	@Override
-	public String getName() {
+	public @Nullable String getName() {
 		return null;
 	}
 
 	@Override
-	public OutputStream getOutputStream() throws IOException {
+	public @Nullable OutputStream getOutputStream() {
 		return null;
 	}
 }

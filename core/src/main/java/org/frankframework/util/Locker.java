@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -153,7 +154,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	 * A wait timeout beyond the basic lockWaitTimeout and transactionTimeout can be set using numRetries in combination with retryDelay.
 	 *
 	 */
-	public String acquire(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException {
+	public @Nullable String acquire(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException {
 
 		try (Connection conn = getConnection()) {
 			if (!getDbmsSupport().isTablePresent(conn, "IBISLOCK")) {

@@ -15,7 +15,6 @@
 */
 package org.frankframework.filesystem.smb;
 
-import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -34,7 +33,7 @@ public class UsernameAndPasswordCallbackHandler implements CallbackHandler {
 	}
 
 	@Override
-	public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+	public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
 		for (Callback callback : callbacks) {
 			if (callback instanceof NameCallback nc) {
 				nc.setName(user);

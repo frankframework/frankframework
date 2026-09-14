@@ -26,30 +26,29 @@ import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
+import lombok.experimental.UtilityClass;
+
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.jta.narayana.NarayanaDataSource;
 
+@UtilityClass
 public class JdbcPoolUtil {
 
 	private static final String CLOSE = "], ";
-
-	private JdbcPoolUtil() {
-		// Empty constructor to prevent creation of instances of static utility-class.
-	}
 
 	/** Returns pool info or NULL when it's not able to do so. */
 	public static @Nullable String getConnectionPoolInfo(@Nullable DataSource datasource) {
 		StringBuilder info = new StringBuilder();
 
-		if (datasource instanceof OpenManagedDataSource<?> targetDataSource) {
-			addPoolMetadata(targetDataSource.getPool(), info);
-		} else if (datasource instanceof org.apache.tomcat.dbcp.dbcp2.PoolingDataSource) {
-			OpenPoolingDataSource<?> dataSource = (OpenPoolingDataSource<?>) datasource;
-			addPoolMetadata(dataSource.getPool(), info);
-		} else if (datasource instanceof DelegatingDataSource source) { // Perhaps it's wrapped?
-			return getConnectionPoolInfo(source.getTargetDataSource());
-		} else {
-			return null;
+		switch (datasource) {
+			case OpenManagedDataSource<?> targetDataSource -> addPoolMetadata(targetDataSource.getPool(), info);
+			case OpenPoolingDataSource<?> poolingDataSource -> addPoolMetadata(poolingDataSource.getPool(), info);
+			case DelegatingDataSource source -> {
+				return getConnectionPoolInfo(source.getTargetDataSource());  // Perhaps it's wrapped?
+			}
+			case null, default -> {
+				return null;
+			}
 		}
 
 		return info.toString();

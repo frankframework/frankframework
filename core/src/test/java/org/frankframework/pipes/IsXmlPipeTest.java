@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -19,7 +18,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	String pipeForwardElse = "else";
 
 	@Override
-	public IsXmlPipe createPipe() throws ConfigurationException {
+	public IsXmlPipe createPipe() {
 		IsXmlPipe isXmlPipe = new IsXmlPipe();
 
 		// Add default pipes

@@ -53,7 +53,7 @@ public class KubernetesSecret extends org.frankframework.credentialprovider.Secr
 	}
 
 	@Override
-	public String getField(@Nullable String key) {
+	public @Nullable String getField(@Nullable String key) {
 		String foundKey = secret.getData().get(key);
 		if (StringUtils.isEmpty(foundKey)) {
 			log.info("no value found for alias [" + getAlias() + "] and field " + key);

@@ -143,7 +143,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	}
 
 	@Override
-	public void endElement(String namespaceURI, String lName, String qName) throws SAXException {
+	public void endElement(String namespaceURI, String lName, String qName) {
 		int level = elements.size() -1;
 		elements.remove(level);
 	}

@@ -3,6 +3,7 @@ package org.frankframework.util;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,6 +15,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,6 +32,7 @@ import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 
+@SuppressWarnings({ "unchecked", "deprecation" })
 public class MessageUtilsTest {
 
 	public static final String JSON_TEST_INPUT = "{\"GUID\": \"ABC\"}";
@@ -305,6 +308,8 @@ public class MessageUtilsTest {
 		request.addHeader("User-Agent", "double-o-seven");
 		Message message = MessageUtils.parseContentAsMessage(request);
 
+		assertNotNull(message);
+		assertNull(message.asObject());
 		assertTrue(Message.isEmpty(message));
 		assertTrue(Message.isNull(message));
 		assertEquals(0L, message.size());
@@ -355,14 +360,13 @@ public class MessageUtilsTest {
 	@Test
 	void testMessageAsStringDoesNotCloseMessage() throws IOException {
 		// Arrange: make it an object, so method can do instanceof check
-		Object msg = new Message(new StringReader("text"));
+		Message msg = new Message(new StringReader("text"));
 
 		// Act
 		String content = MessageUtils.asString(msg);
 
 		// Assert
-		Message message = (Message) msg;
-		assertEquals("text", message.asString());
+		assertEquals("text", msg.asString());
 		assertEquals("text", content);
 	}
 
@@ -376,7 +380,7 @@ public class MessageUtilsTest {
 		String content = MessageUtils.asString(wrapper);
 
 		// Assert
-		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
+		MessageWrapper<Message> messageWrapper = assertInstanceOf(MessageWrapper.class, wrapper);
 		assertEquals("text", messageWrapper.getMessage().asString());
 		assertEquals("text", content);
 	}
@@ -389,6 +393,70 @@ public class MessageUtilsTest {
 		assertEquals(expected, MessageUtils.asString(expected));
 
 		assertEquals(expected, MessageUtils.asString(new StringReader(expected)));
+	}
 
+	@Test
+	void testGenerateDefaultMessageId() {
+		// Act
+		String msgId = MessageUtils.generateDefaultMessageId();
+
+		// Assert
+		Assertions.assertThat(msgId)
+				.isNotNull()
+				.startsWith(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX)
+				.hasSizeLessThanOrEqualTo(100);
+		assertFalse(MessageUtils.isFallbackMessageId(msgId));
+	}
+
+	@Test
+	void testGenerateMessageId() {
+		// Act
+		String msgId = MessageUtils.generateMessageId("short-prefix");
+
+		// Assert
+		Assertions.assertThat(msgId)
+				.isNotNull()
+				.startsWith(MessageUtils.DEFAULT_MESSAGE_ID_PREFIX + "-short-prefix")
+				.hasSizeLessThanOrEqualTo(100);
+		assertFalse(MessageUtils.isFallbackMessageId(msgId));
+	}
+
+	@Test
+	void testGeneratePrefixedMessageId() {
+		// Act
+		String msgId = MessageUtils.generatePrefixedMessageId("short-prefix");
+
+		// Assert
+		Assertions.assertThat(msgId)
+				.isNotNull()
+				.startsWith("short-prefix")
+				.hasSizeLessThanOrEqualTo(100);
+		assertFalse(MessageUtils.isFallbackMessageId(msgId));
+	}
+
+	@Test
+	void testGeneratePrefixedMessageIdWithVeryLongPrefix() {
+		// Act
+		String msgId = MessageUtils.generatePrefixedMessageId("long-prefix".repeat(100));
+
+		// Assert
+		Assertions.assertThat(msgId)
+				.isNotNull()
+				.startsWith("long-prefix")
+				.hasSizeLessThanOrEqualTo(100);
+		assertFalse(MessageUtils.isFallbackMessageId(msgId));
+	}
+
+	@Test
+	void testGenerateFallbackMessageId() {
+		// Act
+		String msgId = MessageUtils.generateFallbackMessageId();
+
+		// Assert
+		Assertions.assertThat(msgId)
+				.isNotNull()
+				.startsWith(MessageUtils.FALLBACK_MESSAGE_ID_PREFIX)
+				.hasSizeLessThanOrEqualTo(100);
+		assertTrue(MessageUtils.isFallbackMessageId(msgId));
 	}
 }

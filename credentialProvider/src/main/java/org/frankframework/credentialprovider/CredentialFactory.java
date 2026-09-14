@@ -281,7 +281,7 @@ public class CredentialFactory {
 		return list;
 	}
 
-	public static Collection<String> getConfiguredAliases() throws Exception {
+	public static Collection<String> getConfiguredAliases() {
 		Collection<String> aliases = new LinkedHashSet<>();
 		for (ISecretProvider factory : getInstance().delegates) {
 			try {

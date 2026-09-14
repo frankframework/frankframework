@@ -32,7 +32,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	private ISecurityHandler securityHandler;
 
 	@Override
-	public IsUserInRolePipe createPipe() throws ConfigurationException {
+	public IsUserInRolePipe createPipe() {
 		return new IsUserInRolePipe();
 	}
 
@@ -266,7 +266,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
 	}
 
-	protected void setNotInRoleForward() throws ConfigurationException {
+	protected void setNotInRoleForward() {
 		PipeForward notInRole = new PipeForward(NOT_IN_ROLE_FORWARD_NAME, NOT_IN_ROLE_FORWARD_PATH);
 		pipe.addForward(notInRole);
 	}

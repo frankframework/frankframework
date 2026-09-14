@@ -285,7 +285,7 @@ public class FixedResultPipeTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void substituteVarsOldWithInvalidAttribute() throws Exception{
+	public void substituteVarsOldWithInvalidAttribute() {
 		Parameter param = ParameterBuilder.create().withName("param");
 		param.setDefaultValue("DefaultValue");
 		pipe.addParameter(param);

@@ -358,7 +358,7 @@ public class SoapWrapperTest {
 
 			String digestString = Base64.getEncoder().encodeToString(digestBytes);
 
-			String result = "";
+			String result;
 			if (digestString.equals(passwordDigest)) {
 				result = "valid";
 			} else {
@@ -395,9 +395,8 @@ public class SoapWrapperTest {
 
 			List<XMLStructure> list = keyInfo.getContent();
 
-			for (int i = 0; i < list.size(); i++) {
-				XMLStructure xmlStructure = list.get(i);
-				if (xmlStructure instanceof DOMStructure dom && purpose.equals(KeySelector.Purpose.VERIFY)) {
+			for (XMLStructure xmlStructure : list) {
+				if (xmlStructure instanceof DOMStructure dom && purpose.equals(Purpose.VERIFY)) {
 					Node wsse = dom.getNode();
 					XmlUtils.getFirstChildTag((Element) wsse, "wsse:Reference");
 

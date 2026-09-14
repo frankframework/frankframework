@@ -40,7 +40,7 @@ public class MessageStoreListenerTest {
 	private static final String MESSAGE_ID_FIELD = "MESSAGEID";
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws Exception {
+	public void setup(DatabaseTestEnvironment env) {
 		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms()); // tests are based on H2 syntax queries
 		Receiver<Serializable> receiver = mock();
 		when(receiver.isTransacted()).thenReturn(false);

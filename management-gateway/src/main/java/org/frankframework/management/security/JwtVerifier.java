@@ -85,7 +85,7 @@ public class JwtVerifier extends DefaultJWTProcessor<SecurityContext> {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() {
 			// Nothing to do here
 		}
 	}

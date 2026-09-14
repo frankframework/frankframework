@@ -151,7 +151,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 							builder.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 							copyFrom = endPos + DT_END.length();
 						} else {
-							String valueOut = null;
+							String valueOut;
 							valueOut = getValueOut(label, valueIn, type, stmt);
 							if (valueOut != null) {
 								builder.append(valueOut);

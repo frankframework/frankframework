@@ -365,7 +365,6 @@ public abstract class AmqpSenderTest {
 							}
 							Message m = Amqp1Helper.convertAmqpMessageToFFMessage(delivery.message());
 							delivery.accept();
-							// noinspection DataFlowIssue
 							return m.asString();
 						} catch (Exception e) {
 							return e.getMessage();

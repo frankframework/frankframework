@@ -235,7 +235,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void nonexistingStyleSheet() throws ConfigurationException, IOException, SenderException, TimeoutException {
+	public void nonexistingStyleSheet() throws ConfigurationException, IOException {
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();

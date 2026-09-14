@@ -47,7 +47,6 @@ import lombok.Getter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
@@ -193,7 +192,7 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException {
 		if (Message.isEmpty(message)) {
 			throw new SenderException("unable to execute query, no input provided");
 		}

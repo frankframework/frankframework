@@ -559,7 +559,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 	}
 
 	@Override
-	public String getWarningsAndErrors() {
+	public @Nullable String getWarningsAndErrors() {
 		return null;
 	}
 

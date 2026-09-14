@@ -127,7 +127,7 @@ public class HttpSender extends AbstractHttpSender {
 	/**
 	 * Returns HttpRequestBase, with (optional) RAW or as BINARY content
 	 */
-	protected HttpRequestBase createRequestMethod(URI uri, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected @Nullable HttpRequestBase createRequestMethod(URI uri, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
 			StringBuilder relativePath = new StringBuilder(uri.getRawPath());

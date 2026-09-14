@@ -177,13 +177,13 @@ public class DateFormatUtilsTest {
 	}
 
 	@Test
-	public void testParseGenericDate4() throws Exception {
+	public void testParseGenericDate4() {
 		Instant date = DateFormatUtils.parseGenericDate("2013-12-10T12:41:43");
 		assertEquals(adjustForTimezone(1386679303000L), date.toEpochMilli());
 	}
 
 	@Test
-	public void testParseGenericDate5() throws Exception {
+	public void testParseGenericDate5() {
 		Instant date = DateFormatUtils.parseGenericDate("2013-12-10");
 		assertEquals(1386633600000L, date.toEpochMilli());
 	}

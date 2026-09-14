@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.transaction.TransactionManager;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.TransactionSystemException;
@@ -26,7 +27,7 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		private @Setter boolean pendingTransactionsAfterShutdown = true;
 
 		@Override
-		protected TransactionManager createTransactionManager() throws TransactionSystemException {
+		protected @Nullable TransactionManager createTransactionManager() throws TransactionSystemException {
 			return null;
 		}
 

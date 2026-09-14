@@ -53,7 +53,7 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	 * Then the default XSD in the Liquibase jar will be used.
 	 */
 	@Override
-	public List<liquibase.resource.Resource> search(String path, boolean recursive) throws IOException {
+	public List<liquibase.resource.Resource> search(String path, boolean recursive) {
 		if (path.equals(resource.getSystemId())) {
 			return asResourceList(path, null, resource::openStream);
 		}
@@ -115,7 +115,7 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		// not necessary to close anything
 	}
 

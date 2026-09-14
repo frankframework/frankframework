@@ -30,11 +30,10 @@ import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
-@SuppressWarnings("removal")
 public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
 	@Override
-	public ZipWriterPipe createPipe() throws ConfigurationException {
+	public ZipWriterPipe createPipe() {
 		ZipWriterPipe zipWriterPipe = new ZipWriterPipe();
 		zipWriterPipe.setCollectionName("zipwriterhandle");
 		return zipWriterPipe;

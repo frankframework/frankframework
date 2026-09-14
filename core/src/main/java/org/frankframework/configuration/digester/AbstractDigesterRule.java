@@ -233,5 +233,5 @@ public abstract class AbstractDigesterRule implements ApplicationContextAware {
 
 	protected abstract void handleBean();
 
-	protected abstract void handleAttribute(String name, String value, Map<String, String> attributes) throws Exception;
+	protected abstract void handleAttribute(String name, String value, Map<String, String> attributes);
 }

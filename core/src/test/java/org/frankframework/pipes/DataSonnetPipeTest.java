@@ -34,7 +34,7 @@ import org.frankframework.testutil.TestFileUtils;
 public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 
 	@Override
-	public DataSonnetPipe createPipe() throws ConfigurationException {
+	public DataSonnetPipe createPipe() {
 		return new DataSonnetPipe();
 	}
 

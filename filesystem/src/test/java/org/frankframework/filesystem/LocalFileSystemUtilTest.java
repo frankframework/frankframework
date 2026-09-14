@@ -1,6 +1,5 @@
 package org.frankframework.filesystem;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.io.TempDir;
@@ -18,7 +17,7 @@ public class LocalFileSystemUtilTest extends FileSystemUtilsTest <Path, LocalFil
 	}
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() throws IOException {
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		return new LocalFileSystemTestHelper(temp);
 	}
 }

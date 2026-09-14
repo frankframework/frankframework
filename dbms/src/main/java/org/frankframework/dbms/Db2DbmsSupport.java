@@ -56,7 +56,7 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) {
 		return selectQuery + " SKIP LOCKED DATA";
 	}
 
@@ -86,7 +86,7 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws DbmsException {
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
 		return doHasIndexOnColumns(conn, schemaOwner, tableName.toUpperCase(), columns.stream().map(String::toUpperCase).collect(Collectors.toList()),
 				"syscat.indexes", "syscat.indexcoluse", null, "tabname", "indname", "colname", "colseq");
 	}

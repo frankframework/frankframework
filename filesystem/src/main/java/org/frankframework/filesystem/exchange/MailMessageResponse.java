@@ -27,6 +27,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeanUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -68,7 +69,7 @@ public class MailMessageResponse {
 	/**
 	 * Resolves mail message
 	 */
-	public static MailMessage get(GraphClient client, MailMessage filePointer) throws IOException {
+	public static @Nullable MailMessage get(GraphClient client, MailMessage filePointer) throws IOException {
 		String composedUrl = MESSAGE_URL_SUFFIX.formatted(filePointer.getMailFolder().getUrl(), filePointer.getId());
 		String generatedUrl = filePointer.getUrl();
 		if (!composedUrl.equals(generatedUrl)) {

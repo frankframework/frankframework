@@ -52,7 +52,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		SpringUtils.autowireByName(getApplicationContext(), sender);
 	}
 

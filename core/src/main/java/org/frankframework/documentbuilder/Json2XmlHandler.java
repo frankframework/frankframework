@@ -148,16 +148,12 @@ public class Json2XmlHandler implements JsonEventHandler {
 	public void primitive(Object value) throws SAXException {
 		final INodeBuilder top = (INodeBuilder)checkField();
 		try (INodeBuilder ignored = top) {
-			if (value instanceof String string) {
-				top.setValue(string);
-			} else if (value instanceof Boolean boolean1) {
-				top.setValue(boolean1);
-			} else if (value instanceof Number number) {
-				top.setValue(number);
-			} else if (value==null) {
-				top.setValue((String)null);
-			} else {
-				top.setValue(value.toString());
+			switch (value) {
+				case String string -> top.setValue(string);
+				case Boolean boolean1 -> top.setValue(boolean1);
+				case Number number -> top.setValue(number);
+				case null -> top.setValue((String) null);
+				default -> top.setValue(value.toString());
 			}
 		}
 		stack.pop();

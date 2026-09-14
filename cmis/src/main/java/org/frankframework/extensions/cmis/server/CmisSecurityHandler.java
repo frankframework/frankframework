@@ -32,7 +32,7 @@ import org.frankframework.util.CredentialFactory;
  */
 public class CmisSecurityHandler implements ISecurityHandler {
 
-	private CredentialFactory credentials = null;
+	private CredentialFactory credentials;
 
 	public CmisSecurityHandler(CallContext callContext) {
 		this.credentials = new CredentialFactory(null, callContext.getUsername(), callContext.getPassword());

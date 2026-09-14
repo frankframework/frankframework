@@ -86,7 +86,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 	}
 
 	@Test
-	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() throws Exception {
+	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() {
 		Exception e = assertThrows(Exception.class, () -> fileSystemActorMoveActionTestNoRoot("folder", false, false));
 		assertThat(e.getMessage(), containsString("unable to process [" + FileSystemAction.MOVE + "] action for File [" + folder.toAbsolutePath() + "/sendermovefile1.txt]: destination folder [" + folder.toAbsolutePath() + "/folder] does not exist"));
 	}

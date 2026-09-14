@@ -42,8 +42,8 @@ public class MessageBrowsingFilter {
 	private @Getter Date startDate = null;
 	private @Getter Date endDate = null;
 
-	private @Getter int maxMessages = 100;
-	private @Getter int skipMessages = 0;
+	private @Getter int maxMessages;
+	private @Getter int skipMessages;
 
 	private @Getter SortOrder sortOrder = SortOrder.NONE;
 	private IMessageBrowser<?> storage = null;

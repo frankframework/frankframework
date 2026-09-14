@@ -110,7 +110,7 @@ public class JdbcUtilTest {
 		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
 
 		// Act
-		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
+		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues);
 
 		// Arrange
 		query = "SELECT COUNT(*) FROM TEMP";
@@ -151,7 +151,7 @@ public class JdbcUtilTest {
 		params.add(ParameterBuilder.create().withValue("3"));
 
 		// Act
-		List<Object> listResult = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params), session);
+		List<Object> listResult = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, ParameterBuilder.getPVL(params));
 
 		// Assert
 		assertEquals("just a third text", listResult.getFirst());
@@ -161,7 +161,7 @@ public class JdbcUtilTest {
 		query = "SELECT COUNT(*) FROM TEMP";
 
 		// Act
-		long result = (Long) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, null, session);
+		long result = (Long) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, null);
 
 		// Assert
 		assertEquals(5, result);
@@ -183,14 +183,14 @@ public class JdbcUtilTest {
 		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
 
 		// Act
-		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
+		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues);
 
 		// Assert
 		ParameterList resultParams = new ParameterList();
 		resultParams.add(NumberParameterBuilder.create().withValue(1));
 
 		Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TBLOB FROM TEMP WHERE TKEY = ?",
-				ParameterBuilder.getPVL(resultParams), session);
+				ParameterBuilder.getPVL(resultParams));
 
 		assertNotNull(result);
 
@@ -217,13 +217,13 @@ public class JdbcUtilTest {
 		ParameterValueList parameterValues = params.getValues(Message.nullMessage(), session);
 
 		// Act
-		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues, session);
+		JdbcTestUtil.executeStatement(dbmsSupport, connection, query, parameterValues);
 
 		// Assert
 		ParameterList resultParams = new ParameterList();
 		resultParams.add(NumberParameterBuilder.create().withValue(1));
 
-		List<Object> result = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams), session);
+		List<Object> result = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams));
 
 		Clob clob = (Clob) result.getFirst();
 		Blob blob = (Blob) result.get(1);

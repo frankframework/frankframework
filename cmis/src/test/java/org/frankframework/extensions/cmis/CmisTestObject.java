@@ -33,7 +33,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 	}
 
 	@Override
-	public CmisObject answer(InvocationOnMock invocation) throws Throwable {
+	public CmisObject answer(InvocationOnMock invocation) {
 		Object obj = invocation.getArguments()[0];
 		if(obj instanceof ObjectId id) {
 			objectId = id.getId();

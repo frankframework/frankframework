@@ -37,6 +37,7 @@ import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.message.BasicNameValuePair;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
@@ -185,13 +186,13 @@ public class HttpEntityFactory {
 				.map(this::encodeAsUrlParameter)
 				.collect(Collectors.toList());
 		if (StringUtils.isNotBlank(initialMessage)) {
-			params.add(0, initialMessage);
+			params.addFirst(initialMessage);
 		}
 		String msg = String.join("&", params);
 		return new ByteArrayEntity(msg.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), computeContentType(message));
 	}
 
-	private ContentType computeContentType(Message message) {
+	private @Nullable ContentType computeContentType(Message message) {
 		if (contentType != null) {
 			return contentType;
 		}

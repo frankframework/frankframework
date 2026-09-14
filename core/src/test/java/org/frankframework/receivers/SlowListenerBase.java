@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -40,7 +39,7 @@ public abstract class SlowListenerBase implements IListener<String> {
 	private @Getter boolean closed = false;
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		// Nothing to configure
 	}
 

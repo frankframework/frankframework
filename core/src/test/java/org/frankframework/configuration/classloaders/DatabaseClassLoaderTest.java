@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -106,7 +107,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		@SuppressWarnings("rawtypes") // IbisContext.log is a void method
 		Answer answer = new Answer() {
 			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
+			public @Nullable Object answer(InvocationOnMock invocation) {
 				String message = invocation.getArgument(0);
 				MessageEventLevel level = invocation.getArgument(1);
 				Exception exception = invocation.getArgument(2);
@@ -169,7 +170,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	 */
 	@Test
 	public void testExceptionHandlingDEBUG() throws Exception {
-		boolean makeSureNoExceptionIsThrown = false;
+		boolean makeSureNoExceptionIsThrown;
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
@@ -184,7 +185,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			assertTrue(makeSureNoExceptionIsThrown);
 
 			List<LogEvent> log = appender.getLogEvents();
-			LogEvent firstLogEntry = log.get(log.size()-1);
+			LogEvent firstLogEntry = log.getLast();
 			assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.DEBUG, firstLogEntry.getLevel());
 			String msg = firstLogEntry.getMessage().getFormattedMessage();
@@ -199,7 +200,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	 */
 	@Test
 	public void testExceptionHandlingINFO() throws Exception {
-		boolean makeSureNoExceptionIsThrown = false;
+		boolean makeSureNoExceptionIsThrown;
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
@@ -214,7 +215,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			assertTrue(makeSureNoExceptionIsThrown);
 
 			List<LogEvent> log = appender.getLogEvents();
-			LogEvent firstLogEntry = log.get(log.size()-1);
+			LogEvent firstLogEntry = log.getLast();
 			assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.INFO, firstLogEntry.getLevel());
 
@@ -243,7 +244,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			assertNull(config);
 
 			List<LogEvent> log = appender.getLogEvents();
-			LogEvent firstLogEntry = log.get(log.size()-1);
+			LogEvent firstLogEntry = log.getLast();
 			assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.WARN, firstLogEntry.getLevel());
 			String msg = firstLogEntry.getMessage().getFormattedMessage();

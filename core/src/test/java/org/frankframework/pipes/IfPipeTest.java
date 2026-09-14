@@ -41,7 +41,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	private PipeRunResult pipeRunResult;
 
 	@Override
-	public IfPipe createPipe() throws ConfigurationException {
+	public IfPipe createPipe() {
 		IfPipe ifPipe = new IfPipe();
 
 		// Add default forwards
@@ -204,7 +204,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	}
 
 	@Test
-	void testInvalidJsonPathExpression() throws Exception {
+	void testInvalidJsonPathExpression() {
 		pipe.setJsonPathExpression("$[invalid]");
 
 		ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> pipe.configure());

@@ -40,6 +40,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -495,7 +496,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		return getUrl();
 	}
 
-	private HttpSession getSharedSession() {
+	private @Nullable HttpSession getSharedSession() {
 		return StringUtils.isNotBlank(sharedResourceRef) ? getSharedResource(sharedResourceRef) : null;
 	}
 

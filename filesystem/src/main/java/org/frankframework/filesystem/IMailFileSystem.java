@@ -15,7 +15,6 @@
 */
 package org.frankframework.filesystem;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -61,7 +60,7 @@ public interface IMailFileSystem<M,A> extends IBasicFileSystem<M> {
 
 	String getAttachmentName(A a) throws FileSystemException;
 
-	Message readAttachment(A a) throws FileSystemException, IOException;
+	Message readAttachment(A a);
 
 	long getAttachmentSize(A a) throws FileSystemException;
 

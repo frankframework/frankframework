@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
@@ -103,7 +102,7 @@ public class ApiServiceDispatcherTest {
 	}
 
 	@Test
-	void testMultipleMethodsSameEndpoint() throws Exception {
+	void testMultipleMethodsSameEndpoint() {
 		String uri = "testEndpoint1";
 		dispatcher.registerServiceClient(createServiceClient(HttpMethod.GET, uri));
 		dispatcher.registerServiceClient(createServiceClient(HttpMethod.POST, uri));
@@ -111,14 +110,14 @@ public class ApiServiceDispatcherTest {
 	}
 
 	@Test
-	void testMultipleMethodsSameEndpointSameListener() throws Exception {
+	void testMultipleMethodsSameEndpointSameListener() {
 		String uri = "testEndpoint1";
 		dispatcher.registerServiceClient(createServiceClient(List.of(HttpMethod.GET, HttpMethod.POST), uri));
 		testMultipleMethods(uri);
 	}
 
 	@Test
-	void testFindMatchSingleAsterisk() throws ListenerException {
+	void testFindMatchSingleAsterisk() {
 		ApiListener listener = createServiceClient(HttpMethod.GET, "/customers/*/addresses/345");
 		dispatcher.registerServiceClient(listener);
 
@@ -136,7 +135,7 @@ public class ApiServiceDispatcherTest {
 			"/employees/123/departments/456/seats/52, 0, /employees/**",
 			"/customers/123/addresses/345, 0, /employees/**",
 	})
-	void testFindPartialPatternMatchWithWildcards(String requestUri, int expectedNrOfMatches, String uriPatterns) throws ListenerException {
+	void testFindPartialPatternMatchWithWildcards(String requestUri, int expectedNrOfMatches, String uriPatterns) {
 		// Arrange
 		for (String uriPattern : uriPatterns.split("\\|")) {
 			ApiListener listener = createServiceClient(HttpMethod.GET, uriPattern);
@@ -164,7 +163,7 @@ public class ApiServiceDispatcherTest {
 			"GET, /customers/123/addresses/345, /customers/**, GET:/customers/**|POST:/customers/*/addresses/**|POST:/customers/*/addresses/*",
 			"GET, /employees/123/departments/456/seats/52, /employees/*/departments/*/seats/*, GET:/employees/**|GET:/employees/*/departments/*/seats/*",
 	})
-	void testFindConfigBestMatchWithWildcards(String requestMethod, String requestUri, String expectedMatch, String uriPatterns) throws ListenerException {
+	void testFindConfigBestMatchWithWildcards(String requestMethod, String requestUri, String expectedMatch, String uriPatterns) {
 		// Arrange
 		for (String uriPattern : uriPatterns.split("\\|")) {
 			String[] methodAndPattern = uriPattern.split(":");

@@ -16,7 +16,6 @@
 package org.frankframework.extensions.rekenbox;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.w3c.dom.Document;
@@ -106,18 +105,18 @@ public class XmlToLabelFormat {
 		Collection children;
 		String tagLabel;
 
-		for(Iterator i = elements.iterator(); i.hasNext();) {
-			Element el = (Element) i.next();
+		for (Object element : elements) {
+			Element el = (Element) element;
 
 			tagLabel = makeTagLabel(parentLabel, el);
 			children = getElementChildren(el);
 
-			if(!children.isEmpty()) {
+			if (!children.isEmpty()) {
 				buf.append(tagLabel).append(" : #SAMENGESTELD\n");
 				convertTagsToLabels(buf, tagLabel, children);
 			} else {
 				StringBuilder text = getTextValue(el);
-				if(text != null && !text.isEmpty()) {
+				if (text != null && !text.isEmpty()) {
 					buf.append(tagLabel).append(" :").append(text).append("\n"); // JDK1.4 needs no converstion text.toString()
 				}
 			}

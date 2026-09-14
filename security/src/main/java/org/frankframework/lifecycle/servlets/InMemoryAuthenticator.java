@@ -48,7 +48,7 @@ public class InMemoryAuthenticator extends AbstractServletAuthenticator {
 	private @Setter String password = null;
 
 	@Override
-	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+	public SecurityFilterChain configure(HttpSecurity http) {
 		http.httpBasic(basic -> basic.realmName("Frank")); // Uses a BasicAuthenticationEntryPoint to force users to log in
 
 		UserDetails user = User.builder()

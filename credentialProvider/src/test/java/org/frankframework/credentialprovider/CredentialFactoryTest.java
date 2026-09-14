@@ -266,7 +266,7 @@ class CredentialFactoryTest {
 	}
 
 	@Test
-	void testFilesystem() throws Exception {
+	void testFilesystem() {
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.FileSystemCredentialFactory");
 
 		String url = this.getClass().getResource("/secrets").toExternalForm();

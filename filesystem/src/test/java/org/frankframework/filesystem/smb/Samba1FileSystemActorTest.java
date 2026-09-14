@@ -57,28 +57,28 @@ public class Samba1FileSystemActorTest extends WritableFileSystemActorTest<SmbFi
 	@Test
 	@Disabled
 	@Override
-	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() throws Exception {
+	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() {
 		// unsure why this doesn't work property
 	}
 
 	@Test
 	@Disabled
 	@Override
-	public void fileSystemActorDeleteActionWithDeleteEmptyFolderTest() throws Exception {
+	public void fileSystemActorDeleteActionWithDeleteEmptyFolderTest() {
 		// unsure why this doesn't work property
 	}
 
 	@Test
 	@Disabled
 	@Override
-	public void fileSystemActorMoveActionWithDeleteEmptyFolderTest() throws Exception {
+	public void fileSystemActorMoveActionWithDeleteEmptyFolderTest() {
 		// unsure why this doesn't work property
 	}
 
 	@Test
 	@Disabled
 	@Override
-	public void fileSystemActorReadDeleteActionWithDeleteEmptyFolderTest() throws Exception {
+	public void fileSystemActorReadDeleteActionWithDeleteEmptyFolderTest() {
 		// unsure why this doesn't work property
 	}
 }

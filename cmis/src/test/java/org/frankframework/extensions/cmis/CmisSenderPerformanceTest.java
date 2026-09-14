@@ -207,8 +207,8 @@ public class CmisSenderPerformanceTest {
 		testGet();
 		results.append("msgsize").append(separator).append("#threads").append(separator).append("totcycles").append(separator).append("totalTime").append(
 				separator).append("totalTimeTesting\n");
-		for (int i = 0; i < threadCount.length; i++) {
-			testParallel(threadCount[i]);
+		for (int j : threadCount) {
+			testParallel(j);
 		}
 		System.out.println(results);
 	}

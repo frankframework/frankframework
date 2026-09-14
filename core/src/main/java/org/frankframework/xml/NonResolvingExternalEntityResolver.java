@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
@@ -41,12 +42,12 @@ public class NonResolvingExternalEntityResolver implements EntityResolver2 {
 	}
 
 	@Override
-	public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
+	public @Nullable InputSource getExternalSubset(String name, String baseURI) {
 		return null;
 	}
 
 	@Override
-	public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
+	public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) {
 		log.warn("Resolving entity with name [{}], public id [{}], base uri [{}] and system id [{}] to an empty string", name, publicId, baseURI, systemId);
 		return new InputSource(new StringReader(""));
 	}

@@ -16,7 +16,6 @@
 package org.frankframework.extensions.tibco;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 
@@ -35,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
-import com.tibco.tibjms.admin.TibjmsAdminException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -231,17 +229,12 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 					connection.start();
 					jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeoutWork);
-					if (rawReplyMsg == null) {
-						throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeoutWork + "] ms");
-					}
-					if (rawReplyMsg instanceof TextMessage replyMsg) {
-						result = replyMsg.getText();
-					} else if (rawReplyMsg instanceof BytesMessage bytesMessage) {
-						InputStream inputStream = new BytesMessageInputStream(bytesMessage);
-						result = StreamUtil.streamToString(inputStream);
-					} else {
-						throw new PipeRunException(this, "Unsupported message type received: " + ClassUtils.classNameOf(rawReplyMsg));
-					}
+					result = switch (rawReplyMsg) {
+						case TextMessage replyMsg -> replyMsg.getText();
+						case BytesMessage bytesMessage -> StreamUtil.streamToString(new BytesMessageInputStream(bytesMessage));
+						case null -> throw new PipeRunException(this, "did not receive reply on [" + replyQueue + "] replyCorrelationId [" + replyCorrelationId + "] within [" + replyTimeoutWork + "] ms");
+						default -> throw new PipeRunException(this, "Unsupported message type received: " + ClassUtils.classNameOf(rawReplyMsg));
+					};
 				}
 
 			} else {
@@ -255,12 +248,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 	private void validateQueueName(String urlWork, CredentialFactory cf, String queueNameWork) throws PipeRunException {
 		TibjmsAdmin admin;
-		try {
-			admin = TibcoUtils.getActiveServerAdmin(urlWork, cf, emsProperties);
-		} catch (TibjmsAdminException e) {
-			log.debug("caught exception, cannot validate Tibco queue name", e);
-			return;
-		}
+		admin = TibcoUtils.getActiveServerAdmin(urlWork, cf, emsProperties);
 		if (admin == null) {
 			return;
 		}

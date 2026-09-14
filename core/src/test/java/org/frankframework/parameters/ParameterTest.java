@@ -916,7 +916,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testParameterInvalidXPathToMessage() throws Exception {
+	public void testParameterInvalidXPathToMessage() {
 		Parameter p = new Parameter();
 		p.setName("number");
 		p.setXpathExpression("{/}not-an-xpath");

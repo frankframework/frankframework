@@ -110,13 +110,13 @@ public class ReplacingPropertyVariablesInputStream extends InputStream {
 		// Remove variablePrefix
 		for (byte b : variablePrefix) {
 			if (list.getFirst() == b) {
-				list.remove(0);
+				list.removeFirst();
 			}
 		}
 
 		// Remove suffix
-		if (list.get(list.size() - 1) == CLOSING_CURLY_BRACE) {
-			list.remove(list.size() - 1);
+		if (list.getLast() == CLOSING_CURLY_BRACE) {
+			list.removeLast();
 		}
 
 		// Convert matchingValue to byte[]

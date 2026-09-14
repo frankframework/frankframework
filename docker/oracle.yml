@@ -8,6 +8,6 @@ services:
       active.storedProcedureTests: true
 
   oracle:
-    image: private.docker.nexus.frankframework.org/ff-test/dbms/oracle
+    image: ghcr.io/frankframework/dbms/oracle
     ports:
       - "1521:1521"

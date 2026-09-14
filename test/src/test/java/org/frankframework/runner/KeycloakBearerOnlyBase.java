@@ -25,10 +25,9 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
  * See: <a href="https://testcontainers.com/guides/testcontainers-container-lifecycle/">testcontainers lifecycle</a>>
  */
 public abstract class KeycloakBearerOnlyBase {
-	@SuppressWarnings("resource")
 	public static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/test-realm.json");
-	protected static int httpPort = 8888;
+	protected static int httpPort;
 
 	static {
 		keycloak.start();

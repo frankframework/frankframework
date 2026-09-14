@@ -38,7 +38,7 @@ public class OAuthAccessTokenRequestTest {
 	private HttpSender httpSender;
 
 	@BeforeEach
-	public void setup() throws Exception {
+	public void setup() {
 		httpSender = new HttpSender();
 		httpSender.setUrl("https://dummy");
 		httpSender.setTokenEndpoint("https://token-dummy");

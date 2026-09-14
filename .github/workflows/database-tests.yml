@@ -71,6 +71,14 @@ jobs:
     services:
       database:
         image: ghcr.io/frankframework/dbms/${{ matrix.db }}:latest
+        # Map all ports so that the database can be accessed from the host machine.
+        ports:
+          - 5432:5432 # PostgreSQL
+          - 3306:3306 # MariaDB
+          - 3307:3307 # MySQL          
+          - 1433:1433 # MSSQL Server
+          - 1521:1521 # Oracle
+        #  - 50000:50000 # DB2
         credentials:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -93,7 +101,7 @@ jobs:
           maven-dependency-cache-
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
-      uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+      uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
       with:
         distribution: 'temurin'
         java-version: ${{ env.JDK_VERSION }}
@@ -118,7 +126,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
       # Tests with proprietary dependencies don't work for some reason. Build only core and the modules that Core depends on. If JDBC is moved to another modules that module should be built as well.
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -pl core -am -Djunit.includedTags=database -Djdbc.hostname=database
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -pl core -am -Dgroups=database
 
     - name: Store Test Results
       if: failure()

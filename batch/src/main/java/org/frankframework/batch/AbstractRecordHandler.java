@@ -185,8 +185,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			if (log.isTraceEnabled()) log.trace("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
 			return false;
 		}
-		if (! equalRecordHandlers) {
-			if (log.isTraceEnabled()) log.trace("isNewRecordType(): equalRecordTypes [{}], so returning true", equalRecordHandlers);
+		if (!equalRecordHandlers) {
+			if (log.isTraceEnabled()) log.trace("isNewRecordType(): equalRecordTypes=[false], so returning true");
 			return true;
 		}
 

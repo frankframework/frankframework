@@ -134,7 +134,7 @@ public class SchedulerHelper {
 	}
 
 	public boolean contains(String name, String group) throws SchedulerException {
-		JobKey key = null;
+		JobKey key;
 
 		if(StringUtils.isEmpty(group))
 			key = JobKey.jobKey(name, DEFAULT_GROUP);
@@ -149,7 +149,7 @@ public class SchedulerHelper {
 	}
 
 	public Trigger getTrigger(String name, String group) throws SchedulerException {
-		TriggerKey key = null;
+		TriggerKey key;
 		if(StringUtils.isEmpty(group))
 			key = TriggerKey.triggerKey(name, DEFAULT_GROUP);
 		else
@@ -175,7 +175,7 @@ public class SchedulerHelper {
 	}
 
 	public void deleteTrigger(String name, String group) throws SchedulerException {
-		TriggerKey key = null;
+		TriggerKey key;
 		if(StringUtils.isEmpty(group))
 			key = TriggerKey.triggerKey(name, DEFAULT_GROUP);
 		else

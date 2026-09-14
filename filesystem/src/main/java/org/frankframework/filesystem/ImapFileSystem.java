@@ -35,7 +35,6 @@ import jakarta.mail.Message;
 import jakarta.mail.Message.RecipientType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
-import jakarta.mail.NoSuchProviderException;
 import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
@@ -86,7 +85,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	/**
 	 * For test purposes only. Defaults to IMAPS, but tests use IMAP
 	 */
-	protected String getStoreName() throws NoSuchProviderException {
+	protected String getStoreName() {
 		return "imaps";
 	}
 
@@ -208,7 +207,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public boolean isFolder(Message message) throws FileSystemException {
+	public boolean isFolder(Message message) {
 		return false;  // Currently only supports messages
 	}
 
@@ -234,7 +233,8 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 		}
 		IMAPFolder baseFolder = getConnection();
 		if (baseFolder == null) {
-			return null;
+			// No connection available; filesystem has not yet been opened. Valid situation, should return empty iterator (not NULL).
+			return FileSystemUtils.getDirectoryStream(List.of());
 		}
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -263,7 +263,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public @Nullable Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -291,7 +291,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public @Nullable Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
@@ -380,7 +380,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public Iterator<MimeBodyPart> listAttachments(Message f) throws FileSystemException {
+	public @Nullable Iterator<MimeBodyPart> listAttachments(Message f) throws FileSystemException {
 		try {
 			String contentType = f.getContentType();
 			if (!contentType.contains("multipart")) {
@@ -437,7 +437,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public org.frankframework.stream.Message readAttachment(MimeBodyPart a) {
+	public org.frankframework.stream.@Nullable Message readAttachment(MimeBodyPart a) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -506,7 +506,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public String getCanonicalName(Message f) {
+	public @NonNull String getCanonicalName(@NonNull Message f) {
 		return getName(f);
 	}
 
