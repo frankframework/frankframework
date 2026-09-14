@@ -28,10 +28,10 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.KeySourceException;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.jwk.source.JWKSetBasedJWKSource;
 import com.nimbusds.jose.jwk.source.JWKSetCacheRefreshEvaluator;
 import com.nimbusds.jose.jwk.source.JWKSetSource;
 import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.JWSAlgorithmFamilyJWSKeySelector;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
@@ -86,7 +86,7 @@ public class JwtVerifier {
 		}
 
 		private static JWKSource<SecurityContext> createJwkSetSource(Supplier<String> supply) {
-			return JWKSourceBuilder.create(new LazyLoadingJwkSetSource(supply)).cacheForever().build();
+			return new JWKSetBasedJWKSource<>(new LazyLoadingJwkSetSource(supply));
 		}
 	}
 
@@ -97,6 +97,7 @@ public class JwtVerifier {
 			this.supply = supply;
 		}
 
+		// We could improve things by caching this for like 15 seconds or something?
 		@Override
 		public JWKSet getJWKSet(JWKSetCacheRefreshEvaluator refreshEvaluator, long currentTime, SecurityContext context) throws KeySourceException {
 			try {

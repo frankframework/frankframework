@@ -33,7 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.integration.channel.NullChannel;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.core.GenericMessagingTemplate;
 
 import com.hazelcast.cluster.Member;
@@ -76,9 +78,14 @@ public class HazelcastOutboundGateway implements ApplicationContextAware, Outbou
 	@Autowired
 	private AbstractJwtGenerator<?> jwtGenerator;
 
+	private MessageChannel nullChannel;
+
 	@Override
 	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
+
+		// Messages from async requests are discarded.
+		nullChannel = SpringUtils.createBean(applicationContext, NullChannel.class);
 	}
 
 	@Override
@@ -115,7 +122,13 @@ public class HazelcastOutboundGateway implements ApplicationContextAware, Outbou
 		}
 	}
 
-	private static @NonNull List<JWK> getJwks(String jwks) {
+	/**
+	 * Returns a modifiable list
+	 */
+	private static @NonNull List<JWK> getJwks(@Nullable  String jwks) {
+		if (StringUtils.isBlank(jwks)) {
+			return new ArrayList<>();
+		}
 		try {
 			return new ArrayList<>(JWKSet.parse(jwks).getKeys());
 		} catch (ParseException e) {
@@ -244,7 +257,7 @@ public class HazelcastOutboundGateway implements ApplicationContextAware, Outbou
 	public <I> void sendAsyncMessage(Message<I> in) {
 		log.debug("sending asynchronous request to topic [{}] message [{}]", requestTopicName, in);
 		Message<I> requestMessage = HazelcastMessageBuilder.fromMessage(in)
-				.setReplyChannelName(null)
+				.setReplyChannel(nullChannel)
 				.setAuthentication(getAuthentication(in))
 				.build();
 
