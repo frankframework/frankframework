@@ -90,7 +90,6 @@ public class ClassLoaderManager {
 		// Register any classloader regardless if it's a ConfigurationClassLoader or not
 		ClassLoadingLeakDetector.registerClassLoader(configurationName, classLoader);
 
-		// If the classLoader implements IClassLoader, configure it
 		applyConfigurationProperties(configurationName, classLoader);
 
 		try {
