@@ -65,6 +65,10 @@ public class HazelcastOutboundGateway implements ApplicationContextAware, Outbou
 	private static final RandomStringUtils NUMBER_GENERATOR = RandomStringUtils.insecure();
 	private final String requestTopicName;
 	private ITopic<Message<?>> requestTopic;
+	private MessageChannel nullChannel;
+
+	@Autowired
+	private AbstractJwtGenerator<?> jwtGenerator;
 
 	public HazelcastOutboundGateway() {
 		this(HazelcastConfig.REQUEST_TOPIC_NAME);
@@ -74,11 +78,6 @@ public class HazelcastOutboundGateway implements ApplicationContextAware, Outbou
 	protected HazelcastOutboundGateway(String requestTopicName) {
 		this.requestTopicName = requestTopicName;
 	}
-
-	@Autowired
-	private AbstractJwtGenerator<?> jwtGenerator;
-
-	private MessageChannel nullChannel;
 
 	@Override
 	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
