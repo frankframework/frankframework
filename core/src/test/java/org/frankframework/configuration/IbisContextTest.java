@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.DummyClassLoader;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.testutil.NullClassLoader;
 import org.frankframework.util.MessageKeeperMessage;
@@ -22,18 +21,18 @@ import org.frankframework.util.MessageKeeperMessage;
 public class IbisContextTest {
 
 	private static final class IbisTestContext extends IbisContext {
-		private Map<String, Class<? extends IConfigurationClassLoader>> configurations = new HashMap<>();
+		private final Map<String, Class<? extends ClassLoader>> configurations = new HashMap<>();
 
 		public IbisTestContext(String configurationToLoad) {
 			this(configurationToLoad, null);
 		}
 
-		public IbisTestContext(String configurationName, Class<? extends IConfigurationClassLoader> classLoaderClass) {
+		public IbisTestContext(String configurationName, Class<? extends ClassLoader> classLoaderClass) {
 			configurations.put(configurationName, classLoaderClass);
 		}
 
 		@Override
-		protected Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames() {
+		protected Map<String, Class<? extends ClassLoader>> retrieveAllConfigNames() {
 			return configurations;
 		}
 
@@ -74,7 +73,7 @@ public class IbisContextTest {
 	public void unknownClassLoader() {
 		String configurationName = "ConfigWithUnknownClassLoader";
 
-		try(IbisContext context = new IbisTestContext(configurationName, IConfigurationClassLoader.class)) {
+		try (IbisContext context = new IbisTestContext(configurationName, ClassLoader.class)) {
 			context.init(false);
 
 			assertEquals("TestConfiguration", context.getApplicationName());

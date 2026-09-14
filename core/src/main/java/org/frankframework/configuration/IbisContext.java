@@ -34,8 +34,6 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
-import org.frankframework.configuration.classloaders.AbstractClassLoader;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.http.RestServiceDispatcher;
@@ -267,14 +265,14 @@ public class IbisContext extends IbisApplicationContext {
 	 *
 	 * @see ClassLoaderManager#get(String)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
-	 * @see #createAndConfigureConfigurationWithClassLoader(AbstractClassLoader, String, ClassLoaderException)
+	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
 	public void load(@Nullable String configurationName) {
 		boolean configFound = false;
 
 		// We have an ordered list with all configurations, lets loop through!
-		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
-		for (Entry<String, Class<? extends IConfigurationClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
+		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
+		for (Entry<String, Class<? extends ClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
 			String classLoaderType = currentConfigNameItem.getValue() == null ? null : currentConfigNameItem.getValue().getCanonicalName();
 
@@ -283,7 +281,7 @@ public class IbisContext extends IbisApplicationContext {
 				configFound = true;
 
 				ClassLoaderException classLoaderException = null;
-				AbstractClassLoader classLoader = null;
+				ClassLoader classLoader = null;
 				try {
 					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
 
@@ -320,7 +318,7 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	/** Helper method to create stubbed configurations used in JunitTests */
-	protected Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames() {
+	protected Map<String, Class<? extends ClassLoader>> retrieveAllConfigNames() {
 		return ConfigurationUtils.retrieveAllConfigNames(getApplicationContext());
 	}
 
@@ -328,7 +326,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Create a new configuration through Spring, and explicitly set the ClassLoader before initializing it.
 	 * If no ClassLoader or ClassLoader is not IConfigurationClassLoader return an error.
 	 */
-	private Configuration createConfiguration(@NonNull String name, @Nullable AbstractClassLoader classLoader) {
+	private Configuration createConfiguration(@NonNull String name, @Nullable ClassLoader classLoader) {
 		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);
 		Configuration configuration = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
@@ -343,7 +341,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
-	private void createAndConfigureConfigurationWithClassLoader(@Nullable AbstractClassLoader classLoader, @NonNull String currentConfigurationName, @Nullable ClassLoaderException classLoaderException) {
+	private void createAndConfigureConfigurationWithClassLoader(@Nullable ClassLoader classLoader, @NonNull String currentConfigurationName, @Nullable ClassLoaderException classLoaderException) {
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration [{}]", currentConfigurationName);
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();

@@ -53,7 +53,7 @@ public class ClassLoaderManager {
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
-	private final Map<String, AbstractClassLoader> classLoaders = new TreeMap<>();
+	private final Map<String, ClassLoader> classLoaders = new TreeMap<>();
 	private final ClassLoader classPathClassLoader;
 
 	public static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
@@ -199,7 +199,7 @@ public class ClassLoaderManager {
 	 * @return ClassLoader or null on error
 	 * @throws ClassLoaderException when a ClassLoader failed to initialize
 	 */
-	public @Nullable AbstractClassLoader get(@NonNull String configurationName) throws ClassLoaderException {
+	public @Nullable ClassLoader get(@NonNull String configurationName) throws ClassLoaderException {
 		return get(configurationName, null);
 	}
 
@@ -210,13 +210,13 @@ public class ClassLoaderManager {
 	 * @return ClassLoader or null on error
 	 * @throws ClassLoaderException when a ClassLoader failed to initialize
 	 */
-	public @Nullable AbstractClassLoader get(@NonNull String configurationName, @Nullable String classLoaderType) throws ClassLoaderException {
+	public @Nullable ClassLoader get(@NonNull String configurationName, @Nullable String classLoaderType) throws ClassLoaderException {
 		if (ibisContext == null) {
 			throw new IllegalStateException("shutting down");
 		}
 
 		log.debug("get configuration ClassLoader [{}]", configurationName);
-		AbstractClassLoader classLoader = classLoaders.get(configurationName);
+		ClassLoader classLoader = classLoaders.get(configurationName);
 		if (classLoader == null) {
 			classLoader = init(configurationName, classLoaderType);
 		}
