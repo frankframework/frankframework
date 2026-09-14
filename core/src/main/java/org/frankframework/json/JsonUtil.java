@@ -167,6 +167,14 @@ public class JsonUtil {
 	}
 
 	private static Object evaluateJsonPathWithBom(@NonNull JsonPath jsonPath, Message inputMessage) throws IOException {
+		// Optimise for the String case
+		if (inputMessage.isRequestOfType(String.class)) {
+			return jsonPath.read(inputMessage.asString(), JSON_PATH_CONFIGURATION);
+		}
+
+		// The JayWay library does not handle a BOM at start of stream. Thus instead of directly passing
+		// an InputStream from the Message, which may start with a BOM, we wrap that in a BOMInputStream and
+		// check the BOM and BOM charset ourselves.
 		BOMInputStream bomDetectingInputStream = StreamUtil.getBomDetectingInputStream(inputMessage.asInputStream());
 		String charset;
 		if (bomDetectingInputStream.hasBOM()) {
