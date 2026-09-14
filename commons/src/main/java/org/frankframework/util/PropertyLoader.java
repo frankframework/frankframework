@@ -31,6 +31,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -261,6 +262,7 @@ public class PropertyLoader extends Properties {
 	 * @return String
 	 */
 	@Nullable
+	@Contract("_, !null -> !null")
 	public String getString(String key, @Nullable String dfault) {
 		String ob = this.getResolvedProperty(key);
 
