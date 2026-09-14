@@ -108,7 +108,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public String getMessageSelector() {
+		public @Nullable String getMessageSelector() {
 			return null;
 		}
 

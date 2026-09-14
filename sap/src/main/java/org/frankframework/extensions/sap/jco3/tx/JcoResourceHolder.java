@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.support.ResourceHolderSupport;
 import org.springframework.util.Assert;
 
@@ -138,11 +139,11 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	}
 
 
-	public JCoDestination getDestination() {
+	public @Nullable JCoDestination getDestination() {
 		return !this.destinations.isEmpty() ? this.destinations.getFirst() : null;
 	}
 
-	public String getTid(JCoDestination destination) {
+	public @Nullable String getTid(JCoDestination destination) {
 		Assert.notNull(destination, "Destination must not be null");
 		List<String> tids = this.tidsPerDestination.get(destination);
 		if (tids==null) {

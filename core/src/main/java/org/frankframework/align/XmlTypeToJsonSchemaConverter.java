@@ -45,6 +45,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -97,7 +98,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		this(models, skipArrayElementContainers, false, null, definitionsPath);
 	}
 
-	public JsonStructure createJsonSchema(String elementName, String namespace) {
+	public @Nullable JsonStructure createJsonSchema(String elementName, String namespace) {
 		XSElementDeclaration elementDecl=findElementDeclaration(elementName, namespace);
 		if (elementDecl==null && namespace!=null) {
 			elementDecl=findElementDeclaration(elementName, null);
@@ -113,7 +114,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		return createJsonSchema(elementName, elementDecl);
 	}
 
-	private XSElementDeclaration findElementDeclaration(String elementName, String namespace) {
+	private @Nullable XSElementDeclaration findElementDeclaration(String elementName, String namespace) {
 		for (XSModel model:models) {
 			if (log.isDebugEnabled()) log.debug("search for element [{}] in namespace [{}]", elementName, namespace);
 			XSElementDeclaration elementDecl = model.getElementDeclaration(elementName, namespace);

@@ -33,6 +33,7 @@ import org.apache.xml.dtm.ref.IncrementalSAXSource_Filter;
 import org.apache.xml.dtm.ref.sax2dtm.SAX2DTM;
 import org.apache.xml.serializer.SerializationHandler;
 import org.apache.xpath.XPathContext;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -241,7 +242,7 @@ public class TransformerHandlerImpl
    *            new InputSource.
    * @see org.xml.sax.EntityResolver#resolveEntity
    */
-  public InputSource resolveEntity(String publicId, String systemId)
+  public @Nullable InputSource resolveEntity(String publicId, String systemId)
           throws SAXException, IOException
   {
 

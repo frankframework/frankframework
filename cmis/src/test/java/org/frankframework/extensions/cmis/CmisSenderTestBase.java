@@ -31,6 +31,7 @@ import org.apache.chemistry.opencmis.client.runtime.util.EmptyItemIterable;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -159,7 +160,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		}
 
 		@Override
-		public List<CmisExtensionElement> getExtensions() {
+		public @Nullable List<CmisExtensionElement> getExtensions() {
 			return null;
 		}
 
@@ -184,7 +185,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		}
 
 		@Override
-		public BigInteger getBigLength() {
+		public @Nullable BigInteger getBigLength() {
 			return null;
 		}
 	}

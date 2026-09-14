@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -95,7 +96,7 @@ public class DateParameter extends AbstractParameter<Date> {
 	}
 
 	@Override
-	protected Date getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected @Nullable Date getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		@SuppressWarnings("deprecation")
 		Object rawValue = request.asObject();
 		if (rawValue == null) {

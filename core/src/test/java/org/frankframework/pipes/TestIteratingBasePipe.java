@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
@@ -32,7 +33,7 @@ public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPi
 	final class IteratingTestPipe extends IteratingPipe<String> {
 
 		@Override
-		protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
+		protected @Nullable IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
 			try {
 				if (input.isEmpty()) {
 					return null;

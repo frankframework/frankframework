@@ -28,6 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
@@ -65,7 +66,7 @@ public class LarvaServlet extends AbstractHttpServlet {
 			this.contentType = contentType;
 		}
 
-		static Assets findAsset(String resource) {
+		static @Nullable Assets findAsset(String resource) {
 			for(Assets asset : values()) {
 				if(asset.resource.equals(resource)) {
 					return asset;

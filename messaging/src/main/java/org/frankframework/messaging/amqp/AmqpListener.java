@@ -48,6 +48,7 @@ import org.frankframework.extensions.messaging.MessageProtocol;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.ResourceLimiter;
+import org.frankframework.util.MessageUtils;
 
 /**
  * Listener for AMQP 1.0 end-points.
@@ -87,7 +88,7 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	@Override
 	public RawMessageWrapper<Message<?>> wrapRawMessage(@NonNull Message<?> rawMessage, @NonNull PipeLineSession session) throws ListenerException {
 		try {
-			String messageId = Objects.toString(rawMessage.messageId(), null);
+			String messageId = Objects.toString(rawMessage.messageId(), MessageUtils.generateMessageId("AMQP[" + (name != null ? name : address) + "]"));
 			String correlationId = Objects.toString(rawMessage.correlationId(), null);
 			PipeLineSession.updateListenerParameters(session, messageId, correlationId);
 			return new RawMessageWrapper<>(rawMessage, messageId, correlationId);

@@ -65,6 +65,7 @@ import org.apache.tomcat.util.descriptor.web.FilterMap;
 import org.apache.tomcat.util.descriptor.web.LoginConfig;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.apache.tomcat.util.http.CookieProcessor;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Minimal implementation for use in unit tests.
@@ -138,32 +139,32 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getLogName() {
+	public @Nullable String getLogName() {
 		return null;
 	}
 
 	@Override
-	public ObjectName getObjectName() {
+	public @Nullable ObjectName getObjectName() {
 		return null;
 	}
 
 	@Override
-	public String getDomain() {
+	public @Nullable String getDomain() {
 		return null;
 	}
 
 	@Override
-	public String getMBeanKeyProperties() {
+	public @Nullable String getMBeanKeyProperties() {
 		return null;
 	}
 
 	@Override
-	public Pipeline getPipeline() {
+	public @Nullable Pipeline getPipeline() {
 		return null;
 	}
 
 	@Override
-	public Cluster getCluster() {
+	public @Nullable Cluster getCluster() {
 		return null;
 	}
 
@@ -207,7 +208,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public ClassLoader getParentClassLoader() {
+	public @Nullable ClassLoader getParentClassLoader() {
 		return null;
 	}
 
@@ -217,7 +218,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Realm getRealm() {
+	public @Nullable Realm getRealm() {
 		return null;
 	}
 
@@ -247,17 +248,17 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Container findChild(String name) {
+	public @Nullable Container findChild(String name) {
 		return null;
 	}
 
 	@Override
-	public Container[] findChildren() {
+	public Container @Nullable [] findChildren() {
 		return null;
 	}
 
 	@Override
-	public ContainerListener[] findContainerListeners() {
+	public ContainerListener @Nullable [] findContainerListeners() {
 		return null;
 	}
 
@@ -287,7 +288,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public AccessLog getAccessLog() {
+	public @Nullable AccessLog getAccessLog() {
 		return null;
 	}
 
@@ -302,12 +303,12 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public File getCatalinaBase() {
+	public @Nullable File getCatalinaBase() {
 		return null;
 	}
 
 	@Override
-	public File getCatalinaHome() {
+	public @Nullable File getCatalinaHome() {
 		return null;
 	}
 
@@ -317,7 +318,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public LifecycleListener[] findLifecycleListeners() {
+	public LifecycleListener @Nullable [] findLifecycleListeners() {
 		return null;
 	}
 
@@ -347,12 +348,12 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public LifecycleState getState() {
+	public @Nullable LifecycleState getState() {
 		return null;
 	}
 
 	@Override
-	public String getStateName() {
+	public @Nullable String getStateName() {
 		return null;
 	}
 
@@ -367,7 +368,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Object[] getApplicationEventListeners() {
+	public Object @Nullable [] getApplicationEventListeners() {
 		return null;
 	}
 
@@ -377,7 +378,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Object[] getApplicationLifecycleListeners() {
+	public Object @Nullable [] getApplicationLifecycleListeners() {
 		return null;
 	}
 
@@ -387,7 +388,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public URL getConfigFile() {
+	public @Nullable URL getConfigFile() {
 		return null;
 	}
 
@@ -417,7 +418,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getSessionCookieName() {
+	public @Nullable String getSessionCookieName() {
 		return null;
 	}
 
@@ -447,7 +448,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getSessionCookieDomain() {
+	public @Nullable String getSessionCookieDomain() {
 		return null;
 	}
 
@@ -457,7 +458,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getSessionCookiePath() {
+	public @Nullable String getSessionCookiePath() {
 		return null;
 	}
 
@@ -482,7 +483,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getAltDDName() {
+	public @Nullable String getAltDDName() {
 		return null;
 	}
 
@@ -507,7 +508,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getDisplayName() {
+	public @Nullable String getDisplayName() {
 		return null;
 	}
 
@@ -527,7 +528,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getDocBase() {
+	public @Nullable String getDocBase() {
 		return null;
 	}
 
@@ -537,7 +538,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getEncodedPath() {
+	public @Nullable String getEncodedPath() {
 		return null;
 	}
 
@@ -552,7 +553,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public LoginConfig getLoginConfig() {
+	public @Nullable LoginConfig getLoginConfig() {
 		return null;
 	}
 
@@ -562,7 +563,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public NamingResourcesImpl getNamingResources() {
+	public @Nullable NamingResourcesImpl getNamingResources() {
 		return null;
 	}
 
@@ -572,7 +573,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getPath() {
+	public @Nullable String getPath() {
 		return null;
 	}
 
@@ -582,7 +583,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getPublicId() {
+	public @Nullable String getPublicId() {
 		return null;
 	}
 
@@ -663,7 +664,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getWrapperClass() {
+	public @Nullable String getWrapperClass() {
 		return null;
 	}
 
@@ -713,7 +714,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public JarScanner getJarScanner() {
+	public @Nullable JarScanner getJarScanner() {
 		return null;
 	}
 
@@ -723,7 +724,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Authenticator getAuthenticator() {
+	public @Nullable Authenticator getAuthenticator() {
 		return null;
 	}
 
@@ -824,87 +825,87 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public InstanceManager createInstanceManager() {
+	public @Nullable InstanceManager createInstanceManager() {
 		return null;
 	}
 
 	@Override
-	public Wrapper createWrapper() {
+	public @Nullable Wrapper createWrapper() {
 		return null;
 	}
 
 	@Override
-	public String[] findApplicationListeners() {
+	public String @Nullable [] findApplicationListeners() {
 		return null;
 	}
 
 	@Override
-	public ApplicationParameter[] findApplicationParameters() {
+	public ApplicationParameter @Nullable [] findApplicationParameters() {
 		return null;
 	}
 
 	@Override
-	public ErrorPage findErrorPage(int errorCode) {
+	public @Nullable ErrorPage findErrorPage(int errorCode) {
 		return null;
 	}
 
 	@Override
-	public ErrorPage findErrorPage(Throwable exceptionType) {
+	public @Nullable ErrorPage findErrorPage(Throwable exceptionType) {
 		return null;
 	}
 
 	@Override
-	public ErrorPage[] findErrorPages() {
+	public ErrorPage @Nullable [] findErrorPages() {
 		return null;
 	}
 
 	@Override
-	public FilterDef findFilterDef(String filterName) {
+	public @Nullable FilterDef findFilterDef(String filterName) {
 		return null;
 	}
 
 	@Override
-	public FilterDef[] findFilterDefs() {
+	public FilterDef @Nullable [] findFilterDefs() {
 		return null;
 	}
 
 	@Override
-	public FilterMap[] findFilterMaps() {
+	public FilterMap @Nullable [] findFilterMaps() {
 		return null;
 	}
 
 	@Override
-	public String findMimeMapping(String extension) {
+	public @Nullable String findMimeMapping(String extension) {
 		return null;
 	}
 
 	@Override
-	public String[] findMimeMappings() {
+	public String @Nullable [] findMimeMappings() {
 		return null;
 	}
 
 	@Override
-	public String findParameter(String name) {
+	public @Nullable String findParameter(String name) {
 		return null;
 	}
 
 	@Override
-	public String[] findParameters() {
+	public String @Nullable [] findParameters() {
 		return null;
 	}
 
 	@Override
-	public String findServletMapping(String pattern) {
+	public @Nullable String findServletMapping(String pattern) {
 		return null;
 	}
 
 	@Override
-	public String[] findServletMappings() {
+	public String @Nullable [] findServletMappings() {
 		return null;
 	}
 
 	@Override
-	public String[] findWatchedResources() {
+	public String @Nullable [] findWatchedResources() {
 		return null;
 	}
 
@@ -914,17 +915,17 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String[] findWelcomeFiles() {
+	public String @Nullable [] findWelcomeFiles() {
 		return null;
 	}
 
 	@Override
-	public String[] findWrapperLifecycles() {
+	public String @Nullable [] findWrapperLifecycles() {
 		return null;
 	}
 
 	@Override
-	public String[] findWrapperListeners() {
+	public String @Nullable [] findWrapperListeners() {
 		return null;
 	}
 
@@ -1009,7 +1010,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getRealPath(String path) {
+	public @Nullable String getRealPath(String path) {
 		return null;
 	}
 
@@ -1034,7 +1035,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public JspConfigDescriptor getJspConfigDescriptor() {
+	public @Nullable JspConfigDescriptor getJspConfigDescriptor() {
 		return null;
 	}
 
@@ -1059,7 +1060,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Set<String> addServletSecurity(Dynamic registration, ServletSecurityElement servletSecurityElement) {
+	public @Nullable Set<String> addServletSecurity(Dynamic registration, ServletSecurityElement servletSecurityElement) {
 		return null;
 	}
 
@@ -1069,7 +1070,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getResourceOnlyServlets() {
+	public @Nullable String getResourceOnlyServlets() {
 		return null;
 	}
 
@@ -1079,7 +1080,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getBaseName() {
+	public @Nullable String getBaseName() {
 		return null;
 	}
 
@@ -1089,7 +1090,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getWebappVersion() {
+	public @Nullable String getWebappVersion() {
 		return null;
 	}
 
@@ -1124,7 +1125,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Loader getLoader() {
+	public @Nullable Loader getLoader() {
 		return null;
 	}
 
@@ -1134,7 +1135,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public WebResourceRoot getResources() {
+	public @Nullable WebResourceRoot getResources() {
 		return null;
 	}
 
@@ -1144,7 +1145,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Manager getManager() {
+	public @Nullable Manager getManager() {
 		return null;
 	}
 
@@ -1184,27 +1185,27 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String findPostConstructMethod(String clazz) {
+	public @Nullable String findPostConstructMethod(String clazz) {
 		return null;
 	}
 
 	@Override
-	public String findPreDestroyMethod(String clazz) {
+	public @Nullable String findPreDestroyMethod(String clazz) {
 		return null;
 	}
 
 	@Override
-	public Map<String, String> findPostConstructMethods() {
+	public @Nullable Map<String, String> findPostConstructMethods() {
 		return null;
 	}
 
 	@Override
-	public Map<String, String> findPreDestroyMethods() {
+	public @Nullable Map<String, String> findPreDestroyMethods() {
 		return null;
 	}
 
 	@Override
-	public InstanceManager getInstanceManager() {
+	public @Nullable InstanceManager getInstanceManager() {
 		return null;
 	}
 
@@ -1219,12 +1220,12 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getContainerSciFilter() {
+	public @Nullable String getContainerSciFilter() {
 		return null;
 	}
 
 	@Override
-	public ThreadBindingListener getThreadBindingListener() {
+	public @Nullable ThreadBindingListener getThreadBindingListener() {
 		return null;
 	}
 
@@ -1234,7 +1235,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public ClassLoader bind(boolean usePrivilegedAction, ClassLoader originalClassLoader) {
+	public @Nullable ClassLoader bind(boolean usePrivilegedAction, ClassLoader originalClassLoader) {
 		return null;
 	}
 
@@ -1244,7 +1245,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public Object getNamingToken() {
+	public @Nullable Object getNamingToken() {
 		return null;
 	}
 
@@ -1254,7 +1255,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public CookieProcessor getCookieProcessor() {
+	public @Nullable CookieProcessor getCookieProcessor() {
 		return null;
 	}
 
@@ -1314,7 +1315,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getRequestCharacterEncoding() {
+	public @Nullable String getRequestCharacterEncoding() {
 		return null;
 	}
 
@@ -1324,7 +1325,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public String getResponseCharacterEncoding() {
+	public @Nullable String getResponseCharacterEncoding() {
 		return null;
 	}
 
@@ -1403,7 +1404,7 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public ClassLoader bind(ClassLoader originalClassLoader) {
+	public @Nullable ClassLoader bind(ClassLoader originalClassLoader) {
 		return null;
 	}
 

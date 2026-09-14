@@ -16,6 +16,8 @@
 
 package org.frankframework.http.rest;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.util.AppConstants;
 
@@ -51,7 +53,7 @@ public class ApiCacheManager {
 		return instanceName + "_" + dtapStage.toUpperCase() + "_" + uriPattern;
 	}
 
-	public static String getParentCacheKey(ApiListener listener, String uri, HttpMethod method) {
+	public static @Nullable String getParentCacheKey(ApiListener listener, String uri, HttpMethod method) {
 		String pattern = listener.getCleanPattern();
 		// Not only remove the eTag for the selected resources but also the collection
 		if((method == HttpMethod.PUT || method == HttpMethod.PATCH || method == HttpMethod.DELETE) && pattern != null && pattern.endsWith("/*")) {

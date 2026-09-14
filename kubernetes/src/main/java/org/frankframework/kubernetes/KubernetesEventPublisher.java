@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -158,7 +159,7 @@ public class KubernetesEventPublisher implements ApplicationListener<MessageEven
 				.build();
 	}
 
-	private static KubernetesClient buildInClusterClientOrNull() {
+	private static @Nullable KubernetesClient buildInClusterClientOrNull() {
 		if (!AppConstants.getInstance().getBoolean(ENABLED_KEY, true)) {
 			return null;
 		}

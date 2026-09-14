@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -118,7 +119,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		return validator;
 	}
 
-	protected ValidationResult runAndEvaluate(XmlValidator validator, String inputFile, String[] expectedFailureReasons) throws IOException  {
+	protected @Nullable ValidationResult runAndEvaluate(XmlValidator validator, String inputFile, String[] expectedFailureReasons) throws IOException  {
 		log.debug("inputFile [{}]", inputFile);
 		String testXml = inputFile != null ? getTestXml(inputFile + ".xml") : null;
 		PipeLineSession session = new PipeLineSession();

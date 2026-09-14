@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.filesystem.IMailFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.xml.SaxElementBuilder;
@@ -11,7 +13,7 @@ import org.frankframework.xml.SaxElementBuilder;
 public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAttachments> implements IMailFileSystem<MockFileWithAttachments, MockAttachment> {
 
 	@Override
-	public Iterator<MockAttachment> listAttachments(MockFileWithAttachments f) {
+	public @Nullable Iterator<MockAttachment> listAttachments(MockFileWithAttachments f) {
 		List<MockAttachment> list = f.getAttachments();
 		return list==null?null:list.iterator();
 	}
@@ -22,7 +24,7 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public Message readAttachment(MockAttachment a) {
+	public @Nullable Message readAttachment(MockAttachment a) {
 		return a.getContents()==null?null:new Message(a.getContents());
 	}
 
@@ -32,17 +34,17 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public String getAttachmentContentType(MockAttachment a) {
+	public @Nullable String getAttachmentContentType(MockAttachment a) {
 		return a.getContents()==null?null:a.getContentType();
 	}
 
 	@Override
-	public String getAttachmentFileName(MockAttachment a) {
+	public @Nullable String getAttachmentFileName(MockAttachment a) {
 		return a.getContents()==null?null:a.getFilename();
 	}
 
 	@Override
-	public Map<String, Object> getAdditionalAttachmentProperties(MockAttachment a) {
+	public @Nullable Map<String, Object> getAdditionalAttachmentProperties(MockAttachment a) {
 		return a.getContents()==null?null:a.getAdditionalProperties();
 	}
 
@@ -57,7 +59,7 @@ public class MockFileSystemWithAttachments extends MockFileSystem<MockFileWithAt
 	}
 
 	@Override
-	public Message getMimeContent(MockFileWithAttachments emailMessage) {
+	public @Nullable Message getMimeContent(MockFileWithAttachments emailMessage) {
 		return null;
 	}
 

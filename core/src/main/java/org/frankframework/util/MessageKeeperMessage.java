@@ -20,6 +20,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.lifecycle.events.MessageEvent;
 import org.frankframework.logging.IbisMaskingLayout;
@@ -74,7 +75,7 @@ public class MessageKeeperMessage {
 	public String getMessageText() {
 		return messageText;
 	}
-	public String getMessageLevel() {
+	public @Nullable String getMessageLevel() {
 		return messageLevel!=null ? messageLevel.name() : null;
 	}
 

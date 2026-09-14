@@ -396,7 +396,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public String getName(SmbFileRef file) {
+	public @Nullable String getName(@NonNull SmbFileRef file) {
 		String name = file.getFilename();
 		if(StringUtils.isNotEmpty(name)) {
 			return name;
@@ -411,12 +411,12 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public String getParentFolder(SmbFileRef f) {
+	public String getParentFolder(@NonNull SmbFileRef f) {
 		return f.getFolder();
 	}
 
 	@Override
-	public String getCanonicalName(SmbFileRef f) {
+	public @NonNull String getCanonicalName(@NonNull SmbFileRef f) {
 		return f.getName(); // Should include folder structure if known
 	}
 

@@ -151,7 +151,7 @@ public class IbisTester {
 	/**
 	 * returns a string containing the error, if any
 	 */
-	public String testStartAdapters() {
+	public @Nullable String testStartAdapters() {
 		// Log4J2 will automatically create a console appender and basic pattern layout.
 		Configurator.setLevel(LogUtil.getRootLogger().getName(), Level.INFO);
 		// remove AppConstants because it can be present from another JUnit test
@@ -222,7 +222,7 @@ public class IbisTester {
 		}
 	}
 
-	public String testLarva() {
+	public @Nullable String testLarva() {
 		debug("***start larva***");
 		Result result;
 		try {
@@ -270,7 +270,7 @@ public class IbisTester {
 		return null;
 	}
 
-	private String runScenarios(String xhtml) {
+	private @Nullable String runScenarios(String xhtml) {
 		Collection<String> scenarios = evaluateXPath(
 				xhtml,
 				"(html/body//select[@name='execute'])[1]/option/@value[ends-with(.,'.properties')]");
@@ -410,7 +410,7 @@ public class IbisTester {
 		}
 	}
 
-	private static String getWebContentDirectory() {
+	private static @Nullable String getWebContentDirectory() {
 		String buildOutputDirectory = getBuildOutputDirectory();
 		if (buildOutputDirectory != null && buildOutputDirectory.endsWith("classes")) {
 			String wcDirectory = null;
@@ -442,7 +442,7 @@ public class IbisTester {
 		}
 	}
 
-	private static String getBuildOutputDirectory() {
+	private static @Nullable String getBuildOutputDirectory() {
 		// TODO: Warning from Sonarlint of Potential NPE?
 		String path = new File(AppConstants.class.getClassLoader().getResource("").getPath()).getPath();
 

@@ -26,6 +26,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -81,7 +82,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 	 * @see IMessageBrowser#setHideRegex(String)
 	 * @see StringUtil#hideAll(String, String, int)
 	 */
-	public static String cleanseMessage(String inputString, Adapter adapter, IMessageBrowser<?> messageBrowser) {
+	public static @Nullable String cleanseMessage(String inputString, Adapter adapter, IMessageBrowser<?> messageBrowser) {
 		if (StringUtils.isEmpty(inputString)) {
 			return inputString;
 		}

@@ -463,7 +463,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		this.ibisManager = ibisManager;
 	}
 
-	public IJob getScheduledJob(String name) {
+	public @Nullable IJob getScheduledJob(String name) {
 		if (scheduleManager == null || !isActive()) {
 			return null;
 		}
@@ -481,7 +481,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		configurationException = exception;
 	}
 
-	public ConfigurationWarnings getConfigurationWarnings() {
+	public @Nullable ConfigurationWarnings getConfigurationWarnings() {
 		if (!isActive()) {
 			return null;
 		}

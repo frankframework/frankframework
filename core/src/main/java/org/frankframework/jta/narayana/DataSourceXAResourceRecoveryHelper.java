@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jboss.narayana.jta.jms.XAResourceConsumer;
 import org.jboss.narayana.jta.jms.XAResourceFunction;
 import org.jboss.tm.XAResourceWrapper;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
@@ -149,12 +150,12 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	}
 
 	@Override
-	public String getProductName() {
+	public @Nullable String getProductName() {
 		return null;
 	}
 
 	@Override
-	public String getProductVersion() {
+	public @Nullable String getProductVersion() {
 		return null;
 	}
 

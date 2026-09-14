@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.jms.Message;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
@@ -95,12 +96,12 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
     }
 
     @Override
-    public IbisExceptionListener getExceptionListener() {
+    public @Nullable IbisExceptionListener getExceptionListener() {
         return null;
     }
 
     @Override
-    public IMessageHandler<Message> getHandler() {
+    public @Nullable IMessageHandler<Message> getHandler() {
         return null;
     }
 
@@ -121,7 +122,7 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, @NonNull PipeLineSession session) {
+	public @Nullable RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, @NonNull PipeLineSession session) {
 		return null;
 	}
 

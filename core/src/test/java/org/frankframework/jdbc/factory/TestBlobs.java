@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Timeout;
 
@@ -222,7 +223,7 @@ public class TestBlobs {
 		return executeTranslatedQuery(connection, query, queryType, false, databaseTestEnvironment);
 	}
 
-	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate, DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
+	protected @Nullable PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate, DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 
 		if (queryType == QueryType.SELECT) {

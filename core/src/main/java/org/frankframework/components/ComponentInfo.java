@@ -95,7 +95,7 @@ public class ComponentInfo {
 		}
 	}
 
-	private static VersionRange parseVersionRange(String ffVersion) {
+	private static @Nullable VersionRange parseVersionRange(String ffVersion) {
 		if (StringUtils.isNotBlank(ffVersion)) {
 			try {
 				return VersionRange.createFromVersionSpec(ffVersion);
@@ -107,7 +107,7 @@ public class ComponentInfo {
 		return null;
 	}
 
-	protected String getFormattedTimestamp() {
+	protected @Nullable String getFormattedTimestamp() {
 		if (timestamp == null) {
 			return null;
 		}

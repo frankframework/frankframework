@@ -21,6 +21,8 @@ import java.util.List;
 
 import jakarta.mail.internet.InternetAddress;
 
+import org.jspecify.annotations.Nullable;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -65,14 +67,14 @@ public class MailMessage extends MailItemId {
 	private EmailAddressHolder sender;
 	private EmailAddressHolder from;
 
-	public EmailAddress getSender() {
+	public @Nullable EmailAddress getSender() {
 		if (sender == null) {
 			return null;
 		}
 		return sender.getEmailAddress();
 	}
 
-	public EmailAddress getFrom() {
+	public @Nullable EmailAddress getFrom() {
 		if (from == null) {
 			return null;
 		}

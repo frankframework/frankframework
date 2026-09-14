@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.jspecify.annotations.Nullable;
+
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -87,7 +89,7 @@ public abstract class StringIteratorPipe extends IteratingPipe<String> {
 				}
 			}
 
-			private StopReason finalizeBlock() throws SenderException, TimeoutException, IOException {
+			private @Nullable StopReason finalizeBlock() throws SenderException, TimeoutException, IOException {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
 					itemCounter=0;
 					items.append(getBlockSuffix());

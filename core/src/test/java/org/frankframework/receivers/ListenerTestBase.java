@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
@@ -63,7 +64,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 		listener = createListener();
 	}
 
-	protected RawMessageWrapper<M> getRawMessage(Serializable mockedResult) throws ListenerException {
+	protected @Nullable RawMessageWrapper<M> getRawMessage(Serializable mockedResult) throws ListenerException {
 		threadContext.put(STUB_RESULT_KEY, mockedResult);
 		if(listener instanceof IPullingListener) {
 			@SuppressWarnings("unchecked")

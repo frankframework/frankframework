@@ -35,6 +35,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.io.TikaInputStream;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -190,7 +191,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 	/**
 	 * Should fail fast, always return null / HTTP 404.
 	 */
-	private URL findResource(HttpServletRequest req) {
+	private @Nullable URL findResource(HttpServletRequest req) {
 		String normalizedPath = FilenameUtils.normalize(req.getPathInfo(), true);
 		if (normalizedPath.startsWith("/")) {
 			normalizedPath = normalizedPath.substring(1);

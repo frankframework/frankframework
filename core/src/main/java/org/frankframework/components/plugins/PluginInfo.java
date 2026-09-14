@@ -22,6 +22,7 @@ import java.util.jar.Manifest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.ManifestPluginDescriptorFinder;
 import org.pf4j.Plugin;
 import org.pf4j.PluginDependency;
@@ -73,7 +74,7 @@ public class PluginInfo extends ComponentInfo implements PluginDescriptor {
 	}
 
 	@Override
-	public String getLicense() {
+	public @Nullable String getLicense() {
 		return null;
 	}
 

@@ -17,6 +17,7 @@ package org.frankframework.http.rest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Setter;
 import net.sf.ehcache.Cache;
@@ -132,7 +133,7 @@ public class ApiEhcache implements IApiCache {
 	 * get() and isKeyInCache() are not synchronized methods and do not contain any state checking.
 	 */
 	@Override
-	public Object get(String key) {
+	public @Nullable Object get(String key) {
 		if(!isCacheAlive())
 			return null;
 

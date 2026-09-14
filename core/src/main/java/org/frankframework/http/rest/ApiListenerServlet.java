@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import jakarta.json.Json;
@@ -339,8 +340,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 */
 				pipelineSession.put("allowedMethods", buildAllowedMethodsHeader(config.getMethods()));
 
-				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
-				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
+				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), () -> MessageUtils.generateMessageId("HTTP[" + listener.getName() + "]"));
+				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), () -> messageId);
 				PipeLineSession.updateListenerParameters(pipelineSession, messageId, correlationId);
 
 				/*
@@ -808,12 +809,12 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		return true;
 	}
 
-	private String getHeaderOrDefault(HttpServletRequest request, String headerName, String defaultValue) {
+	private String getHeaderOrDefault(HttpServletRequest request, String headerName, Supplier<String> defaultValueSupplier) {
 		if (StringUtils.isBlank(headerName)) {
-			return defaultValue;
+			return defaultValueSupplier.get();
 		}
 		final String headerValue = request.getHeader(headerName);
-		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
+		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValueSupplier.get();
 	}
 
 	private String buildAllowedMethodsHeader(Set<ApiListener.HttpMethod> methods) {

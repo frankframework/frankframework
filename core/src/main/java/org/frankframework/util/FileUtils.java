@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -114,7 +115,7 @@ public class FileUtils {
 		return result;
 	}
 
-	public static String moveFile(File orgFile, File rename2File, int numberOfAttempts, long waitTime) throws InterruptedException {
+	public static @Nullable String moveFile(File orgFile, File rename2File, int numberOfAttempts, long waitTime) throws InterruptedException {
 		boolean rename2FileExists = rename2File.exists();
 		int errCount = 0;
 
@@ -260,7 +261,7 @@ public class FileUtils {
 		return result.toArray(new File[0]);
 	}
 
-	public static String getFileNameExtension(String fileName) {
+	public static @Nullable String getFileNameExtension(String fileName) {
 		int idx = fileName.lastIndexOf('.');
 		if (idx<0) {
 			return null;
@@ -272,7 +273,7 @@ public class FileUtils {
 		return fileName.substring(idx);
 	}
 
-	public static String getBaseName(String fileName) {
+	public static @Nullable String getBaseName(String fileName) {
 		File file = new File(fileName);
 		String fname = file.getName();
 		int idx = fname.lastIndexOf('.');

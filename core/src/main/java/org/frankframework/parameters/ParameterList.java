@@ -108,7 +108,7 @@ public class ParameterList implements Iterable<IParameter> {
 		return parameters.remove(param);
 	}
 
-	public IParameter remove(String name) {
+	public @Nullable IParameter remove(String name) {
 		final IParameter param = findParameter(name);
 		if (param == null) {
 			return null;
@@ -127,7 +127,7 @@ public class ParameterList implements Iterable<IParameter> {
 		return parameters.get(i);
 	}
 
-	public IParameter findParameter(String name) {
+	public @Nullable IParameter findParameter(String name) {
 		if (parameters == null) {
 			return null;
 		}

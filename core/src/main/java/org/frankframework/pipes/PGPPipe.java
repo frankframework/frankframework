@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.OutputStream;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -173,7 +174,7 @@ public class PGPPipe extends FixedForwardPipe {
 	 * @param str String to be split.
 	 * @return Array of strings that were split from the original string.
 	 */
-	private String[] split(String str) {
+	private String @Nullable [] split(String str) {
 		if (str == null)
 			return null;
 

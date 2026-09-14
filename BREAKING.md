@@ -5,6 +5,12 @@ Contains breaking changes per release.
 > [!NOTE]\
 > Previously, we put this information in RELEASES.md. Take a look there for older breaking changes and migration notes.
 
+10.3
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/release/10.2...HEAD)
+
+* In ticket [11345](https://github.com/frankframework/frankframework/issues/11345) validation for the instance name was added. If you are using a name that is not valid the application will not start up.
+
 10.2
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/release/10.1...HEAD)

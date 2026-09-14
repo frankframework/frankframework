@@ -148,7 +148,7 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public Message extractMessage(jakarta.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
+	public @Nullable Message extractMessage(jakarta.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
 		BytesMessage message;
 		try {
 			message = (BytesMessage)rawMessage;

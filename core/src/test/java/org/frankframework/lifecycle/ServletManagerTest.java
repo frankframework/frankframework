@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServlet;
 import org.apache.commons.lang3.NotImplementedException;
 import org.hamcrest.CoreMatchers;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -90,7 +91,7 @@ public class ServletManagerTest {
 		}
 
 		@Override
-		public SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
+		public @Nullable SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 			// NOOP
 			return null;
 		}
@@ -261,7 +262,7 @@ public class ServletManagerTest {
 		}
 
 		@Override
-		public Set<String> addMapping(String... urlPatterns) {
+		public @Nullable Set<String> addMapping(String... urlPatterns) {
 			mappings.addAll(Arrays.asList(urlPatterns));
 			return null;
 		}
@@ -272,7 +273,7 @@ public class ServletManagerTest {
 		}
 
 		@Override
-		public Set<String> setInitParameters(Map<String, String> initParameters) {
+		public @Nullable Set<String> setInitParameters(Map<String, String> initParameters) {
 			this.initParameters.putAll(initParameters);
 			return null;
 		}
@@ -289,7 +290,7 @@ public class ServletManagerTest {
 		}
 
 		@Override
-		public Set<String> setServletSecurity(ServletSecurityElement constraint) {
+		public @Nullable Set<String> setServletSecurity(ServletSecurityElement constraint) {
 			this.servletSecurity = constraint;
 			return null;
 		}

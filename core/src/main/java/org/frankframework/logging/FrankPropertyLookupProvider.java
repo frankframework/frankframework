@@ -93,7 +93,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	}
 
 	@Override
-	public String lookup(LogEvent ignored, String key) { // Always ignore the event
+	public @Nullable String lookup(LogEvent ignored, String key) { // Always ignore the event
 		Properties properties = getProperties();
 		String value = properties.getProperty(key);
 

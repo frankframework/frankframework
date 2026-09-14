@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -132,7 +133,7 @@ public class ApiStreamPipe extends StreamPipe {
 		return firstStringPart;
 	}
 
-	private String selectMessageKey(String slotId, String messageId) throws JdbcException {
+	private @Nullable String selectMessageKey(String slotId, String messageId) throws JdbcException {
 		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='?' AND SLOTID='?' AND MESSAGEID='?'";
 		try (Connection connection = dummyQuerySender.getConnection(); PreparedStatement stmt = connection.prepareStatement(query)) {
 			stmt.setString(1, IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
@@ -175,7 +176,7 @@ public class ApiStreamPipe extends StreamPipe {
 		}
 	}
 
-	private static String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query, String messageKey) throws JdbcException {
+	private static @Nullable String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query, String messageKey) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]", query);
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			stmt.setString(1, messageKey);

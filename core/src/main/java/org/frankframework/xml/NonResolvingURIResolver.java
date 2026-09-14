@@ -19,6 +19,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.URIResolver;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.util.LogUtil;
 
@@ -31,7 +32,7 @@ public class NonResolvingURIResolver implements URIResolver {
 	private final Logger log = LogUtil.getLogger(this);
 
 	@Override
-	public Source resolve(String href, String base) {
+	public @Nullable Source resolve(String href, String base) {
 		log.warn("resolving entity with href [{}] base [{}] to NULL", href, base);
 
 		return null;

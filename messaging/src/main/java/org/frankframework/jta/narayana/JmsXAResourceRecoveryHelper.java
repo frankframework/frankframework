@@ -23,6 +23,7 @@ import jakarta.jms.XAConnectionFactory;
 
 import org.jboss.narayana.jta.jms.ConnectionManager;
 import org.jboss.tm.XAResourceWrapper;
+import org.jspecify.annotations.Nullable;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
@@ -168,12 +169,12 @@ public class JmsXAResourceRecoveryHelper implements XAResourceRecoveryHelper, XA
 	}
 
 	@Override
-	public String getProductName() {
+	public @Nullable String getProductName() {
 		return null;
 	}
 
 	@Override
-	public String getProductVersion() {
+	public @Nullable String getProductVersion() {
 		return null;
 	}
 

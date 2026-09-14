@@ -38,6 +38,7 @@ import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import com.tibco.tibjms.admin.ACLEntry;
 import com.tibco.tibjms.admin.BridgeTarget;
@@ -205,7 +206,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private LdapSender retrieveLdapSender(String ldapUrl, CredentialFactory cf) {
+	private @Nullable LdapSender retrieveLdapSender(String ldapUrl, CredentialFactory cf) {
 		try {
 			LdapSender ldapSender = new LdapSender();
 			ldapSender.setLdapProviderURL(ldapUrl);
@@ -522,7 +523,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return aclMap;
 	}
 
-	private String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
+	private @Nullable String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
 		String principalDescription = null;
 		Message ldapRequest = new Message("<req>" + principal + "</req>");
 		try (PipeLineSession session = new PipeLineSession()) {
@@ -541,7 +542,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		return principalDescription;
 	}
 
-	private String getResolvedUrl(String url) {
+	private @Nullable String getResolvedUrl(String url) {
 		URI uri;
 		try {
 			uri = new URI(url);

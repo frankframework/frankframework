@@ -21,6 +21,8 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;
@@ -64,12 +66,12 @@ public class DummySchemasProviderImpl implements SchemasProvider {
 	}
 
 	@Override
-	public String getSchemasId(PipeLineSession session) {
+	public @Nullable String getSchemasId(PipeLineSession session) {
 		return null;
 	}
 
 	@Override
-	public List<Schema> getSchemas(PipeLineSession session) {
+	public @Nullable List<Schema> getSchemas(PipeLineSession session) {
 		return null;
 	}
 

@@ -293,7 +293,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public String getName(FTPFileRef file) {
+	public @Nullable String getName(@NonNull FTPFileRef file) {
 		String name = file.getFileName();
 		if(StringUtils.isNotEmpty(name)) {
 			return name;
@@ -308,12 +308,12 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public String getParentFolder(FTPFileRef file) {
+	public String getParentFolder(@NonNull FTPFileRef file) {
 		return file.getFolder();
 	}
 
 	@Override
-	public String getCanonicalName(FTPFileRef f) {
+	public @Nullable String getCanonicalName(@NonNull FTPFileRef f) {
 		return f.getName();  // Should include folder structure if known
 	}
 

@@ -29,6 +29,7 @@ import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -220,7 +221,7 @@ public class JsonElementContainer {
 		return value;
 	}
 
-	public Object getContent() {
+	public @Nullable Object getContent() {
 		if (nil) {
 			return null;
 		}

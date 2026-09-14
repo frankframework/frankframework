@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -172,7 +173,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		uriPattern = string;
 	}
 
-	public String getUriPattern() {
+	public @Nullable String getUriPattern() {
 		if(uriPattern != null) {
 			return uriPattern.toLowerCase();
 		}

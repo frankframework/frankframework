@@ -323,7 +323,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 
 
 	@Override
-	public String getSchemasId() {
+	public @Nullable String getSchemasId() {
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			return getNoNamespaceSchemaLocation();
 		} else if (StringUtils.isNotEmpty(getSchemaLocation())) {
@@ -466,7 +466,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	}
 
 	@Override
-	public String getSchemasId(PipeLineSession session) throws PipeRunException {
+	public @Nullable String getSchemasId(PipeLineSession session) throws PipeRunException {
 		String schemaSessionKey = getSchemaSessionKey();
 		if (schemaSessionKey != null) {
 			if (session.containsKey(schemaSessionKey)) {
@@ -481,7 +481,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	public List<Schema> getSchemas(PipeLineSession session) throws PipeRunException {
 		List<Schema> xsds = new ArrayList<>();
 		String schemaLocation = getSchemasId(session);
-		if (getSchemaSessionKey() != null) {
+		if (schemaLocation != null) {
 			final URL url = ClassLoaderUtils.getResourceURL(this, schemaLocation);
 			if (url == null) {
 				throw new PipeRunException(this, "could not find schema at [" + schemaLocation + "]");

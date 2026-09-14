@@ -410,7 +410,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	@Override
-	public RawMessageWrapper<F> changeProcessState(RawMessageWrapper<F> message, ProcessState toState, String reason) throws ListenerException {
+	public @Nullable RawMessageWrapper<F> changeProcessState(RawMessageWrapper<F> message, ProcessState toState, String reason) throws ListenerException {
 		log.debug("Change message process state to [{}] for message [{}]", toState, message);
 		try {
 			if (!getFileSystem().exists(message.getRawMessage()) || !knownProcessStates().contains(toState)) {
@@ -495,7 +495,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	@Override
-	public IMessageBrowser<F> getMessageBrowser(ProcessState state) {
+	public @Nullable IMessageBrowser<F> getMessageBrowser(ProcessState state) {
 		if (isDisableMessageBrowsers() || !knownProcessStates().contains(state)) {
 			return null;
 		}

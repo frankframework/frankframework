@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
@@ -101,7 +103,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 		return super.getFullRecord(reader, flow, firstPart);
 	}
 
-	private String readUpToXChars(Reader reader, int maxChars) throws IOException {
+	private @Nullable String readUpToXChars(Reader reader, int maxChars) throws IOException {
 		char[] buffer = new char[maxChars];
 		int totalRead = 0;
 

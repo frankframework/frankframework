@@ -41,6 +41,7 @@ public class SoapMessage {
 		this(new MultipartMessages(message));
 	}
 
+	@SuppressWarnings("java:S2637") // False positive
 	private SoapMessage(@NonNull MultipartMessages parts) throws SOAPException {
 		this.parts = parts;
 		Message body = parts.body();
@@ -63,7 +64,7 @@ public class SoapMessage {
 		}
 	}
 
-	public @Nullable Map<String, Message> getAttachments() {
+	public @NonNull Map<String, Message> getAttachments() {
 		return parts.messages();
 	}
 
@@ -75,7 +76,7 @@ public class SoapMessage {
 		return parts.multipartXml();
 	}
 
-	public @NonNull Message getBody() {
+	public @Nullable Message getBody() {
 		return parts.body();
 	}
 }

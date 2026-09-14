@@ -47,6 +47,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
@@ -74,7 +75,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 	private static final int MINUTES_2020 = (int) TimeUnit.MILLISECONDS.toMinutes(Instant.parse("2020-01-01T01:00:00.00Z").getEpochSecond());
 
 	@Override
-	public String getButtonText() {
+	public @Nullable String getButtonText() {
 		String stage = appConstants.getProperty("dtap.stage", "LOC");
 		if(!stage.equalsIgnoreCase("LOC")) {
 			return null;

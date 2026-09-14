@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * This subclass of BufferedReader modifies the meaning of readLine such that
  * lines break on '\n' OR ';' (OR ";\n"). This is nessecary to read files from
@@ -60,7 +62,7 @@ class RekenboxLineReader extends BufferedReader {
 	/**
 	 * @see BufferedReader#readLine()
 	 */
-	public String readLine() throws IOException {
+	public @Nullable String readLine() throws IOException {
 		StringBuilder str;
 		boolean eos;
 

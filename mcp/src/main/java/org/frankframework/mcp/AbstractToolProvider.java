@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import io.modelcontextprotocol.server.McpServerFeatures.SyncToolSpecification;
@@ -130,7 +131,7 @@ public abstract class AbstractToolProvider implements McpToolProvider {
 		}
 	}
 
-	protected static String stringArg(CallToolRequest request, String name) {
+	protected static @Nullable String stringArg(CallToolRequest request, String name) {
 		Object value = request.arguments().get(name);
 		return value != null ? value.toString() : null;
 	}
@@ -154,7 +155,7 @@ public abstract class AbstractToolProvider implements McpToolProvider {
 		return Boolean.parseBoolean(value.toString());
 	}
 
-	protected static Integer integerArg(CallToolRequest request, String name) {
+	protected static @Nullable Integer integerArg(CallToolRequest request, String name) {
 		Object value = request.arguments().get(name);
 		if (value == null) {
 			return null;

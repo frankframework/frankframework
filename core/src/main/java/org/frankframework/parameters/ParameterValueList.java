@@ -47,7 +47,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		map  = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	}
 
-	public static ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
+	public static @Nullable ParameterValueList get(ParameterList params, Message message, PipeLineSession session) throws ParameterException {
 		if (params == null) {
 			return null;
 		}

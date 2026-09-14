@@ -17,6 +17,7 @@ package org.frankframework.filesystem.sftp;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
@@ -76,7 +77,7 @@ public class SftpFileRef {
 	}
 
 	/** Returns the canonical name inclusive file path when present */
-	public String getName() {
+	public @Nullable String getName() {
 		String prefix = folder != null ? folder + "/" : "";
 		if (StringUtils.isNotEmpty(prefix) || name != null) {
 			return prefix + name;

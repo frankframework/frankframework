@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -145,7 +146,7 @@ public class PgpPipeTest {
 	 * @param param A list of files separated by semicolon.
 	 * @return A list of files separated by semicolon including the parent folder's path.
 	 */
-	private String addFolderPath(String param) {
+	private @Nullable String addFolderPath(String param) {
 		if (param == null)
 			return null;
 		return StringUtil.splitToStream(param, ";")

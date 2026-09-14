@@ -88,7 +88,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public String autoIncrementInsertValue(String sequenceName) {
+	public @Nullable String autoIncrementInsertValue(String sequenceName) {
 		return null;
 	}
 
@@ -297,7 +297,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 
 	@Override
-	public String getSchema(Connection conn) throws DbmsException {
+	public @Nullable String getSchema(Connection conn) throws DbmsException {
 		return null;
 	}
 
