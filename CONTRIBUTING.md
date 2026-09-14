@@ -71,8 +71,8 @@ We don't forbid using AI tools, but would like to make sure that you are aware o
 it's easy to make a change which breaks something else.
 
 We assume the following guidelines:
-* Do not use AI to create the feature for you. You are responsible for the code you submit.
-* You can use AI to help you with the boilerplate code and derived tasks, like creating unit tests, or documentation. But also in these cases, review the generated changes.
+* Do not use AI to create the feature for you. You are responsible for the code you submit, and should be able to explain your changes in detail.
+* You can use AI to help you with the boilerplate code and when you have a working piece of code to help with other tasks that are based on that code. Think about setting up unit tests, or help with creating documentation. But also in these cases, you are responsible for the changes you make.
 * You can use AI to help with analysing a problem or to prepare your pull request.
 * Assume that AI makes mistakes. Always check the code it generates and make sure it is correct and does not break anything else.
 
