@@ -49,11 +49,11 @@ public class DateFormatUtils {
 	public static final DateTimeFormatter FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER = buildFormatter(FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
 	public static final DateTimeFormatter FULL_GENERIC_FORMATTER = buildFormatter(FORMAT_FULL_GENERIC);
 	public static final DateTimeFormatter GENERIC_DATETIME_FORMATTER = buildFormatter(FORMAT_DATETIME_GENERIC);
-	private static final String FORMAT_DATE_ISO = "yyyy-MM-dd";
+	public static final String FORMAT_DATE_ISO = "yyyy-MM-dd";
 	public static final DateTimeFormatter ISO_DATE_FORMATTER = buildFormatter(FORMAT_DATE_ISO);
-	private static final String FORMAT_SHORT_DATE = "dd-MM-yy";
+	public static final String FORMAT_SHORT_DATE = "dd-MM-yy";
 	public static final DateTimeFormatter SHORT_DATE_FORMATTER = buildFormatter(FORMAT_SHORT_DATE);
-	private static final String FORMAT_TIME_HMS = "HH:mm:ss";
+	public static final String FORMAT_TIME_HMS = "HH:mm:ss";
 	public static final DateTimeFormatter TIME_HMS_FORMATTER = buildFormatter(FORMAT_TIME_HMS);
 
 	public static final DateTimeFormatter HTTP_DATE_HEADER_FORMAT = DateTimeFormatter.RFC_1123_DATE_TIME;

@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
@@ -96,7 +97,7 @@ import org.frankframework.util.XmlUtils;
  * <p>With both expression languages, you'll be able to select one or multiple nodes from this collection.</p>
  *
  * <p>Using this pipe, there are two options. Use it only with an {@code expression} or combine it with an {@code expressionValue}. When using the expression,
- * the pipe evaluates to {@code thenForwardName} when <em>there is a match</em>, even if it is empty. In the given example, this might be one of:</p>
+ * the pipe evaluates to the {@code then} Forward when <em>there is a match</em>. In the given example, this might be one of:</p>
  * <pre>{@code
  *   $.store
  *   $.store.book[1]
@@ -105,8 +106,14 @@ import org.frankframework.util.XmlUtils;
  * }</pre>
  *
  * <h4>expressionValue</h4>
- * <p>When using expression combined with expressionValue, the pipe evaluates to {@code thenForwardName} when <em>the matched value is equal to
- * expressionValue</em>. This needs to be an exact match.</p>
+ * <p>When using expression combined with expressionValue, the pipe evaluates to the {@code then} Forward when <em>the matched value is equal to
+ * expressionValue</em>. This needs to be an exact match. If the result does not match the expressionValue, the pipe evaluates to the {@code else} Forward.</p>
+ * <p>The matched value is either the result of an Xpath or JsonPath expression if either is set, or the value of the input message as string.</p>
+ *
+ * <h4>No expressionValue</h4>
+ * <p>When no expressionValue has been set, the {@code then} Forward is chosen when the matched value is anything not {@code null} or the string  {@code "false"}.
+ * An empty string, {@code ""}, will also follow the {@code then} Forward.
+ * If the matched value is {@code null} or the string {@code "false"} the {@code else} Forward is chosen.</p>
  *
  * <h4>XML/XPATH</h4>
  * <p>Xpath has been around a long time. Information about the syntax can be found everywhere on the internet.
@@ -136,6 +143,7 @@ import org.frankframework.util.XmlUtils;
  * @see <a href="https://www.freeformatter.com/xpath-tester.html">Xpath online evaluator</a>
  * @see <a href="https://en.wikipedia.org/wiki/XPath">Xpath information and history</a>
  */
+@SuppressWarnings("removal")
 @Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @Forward(name = "then", description = "the configured condition is met")
 @Forward(name = "else", description = "the configured condition is not met")
@@ -220,15 +228,12 @@ public class IfPipe extends AbstractPipe {
 			return xpathExpression;
 		}
 
-		String xpath = xpathExpression;
-
 		// Only append the value matching if the xpath selector doesn't use any expressions.
 		if (xpathExpression.matches("([\\w/]+)")) {
-			xpath = xpathExpression.endsWith("/") ? xpath : xpath + "/";
-			xpath += "text()";
+			return Strings.CS.appendIfMissing(xpathExpression, "/") + "text()";
+		} else {
+			return xpathExpression;
 		}
-
-		return xpath;
 	}
 
 	@NonNull
@@ -268,12 +273,13 @@ public class IfPipe extends AbstractPipe {
 
 			// If there's an expressionValue, and the result string is not empty, try to match those
 			if (StringUtils.isNoneEmpty(expressionValue, resultAsString)) {
+				//noinspection DataFlowIssue False positive for possible NULL value
 				return resultAsString.equals(expressionValue) ? thenForward : elseForward;
 			}
 
 			if (StringUtils.isEmpty(expressionValue)) {
 				// if result is null (from selector) or equals 'false' (from expression)
-				if (resultAsString == null || StringUtils.equalsIgnoreCase(resultAsString, "false")) {
+				if (resultAsString == null || "false".equalsIgnoreCase(resultAsString)) {
 					return elseForward;
 				}
 
@@ -374,7 +380,14 @@ public class IfPipe extends AbstractPipe {
 		this.elseForwardName = elseForwardName;
 	}
 
-	/** A string to compare the result of the xpathExpression (or the input message itself) to. If not specified, a non-empty result leads to the 'then' forward, and an empty result leads to the 'else' forward. */
+	/**
+	 *  A string to compare to the result of the xpathExpression / jsonPathExpression, or to the string-value of the input message itself if neither the xpathExpression nor the
+	 *  jsonPathExpression is set.
+	 *  <br/>
+	 *  If set, this must be an exact match.
+	 *  <br/>
+	 *  If not set, then any result that is not {@code null} or {@code "false"} leads to the 'then' forward, and a result that is {@code null} or a zero-length string leads to the 'else' forward.
+	 */
 	public void setExpressionValue(String expressionValue) {
 		this.expressionValue = expressionValue;
 	}
