@@ -58,14 +58,33 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 	private @Getter @Setter int ttl = 300;
 
 	/**
-	 * Remove the `WSSE:Security` part from the SOAP:Header.
+	 * Remove the `WSSE:Security` part from the SOAP:Header. Should only be used when `VERIFY` or `DECRYPT` are used, otherwise the message will be invalid.
 	 */
 	private @Getter @Setter boolean removeSecurityHeader = true;
 
+	/**
+	 * {@code xenc:EncryptionMethod} encryption algorithm to use for encrypting the symmetric key.
+	 */
 	private @Getter @Setter SoapUtils.KeyEncryptionAlgorithm keyEncryptionAlgorithm = SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP;
+
+	/**
+	 * {@code xenc:EncryptionMethod} encryption algorithm to use for encrypting the SOAP (body) data.
+	 */
 	private @Getter @Setter SoapUtils.DataEncryptionAlgorithm dataEncryptionAlgorithm = SoapUtils.DataEncryptionAlgorithm.AES_256;
+
+	/**
+	 * {@code wsse:KeyIdentifier} type to detect which certificate to use to verify the SOAP message.
+	 */
 	private @Getter @Setter SoapUtils.KeyIdentifierType keyIdentifier = SoapUtils.KeyIdentifierType.X509_KEY_IDENTIFIER;
+
+	/**
+	 * Which {@code ds:DigestMethod} hash algorithm to use for signing the SOAP message.
+	 */
 	private @Getter @Setter SoapUtils.DigestAlgorithm digestAlgorithm = SoapUtils.DigestAlgorithm.SHA256;
+
+	/**
+	 * Which {@code ds:SignatureMethod} signature algorithm to use for signing the SOAP message.
+	 */
 	private @Getter @Setter SoapUtils.SignatureAlgorithm signatureAlgorithm = SoapUtils.SignatureAlgorithm.RSA_SHA256;
 
 	private @Getter KeystoreConfiguration keystoreConfiguration;
