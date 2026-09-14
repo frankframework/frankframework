@@ -42,6 +42,15 @@ import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 
+/**
+ * Validator that can sign, encrypt, verify and decrypt SOAP messages.
+ * At least one operation is required, you may combine `sign,encrypt` and `verify,decrypt` operations.
+ * <br />
+ * This validator extends the {@link SoapValidator} and can be used to validate SOAP messages with additional security features.
+ * If you wish to use it without validating the soap message, set the attribute {@code allowPlainXml} to true.
+ *
+ * @ff.info It is not possible to use this validator as a Mixed input-output validator.
+ */
 public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 	private CredentialFactory certificateCf;
 	private KeyStore keystore;
