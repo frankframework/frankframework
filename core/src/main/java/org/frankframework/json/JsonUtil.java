@@ -18,10 +18,12 @@ package org.frankframework.json;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
@@ -30,6 +32,7 @@ import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -48,6 +51,7 @@ import net.minidev.json.parser.JSONParser;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
+import org.frankframework.util.StreamUtil;
 
 public class JsonUtil {
 	// Since 2.6.0 json-smart accepts incomplete JSON by default, so we have to use MODE_PERMISSIVE to disable that.
@@ -101,7 +105,7 @@ public class JsonUtil {
 		// Try to match the jsonPath expression on the given json string
 		try {
 			// May return null!
-			Object jsonPathResult = jsonPath.read(message.asInputStream(), JSON_PATH_CONFIGURATION);
+			Object jsonPathResult = evaluateJsonPathWithBom(jsonPath, message);
 
 			// if we get to this point, we have a match (and no PathNotFoundException)
 
@@ -153,7 +157,7 @@ public class JsonUtil {
 	public static @NonNull Message evaluateJsonPath(@NonNull JsonPath jsonPath, @NonNull Object input) throws JsonException {
 		try {
 			Message inputMessage = MessageUtils.convertToJsonMessage(input);
-			Object result = jsonPath.read(inputMessage.asInputStream());
+			Object result = evaluateJsonPathWithBom(jsonPath, inputMessage);
 			return getJsonPathResult(result);
 		} catch (PathNotFoundException e) {
 			throw new JsonPathNotFoundException("Cannot find path in input", e);
@@ -162,10 +166,22 @@ public class JsonUtil {
 		}
 	}
 
+	private static Object evaluateJsonPathWithBom(@NonNull JsonPath jsonPath, Message inputMessage) throws IOException {
+		BOMInputStream bomDetectingInputStream = StreamUtil.getBomDetectingInputStream(inputMessage.asInputStream());
+		String charset;
+		if (bomDetectingInputStream.hasBOM()) {
+			charset = bomDetectingInputStream.getBOM().getCharsetName();
+		} else {
+			Charset computedCharset = MessageUtils.computeDecodingCharset(inputMessage);
+			charset = Objects.requireNonNullElse(computedCharset, StandardCharsets.UTF_8).name();
+		}
+		return jsonPath.read(bomDetectingInputStream, charset, JSON_PATH_CONFIGURATION);
+	}
+
 	/**
 	 * Official json-smart conversion. Tweaked a bit, when we know it's json, sets the correct mimetype.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static Message getJsonPathResult(Object obj) {
 		if (obj instanceof Map jsonObject) {
 			Message result = new Message(JSONObject.toJSONString(jsonObject, JSONStyle.LT_COMPRESS));
@@ -177,7 +193,7 @@ public class JsonUtil {
 			return result;
 		} else if (obj instanceof String || obj instanceof Number || obj instanceof Boolean) {
 			// Scalar value, not JSON!
-			Message result =  new Message(getSingleValueJsonPathResult(obj));
+			Message result =  Message.asMessage(getSingleValueJsonPathResult(obj));
 			result.getContext().withMimeType(MediaType.TEXT_PLAIN).withCharset(StandardCharsets.UTF_8);
 			return result;
 		} else if (obj == null) {

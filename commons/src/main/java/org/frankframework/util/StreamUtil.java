@@ -70,10 +70,7 @@ public class StreamUtil {
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, a default character set is used.
 	 */
 	public static BufferedReader getCharsetDetectingInputStreamReader(InputStream inputStream, @Nullable String defaultCharset) throws IOException {
-		BOMInputStream bomInputStream = BOMInputStream.builder()
-				.setInputStream(inputStream)
-				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
-				.get();
+		BOMInputStream bomInputStream = getBomDetectingInputStream(inputStream);
 
 		String charsetName = !bomInputStream.hasBOM() ? defaultCharset : bomInputStream.getBOM().getCharsetName();
 
@@ -82,6 +79,16 @@ public class StreamUtil {
 		}
 
 		return new BufferedReader(new InputStreamReader(bomInputStream, charsetName));
+	}
+
+	/**
+	 * Wrap the inputStream in another InputStream that detects the BOM and return that.
+	 */
+	public static BOMInputStream getBomDetectingInputStream(InputStream inputStream) throws IOException {
+		return BOMInputStream.builder()
+				.setInputStream(inputStream)
+				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
+				.get();
 	}
 
 	/**
