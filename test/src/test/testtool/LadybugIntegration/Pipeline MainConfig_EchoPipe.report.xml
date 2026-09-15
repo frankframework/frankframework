@@ -50,11 +50,7 @@
       <int>1</int>
      </void>
      <void property="message">
-      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-&lt;java version=&quot;21.0.7&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
- &lt;boolean&gt;false&lt;/boolean&gt;
-&lt;/java&gt;
-</string>
+      <string>false</string>
      </void>
      <void property="messageClassName">
       <string>java.lang.Boolean</string>
@@ -310,6 +306,9 @@
      </void>
      <void property="message">
       <string>SUCCESS</string>
+     </void>
+     <void property="messageClassName">
+      <string>org.frankframework.core.PipeLine$ExitState</string>
      </void>
      <void property="messageContext">
       <object idref="Collections$EmptyMap0"/>
