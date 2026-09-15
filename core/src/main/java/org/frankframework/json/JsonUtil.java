@@ -16,15 +16,12 @@
 package org.frankframework.json;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
@@ -33,7 +30,6 @@ import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 
-import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -42,7 +38,6 @@ import org.springframework.http.MediaType;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -52,12 +47,11 @@ import net.minidev.json.parser.JSONParser;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.StreamUtil;
 
 public class JsonUtil {
 	// Since 2.6.0 json-smart accepts incomplete JSON by default, so we have to use MODE_PERMISSIVE to disable that.
 	private static final Configuration JSON_PATH_CONFIGURATION = Configuration.builder()
-			.jsonProvider(new JsonSmartJsonProvider(JSONParser.MODE_PERMISSIVE))
+			.jsonProvider(new BomInterpretingJsonSmartJsonProvider(JSONParser.MODE_PERMISSIVE))
 			.build();
 
 	private JsonUtil() {
@@ -173,32 +167,8 @@ public class JsonUtil {
 			return jsonPath.read(inputMessage.asString(), JSON_PATH_CONFIGURATION);
 		}
 
-		StreamAndCharset streamAndCharset = getInputStreamWithoutBom(inputMessage);
-		return jsonPath.read(streamAndCharset.inputStream, streamAndCharset.charset, JSON_PATH_CONFIGURATION);
-
-	}
-
-	/**
-	 * Get from the Message an InputStream where an optional BOM has already been skipped, because the JayWay
-	 * library doesn't do that.
-	 * This also returns the charset that was derived from the BOM if present, or otherwise the charset computed
-	 * from the Message, or UTF-8 default if all else fails.
-	 */
-	private static @NonNull StreamAndCharset getInputStreamWithoutBom(@NonNull Message message) throws IOException {
-		// The JayWay library does not handle a BOM at start of stream. Thus instead of directly passing
-		// an InputStream from the Message, which may start with a BOM, we wrap that in a BOMInputStream and
-		// check the BOM and BOM charset ourselves.
-		// This way we can pass back to JayWay an InputStream where the BOM has already been read past.
-		BOMInputStream bomDetectingInputStream = StreamUtil.getBomDetectingInputStream(message.asInputStream());
-		String charset;
-		if (bomDetectingInputStream.hasBOM()) {
-			charset = bomDetectingInputStream.getBOM().getCharsetName();
-		} else {
-			Charset computedCharset = MessageUtils.computeDecodingCharset(message);
-			charset = Objects.requireNonNullElse(computedCharset, StandardCharsets.UTF_8).name();
-		}
-		message.getContext().withCharset(charset);
-		return new StreamAndCharset(bomDetectingInputStream, charset);
+		String charset = inputMessage.getCharset();
+		return jsonPath.read(inputMessage.asInputStream(), charset != null ? charset : StandardCharsets.UTF_8.name(), JSON_PATH_CONFIGURATION);
 	}
 
 	/**
@@ -241,6 +211,4 @@ public class JsonUtil {
 		}
 		return sw.toString().trim();
 	}
-
-	private record StreamAndCharset(@NonNull InputStream inputStream, @NonNull String charset) {}
 }
