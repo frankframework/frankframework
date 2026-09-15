@@ -89,7 +89,7 @@ public class SoapUtilsTest {
 		SecretKey secretKey = keyGen.generateKey();
 
 		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, includeCertificateInMessage,
-				SoapUtils.KeyIdentifierType.THUMBPRINT_SHA1, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP_ENC11, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
+				SoapUtils.KeyIdentifierType.THUMBPRINT_SHA1, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
 
 		String encryptedString = Objects.requireNonNull(encrypted.asString())
 				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>")
