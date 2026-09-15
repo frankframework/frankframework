@@ -46,6 +46,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -83,8 +84,13 @@ public class JdbcUtil {
 	}
 
 	@Deprecated
+	@Contract("!null -> !null")
 	public static @Nullable String warningsToString(@Nullable SQLWarning warnings) {
+		if (warnings == null) {
+			return null;
+		}
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
+		// noinspection java:S2637  Sonar false positive because it doesn't understand @Contract annotations yet
 		return warningsElem.asXmlString();
 	}
 
@@ -97,6 +103,7 @@ public class JdbcUtil {
 	}
 
 	@Deprecated
+	@Contract("!null -> !null")
 	public static @Nullable XmlBuilder warningsToXmlBuilder(@Nullable SQLWarning warnings) {
 		if (warnings == null) {
 			return null;
