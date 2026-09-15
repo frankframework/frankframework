@@ -17,7 +17,9 @@ package org.frankframework.condition;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -25,18 +27,22 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 public class AppConstantCondition implements Condition {
 
 	@Override
-	public boolean matches(@NonNull ConditionContext context, AnnotatedTypeMetadata metadata) {
-		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnAppConstants.class.getName());
+	public boolean matches(@NonNull ConditionContext context, @NonNull AnnotatedTypeMetadata metadata) {
+		Map<@NonNull String, @Nullable Object> attributes = metadata.getAnnotationAttributes(ConditionalOnAppConstants.class.getName());
 		if (attributes == null)
 			return false;
 
 		if (!attributes.containsKey("name") || !attributes.containsKey("value"))
 			return false;
 
-		String propertyName = attributes.get("name").toString();
-		String propertyValue = attributes.get("value").toString();
+		Object propNameObj = attributes.get("name");
+		if (propNameObj == null) {
+			return false;
+		}
+		String propertyName = propNameObj.toString();
+		Object propValueObj = attributes.get("value");
+		String propertyValue = propValueObj != null ? propValueObj.toString() : null;
 		String appConstantsPropertyValue = context.getEnvironment().getProperty(propertyName);
-		return propertyValue.equalsIgnoreCase(appConstantsPropertyValue);
+		return Strings.CI.equals(propertyValue, appConstantsPropertyValue);
 	}
-
 }
