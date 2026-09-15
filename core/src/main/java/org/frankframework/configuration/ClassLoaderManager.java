@@ -27,7 +27,6 @@ import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.ClassLoadingLeakDetector;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.WebAppClassLoader;
@@ -66,11 +65,11 @@ public class ClassLoaderManager {
 		classPathClassLoader = Thread.currentThread().getContextClassLoader();
 	}
 
-	private AbstractClassLoader createClassloader(@NonNull String configurationName, @NonNull String classLoaderType) throws ClassLoaderException {
+	private ClassLoader createClassloader(@NonNull String configurationName, @NonNull String classLoaderType) throws ClassLoaderException {
 		return createClassloader(configurationName, classLoaderType, classPathClassLoader);
 	}
 
-	private @Nullable AbstractClassLoader createClassloader(@NonNull String configurationName, @NonNull String classLoaderType, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
+	private @Nullable ClassLoader createClassloader(@NonNull String configurationName, @NonNull String classLoaderType, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
 		// It is possible that no ClassLoader has been defined, use default ClassLoader
 		if (classLoaderType.isEmpty())
 			throw new ClassLoaderException("classLoaderType cannot be empty");
@@ -78,11 +77,11 @@ public class ClassLoaderManager {
 		String className = classLoaderType.contains(".") ? classLoaderType : CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 		log.debug("trying to create classloader of type[{}]", className);
 
-		final AbstractClassLoader classLoader;
+		final ClassLoader classLoader;
 		try {
 			Class<?> clas = ClassUtils.loadClass(className);
 			Constructor<?> con = ClassUtils.getConstructorOnType(clas, new Class[] {ClassLoader.class});
-			classLoader = (AbstractClassLoader) con.newInstance(parentClassLoader);
+			classLoader = (ClassLoader) con.newInstance(parentClassLoader);
 		} catch (Exception e) {
 			throw new ClassLoaderException("invalid classLoaderType ["+className+"]", e);
 		}
@@ -90,23 +89,25 @@ public class ClassLoaderManager {
 		// Register any classloader regardless if it's a ConfigurationClassLoader or not
 		ClassLoadingLeakDetector.registerClassLoader(configurationName, classLoader);
 
-		applyConfigurationProperties(configurationName, classLoader);
 
-		try {
-			classLoader.configure(ibisContext, configurationName);
-		} catch (ClassLoaderException ce) {
-			String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
-			switch (classLoader.getReportLevel()) {
-				case DEBUG -> log.debug(msg, ce);
-				case INFO -> ibisContext.log(msg, MessageEventLevel.INFO, ce);
-				case WARN -> ApplicationWarnings.add(log, msg, ce);
-				case ERROR -> throw ce;
+		if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
+			applyConfigurationProperties(configurationName, configurationClassLoader);
+			try {
+				configurationClassLoader.configure(ibisContext, configurationName);
+			} catch (ClassLoaderException ce) {
+				String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
+				switch (configurationClassLoader.getReportLevel()) {
+					case DEBUG -> log.debug(msg, ce);
+					case INFO -> ibisContext.log(msg, MessageEventLevel.INFO, ce);
+					case WARN -> ApplicationWarnings.add(log, msg, ce);
+					case ERROR -> throw ce;
+				}
+
+				// Break here, we cannot continue when there are ConfigurationExceptions!
+				return null;
 			}
-
-			// Break here, we cannot continue when there are ConfigurationExceptions!
-			return null;
+			log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
 		}
-		log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
 
 		return classLoader;
 	}
@@ -147,11 +148,11 @@ public class ClassLoaderManager {
 		};
 	}
 
-	private @Nullable AbstractClassLoader init(@NonNull String configurationName, @Nullable String classLoaderType) throws ClassLoaderException {
+	private @Nullable ClassLoader init(@NonNull String configurationName, @Nullable String classLoaderType) throws ClassLoaderException {
 		return init(configurationName, classLoaderType, APP_CONSTANTS.getString("configurations." + configurationName + ".parentConfig", null));
 	}
 
-	private @Nullable AbstractClassLoader init(@NonNull String configurationName, @Nullable String classLoaderType, String parentConfig) throws ClassLoaderException {
+	private @Nullable ClassLoader init(@NonNull String configurationName, @Nullable String classLoaderType, String parentConfig) throws ClassLoaderException {
 		if (contains(configurationName))
 			throw new ClassLoaderException("unable to add configuration with duplicate name ["+configurationName+"]");
 
@@ -159,7 +160,7 @@ public class ClassLoaderManager {
 
 		log.info("attempting to create new ClassLoader of type [{}] for configuration [{}]", actualClassLoaderType, configurationName);
 
-		AbstractClassLoader classLoader;
+		ClassLoader classLoader;
 		if (StringUtils.isNotEmpty(parentConfig)) {
 			if(!contains(parentConfig))
 				throw new ClassLoaderException("failed to locate parent configuration ["+parentConfig+"]");

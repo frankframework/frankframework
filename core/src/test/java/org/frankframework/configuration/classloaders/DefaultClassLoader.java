@@ -6,7 +6,6 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Depending on the JKD this grabs the default ClassLoader
- * Does not implement the IConfigurationClassLoader interface
  *
  * @author Niels Meijer
  *
