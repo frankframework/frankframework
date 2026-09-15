@@ -66,6 +66,16 @@ If a comment you answered to is very old and if no additional
 answer has been added to the conversation for a long time, you
 can also set it to resolved to ease the review process.
 
+## AI usage
+We don't forbid using AI tools, but would like to make sure that you are aware of the risks. Since everything in the F!F is very tightly-knit together, 
+it's easy to make a change which breaks something else.
+
+We assume the following guidelines:
+* Do not use AI to create the feature for you. You are responsible for the code you submit, and should be able to explain your changes in detail.
+* You can use AI to help you with the boilerplate code and when you have a working piece of code to help with other tasks that are based on that code. Think about setting up unit tests, or help with creating documentation. But also in these cases, you are responsible for the changes you make.
+* You can use AI to help with analysing a problem or to prepare your pull request.
+* Assume that AI makes mistakes. Always check the code it generates and make sure it is correct and does not break anything else.
+
 ## Coding conventions
 
 Start reading our code, and you'll get the hang of it. We optimize for readability:

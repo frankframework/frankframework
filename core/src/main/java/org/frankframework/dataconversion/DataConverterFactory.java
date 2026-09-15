@@ -38,8 +38,8 @@ public class DataConverterFactory {
 	static final NodeConverter nodeConverter = new NodeConverter();
 	static final SerializableFileReferenceConverter serializableFileReferenceConverter = new SerializableFileReferenceConverter();
 	static final ThrowingSupplierConverter throwingSupplierConverter = new ThrowingSupplierConverter();
-	static final StringableDataConverter.DateConverter dateConverter = new StringableDataConverter.DateConverter();
-	static final StringableDataConverter.TemporalAccessorConverter temporalAccessorConverter = new StringableDataConverter.TemporalAccessorConverter();
+	static final DateTimeConversions.DateConverter dateConverter = new DateTimeConversions.DateConverter();
+	static final DateTimeConversions.TemporalAccessorConverter temporalAccessorConverter = new DateTimeConversions.TemporalAccessorConverter();
 	static final ByteArrayConverter byteArrayConverter = new ByteArrayConverter();
 
 	private DataConverterFactory() {

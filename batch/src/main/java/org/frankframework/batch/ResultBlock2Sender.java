@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2021, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.frankframework.util.ClassUtils;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
 public class ResultBlock2Sender extends Result2StringWriter {
 
 	private @Getter ISender sender = null;
@@ -81,8 +82,8 @@ public class ResultBlock2Sender extends Result2StringWriter {
 
 	@Override
 	public void openDocument(PipeLineSession session, String streamId) throws Exception {
-		counters.put(streamId,Integer.valueOf(0));
-		levels.put(streamId,Integer.valueOf(0));
+		counters.put(streamId, 0);
+		levels.put(streamId, 0);
 		super.openDocument(session, streamId);
 	}
 
@@ -98,7 +99,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		if (counter==null) {
 			throw new SenderException("no counter found for stream ["+streamId+"]");
 		}
-		return counter.intValue();
+		return counter;
 	}
 
 	protected int incCounter(String streamId) throws SenderException {
@@ -106,8 +107,8 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		if (counter==null) {
 			throw new SenderException("no counter found for stream ["+streamId+"]");
 		}
-		int result=counter.intValue()+1;
-		counters.put(streamId,Integer.valueOf(result));
+		int result= counter +1;
+		counters.put(streamId, result);
 		return result;
 	}
 
@@ -116,7 +117,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		if (level==null) {
 			throw new SenderException("no level found for stream ["+streamId+"]");
 		}
-		return level.intValue();
+		return level;
 	}
 
 	protected int incLevel(String streamId) throws SenderException {
@@ -124,8 +125,8 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		if (level==null) {
 			throw new SenderException("no level found for stream ["+streamId+"]");
 		}
-		int result=level.intValue()+1;
-		levels.put(streamId,Integer.valueOf(result));
+		int result= level +1;
+		levels.put(streamId, result);
 		return result;
 	}
 
@@ -134,8 +135,8 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		if (level==null) {
 			throw new SenderException("no level found for stream ["+streamId+"]");
 		}
-		int result=level.intValue()-1;
-		levels.put(streamId,Integer.valueOf(result));
+		int result= level -1;
+		levels.put(streamId, result);
 		return result;
 	}
 

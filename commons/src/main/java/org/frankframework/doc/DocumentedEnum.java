@@ -34,8 +34,8 @@ public interface DocumentedEnum {
 		} catch (NoSuchFieldException e) {
 			return name();
 		}
-		if (enumConstant.isAnnotationPresent(EnumLabel.class)) {
-			EnumLabel enumLabel = enumConstant.getAnnotation(EnumLabel.class);
+		EnumLabel enumLabel = enumConstant.getAnnotation(EnumLabel.class);
+		if (enumLabel != null) {
 			return enumLabel.value();
 		}
 		return name();

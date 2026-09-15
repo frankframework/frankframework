@@ -34,6 +34,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -393,6 +394,7 @@ public class PipeLineSession extends NestedLookupMap<Object> implements AutoClos
 	 * @return String
 	 */
 	@Nullable
+	@Contract("_, !null -> !null")
 	public String get(@Nullable String key, @Nullable String defaultValue) {
 		String ob = this.getString(key);
 

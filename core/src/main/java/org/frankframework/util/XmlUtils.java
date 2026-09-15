@@ -436,15 +436,15 @@ public class XmlUtils {
 
 	public static String getNamespaceClause(@Nullable String namespaceDefs) {
 		StringBuilder namespaceClause = new StringBuilder();
-		for (Entry<String, String> namespaceDef : getNamespaceMap(namespaceDefs).entrySet()) {
+		for (Entry<@Nullable String, String> namespaceDef : getNamespaceMap(namespaceDefs).entrySet()) {
 			String prefixClause = namespaceDef.getKey() == null ? "" : ":" + namespaceDef.getKey();
 			namespaceClause.append(" xmlns").append(prefixClause).append("=\"").append(namespaceDef.getValue()).append("\"");
 		}
 		return namespaceClause.toString();
 	}
 
-	public static Map<String,String> getNamespaceMap(@Nullable String namespaceDefs) {
-		Map<String,String> namespaceMap= new LinkedHashMap<>();
+	public static Map<@Nullable String,String> getNamespaceMap(@Nullable String namespaceDefs) {
+		Map<@Nullable String,String> namespaceMap = new LinkedHashMap<>();
 		if (namespaceDefs != null) {
 			for (final String namespaceDef : StringUtil.split(namespaceDefs, ", \t\r\n\f")) {
 				int separatorPos = namespaceDef.indexOf('=');

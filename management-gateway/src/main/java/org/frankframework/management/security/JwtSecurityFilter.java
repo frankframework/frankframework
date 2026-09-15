@@ -15,12 +15,9 @@
 */
 package org.frankframework.management.security;
 
-import static org.frankframework.management.security.JwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.text.ParseException;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -40,22 +37,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
-import com.nimbusds.jose.proc.BadJOSEException;
-import com.nimbusds.jose.proc.JWSKeySelector;
-import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
-import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import lombok.Setter;
 
 public class JwtSecurityFilter implements Filter, InitializingBean { // Should we use the OncePerRequestFilter?
 	private static final String JWT_TOKEN_CONTEXT_KEY = "JWT_TOKEN_CONTEXT_KEY";
 	private ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
+	private JwtVerifier jwtVerifier;
 	private final Logger log = LogManager.getLogger(JwtSecurityFilter.class);
 
 	@Value("${management.gateway.http.jwks.endpoint}")
@@ -101,30 +91,15 @@ public class JwtSecurityFilter implements Filter, InitializingBean { // Should w
 		}
 
 
-		Authentication newToken = createAuthenticationToken(jwt);
+		Authentication newToken = jwtVerifier.verify(jwt);
 		log.debug("created new authentication token [{}]", newToken);
 		session.setAttribute(JWT_TOKEN_CONTEXT_KEY, newToken);
 		return newToken;
 	}
 
-	private Authentication createAuthenticationToken(String jwt) throws IOException {
-		JWTClaimsSet claimsSet;
-		try {
-			claimsSet = jwtProcessor.process(jwt, null);
-		} catch (JOSEException | ParseException | BadJOSEException e) {
-			throw new IOException("unable to parse JWT", e);
-		}
-
-		try {
-			return new JwtAuthenticationToken(claimsSet, jwt);
-		} catch (ParseException e) {
-			throw new IOException("unable to create AuthenticationToken", e);
-		}
-	}
-
 	@Override
 	public void destroy() {
-		jwtProcessor = null;
+		jwtVerifier = null;
 	}
 
 	@Override
@@ -134,9 +109,6 @@ public class JwtSecurityFilter implements Filter, InitializingBean { // Should w
 		}
 
 		URL url = new URI(jwksEndpoint).toURL();
-		JWKSource<SecurityContext> keySource = JWKSourceBuilder.create(url).cacheForever().build();
-		jwtProcessor = new DefaultJWTProcessor<>();
-		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWT_DEFAULT_SIGNING_ALGORITHM, keySource);
-		jwtProcessor.setJWSKeySelector(keySelector);
+		jwtVerifier = new JwtVerifier(url);
 	}
 }

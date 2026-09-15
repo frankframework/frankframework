@@ -25,12 +25,14 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -54,7 +56,7 @@ public class PropertyLoader extends Properties {
 	}
 
 	public PropertyLoader(String propertiesFile) {
-		this(PropertyLoader.class.getClassLoader(), propertiesFile);
+		this(Objects.requireNonNull(PropertyLoader.class.getClassLoader()), propertiesFile);
 	}
 
 	public PropertyLoader(ClassLoader classLoader, String propertiesFile) {
@@ -109,6 +111,7 @@ public class PropertyLoader extends Properties {
 		return getResolvedProperty(key);
 	}
 
+	@Nullable
 	public String getUnresolvedProperty(String key) {
 		return super.getProperty(key);
 	}
@@ -261,6 +264,7 @@ public class PropertyLoader extends Properties {
 	 * @return String
 	 */
 	@Nullable
+	@Contract("_, !null -> !null")
 	public String getString(String key, @Nullable String dfault) {
 		String ob = this.getResolvedProperty(key);
 

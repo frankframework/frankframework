@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.time.temporal.TemporalAccessor;
-import java.util.Date;
 
 abstract class StringableDataConverter<T> implements TypedCharacterDataConverter<T> {
 
@@ -59,12 +57,11 @@ abstract class StringableDataConverter<T> implements TypedCharacterDataConverter
 		return new ByteArrayInputStream(asByteArray(data, encodingCharset));
 	}
 
-	static class StringConverter extends StringableDataConverter<String> { }
-	static class BooleanConverter extends StringableDataConverter<Boolean> { }
-	static class NumberConverter extends StringableDataConverter<Number> { }
-	static class DateConverter extends StringableDataConverter<Date> { }
-	static class TemporalAccessorConverter extends StringableDataConverter<TemporalAccessor> { }
-	static class EnumConverter extends StringableDataConverter<Enum<?>> {
+	static final class StringConverter extends StringableDataConverter<String> { }
+	static final class BooleanConverter extends StringableDataConverter<Boolean> { }
+	static final class NumberConverter extends StringableDataConverter<Number> { }
+
+	static final class EnumConverter extends StringableDataConverter<Enum<?>> {
 		@Override
 		public String asString(Enum<?> data) {
 			return data.name();

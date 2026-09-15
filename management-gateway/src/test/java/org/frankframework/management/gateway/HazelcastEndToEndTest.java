@@ -176,7 +176,7 @@ public class HazelcastEndToEndTest {
 		Message<InputStream> request = new BinaryMessage(stream);
 
 		// Act
-		Message<String> response = outboundGateway.sendSyncMessage(request);
+		Message<InputStream> response = outboundGateway.sendSyncMessage(request);
 
 		// Assert
 		InputStream responseStream = assertInstanceOf(InputStream.class, response.getPayload());
@@ -194,7 +194,7 @@ public class HazelcastEndToEndTest {
 		Message<InputStream> request = new GenericMessage<>(stream, new MessageHeaders(null));
 
 		// Act
-		Message<String> response = outboundGateway.sendSyncMessage(request);
+		Message<InputStream> response = outboundGateway.sendSyncMessage(request);
 
 		// Assert
 		InputStream responseStream = assertInstanceOf(InputStream.class, response.getPayload());

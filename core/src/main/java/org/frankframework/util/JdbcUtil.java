@@ -36,7 +36,6 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
@@ -47,6 +46,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -79,18 +79,18 @@ import org.frankframework.xml.SaxElementBuilder;
 @Log4j2
 public class JdbcUtil {
 
-	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
-	public static final DateTimeFormatter DATEFORMAT_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(DATEFORMAT);
-	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
-	public static final DateTimeFormatter TIMESTAMP_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(TIMESTAMPFORMAT);
-
 	private JdbcUtil() {
 		// Private constructor to prevent creating instances
 	}
 
 	@Deprecated
+	@Contract("!null -> !null")
 	public static @Nullable String warningsToString(@Nullable SQLWarning warnings) {
+		if (warnings == null) {
+			return null;
+		}
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
+		// noinspection java:S2637  Sonar false positive because it doesn't understand @Contract annotations yet
 		return warningsElem.asXmlString();
 	}
 
@@ -103,6 +103,7 @@ public class JdbcUtil {
 	}
 
 	@Deprecated
+	@Contract("!null -> !null")
 	public static @Nullable XmlBuilder warningsToXmlBuilder(@Nullable SQLWarning warnings) {
 		if (warnings == null) {
 			return null;
@@ -312,68 +313,14 @@ public class JdbcUtil {
 	 */
 	@Deprecated(since = "10.3")
 	public static @Nullable String getValue(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int colNum, @NonNull final ResultSetMetaData rsmeta, @Nullable String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
-		if (dbmsSupport.isBlobType(rsmeta, colNum)) {
-			if (dbmsSupport.isRowVersionTimestamp(rsmeta, colNum)) {
-				return rs.getString(colNum);
-			}
-			try {
-				return JdbcUtil.getBlobAsString(dbmsSupport, rs, colNum, blobCharset, decompressBlobs, getBlobSmart, encodeBlobBase64);
-			} catch (JdbcException e) {
-				log.debug("Caught JdbcException, assuming no blob found", e);
-				return nullValue;
-			}
+		Message result = getValueAsMessage(dbmsSupport, rs, colNum, rsmeta, blobCharset, decompressBlobs, trimSpaces, getBlobSmart, encodeBlobBase64);
+		if (result.isNull()) {
+			return nullValue;
 		}
-		if (dbmsSupport.isClobType(rsmeta, colNum)) {
-			try {
-				return JdbcUtil.getClobAsString(dbmsSupport, rs, colNum, false);
-			} catch (JdbcException e) {
-				log.debug("Caught JdbcException, assuming no clob found", e);
-				return nullValue;
-			}
+		if (trimSpaces) {
+			return result.asString().trim();
 		}
-		int columnType = rsmeta.getColumnType(colNum);
-		switch (columnType) {
-			// return "undefined" for types that cannot be rendered to strings easily
-			case Types.LONGVARBINARY:
-			case Types.VARBINARY:
-			case Types.BINARY:
-			case Types.BLOB:
-			case Types.ARRAY:
-			case Types.DISTINCT:
-			case Types.REF:
-			case Types.STRUCT:
-				return "undefined";
-			case Types.BOOLEAN:
-			case Types.BIT: {
-				boolean value = rs.getBoolean(colNum);
-				return Boolean.toString(value);
-			}
-			// return as specified date format
-			case Types.TIMESTAMP:
-			case Types.DATE: {
-				try {
-					if (columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty()) {
-						return TIMESTAMP_DATE_TIME_FORMATTER.format(rs.getTimestamp(colNum).toLocalDateTime());
-
-					} else if (columnType == Types.DATE && !DATEFORMAT.isEmpty()) {
-						return DATEFORMAT_DATE_TIME_FORMATTER.format(rs.getDate(colNum).toLocalDate());
-					}
-				} catch (Exception e) {
-					// Do nothing, the default: will handle it
-				}
-			}
-			// $FALL-THROUGH$
-			default: {
-				Object value = rs.getObject(colNum);
-				if (value == null) {
-					return nullValue;
-				}
-				if (trimSpaces) {
-					return value.toString().trim();
-				}
-				return value.toString();
-			}
-		}
+		return result.asString();
 	}
 
 	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int column, final boolean blobIsCompressed) throws SQLException, JdbcException {

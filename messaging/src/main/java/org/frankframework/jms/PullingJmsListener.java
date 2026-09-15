@@ -176,8 +176,8 @@ public class PullingJmsListener extends AbstractJmsListener implements IPullingL
 	}
 
 	@Override
-	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, JMSException, IOException {
-		Session session = (Session) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, @NonNull PipeLineSession pipeLineSession, @NonNull Map<String, Object> properties) throws SenderException, ListenerException, JMSException, IOException {
+		Session session = pipeLineSession.getAsType(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 		if (session==null) {
 			try {
 				session=getSession(pipeLineSession);

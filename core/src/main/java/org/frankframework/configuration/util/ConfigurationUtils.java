@@ -46,7 +46,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.dbms.JdbcException;
@@ -484,7 +483,7 @@ public class ConfigurationUtils {
 	/**
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
-	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
+	public static Map<String, Class<? extends ClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
 		ConfigurationAutoDiscovery discovery = SpringUtils.createBean(applicationContext);
 		try {
 			if (CONFIG_AUTO_FS_CLASSLOADER) discovery.withDirectoryScanner();

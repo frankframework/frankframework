@@ -82,7 +82,7 @@ public class ConfigurationAutoDiscoveryTest {
 		ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 		autoDiscovery.withDatabaseScanner(env.getDataSourceName());
 
-		Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
+		Map<String, Class<? extends ClassLoader>> configs = autoDiscovery.scan(true);
 		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "config1", "config2", "config3", "config4", "config5"));
 
 		assertNull(configs.get("IAF_Util"));
@@ -99,7 +99,7 @@ public class ConfigurationAutoDiscoveryTest {
 		autoDiscovery.withDatabaseScanner(env.getDataSourceName());
 
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
-			Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
+			Map<String, Class<? extends ClassLoader>> configs = autoDiscovery.scan(true);
 			assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration"));
 
 			assertNull(configs.get("IAF_Util"));
@@ -118,7 +118,7 @@ public class ConfigurationAutoDiscoveryTest {
 		autoDiscovery.withDatabaseScanner(env.getDataSourceName());
 		autoDiscovery.withDirectoryScanner();
 
-		Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
+		Map<String, Class<? extends ClassLoader>> configs = autoDiscovery.scan(true);
 
 		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "JarConfig1", "config1", "config2", "config3", "config4", "config5"));
 
@@ -138,7 +138,7 @@ public class ConfigurationAutoDiscoveryTest {
 			ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 			autoDiscovery.withDirectoryScanner();
 
-			Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
+			Map<String, Class<? extends ClassLoader>> configs = autoDiscovery.scan(true);
 
 			assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "JarConfig1"));
 

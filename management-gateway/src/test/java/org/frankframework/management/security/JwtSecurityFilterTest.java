@@ -25,6 +25,7 @@ import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -33,6 +34,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 
 class JwtSecurityFilterTest {
@@ -40,15 +45,24 @@ class JwtSecurityFilterTest {
 	@TempDir
 	private File tempDirectory;
 
-	private JwtKeyGenerator keyGenerator;
+	private DefaultJwtKeyGenerator keyGenerator;
 	private String jwksUrl;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		keyGenerator = new JwtKeyGenerator();
+		keyGenerator = new DefaultJwtKeyGenerator();
+
+		GenericApplicationContext ac = new GenericApplicationContext();
+		ac.setDisplayName("bla bla appl");
+		ac.refresh();
+		SpringUtils.autowireByType(ac, keyGenerator);
+
 		File jwksFile = new File(tempDirectory, "jwks.txt");
+		JWK jwk = keyGenerator.getPublicJwk();
+		assertNotNull(jwk);
+		String jwks = new JWKSet(jwk).toString();
 		try (OutputStream fileOut = Files.newOutputStream(jwksFile.toPath())) {
-			StreamUtil.streamToStream(new ByteArrayInputStream(keyGenerator.getPublicJwkSet().getBytes(StandardCharsets.UTF_8)), fileOut);
+			StreamUtil.streamToStream(new ByteArrayInputStream(jwks.getBytes(StandardCharsets.UTF_8)), fileOut);
 		}
 		jwksUrl = jwksFile.toURI().toURL().toExternalForm();
 
@@ -76,7 +90,7 @@ class JwtSecurityFilterTest {
 		JwtSecurityFilter filter = new JwtSecurityFilter();
 		filter.setJwksEndpoint(jwksUrl);
 		filter.afterPropertiesSet();
-		String jwt = keyGenerator.create();
+		String jwt = keyGenerator.createJWT();
 		assertNotNull(jwt);
 
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
@@ -90,6 +104,7 @@ class JwtSecurityFilterTest {
 		// Assert
 		verify(chain, times(1)).doFilter(any(ServletRequest.class), any(ServletResponse.class));
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		assertNotNull(authentication);
 		List<String> authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 		assertAll(
 				() -> assertInstanceOf(JwtAuthenticationToken.class, authentication),
