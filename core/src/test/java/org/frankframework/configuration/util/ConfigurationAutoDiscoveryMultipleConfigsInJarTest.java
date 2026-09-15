@@ -30,7 +30,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
@@ -57,7 +56,7 @@ class ConfigurationAutoDiscoveryMultipleConfigsInJarTest {
 			ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 			autoDiscovery.withDirectoryScanner();
 
-			Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
+			Map<String, Class<? extends ClassLoader>> configs = autoDiscovery.scan(true);
 
 			assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "Weer", "Nieuws", "Trein"));
 

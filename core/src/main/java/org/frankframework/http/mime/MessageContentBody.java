@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.content.ContentBody;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -32,30 +33,33 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
+@NullMarked
 @Log4j2
 public class MessageContentBody implements ContentBody {
-	private final Message message;
-	private final String filename;
 	private static final int OUTPUT_BUFFER_SIZE = 4096;
+
+	private final Message message;
+	private final @Nullable String filename;
 	private final MimeType mimeType;
 
 	public MessageContentBody(Message message) {
 		this(message, null);
 	}
 
-	public MessageContentBody(Message message, MimeType contentType) {
+	public MessageContentBody(Message message, @Nullable MimeType contentType) {
 		this(message, contentType, null);
 	}
 
-	public MessageContentBody(Message message, MimeType contentType, String filename) {
+	public MessageContentBody(Message message, @Nullable MimeType contentType, @Nullable String filename) {
 		this.message = message;
 		this.filename = filename;
 
 		MimeType type = contentType != null ? contentType : MessageUtils.getMimeType(message);
-		if(type == null) {
-			type = message.isBinary() ? MediaType.APPLICATION_OCTET_STREAM : MediaType.TEXT_PLAIN;
+		if (type != null) {
+			this.mimeType = type;
+		} else {
+			this.mimeType = message.isBinary() ? MediaType.APPLICATION_OCTET_STREAM : MediaType.TEXT_PLAIN;
 		}
-		this.mimeType = type;
 
 //		Map<String, Object> context = message.getContext();
 //		if(context != null && filename == null) {
@@ -65,7 +69,7 @@ public class MessageContentBody implements ContentBody {
 	}
 
 	@Override
-	public String getFilename() {
+	public @Nullable String getFilename() {
 		return filename;
 	}
 
@@ -105,12 +109,12 @@ public class MessageContentBody implements ContentBody {
 
 	@Override
 	public @Nullable String getCharset() {
-		if(message.isBinary()) {
+		if (message.isBinary()) {
 			return null;
 		}
 
 		Charset charset = mimeType.getCharset() != null ? mimeType.getCharset() : StreamUtil.DEFAULT_CHARSET;
-		if(charset != null) {
+		if (charset != null) {
 			return charset.name();
 		}
 		return null;

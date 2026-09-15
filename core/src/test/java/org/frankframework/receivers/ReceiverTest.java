@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -1221,6 +1222,7 @@ public class ReceiverTest {
 
 		// Assert
 		assertEquals(expectedBackoffDelayMs, actualBackoffDelay);
+		assertNotNull(configWarnings);
 		if (expectConfigWarning) {
 			assertEquals(1, configWarnings.size(), "There should have been exactly 1 config warning");
 			assertThat(configWarnings.getWarnings().getFirst(), containsString("Maximum backoff delay reduced"));

@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.sql.DataSource;
 
@@ -43,7 +44,6 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ClassLoaderManager;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.DbmsSupportFactory;
@@ -60,7 +60,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	private static final String CONFIGURATIONS_NAMES = APP_CONSTANTS.getProperty("configurations.names.application");
 	private static final String DUPLICATE_CONFIG_WARNING = "config [%s] already exists, cannot add same config twice";
 
-	private final Map<String, Class<? extends IConfigurationClassLoader>> configurations = new LinkedHashMap<>();
+	private final Map<String, Class<? extends ClassLoader>> configurations = new LinkedHashMap<>();
 
 	private ApplicationContext applicationContext;
 
@@ -102,7 +102,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	@NonNull
-	public Map<String, Class<? extends IConfigurationClassLoader>> scan(boolean includeExplicitlyDefinedConfigurations) {
+	public Map<String, Class<? extends ClassLoader>> scan(boolean includeExplicitlyDefinedConfigurations) {
 		configurations.clear();
 
 		if (includeExplicitlyDefinedConfigurations && CONFIGURATIONS_NAMES != null) {
@@ -129,10 +129,10 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	@NonNull
-	private Map<String, Class<? extends IConfigurationClassLoader>> scanDirectory(@NonNull Path configDir) throws IOException {
+	private Map<String, Class<? extends ClassLoader>> scanDirectory(@NonNull Path configDir) throws IOException {
 		log.info("scanning directory [{}] for configurations", configDir);
 
-		Map<String, Class<? extends IConfigurationClassLoader>> directoryConfigurations = new LinkedHashMap<>();
+		Map<String, Class<? extends ClassLoader>> directoryConfigurations = new LinkedHashMap<>();
 		Class<DirectoryClassLoader> defaultDirectoryClassLoaderType = getDefaultDirectoryClassLoaderType();
 		for(String name : retrieveDirectoryConfigNames(configDir)) {
 			if (directoryConfigurations.get(name) == null) {
@@ -156,10 +156,10 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	@NonNull
-	private Map<String, Class<? extends IConfigurationClassLoader>> scanDatabase(@NonNull String dataSourceName) throws DbmsException, SQLException {
+	private Map<String, Class<? extends ClassLoader>> scanDatabase(@NonNull String dataSourceName) throws DbmsException, SQLException {
 		log.info("scanning database [{}] for configurations", dataSourceName);
 
-		Map<String, Class<? extends IConfigurationClassLoader>> databaseConfigurations = new LinkedHashMap<>();
+		Map<String, Class<? extends ClassLoader>> databaseConfigurations = new LinkedHashMap<>();
 		for (String name : retrieveConfigNamesFromDatabase(dataSourceName)) {
 			if (databaseConfigurations.get(name) == null) {
 				databaseConfigurations.put(name, DatabaseClassLoader.class);
@@ -172,13 +172,15 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return databaseConfigurations;
 	}
 
-	private Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType() {
-		String classLoaderType = APP_CONSTANTS.getString("configurations.directory.classLoaderType", DirectoryClassLoader.class.getCanonicalName());
+	private @NonNull Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType() {
+		String canonicalName = Objects.requireNonNull(DirectoryClassLoader.class.getCanonicalName());
+		String classLoaderType = APP_CONSTANTS.getString("configurations.directory.classLoaderType", canonicalName);
+		// noinspection java:S2637  Sonar gives false positive here, Contract annotation should tell it that classLoaderType cannot be NULL when canonicalName is not NULL.
 		return getDefaultDirectoryClassLoaderType(classLoaderType);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected static Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(String classLoaderType) {
+	protected static @NonNull Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(@NonNull String classLoaderType) {
 		try {
 			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 

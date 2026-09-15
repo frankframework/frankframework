@@ -570,7 +570,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return messageConsumer;
 	}
 
-	public @Nullable String send(@NonNull Session session, @Nullable Destination dest, String correlationId, Message message, PipeLineSession pipeLineSession, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, IOException, SenderException {
+	public @Nullable String send(@NonNull Session session, @Nullable Destination dest, @Nullable String correlationId, @NonNull Message message, @Nullable PipeLineSession pipeLineSession, @Nullable String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, @NonNull Map<String, Object> properties) throws JMSException, IOException, SenderException {
 		jakarta.jms.Message msg = createMessage(session, correlationId, message, pipeLineSession);
 		try (MessageProducer mp = session.createProducer(dest)) {
 			if (messageType!=null) {
@@ -587,15 +587,13 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 			if (timeToLive>0) {
 				mp.setTimeToLive(timeToLive);
 			}
-			if (properties!=null) {
-				for (Map.Entry<String, Object> entry: properties.entrySet()) {
-					String key = entry.getKey();
-					Object value = entry.getValue();
-					if (value instanceof Message message1) {
-						value = message1.asString();
-					}
-					msg.setObjectProperty(key, value);
+			for (Map.Entry<String, Object> entry : properties.entrySet()) {
+				String key = entry.getKey();
+				Object value = entry.getValue();
+				if (value instanceof Message message1) {
+					value = message1.asString();
 				}
+				msg.setObjectProperty(key, value);
 			}
 
 			return send(mp, msg, ignoreInvalidDestinationException);
@@ -614,10 +612,10 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	 * @param message
 	 * @return messageID of sent message
 	 */
-	public String send(MessageProducer messageProducer, jakarta.jms.Message message) throws JMSException {
+	public @Nullable String send(@NonNull MessageProducer messageProducer, jakarta.jms. @NonNull Message message) throws JMSException {
 		return send(messageProducer, message, false);
 	}
-	public @Nullable String send(MessageProducer messageProducer, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
+	public @Nullable String send(@NonNull MessageProducer messageProducer, jakarta.jms. @NonNull Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		logMessageDetails(message, messageProducer);
 		try {
 			messageProducer.send(message);
@@ -632,7 +630,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	@SuppressWarnings("java:S3457") // Ignore {} usage inside logging
-	protected void logMessageDetails(jakarta.jms.Message message, MessageProducer messageProducer) throws JMSException {
+	protected void logMessageDetails(jakarta.jms. @NonNull Message message, @Nullable MessageProducer messageProducer) throws JMSException {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() + "sender on [" + getDestinationName()
 					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
@@ -662,12 +660,12 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	 * @param message
 	 * @return message ID of the sent message
 	 */
-	public String send(Session session, Destination dest, jakarta.jms.Message message)
+	public String send(@NonNull Session session, @NonNull Destination dest, jakarta.jms. @NonNull Message message)
 		throws JMSException {
 		return send(session, dest, message, false);
 	}
 
-	public @Nullable String send(Session session, Destination dest, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
+	public @Nullable String send(@NonNull Session session, @NonNull Destination dest, jakarta.jms. @NonNull Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		try (MessageProducer mp = session.createProducer(dest)) {
 			logMessageDetails(message, mp);
 			mp.send(message);
@@ -681,14 +679,14 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		}
 	}
 
-	protected String sendByQueue(QueueSession session, Queue destination, jakarta.jms.Message message) throws JMSException {
+	protected String sendByQueue(@NonNull QueueSession session, @NonNull Queue destination, jakarta.jms. @NonNull Message message) throws JMSException {
 		try (QueueSender tqs = session.createSender(destination)) {
 			tqs.send(message);
 			return message.getJMSMessageID();
 		}
 	}
 
-	protected String sendByTopic(TopicSession session, Topic destination, jakarta.jms.Message message) throws JMSException {
+	protected String sendByTopic(@NonNull TopicSession session, @NonNull Topic destination, jakarta.jms. @NonNull Message message) throws JMSException {
 		try (TopicPublisher tps = session.createPublisher(destination)) {
 			tps.publish(message);
 			return message.getJMSMessageID();
@@ -730,8 +728,9 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		Message message = switch (jmsMessage) {
 			case TextMessage textMessage -> new Message(textMessage.getText(), getContext(jmsMessage));
 			case BytesMessage bytesMsg -> {
-				InputStream input = new BytesMessageInputStream(bytesMsg);
-				yield new Message(input, getContext(jmsMessage));
+				try (InputStream input = new BytesMessageInputStream(bytesMsg)) {
+					yield new Message(input, getContext(jmsMessage));
+				}
 			}
 			case ObjectMessage objectMessage -> Message.asMessage(objectMessage.getObject());
 			case null -> Message.nullMessage();

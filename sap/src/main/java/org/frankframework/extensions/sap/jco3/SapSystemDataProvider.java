@@ -19,7 +19,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import com.sap.conn.jco.ext.DestinationDataEventListener;
 import com.sap.conn.jco.ext.DestinationDataProvider;
@@ -54,12 +54,8 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 	}
 
 	@Override
-	public @Nullable Properties getDestinationProperties(String destinationName) {
+	public @NonNull Properties getDestinationProperties(String destinationName) {
 		SapSystemImpl sapSystem = SapSystemImpl.getSystem(destinationName);
-		if (sapSystem == null) {
-			log.warn("Could not find destination name");
-			return null;
-		}
 		CredentialFactory cf = new CredentialFactory(sapSystem.getAuthAlias(), sapSystem.getUserid(), sapSystem.getPasswd());
 		Properties destinationProperties = new Properties();
 		// See Javadoc DestinationDataProvider for available properties and their description.

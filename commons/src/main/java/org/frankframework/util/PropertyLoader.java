@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
@@ -55,7 +56,7 @@ public class PropertyLoader extends Properties {
 	}
 
 	public PropertyLoader(String propertiesFile) {
-		this(PropertyLoader.class.getClassLoader(), propertiesFile);
+		this(Objects.requireNonNull(PropertyLoader.class.getClassLoader()), propertiesFile);
 	}
 
 	public PropertyLoader(ClassLoader classLoader, String propertiesFile) {
@@ -110,6 +111,7 @@ public class PropertyLoader extends Properties {
 		return getResolvedProperty(key);
 	}
 
+	@Nullable
 	public String getUnresolvedProperty(String key) {
 		return super.getProperty(key);
 	}

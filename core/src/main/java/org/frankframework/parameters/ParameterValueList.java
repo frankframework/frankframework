@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -141,7 +142,8 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return getValue(parameterName, (String) null);
 	}
 
-	public String getValue(@NonNull String name, @Nullable String defaultValue) {
+	@Contract("_, !null -> !null")
+	public @Nullable String getValue(@NonNull String name, @Nullable String defaultValue) {
 		ParameterValue pv = get(name);
 		if (pv != null) {
 			return pv.asStringValue(defaultValue);
@@ -149,7 +151,8 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return defaultValue;
 	}
 
-	public Message getValue(@NonNull String name, @Nullable Message defaultValue) {
+	@Contract("_, !null -> !null")
+	public @Nullable Message getValue(@NonNull String name, @Nullable Message defaultValue) {
 		ParameterValue pv = get(name);
 		Message value = pv!=null ? pv.asMessage() : null;
 		if (!Message.isNull(value)) {

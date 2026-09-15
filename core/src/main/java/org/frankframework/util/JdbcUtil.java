@@ -36,7 +36,6 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
@@ -47,6 +46,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -79,18 +79,18 @@ import org.frankframework.xml.SaxElementBuilder;
 @Log4j2
 public class JdbcUtil {
 
-	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
-	public static final DateTimeFormatter DATEFORMAT_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(DATEFORMAT);
-	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
-	public static final DateTimeFormatter TIMESTAMP_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(TIMESTAMPFORMAT);
-
 	private JdbcUtil() {
 		// Private constructor to prevent creating instances
 	}
 
 	@Deprecated
+	@Contract("!null -> !null")
 	public static @Nullable String warningsToString(@Nullable SQLWarning warnings) {
+		if (warnings == null) {
+			return null;
+		}
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
+		// noinspection java:S2637  Sonar false positive because it doesn't understand @Contract annotations yet
 		return warningsElem.asXmlString();
 	}
 
@@ -103,6 +103,7 @@ public class JdbcUtil {
 	}
 
 	@Deprecated
+	@Contract("!null -> !null")
 	public static @Nullable XmlBuilder warningsToXmlBuilder(@Nullable SQLWarning warnings) {
 		if (warnings == null) {
 			return null;
