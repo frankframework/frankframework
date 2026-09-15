@@ -23,3 +23,5 @@ minimumReleaseAgeExclude:
   - "@angular/compiler@22.1.6"
   # Renovate security update: vitest@4.1.11
   - vitest@4.1.11
+  # Renovate security update: @angular/common@22.1.6
+  - "@angular/common@22.1.6"
