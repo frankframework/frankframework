@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2025 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
-	private @Getter @Nonnull Set<String> allowedParameterSet = Set.of();
+	private @Getter @Nonnull Set<String> allowedParameterSet = new HashSet<>(); // Set should be mutable
 	private @Getter Boolean allowAllParams = null;
 
 	// for jwt validation
@@ -229,6 +229,11 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
 		}
 
+		if (StringUtils.isNotEmpty(multipartBodyName)) {
+			allowedParameterSet.add(multipartBodyName);
+		}
+
+		// Make sure allowedParameters or allowAll is explicitly set
 		// Check that none of configured parameters or path-variables matches any of the reserved names.
 		if (allowedParameterSet.isEmpty() && allowAllParams == null) {
 			ConfigurationWarnings.add(this, log, "SECURITY RISK: All path parameters and query parameters will be copied into the session. Specify [allowedParameters] for your pipeline, or explicitly set [allowAllParams] to 'true'.", SuppressKeys.UNSAFE_ATTRIBUTE_SUPPRESS_KEY);
@@ -535,7 +540,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @param paramWhitelist Comma-separated list of allowed HTTP parameters.
 	 */
 	public void setAllowedParameters(@Nullable String paramWhitelist) {
-		this.allowedParameterSet = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toSet());
+		this.allowedParameterSet = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toCollection(HashSet::new)); // The set needs to be mutable while in configuration()
 	}
 
 	/**
