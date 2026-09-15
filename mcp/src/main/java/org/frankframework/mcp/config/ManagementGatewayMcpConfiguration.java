@@ -35,8 +35,9 @@ import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGatewayFactory;
-import org.frankframework.management.gateway.HttpOutboundGateway;
-import org.frankframework.management.security.JwtKeyGenerator;
+import org.frankframework.management.gateway.HazelcastOutboundGateway;
+import org.frankframework.management.security.AbstractJwtGenerator;
+import org.frankframework.management.security.DefaultJwtKeyGenerator;
 import org.frankframework.mcp.ManagementGatewayMcpServerFactory;
 import org.frankframework.mcp.McpSession;
 import org.frankframework.mcp.McpToolProvider;
@@ -58,11 +59,9 @@ public class ManagementGatewayMcpConfiguration {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
 
-	// Beans required by the (HTTP) outbound gateway and its underlying Spring Integration message handler,
-	// mirroring FrankConsoleContext.xml.
 	@Bean
-	JwtKeyGenerator jwtKeyGenerator() {
-		return new JwtKeyGenerator();
+	AbstractJwtGenerator<?> jwtKeyGenerator() {
+		return new DefaultJwtKeyGenerator();
 	}
 
 	@Bean
@@ -91,7 +90,7 @@ public class ManagementGatewayMcpConfiguration {
 	@Bean(name = "outboundGateway")
 	OutboundGatewayFactory outboundGateway(Environment environment) {
 		OutboundGatewayFactory factory = new OutboundGatewayFactory();
-		factory.setGatewayClassname(environment.getProperty(GATEWAY_CLASS_KEY, HttpOutboundGateway.class.getCanonicalName()));
+		factory.setGatewayClassname(environment.getProperty(GATEWAY_CLASS_KEY, HazelcastOutboundGateway.class.getCanonicalName()));
 		return factory;
 	}
 

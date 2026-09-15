@@ -18,10 +18,12 @@ package org.frankframework.management.bus;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.util.ClassUtils;
 
 import lombok.Setter;
@@ -31,7 +33,7 @@ import org.frankframework.util.SpringUtils;
 /**
  * Allows the creation of outbound integration gateways.
  */
-public class OutboundGatewayFactory implements InitializingBean, ApplicationContextAware, FactoryBean<OutboundGateway> {
+public class OutboundGatewayFactory implements InitializingBean, SmartLifecycle, DisposableBean, ApplicationContextAware, FactoryBean<OutboundGateway> {
 
 	private final Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
@@ -42,15 +44,15 @@ public class OutboundGatewayFactory implements InitializingBean, ApplicationCont
 
 	@Override
 	public void afterPropertiesSet() {
-		if(StringUtils.isBlank(gatewayClassname)) {
-			throw new IllegalStateException("no outbound gateway class specified. Please set ["+GATEWAY_CLASS_KEY+"]");
+		if (StringUtils.isBlank(gatewayClassname)) {
+			throw new IllegalStateException("no outbound gateway class specified. Please set [" + GATEWAY_CLASS_KEY + "]");
 		}
 		log.info("attempting to initialize using gateway class [{}]", gatewayClassname);
 
 		Class<?> gatewayClass = ClassUtils.resolveClassName(gatewayClassname, applicationContext.getClassLoader());
 
-		if(!OutboundGateway.class.isAssignableFrom(gatewayClass)) {
-			throw new IllegalArgumentException("gateway ["+gatewayClassname+"] does not implement type IntegrationGateway");
+		if (!OutboundGateway.class.isAssignableFrom(gatewayClass)) {
+			throw new IllegalArgumentException("gateway [" + gatewayClassname + "] does not implement type IntegrationGateway");
 		}
 
 		gateway = (OutboundGateway) SpringUtils.createBean(applicationContext, gatewayClass);
@@ -68,7 +70,31 @@ public class OutboundGatewayFactory implements InitializingBean, ApplicationCont
 	}
 
 	@Override
-	public boolean isSingleton() {
-		return true;
+	public void start() {
+		if (gateway instanceof SmartLifecycle lifecycleGateway) {
+			lifecycleGateway.start();
+		}
+	}
+
+	@Override
+	public void stop() {
+		if (gateway instanceof SmartLifecycle lifecycleGateway) {
+			lifecycleGateway.stop();
+		}
+	}
+
+	@Override
+	public boolean isRunning() {
+		if (gateway instanceof SmartLifecycle lifecycleGateway) {
+			return lifecycleGateway.isRunning();
+		}
+		return false;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		if (gateway instanceof DisposableBean disposableBean) {
+			disposableBean.destroy();
+		}
 	}
 }
