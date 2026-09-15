@@ -8,8 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.ByteOrderMark;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -49,6 +52,27 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 		// Assert
 		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
 		assertEquals("{\"greetings\":\"Hello World\"}", result.asString());
+	}
+
+	@Test
+	public void simpleMappingInputWithBom() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/simple.jsonnet");
+		configureAndStartPipe();
+
+		// Act
+		Message input = Message.asMessage(createByteArrayWithBom("Hello World"));
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		assertEquals("{\"greetings\":\"Hello World\"}", result.asString());
+	}
+
+	private static byte @NonNull[] createByteArrayWithBom(String input) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		baos.writeBytes(ByteOrderMark.UTF_8.getBytes());
+		baos.writeBytes(input.getBytes(StandardCharsets.UTF_8));
+		return baos.toByteArray();
 	}
 
 	@Test

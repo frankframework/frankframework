@@ -470,7 +470,7 @@ public class MessageUtils {
 	 * is returned as-is. If the value is in XML format, it will be converted to JSON using {@link UtilityTransformerPools#getXml2JsonTransformerPool()}.
 	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"value": value}}.
 	 */
-	public static @NonNull Message convertToJsonMessage(@NonNull Object value) throws IOException, XmlException {
+	public static @NonNull Message convertToJsonMessage(@Nullable Object value) throws IOException, XmlException {
 		return convertToJsonMessage(value, "value");
 	}
 
@@ -480,7 +480,7 @@ public class MessageUtils {
 	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"valueName": value}}, using parameter {@code valueName} as
 	 * name of the object.
 	 */
-	public static @NonNull Message convertToJsonMessage(@NonNull Object value, @NonNull String valueName) throws IOException, XmlException {
+	public static @NonNull Message convertToJsonMessage(@Nullable Object value, @NonNull String valueName) throws IOException, XmlException {
 		Message message = Message.asMessage(value);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (MediaType.APPLICATION_JSON.isCompatibleWith(mimeType)) {

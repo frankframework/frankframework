@@ -19,7 +19,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -34,6 +36,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 
+import org.apache.commons.io.ByteOrderMark;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
@@ -1503,6 +1507,41 @@ public class ParameterTest {
 
 		// Assert
 		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromSessionKeyMessageWithJsonMimetype() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression("$.root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+		Message jsonMessage = new Message(createByteArrayWithBom(), new MessageContext().withMimeType("application/json"));
+		session.put("sessionKey", jsonMessage);
+
+		// Act
+		Object result = getValue(parameter.getValue(alreadyResolvedParameters, message, session, true));
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	private static byte @NonNull[] createByteArrayWithBom() {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		baos.writeBytes(ByteOrderMark.UTF_8.getBytes());
+		baos.writeBytes("""
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""".getBytes(StandardCharsets.UTF_8));
+		return baos.toByteArray();
 	}
 
 	@Test
