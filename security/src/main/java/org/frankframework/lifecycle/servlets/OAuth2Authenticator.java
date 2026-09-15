@@ -17,6 +17,7 @@ package org.frankframework.lifecycle.servlets;
 
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -90,6 +91,9 @@ import org.frankframework.util.StringUtil;
  * @see OAuth2AuthorizationRequestRedirectFilter#DEFAULT_AUTHORIZATION_REQUEST_BASE_URI
  */
 public class OAuth2Authenticator extends AbstractOAuth2Authenticator {
+
+	/** Default session attribute name used by the {@link HttpSessionRequestCache}, not exposed as constant. */
+	private static final String SAVED_REQUEST_SESSION_ATTRIBUTE = "SPRING_SECURITY_SAVED_REQUEST";
 
 	/**
 	 * The scopes to request from the OAuth2 provider.
@@ -218,9 +222,18 @@ public class OAuth2Authenticator extends AbstractOAuth2Authenticator {
 		// The authorization-code flow needs a session: to replay the originally requested URL
 		// after the IdP redirect, and to keep the authentication between requests.
 		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
-		http.requestCache(cache -> cache.requestCache(new HttpSessionRequestCache()));
+
+		// All servlets share one HttpSession. Scope the session attributes to the endpoints of this chain,
+		// so an authentication on one servlet is not picked up by the security chain of another servlet.
+		String sessionAttributeSuffix = "_" + getSessionScope();
+		HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+		requestCache.setSessionAttrName(SAVED_REQUEST_SESSION_ATTRIBUTE + sessionAttributeSuffix);
+		// Only remember browser page requests. API calls, XHRs and probes get a 401 and must not create a session or become the post-login redirect.
+		requestCache.setRequestMatcher(request -> !AuthenticatorUtils.isApiRequest(request));
+		http.requestCache(cache -> cache.requestCache(requestCache));
 		// Shared object too: the oauth2Login filter takes its repository from there.
 		HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+		securityContextRepository.setSpringSecurityContextKey(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY + sessionAttributeSuffix);
 		http.setSharedObject(SecurityContextRepository.class, securityContextRepository);
 		http.securityContext(context -> context.securityContextRepository(securityContextRepository));
 
@@ -247,6 +260,16 @@ public class OAuth2Authenticator extends AbstractOAuth2Authenticator {
 		}
 
 		return http.build();
+	}
+
+	/**
+	 * Identifies this security chain within the shared HttpSession. Based on the (sorted) url mappings,
+	 * so it is unique per chain and stable across restarts and cluster nodes.
+	 */
+	String getSessionScope() {
+		return getPrivateEndpoints().stream()
+				.sorted()
+				.collect(Collectors.joining(","));
 	}
 
 	/**
