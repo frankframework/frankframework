@@ -16,6 +16,7 @@
 package org.frankframework.json;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -154,7 +155,7 @@ public class JsonUtil {
 		return "";
 	}
 
-	public static @NonNull Message evaluateJsonPath(@NonNull JsonPath jsonPath, @NonNull Object input) throws JsonException {
+	public static @NonNull Message evaluateJsonPath(@NonNull JsonPath jsonPath, @Nullable Object input) throws JsonException {
 		try {
 			Message inputMessage = MessageUtils.convertToJsonMessage(input);
 			Object result = evaluateJsonPathWithBom(jsonPath, inputMessage);
@@ -166,32 +167,45 @@ public class JsonUtil {
 		}
 	}
 
-	private static Object evaluateJsonPathWithBom(@NonNull JsonPath jsonPath, Message inputMessage) throws IOException {
+	private static @Nullable Object evaluateJsonPathWithBom(@NonNull JsonPath jsonPath, @NonNull Message inputMessage) throws IOException {
 		// Optimise for the String case
 		if (inputMessage.isRequestOfType(String.class)) {
 			return jsonPath.read(inputMessage.asString(), JSON_PATH_CONFIGURATION);
 		}
 
+		StreamAndCharset streamAndCharset = getInputStreamWithoutBom(inputMessage);
+		return jsonPath.read(streamAndCharset.inputStream, streamAndCharset.charset, JSON_PATH_CONFIGURATION);
+
+	}
+
+	/**
+	 * Get from the Message an InputStream where an optional BOM has already been skipped, because the JayWay
+	 * library doesn't do that.
+	 * This also returns the charset that was derived from the BOM if present, or otherwise the charset computed
+	 * from the Message, or UTF-8 default if all else fails.
+	 */
+	private static @NonNull StreamAndCharset getInputStreamWithoutBom(@NonNull Message message) throws IOException {
 		// The JayWay library does not handle a BOM at start of stream. Thus instead of directly passing
 		// an InputStream from the Message, which may start with a BOM, we wrap that in a BOMInputStream and
 		// check the BOM and BOM charset ourselves.
-		try (BOMInputStream bomDetectingInputStream = StreamUtil.getBomDetectingInputStream(inputMessage.asInputStream())) {
-			String charset;
-			if (bomDetectingInputStream.hasBOM()) {
-				charset = bomDetectingInputStream.getBOM().getCharsetName();
-			} else {
-				Charset computedCharset = MessageUtils.computeDecodingCharset(inputMessage);
-				charset = Objects.requireNonNullElse(computedCharset, StandardCharsets.UTF_8).name();
-			}
-			return jsonPath.read(bomDetectingInputStream, charset, JSON_PATH_CONFIGURATION);
+		// This way we can pass back to JayWay an InputStream where the BOM has already been read past.
+		BOMInputStream bomDetectingInputStream = StreamUtil.getBomDetectingInputStream(message.asInputStream());
+		String charset;
+		if (bomDetectingInputStream.hasBOM()) {
+			charset = bomDetectingInputStream.getBOM().getCharsetName();
+		} else {
+			Charset computedCharset = MessageUtils.computeDecodingCharset(message);
+			charset = Objects.requireNonNullElse(computedCharset, StandardCharsets.UTF_8).name();
 		}
+		message.getContext().withCharset(charset);
+		return new StreamAndCharset(bomDetectingInputStream, charset);
 	}
 
 	/**
 	 * Official json-smart conversion. Tweaked a bit, when we know it's json, sets the correct mimetype.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static Message getJsonPathResult(Object obj) {
+	private static @NonNull Message getJsonPathResult(@Nullable Object obj) {
 		if (obj instanceof Map jsonObject) {
 			Message result = new Message(JSONObject.toJSONString(jsonObject, JSONStyle.LT_COMPRESS));
 			result.getContext().withMimeType(MediaType.APPLICATION_JSON);
@@ -212,7 +226,7 @@ public class JsonUtil {
 		}
 	}
 
-	public static String jsonPretty(String json) {
+	public static @NonNull String jsonPretty(@NonNull String json) {
 		StringWriter sw = new StringWriter();
 		try(JsonReader jr = Json.createReader(new StringReader(json))) {
 			JsonStructure jobj = jr.read();
@@ -227,4 +241,6 @@ public class JsonUtil {
 		}
 		return sw.toString().trim();
 	}
+
+	private record StreamAndCharset(@NonNull InputStream inputStream, @NonNull String charset) {}
 }
