@@ -15,14 +15,22 @@
 */
 package org.frankframework.mcp;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import lombok.Getter;
 
+import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 
@@ -37,7 +45,6 @@ import org.frankframework.management.bus.OutboundGateway.ClusterMember;
  * gateway route to its single, implicit destination.
  */
 public class McpSession {
-
 	private final OutboundGateway outboundGateway;
 
 	private @Nullable @Getter UUID memberTarget;
@@ -45,6 +52,21 @@ public class McpSession {
 	public McpSession(OutboundGateway outboundGateway) {
 		this.outboundGateway = outboundGateway;
 		this.memberTarget = findDefaultWorker().orElse(null);
+
+		SecurityContextHolder.setStrategyName("MODE_GLOBAL");
+		setAuthentication();
+	}
+
+	// Create an endpoint of sorts where a user can login. For now allow everything.
+	private void setAuthentication() {
+		SecurityContext context = SecurityContextHolder.getContextHolderStrategy().createEmptyContext();
+		List<GrantedAuthority> authorities = new ArrayList<>();
+		for (String role : DynamicRegistration.ALL_IBIS_USER_ROLES) {
+			authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+		}
+		Authentication authentication = UsernamePasswordAuthenticationToken.authenticated("user", "password", authorities);
+		context.setAuthentication(authentication);
+		SecurityContextHolder.getContextHolderStrategy().setContext(context);
 	}
 
 	/**
