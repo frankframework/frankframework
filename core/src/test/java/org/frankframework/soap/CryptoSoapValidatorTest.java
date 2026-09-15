@@ -1,16 +1,16 @@
 package org.frankframework.soap;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.lang.reflect.Field;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.soap.CryptoSoapValidator.Operation;
@@ -23,7 +23,7 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 	}
 
 	@Test
-	void defaultsAreExpected() throws Exception {
+	void defaultsAreExpected() {
 		assertTrue(pipe.isIncludeCertificateInMessage());
 		assertEquals(300, pipe.getTtl());
 		assertTrue(pipe.isRemoveSecurityHeader());
@@ -33,12 +33,18 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 		assertEquals(SoapUtils.DigestAlgorithm.SHA256, pipe.getDigestAlgorithm());
 		assertEquals(SoapUtils.SignatureAlgorithm.RSA_SHA256, pipe.getSignatureAlgorithm());
 		assertNull(pipe.getKeystoreConfiguration());
-		assertEquals(List.of(), getOperations());
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, pipe::configure);
+		assertEquals("no operations specified", e.getMessage());
 	}
 
 	@Test
-	void settersUpdateProperties() throws Exception {
+	void settersUpdateProperties() {
 		KeystoreConfiguration keystoreConfiguration = new KeystoreConfiguration();
+		keystoreConfiguration.setResource("/Signature/saml-keystore.p12");
+		keystoreConfiguration.setPassword("geheim");
+		keystoreConfiguration.setKeystoreAlias("myalias");
+		keystoreConfiguration.setKeystoreAliasPassword("geheim");
 
 		pipe.setIncludeCertificateInMessage(false);
 		pipe.setTtl(42);
@@ -49,7 +55,10 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 		pipe.setDigestAlgorithm(SoapUtils.DigestAlgorithm.SHA1);
 		pipe.setSignatureAlgorithm(SoapUtils.SignatureAlgorithm.RSA_SHA1);
 		pipe.setKeystoreConfiguration(keystoreConfiguration);
-		pipe.setOperations(Operation.SIGN, Operation.ENCRYPT);
+		pipe.setOperations(Operation.SIGN);
+		pipe.setThrowException(true);
+		pipe.setSchemaLocation(SoapValidatorTest.SCHEMALOCATION_SET_GPBDB);
+		pipe.setSoapBody("Request");
 
 		assertFalse(pipe.isIncludeCertificateInMessage());
 		assertEquals(42, pipe.getTtl());
@@ -60,13 +69,6 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 		assertEquals(SoapUtils.DigestAlgorithm.SHA1, pipe.getDigestAlgorithm());
 		assertEquals(SoapUtils.SignatureAlgorithm.RSA_SHA1, pipe.getSignatureAlgorithm());
 		assertSame(keystoreConfiguration, pipe.getKeystoreConfiguration());
-		assertEquals(List.of(Operation.SIGN, Operation.ENCRYPT), getOperations());
-	}
-
-	@SuppressWarnings("unchecked")
-	private List<Operation> getOperations() throws Exception {
-		Field operationsField = CryptoSoapValidator.class.getDeclaredField("operations");
-		operationsField.setAccessible(true);
-		return (List<Operation>) operationsField.get(pipe);
+		assertDoesNotThrow(this::configureAndStartPipe);
 	}
 }
