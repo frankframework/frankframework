@@ -733,7 +733,10 @@ public class ApiListenerServletTest {
 	@Test
 	public void listenerMultipartContentUTF8() throws IOException, ConfigurationException {
 		String uri="/listenerMultipartContentCharset";
-		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART, MediaTypes.JSON, null, "string2").build();
+		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART, MediaTypes.JSON, null, "string2")
+				.withAllowAllParams(false)
+				.withAllowedParams("string1,string3,file1")
+				.build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody("string1", "<hallo>€ è</hallo>", ContentType.create("text/plain"));
