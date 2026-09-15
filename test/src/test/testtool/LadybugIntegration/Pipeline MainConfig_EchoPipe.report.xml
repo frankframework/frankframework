@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="21.0.7" class="java.beans.XMLDecoder">
- <object class="nl.nn.testtool.Report" id="Report0">
+ <object class="org.wearefrank.ladybug.Report" id="Report0">
   <void property="checkpoints">
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="message">
       <string>{
 	&quot;element&quot;: &quot;één euro: € 1,-&quot;
@@ -42,7 +42,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="encoding">
       <string>XMLEncoder</string>
      </void>
@@ -77,7 +77,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>1</int>
      </void>
@@ -102,7 +102,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>1</int>
      </void>
@@ -127,7 +127,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>1</int>
      </void>
@@ -166,7 +166,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>1</int>
      </void>
@@ -191,7 +191,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>1</int>
      </void>
@@ -233,7 +233,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>2</int>
      </void>
@@ -258,7 +258,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>2</int>
      </void>
@@ -304,7 +304,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>1</int>
      </void>
@@ -329,7 +329,7 @@
     </object>
    </void>
    <void method="add">
-    <object class="nl.nn.testtool.Checkpoint">
+    <object class="org.wearefrank.ladybug.Checkpoint">
      <void property="level">
       <int>1</int>
      </void>
