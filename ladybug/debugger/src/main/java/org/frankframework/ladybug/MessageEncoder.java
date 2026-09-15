@@ -73,7 +73,7 @@ public class MessageEncoder extends MessageEncoderImpl {
 	 *                           <p>
 	 *                           {@link TestTool#DEFAULT_STUB_MESSAGE}
 	 *
-	 * @param messageToStub      The message in the report in progress that needs to be stubbed.
+	 * @param expectedReturnType The message in the report in progress that needs to be stubbed.
 	 *                           Only used to determine the class' type.
 	 * @param <T>                Unused
 	 *
@@ -82,13 +82,14 @@ public class MessageEncoder extends MessageEncoderImpl {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
-		T stub = super.toObject(originalCheckpoint, messageToStub);
+	public <T> T toObject(Checkpoint originalCheckpoint, T expectedReturnType) {
+		T stub = super.toObject(originalCheckpoint, expectedReturnType);
 
-		if (messageToStub instanceof Enum<?> enumType) {
-			// Probably shouldn't happen but...
+		if (expectedReturnType instanceof Boolean) {
+			return (T) Boolean.valueOf("" + stub);
+		} else if (expectedReturnType instanceof Enum<?> enumType) {
 			return (T) EnumUtils.parse(enumType.getDeclaringClass(), "" + stub);
-		} else if (messageToStub instanceof Message) {
+		} else if (expectedReturnType instanceof Message) {
 			// String encoding = originalCheckpoint.getEncoding();
 			// If the type is Message, and it's encoded, assume the original was binary.
 			// For now, it doesn't matter I suppose?
