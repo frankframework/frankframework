@@ -175,15 +175,16 @@ public class JsonUtil {
 		// The JayWay library does not handle a BOM at start of stream. Thus instead of directly passing
 		// an InputStream from the Message, which may start with a BOM, we wrap that in a BOMInputStream and
 		// check the BOM and BOM charset ourselves.
-		BOMInputStream bomDetectingInputStream = StreamUtil.getBomDetectingInputStream(inputMessage.asInputStream());
-		String charset;
-		if (bomDetectingInputStream.hasBOM()) {
-			charset = bomDetectingInputStream.getBOM().getCharsetName();
-		} else {
-			Charset computedCharset = MessageUtils.computeDecodingCharset(inputMessage);
-			charset = Objects.requireNonNullElse(computedCharset, StandardCharsets.UTF_8).name();
+		try (BOMInputStream bomDetectingInputStream = StreamUtil.getBomDetectingInputStream(inputMessage.asInputStream())) {
+			String charset;
+			if (bomDetectingInputStream.hasBOM()) {
+				charset = bomDetectingInputStream.getBOM().getCharsetName();
+			} else {
+				Charset computedCharset = MessageUtils.computeDecodingCharset(inputMessage);
+				charset = Objects.requireNonNullElse(computedCharset, StandardCharsets.UTF_8).name();
+			}
+			return jsonPath.read(bomDetectingInputStream, charset, JSON_PATH_CONFIGURATION);
 		}
-		return jsonPath.read(bomDetectingInputStream, charset, JSON_PATH_CONFIGURATION);
 	}
 
 	/**
