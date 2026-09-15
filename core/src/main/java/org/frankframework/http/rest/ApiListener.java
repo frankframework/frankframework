@@ -132,7 +132,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
-	private @Getter @NonNull Set<String> allowedParameterSet = Set.of();
+	private @Getter @NonNull Set<String> allowedParameterSet = new HashSet<>(); // Set should be mutable
 	private @Getter Boolean allowAllParams = null;
 
 	// for jwt validation
@@ -227,6 +227,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 		if (responseType != HttpEntityType.MTOM && StringUtils.isNotBlank(responseMtomContentTransferEncoding)) {
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
+		}
+
+		if (StringUtils.isNotEmpty(multipartBodyName)) {
+			allowedParameterSet.add(multipartBodyName);
 		}
 
 		// Make sure allowedParameters or allowAll is explicitly set
@@ -549,7 +553,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 * @param paramWhitelist Comma-separated list of allowed HTTP parameters.
 	 */
 	public void setAllowedParameters(@Nullable String paramWhitelist) {
-		this.allowedParameterSet = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toSet());
+		this.allowedParameterSet = StringUtil.splitToStream(paramWhitelist).collect(Collectors.toCollection(HashSet::new)); // The set needs to be mutable while in configuration()
 	}
 
 	/**
