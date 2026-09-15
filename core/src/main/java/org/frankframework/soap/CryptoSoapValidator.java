@@ -25,6 +25,7 @@ import javax.crypto.SecretKey;
 
 import jakarta.xml.soap.SOAPException;
 
+import org.apache.tika.utils.StringUtils;
 import org.apache.wss4j.common.ext.WSSecurityException;
 
 import lombok.Getter;
@@ -112,6 +113,12 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 		if (isConfiguredForMixedValidation()) {
 			throw new ConfigurationException("this validator does not support input/output processing in '1' element, configure an OutputValidator explicitly");
 		}
+		if (StringUtils.isBlank(getKeystoreAlias())) {
+			throw new ConfigurationException("attribute [keystoreAlias] (the name of the certificate) must be specified");
+		}
+		if (removeSecurityHeader && (operations.contains(Operation.ENCRYPT) || operations.contains(Operation.SIGN))) {
+			throw new ConfigurationException("attribute [removeSecurityHeader] cannot be used when encrypting/signing a message");
+		}
 
 		super.configure();
 
@@ -139,10 +146,11 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 		Message result = input;
 		try {
 			if (operations.contains(Operation.VERIFY)) {
-				result = SoapUtils.verifyMessage(result, keystore, getKeystoreAlias(), certificateCf.getPassword(), false);
+				boolean removeSH = this.removeSecurityHeader && !operations.contains(Operation.DECRYPT);
+				result = SoapUtils.verifyMessage(result, keystore, getKeystoreAlias(), certificateCf.getPassword(), removeSH);
 			}
 			if (operations.contains(Operation.DECRYPT)) {
-				result = SoapUtils.decryptMessage(result, keystore, getKeystoreAlias(), certificateCf.getPassword(), true);
+				result = SoapUtils.decryptMessage(result, keystore, getKeystoreAlias(), certificateCf.getPassword(), removeSecurityHeader);
 			}
 
 			PipeRunResult pipeRunResult = super.doPipe(result, session, responseMode, messageRoot);
