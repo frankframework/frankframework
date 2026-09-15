@@ -38,7 +38,6 @@ import org.springframework.http.MediaType;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -52,7 +51,7 @@ import org.frankframework.util.MessageUtils;
 public class JsonUtil {
 	// Since 2.6.0 json-smart accepts incomplete JSON by default, so we have to use MODE_PERMISSIVE to disable that.
 	private static final Configuration JSON_PATH_CONFIGURATION = Configuration.builder()
-			.jsonProvider(new JsonSmartJsonProvider(JSONParser.MODE_PERMISSIVE))
+			.jsonProvider(new BomInterpretingJsonSmartJsonProvider(JSONParser.MODE_PERMISSIVE))
 			.build();
 
 	private JsonUtil() {
@@ -100,7 +99,7 @@ public class JsonUtil {
 		}
 		// Try to match the jsonPath expression on the given json string
 		try {
-			Object jsonPathResult = jsonPath.read(message.asInputStream(), JSON_PATH_CONFIGURATION);
+			Object jsonPathResult = evaluateJsonPathWithBom(jsonPath, message);
 
 			// if we get to this point, we have a match (and no PathNotFoundException)
 
@@ -144,10 +143,10 @@ public class JsonUtil {
 		return "";
 	}
 
-	public static @NonNull Message evaluateJsonPath(@NonNull JsonPath jsonPath, @NonNull Object input) throws JsonException {
+	public static @NonNull Message evaluateJsonPath(@NonNull JsonPath jsonPath, @Nullable Object input) throws JsonException {
 		try {
 			Message inputMessage = MessageUtils.convertToJsonMessage(input);
-			Object result = jsonPath.read(inputMessage.asInputStream());
+			Object result = evaluateJsonPathWithBom(jsonPath, inputMessage);
 			return getJsonPathResult(result);
 		} catch (PathNotFoundException e) {
 			throw new JsonPathNotFoundException("Cannot find path in input", e);
@@ -156,11 +155,21 @@ public class JsonUtil {
 		}
 	}
 
+	private static @Nullable Object evaluateJsonPathWithBom(@NonNull JsonPath jsonPath, @NonNull Message inputMessage) throws IOException {
+		// Optimise for the String case
+		if (inputMessage.isRequestOfType(String.class)) {
+			return jsonPath.read(inputMessage.asString(), JSON_PATH_CONFIGURATION);
+		}
+
+		String charset = inputMessage.getCharset();
+		return jsonPath.read(inputMessage.asInputStream(), charset != null ? charset : StandardCharsets.UTF_8.name(), JSON_PATH_CONFIGURATION);
+	}
+
 	/**
 	 * Official json-smart conversion. Tweaked a bit, when we know it's json, sets the correct mimetype.
 	 */
-	@SuppressWarnings("unchecked")
-	private static Message getJsonPathResult(Object obj) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static @NonNull Message getJsonPathResult(@Nullable Object obj) {
 		if (obj instanceof Map jsonObject) {
 			Message result = new Message(JSONObject.toJSONString(jsonObject, JSONStyle.LT_COMPRESS));
 			result.getContext().withMimeType(MediaType.APPLICATION_JSON);
@@ -171,7 +180,7 @@ public class JsonUtil {
 			return result;
 		} else if (obj instanceof String || obj instanceof Number || obj instanceof Boolean) {
 			// Scalar value, not JSON!
-			Message result =  new Message(getSingleValueJsonPathResult(obj));
+			Message result =  Message.asMessage(getSingleValueJsonPathResult(obj));
 			result.getContext().withMimeType(MediaType.TEXT_PLAIN).withCharset(StandardCharsets.UTF_8);
 			return result;
 		} else if (obj == null) {
@@ -181,7 +190,7 @@ public class JsonUtil {
 		}
 	}
 
-	public static String jsonPretty(String json) {
+	public static @NonNull String jsonPretty(@NonNull String json) {
 		StringWriter sw = new StringWriter();
 		try(JsonReader jr = Json.createReader(new StringReader(json))) {
 			JsonStructure jobj = jr.read();
