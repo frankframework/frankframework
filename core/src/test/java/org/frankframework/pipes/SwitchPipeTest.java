@@ -29,6 +29,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.XmlParameterBuilder;
 
+@SuppressWarnings("deprecation")
 public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 
 	@Override
@@ -253,6 +254,15 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.setJsonPathExpression("$.status");
 
 		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simple.json"),"Success");
+	}
+
+	@Test
+	void basicSelectionWithJsonPathExpressionWithBom() throws Exception {
+		pipe.addForward(new PipeForward("Error", "statusError-Path"));
+		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
+		pipe.setJsonPathExpression("$.status");
+
+		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simpleWithBom.json"),"Success");
 	}
 
 	@Test
