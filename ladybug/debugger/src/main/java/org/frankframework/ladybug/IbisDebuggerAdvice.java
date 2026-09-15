@@ -130,7 +130,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		} catch (Throwable throwable) {
 			throw reportGenerator.pipelineAbort(pipeLine, correlationId, throwable);
 		}
-		reportGenerator.showOutputValue(correlationId, "exitState", pipeLineResult.getState().name());
+		reportGenerator.showOutputValue(correlationId, "exitState", pipeLineResult.getState());
 		if (pipeLineResult.getExitCode() != null) {
 			reportGenerator.showOutputValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
 		}
