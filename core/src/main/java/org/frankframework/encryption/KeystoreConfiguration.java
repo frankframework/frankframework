@@ -39,11 +39,14 @@ public class KeystoreConfiguration implements FrankElement {
 	/** Authentication alias used to obtain keystore password. */
 	private String authAlias;
 
-	/** Default password to access keystore. */
+	/**
+	 * Default password to access keystore.
+	 * NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.
+	 */
 	private String password;
 
 	/**
-	 * Type of keystore.
+	 * Type of keystore to use, typically a JKS (Java 'vault') or P12 (standalone X.509) file.
 	 * @ff.default pkcs12
 	 */
 	private KeystoreType type = KeystoreType.PKCS12;
@@ -54,7 +57,10 @@ public class KeystoreConfiguration implements FrankElement {
 	/** Authentication alias to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
 	private String keystoreAliasAuthAlias;
 
-	/** Default password to authenticate access to certificate or key indicated by <code>keystoreAlias</code> */
+	/**
+	 * Default password to authenticate access to certificate or key indicated by <code>keystoreAlias</code>.
+	 * NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.
+	 * */
 	private String keystoreAliasPassword;
 
 	/** Key manager algorithm. Can be left empty to use the servers default algorithm */

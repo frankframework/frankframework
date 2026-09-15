@@ -89,7 +89,7 @@ public class SoapUtilsTest {
 		SecretKey secretKey = keyGen.generateKey();
 
 		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, includeCertificateInMessage,
-				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
+				SoapUtils.KeyIdentifierType.THUMBPRINT_SHA1, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
 
 		String encryptedString = Objects.requireNonNull(encrypted.asString())
 				.replaceAll("<xenc:CipherValue>.*?</xenc:CipherValue>", "<xenc:CipherValue>IGNORE-CIPHER-VALUE</xenc:CipherValue>")
@@ -122,7 +122,7 @@ public class SoapUtilsTest {
 		SecretKey secretKey = keyGen.generateKey();
 
 		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, false,
-				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
+				SoapUtils.KeyIdentifierType.THUMBPRINT_SHA1, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
 
 		WSSecurityException e1 = assertThrows(WSSecurityException.class, () -> SoapUtils.decryptMessage(encrypted, keystore, certificateName, "wrong-password", false));
 		assertEquals("unable to process security header", e1.getMessage());
@@ -226,10 +226,10 @@ public class SoapUtilsTest {
 		SecretKey secretKey = keyGen.generateKey();
 
 		Message encrypted = SoapUtils.encryptMessage(new UrlMessage(file), keystore, certificateName, secretKey, true,
-				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
+				SoapUtils.KeyIdentifierType.THUMBPRINT_SHA1, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP, SoapUtils.DataEncryptionAlgorithm.AES_256, 300);
 
 		Message signed = SoapUtils.signMessage(encrypted, keystore, certificateName, certificatePass, true,
-				SoapUtils.KeyIdentifierType.THUMBPRINT_IDENTIFIER, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.SignatureAlgorithm.RSA_SHA1, 300);
+				SoapUtils.KeyIdentifierType.THUMBPRINT_SHA1, SoapUtils.DigestAlgorithm.SHA1, SoapUtils.SignatureAlgorithm.RSA_SHA1, 300);
 
 		Message unsigned = SoapUtils.verifyMessage(signed, keystore, certificateName, certificatePass, false);
 		Message decrypted = SoapUtils.decryptMessage(unsigned, keystore, certificateName, certificatePass, true);

@@ -42,6 +42,15 @@ import org.frankframework.encryption.KeystoreConfiguration;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 
+/**
+ * Validator that can sign, encrypt, verify and decrypt SOAP messages.
+ * At least one operation is required, you may combine `sign,encrypt` and `verify,decrypt` operations.
+ * <br />
+ * This validator extends the {@link SoapValidator} and can be used to validate SOAP messages with additional security features.
+ * If you wish to use it without validating the soap message, set the attribute {@code allowPlainXml} to true.
+ *
+ * @ff.info It is not possible to use this validator as a Mixed input-output validator.
+ */
 public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 	private CredentialFactory certificateCf;
 	private KeyStore keystore;
@@ -58,14 +67,33 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 	private @Getter @Setter int ttl = 300;
 
 	/**
-	 * Remove the `WSSE:Security` part from the SOAP:Header.
+	 * Remove the `WSSE:Security` part from the SOAP:Header. Should only be used when `VERIFY` or `DECRYPT` are used, otherwise the message will be invalid.
 	 */
 	private @Getter @Setter boolean removeSecurityHeader = true;
 
+	/**
+	 * {@code xenc:EncryptionMethod} encryption algorithm to use for encrypting the symmetric key.
+	 */
 	private @Getter @Setter SoapUtils.KeyEncryptionAlgorithm keyEncryptionAlgorithm = SoapUtils.KeyEncryptionAlgorithm.RSA_OAEP;
+
+	/**
+	 * {@code xenc:EncryptionMethod} encryption algorithm to use for encrypting the SOAP (body) data.
+	 */
 	private @Getter @Setter SoapUtils.DataEncryptionAlgorithm dataEncryptionAlgorithm = SoapUtils.DataEncryptionAlgorithm.AES_256;
+
+	/**
+	 * {@code wsse:KeyIdentifier} type to detect which certificate to use to verify the SOAP message.
+	 */
 	private @Getter @Setter SoapUtils.KeyIdentifierType keyIdentifier = SoapUtils.KeyIdentifierType.X509_KEY_IDENTIFIER;
+
+	/**
+	 * Which {@code ds:DigestMethod} hash algorithm to use for signing the SOAP message.
+	 */
 	private @Getter @Setter SoapUtils.DigestAlgorithm digestAlgorithm = SoapUtils.DigestAlgorithm.SHA256;
+
+	/**
+	 * Which {@code ds:SignatureMethod} signature algorithm to use for signing the SOAP message.
+	 */
 	private @Getter @Setter SoapUtils.SignatureAlgorithm signatureAlgorithm = SoapUtils.SignatureAlgorithm.RSA_SHA256;
 
 	private @Getter KeystoreConfiguration keystoreConfiguration;
