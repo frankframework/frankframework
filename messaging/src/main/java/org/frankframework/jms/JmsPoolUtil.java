@@ -54,9 +54,13 @@ public class JmsPoolUtil {
 
 	/** Retrieve the 'original' ConnectionFactory, used by the console (to get the Tibco QCF) in order to display queue message count. */
 	@Nullable
-	private static Object getManagedConnectionFactory(ConnectionFactory qcf) {
+	private static Object getManagedConnectionFactory(@NonNull ConnectionFactory qcf) {
 		if (qcf instanceof DelegatingConnectionFactory source) { // Perhaps it's wrapped?
-			return getManagedConnectionFactory(source.getTargetConnectionFactory());
+			ConnectionFactory targetConnectionFactory = source.getTargetConnectionFactory();
+			if (targetConnectionFactory == null) {
+				return null;
+			}
+			return getManagedConnectionFactory(targetConnectionFactory);
 		}
 		if (qcf instanceof JmsPoolConnectionFactory factory) { // Narayana with pooling
 			return factory.getConnectionFactory();
@@ -80,15 +84,13 @@ public class JmsPoolUtil {
 
 	/** Return pooling info if present */
 	private static String getJmsPoolInfo(@NonNull JmsPoolConnectionFactory poolcf) {
-		StringBuilder info = new StringBuilder();
-		info.append(ClassUtils.classNameOf(poolcf)).append(" Pool Info: ");
-		info.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
-		info.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
-		info.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
-		info.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append(CLOSE);
-		info.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append(CLOSE);
-		info.append("connection check interval (ms) [").append(poolcf.getConnectionCheckInterval()).append(CLOSE);
-		info.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append("]");
-		return info.toString();
+		return ClassUtils.classNameOf(poolcf) + " Pool Info: " +
+				"current pool size [" + poolcf.getNumConnections() + CLOSE +
+				"max pool size [" + poolcf.getMaxConnections() + CLOSE +
+				"max sessions per connection [" + poolcf.getMaxSessionsPerConnection() + CLOSE +
+				"block if session pool is full [" + poolcf.isBlockIfSessionPoolIsFull() + CLOSE +
+				"block if session pool is full timeout [" + poolcf.getBlockIfSessionPoolIsFullTimeout() + CLOSE +
+				"connection check interval (ms) [" + poolcf.getConnectionCheckInterval() + CLOSE +
+				"connection idle timeout (s) [" + poolcf.getConnectionIdleTimeout() / 1000 + "]";
 	}
 }
