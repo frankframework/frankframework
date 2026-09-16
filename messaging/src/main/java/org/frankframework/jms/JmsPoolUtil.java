@@ -43,7 +43,9 @@ public class JmsPoolUtil {
 
 		switch (qcf) {
 			case JmsPoolConnectionFactory targetQcf -> getJmsPoolInfo(targetQcf, info);
-			case DelegatingConnectionFactory source -> getConnectionPoolInfo(source.getTargetConnectionFactory()); // Perhaps it's wrapped?
+			case DelegatingConnectionFactory source -> {
+				return getConnectionPoolInfo(source.getTargetConnectionFactory()); // Perhaps it's wrapped?
+				}
 			case null, default -> {
 				return null;
 			}
