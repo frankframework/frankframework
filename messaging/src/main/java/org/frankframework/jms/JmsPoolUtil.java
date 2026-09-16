@@ -39,19 +39,11 @@ public class JmsPoolUtil {
 
 	/** Returns pool info or NULL when it's not able to do so. */
 	public static @Nullable String getConnectionPoolInfo(@Nullable ConnectionFactory qcf) {
-		StringBuilder info = new StringBuilder();
-
-		switch (qcf) {
-			case JmsPoolConnectionFactory targetQcf -> getJmsPoolInfo(targetQcf, info);
-			case DelegatingConnectionFactory source -> {
-				return getConnectionPoolInfo(source.getTargetConnectionFactory()); // Perhaps it's wrapped?
-				}
-			case null, default -> {
-				return null;
-			}
-		}
-
-		return info.toString();
+		return switch (qcf) {
+			case JmsPoolConnectionFactory targetQcf -> getJmsPoolInfo(targetQcf);
+			case DelegatingConnectionFactory source -> getConnectionPoolInfo(source.getTargetConnectionFactory()); // Perhaps it's wrapped?
+			case null, default -> null;
+		};
 	}
 
 	@NonNull
@@ -86,9 +78,9 @@ public class JmsPoolUtil {
 		}
 	}
 
-	/** Return pooling info if present
-	 * @param info */
-	private static void getJmsPoolInfo(@NonNull JmsPoolConnectionFactory poolcf, @NonNull StringBuilder info) {
+	/** Return pooling info if present */
+	private static String getJmsPoolInfo(@NonNull JmsPoolConnectionFactory poolcf) {
+		StringBuilder info = new StringBuilder();
 		info.append(ClassUtils.classNameOf(poolcf)).append(" Pool Info: ");
 		info.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 		info.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
@@ -97,5 +89,6 @@ public class JmsPoolUtil {
 		info.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append(CLOSE);
 		info.append("connection check interval (ms) [").append(poolcf.getConnectionCheckInterval()).append(CLOSE);
 		info.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append("]");
+		return info.toString();
 	}
 }
