@@ -18,6 +18,7 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.stream.Stream;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -28,6 +29,9 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -133,9 +137,17 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 		TestAssertions.assertEqualsIgnoreCRLF(expected, stringResult);
 	}
 
-	@Test
-	void testSignOperation() throws Exception {
-		pipe.setOperations(CryptoSoapValidator.Operation.SIGN);
+	private static Stream<Arguments> testSignAndEncryptOperation() {
+		return Stream.of(
+				Arguments.of(CryptoSoapValidator.Operation.SIGN),
+				Arguments.of(CryptoSoapValidator.Operation.ENCRYPT)
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void testSignAndEncryptOperation(CryptoSoapValidator.Operation operation) throws Exception {
+		pipe.setOperations(operation);
 
 		String certificateName = "myCustomCertificateName";
 		String certificatePass = "Super$3cure";
