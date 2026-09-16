@@ -15,8 +15,6 @@
 */
 package org.frankframework.lifecycle;
 
-import static java.util.Objects.requireNonNull;
-
 import java.io.Closeable;
 import java.net.URL;
 import java.util.ArrayList;
@@ -176,7 +174,7 @@ public class IbisApplicationContext implements Closeable {
 		classPathApplicationContext.setConfigLocations(getSpringConfigurationFiles(classLoader));
 
 		String instanceName = AppConstants.getInstance().getProperty("instance.name");
-		classPathApplicationContext.setId(requireNonNull(instanceName));
+		classPathApplicationContext.setId(Objects.requireNonNull(instanceName));
 		classPathApplicationContext.setDisplayName("IbisApplicationContext [" + instanceName + "]");
 
 		return classPathApplicationContext;
