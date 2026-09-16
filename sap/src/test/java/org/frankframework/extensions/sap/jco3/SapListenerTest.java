@@ -79,7 +79,7 @@ public class SapListenerTest {
 		listener.setProgid("prog-id");
 		listener.setSapSystemName("doesnt-exist");
 
-		assertThrows(NullPointerException.class, () -> listener.configure());
+		assertThrows(ConfigurationException.class, () -> listener.configure());
 	}
 
 	@Test
