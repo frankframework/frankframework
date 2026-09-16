@@ -33,16 +33,20 @@ public class JmsPoolUtil {
 
 	private static final String CLOSE = "], ";
 
+	private JmsPoolUtil() {
+		// Hide implicit public constructor
+	}
+
 	/** Returns pool info or NULL when it's not able to do so. */
 	public static @Nullable String getConnectionPoolInfo(@Nullable ConnectionFactory qcf) {
 		StringBuilder info = new StringBuilder();
 
-		if (qcf instanceof JmsPoolConnectionFactory targetQcf) {
-			getJmsPoolInfo(targetQcf, info);
-		} else if (qcf instanceof DelegatingConnectionFactory source) { // Perhaps it's wrapped?
-			return getConnectionPoolInfo(source.getTargetConnectionFactory());
-		} else {
-			return null;
+		switch (qcf) {
+			case JmsPoolConnectionFactory targetQcf -> getJmsPoolInfo(targetQcf, info);
+			case DelegatingConnectionFactory source -> getConnectionPoolInfo(source.getTargetConnectionFactory()); // Perhaps it's wrapped?
+			case null, default -> {
+				return null;
+			}
 		}
 
 		return info.toString();
@@ -82,7 +86,7 @@ public class JmsPoolUtil {
 
 	/** Return pooling info if present
 	 * @param info */
-	private static void getJmsPoolInfo(JmsPoolConnectionFactory poolcf, StringBuilder info) {
+	private static void getJmsPoolInfo(@NonNull JmsPoolConnectionFactory poolcf, @NonNull StringBuilder info) {
 		info.append(ClassUtils.classNameOf(poolcf)).append(" Pool Info: ");
 		info.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
 		info.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);

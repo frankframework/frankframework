@@ -361,7 +361,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * If a Last Modified value is present, set the 'Last-Modified' header.
 				 */
 				long lastModDate = TimeProvider.now().toEpochMilli();
-				if(!Message.isEmpty(result)) {
+				if(Message.isNotEmpty(result)) {
 					String lastModified = result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
 						lastModDate = DateFormatUtils.parseToInstant(lastModified, DateFormatUtils.FULL_GENERIC_FORMATTER).toEpochMilli();
@@ -383,7 +383,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 */
 				response.addHeader("Allow", (String) pipelineSession.get("allowedMethods"));
 
-				if (!Message.isEmpty(result) || method == ApiListener.HttpMethod.HEAD) {
+				if (Message.isNotEmpty(result) || method == ApiListener.HttpMethod.HEAD) {
 					MimeType contentType = determineContentType(pipelineSession, listener, result);
 					result.getContext().withMimeType(contentType);
 					response.setContentType(contentType.toString());
@@ -622,7 +622,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	private void calculateEtags(HttpServletResponse response, ApiListener.HttpMethod method, String uri, ApiListener listener, Message result, String etagCacheKey) {
 		LOG.debug("calculating etags over processed result");
 		String cleanPattern = listener.getCleanPattern();
-		if (!Message.isEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { // If the data has changed, generate a new eTag
+		if (Message.isNotEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { // If the data has changed, generate a new eTag
 			String eTag = MessageUtils.generateMD5Hash(result);
 			if(eTag != null) {
 				LOG.debug("adding/overwriting etag with key[{}] value[{}]", etagCacheKey, eTag);

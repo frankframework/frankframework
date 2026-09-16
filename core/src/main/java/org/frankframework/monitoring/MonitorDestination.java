@@ -73,7 +73,7 @@ public class MonitorDestination extends AbstractMonitorDestination {
 	public void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
 		try (PipeLineSession session = new PipeLineSession()) {
 			Message message = event.getEventMessage();
-			if(!Message.isNull(message)) {
+			if(Message.isNotNull(message)) {
 				Message newMessage = message.copyMessage();
 				session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, newMessage);
 			}

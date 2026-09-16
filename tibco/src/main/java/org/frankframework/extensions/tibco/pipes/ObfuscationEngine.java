@@ -46,6 +46,7 @@ public class ObfuscationEngine {
 	private static final String ALGORITHM = "DESede/CBC/PKCS5Padding";
 
 	private static final String SECRET_KEY_SPEC = "DESede";
+	private static final SecureRandom random = new SecureRandom();
 
 	private ObfuscationEngine() {
 		// Do not construct static class
@@ -94,13 +95,12 @@ public class ObfuscationEngine {
 	/**
 	 * @return a configured Cipher instance
 	 */
-	@SuppressWarnings({ "java:S5542", "java:S5547" })
+	@SuppressWarnings({ "java:S5542", "java:S5547" }) // Sonar doesn't like the chosen cipher algorithm, but we are bound using it anyway due to legacy
 	private static Cipher getCipher(int cipherMode) throws Exception {
 		Cipher cipher = Cipher.getInstance(ALGORITHM);
 
 		// Setting up the IV for Cipher Block Chaining (CBC)
 		byte[] ivSetup = new byte[cipher.getBlockSize()];
-		SecureRandom random = new SecureRandom();
 		random.nextBytes(ivSetup);
 
 		SecretKey key = new SecretKeySpec(SECRET, SECRET_KEY_SPEC);

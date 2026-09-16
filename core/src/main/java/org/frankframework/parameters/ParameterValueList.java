@@ -155,7 +155,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	public @Nullable Message getValue(@NonNull String name, @Nullable Message defaultValue) {
 		ParameterValue pv = get(name);
 		Message value = pv!=null ? pv.asMessage() : null;
-		if (!Message.isNull(value)) {
+		if (Message.isNotNull(value)) {
 			return value;
 		}
 		return defaultValue;

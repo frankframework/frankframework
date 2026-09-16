@@ -311,7 +311,9 @@ public class MessageUtilsTest {
 		assertNotNull(message);
 		assertNull(message.asObject());
 		assertTrue(Message.isEmpty(message));
+		assertFalse(Message.isNotEmpty(message));
 		assertTrue(Message.isNull(message));
+		assertFalse(Message.isNotNull(message));
 		assertEquals(0L, message.size());
 		assertEquals("[Header.User-Agent]", getMessageHeaders(message));
 	}
@@ -325,7 +327,9 @@ public class MessageUtilsTest {
 		Message message = MessageUtils.parseContentAsMessage(request);
 
 		assertTrue(Message.isEmpty(message));
+		assertFalse(Message.isNotEmpty(message));
 		assertTrue(Message.isNull(message));
+		assertFalse(Message.isNotNull(message));
 		assertEquals(0L, message.size());
 		assertEquals("[Header.User-Agent]", getMessageHeaders(message));
 	}

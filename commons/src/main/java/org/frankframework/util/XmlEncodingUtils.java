@@ -24,6 +24,7 @@ import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -208,6 +209,7 @@ public class XmlEncodingUtils {
 	}
 
 	@Nullable
+	@Contract("!null, _, _, _ -> !null")
 	public static String replaceNonValidXmlCharacters(@Nullable String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
 		if (string == null) {
 			return null;

@@ -454,7 +454,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			throw new SenderException("Failed to recover from exception");
 		}
 
-		if (isXhtml() && !Message.isEmpty(result)) {
+		if (isXhtml() && Message.isNotEmpty(result)) {
 			Message xhtmlResult;
 			try {
 				xhtmlResult = XmlUtils.toXhtml(result);
@@ -462,7 +462,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 				throw new SenderException("error reading http response as String", e);
 			}
 
-			if (transformerPool != null && !xhtmlResult.isEmpty()) {
+			if (transformerPool != null && xhtmlResult.isNotEmpty()) {
 				log.debug("transforming result [{}]", xhtmlResult);
 				try {
 					xhtmlResult = transformerPool.transform(xhtmlResult);

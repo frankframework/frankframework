@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -29,26 +32,26 @@ import org.frankframework.util.XmlUtils;
 @SuppressWarnings("resource")
 public class SaxElementBuilder implements AutoCloseable {
 
-	private final ContentHandler handler;
-	private String elementName;
-	private final SaxElementBuilder parent;
+	private final @NonNull ContentHandler handler;
+	private @Nullable String elementName;
+	private final @Nullable SaxElementBuilder parent;
 
-	private AttributesImpl attributes=null;
+	private @Nullable AttributesImpl attributes=null;
 	private boolean promotedToObject = false;
 
-	public SaxElementBuilder(ContentHandler handler) {
+	public SaxElementBuilder(@NonNull ContentHandler handler) {
 		this(null, handler, null);
 	}
 
-	public SaxElementBuilder(String elementName) {
+	public SaxElementBuilder(@Nullable String elementName) {
 		this(elementName, new XmlWriter());
 	}
 
-	public SaxElementBuilder(String elementName, ContentHandler handler) {
+	public SaxElementBuilder(@Nullable String elementName, ContentHandler handler) {
 		this(elementName, handler, null);
 	}
 
-	private SaxElementBuilder(String elementName, ContentHandler handler, SaxElementBuilder parent) {
+	private SaxElementBuilder(@Nullable String elementName, @NonNull ContentHandler handler, @Nullable SaxElementBuilder parent) {
 		this.handler = handler;
 		this.elementName = XmlUtils.cleanseElementName(elementName);
 		this.parent = parent;
@@ -57,23 +60,27 @@ public class SaxElementBuilder implements AutoCloseable {
 		}
 	}
 
+	@Contract("_, _ -> this")
 	public SaxElementBuilder addAttribute(String name, int value) throws SAXException {
 		return addAttribute(name, Integer.toString(value));
 	}
 
+	@Contract("_, _ -> this")
 	public SaxElementBuilder addAttribute(String name, String value) throws SAXException {
 		if (attributes==null) {
 			throw new SaxException("start of element ["+elementName+"] already written");
 		}
 		String attruri = "";
 		String attrlocalName = XmlUtils.cleanseElementName(name);
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		String attrqName = attrlocalName;
 		String attrType = "";
 		attributes.addAttribute(attruri, attrlocalName, attrqName, attrType, XmlUtils.normalizeAttributeValue(value));
 		return this;
 	}
 
-	public SaxElementBuilder addAttributes(Map<String,String> attributes) throws SAXException {
+	@Contract("_ -> this")
+	public SaxElementBuilder addAttributes(@Nullable Map<String,String> attributes) throws SAXException {
 		if (attributes!=null) {
 			for(Entry<String,String> entry:attributes.entrySet()) {
 				addAttribute(entry.getKey(), entry.getValue());
@@ -86,23 +93,26 @@ public class SaxElementBuilder implements AutoCloseable {
 		if (attributes!=null) {
 			String uri = "";
 			String localName = elementName;
+			@SuppressWarnings("UnnecessaryLocalVariable")
 			String qName = localName;
 			handler.startElement(uri, localName, qName, attributes);
 			attributes=null;
 		}
 	}
 
-	public SaxElementBuilder endElement() throws SAXException {
+	public @Nullable SaxElementBuilder endElement() throws SAXException {
 		writePendingStartElement();
 		String uri = "";
 		String localName = elementName;
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		String qName = localName;
 		handler.endElement(uri, localName, qName);
 		elementName = null;
 		return parent;
 	}
 
-	public SaxElementBuilder addValue(String value) throws SAXException {
+	@Contract("_ -> this")
+	public SaxElementBuilder addValue(@Nullable String value) throws SAXException {
 		if (StringUtils.isNotEmpty(value)) {
 			char[] chars = XmlEncodingUtils.replaceNonValidXmlCharacters(value, '?', true, true).toCharArray();
 			addValue(chars, 0, chars.length);
@@ -114,7 +124,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		handler.characters(chars, offset, len);
 	}
 
-	public SaxElementBuilder startElement(String elementName) throws SAXException {
+	public @NonNull SaxElementBuilder startElement(@Nullable String elementName) throws SAXException {
 		String cleanElementName = XmlUtils.cleanseElementName(elementName);
 
 		if (cleanElementName==null) {
@@ -125,23 +135,23 @@ public class SaxElementBuilder implements AutoCloseable {
 		return new SaxElementBuilder(cleanElementName, handler, this);
 	}
 
-	public void addElement(String elementName) throws SAXException {
+	public void addElement(@Nullable String elementName) throws SAXException {
 		addElement(elementName, null, null);
 	}
 
-	public void addElement(String elementName, Map<String,String> attributes) throws SAXException {
+	public void addElement(@Nullable String elementName, @Nullable Map<String,String> attributes) throws SAXException {
 		addElement(elementName, attributes, null);
 	}
 
-	public void addElement(String elementName, String value) throws SAXException {
+	public void addElement(@Nullable String elementName, @Nullable String value) throws SAXException {
 		addElement(elementName, null, value);
 	}
 
-	public void addElement(String elementName, Map<String,String> attributes, String value) throws SAXException {
+	public void addElement(@Nullable String elementName, @Nullable Map<String,String> attributes, @Nullable String value) throws SAXException {
 		startElement(elementName).addAttributes(attributes).addValue(value).endElement();
 	}
 
-	public void addElement(String elementName, String attributeName, String attributeValue, String value) throws SAXException {
+	public void addElement(@Nullable String elementName, @Nullable String attributeName, @Nullable String attributeValue, @Nullable String value) throws SAXException {
 		startElement(elementName).addAttribute(attributeName, attributeValue).addValue(value).endElement();
 	}
 
@@ -157,7 +167,7 @@ public class SaxElementBuilder implements AutoCloseable {
 	}
 
 	// Package private for now
-	ContentHandler getHandler() {
+	@NonNull ContentHandler getHandler() {
 		return handler;
 	}
 }

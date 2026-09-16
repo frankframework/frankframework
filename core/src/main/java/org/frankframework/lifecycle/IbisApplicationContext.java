@@ -22,9 +22,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -113,13 +115,13 @@ public class IbisApplicationContext implements Closeable {
 	 * @param classLoader to use in order to find and validate the Spring Configuration files
 	 * @return A String array containing all files to use.
 	 */
-	protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+	protected @NonNull String @NonNull[] getSpringConfigurationFiles(@NonNull ClassLoader classLoader) {
 		List<String> springConfigurationFiles = new ArrayList<>();
 		if (parentContext == null) { // When not running in a web container, populate top-level beans so they can be found throughout this/sub-contexts.
 			springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
 		}
 		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
-		String configLocations = AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS");
+		String configLocations = Objects.requireNonNull(AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS"), "Spring Context Locations not found, cannot configure");
 		springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, configLocations));
 
 		List<String> additionalSpringConfigurationFiles = ComponentLoader.findAllModules().stream()
@@ -133,7 +135,7 @@ public class IbisApplicationContext implements Closeable {
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
-	private List<String> splitIntoConfigFiles(ClassLoader classLoader, String fileList) {
+	private @NonNull List<String> splitIntoConfigFiles(@NonNull ClassLoader classLoader, @NonNull String fileList) {
 		return Arrays
 			.stream(fileList.split(","))
 			.filter(filename -> isSpringConfigFileOnClasspath(classLoader, filename))
@@ -141,7 +143,7 @@ public class IbisApplicationContext implements Closeable {
 			.toList();
 	}
 
-	private boolean isSpringConfigFileOnClasspath(ClassLoader classLoader, String filename) {
+	private boolean isSpringConfigFileOnClasspath(@NonNull ClassLoader classLoader, @NonNull String filename) {
 		URL fileURL = classLoader.getResource(filename);
 		if (fileURL == null) {
 			LOG.error("unable to locate Spring configuration file [{}]", filename);
@@ -149,7 +151,7 @@ public class IbisApplicationContext implements Closeable {
 		return fileURL != null;
 	}
 
-	private String addClasspathPrefix(String filename) {
+	private @NonNull String addClasspathPrefix(@NonNull String filename) {
 		if (filename.contains(":")) {
 			return filename;
 		}
@@ -161,7 +163,7 @@ public class IbisApplicationContext implements Closeable {
 	 *
 	 * @throws BeansException when the Context fails to initialize
 	 */
-	private ClassPathXmlApplicationContext createClassPathApplicationContext() {
+	private @NonNull ClassPathXmlApplicationContext createClassPathApplicationContext() {
 		ClassPathXmlApplicationContext classPathApplicationContext = new ClassPathXmlApplicationContext();
 
 		MutablePropertySources propertySources = classPathApplicationContext.getEnvironment().getPropertySources();

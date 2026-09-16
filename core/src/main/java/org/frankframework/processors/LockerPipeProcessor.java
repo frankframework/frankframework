@@ -33,6 +33,7 @@ public class LockerPipeProcessor extends AbstractPipeProcessor {
 
 	@NonNull
 	@Override
+	@SuppressWarnings({ "java:S1193", "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" })
 	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		String objectId;
 		Locker locker = pipe.getLocker();
@@ -43,18 +44,29 @@ public class LockerPipeProcessor extends AbstractPipeProcessor {
 		try {
 			objectId = locker.acquire();
 		} catch (Exception e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
 			throw new PipeRunException(pipe, "error while trying to obtain lock [" + locker + "]", e);
 		}
 		if (objectId == null) {
 			throw new PipeRunException(pipe, "could not obtain lock [" + locker + "]");
 		}
+		Throwable tThrown = null;
 		try {
 			return chain.apply(message);
+		} catch (Throwable e) {
+			tThrown = e;
+			throw e;
 		} finally {
 			try {
 				locker.release(objectId);
 			} catch (Exception e) {
-				throw new PipeRunException(pipe, "error while removing lock", e);
+				PipeRunException pre = new PipeRunException(pipe, "error while removing lock", e);
+				if (tThrown != null) {
+					pre.addSuppressed(tThrown);
+				}
+				throw pre;
 			}
 		}
 	}

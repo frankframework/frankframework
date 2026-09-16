@@ -83,9 +83,10 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 //			throw new ConfigurationException("attribute sapSystemName must be specified");
 //		}
 		if (StringUtils.isNotEmpty(getSapSystemName())) {
-			sapSystem=SapSystemImpl.getSystem(getSapSystemName());
-			if (sapSystem==null) {
-				throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
+			try {
+				sapSystem=SapSystemImpl.getSystem(getSapSystemName());
+			} catch (Exception e) {
+				throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]", e);
 			}
 		} else {
 			SapSystemImpl.configureAll();
@@ -212,12 +213,15 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 	 *  >0 : the required index
 	 *  0  : no index found, convert all fields to/from xml.
 	 */
-	protected int findFieldIndex(JCoParameterList params, int index, String name) {
+	protected int findFieldIndex(@Nullable JCoParameterList params, int index, @Nullable String name) {
 		if(name != null && params != null && log.isTraceEnabled())
 			log.trace("find FieldIndex for name [{}] in JCoParameterList [{}]", name, params);
 
 		if (index!=0 || StringUtils.isEmpty(name)) {
 			return index;
+		}
+		if (params == null) {
+			return 0;
 		}
 		try {
 			return 1+params.getListMetaData().indexOf(name);
@@ -260,7 +264,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 			result+="</request>";
 		}
 
-		return new Message(result);
+		return Message.asMessage(result);
 	}
 
 	public Message functionResult2message(JCoFunction function) {
@@ -285,7 +289,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 			}
 			result+="</response>";
 		}
-		return new Message(result);
+		return Message.asMessage(result);
 	}
 
 	public void message2FunctionCall(JCoFunction function, String request, String correlationId, ParameterValueList pvl) throws SapException {
@@ -326,11 +330,11 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 		return sapSystem;
 	}
 	public SapSystemImpl getSapSystem(String systemName) throws SapException {
-		SapSystemImpl sapSystem = SapSystemImpl.getSystem(systemName);
-		if(sapSystem==null) {
-			throw new SapException("cannot find sapSystem ["+systemName+"]");
+		try {
+			return SapSystemImpl.getSystem(systemName);
+		} catch (Exception e) {
+			throw new SapException("cannot find sapSystem ["+systemName+"]", e);
 		}
-		return sapSystem;
 	}
 
 	protected JCoFunctionTemplate getFunctionTemplate() throws SapException {

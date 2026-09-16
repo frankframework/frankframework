@@ -80,6 +80,7 @@ import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
@@ -1465,10 +1466,10 @@ public class XmlUtils {
 		}
 	}
 
-	public static Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
+	public static @NonNull Map<@Nullable String, @Nullable String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
-		Map<String, String> m = new HashMap<>();
+		Map<@Nullable String, @Nullable String> m = new HashMap<>();
 		try {
 			Document doc = buildDomDocument(msg, true, true);
 			XPath xPath = getXPathFactory().newXPath();
@@ -1490,8 +1491,8 @@ public class XmlUtils {
 		return m;
 	}
 
-	public static Message toXhtml(Message message) throws IOException {
-		if (!Message.isEmpty(message)) {
+	public static @NonNull Message toXhtml(@Nullable Message message) throws IOException {
+		if (Message.isNotEmpty(message)) {
 			String messageCharset = message.getCharset();
 			String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);
 			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {

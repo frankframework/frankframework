@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 
@@ -37,7 +38,7 @@ public class IbisContextTest {
 		}
 
 		@Override
-		protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+		protected String @NonNull [] getSpringConfigurationFiles(@NonNull ClassLoader classLoader) {
 			List<String> springConfigurationFiles = new ArrayList<>();
 			springConfigurationFiles.add("testApplicationContext.xml");
 

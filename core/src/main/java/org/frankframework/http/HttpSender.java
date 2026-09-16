@@ -113,7 +113,7 @@ public class HttpSender extends AbstractHttpSender {
 
 	@Override
 	protected HttpRequestBase getMethod(URI url, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException {
-		if (isEncodeMessages() && !Message.isEmpty(message)) {
+		if (isEncodeMessages() && Message.isNotEmpty(message)) {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
 			} catch (IOException e) {
@@ -143,7 +143,7 @@ public class HttpSender extends AbstractHttpSender {
 					log.debug("path after appending of parameters [{}]", relativePath);
 				}
 
-				HttpGet getMethod = new HttpGet(relativePath+(parameters.size() == 0 && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
+				HttpGet getMethod = new HttpGet(relativePath+(parameters.size() == 0 && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && Message.isNotEmpty(message) ? message.asString():""));
 				log.debug("HttpSender constructed GET-method [{}]", () -> getMethod.getURI().getQuery());
 				return getMethod;
 

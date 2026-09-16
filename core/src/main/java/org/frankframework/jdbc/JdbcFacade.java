@@ -171,17 +171,27 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		}
 	}
 
+	@SuppressWarnings({ "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" })
 	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
 		if (timeout<=0) {
 			return getConnection();
 		}
 		TimeoutGuard tg = new TimeoutGuard("Connection");
+		Throwable tThrown = null;
 		try {
 			tg.activateGuard(timeout);
 			return getConnection();
+		} catch (Throwable e) {
+			tThrown = e;
+			throw e;
 		} finally {
 			if (tg.cancel()) {
-				throw new TimeoutException(getLogPrefix()+"thread has been interrupted");
+				TimeoutException te = new TimeoutException(getLogPrefix()+"thread has been interrupted");
+				if (tThrown != null) {
+					te.addSuppressed(tThrown);
+				}
+
+				throw te;
 			}
 		}
 	}
