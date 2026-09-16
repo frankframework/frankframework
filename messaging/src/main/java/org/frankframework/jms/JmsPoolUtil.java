@@ -47,7 +47,7 @@ public class JmsPoolUtil {
 	}
 
 	@NonNull
-	public static String reflectionToString(ConnectionFactory qcf) {
+	public static String reflectionToString(@NonNull ConnectionFactory qcf) {
 		Object factory = getManagedConnectionFactory(qcf);
 		return StringUtil.reflectionToString(factory);
 	}
@@ -73,7 +73,7 @@ public class JmsPoolUtil {
 			// JCA ManagedConnectionFactory, but unsure who would be the owner
 			return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
 		} catch (NoSuchMethodException | NoSuchFieldException e) {
-			// Either the field or method does not exist. Unsure if this is the most outer factory, but lets use it!
+			// Either the field or method does not exist. Unsure if this is the most outer factory, but let's use it!
 			return qcf;
 		} catch (Exception e) {
 			// Unsure what went wrong here, return null.
@@ -83,7 +83,7 @@ public class JmsPoolUtil {
 	}
 
 	/** Return pooling info if present */
-	private static String getJmsPoolInfo(@NonNull JmsPoolConnectionFactory poolcf) {
+	private static @NonNull String getJmsPoolInfo(@NonNull JmsPoolConnectionFactory poolcf) {
 		return ClassUtils.classNameOf(poolcf) + " Pool Info: " +
 				"current pool size [" + poolcf.getNumConnections() + CLOSE +
 				"max pool size [" + poolcf.getMaxConnections() + CLOSE +
