@@ -25,7 +25,7 @@ import javax.crypto.SecretKey;
 
 import jakarta.xml.soap.SOAPException;
 
-import org.apache.tika.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.wss4j.common.ext.WSSecurityException;
 
 import lombok.Getter;
@@ -97,7 +97,7 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 	 */
 	private @Getter @Setter SoapUtils.SignatureAlgorithm signatureAlgorithm = SoapUtils.SignatureAlgorithm.RSA_SHA256;
 
-	private @Getter KeystoreConfiguration keystoreConfiguration;
+	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
 	private SecretKey symmetricKey;
 	private List<Operation> operations = List.of();
 
@@ -110,24 +110,20 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 		if (operations.isEmpty()) {
 			throw new ConfigurationException("no operations specified");
 		}
-		if (isConfiguredForMixedValidation()) {
+		if (isConfiguredForMixedValidation() || getResponseRootValidations() != null) {
 			throw new ConfigurationException("this validator does not support input/output processing in '1' element, configure an OutputValidator explicitly");
+		}
+		if (keystoreConfiguration.getResource() == null) {
+			throw new ConfigurationException("element [Keystore] must be specified");
 		}
 		if (StringUtils.isBlank(getKeystoreAlias())) {
 			throw new ConfigurationException("attribute [keystoreAlias] (the name of the certificate) must be specified");
-		}
-		if (removeSecurityHeader && (operations.contains(Operation.ENCRYPT) || operations.contains(Operation.SIGN))) {
-			throw new ConfigurationException("attribute [removeSecurityHeader] cannot be used when encrypting/signing a message");
 		}
 
 		super.configure();
 
 		certificateCf = new CredentialFactory(getKeystoreAliasAuthAlias(), null, getKeystoreAliasPassword());
-		try {
-			keystore = CorePkiUtil.createKeyStore(keystoreConfiguration);
-		} catch (EncryptionException e) {
-			throw new ConfigurationException("unable to open keystore", e);
-		}
+		keystore = createKeyStore(keystoreConfiguration);
 
 		if (operations.contains(Operation.ENCRYPT)) {
 			try {
@@ -137,6 +133,18 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 			} catch (NoSuchAlgorithmException e) {
 				throw new ConfigurationException("unable to generate symmetric key", e);
 			}
+		}
+	}
+
+	/**
+	 * Create a keystore based on the given FF! Keystore Element.
+	 * Protected so it can be overridden in tests.
+	 */
+	protected KeyStore createKeyStore(KeystoreConfiguration keystoreConfiguration) throws ConfigurationException {
+		try {
+			return CorePkiUtil.createKeyStore(keystoreConfiguration);
+		} catch (EncryptionException e) {
+			throw new ConfigurationException("unable to open keystore", e);
 		}
 	}
 
