@@ -2469,12 +2469,12 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, boolean duplicatesAlreadyChecked) {
+		public void processRawMessage(@NonNull IListener<Message> origin, @NonNull RawMessageWrapper<Message> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) {
 			fail("method should not be called");
 		}
 
 		@Override
-		public Message processRequest(IPushingListener<Message> origin, MessageWrapper<Message> messageWrapper, PipeLineSession session) throws ListenerException {
+		public @NonNull Message processRequest(@NonNull IPushingListener<Message> origin, @NonNull MessageWrapper<Message> messageWrapper, @NonNull PipeLineSession session) throws ListenerException {
 			Message message = messageWrapper.getMessage();
 			assertNotNull(message, "input message may not be null");
 

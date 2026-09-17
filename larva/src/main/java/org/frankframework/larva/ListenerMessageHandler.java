@@ -48,13 +48,13 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private long timeoutMillis;
 
 	@Override
-	public Message processRequest(IPushingListener<M> origin, MessageWrapper<M> rawMessage, PipeLineSession session) throws ListenerException {
+	public @NonNull Message processRequest(@NonNull IPushingListener<M> origin, @NonNull MessageWrapper<M> rawMessage, @NonNull PipeLineSession session) throws ListenerException {
 		session.putAll(rawMessage.getContext());
 		return processRequest(rawMessage.getMessage(), session);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 		session.putAll(rawMessage.getContext());
 		Message message = origin.extractMessage(rawMessage, session);
 		processRequest(message, session);

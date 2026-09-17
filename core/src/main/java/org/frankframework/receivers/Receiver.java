@@ -1100,7 +1100,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * </p>
 	 */
 	@Override
-	public Message processRequest(IPushingListener<M> origin, @NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession session) throws ListenerException {
+	public @NonNull Message processRequest(@NonNull IPushingListener<M> origin, @NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
@@ -1139,7 +1139,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
 	@Override
-	public void processRawMessage(@NonNull IListener<M> origin, @Nullable RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
+	public void processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
@@ -1299,7 +1299,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
 	@SuppressWarnings({ "java:S1143", "java:S1163", "ThrowFromFinallyBlock" }) // Throw from finally; catching Throwable not Exception. Cannot change these easily.
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry,
+	private @NonNull Message processMessageInAdapter(@NonNull MessageWrapper<M> messageWrapperOriginal, @NonNull PipeLineSession session, boolean manualRetry,
 											boolean retryStatusAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();

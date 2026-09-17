@@ -542,6 +542,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			case ContextStoppedEvent ignored -> publishEvent(new AdapterMessageEvent(this, "stopped"));
 			case ContextClosedEvent ignored -> publishEvent(new AdapterMessageEvent(this, "closed"));
 			default -> {
+				// No-op for other even types
 			}
 		}
 
@@ -708,9 +709,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
-	public @Nullable Receiver<?> getReceiverByName(String receiverName) {
+	public @Nullable Receiver<?> getReceiverByName(@NonNull String receiverName) {
 		for (Receiver<?> receiver: receivers) {
-			if (receiver.getName().equalsIgnoreCase(receiverName)) {
+			if (receiverName.equalsIgnoreCase(receiver.getName())) {
 				return receiver;
 			}
 		}
@@ -759,7 +760,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
 	@SuppressWarnings("java:S1181")
-	public PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
+	public @NonNull PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
 			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
 		) {
@@ -813,7 +814,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @return {@link PipeLineResult} with result from processing the message in the {@link PipeLine}.
 	 * @throws ListenerException If there was an exception, throws a {@link ListenerException}.
 	 */
-	public PipeLineResult processMessageWithExceptions(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
+	public @NonNull PipeLineResult processMessageWithExceptions(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never know....
@@ -848,7 +849,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
 			result = new PipeLineResult();
 			result.setState(ExitState.ERROR);
-			result.setResult(new Message(e.getMessage()));
+			result.setResult(Message.asMessage(e.getMessage()));
 			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
@@ -1028,28 +1029,18 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				.whenComplete(this::handleException); // The exception from the previous stage, if any, will propagate further.
 	}
 
-	private <T> T handleException(T result, Throwable t) {
-		switch (t) {
-			case null -> {
-				return result;
-			}
-			case CompletionException ee -> {
-				return handleException(result, ee.getCause());
-			}
-			case ExecutionException ee -> {
-				return handleException(result, ee.getCause());
-			}
-			case ApplicationContextException ace -> {
-				return handleException(result, ace.getCause());
-			}
+	private <T> @Nullable T handleException(@Nullable T result, @Nullable Throwable t) {
+		return switch (t) {
+			case null -> result;
+			case CompletionException ee -> handleException(result, ee.getCause());
+			case ExecutionException ee -> handleException(result, ee.getCause());
+			case ApplicationContextException ace -> handleException(result, ace.getCause());
 			default -> {
+				runState.setRunState(RunState.ERROR);
+				addErrorMessageToMessageKeeper("caught error", t);
+				yield result;
 			}
-		}
-
-		runState.setRunState(RunState.ERROR);
-		addErrorMessageToMessageKeeper("caught error", t);
-
-		return result;
+		};
 	}
 
 	@Override

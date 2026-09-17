@@ -53,7 +53,7 @@ public class TestPipelineTest extends BusTestBase {
 
 	public static class TestPipelineSessionAdapter extends Adapter {
 		@Override
-		public PipeLineResult processMessageDirect(@NonNull String messageId, org.frankframework.stream.@NonNull Message message, @NonNull PipeLineSession session) {
+		public @NonNull PipeLineResult processMessageDirect(@NonNull String messageId, org.frankframework.stream.@NonNull Message message, @NonNull PipeLineSession session) {
 			try {
 				String action = message.asString();
 				if (StringUtils.isEmpty(action)) {
