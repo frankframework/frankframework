@@ -72,7 +72,7 @@ public class SoapMessage {
 		return context;
 	}
 
-	public @Nullable Object getMultipartXml() {
+	public @Nullable Message getMultipartXml() {
 		return parts.multipartXml();
 	}
 

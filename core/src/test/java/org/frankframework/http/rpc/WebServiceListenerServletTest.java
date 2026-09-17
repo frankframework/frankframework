@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URL;
@@ -134,7 +135,8 @@ class WebServiceListenerServletTest {
 
 	@Test
 	void testExitCode() throws Exception {
-		ServiceClient sc = mock(WebServiceListener.class);
+		WebServiceListener sc = mock(WebServiceListener.class);
+		when(sc.getMultipartXmlSessionKey()).thenReturn("multipartXml");
 		doAnswer(e -> {
 			Message message = e.getArgument(0);
 			PipeLineResult result = new PipeLineResult();
@@ -158,7 +160,8 @@ class WebServiceListenerServletTest {
 
 	@Test
 	void testExitCodeEmptyResult() throws Exception {
-		ServiceClient sc = mock(WebServiceListener.class);
+		WebServiceListener sc = mock(WebServiceListener.class);
+		when(sc.getMultipartXmlSessionKey()).thenReturn("multipartXml");
 		doAnswer(e -> {
 			PipeLineResult result = new PipeLineResult();
 			result.setExitCode(204);

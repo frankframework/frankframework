@@ -44,7 +44,6 @@ import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.HttpStatusResolver;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.http.mime.HttpEntityFactory;
-import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.receivers.ServiceClient;
@@ -174,9 +173,10 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 		// Make attachments in request (when present) available as session keys
 		if (BACKWARDS_COMPATIBILITY_MODE) {
 			handleIncomingAttachmentsLegacy(request, session);
-		} else {
+		}
+		if (request.getMultipartXml() != null) {
 			session.putAll(request.getAttachments());
-			session.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, request.getMultipartXml());
+			session.put(listener.getMultipartXmlSessionKey(), request.getMultipartXml());
 		}
 
 		final Message output;

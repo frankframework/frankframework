@@ -29,6 +29,7 @@ import org.apache.cxf.jaxws.EndpointImpl;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.DestinationType;
@@ -43,7 +44,6 @@ import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
-import org.frankframework.util.XmlBuilder;
 
 /**
  * Listener that allows a {@link Receiver} to receive messages as a SOAP webservice.
@@ -89,7 +89,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if(StringUtils.isEmpty(getAddress()) && isMtomEnabled())
+		if (StringUtils.isEmpty(getAddress()) && isMtomEnabled())
 			throw new ConfigurationException("can only use MTOM when address attribute has been set");
 
 		if (StringUtils.isNotEmpty(getAttachmentSessionKeys())) {
@@ -187,19 +187,6 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 	@Override
 	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
-		if (!attachmentSessionKeysList.isEmpty()) {
-			XmlBuilder xmlMultipart = new XmlBuilder("parts");
-			for(String attachmentSessionKey: attachmentSessionKeysList) {
-				// Using the following format: <parts><part type=\"file\" name=\"document.pdf\" sessionKey=\"part_file\" size=\"12345\" mimeType=\"application/octet-stream\"/></parts>
-				XmlBuilder part = new XmlBuilder("part");
-				part.addAttribute("name", attachmentSessionKey);
-				part.addAttribute("sessionKey", attachmentSessionKey);
-				part.addAttribute("mimeType", "application/octet-stream");
-				xmlMultipart.addSubElement(part);
-			}
-			session.put(getMultipartXmlSessionKey(), xmlMultipart.asXmlString());
-		}
-
 		if (!isSoap()) {
 			return super.processRequest(message, session);
 		}
@@ -288,6 +275,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	}
 
 	/** Comma separated list of session keys to hold contents of attachments of the request */
+	@Deprecated
+	@ConfigurationWarning("No longer used, all attachments will be put in session")
 	public void setAttachmentSessionKeys(String attachmentSessionKeys) {
 		this.attachmentSessionKeys = attachmentSessionKeys;
 	}
