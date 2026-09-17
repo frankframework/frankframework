@@ -1,0 +1,7 @@
+<SOAP:Envelope xmlns:SOAP="http://schemas.xmlsoap.org/soap/envelope/" xmlns="http://www.ing.com/testxmlns">
+	<SOAP:Body>
+		<A>
+			<B xmlns="http://xmlns/b"/>
+		</A>
+	</SOAP:Body>
+</SOAP:Envelope>
