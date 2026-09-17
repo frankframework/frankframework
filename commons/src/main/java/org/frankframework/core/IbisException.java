@@ -89,7 +89,7 @@ public class IbisException extends Exception {
 				int xaError = oxae.getXAError();
 				yield xaError != 0 ? "xaError [" + xaError + "] xaErrorMessage [" + oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError) + "]" : null;
 			}
-			default -> null;
+			case null, default -> null;
 		};
 	}
 
@@ -129,7 +129,7 @@ public class IbisException extends Exception {
 
 	public static String expandMessage(@Nullable String msg, Throwable e, ExcludeClassInfoExceptionFilter filter) {
 		String result = null;
-		List<String> msgChain = getMessages(e, msg);
+		List<@Nullable String> msgChain = getMessages(e, msg);
 		Throwable t = e;
 		for (String message : msgChain) {
 			String exceptionType = (t == null || filter.accept(t)) ? "" : "(" + ClassUtils.classNameOf(t) + ")";
@@ -225,7 +225,7 @@ public class IbisException extends Exception {
 	}
 
 	@Override
-	public String getMessage() {
+	public @Nullable String getMessage() {
 		return expandedMessage;
 	}
 

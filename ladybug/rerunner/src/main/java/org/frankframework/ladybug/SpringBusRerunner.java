@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
@@ -127,7 +128,7 @@ public class SpringBusRerunner implements Rerunner {
 		}
 	}
 
-	private String processRequest(Message<?> request) {
+	private @Nullable String processRequest(Message<?> request) {
 		try {
 			getGateway().sendSyncMessage(request);
 			// Nothing is done with the response at the moment

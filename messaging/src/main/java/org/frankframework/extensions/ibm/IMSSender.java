@@ -127,12 +127,11 @@ public class IMSSender extends MQSender {
 
 			byte[] data = message.asByteArray(CHARSET.name());
 
-			int messageLength = data == null ? 0 : data.length;
+			int messageLength = data.length;
 			bos.write(shortToBytes(messageLength + 13)); // LL, +13 is for LL, ZZ and transaction code bytes
 			bos.write(new byte[2]); // ZZ
 			bos.write((transactionCode + " ").getBytes(CHARSET));
-
-			bos.write(data != null ? data : new byte[0]);
+			bos.write(data);
 		} catch (IOException e) {
 			// Should never happen
 			throw new IllegalArgumentException("unable to compile binary message", e);
@@ -149,7 +148,7 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public Message extractMessage(jakarta.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
+	public @Nullable Message extractMessage(jakarta.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
 		BytesMessage message;
 		try {
 			message = (BytesMessage)rawMessage;

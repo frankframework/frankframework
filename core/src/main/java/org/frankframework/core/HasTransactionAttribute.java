@@ -17,7 +17,6 @@ package org.frankframework.core;
 
 import org.springframework.transaction.TransactionDefinition;
 
-import org.frankframework.configuration.ConfigurationException;
 
 /**
  * The <code>HasTransactionAttribute</code> allows Pipes to declare transaction and isolation behavior.
@@ -50,7 +49,7 @@ public interface HasTransactionAttribute {
 	 *   </table>
 	 * @ff.default Supports
 	 */
-	void setTransactionAttribute(TransactionAttribute attribute) throws ConfigurationException;
+	void setTransactionAttribute(TransactionAttribute attribute);
 	TransactionAttribute getTransactionAttribute();
 
 	/**

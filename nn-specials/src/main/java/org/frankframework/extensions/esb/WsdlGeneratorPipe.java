@@ -238,7 +238,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		return pipeLine;
 	}
 
-	private EsbSoapValidator createValidator(File xsdFile, String namespace,
+	private @Nullable EsbSoapValidator createValidator(File xsdFile, String namespace,
 			String root, int rootPosition, int cmhVersion, PipeLine pipeLine) throws ConfigurationException {
 		if (xsdFile != null) {
 			EsbSoapValidator esbSoapValidator = new EsbSoapValidator();

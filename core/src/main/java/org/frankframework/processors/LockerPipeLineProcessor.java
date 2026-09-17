@@ -36,7 +36,7 @@ public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		PipeLineResult pipeLineResult;
 		Locker locker = pipeLine.getLocker();
-		String objectId = null;
+		String objectId;
 		if (locker != null) {
 			try {
 				objectId = locker.acquire();

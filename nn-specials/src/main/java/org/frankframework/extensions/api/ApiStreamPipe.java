@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -104,7 +105,7 @@ public class ApiStreamPipe extends StreamPipe {
 			}
 
 			String slotId = AppConstants.getInstance().getProperty("instance.name") + "/" + session.get("operation");
-			String selectMessageKeyResult = null;
+			String selectMessageKeyResult;
 			try {
 				selectMessageKeyResult = selectMessageKey(slotId, messageId);
 			} catch (Exception e) {
@@ -113,7 +114,7 @@ public class ApiStreamPipe extends StreamPipe {
 			if (StringUtils.isEmpty(selectMessageKeyResult)) {
 				throw new PipeRunException(this, "Could not find message in MessageStore for slotId [" + slotId + "] and messageId [" + messageId + "]");
 			}
-			String selectMessageResult = null;
+			String selectMessageResult;
 			try {
 				selectMessageResult = selectMessage(selectMessageKeyResult);
 			} catch (Exception e) {
@@ -132,7 +133,7 @@ public class ApiStreamPipe extends StreamPipe {
 		return firstStringPart;
 	}
 
-	private String selectMessageKey(String slotId, String messageId) throws JdbcException {
+	private @Nullable String selectMessageKey(String slotId, String messageId) throws JdbcException {
 		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='?' AND SLOTID='?' AND MESSAGEID='?'";
 		try (Connection connection = dummyQuerySender.getConnection(); PreparedStatement stmt = connection.prepareStatement(query)) {
 			stmt.setString(1, IMessageBrowser.StorageType.MESSAGESTORAGE.getCode());
@@ -175,7 +176,7 @@ public class ApiStreamPipe extends StreamPipe {
 		}
 	}
 
-	private static String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query, String messageKey) throws JdbcException {
+	private static @Nullable String executeBlobQuery(IDbmsSupport dbmsSupport, Connection connection, String query, String messageKey) throws JdbcException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]", query);
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			stmt.setString(1, messageKey);

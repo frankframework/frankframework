@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -59,7 +60,7 @@ public class ClassUtils {
 	 * Return the context ClassLoader.
 	 */
 	private static ClassLoader getClassLoader() {
-		return Thread.currentThread().getContextClassLoader();
+		return Objects.requireNonNull(Thread.currentThread().getContextClassLoader());
 	}
 
 	/**
@@ -283,6 +284,7 @@ public class ClassUtils {
 	}
 
 	@Nullable
+	@Contract("_, null -> null; _, !null -> !null")
 	private static Object convertToTypeRawTyped(Class<?> type, @Nullable String value) throws IllegalArgumentException {
 		if (value == null) {
 			return null;
@@ -352,7 +354,7 @@ public class ClassUtils {
 		setterMtd.invoke(o, args);
 	}
 
-	public static Object invokeGetter(Object o, String name, boolean forceAccess) throws ReflectiveOperationException, IllegalArgumentException {
+	public static @Nullable Object invokeGetter(Object o, String name, boolean forceAccess) throws ReflectiveOperationException, IllegalArgumentException {
 		Method getterMtd = o.getClass().getMethod(name, (Class<?>[]) null);
 		if (forceAccess) {
 			getterMtd.setAccessible(true);
@@ -404,7 +406,7 @@ public class ClassUtils {
 		Map<String, Object> result = new LinkedHashMap<>();
 		String classLoaderName = classLoader != null ? classLoader.toString() : "<system classloader>";
 		result.put("classLoader", classLoaderName);
-		if (clazz != null) {
+		if (clazz != null && clazz.getPackage() != null) {
 			Package pkg = clazz.getPackage();
 			result.put("specification", pkg.getSpecificationTitle() + " version " + pkg.getSpecificationVersion() + " by " + pkg.getSpecificationVendor());
 			result.put("implementation", pkg.getImplementationTitle() + " version " + pkg.getImplementationVersion() + " by " + pkg.getImplementationVendor());

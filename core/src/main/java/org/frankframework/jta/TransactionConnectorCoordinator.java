@@ -15,6 +15,7 @@
 */
 package org.frankframework.jta;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.extern.log4j.Log4j2;
@@ -45,7 +46,7 @@ public class TransactionConnectorCoordinator implements AutoCloseable {
 		suspendTransaction();
 	}
 
-	public static TransactionConnectorCoordinator getInstance(IThreadConnectableTransactionManager txManager) {
+	public static @Nullable TransactionConnectorCoordinator getInstance(IThreadConnectableTransactionManager txManager) {
 		if (txManager==null) {
 			throw new IllegalStateException("txManager is null");
 		}

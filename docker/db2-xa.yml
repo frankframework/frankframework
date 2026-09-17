@@ -9,7 +9,7 @@ services:
       active.storedProcedureTests: true
 
   db2:
-    image: private.docker.nexus.frankframework.org/ff-test/dbms/db2
+    image: ghcr.io/frankframework/dbms/db2
     privileged: true
     ports:
       - "50000:50000"

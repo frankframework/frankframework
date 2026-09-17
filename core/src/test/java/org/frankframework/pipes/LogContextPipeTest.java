@@ -17,7 +17,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -40,7 +39,7 @@ public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 	}
 
 	@Override
-	public LogContextPipe createPipe() throws ConfigurationException {
+	public LogContextPipe createPipe() {
 		return new LogContextPipe();
 	}
 

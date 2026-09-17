@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebAppClassLoader> {
 
 	@Override
-	public WebAppClassLoader createClassLoader(ClassLoader parent) throws Exception {
+	public WebAppClassLoader createClassLoader(ClassLoader parent) {
 		return new WebAppClassLoader(parent);
 	}
 

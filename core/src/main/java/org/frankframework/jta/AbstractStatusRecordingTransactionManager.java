@@ -26,6 +26,7 @@ import jakarta.transaction.TransactionManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
@@ -137,7 +138,7 @@ public abstract class AbstractStatusRecordingTransactionManager extends ThreadCo
 		}
 	}
 
-	public String read(String filename) {
+	public @Nullable String read(String filename) {
 		if (StringUtils.isNotEmpty(filename)) {
 			Path file = Paths.get(filename);
 			if (!Files.exists(file)) {

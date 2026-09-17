@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -1221,6 +1222,7 @@ public class ReceiverTest {
 
 		// Assert
 		assertEquals(expectedBackoffDelayMs, actualBackoffDelay);
+		assertNotNull(configWarnings);
 		if (expectConfigWarning) {
 			assertEquals(1, configWarnings.size(), "There should have been exactly 1 config warning");
 			assertThat(configWarnings.getWarnings().getFirst(), containsString("Maximum backoff delay reduced"));
@@ -1254,7 +1256,7 @@ public class ReceiverTest {
 
 		// Act
 		for (int i = 0; i < 20; ++i) {
-			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("error-"), MessageUtils.generateMessageId()), new PipeLineSession()));
+			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("error-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession()));
 		}
 
 		// Assert
@@ -1272,7 +1274,7 @@ public class ReceiverTest {
 		reset(receiver);
 
 		// Act
-		receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("success-"), MessageUtils.generateMessageId()), new PipeLineSession());
+		receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("success-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession());
 
 		// Assert
 		// Verify that the backoff-delay has been reset after a successful request
@@ -1282,7 +1284,7 @@ public class ReceiverTest {
 		// Repeat the errors and verify error behaviour occurs again after errors
 		// Act
 		for (int i = 0; i < 20; ++i) {
-			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generateMessageId("error-"), MessageUtils.generateMessageId()), new PipeLineSession()));
+			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("error-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession()));
 		}
 
 		// Assert

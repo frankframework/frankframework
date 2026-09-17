@@ -33,6 +33,9 @@ import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 
+/**
+ * Turns the Parameter output into a `DOMDOC` or XML `NODE`-set for processing in an XSLT.
+ */
 @Log4j2
 public class XmlParameter extends AbstractParameter<Node> {
 	private XmlType xmlType;

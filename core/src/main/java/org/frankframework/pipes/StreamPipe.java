@@ -185,7 +185,6 @@ public class StreamPipe extends FixedForwardPipe {
 							// Process form file field (input type="file").
 							if (lastFoundFileName != null && lastFoundAVStatus != null) {
 								antiVirusObjects.add(new AntiVirusObject(lastFoundFileName, lastFoundAVStatus, lastFoundAVMessage));
-								lastFoundFileName = null;
 								lastFoundAVStatus = null;
 								lastFoundAVMessage = null;
 							}

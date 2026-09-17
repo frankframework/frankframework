@@ -117,7 +117,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 					for(int i = 0; i < count; i++) {
 						BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 
-						ContentType parsedContentType = null;
+						ContentType parsedContentType;
 						if(i == 0) // Apparently with IBM CMIS the first part always returns this header, ala SWA but other parts are MTOM!?
 							parsedContentType = ContentType.create("text/xml");
 						else

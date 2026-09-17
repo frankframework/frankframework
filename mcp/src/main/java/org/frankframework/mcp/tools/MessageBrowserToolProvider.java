@@ -40,6 +40,7 @@ import org.frankframework.mcp.ToolSchema;
 public class MessageBrowserToolProvider extends AbstractToolProvider {
 
 	private static final String DEFAULT_PROCESS_STATE = "Error";
+	public static final String MESSAGE_ID = "messageId";
 
 	public MessageBrowserToolProvider(OutboundGateway outboundGateway, McpSession session) {
 		super(outboundGateway, session);
@@ -64,7 +65,7 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 						.string("processState", "the message store to browse, e.g. Error (default) or Done")
 						.integer("skip", "number of messages to skip")
 						.integer("max", "maximum number of messages to return")
-						.string("messageId", "filter on message id")
+						.string(MESSAGE_ID, "filter on message id")
 						.string("correlationId", "filter on correlation id")
 						.string("type", "filter on message type")
 						.string("host", "filter on host")
@@ -79,7 +80,7 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 					addStoreHeaders(request, builder);
 					builder.addHeader("skip", integerArg(request, "skip"));
 					builder.addHeader("max", integerArg(request, "max"));
-					builder.addHeader("messageId", stringArg(request, "messageId"));
+					builder.addHeader(MESSAGE_ID, stringArg(request, MESSAGE_ID));
 					builder.addHeader("correlationId", stringArg(request, "correlationId"));
 					builder.addHeader("type", stringArg(request, "type"));
 					builder.addHeader("host", stringArg(request, "host"));
@@ -100,12 +101,12 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 						.requiredString("adapter", "the name of the adapter")
 						.requiredString("receiver", "the name of the receiver")
 						.string("processState", "the message store, e.g. Error (default) or Done")
-						.requiredString("messageId", "the id of the message to retrieve")
+						.requiredString(MESSAGE_ID, "the id of the message to retrieve")
 						.build(),
 				request -> {
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET);
 					addStoreHeaders(request, builder);
-					builder.addHeader("messageId", requiredStringArg(request, "messageId"));
+					builder.addHeader(MESSAGE_ID, requiredStringArg(request, MESSAGE_ID));
 					return sendSyncForString(builder);
 				});
 	}
@@ -117,13 +118,13 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 						.requiredString("configuration", "the name of the configuration the adapter belongs to")
 						.requiredString("adapter", "the name of the adapter")
 						.requiredString("receiver", "the name of the receiver")
-						.requiredString("messageId", "the id of the message to resend")
+						.requiredString(MESSAGE_ID, "the id of the message to resend")
 						.build(),
 				request -> {
-					String messageId = requiredStringArg(request, "messageId");
+					String messageId = requiredStringArg(request, MESSAGE_ID);
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.UPLOAD);
 					addReceiverHeaders(request, builder);
-					builder.addHeader("messageId", messageId);
+					builder.addHeader(MESSAGE_ID, messageId);
 					sendAsync(builder);
 					return "Requested resend of message [%s].".formatted(messageId);
 				});
@@ -136,13 +137,13 @@ public class MessageBrowserToolProvider extends AbstractToolProvider {
 						.requiredString("configuration", "the name of the configuration the adapter belongs to")
 						.requiredString("adapter", "the name of the adapter")
 						.requiredString("receiver", "the name of the receiver")
-						.requiredString("messageId", "the id of the message to delete")
+						.requiredString(MESSAGE_ID, "the id of the message to delete")
 						.build(),
 				request -> {
-					String messageId = requiredStringArg(request, "messageId");
+					String messageId = requiredStringArg(request, MESSAGE_ID);
 					RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 					addReceiverHeaders(request, builder);
-					builder.addHeader("messageId", messageId);
+					builder.addHeader(MESSAGE_ID, messageId);
 					sendAsync(builder);
 					return "Requested deletion of message [%s].".formatted(messageId);
 				});

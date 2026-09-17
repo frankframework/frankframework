@@ -2,6 +2,8 @@ package org.frankframework.filesystem.mock;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.filesystem.IFileSystemWithAttachmentsTestHelper;
 
 public class MockFileSystemWithAttachmentsTestHelper extends MockFileSystemTestHelper<MockFileWithAttachments> implements IFileSystemWithAttachmentsTestHelper<MockAttachment> {
@@ -40,7 +42,7 @@ public class MockFileSystemWithAttachmentsTestHelper extends MockFileSystemTestH
 	}
 
 	@Override
-	public Object getProperty(MockAttachment attachment, String key) {
+	public @Nullable Object getProperty(MockAttachment attachment, String key) {
 		Map<String,Object> properties=attachment.getAdditionalProperties();
 		if (properties==null) {
 			return null;

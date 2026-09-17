@@ -23,6 +23,7 @@ The source is available from the [docker-folder](docker/Tomcat) in this reposito
     * [Secrets](#secrets)
     * [Drivers](#drivers)
     * [Non-root](#non-root)
+    * [Readonly](#readonly)
 <!-- TOC -->
 
 ## General use
@@ -117,7 +118,7 @@ In some cases you might want to change the log-appenders, for example to log to 
 Environment variables can be used to set properties. Environment variables have the highest precedence and override
 application properties set in .properties files supplied by Tomcat, resources and configurations.
 
-For instance, when you need to override a setting in `catalinaAdditional.properties`, you can set an environment variable with the same 
+For instance, when you need to override a setting in `catalinaAdditional.properties`, you can set an environment variable with the same
 name as the property you want to override, and it will take precedence over that value.
 For instance, to override the `configurations.directory.autoLoad` property, you can set an environment variable `configurations.directory.autoLoad=false` to disable auto loading of configurations.
 
@@ -195,3 +196,7 @@ services:
       - /usr/local/tomcat/conf/Catalina/localhost
       - /usr/local/tomcat/work/Catalina/localhost
 ```
+
+---
+
+Last checked for correctness: 2026-09-04

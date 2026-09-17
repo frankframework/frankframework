@@ -368,7 +368,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if (isActive()) {
 			throw new LifecycleException("unable to refresh, AdapterContext is already active");
 		}
@@ -1180,7 +1180,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		return sb.toString();
 	}
 
-	private String getFileSizeAsBytes(Message message) {
+	private @Nullable String getFileSizeAsBytes(Message message) {
 		if (Message.isEmpty(message)) {
 			return null;
 		}

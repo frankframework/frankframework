@@ -26,16 +26,15 @@ import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
+import lombok.experimental.UtilityClass;
+
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.jta.narayana.NarayanaDataSource;
 
+@UtilityClass
 public class JdbcPoolUtil {
 
 	private static final String CLOSE = "], ";
-
-	private JdbcPoolUtil() {
-		// Empty constructor to prevent creation of instances of static utility-class.
-	}
 
 	/** Returns pool info or NULL when it's not able to do so. */
 	public static @Nullable String getConnectionPoolInfo(@Nullable DataSource datasource) {
@@ -43,9 +42,7 @@ public class JdbcPoolUtil {
 
 		switch (datasource) {
 			case OpenManagedDataSource<?> targetDataSource -> addPoolMetadata(targetDataSource.getPool(), info);
-			case OpenPoolingDataSource<?> poolingDataSource -> {
-				addPoolMetadata(poolingDataSource.getPool(), info);
-			}
+			case OpenPoolingDataSource<?> poolingDataSource -> addPoolMetadata(poolingDataSource.getPool(), info);
 			case DelegatingDataSource source -> {
 				return getConnectionPoolInfo(source.getTargetDataSource());  // Perhaps it's wrapped?
 			}

@@ -391,7 +391,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
        		context.close();
        	}
     }
-    protected String searchObjectForSingleAttributeWithCache(DirContext context, String objectDN, String baseDn, String attribute) throws NamingException {
+    protected @Nullable String searchObjectForSingleAttributeWithCache(DirContext context, String objectDN, String baseDn, String attribute) throws NamingException {
     	Set<String> resultSet=searchObjectForMultiValuedAttributeWithCache(context, objectDN, baseDn, attribute, true);
     	if (resultSet!=null) {
     		Iterator<String> it = resultSet.iterator();
@@ -473,7 +473,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		return result;
 	}
 
-    public String getFirstAttribute(SearchResult searchResult) throws NamingException {
+    public @Nullable String getFirstAttribute(SearchResult searchResult) throws NamingException {
 		Attributes attributes=searchResult.getAttributes();
 		NamingEnumeration<? extends Attribute> attrenum= attributes.getAll();
 		try {
@@ -595,7 +595,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		}
     }
 
-    public String checkPassword(String userDN, String password, String baseDN, String returnedAttribute) throws NamingException {
+    public @Nullable String checkPassword(String userDN, String password, String baseDN, String returnedAttribute) throws NamingException {
 
     	if (userDN==null || "".equals(userDN) || password==null || "".equals(password)) {
     		return null;
@@ -615,7 +615,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		}
     }
 
-	public String authenticate(String username, String password, String searchDN, String baseDN, String searchFilter, String returnedAttributeDN, String returnedAttributeResult) throws NamingException {
+	public @Nullable String authenticate(String username, String password, String searchDN, String baseDN, String searchFilter, String returnedAttributeDN, String returnedAttributeResult) throws NamingException {
 		if (username==null|| "".equals(username) || password==null|| "".equals(password)) {
 			return null;
 		}

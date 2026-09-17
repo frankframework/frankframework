@@ -20,6 +20,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.lifecycle.events.MessageEvent;
 import org.frankframework.logging.IbisMaskingLayout;
@@ -40,7 +41,7 @@ public class MessageKeeperMessage {
 
 	public static MessageKeeperMessage fromEvent(MessageEvent<?> event) {
 		MessageKeeper.MessageKeeperLevel level = EnumUtils.parse(MessageKeeper.MessageKeeperLevel.class, event.getLevel().name());
-		return new MessageKeeperMessage(event.getMessage(), Instant.ofEpochMilli(event.getTimestamp()), level);
+		return new MessageKeeperMessage(event.getMessage(), event.getEventTime(), level);
 	}
 
 	/**
@@ -74,7 +75,7 @@ public class MessageKeeperMessage {
 	public String getMessageText() {
 		return messageText;
 	}
-	public String getMessageLevel() {
+	public @Nullable String getMessageLevel() {
 		return messageLevel!=null ? messageLevel.name() : null;
 	}
 

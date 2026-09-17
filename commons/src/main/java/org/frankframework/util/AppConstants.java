@@ -16,6 +16,7 @@
 package org.frankframework.util;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -68,7 +69,7 @@ public final class AppConstants extends PropertyLoader {
 
 	private static final ConcurrentHashMap<Integer, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
 
-	private AppConstants(ClassLoader classLoader) {
+	private AppConstants(@NonNull ClassLoader classLoader) {
 		super(classLoader, APP_CONSTANTS_PROPERTIES_FILE);
 
 		// Calculate this outside the cleaner-function to make sure we do not accidentally capture a reference
@@ -89,7 +90,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @return AppConstants instance
 	 */
 	public static AppConstants getInstance() {
-		return getInstance(AppConstants.class.getClassLoader());
+		return getInstance(Objects.requireNonNull(AppConstants.class.getClassLoader()));
 	}
 
 	/**
@@ -111,7 +112,7 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	public static void removeInstance() {
-		removeInstance(AppConstants.class.getClassLoader());
+		removeInstance(Objects.requireNonNull(AppConstants.class.getClassLoader()));
 	}
 
 	public static synchronized void removeInstance(final ClassLoader cl) {
@@ -150,10 +151,9 @@ public final class AppConstants extends PropertyLoader {
 		}
 
 		Properties filteredProperties = new Properties();
-		for(Object objKey: constants.keySet()) {
-			String key = (String) objKey;
-			if(key.startsWith(propertyPrefix)) {
-				filteredProperties.put(key, constants.getResolvedProperty(key));
+		for (String key : constants.stringPropertyNames()) {
+			if (key.startsWith(propertyPrefix)) {
+				filteredProperties.put(key, Objects.requireNonNull(constants.getResolvedProperty(key)));
 			}
 		}
 
@@ -169,7 +169,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @return Previous value, or null
 	 */
 	@Override
-	public synchronized Object setProperty(String key, String value) {
+	public synchronized @Nullable Object setProperty(String key, String value) {
 		return super.setProperty(key, value);
 	}
 
@@ -181,7 +181,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @param value the value corresponding to {@code key}.
 	 * @return Previous value, or null
 	 */
-	public Object setProperty(String key, boolean value) {
+	public @Nullable Object setProperty(String key, boolean value) {
 		return setProperty(key, ""+value);
 	}
 
@@ -248,7 +248,7 @@ public final class AppConstants extends PropertyLoader {
 		load(classLoader, filename, null, loadAdditionalPropertiesFiles);
 	}
 
-	private synchronized void load(final ClassLoader classLoader, final String filename, final String suffix, final boolean loadAdditionalPropertiesFiles) {
+	private synchronized void load(final ClassLoader classLoader, final String filename, final @Nullable String suffix, final boolean loadAdditionalPropertiesFiles) {
 		for (final String theFilename : StringUtil.split(filename)) {
 			super.load(classLoader, theFilename);
 

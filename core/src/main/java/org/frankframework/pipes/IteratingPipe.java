@@ -159,7 +159,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		}
 	}
 
-	protected IDataIterator<I> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
+	protected @Nullable IDataIterator<I> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		return null;
 	}
 
@@ -267,7 +267,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		/**
 		 * @return a non-null StopReason when stop is required
 		 */
-		public StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
+		public @Nullable StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
 			if (isRemoveDuplicates()) {
 				if (inputItems.contains(item)) {
 					log.debug("duplicate item [{}] will not be processed", item);

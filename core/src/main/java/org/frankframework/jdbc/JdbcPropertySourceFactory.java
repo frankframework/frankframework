@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -45,7 +46,7 @@ public class JdbcPropertySourceFactory implements ApplicationContextAware {
 		return createPropertySource(name, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 	}
 
-	public Properties createPropertySource(String name, String datasourceName) {
+	public @Nullable Properties createPropertySource(String name, String datasourceName) {
 		JdbcFacade ibisProp = (JdbcFacade) applicationContext.getAutowireCapableBeanFactory().autowire(JdbcFacade.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		log.debug("looking up properties in database with datasouce [{}]", datasourceName);
 		ibisProp.setDatasourceName(datasourceName);

@@ -157,7 +157,7 @@ public class EnumUtilsTest {
 
 	public enum EnumWithInteger {
 		ONE(1), TWO(2);
-		private int i = 0;
+		private int i;
 
 		EnumWithInteger(int i) {
 			this.i = i;

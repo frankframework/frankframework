@@ -18,6 +18,7 @@ package org.frankframework.http.authentication;
 import org.apache.http.impl.auth.AuthSchemeBase;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -38,7 +39,7 @@ public enum AuthenticationScheme {
 		schemeName = createScheme().getSchemeName();
 	}
 
-	public AuthSchemeBase createScheme() {
+	public @Nullable AuthSchemeBase createScheme() {
 		try {
 			return ClassUtils.newInstance(schemeClass);
 		} catch (ReflectiveOperationException | SecurityException e) {

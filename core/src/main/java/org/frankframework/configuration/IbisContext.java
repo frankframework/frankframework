@@ -23,8 +23,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -33,11 +34,8 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
-import org.frankframework.credentialprovider.CredentialFactory;
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.http.RestServiceDispatcher;
 import org.frankframework.jdbc.JdbcPropertySourceFactory;
 import org.frankframework.lifecycle.IbisApplicationContext;
@@ -69,29 +67,7 @@ public class IbisContext extends IbisApplicationContext {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	static {
-		checkForDeprecations();
-	}
-
-	public static void checkForDeprecations() {
-		AppConstants appConstants = AppConstants.getInstance();
-		if (!appConstants.getBoolean("jdbc.convertFieldnamesToUppercase", true))
-			ApplicationWarnings.add(LOG, "DEPRECATED: jdbc.convertFieldnamesToUppercase is set to false, please set to true. XML field definitions of SQL senders will be uppercased!");
-
-		String loadFileSuffix = appConstants.getProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
-		if (StringUtils.isNotEmpty(loadFileSuffix))
-			ApplicationWarnings.add(LOG, "DEPRECATED: SUFFIX [_"+loadFileSuffix+"] files are deprecated, property files are now inherited from their parent!");
-
-		String autoDatabaseClassLoader = appConstants.getProperty("configurations.autoDatabaseClassLoader");
-		if (StringUtils.isNotEmpty(autoDatabaseClassLoader))
-			ApplicationWarnings.add(LOG, "DEPRECATED property [configurations.autoDatabaseClassLoader], please use [configurations.database.autoLoad] instead");
-
-		String credentialFactoryClassNames = CredentialConstants.getInstance().getProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY);
-		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
-		if (StringUtils.isNotEmpty(credentialFactoryClassNames) && credentialFactoryClassNames.contains(CredentialFactory.LEGACY_PACKAGE_NAME)) {
-			ApplicationWarnings.add(LOG, "DEPRECATED legacy classnames from package [" +
-					CredentialFactory.LEGACY_PACKAGE_NAME + "] used for creating CredentialProviders, please update to use new classnames starting with [" +
-					CredentialFactory.ORG_FRANKFRAMEWORK_PACKAGE_NAME + "]: [" + credentialFactoryClassNames + "]");
-		}
+		AppConstantsValidator.validate();
 	}
 
 	private @Getter IbisManager ibisManager;
@@ -291,12 +267,12 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
-	public void load(String configurationName) {
+	public void load(@Nullable String configurationName) {
 		boolean configFound = false;
 
 		// We have an ordered list with all configurations, lets loop through!
-		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
-		for (Entry<String, Class<? extends IConfigurationClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
+		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
+		for (Entry<String, Class<? extends ClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
 			String classLoaderType = currentConfigNameItem.getValue() == null ? null : currentConfigNameItem.getValue().getCanonicalName();
 
@@ -309,9 +285,9 @@ public class IbisContext extends IbisApplicationContext {
 				try {
 					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
 
-					// An error occurred but we don't want to throw any exceptions.
+					// An error occurred, but we don't want to throw any exceptions.
 					// Skip configuration digesting so it can be done at a later time.
-					if(classLoader == null)
+					if (classLoader == null)
 						continue;
 
 				} catch (ClassLoaderException e) {
@@ -337,12 +313,12 @@ public class IbisContext extends IbisApplicationContext {
 		generateFlow();
 		// Check if the configuration we try to reload actually exists
 		if (!configFound && configurationName != null) {
-			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageEventLevel.ERROR);
+			log(configurationName + " not found in ["+ allConfigNamesItems.keySet() +"]", MessageEventLevel.ERROR);
 		}
 	}
 
 	/** Helper method to create stubbed configurations used in JunitTests */
-	protected Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames() {
+	protected Map<String, Class<? extends ClassLoader>> retrieveAllConfigNames() {
 		return ConfigurationUtils.retrieveAllConfigNames(getApplicationContext());
 	}
 
@@ -350,11 +326,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Create a new configuration through Spring, and explicitly set the ClassLoader before initializing it.
 	 * If no ClassLoader or ClassLoader is not IConfigurationClassLoader return an error.
 	 */
-	private Configuration createConfiguration(String name, ClassLoader classLoader) {
-		if(!(classLoader instanceof IConfigurationClassLoader)) {
-			throw new IllegalStateException("no IConfigurationClassLoader set");
-		}
-
+	private Configuration createConfiguration(@NonNull String name, @Nullable ClassLoader classLoader) {
 		Configuration bean = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().autowire(Configuration.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		bean.setClassLoader(classLoader);
 		Configuration configuration = (Configuration) getApplicationContext().getAutowireCapableBeanFactory().initializeBean(bean, name);
@@ -369,7 +341,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * either ClassLoader is populated or ConfigurationException, but never both!
 	 */
-	private void createAndConfigureConfigurationWithClassLoader(ClassLoader classLoader, String currentConfigurationName, ClassLoaderException classLoaderException) {
+	private void createAndConfigureConfigurationWithClassLoader(@Nullable ClassLoader classLoader, @NonNull String currentConfigurationName, @Nullable ClassLoaderException classLoaderException) {
 		if(LOG.isDebugEnabled()) LOG.debug("creating new configuration [{}]", currentConfigurationName);
 
 		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
@@ -386,7 +358,7 @@ public class IbisContext extends IbisApplicationContext {
 				configuration = new Configuration();
 				configuration.setName(currentConfigurationName);
 				ibisManager.addConfiguration(configuration); // Manually add the configuration else it will be GC'd
-				if(classLoaderException != null) {
+				if (classLoaderException != null) {
 					classLoaderException.addSuppressed(e);
 					throw new ClassLoaderException("error instantiating ClassLoader", classLoaderException);
 				}
@@ -401,6 +373,7 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.error("unable to configure configuration [{}]", currentConfigurationName, e);
 		} catch (Exception e) {
 			// Something is wrong, unable to create configuration.
+			assert configuration != null; // Different code analysis tools have different results for wether `configuration` can be null here or not; overall it cannot be but we make the assert to satisfy all tools.
 			configuration.setConfigurationException(new ConfigurationException(e));
 			log("exception loading configuration ["+currentConfigurationName+"]", MessageEventLevel.ERROR, e);
 		} finally {

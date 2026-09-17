@@ -86,7 +86,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	}
 
 	@Test
-	public void nothingGetsEscapedWhenNoSubstringEndConfigured() throws Exception {
+	public void nothingGetsEscapedWhenNoSubstringEndConfigured() {
 		pipe.setSubstringStart("<message>");
 		pipe.setSubstringEnd("");
 
@@ -94,7 +94,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	}
 
 	@Test
-	public void nothingGetsEscapedWhenNoSubstringStartConfigured() throws Exception {
+	public void nothingGetsEscapedWhenNoSubstringStartConfigured() {
 		pipe.setSubstringStart("");
 		pipe.setSubstringEnd("</message>");
 

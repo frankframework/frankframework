@@ -24,6 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -68,7 +69,7 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 		try {
 			if (prometheusRegistry == null) {
-				resp.sendError(501, "Prometheus registry not found");
+				resp.sendError(HttpStatus.NOT_IMPLEMENTED.value(), "Prometheus registry not found");
 				return;
 			}
 

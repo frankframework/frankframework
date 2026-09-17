@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.collection.AbstractCollectorPipe.Action;
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
@@ -17,11 +16,11 @@ public class CollectorPipeTest extends PipeTestBase<AbstractCollectorPipe<TestCo
 	private final TestCollector collector = new TestCollector();
 
 	@Override
-	public AbstractCollectorPipe<TestCollector, TestCollectorPart> createPipe() throws ConfigurationException {
+	public AbstractCollectorPipe<TestCollector, TestCollectorPart> createPipe() {
 		return new AbstractCollectorPipe<>() {
 
 			@Override
-			protected TestCollector createCollector(Message input, PipeLineSession session) throws CollectionException {
+			protected TestCollector createCollector(Message input, PipeLineSession session) {
 				return collector;
 			}
 

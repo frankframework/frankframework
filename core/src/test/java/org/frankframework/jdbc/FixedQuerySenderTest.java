@@ -46,7 +46,7 @@ public class FixedQuerySenderTest {
 	private Dbms databaseUnderTest;
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+	public void setup(DatabaseTestEnvironment databaseTestEnvironment) {
 		this.databaseUnderTest = databaseTestEnvironment.getDbmsSupport().getDbms();
 		TestConfiguration configuration = databaseTestEnvironment.getConfiguration();
 		session = new PipeLineSession();

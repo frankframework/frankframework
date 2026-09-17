@@ -41,7 +41,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class BearerOnlyAuthenticator extends AbstractOAuth2Authenticator {
 
 	@Override
-	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+	public SecurityFilterChain configure(HttpSecurity http) {
 		configureBearerTokenResourceServer(http);
 		return http.build();
 	}

@@ -135,7 +135,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	@Override
-	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+	public void startPrefixMapping(String prefix, String uri) {
 		PrefixMapping mapping = new PrefixMapping(prefix, uri);
 		Stack<String> prefixMappingStack = activeNamespaceDefinitions.get(prefix);
 		if (prefixMappingStack==null) {
@@ -149,7 +149,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	@Override
-	public void endPrefixMapping(String prefix) throws SAXException {
+	public void endPrefixMapping(String prefix) {
 		activeNamespaceDefinitions.get(prefix).pop();
 	}
 
@@ -260,7 +260,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	@Override
-	public void endDTD() throws SAXException {
+	public void endDTD() {
 //		System.out.println("endDTD");
 	}
 
@@ -299,7 +299,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 //		System.out.println("startEntity ["+arg0+"]");
 	}
 	@Override
-	public void endEntity(String arg0) throws SAXException {
+	public void endEntity(String arg0) {
 //		System.out.println("endEntity ["+arg0+"]");
 	}
 

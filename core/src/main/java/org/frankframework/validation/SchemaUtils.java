@@ -648,7 +648,7 @@ public class SchemaUtils {
 		return w.toString().trim();
 	}
 
-	public static void sortByDependencies(Set<IXSD> xsds, List<Schema> schemas) throws ConfigurationException {
+	public static void sortByDependencies(Set<IXSD> xsds, List<Schema> schemas) {
 		Set<IXSD> xsdsWithDependencies = new LinkedHashSet<>();
 		for (IXSD xsd : xsds) {
 			if (xsd.hasDependency(xsds)) {

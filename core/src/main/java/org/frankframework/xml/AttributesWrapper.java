@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 
 /**
@@ -115,7 +116,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getLocalName(int i) {
+	public @Nullable String getLocalName(int i) {
 		if (i < 0 || i >= attributes.size()) {
 			return null;
 		}
@@ -123,7 +124,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getQName(int i) {
+	public @Nullable String getQName(int i) {
 		if (i < 0 || i >= attributes.size()) {
 			return null;
 		}
@@ -131,7 +132,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getType(int i) {
+	public @Nullable String getType(int i) {
 		if (i < 0 || i >= attributes.size()) {
 			return null;
 		}
@@ -139,7 +140,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getType(String qName) {
+	public @Nullable String getType(String qName) {
 		int index = getIndex(qName);
 		if (index == -1) {
 			return null;
@@ -148,7 +149,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getType(String uri, String localName) {
+	public @Nullable String getType(String uri, String localName) {
 		int index = getIndex(uri, localName);
 		if (index == -1) {
 			return null;
@@ -157,7 +158,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getURI(int i) {
+	public @Nullable String getURI(int i) {
 		if (i < 0 || i >= attributes.size()) {
 			return null;
 		}
@@ -165,7 +166,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getValue(int i) {
+	public @Nullable String getValue(int i) {
 		if (i < 0 || i >= attributes.size()) {
 			return null;
 		}
@@ -173,7 +174,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getValue(String qName) {
+	public @Nullable String getValue(String qName) {
 		int index = getIndex(qName);
 		if (index == -1) {
 			return null;
@@ -182,7 +183,7 @@ public class AttributesWrapper implements Attributes {
 	}
 
 	@Override
-	public String getValue(String uri, String localName) {
+	public @Nullable String getValue(String uri, String localName) {
 		int index = getIndex(uri, localName);
 		if (index == -1) {
 			return null;

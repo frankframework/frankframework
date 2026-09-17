@@ -143,7 +143,7 @@ public class TestAttributesAndDestinationType {
 	}
 
 	@Test
-	public void verifyThatPhysicalDestinationHaveDestinationTypeAnnotation() throws ClassNotFoundException {
+	public void verifyThatPhysicalDestinationHaveDestinationTypeAnnotation() {
 		List<Executable> executables = new ArrayList<>();
 		for (String beanName : getClassesThatImplement(HasPhysicalDestination.class)) {
 			if (beanName.contains("kafka")) continue;

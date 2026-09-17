@@ -14,7 +14,6 @@ import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -22,6 +21,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.JdbcUtil;
 
+@SuppressWarnings("SqlSourceToSinkFlow") // Don't warn about SQL Injection Attacks for this test-util class
 @Log4j2
 public class JdbcTestUtil {
 
@@ -68,7 +68,7 @@ public class JdbcTestUtil {
 		}
 	}
 
-	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
+	public static void executeStatement(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues) throws JdbcException {
 		log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try {
 			PreparedStatement stmt = connection.prepareStatement(query);
@@ -79,7 +79,7 @@ public class JdbcTestUtil {
 		}
 	}
 
-	public static Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues, PipeLineSession session) throws JdbcException {
+	public static @Nullable Object executeQuery(IDbmsSupport dbmsSupport, Connection connection, String query, @Nullable ParameterValueList parameterValues) throws JdbcException {
 		JdbcTestUtil.log.debug("prepare and execute query [" + query + "]" + displayParameters(parameterValues));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			JdbcUtil.applyParameters(dbmsSupport, stmt, parameterValues != null ? parameterValues : new ParameterValueList());
@@ -194,7 +194,7 @@ public class JdbcTestUtil {
 	 * @return Query result as string, or {@literal  NULL}. The result is taken from only the first result-row, first column.
 	 * @throws DbmsException if there is an error in query execution or parameter mapping
 	 */
-	public static String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
+	public static @Nullable String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
 		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayQueryParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt, params);

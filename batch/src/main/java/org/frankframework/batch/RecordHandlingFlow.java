@@ -65,7 +65,7 @@ public final class RecordHandlingFlow {
 				throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
 		}
 		// obtain the named manager that is to be used after a specified record
-		IRecordHandlerManager nextManager = null;
+		IRecordHandlerManager nextManager;
 		if (StringUtils.isEmpty(getNextRecordHandlerManagerRef())) {
 			nextManager = manager;
 		} else {

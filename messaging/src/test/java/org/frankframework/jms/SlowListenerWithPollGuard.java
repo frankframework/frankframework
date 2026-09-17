@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.jms.Message;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
@@ -17,7 +18,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IPushingListener;
@@ -47,7 +47,7 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
 	private SpringJmsConnector mockConnector;
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		DefaultMessageListenerContainer mockContainer = mock(DefaultMessageListenerContainer.class);
 		mockConnector = mock(SpringJmsConnector.class);
 		when(mockConnector.getLastPollFinishedTime()).thenAnswer(invocationOnMock -> System.currentTimeMillis() - mockLastPollDelayMs);
@@ -96,12 +96,12 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
     }
 
     @Override
-    public IbisExceptionListener getExceptionListener() {
+    public @Nullable IbisExceptionListener getExceptionListener() {
         return null;
     }
 
     @Override
-    public IMessageHandler<Message> getHandler() {
+    public @Nullable IMessageHandler<Message> getHandler() {
         return null;
     }
 
@@ -122,7 +122,7 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, @NonNull PipeLineSession session) {
+	public @Nullable RawMessageWrapper<Message> wrapRawMessage(@NonNull Message rawMessage, @NonNull PipeLineSession session) {
 		return null;
 	}
 

@@ -174,7 +174,7 @@ public class DocumentBuilderTest {
 								</root>\
 								""";
 		try(JsonReader jr = Json.createReader(new StringReader(input))) {
-			JsonValue jValue=null;
+			JsonValue jValue;
 			jValue = jr.read();
 			StringWriter writer = new StringWriter();
 			try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer)) {

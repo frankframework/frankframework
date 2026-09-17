@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -163,8 +164,7 @@ public abstract class AbstractOAuth2Authenticator extends AbstractServletAuthent
 		Collection<GrantedAuthority> authorities = new HashSet<>(getGrantedAuthorities(jwt));
 		authorities.add(FactorGrantedAuthority.fromAuthority(FactorGrantedAuthority.BEARER_AUTHORITY));
 
-		String principalClaimValue = jwt.getClaimAsString(userNameAttributeName);
-		AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
+		AbstractAuthenticationToken token = getJwtAuthenticationToken(jwt, authorities);
 
 		// If Authorities are set, the user is authenticated if the user has at least one of the required roles
 		if (!getAuthorities().isEmpty()) {
@@ -174,6 +174,15 @@ public abstract class AbstractOAuth2Authenticator extends AbstractServletAuthent
 		}
 
 		return token;
+	}
+
+	private @NonNull AbstractAuthenticationToken getJwtAuthenticationToken(Jwt jwt, Collection<GrantedAuthority> authorities) {
+		String principalClaimValue = jwt.getClaimAsString(userNameAttributeName);
+
+		if (StringUtils.isNotBlank(principalClaimValue)) {
+			return new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
+		}
+		return new JwtAuthenticationToken(jwt, authorities);
 	}
 
 	/**
@@ -206,8 +215,13 @@ public abstract class AbstractOAuth2Authenticator extends AbstractServletAuthent
 			return jwt;
 		}
 
-		log.debug("Fetched user info: {}", userInfo);
-		return new Jwt(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getHeaders(), userInfo);
+		if (userInfo != null && !userInfo.isEmpty()) {
+			log.debug("Fetched user info: {}", userInfo);
+			return new Jwt(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getHeaders(), userInfo);
+		}
+
+		log.debug("Fetched user info is empty");
+		return jwt;
 	}
 
 	private JwtDecoder getJwtDecoder() {

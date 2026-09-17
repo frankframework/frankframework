@@ -8,6 +8,6 @@ services:
       active.storedProcedureTests: true
 
   mysql:
-    image: private.docker.nexus.frankframework.org/ff-test/dbms/mysql
+    image: ghcr.io/frankframework/dbms/mysql
     ports:
       - "3307:3307"

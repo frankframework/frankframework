@@ -40,7 +40,7 @@ import java.util.Vector;
  **/
 public class WildCardFilter implements FilenameFilter {
 
-	String wildPattern = null;
+	String wildPattern;
 	Vector<String> pattern = new Vector<>();
 
 	private static final String FIND = "find";
@@ -113,8 +113,8 @@ public class WildCardFilter implements FilenameFilter {
 
 		boolean acceptName = true;
 
-		String command = null;
-		String param = null;
+		String command;
+		String param;
 
 		int currPos = 0;
 		int cmdPos = 0;

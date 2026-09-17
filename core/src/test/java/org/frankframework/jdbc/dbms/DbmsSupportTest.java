@@ -23,11 +23,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -259,7 +259,7 @@ public class DbmsSupportTest {
 	public void testGetDateTimeLiteral() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(TimeProvider.nowAsDate()), 4) + "," + dbmsSupport.getDatetimeLiteral(TimeProvider.nowAsDate()) + ")");
-			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null, new PipeLineSession());
+			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null);
 		}
 	}
 
@@ -267,7 +267,7 @@ public class DbmsSupportTest {
 	public void testSysDate() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3," + dbmsSupport.getSysDate() + "," + dbmsSupport.getSysDate() + ")");
-			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null, new PipeLineSession());
+			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null);
 		}
 	}
 
@@ -736,7 +736,7 @@ public class DbmsSupportTest {
 		return executeTranslatedQuery(connection, query, queryType, false);
 	}
 
-	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
+	protected @Nullable PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 
 		log.debug("executing translated query [{}]", translatedQuery);

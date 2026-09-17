@@ -15,7 +15,6 @@
 */
 package org.frankframework.larva.actions;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.frankframework.core.ListenerException;
@@ -27,5 +26,5 @@ public interface LarvaScenarioAction extends AutoCloseable {
 
 	void executeWrite(Message fileContent, String correlationId, Properties stepParameters) throws TimeoutException, SenderException, ListenerException;
 
-	Message executeRead(Properties stepParameters) throws SenderException, IOException, TimeoutException, ListenerException;
+	Message executeRead(Properties stepParameters) throws SenderException, TimeoutException, ListenerException;
 }

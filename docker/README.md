@@ -21,7 +21,7 @@ mvn clean package -P docker,Tomcat -DskipTests
 
 First make sure that you can access the auxiliary images. This can be done by:
 - building them yourself, by checking out https://github.com/frankframework/ci-images/
-- or by using the prebuild images in the private Docker registry `private.docker.nexus.frankframework.org`. The private repository
+- or by using the prebuild images in the private Docker registry `ghcr.io`. The private repository
 requires [login](https://docs.docker.com/engine/reference/commandline/login/).
 
 Use Docker compose to run any combination of test image, database and Messaging Systems. The properties will be resolved automatically.
@@ -48,7 +48,7 @@ work on fixes easily, without the whole Maven build and Docker compose cycle.
 - First, build the test image as described above with Maven.
 - Second, start the image with the following command, from the current 'docker' folder:
   ```shell
-  export VERSION=8.2.0-SNAPSHOT
+  export VERSION=10.3.0-SNAPSHOT
   docker compose -f tomcat-debug.yml up
   ```
 - Third, attach to your running process, inside your IDE. In IntelliJ, choose `Remote JVM Debug` and use port 8001 at
@@ -66,7 +66,7 @@ It is possible to run the test image using a different version.
 This can be done by exporting the `VERSION` property. For example:
 
 ```shell
-export VERSION=8.2.0-SNAPSHOT
+export VERSION=10.3.0-SNAPSHOT
 ```
 
 The `.env` file should contain the current version of the project, but it can be changed for a more permanent solution.
@@ -79,3 +79,7 @@ There are two scenario root directories that can be used.
   made.
 - **external testtool directory /opt/frank/testtool-ext**: Uses mounted tests, which can be changed while the image is
   running.
+
+---
+
+Last checked for correctness: 2026-09-04

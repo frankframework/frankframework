@@ -32,7 +32,7 @@ public class JndiContextPrefixFactory implements InitializingBean {
 		TOMCAT(JndiLocatorSupport.CONTAINER_PREFIX),
 		DEFAULT(JndiLocatorSupport.CONTAINER_PREFIX);
 
-		private String prefix = "";
+		private String prefix;
 		ContextPrefix(String prefix) {
 			this.prefix = prefix;
 		}

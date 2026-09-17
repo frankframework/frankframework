@@ -9,7 +9,7 @@ public class ServletManagerMock extends ServletManager {
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		// ignore setup
 	}
 }

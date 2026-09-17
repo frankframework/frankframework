@@ -37,6 +37,7 @@ import javax.net.ssl.SSLParameters;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -310,7 +311,7 @@ public class SecurityItems extends BusEndpointBase {
 		return (bean instanceof HasSender hasSender) ? hasSender.getSender() : bean;
 	}
 
-	private KeyStore extractKeyStore(FrankElement bean) {
+	private @Nullable KeyStore extractKeyStore(FrankElement bean) {
 		try {
 			if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 				return CorePkiUtil.createKeyStore(keystoreOwner);

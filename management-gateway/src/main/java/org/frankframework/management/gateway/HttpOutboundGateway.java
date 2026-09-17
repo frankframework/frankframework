@@ -37,7 +37,7 @@ public class HttpOutboundGateway implements InitializingBean, ApplicationContext
 	private String endpoint;
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(StringUtils.isBlank(endpoint)) {
 			throw new IllegalStateException("no endpoint specified");
 		}

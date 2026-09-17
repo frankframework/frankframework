@@ -34,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
-import com.tibco.tibjms.admin.TibjmsAdminException;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -249,12 +248,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 	private void validateQueueName(String urlWork, CredentialFactory cf, String queueNameWork) throws PipeRunException {
 		TibjmsAdmin admin;
-		try {
-			admin = TibcoUtils.getActiveServerAdmin(urlWork, cf, emsProperties);
-		} catch (TibjmsAdminException e) {
-			log.debug("caught exception, cannot validate Tibco queue name", e);
-			return;
-		}
+		admin = TibcoUtils.getActiveServerAdmin(urlWork, cf, emsProperties);
 		if (admin == null) {
 			return;
 		}

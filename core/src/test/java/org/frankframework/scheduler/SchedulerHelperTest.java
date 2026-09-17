@@ -32,7 +32,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 
 	// Fill the scheduler with 4 entries, remove 1 and check which schedules are left.
 	@Test
-	public void testDeleteTrigger() throws SchedulerException, ParseException {
+	public void testDeleteTrigger() throws SchedulerException {
 		schedulerHelper.scheduleJob(createConfiguredJob("target", null), 1000);
 		schedulerHelper.scheduleJob(createConfiguredJob("target", "something"), 1000);
 
@@ -43,7 +43,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testNullIsDefaultGroup() throws SchedulerException, ParseException {
+	public void testNullIsDefaultGroup() throws SchedulerException {
 		schedulerHelper.scheduleJob(createConfiguredJob("target", null), 1000);
 
 		// Make sure null, DEFAULT and SchedulerHelper.DEFAULT_GROUP are all the same
@@ -53,7 +53,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testContains() throws SchedulerException, ParseException {
+	public void testContains() throws SchedulerException {
 		schedulerHelper.scheduleJob(createConfiguredJob("target", "some-group"), 1000);
 
 		assertTrue(schedulerHelper.contains("target", "some-group"));

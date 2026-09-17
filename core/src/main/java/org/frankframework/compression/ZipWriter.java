@@ -123,7 +123,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		// nothing to close
 	}
 }

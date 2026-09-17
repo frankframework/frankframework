@@ -89,12 +89,12 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@NonNull
 	@Override
-	public Map<String,Object> openThread() throws ListenerException {
+	public Map<String,Object> openThread() {
 		return new LinkedHashMap<>();
 	}
 
 	@Override
-	public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@NonNull Map<String, Object> threadContext) {
 		// No-op
 	}
 
@@ -112,7 +112,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		}
 	}
 
-	protected RawMessageWrapper<String> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
+	protected @Nullable RawMessageWrapper<String> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		String query = getSelectQuery();
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);

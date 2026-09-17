@@ -250,7 +250,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		}
 
 		@Override
-		public void endDTD() throws SAXException {
+		public void endDTD() {
 //			System.out.println("endDTD");
 		}
 

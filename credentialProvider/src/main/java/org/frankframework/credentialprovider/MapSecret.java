@@ -15,7 +15,6 @@
 */
 package org.frankframework.credentialprovider;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -48,7 +47,7 @@ public class MapSecret extends Secret {
 	}
 
 	@Override
-	public String getField(@Nullable String fieldName) throws IOException {
+	public String getField(@Nullable String fieldName) {
 		if (secret.size() == 1) {
 			// no field
 			if(StringUtils.isBlank(fieldName)) {

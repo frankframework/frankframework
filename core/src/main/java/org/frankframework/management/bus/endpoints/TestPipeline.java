@@ -192,8 +192,8 @@ public class TestPipeline extends BusEndpointBase {
 		try {
 			LinkedHashMap<String, String> ibisContexts = new LinkedHashMap<>();
 			int indexBraceOpen = str.indexOf("{");
-			int indexBraceClose = 0;
-			int indexStartNextSearch = 0;
+			int indexBraceClose;
+			int indexStartNextSearch;
 			while (indexBraceOpen >= 0) {
 				indexBraceClose = str.indexOf("}", indexBraceOpen+1);
 				if (indexBraceClose > indexBraceOpen) {
@@ -230,7 +230,7 @@ public class TestPipeline extends BusEndpointBase {
 	/**
 	 * Checks if the input is valid XML, and returns processing instructions if any
 	 */
-	private String findProcessingInstructions(String input) {
+	private @Nullable String findProcessingInstructions(String input) {
 		if (StringUtils.isEmpty(input) || !XmlUtils.isWellFormed(input)) {
 			return null;
 		}

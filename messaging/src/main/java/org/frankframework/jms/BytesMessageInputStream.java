@@ -73,4 +73,8 @@ public class BytesMessageInputStream extends InputStream {
 			throw new IOException("Cannot read JMS message", e);
 		}
 	}
+
+	public void resetMessage() throws JMSException {
+		bytesMsg.reset();
+	}
 }

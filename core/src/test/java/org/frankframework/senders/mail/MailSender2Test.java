@@ -43,7 +43,7 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 	}
 
 	@Override
-	public MailSender createSender() throws Exception {
+	public MailSender createSender() {
 		MailSender mailSender = new MailSender();
 		mailSender.setSmtpHost("localhost");
 		mailSender.setSmtpPort(greenMail.getSmtp().getPort());

@@ -18,10 +18,8 @@ package org.frankframework.batch;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
 
 /**
  * {@link IReaderFactory} that provides a reader that reads Delphi records containing Strings.
@@ -40,11 +38,11 @@ public class DelphiStringRecordReaderFactory implements IReaderFactory {
 	private String separatorReplacement="_";
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 	}
 
 	@Override
-	public Reader getReader(InputStream in, String charset, String streamId, PipeLineSession session) throws SenderException {
+	public Reader getReader(InputStream in, String charset, String streamId, PipeLineSession session) {
 		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement());
 	}
 

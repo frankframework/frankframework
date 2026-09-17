@@ -16,11 +16,13 @@
 package org.frankframework.larva;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -65,7 +67,7 @@ public class Step implements Comparable<Step> {
 		return STEP_PARSE_RE.matcher(stepLine).matches();
 	}
 
-	public String getStepDataFile() {
+	public @Nullable String getStepDataFile() {
 		if (isInline() || isIgnore()) {
 			return null;
 		}
@@ -97,14 +99,15 @@ public class Step implements Comparable<Step> {
 		if (isInline() || isIgnore()) {
 			return new Message(value);
 		}
-		Message fileMessage = LarvaUtil.readFile(getStepDataFile());
-		if (!scenario.isResolvePropertiesInScenarioFiles()) {
+		String stepDataFile = Objects.requireNonNull(getStepDataFile(), "Step data file should not be NULL when not inline and not ignore");
+		Message fileMessage = LarvaUtil.readFile(stepDataFile);
+		if (fileMessage.isNull()) {
+			throw new LarvaException("Failed to read input file [" + value + "] for step " + index);
+		}
+		if (!scenario.isResolvePropertiesInScenarioFiles() || fileMessage.isEmpty()) {
 			return fileMessage;
 		}
 		String fileData = fileMessage.asString();
-		if (fileData == null) {
-			throw new LarvaException("Failed to resolve properties in input file [" + value + "] for step " + index);
-		}
 		return new Message(StringResolver.substVars(fileData, appConstants), fileMessage.copyContext());
 	}
 

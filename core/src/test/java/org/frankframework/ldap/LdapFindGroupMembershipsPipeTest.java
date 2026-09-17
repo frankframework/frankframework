@@ -9,7 +9,6 @@ import java.util.LinkedHashSet;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
@@ -18,7 +17,7 @@ import org.frankframework.stream.Message;
 public class LdapFindGroupMembershipsPipeTest extends PipeTestBase<LdapFindGroupMembershipsPipe> {
 
 	@Override
-	public LdapFindGroupMembershipsPipe createPipe() throws ConfigurationException {
+	public LdapFindGroupMembershipsPipe createPipe() {
 		return spy(new LdapFindGroupMembershipsPipe());
 	}
 

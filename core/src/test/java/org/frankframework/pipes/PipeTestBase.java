@@ -25,7 +25,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
 	protected P pipe;
 
-	public abstract P createPipe() throws ConfigurationException;
+	public abstract P createPipe();
 
 	@Override
 	@BeforeEach

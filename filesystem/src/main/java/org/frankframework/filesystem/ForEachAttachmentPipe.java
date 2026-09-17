@@ -79,17 +79,17 @@ public class ForEachAttachmentPipe<F, A, FS extends IMailFileSystem<F,A>> extend
 		}
 
 		@Override
-		public boolean hasNext() throws SenderException {
+		public boolean hasNext() {
 			return it.hasNext();
 		}
 
 		@Override
-		public A next() throws SenderException {
+		public A next() {
 			return it.next();
 		}
 
 		@Override
-		public void close() throws SenderException {
+		public void close() {
 			// no action required
 		}
 	}

@@ -514,6 +514,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/** If set, this pipe is only executed when the value of the parameter with the name <code>ifParam</code> equals <code>ifValue</code>. Otherwise, this pipe is skipped. */
+	@Deprecated(forRemoval = true)
+	@ConfigurationWarning("Use the IfPipe and/or SwitchPipe instead of IfParam to control application flow")
 	@Override
 	public void setIfParam(String ifParam) {
 		this.ifParam = ifParam;
@@ -521,6 +523,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	/** See {@code ifParam} */
 	@Override
+	@Deprecated(forRemoval = true)
+	@ConfigurationWarning("Use the IfPipe and/or SwitchPipe instead of IfValue to control application flow")
 	public void setIfValue(String ifValue) {
 		this.ifValue = ifValue;
 	}
@@ -533,6 +537,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	/** Value of session variable 'onlyIfSessionKey' to check if the action must be executed. The pipe is only executed if the session variable has the specified value. */
 	@Override
+	@Deprecated(forRemoval = true)
+	@ConfigurationWarning("Use the IfPipe and/or SwitchPipe instead of OnlyIfValue to control application flow")
 	public void setOnlyIfValue(String onlyIfValue) {
 		this.onlyIfValue = onlyIfValue;
 	}
@@ -545,6 +551,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	/** Value of session variable 'unlessSessionKey' to check if the action must be executed. The pipe is not executed if the session variable has the specified value. */
 	@Override
+	@Deprecated(forRemoval = true)
+	@ConfigurationWarning("Use the IfPipe and/or SwitchPipe instead of unlessValue to control application flow")
 	public void setUnlessValue(String unlessValue) {
 		this.unlessValue = unlessValue;
 	}

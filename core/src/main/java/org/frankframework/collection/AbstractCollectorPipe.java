@@ -118,7 +118,7 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 				}
 				case WRITE:
 				case LAST:
-					addPartToCollection(collection, input, session, getParameterValueList(input, session));
+					collection.add(input, session, getParameterValueList(input, session));
 					if (action == Action.LAST) {
 						return closeCollector(collection, session);
 					}
@@ -131,11 +131,6 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 
 			return Message.nullMessage();
 		}
-	}
-
-	// This purely exists because of the STREAM action in the ZipWriterPipe.
-	protected void addPartToCollection(Collection<C, P> collection, Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
-		collection.add(input, session, pvl);
 	}
 
 	protected abstract C createCollector(Message input, PipeLineSession session) throws CollectionException;

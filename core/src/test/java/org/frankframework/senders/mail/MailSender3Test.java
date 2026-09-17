@@ -45,7 +45,7 @@ public class MailSender3Test extends SenderTestBase<MailSender> {
 	}
 
 	@Override
-	public MailSender createSender() throws Exception {
+	public MailSender createSender() {
 		MailSender mailSender = new MailSender();
 		mailSender.setSmtpHost("localhost");
 		mailSender.setSmtpPort(greenMail.getSmtp().getPort());
@@ -71,12 +71,12 @@ public class MailSender3Test extends SenderTestBase<MailSender> {
 	}
 
 	@Test
-	public void testEmptyFrom() throws Exception {
+	public void testEmptyFrom() {
 		assertThrows(SenderException.class, () -> sendMailXml(examplesMainFolder + "emailSampleEmptyFrom.xml"));
 	}
 
 	@Test
-	public void testEmptyMessage() throws Exception {
+	public void testEmptyMessage() {
 		assertThrows(SenderException.class, () -> sendMailXml(examplesMainFolder + "emailSampleEmptyMessage.xml"));
 	}
 
@@ -86,7 +86,7 @@ public class MailSender3Test extends SenderTestBase<MailSender> {
 	}
 
 	@Test
-	public void testEmptyRecipients() throws Exception {
+	public void testEmptyRecipients() {
 		SenderException thrown = assertThrows(SenderException.class, () -> sendMailXml(examplesMainFolder + "emailSampleEmptyRecipients.xml"));
 		assertTrue(thrown.getMessage().contains("no recipients for message"));
 	}

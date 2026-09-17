@@ -8,6 +8,7 @@ import java.util.Set;
 import jakarta.xml.ws.handler.MessageContext;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class MessageContextStub implements MessageContext{
 
@@ -85,7 +86,7 @@ public class MessageContextStub implements MessageContext{
 	}
 
 	@Override
-	public Scope getScope(String s) {
+	public @Nullable Scope getScope(String s) {
 		// NO-OP
 		return null;
 	}

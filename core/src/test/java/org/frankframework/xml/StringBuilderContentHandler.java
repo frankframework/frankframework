@@ -1,7 +1,6 @@
 package org.frankframework.xml;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -11,72 +10,72 @@ public class StringBuilderContentHandler extends DefaultHandler implements Lexic
 
 
 	@Override
-	public void startDocument() throws SAXException {
+	public void startDocument() {
 		builder.append("startDocument\n");
 	}
 
 	@Override
-	public void endDocument() throws SAXException {
+	public void endDocument() {
 		builder.append("endDocument\n");
 	}
 
 	@Override
-	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+	public void startElement(String uri, String localName, String qName, Attributes atts) {
 		builder.append("startElement ").append(localName).append("\n");
 	}
 
 	@Override
-	public void endElement(String uri, String localName, String qName) throws SAXException {
+	public void endElement(String uri, String localName, String qName) {
 		builder.append("endElement ").append(localName).append("\n");
 	}
 
 	@Override
-	public void characters(char[] ch, int offset, int length) throws SAXException {
+	public void characters(char[] ch, int offset, int length) {
 		builder.append("characters [").append(ch,offset,length).append("]\n");
 	}
 
 
 	@Override
-	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+	public void startPrefixMapping(String prefix, String uri) {
 		builder.append("startPrefixMapping ").append(prefix).append("=").append(uri).append("\n");
 	}
 
 	@Override
-	public void endPrefixMapping(String prefix) throws SAXException {
+	public void endPrefixMapping(String prefix) {
 		builder.append("endPrefixMapping ").append(prefix).append("\n");
 	}
 
 	@Override
-	public void startCDATA() throws SAXException {
+	public void startCDATA() {
 		builder.append("startCDATA\n");
 	}
 	@Override
-	public void endCDATA() throws SAXException {
+	public void endCDATA() {
 		builder.append("endCDATA\n");
 	}
 
 	@Override
-	public void comment(char[] ch, int offset, int length) throws SAXException {
+	public void comment(char[] ch, int offset, int length) {
 		builder.append("comment [").append(ch,offset,length).append("]\n");
 	}
 
 	@Override
-	public void startDTD(String name, String publicId, String systemId) throws SAXException {
+	public void startDTD(String name, String publicId, String systemId) {
 		builder.append("startDTD ").append(name).append(", ").append(publicId).append(", ").append(systemId).append("\n");
 	}
 
 	@Override
-	public void endDTD() throws SAXException {
+	public void endDTD() {
 		builder.append("endCDATA\n");
 	}
 
 	@Override
-	public void startEntity(String entity) throws SAXException {
+	public void startEntity(String entity) {
 		builder.append("startEntity ").append(entity).append("\n");
 	}
 
 	@Override
-	public void endEntity(String entity) throws SAXException {
+	public void endEntity(String entity) {
 		builder.append("endEntity ").append(entity).append("\n");
 	}
 

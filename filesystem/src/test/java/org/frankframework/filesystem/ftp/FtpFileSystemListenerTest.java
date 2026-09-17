@@ -1,6 +1,5 @@
 package org.frankframework.filesystem.ftp;
 
-import java.io.IOException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,7 +62,7 @@ public class FtpFileSystemListenerTest extends WritableFileSystemListenerTest<FT
 	}
 
 	@Override
-	protected IFileSystemTestHelper getFileSystemTestHelper() throws IOException {
+	protected IFileSystemTestHelper getFileSystemTestHelper() {
 		if ("localhost".equals(host)) {
 			return new LocalFileSystemTestHelper(fs.getTestDirectory());
 		}

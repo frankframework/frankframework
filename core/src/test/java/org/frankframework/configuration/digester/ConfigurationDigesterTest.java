@@ -378,7 +378,7 @@ public class ConfigurationDigesterTest {
 	}
 
 	@Test
-	public void testNoConfigurationFile() throws Exception {
+	public void testNoConfigurationFile() {
 		Configuration configuration = new TestConfiguration();
 		String configurationFile = "DoesNotExistConfiguration.xml";
 		AppConstants.getInstance(configuration.getClassLoader()).setProperty("configurations.TestConfiguration.configurationFile", configurationFile);
@@ -389,7 +389,7 @@ public class ConfigurationDigesterTest {
 	}
 
 	@Test
-	public void testDigestConfigWithFaultyXml() throws Exception {
+	public void testDigestConfigWithFaultyXml() {
 		Configuration configuration = new TestConfiguration();
 		String configurationFile = "FaultyConfiguration.xml";
 		AppConstants.getInstance(configuration.getClassLoader()).setProperty("configurations.TestConfiguration.configurationFile", configurationFile);
@@ -413,7 +413,7 @@ public class ConfigurationDigesterTest {
 	}
 
 	@Test
-	public void testDigestConfigThatHasExceptions() throws Exception {
+	public void testDigestConfigThatHasExceptions() {
 		Configuration configuration = new TestConfiguration();
 		String configurationFile = "UnableToDigestConfiguration.xml";
 		AppConstants.getInstance(configuration.getClassLoader()).setProperty("configurations.TestConfiguration.configurationFile", configurationFile);

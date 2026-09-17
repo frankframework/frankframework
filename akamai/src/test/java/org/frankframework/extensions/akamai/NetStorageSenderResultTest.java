@@ -108,7 +108,7 @@ public class NetStorageSenderResultTest {
 		String contentType = "text/xml";
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileArray)));
-		for (String line = null; null != (line = reader.readLine());) {
+		for (String line; null != (line = reader.readLine());) {
 			if(line.startsWith("Content-Type")) {
 				contentType = line.substring(line.indexOf(":") + 1).trim();
 				break;

@@ -24,7 +24,6 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.core.ParameterException;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool.OutputType;
@@ -78,7 +77,7 @@ public class Parameter extends AbstractParameter<Message> {
 	}
 
 	@Override
-	protected Message getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Message getValueAsType(@NonNull Message request, boolean namespaceAware) {
 		if (getMinLength() >= 0 || getMaxLength() >= 0) {
 			return applyMinLength(request);
 		}

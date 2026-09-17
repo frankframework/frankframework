@@ -26,7 +26,7 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 	protected static final long DELAY_MILLIS = 500L;
 
 	@Override
-	public ParallelSenders createSender() throws Exception {
+	public ParallelSenders createSender() {
 		return new ParallelSenders();
 	}
 

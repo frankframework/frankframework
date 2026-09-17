@@ -64,7 +64,6 @@ public class PullingListenerAction extends AbstractLarvaAction<IPullingListener>
 			if (threadContext != null) {
 				pullingListener.closeThread(threadContext);
 			}
-			threadContext = null;
 		}
 		throw new ListenerException("No message found in queue [" + peek() + "]");
 	}

@@ -25,6 +25,7 @@ import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.ListenerException;
@@ -132,7 +133,7 @@ public class JmsTransactionalStorage extends AbstractJmsMessageBrowser<Serializa
 	}
 
 	@Override
-	public String getSelector() {
+	public @Nullable String getSelector() {
 		if (StringUtils.isEmpty(getSlotId())) {
 			return null;
 		}

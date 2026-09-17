@@ -49,12 +49,12 @@ public class BodyOnlyFilter extends FullXmlFilter {
 	}
 
 	@Override
-	public void endDocument() throws SAXException {
+	public void endDocument() {
 		// skip this method
 	}
 
 	@Override
-	public void startDocument() throws SAXException {
+	public void startDocument() {
 		// skip this method
 	}
 

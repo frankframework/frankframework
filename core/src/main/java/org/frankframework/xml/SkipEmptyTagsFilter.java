@@ -131,7 +131,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 	}
 
 	@Override
-	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+	public void startPrefixMapping(String prefix, String uri) {
 		log.trace("startPrefixMapping({},{})", prefix, uri);
 		pendingNamespaceMappings.put(prefix, uri);
 	}

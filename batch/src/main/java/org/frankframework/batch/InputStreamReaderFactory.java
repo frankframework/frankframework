@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.util.StreamUtil;
@@ -33,7 +32,7 @@ import org.frankframework.util.StreamUtil;
 public class InputStreamReaderFactory implements IReaderFactory {
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 	}
 
 	@Override

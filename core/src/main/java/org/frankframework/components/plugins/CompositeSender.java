@@ -74,7 +74,7 @@ public class CompositeSender extends AbstractSenderWithParameters implements Ini
 	private @Getter @Setter Adapter adapter;
 	private FrankPlugin frankPlugin;
 
-	public CompositeSender() throws SecurityException, ReflectiveOperationException {
+	public CompositeSender() throws SecurityException {
 		// NOOP for Spring to initialize
 	}
 
@@ -133,7 +133,7 @@ public class CompositeSender extends AbstractSenderWithParameters implements Ini
 		}
 
 		try (PipeLineSession childSession = createChildSession(pvl, parentSession)) {
-			PipeLineResult pipelineResult = frankPlugin.process(null, MessageUtils.generateMessageId(), message, childSession);
+			PipeLineResult pipelineResult = frankPlugin.process(null, MessageUtils.generateDefaultMessageId(), message, childSession);
 
 			Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 			String forwardName = Objects.toString(exitCode, null); // ToString the value

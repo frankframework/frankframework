@@ -85,7 +85,7 @@ public enum Dbms {
 		return new GenericDbmsSupport();
 	}
 
-	public IDbmsSupport getDbmsSupport() throws ReflectiveOperationException {
+	public @Nullable IDbmsSupport getDbmsSupport() throws ReflectiveOperationException {
 		if (dbmsSupportClass == null) {
 			return null;
 		}

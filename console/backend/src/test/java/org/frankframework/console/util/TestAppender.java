@@ -78,7 +78,7 @@ public class TestAppender extends AbstractAppender implements AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		removeAppender(this);
 	}
 

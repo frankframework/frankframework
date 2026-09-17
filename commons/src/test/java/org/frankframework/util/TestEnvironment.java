@@ -99,12 +99,12 @@ public class TestEnvironment {
 		}
 
 		@Override
-		public void connect() throws IOException {
+		public void connect() {
 			// NO OP
 		}
 
 		@Override
-		public InputStream getInputStream() throws IOException {
+		public InputStream getInputStream() {
 			return new ByteArrayInputStream(bytes);
 		}
 	}

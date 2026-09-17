@@ -66,7 +66,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 	}
 
 	@Test
-	public void testEmptyIncrementParameter() throws Exception {
+	public void testEmptyIncrementParameter() {
 		Exception exception = assertThrows(NumberFormatException.class, () -> {
 			String numberSession = "number";
 			session.put(numberSession, "4");

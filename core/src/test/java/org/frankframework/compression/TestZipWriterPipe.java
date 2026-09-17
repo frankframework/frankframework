@@ -33,7 +33,7 @@ import org.frankframework.util.StreamUtil;
 public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
 	@Override
-	public ZipWriterPipe createPipe() throws ConfigurationException {
+	public ZipWriterPipe createPipe() {
 		ZipWriterPipe zipWriterPipe = new ZipWriterPipe();
 		zipWriterPipe.setCollectionName("zipwriterhandle");
 		return zipWriterPipe;

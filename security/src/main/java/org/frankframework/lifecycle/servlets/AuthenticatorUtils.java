@@ -50,7 +50,7 @@ public class AuthenticatorUtils {
 	public static IAuthenticator createAuthenticator(ApplicationContext applicationContext, String properyPrefix) {
 		Environment environment = applicationContext.getEnvironment();
 		String type = environment.getProperty(properyPrefix + "type", getDefaultAuthenticationType());
-		AuthenticationType auth = null;
+		AuthenticationType auth;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
 		} catch (IllegalArgumentException e) {

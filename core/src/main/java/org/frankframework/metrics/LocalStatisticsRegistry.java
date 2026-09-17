@@ -31,6 +31,7 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
@@ -281,7 +282,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 				.toList();
 	}
 
-	private JsonObjectBuilder getDistributionSummary(Collection<Meter> meters, FrankMeterType type) {
+	private @Nullable JsonObjectBuilder getDistributionSummary(Collection<Meter> meters, FrankMeterType type) {
 		List<LocalDistributionSummary> duration = meters.stream().filter(type::isOfType).map(LocalDistributionSummary.class::cast).toList();
 		if(duration.size() > 1) {
 			throw new IllegalStateException("found more then 1 "+type+" statistic");

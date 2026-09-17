@@ -84,48 +84,48 @@ public interface IDbmsSupport {
 
 	boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 
-	@Nullable Reader getClobReader(ResultSet rs, int column) throws SQLException, DbmsException;
+	@Nullable Reader getClobReader(ResultSet rs, int column) throws SQLException;
 
-	@Nullable Reader getClobReader(ResultSet rs, String column) throws SQLException, DbmsException;
+	@Nullable Reader getClobReader(ResultSet rs, String column) throws SQLException;
 
-	@NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException;
+	@NonNull Object getClobHandle(@NonNull ResultSet rs, int column) throws SQLException;
 
-	@NonNull Writer getClobWriter(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException, DbmsException;
+	@NonNull Writer getClobWriter(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException;
 
-	void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException, DbmsException;
+	void updateClob(@NonNull ResultSet rs, int column, @NonNull Object clobHandle) throws SQLException;
 
-	void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobHandle) throws SQLException, DbmsException;
+	void updateClob(@NonNull ResultSet rs, String column, @NonNull Object clobHandle) throws SQLException;
 
 	// CLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements
-	@NonNull Object getClobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException, DbmsException;
+	@NonNull Object getClobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException;
 
-	@NonNull Writer getClobWriter(@NonNull PreparedStatement stmt, int column, @NonNull Object clobHandle) throws SQLException, DbmsException;
+	@NonNull Writer getClobWriter(@NonNull PreparedStatement stmt, int column, @NonNull Object clobHandle) throws SQLException;
 
-	void applyClobParameter(@NonNull PreparedStatement stmt, int column, @NonNull Object clobHandle) throws SQLException, DbmsException;
+	void applyClobParameter(@NonNull PreparedStatement stmt, int column, @NonNull Object clobHandle) throws SQLException;
 
 
 	String getBlobFieldType();
 
 	boolean isBlobType(@NonNull final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 
-	@Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, int column) throws SQLException, DbmsException;
+	@Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, int column) throws SQLException;
 
-	@Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, String column) throws SQLException, DbmsException;
+	@Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, String column) throws SQLException;
 
-	@NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException, DbmsException;
+	@NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException;
 
-	@NonNull OutputStream getBlobOutputStream(@NonNull ResultSet rs, int column, @NonNull Object blobHandle) throws SQLException, DbmsException;
+	@NonNull OutputStream getBlobOutputStream(@NonNull ResultSet rs, int column, @NonNull Object blobHandle) throws SQLException;
 
-	void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobHandle) throws SQLException, DbmsException;
+	void updateBlob(@NonNull ResultSet rs, int column, @NonNull Object blobHandle) throws SQLException;
 
-	void updateBlob(@NonNull ResultSet rs, String column, @NonNull Object blobHandle) throws SQLException, DbmsException;
+	void updateBlob(@NonNull ResultSet rs, String column, @NonNull Object blobHandle) throws SQLException;
 
 	// BLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements
-	@NonNull Object getBlobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException, DbmsException;
+	@NonNull Object getBlobHandle(@NonNull PreparedStatement stmt, int column) throws SQLException;
 
-	@NonNull OutputStream getBlobOutputStream(@NonNull PreparedStatement stmt, int column, @NonNull Object blobInsertHandle) throws SQLException, DbmsException;
+	@NonNull OutputStream getBlobOutputStream(@NonNull PreparedStatement stmt, int column, @NonNull Object blobInsertHandle) throws SQLException;
 
-	void applyBlobParameter(@NonNull PreparedStatement stmt, int column, @NonNull Object blobInsertHandle) throws SQLException, DbmsException;
+	void applyBlobParameter(@NonNull PreparedStatement stmt, int column, @NonNull Object blobInsertHandle) throws SQLException;
 
 	@NonNull
 	default String getTextFieldType() {

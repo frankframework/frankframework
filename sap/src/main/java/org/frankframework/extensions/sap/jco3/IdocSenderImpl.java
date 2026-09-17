@@ -16,6 +16,7 @@
 package org.frankframework.extensions.sap.jco3;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocException;
@@ -27,7 +28,6 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlUtils;
@@ -57,7 +57,7 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		String tid;
 		try {
 			ParameterValueList pvl;
@@ -90,7 +90,7 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 	}
 
 	@Override
-	protected String getFunctionName() {
+	protected @Nullable String getFunctionName() {
 		return null;
 	}
 }

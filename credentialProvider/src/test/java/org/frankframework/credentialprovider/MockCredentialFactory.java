@@ -1,11 +1,9 @@
 package org.frankframework.credentialprovider;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -16,7 +14,7 @@ import lombok.Getter;
 @NullMarked
 public class MockCredentialFactory extends HashMap<String, ISecret> implements ISecretProvider {
 
-	private static MockCredentialFactory instance;
+	private static @Nullable MockCredentialFactory instance;
 
 	public static MockCredentialFactory getInstance() {
 		if (instance == null) {
@@ -31,12 +29,12 @@ public class MockCredentialFactory extends HashMap<String, ISecret> implements I
 	}
 
 	@Override
-	public boolean hasSecret(@NonNull CredentialAlias alias) {
+	public boolean hasSecret(CredentialAlias alias) {
 		return getInstance().containsKey(alias.getName());
 	}
 
 	@Override
-	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		ISecret credentials = getInstance().get(alias.getName());
 		if (credentials == null) {
 			throw new NoSuchElementException("credentials not found");
@@ -62,11 +60,11 @@ public class MockCredentialFactory extends HashMap<String, ISecret> implements I
 	@AllArgsConstructor
 	private static class MockCredential implements ISecret {
 		private final String alias;
-		private final String username;
+		private final @Nullable String username;
 		private final String password;
 
 		@Override
-		public String getField(@Nullable String fieldname) throws IOException {
+		public String getField(@Nullable String fieldname) {
 			if ("username".equals(fieldname) && username != null) {
 				return username;
 			}

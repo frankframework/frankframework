@@ -130,7 +130,7 @@ public class IntraGrammarPoolEntityResolverTest {
 
 	@Test // Should throw an XNIException to trigger XercesValidationErrorHandler#error which rethrows the Exception.
 	@Issue("3973")
-	public void localClassPathAbsoluteRef() throws Exception {
+	public void localClassPathAbsoluteRef() {
 		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, EMPTY_SCHEMAS_LIST);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("/this/schema/does/not/exist.xsd", null);
@@ -140,7 +140,7 @@ public class IntraGrammarPoolEntityResolverTest {
 	}
 
 	@Test
-	public void classLoaderXmlEntityResolverCannotLoadExternalEntities() throws Exception {
+	public void classLoaderXmlEntityResolverCannotLoadExternalEntities() {
 		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, EMPTY_SCHEMAS_LIST);
 
 		XMLResourceIdentifier resourceIdentifier = getXMLResourceIdentifier("ftp://share.host.org/UDTSchema.xsd", null);

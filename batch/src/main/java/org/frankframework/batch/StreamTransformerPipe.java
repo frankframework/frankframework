@@ -286,7 +286,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		if (reader==null) {
 			throw new PipeRunException(this,"could not obtain reader for ["+streamId+"]");
 		}
-		String transformationResult=null;
+		String transformationResult;
 		try {
 			Map<String, Object> blocks = new HashMap<>();
 			transformationResult = transform(streamId, reader, session, blocks);
@@ -401,7 +401,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * it using the registered managers, record- and result handlers.
 	 */
 	private String transform(String streamId, BufferedReader reader, PipeLineSession session, Map<String, Object> blocks) throws PipeRunException {
-		String rawRecord = null;
+		String rawRecord;
 		int linenumber = 0;
 		int counter = 0;
 		StringBuilder sb = null;

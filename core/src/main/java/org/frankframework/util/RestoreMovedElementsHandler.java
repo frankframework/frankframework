@@ -56,7 +56,7 @@ public class RestoreMovedElementsHandler extends FullXmlFilter {
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length) throws SAXException {
+	public void characters(char[] ch, int start, int length) {
 		charDataBuilder.append(ch, start, length);
 	}
 
@@ -112,12 +112,12 @@ public class RestoreMovedElementsHandler extends FullXmlFilter {
 	}
 
 	@Override
-	public void startCDATA() throws SAXException {
+	public void startCDATA() {
 		inCDATASection = true;
 	}
 
 	@Override
-	public void endCDATA() throws SAXException {
+	public void endCDATA() {
 		// Do nothing, as the CDATA section is already ended in the processCharacterData method.
 	}
 

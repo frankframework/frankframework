@@ -74,33 +74,34 @@ public class JsonValidator extends AbstractValidator {
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
+		if (messageToValidate.isEmpty()) {
+			messageToValidate = new Message("{}");
+		}
+
+		Schema curSchema = jsonSchema;
+
+		if (StringUtils.isEmpty(messageRoot)) {
+			messageRoot = responseMode ? getResponseRoot() : getRoot();
+		}
+
+		if (StringUtils.isNotEmpty(messageRoot)) {
+			log.debug("validation to messageRoot [{}]", messageRoot);
+
+			curSchema = getSubSchema(messageRoot);
+		}
+
+		SchemaValidationResult result;
 		try {
-			if (messageToValidate.isEmpty()) {
-				messageToValidate = new Message("{}");
-			}
-
-			Schema curSchema = jsonSchema;
-
-			if (StringUtils.isEmpty(messageRoot)) {
-				messageRoot = responseMode ? getResponseRoot() : getRoot();
-			}
-
-			if (StringUtils.isNotEmpty(messageRoot)) {
-				log.debug("validation to messageRoot [{}]", messageRoot);
-
-				curSchema = getSubSchema(messageRoot);
-			}
-
-			SchemaValidationResult result = validateJson(curSchema, messageToValidate);
-
-			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-				session.put(getReasonSessionKey(), result.validationMessages.toString());
-			}
-
-			return determineForward(result.result, responseMode, result.validationMessages::toString);
+			result = validateJson(curSchema, messageToValidate);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot validate", e);
 		}
+
+		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+			session.put(getReasonSessionKey(), result.validationMessages.toString());
+		}
+
+		return determineForward(result.result, responseMode, result.validationMessages::toString);
 	}
 
 	private Schema getSubSchema(String messageRoot) throws PipeRunException {

@@ -25,6 +25,7 @@ import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
+import org.jspecify.annotations.Nullable;
 
 
 public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
@@ -58,12 +59,12 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 	}
 
 	@Override
-	public Header getContentEncoding() {
+	public @Nullable Header getContentEncoding() {
 		return null;
 	}
 
 	@Override
-	public void consumeContent() throws IOException, UnsupportedOperationException {
+	public void consumeContent() throws UnsupportedOperationException {
 		if (isStreaming()) {
 			throw new UnsupportedOperationException("Streaming entity does not implement #consumeContent()");
 		}

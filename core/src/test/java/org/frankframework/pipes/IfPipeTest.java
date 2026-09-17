@@ -6,10 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.ByteOrderMark;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +44,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	private PipeRunResult pipeRunResult;
 
 	@Override
-	public IfPipe createPipe() throws ConfigurationException {
+	public IfPipe createPipe() {
 		IfPipe ifPipe = new IfPipe();
 
 		// Add default forwards
@@ -57,6 +60,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	public static Stream<Arguments> messageSource() {
 		return Stream.of(
 				Arguments.of(getJsonMessage(), true),
+				Arguments.of(getJsonMessageWithBom(), true),
 				Arguments.of(new Message(TEST_INPUT), false)
 		);
 	}
@@ -204,7 +208,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	}
 
 	@Test
-	void testInvalidJsonPathExpression() throws Exception {
+	void testInvalidJsonPathExpression() {
 		pipe.setJsonPathExpression("$[invalid]");
 
 		ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> pipe.configure());
@@ -406,6 +410,15 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 	private static Message getJsonMessage() {
 		return getJsonMessage(TEST_JSON_INPUT);
+	}
+
+	private static Message getJsonMessageWithBom() {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		baos.writeBytes(ByteOrderMark.UTF_8.getBytes());
+		baos.writeBytes(TEST_JSON_INPUT.getBytes(StandardCharsets.UTF_8));
+		Message jsonMessage = Message.asMessage(baos.toByteArray());
+		jsonMessage.getContext().withMimeType("application/json");
+		return jsonMessage;
 	}
 
 	static Message getJsonMessage(String json) {

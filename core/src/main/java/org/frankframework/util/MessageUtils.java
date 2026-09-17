@@ -470,7 +470,7 @@ public class MessageUtils {
 	 * is returned as-is. If the value is in XML format, it will be converted to JSON using {@link UtilityTransformerPools#getXml2JsonTransformerPool()}.
 	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"value": value}}.
 	 */
-	public static @NonNull Message convertToJsonMessage(@NonNull Object value) throws IOException, XmlException {
+	public static @NonNull Message convertToJsonMessage(@Nullable Object value) throws IOException, XmlException {
 		return convertToJsonMessage(value, "value");
 	}
 
@@ -480,7 +480,7 @@ public class MessageUtils {
 	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"valueName": value}}, using parameter {@code valueName} as
 	 * name of the object.
 	 */
-	public static @NonNull Message convertToJsonMessage(@NonNull Object value, @NonNull String valueName) throws IOException, XmlException {
+	public static @NonNull Message convertToJsonMessage(@Nullable Object value, @NonNull String valueName) throws IOException, XmlException {
 		Message message = Message.asMessage(value);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (MediaType.APPLICATION_JSON.isCompatibleWith(mimeType)) {
@@ -522,16 +522,36 @@ public class MessageUtils {
 		}
 	}
 
-	public static @NonNull String generateMessageId() {
-		return generateMessageId(DEFAULT_MESSAGE_ID_PREFIX);
+	/**
+	 * Generate a randomised message-id prefixed with {@value DEFAULT_MESSAGE_ID_PREFIX}
+	 */
+	public static @NonNull String generateDefaultMessageId() {
+		return generatePrefixedMessageId(DEFAULT_MESSAGE_ID_PREFIX);
 	}
 
+	/**
+	 * Generate a randomised message-id prefixed with {@value DEFAULT_MESSAGE_ID_PREFIX}, then your custom message-prefix. The total
+	 * length of the message-id is capped at 100 characters.
+	 * @param prefix Custom prefix which will follow the {@literal DEFAULT_MESSAGE_ID_PREFIX}
+	 */
 	public static @NonNull String generateMessageId(String prefix) {
-		return prefix + "-" + UUIDUtil.createSimpleUUID();
+		return generatePrefixedMessageId(DEFAULT_MESSAGE_ID_PREFIX + "-" + prefix);
 	}
 
+	/**
+	 * Generate a randomised message-id prefixed with just your custom message-prefix (no default prefix). The total length of the message-id is capped at 100 characters.
+	 * @param prefix Custom prefix to the message-id
+	 */
+	public static @NonNull String generatePrefixedMessageId(String prefix) {
+		String uuid = UUIDUtil.createNumericUUID();
+		return StringUtils.truncate(prefix, 99 - uuid.length()) + "-" + uuid;
+	}
+
+	/**
+	 * Generate a message-id prefixed with {@value FALLBACK_MESSAGE_ID_PREFIX}
+	 */
 	public static @NonNull String generateFallbackMessageId() {
-		return generateMessageId(FALLBACK_MESSAGE_ID_PREFIX);
+		return generatePrefixedMessageId(FALLBACK_MESSAGE_ID_PREFIX);
 	}
 
 	public static boolean isFallbackMessageId(@NonNull String messageId) {

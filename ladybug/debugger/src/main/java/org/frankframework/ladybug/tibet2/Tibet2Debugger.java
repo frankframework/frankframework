@@ -18,6 +18,7 @@ package org.frankframework.ladybug.tibet2;
 import java.io.IOException;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.SecurityContext;
@@ -51,7 +52,7 @@ public class Tibet2Debugger extends LadybugDebugger {
 	}
 
 	@Override
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
+	public @Nullable String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
 		if (!"Table EXCEPTIONLOG".equals(originalReport.getName())) {
 			return super.rerun(correlationId, originalReport, securityContext, reportRunner);
 		}

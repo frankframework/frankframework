@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
@@ -141,7 +142,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 
 		// Save the job in the database
 		if(AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
-			boolean success = false;
+			boolean success;
 			FixedQuerySender qs = createBean(FixedQuerySender.class);
 			qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 			qs.setQuery("SELECT COUNT(*) FROM IBISSCHEDULES");
@@ -211,7 +212,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		return findAdapter(adapterName);
 	}
 
-	private Adapter findAdapter(String adapterName) {
+	private @Nullable Adapter findAdapter(String adapterName) {
 		for(Configuration config : getIbisManager().getActiveConfigurations()) {
 			Adapter adapter = config.getRegisteredAdapter(adapterName);
 			if (adapterName.equals(adapter.getName())) {

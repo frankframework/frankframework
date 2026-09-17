@@ -116,7 +116,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	}
 
 	@Override // After initialization but before other servlets are wired
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(servletContext == null) {
 			throw new IllegalStateException("not ServletContext configured");
 		}
@@ -158,7 +158,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		AppConstants appConstants = AppConstants.getInstance();
 		String properyPrefix = "application.security.http.authenticators."+authenticatorName+".";
 		String type = AppConstants.getInstance().getProperty(properyPrefix+"type");
-		AuthenticationType auth = null;
+		AuthenticationType auth;
 		try {
 			auth = EnumUtils.parse(AuthenticationType.class, type);
 		} catch (IllegalArgumentException e) {

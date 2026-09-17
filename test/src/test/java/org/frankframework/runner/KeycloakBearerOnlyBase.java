@@ -27,7 +27,7 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 public abstract class KeycloakBearerOnlyBase {
 	public static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/test-realm.json");
-	protected static int httpPort = 8888;
+	protected static int httpPort;
 
 	static {
 		keycloak.start();

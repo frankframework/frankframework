@@ -629,7 +629,7 @@ public class Json2Xml extends XmlAligner {
 	 * Normally, the parse is started via {#startParse(C container)}, but this implementation allows {@link #asSource(JsonValue)} to function.
 	 */
 	@Override
-	public void parse(InputSource input) throws SAXException, IOException {
+	public void parse(InputSource input) throws SAXException {
 		JsonValue container;
 		if (input instanceof XmlAlignerInputSource xmlAlignerInputSource) {
 			container = xmlAlignerInputSource.container;

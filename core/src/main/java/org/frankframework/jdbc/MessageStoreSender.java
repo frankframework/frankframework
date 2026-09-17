@@ -31,7 +31,6 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.ExcludeFromType;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.parameters.IParameter;
@@ -110,7 +109,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage implements ISen
 	}
 
 	@Override
-	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		ParameterValueList parameterValues = resolveParameterValues(message, session);
 
 		// the messageId to be inserted can also be specified via the parameter messageId, but defaults to the messageId of the session

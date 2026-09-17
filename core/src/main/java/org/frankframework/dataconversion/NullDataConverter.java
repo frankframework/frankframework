@@ -17,7 +17,6 @@ package org.frankframework.dataconversion;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Serializable;
@@ -80,12 +79,12 @@ final class NullDataConverter implements DataConverter {
 	}
 
 	@Override
-	public InputStream asInputStream() throws IOException {
+	public InputStream asInputStream() {
 		return new BufferedInputStream(InputStream.nullInputStream());
 	}
 
 	@Override
-	public InputStream asInputStream(String encodingCharset) throws IOException {
+	public InputStream asInputStream(String encodingCharset) {
 		return new BufferedInputStream(InputStream.nullInputStream());
 	}
 

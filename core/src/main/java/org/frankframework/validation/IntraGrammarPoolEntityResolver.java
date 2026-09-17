@@ -23,6 +23,7 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
@@ -47,7 +48,7 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { // Cl
 	}
 
 	@Override
-	public XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier) throws XNIException, IOException {
+	public @Nullable XMLInputSource resolveEntity(XMLResourceIdentifier resourceIdentifier) throws XNIException, IOException {
 		if (log.isDebugEnabled())
 			log.debug("resolveEntity publicId [{}] baseSystemId [{}] expandedSystemId [{}] literalSystemId [{}] namespace [{}]", resourceIdentifier.getPublicId(), resourceIdentifier.getBaseSystemId(), resourceIdentifier.getExpandedSystemId(), resourceIdentifier.getLiteralSystemId(), resourceIdentifier.getNamespace());
 		if (resourceIdentifier.getExpandedSystemId() == null

@@ -5,7 +5,6 @@ import java.sql.Connection;
 import org.mockito.Mockito;
 
 import org.frankframework.dbms.Dbms;
-import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.dbms.IDbmsSupport;
 
@@ -27,7 +26,7 @@ public abstract class DbmsSupportMock extends GenericDbmsSupport implements IDbm
 	}
 
 	@Override
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws DbmsException {
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) {
 		return true; // all tables are present
 	}
 }

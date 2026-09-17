@@ -1724,7 +1724,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	protected boolean isDeliveryRetryLimitExceededAfterMessageProcessed(@NonNull final RawMessageWrapper<M> messageWrapper) {
 		if (!(getListener() instanceof IRedeliveringListener<M>))
 			return true; // No redelivery supported by listener so always treat as if the limit has already been exceeded.
-		if (getMaxRetries() < 0) {
+		if (maxRetries == null || maxRetries < 0) {
 			log.debug("{} Receiver has no retry limit so message will be retried", this::getLogPrefix);
 			return false;
 		}
@@ -1756,7 +1756,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		log.warn("{} message with messageId [{}] has receive count [{}]", logPrefix, messageId, deliveryCount);
 		session.put(RETRY_FLAG_SESSION_KEY, "true");
 
-		if (getMaxRetries() < 0) {
+		if (getMaxRetries() == null || getMaxRetries() < 0) {
 			log.debug("{} Infinite retries, message with messageId [{}] will be processed regardless of number of previous attempts", logPrefix, messageId);
 			return false;
 		}

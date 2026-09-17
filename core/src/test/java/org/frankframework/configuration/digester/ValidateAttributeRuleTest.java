@@ -76,7 +76,7 @@ public class ValidateAttributeRuleTest {
 		});
 		when(attrs.getValue(anyInt())).thenAnswer(new Answer<String>() {
 			@Override
-			public String answer(InvocationOnMock invocation) throws Throwable {
+			public String answer(InvocationOnMock invocation) {
 				int i = (int) invocation.getArguments()[0];
 				return attList.get(i)[1];
 			}

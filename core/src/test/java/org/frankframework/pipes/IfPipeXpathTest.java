@@ -28,7 +28,7 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 	private PipeRunResult pipeRunResult;
 
 	@Override
-	public IfPipe createPipe() throws ConfigurationException {
+	public IfPipe createPipe() {
 		IfPipe ifPipe = new IfPipe();
 
 		// Add default forwards

@@ -24,7 +24,7 @@ public class ConcurrentJdbcActionTester extends ConcurrentActionTester {
 		initAction(connection);
 	}
 
-	public void initAction(Connection conn) throws SQLException, DbmsException {
+	public void initAction(Connection conn) throws DbmsException {
 	}
 
 	@Override
@@ -47,6 +47,6 @@ public class ConcurrentJdbcActionTester extends ConcurrentActionTester {
 		}
 	}
 
-	public void finalizeAction(Connection conn) throws SQLException {
+	public void finalizeAction(Connection conn) {
 	}
 }

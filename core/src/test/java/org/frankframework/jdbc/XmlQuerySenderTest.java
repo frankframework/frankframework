@@ -30,7 +30,7 @@ public class XmlQuerySenderTest {
 	private DatabaseTestEnvironment env;
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+	public void setup(DatabaseTestEnvironment databaseTestEnvironment) {
 		TestConfiguration configuration = databaseTestEnvironment.getConfiguration();
 		env = databaseTestEnvironment;
 		session = new PipeLineSession();

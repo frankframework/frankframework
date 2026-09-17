@@ -135,7 +135,7 @@ public class Xml2Json extends XMLFilterImpl {
 		}
 	}
 
-	private XSSimpleTypeDefinition findAttributeTypeDefinition(@NonNull List<XSAttributeUse> attributeUses, String namespace, String name) {
+	private @Nullable XSSimpleTypeDefinition findAttributeTypeDefinition(@NonNull List<XSAttributeUse> attributeUses, String namespace, String name) {
 		for (XSAttributeUse attributeUse : attributeUses) {
 			XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
 			String attUseName = attributeDeclaration.getName();

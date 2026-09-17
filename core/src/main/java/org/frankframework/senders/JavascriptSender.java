@@ -159,7 +159,7 @@ public class JavascriptSender extends SenderSeries {
 		} catch (ParameterException e) {
 			throw new SenderException("unable to extract parameters", e);
 		}
-		int numberOfParameters = 0;
+		int numberOfParameters;
 		numberOfParameters = pvl.size();
 
 		// This array will contain the parameters given in the configuration

@@ -8,6 +8,6 @@ services:
       active.storedProcedureTests: true
 
   mariadb:
-    image: private.docker.nexus.frankframework.org/ff-test/dbms/mariadb
+    image: ghcr.io/frankframework/dbms/mariadb
     ports:
       - "3306:3306"

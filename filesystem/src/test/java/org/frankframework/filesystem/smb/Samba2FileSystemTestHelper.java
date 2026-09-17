@@ -70,12 +70,12 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	private Connection connection;
 	private Session session;
 	private DiskShare diskShare;
-	private String shareName = null;
-	private String userName = null;
-	private String password = null;
-	private String host = null;
-	private Integer port = null;
-	private String domain = null;
+	private String shareName;
+	private String userName;
+	private String password;
+	private String host;
+	private Integer port;
+	private String domain;
 
 	public Samba2FileSystemTestHelper(String host, Integer port, String shareFolder, String userName, String password, String domain) {
 		this.shareName = shareFolder;
@@ -93,7 +93,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		close();
 	}
 
@@ -135,20 +135,20 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public boolean _fileExists(String folder, String filename) throws Exception {
+	public boolean _fileExists(String folder, String filename) {
 		String path = folder != null ? folder + "/" + filename : filename;
 		boolean exists = diskShare.fileExists(path);
 		return exists;
 	}
 
 	@Override
-	public boolean _folderExists(String folderName) throws Exception {
+	public boolean _folderExists(String folderName) {
 		boolean exists = diskShare.folderExists(folderName);
 		return exists;
 	}
 
 	@Override
-	public void _deleteFile(String folder, String filename) throws Exception {
+	public void _deleteFile(String folder, String filename) {
 		String path = folder != null ? folder + "/" + filename : filename;
 		diskShare.rm(path);
 	}
@@ -173,7 +173,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public InputStream _readFile(String folder, String filename) throws Exception {
+	public InputStream _readFile(String folder, String filename) {
 		String path = folder != null ? folder + "/" + filename : filename;
 		final File file = getFile(path, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		InputStream is = file.getInputStream();

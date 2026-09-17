@@ -28,7 +28,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	private PipeRunResult pipeRunResult;
 
 	@Override
-	public XmlIf createPipe() throws ConfigurationException {
+	public XmlIf createPipe() {
 		XmlIf xmlIf = new XmlIf();
 
 		// Add default pipes

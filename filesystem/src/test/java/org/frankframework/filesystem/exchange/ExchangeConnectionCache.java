@@ -3,8 +3,6 @@ package org.frankframework.filesystem.exchange;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
@@ -106,7 +104,7 @@ public class ExchangeConnectionCache {
 	private ExchangeFileSystem createFileSystemWithConnectionCache() {
 		ExchangeFileSystem exchange = new ExchangeFileSystem() {
 			@Override
-			protected GraphClient getGraphClient() throws IOException {
+			protected GraphClient getGraphClient() {
 				return EXCHANGE_CONNECTION_CACHE.graphClient;
 			}
 		};

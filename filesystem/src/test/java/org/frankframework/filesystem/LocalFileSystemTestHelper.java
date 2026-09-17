@@ -28,7 +28,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullContr
 	}
 
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		// not necessary
 	}
 
@@ -84,7 +84,7 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullContr
 	}
 
 	@Override
-	public boolean _folderExists(String folderName) throws Exception {
+	public boolean _folderExists(String folderName) {
 		return _fileExists(null,folderName);
 	}
 

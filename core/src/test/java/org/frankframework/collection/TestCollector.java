@@ -41,7 +41,7 @@ public class TestCollector implements ICollector<TestCollectorPart> {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		open=false;
 	}
 }

@@ -1,6 +1,5 @@
 package org.frankframework.filesystem;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -12,7 +11,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	protected IFileSystemTestHelper helper;
 
-	protected abstract IFileSystemTestHelper getFileSystemTestHelper() throws IOException;
+	protected abstract IFileSystemTestHelper getFileSystemTestHelper();
 
 	/**
 	 * Checks if a file with the specified name exists.

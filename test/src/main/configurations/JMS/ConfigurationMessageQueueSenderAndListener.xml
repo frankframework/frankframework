@@ -1,0 +1,66 @@
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
+	active="${active.jms}">
+
+	<Adapter name="writeMessageQueue">
+		<Receiver name="writeMessageQueueReceiver">
+			<FrankListener name="writeMessageQueueListener"/>
+			<JdbcErrorStorage slotId="TestMessageQueueSenderAndListener-WriteErrors"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
+			</Exits>
+
+			<PutInSessionPipe name="prepareSessionKeys">
+				<Param name="key1" value="a,b,c"/>
+				<Param name="key2" value="double quote: [&quot;] single quote [']"/>
+			</PutInSessionPipe>
+			<SenderPipe name="sendMessagePipe">
+				<JdbcMessageLog slotId="TestMessageQueueSenderAndListener-WriteLog"/>
+				<MessageQueueSender
+					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="false"
+					sessionKeys="key1,key2">
+					<Param name="SOURCE" value="${hostname}_MSG_Q_TST_FF"/>
+					<Param name="correlationId" xpathExpression="/Envelope/Header/CorrelationID"/>
+				</MessageQueueSender>
+			</SenderPipe>
+			<PutInSessionPipe name="Copy JMS ID to Session" sessionKey="id"/>
+			<ReplacerPipe name="Wrap ID in XML" getInputFromFixedValue="&lt;id&gt;${id}&lt;/id&gt;">
+				<Param name="id" sessionKey="id"/>
+			</ReplacerPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="readMessageQueue">
+		<Receiver name="readMessageQueueReceiver" pollInterval="1" maxRetries="-1">
+			<MessageQueueListener name="MessageQueueListener"
+				jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}"
+				messageSelector="SOURCE='${hostname}_MSG_Q_TST_FF'"/>
+			<JdbcErrorStorage slotId="TestMessageQueueSenderAndListener-ReadErrors"/>
+			<JdbcMessageLog slotId="TestMessageQueueSenderAndListener-ReadLog"/>
+		</Receiver>
+		<Pipeline>
+			<InputValidator className="org.frankframework.pipes.XmlValidator"
+				schema="MessageQueueSenderAndListener/any.xsd"
+				root="Envelope"
+				throwException="true">
+			</InputValidator>
+
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200"/>
+			</Exits>
+
+			<XsltPipe name="collectResults" xpathExpression="concat('key1 [',$k1,'] key2 [',$k2,'] cid [', $cid, ']')">
+				<Param name="msg" sessionKey="originalMessage"/>
+				<Param name="k1" sessionKey="key1"/>
+				<Param name="k2" sessionKey="key2"/>
+				<Param name="cid" sessionKey="cid"/>
+			</XsltPipe>
+			<SenderPipe name="Store result in DB">
+				<JdbcMessageLog slotId="TestMessageQueueSenderAndListener-ReadResultLog"/>
+				<EchoSender/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+</Module>

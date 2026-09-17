@@ -20,7 +20,6 @@ import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -53,7 +52,7 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 
 	@NonNull
 	@Override
-	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) {
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getDefaultUserid(), getDefaultPassword());
 		String result = "";
 

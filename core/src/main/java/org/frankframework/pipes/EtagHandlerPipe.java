@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -88,7 +89,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 
 		String uriPatternSessionKey = null;
-		ParameterValueList pvl = null;
+		ParameterValueList pvl;
 		ParameterList parameterList = getParameterList();
 		try {
 			pvl = parameterList.getValues(message, session);
@@ -101,7 +102,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		}
 
 		// hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
-		String cacheKey = null;
+		String cacheKey;
 		if(uriPatternSessionKey != null && !uriPatternSessionKey.isEmpty())
 			cacheKey = getRestPath()+"_"+uriPatternSessionKey.toLowerCase();
 		else
@@ -172,7 +173,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		uriPattern = string;
 	}
 
-	public String getUriPattern() {
+	public @Nullable String getUriPattern() {
 		if(uriPattern != null) {
 			return uriPattern.toLowerCase();
 		}

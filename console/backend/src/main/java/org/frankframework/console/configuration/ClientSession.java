@@ -54,7 +54,7 @@ public class ClientSession implements InitializingBean {
 
 	// When a new session is created, assign a default target
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		List<ClusterMember> members = outboundGateway.getMembers();
 		members.stream().filter(m -> "worker".equals(m.getType())).findFirst().ifPresent(m -> {
 			m.setSelectedMember(true);

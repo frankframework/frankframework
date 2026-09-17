@@ -76,7 +76,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@BeforeEach
 	@Override
-	public void setUp() throws Exception {
+	public void setUp() {
 		if (userId == null) {
 			msGraphClient = getGraphServiceClient();
 			User user = msGraphClient.usersWithUserPrincipalName(mailAddress).get(rc -> {
@@ -188,7 +188,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public boolean _fileExists(String folder, String filename) throws Exception {
+	public boolean _fileExists(String folder, String filename) {
 		String mailFolderId = baseFolderId;
 		if (folder != null) {
 			MailFolder fFolder = findFolder(folder);
@@ -208,12 +208,12 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public boolean _folderExists(String folderName) throws Exception {
+	public boolean _folderExists(String folderName) {
 		return findFolder(folderName) != null;
 	}
 
 	@Override
-	public void _deleteFile(String folder, String messageId) throws Exception {
+	public void _deleteFile(String folder, String messageId) {
 		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
 		MessageItemRequestBuilder mirb = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(messageId);
 
@@ -221,7 +221,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public String createFile(String folder, String filename, String content) throws Exception {
+	public String createFile(String folder, String filename, String content) {
 		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
 
 		Message message = new Message();
@@ -260,7 +260,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public InputStream _readFile(String folder, String mailId) throws Exception {
+	public InputStream _readFile(String folder, String mailId) {
 		String mailFolderId = (folder != null) ? findFolder(folder).getId() : baseFolderId;
 
 		Message mailMessage = getRequestBuilder().mailFolders().byMailFolderId(mailFolderId).messages().byMessageId(mailId).get();
@@ -268,7 +268,7 @@ public class ExchangeFileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public void _createFolder(String foldername) throws Exception {
+	public void _createFolder(String foldername) {
 		List<String> folders = StringUtil.split(foldername, "/");
 		ChildFoldersRequestBuilder crb = baseMailFolder.childFolders();
 

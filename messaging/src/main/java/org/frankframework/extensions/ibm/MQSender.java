@@ -47,19 +47,19 @@ public class MQSender extends JmsSender {
 	}
 
 	@Override
-	public String send(Session session, Destination dest, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
+	public String send(@NonNull Session session, @NonNull Destination dest, jakarta.jms.@NonNull Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		setTargetClientMQ(dest);
 		return super.send(session, dest, message, ignoreInvalidDestinationException);
 	}
 
 	@Override
-	protected String sendByQueue(QueueSession session, Queue destination, jakarta.jms.Message message) throws JMSException {
+	protected String sendByQueue(@NonNull QueueSession session, @NonNull Queue destination, jakarta.jms.@NonNull Message message) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.sendByQueue(session, destination, message);
 	}
 
 	@Override
-	protected String sendByTopic(TopicSession session, Topic destination, jakarta.jms.Message message) throws JMSException {
+	protected String sendByTopic(@NonNull TopicSession session, @NonNull Topic destination, jakarta.jms.@NonNull Message message) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.sendByTopic(session, destination, message);
 	}

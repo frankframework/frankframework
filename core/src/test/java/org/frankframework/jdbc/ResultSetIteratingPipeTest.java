@@ -233,7 +233,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 	private static class ResultCollectingSender extends EchoSender {
 		private List<Message> data = Collections.synchronizedList(new ArrayList<>());
-		private int delay = 0;
+		private int delay;
 		public ResultCollectingSender() {
 			this(0);
 		}

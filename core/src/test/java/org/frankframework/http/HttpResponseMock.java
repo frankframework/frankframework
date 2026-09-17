@@ -39,6 +39,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.jspecify.annotations.Nullable;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -89,7 +90,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 			this.value = value;
 		}
 		@Override
-		public HeaderElement[] getElements() throws ParseException {
+		public HeaderElement @Nullable [] getElements() throws ParseException {
 			return null;
 		}
 	}
@@ -124,7 +125,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 		return new ByteArrayInputStream(response.toString().getBytes());
 	}
 
-	private InputStream doHead(HttpHost host, HttpHead request, HttpContext context) {
+	private @Nullable InputStream doHead(HttpHost host, HttpHead request, HttpContext context) {
 		assertEquals("HEAD", request.getMethod());
 		assertEquals("HEAD / HTTP/1.1", request.toString());
 		return null; // HEAD requests do not have a body

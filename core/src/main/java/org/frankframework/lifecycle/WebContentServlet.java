@@ -35,6 +35,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.io.TikaInputStream;
+import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
@@ -110,7 +112,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 				listDirectory(resp);
 				resp.flushBuffer();
 			} else {
-				resp.sendError(404, "resource not found");
+				resp.sendError(HttpStatus.NOT_FOUND.value(), "resource not found");
 			}
 			return;
 		}
@@ -118,7 +120,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 		URL resource = findResource(req);
 
 		if (resource == null) {
-			resp.sendError(404, "resource not found");
+			resp.sendError(HttpStatus.NOT_FOUND.value(), "resource not found");
 			return;
 		}
 
@@ -132,7 +134,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 			IOUtils.copy(in, resp.getOutputStream());
 		} catch (IOException e) {
 			log.warn("error reading or writing resource to servlet", e);
-			resp.sendError(500, e.getMessage());
+			resp.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
 			return;
 		}
 
@@ -189,7 +191,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 	/**
 	 * Should fail fast, always return null / HTTP 404.
 	 */
-	private URL findResource(HttpServletRequest req) {
+	private @Nullable URL findResource(HttpServletRequest req) {
 		String normalizedPath = FilenameUtils.normalize(req.getPathInfo(), true);
 		if (normalizedPath.startsWith("/")) {
 			normalizedPath = normalizedPath.substring(1);

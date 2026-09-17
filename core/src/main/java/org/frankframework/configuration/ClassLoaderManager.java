@@ -69,7 +69,7 @@ public class ClassLoaderManager {
 		return createClassloader(configurationName, classLoaderType, classPathClassLoader);
 	}
 
-	private @Nullable ClassLoader createClassloader(@NonNull String configurationName, @NonNull String classLoaderType, ClassLoader parentClassLoader) throws ClassLoaderException {
+	private @Nullable ClassLoader createClassloader(@NonNull String configurationName, @NonNull String classLoaderType, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
 		// It is possible that no ClassLoader has been defined, use default ClassLoader
 		if (classLoaderType.isEmpty())
 			throw new ClassLoaderException("classLoaderType cannot be empty");
@@ -82,24 +82,21 @@ public class ClassLoaderManager {
 			Class<?> clas = ClassUtils.loadClass(className);
 			Constructor<?> con = ClassUtils.getConstructorOnType(clas, new Class[] {ClassLoader.class});
 			classLoader = (ClassLoader) con.newInstance(parentClassLoader);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new ClassLoaderException("invalid classLoaderType ["+className+"]", e);
 		}
 		log.debug("successfully instantiated classloader [{}] with parent classloader [{}]", () -> ClassUtils.nameOf(classLoader), () -> ClassUtils.nameOf(parentClassLoader));
 		// Register any classloader regardless if it's a ConfigurationClassLoader or not
 		ClassLoadingLeakDetector.registerClassLoader(configurationName, classLoader);
 
-		// If the classLoader implements IClassLoader, configure it
-		if (classLoader instanceof IConfigurationClassLoader loader) {
 
-			applyConfigurationProperties(configurationName, loader);
-
+		if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
+			applyConfigurationProperties(configurationName, configurationClassLoader);
 			try {
-				loader.configure(ibisContext, configurationName);
+				configurationClassLoader.configure(ibisContext, configurationName);
 			} catch (ClassLoaderException ce) {
 				String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
-				switch (loader.getReportLevel()) {
+				switch (configurationClassLoader.getReportLevel()) {
 					case DEBUG -> log.debug(msg, ce);
 					case INFO -> ibisContext.log(msg, MessageEventLevel.INFO, ce);
 					case WARN -> ApplicationWarnings.add(log, msg, ce);
@@ -109,14 +106,14 @@ public class ClassLoaderManager {
 				// Break here, we cannot continue when there are ConfigurationExceptions!
 				return null;
 			}
-			log.info("configured classloader [{}]", () -> ClassUtils.nameOf(loader));
+			log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
 		}
 
 		return classLoader;
 	}
 
 	@SuppressWarnings("java:S135") // Suppress warning for multiple continue statements in for loop
-	private void applyConfigurationProperties(@NonNull String configurationName, IConfigurationClassLoader loader) throws ClassLoaderException {
+	private void applyConfigurationProperties(@NonNull String configurationName, @NonNull IConfigurationClassLoader loader) throws ClassLoaderException {
 		String parentProperty = "configurations." + configurationName + ".";
 
 		for (Method method: loader.getClass().getMethods()) {
@@ -203,7 +200,7 @@ public class ClassLoaderManager {
 	 * @return ClassLoader or null on error
 	 * @throws ClassLoaderException when a ClassLoader failed to initialize
 	 */
-	public @Nullable ClassLoader get(String configurationName) throws ClassLoaderException {
+	public @Nullable ClassLoader get(@NonNull String configurationName) throws ClassLoaderException {
 		return get(configurationName, null);
 	}
 

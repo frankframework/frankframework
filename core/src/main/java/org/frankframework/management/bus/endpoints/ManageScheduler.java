@@ -200,7 +200,7 @@ public class ManageScheduler extends BusEndpointBase {
 
 		try {
 			if(jobDetail.getJobType() == JobType.DATABASE) {
-				boolean success = false;
+				boolean success;
 				// remove from database
 				FixedQuerySender qs = createBean(FixedQuerySender.class);
 				qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);

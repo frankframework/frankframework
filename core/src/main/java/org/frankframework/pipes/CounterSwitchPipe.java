@@ -63,7 +63,7 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		String forward = "";
-		PipeForward pipeForward = null;
+		PipeForward pipeForward;
 
 		DistributionSummary summary = getPipeLine().getPipeStatistics(this);
 		if (summary != null) {

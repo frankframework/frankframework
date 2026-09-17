@@ -298,9 +298,6 @@ public class FileSystemUtils {
 	@NonNull
 	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard, @NonNull TypeFilter typeFilter) throws FileSystemException {
 		DirectoryStream<F> ds = fileSystem.list(folder, typeFilter);
-		if (ds == null) {
-			return Stream.empty();
-		}
 		Iterator<F> it = ds.iterator();
 
 		WildCardFilter wildcardfilter = StringUtils.isEmpty(wildCard) ? null : new WildCardFilter(wildCard);

@@ -6,19 +6,20 @@ import jakarta.xml.ws.EndpointReference;
 import jakarta.xml.ws.WebServiceContext;
 import jakarta.xml.ws.handler.MessageContext;
 
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 
 public class WebServiceContextStub implements WebServiceContext {
 
 	private final MessageContextStub messageContext = new MessageContextStub();
 	@Override
-	public EndpointReference getEndpointReference(Element... arg0) {
+	public @Nullable EndpointReference getEndpointReference(Element... arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public <T extends EndpointReference> T getEndpointReference(Class<T> arg0, Element... arg1) {
+	public <T extends EndpointReference> @Nullable T getEndpointReference(Class<T> arg0, Element... arg1) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -29,7 +30,7 @@ public class WebServiceContextStub implements WebServiceContext {
 	}
 
 	@Override
-	public Principal getUserPrincipal() {
+	public @Nullable Principal getUserPrincipal() {
 		// TODO Auto-generated method stub
 		return null;
 	}

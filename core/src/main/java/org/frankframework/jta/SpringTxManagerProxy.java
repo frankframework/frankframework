@@ -109,7 +109,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		if(realTxManager == null) {
 			throw new IllegalStateException("RealTxManager not set");
 		}

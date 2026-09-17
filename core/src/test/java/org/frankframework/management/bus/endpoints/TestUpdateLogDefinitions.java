@@ -38,7 +38,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	private static final String NEW_LOG_EXCEPTION_MESSAGE = "neither [logPackage] or [level] provided";
 
 	@Test
-	public void getLogDefinitions() throws Exception {
+	public void getLogDefinitions() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 		String json = (String) response.getPayload();
@@ -68,7 +68,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	}
 
 	@Test
-	public void getLogDefinitionsWithFilter() throws Exception {
+	public void getLogDefinitionsWithFilter() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.GET);
 		request.setHeader("filter", LOG_DEFINITION_PACKAGE);
 		Message<?> response = callSyncGateway(request);
