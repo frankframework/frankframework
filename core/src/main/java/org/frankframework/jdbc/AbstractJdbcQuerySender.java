@@ -763,7 +763,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 								} else {
 									// ISO_LOCAL_DATE == "yyyy-MM-dd";
 									Instant instant = Instant.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(element));
-									java.sql.Date sDate = new java.sql.Date(instant.getEpochSecond());
+									java.sql.Date sDate = new java.sql.Date(instant.toEpochMilli());
 									paramArray[idx] = sDate;
 								}
 							} else {
