@@ -72,7 +72,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 	public static final String STUB_KEY_PREFIX = "stub.";
 	public static String scenarioSuffix;
 	private final AppConstants appConstants = AppConstants.getInstance();
-	private static final int MINUTES_2020 = (int) TimeUnit.MILLISECONDS.toMinutes(Instant.parse("2020-01-01T01:00:00.00Z").getEpochSecond());
+	private static final int MINUTES_2020 = (int) TimeUnit.MILLISECONDS.toMinutes(Instant.parse("2020-01-01T01:00:00.00Z").toEpochMilli());
 
 	@Override
 	public @Nullable String getButtonText() {
