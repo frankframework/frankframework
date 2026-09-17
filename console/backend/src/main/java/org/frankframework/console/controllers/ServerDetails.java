@@ -87,7 +87,15 @@ public class ServerDetails {
 	}
 
 	@PermitAll
-	@Description("view application health")
+	@Description("""
+		View the application health. The health check is affected by the availability of cluster `workers`.
+		If no workers are available, a 503 'Service Unavailable' response is returned. If workers are available,
+		the health check is performed and the response is returned based on the `strict` mode parameter.
+		If the query parameter `strict` is set to `false`, a 200 OK response is returned with the health check data, even if there are errors.
+		These errors consist only of Configuration warnings and/or errors, and do not indicate that an Adapter is unavailable.
+		The `strict` mode parameter allows deployments to succeed in environments where the health check is solely to prove the application is online.
+		This endpoint is secured using the `iaf-api.healthCheckEndpointExpression` property, which defaults to `localhost`.
+		""")
 	@GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFrankHealth(@RequestParam(value = "strict", required = false, defaultValue = "true") boolean strictMode) {
 		if (frankApiService.hasNoAvailableWorker()) {

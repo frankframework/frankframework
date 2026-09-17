@@ -137,6 +137,8 @@ services:
       customViews.FrankFlow.url: http://localhost:8081
       # Enable CORS. The default Allow-Origin is set to "*" for all endpoints, which is sufficient for local development. For production, consider setting a specific allowed origin instead.
       cors.enforced: "true"
+    volumes:
+      - ./configurations/:/opt/frank/configurations
     develop:
       watch:
         - action: sync
