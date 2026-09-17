@@ -80,9 +80,9 @@ import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -92,6 +92,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -283,7 +285,6 @@ public class XmlUtils {
 
 	private static XMLReader getXMLReader(boolean namespaceAware, @Nullable IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		SAXParserFactory factory = getSAXParserFactory(namespaceAware);
-		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		XMLReader xmlReader = factory.newSAXParser().getXMLReader();
 		if (scopeProvider != null) {
 			xmlReader.setEntityResolver(new ClassLoaderEntityResolver(scopeProvider));
@@ -762,16 +763,18 @@ public class XmlUtils {
 		return factory;
 	}
 
-	public static SAXParserFactory getSAXParserFactory() {
+	public static SAXParserFactory getSAXParserFactory() throws SAXNotSupportedException, SAXNotRecognizedException, ParserConfigurationException {
 		return getSAXParserFactory(isNamespaceAwareByDefault());
 	}
 
-	public static SAXParserFactory getSAXParserFactory(boolean namespaceAware) {
+	public static SAXParserFactory getSAXParserFactory(boolean namespaceAware) throws SAXNotSupportedException, SAXNotRecognizedException, ParserConfigurationException {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		factory.setNamespaceAware(namespaceAware);
 		return factory;
 	}
 
+	@Contract("null -> null; !null -> !null")
 	public static @Nullable String convertEndOfLines(@Nullable String input) {
 		if (input==null) {
 			return null;
@@ -779,6 +782,7 @@ public class XmlUtils {
 		return input.replaceAll("\r\n?", "\n");
 	}
 
+	@Contract("null -> null; !null -> !null")
 	public static @Nullable String normalizeWhitespace(@Nullable String input) {
 		if (input == null) {
 			return null;
@@ -786,10 +790,12 @@ public class XmlUtils {
 		return input.replaceAll("[\t\n\r]", " ");
 	}
 
-	public static @Nullable String normalizeAttributeValue(String input) {
+	@Contract("null -> null; !null -> !null")
+	public static @Nullable String normalizeAttributeValue(@Nullable String input) {
 		return XmlEncodingUtils.replaceNonValidXmlCharacters(normalizeWhitespace(convertEndOfLines(input)), '?', true, true);
 	}
 
+	@Contract("null -> null; !null -> !null")
 	public static @Nullable String cleanseElementName(@Nullable String candidateName) {
 		return candidateName!=null ? XmlEncodingUtils.replaceNonValidXmlCharacters(candidateName.replaceAll("[^\\w\\-.]", "_"), '?', true, true) : null;
 	}
@@ -1099,6 +1105,7 @@ public class XmlUtils {
 
 	}
 
+	@SuppressWarnings({ "java:S2445", "SynchronizationOnLocalVariableOrMethodParameter" }) // I believe that synchronization on the method parameter is acceptable in this instance
 	private static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
 		Result result = new StreamResult(out);
 		synchronized (t) {
@@ -1142,7 +1149,14 @@ public class XmlUtils {
 	public static Map<String, String> getVersionInfo() {
 		Map<String,String> map = new LinkedHashMap<>();
 
-		SAXParserFactory spFactory = getSAXParserFactory();
+		SAXParserFactory spFactory;
+		try {
+			spFactory = getSAXParserFactory();
+		} catch (Exception e) {
+			log.warn("Could not create and initialize SAXParserFactory", e);
+			map.put("SAXParserFactory", "Unable to create SAX Parser: " + e.getMessage());
+			return map;
+		}
 		map.put("SAXParserFactory-class", spFactory.getClass().getName());
 		DocumentBuilderFactory domFactory1 = getDocumentBuilderFactory(false);
 		map.put("DocumentBuilderFactory1-class", domFactory1.getClass().getName());
@@ -1171,24 +1185,24 @@ public class XmlUtils {
 
 		try {
 			map.put("Xerces-Version", org.apache.xerces.impl.Version.getVersion());
-		} catch (Throwable t) {
-			log.warn("could not get Xerces version", t);
-			map.put("Xerces-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+		} catch (Exception e) {
+			log.warn("could not get Xerces version", e);
+			map.put("Xerces-Version", "not found (" + e.getClass().getName() + "): "+ e.getMessage() + ")");
 		}
 
 		try {
 			String xalanVersion = org.apache.xalan.Version.getVersion();
 			map.put("Xalan-Version", xalanVersion);
-		} catch (Throwable t) {
-			log.warn("could not get Xalan version", t);
-			map.put("Xalan-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+		} catch (Exception e) {
+			log.warn("could not get Xalan version", e);
+			map.put("Xalan-Version", "not found (" + e.getClass().getName() + "): "+ e.getMessage() + ")");
 		}
 		try {
 			String saxonVersion = net.sf.saxon.Version.getProductTitle();
 			map.put("Saxon-Version", saxonVersion);
-		} catch (Throwable t) {
-			log.warn("could not get Saxon version", t);
-			map.put("Saxon-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+		} catch (Exception e) {
+			log.warn("could not get Saxon version", e);
+			map.put("Saxon-Version", "not found (" + e.getClass().getName() + "): "+ e.getMessage() + ")");
 		}
 		try {
 			if (xmlInputFactory instanceof WstxInputFactory factory) {
@@ -1196,9 +1210,9 @@ public class XmlUtils {
 				String woodstoxVersion = ReaderConfig.getImplName()+" "+ReaderConfig.getImplVersion()+"; xml1.1 "+(woodstoxConfig.isXml11()?"":"not ")+"enabled";
 				map.put("Woodstox-Version", woodstoxVersion);
 			}
-		} catch (Throwable t) {
-			log.warn("could not get Woodstox version", t);
-			map.put("Woodstox-Version", "not found (" + t.getClass().getName() + "): "+ t.getMessage() + ")");
+		} catch (Exception e) {
+			log.warn("could not get Woodstox version", e);
+			map.put("Woodstox-Version", "not found (" + e.getClass().getName() + "): "+ e.getMessage() + ")");
 		}
 
 		return map;
@@ -1466,7 +1480,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static @NonNull Map<@Nullable String, @Nullable String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
+	public static Map<@Nullable String, @Nullable String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Map<@Nullable String, @Nullable String> m = new HashMap<>();
@@ -1491,26 +1505,30 @@ public class XmlUtils {
 		return m;
 	}
 
-	public static @NonNull Message toXhtml(@Nullable Message message) throws IOException {
-		if (Message.isNotEmpty(message)) {
-			String messageCharset = message.getCharset();
-			String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);
-			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
-				CleanerProperties props = new CleanerProperties();
-				props.setOmitDoctypeDeclaration(true);
-				if(messageCharset != null) {
-					props.setCharset(messageCharset);
-				}
-				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(message.asReader());
-				MessageBuilder messageBuilder = new MessageBuilder();
-				OutputStream outputStream = messageBuilder.asOutputStream();
-				new SimpleXmlSerializer(props).writeToStream(tagNode, outputStream);
-				outputStream.close();
-				return messageBuilder.build();
-			}
+	@SuppressWarnings("javabugs:S2259") // Sonar false-positive on potential NULL access b/c Sonar doesn't understand semantics of Message.isEmpty(message)
+	public static Message toXhtml(@Nullable Message message) throws IOException {
+		if (Message.isEmpty(message)) {
+			return Message.nullMessage();
 		}
-		return Message.nullMessage();
+		String messageCharset = message.getCharset();
+		String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);
+		if (!xhtmlString.contains("<html>") && !xhtmlString.contains("<html ")) {
+			return Message.nullMessage();
+		}
+
+		CleanerProperties props = new CleanerProperties();
+		props.setOmitDoctypeDeclaration(true);
+		if(messageCharset != null) {
+			props.setCharset(messageCharset);
+		}
+		HtmlCleaner cleaner = new HtmlCleaner(props);
+		TagNode tagNode = cleaner.clean(message.asReader());
+		MessageBuilder messageBuilder = new MessageBuilder();
+		OutputStream outputStream = messageBuilder.asOutputStream();
+		new SimpleXmlSerializer(props).writeToStream(tagNode, outputStream);
+		outputStream.close();
+
+		return messageBuilder.build();
 	}
 
 	public static XPathFactory getXPathFactory() {

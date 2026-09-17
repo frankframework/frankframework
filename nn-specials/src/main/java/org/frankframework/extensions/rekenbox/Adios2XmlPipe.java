@@ -245,7 +245,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				handler = new Xml2AdiosHandler();
 				SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 				saxParser = parserFactory.newSAXParser();
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new ConfigurationException("cannot configure a parser", e);
 			}
 
