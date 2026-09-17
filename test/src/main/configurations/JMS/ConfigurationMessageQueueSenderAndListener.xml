@@ -3,7 +3,7 @@
 	active="${active.jms}">
 
 	<Adapter name="writeMessageQueue">
-		<Receiver name="writeMessageQueueReceiver">
+		<Receiver name="writeMessageQueueReceiver" maxRetries="1">
 			<FrankListener name="writeMessageQueueListener"/>
 			<JdbcErrorStorage slotId="TestMessageQueueSenderAndListener-WriteErrors"/>
 		</Receiver>
