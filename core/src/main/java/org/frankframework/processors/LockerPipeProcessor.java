@@ -33,7 +33,7 @@ public class LockerPipeProcessor extends AbstractPipeProcessor {
 
 	@NonNull
 	@Override
-	@SuppressWarnings({ "java:S1193", "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" })
+	@SuppressWarnings({ "java:S1193", "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" }) // java:S1193: instanceof in catch block. Prevents us from duplicating the throw PipeRunException. java:S1143, java:S1163: We want to throw from finally, sorry. java:S1181: Catching Throwable. Because we want to add the Throwable to suppressedExceptions.
 	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		String objectId;
 		Locker locker = pipe.getLocker();
