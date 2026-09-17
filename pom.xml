@@ -237,6 +237,12 @@
 				<version>1.0.1</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.jayway.jsonpath</groupId>
+				<artifactId>json-path</artifactId>
+				<version>3.0.0</version>
+			</dependency>
+
 			<!-- Lock transient dependency versions to fix CVE's -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>

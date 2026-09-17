@@ -153,7 +153,6 @@
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
-			<version>3.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
