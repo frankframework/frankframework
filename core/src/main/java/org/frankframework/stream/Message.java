@@ -476,7 +476,7 @@ public class Message implements Serializable {
 	 * @param message Message to check. Can be {@code null}.
 	 * @return Returns {@code true} if the message is {@code null}, otherwise the result of {@link Message#isEmpty()}.
 	 */
-	@Contract(value = "null -> true")
+	@Contract("null -> true")
 	public static boolean isEmpty(@Nullable Message message) {
 		return message == null || message.isEmpty();
 	}
@@ -486,7 +486,7 @@ public class Message implements Serializable {
 		return message != null && message.isNotEmpty();
 	}
 
-	@Contract(value = "null -> true")
+	@Contract("null -> true")
 	public static boolean isNull(@Nullable Message message) {
 		return message == null || message.isNull();
 	}

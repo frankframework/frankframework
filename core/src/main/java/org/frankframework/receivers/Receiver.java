@@ -1298,7 +1298,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	@SuppressWarnings({ "java:S1143", "java:S1163", "ThrowFromFinallyBlock" })
+	@SuppressWarnings({ "java:S1143", "java:S1163", "ThrowFromFinallyBlock" }) // Throw from finally; catching Throwable not Exception. Cannot change these easily.
 	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry,
 											boolean retryStatusAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();

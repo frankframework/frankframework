@@ -171,7 +171,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		}
 	}
 
-	@SuppressWarnings({ "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" })
+	@SuppressWarnings({ "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" }) // java:S1143, java:S1163: We want to throw from finally, sorry. java:S1181: Catching Throwable. Because we want to add the Throwable to suppressedExceptions.
 	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
 		if (timeout<=0) {
 			return getConnection();

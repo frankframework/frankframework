@@ -41,7 +41,7 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
-	@SuppressWarnings({ "java:S1141", "java:S1181", "java:S2629", "java:S1143", "java:S1163" })
+	@SuppressWarnings({ "java:S1141", "java:S1181", "java:S2629", "java:S1143", "java:S1163" }) // java:S2629: log arguments not evaluated lazily, b/c non-final variable; java:S1141: Ignore nested try-catch blocks; java:S1143, java:S1163: We want to throw from finally, sorry. java:S1181: Catching Throwable. Because we want to add the Throwable to suppressedExceptions.
 	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		try {
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
