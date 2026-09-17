@@ -54,10 +54,10 @@
 
 	<profiles>
 		<profile>
-			<id>all-dependencies</id>
+			<id>cmis</id>
 			<activation>
 				<property>
-					<name>all-dependencies</name>
+					<name>cmis</name>
 				</property>
 			</activation>
 			<dependencies>
@@ -65,6 +65,16 @@
 					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-cmis</artifactId>
 				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>aspose</id>
+			<activation>
+				<property>
+					<name>aspose</name>
+				</property>
+			</activation>
+			<dependencies>
 				<dependency>
 					<groupId>org.frankframework</groupId>
 					<artifactId>frankframework-aspose</artifactId>
