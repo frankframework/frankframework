@@ -72,7 +72,7 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 					throw tThrown;
 				} finally {
 					if (tg.cancel()) {
-						if (tThrown==null) {
+						if (tThrown == null) {
 							throw new InterruptedException(tg.getDescription()+" was interrupted");
 						}
 						log.warn("Thread interrupted, but propagating other caught exception of type [{}]", ClassUtils.nameOf(tThrown));
