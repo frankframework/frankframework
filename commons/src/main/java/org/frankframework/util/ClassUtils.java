@@ -413,7 +413,7 @@ public class ClassUtils {
 			result.put("implementation", pkg.getImplementationTitle() + " version " + pkg.getImplementationVersion() + " by " + pkg.getImplementationVendor());
 
 			CodeSource codeSource = clazz.getProtectionDomain().getCodeSource();
-			result.put("codeSource", codeSource != null ? codeSource.getLocation().toString() : "unknown");
+			result.put("codeSource", codeSource != null && codeSource.getLocation() != null ? codeSource.getLocation().toString() : "unknown");
 
 			URL classLocation = clazz.getResource('/' + clazz.getName().replace('.', '/') + ".class");
 			result.put("location", classLocation != null ? classLocation.toString() : "unknown");
