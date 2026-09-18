@@ -537,7 +537,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 
 					try {
 						TemporalAccessor parse = formatter.parse(property);
-						calendar.setTimeInMillis(Instant.from(parse).getEpochSecond());
+						calendar.setTimeInMillis(Instant.from(parse).toEpochMilli());
 					} catch (DateTimeParseException e) {
 						throw new SenderException("exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
 					}
