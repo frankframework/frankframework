@@ -710,12 +710,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	public @Nullable Receiver<?> getReceiverByName(@NonNull String receiverName) {
-		for (Receiver<?> receiver: receivers) {
-			if (receiverName.equalsIgnoreCase(receiver.getName())) {
-				return receiver;
-			}
-		}
-		return null;
+		return receivers.stream()
+				.filter(receiver -> receiverName.equalsIgnoreCase(receiver.getName()))
+				.findFirst()
+				.orElse(null);
 	}
 
 	public @NonNull List<Receiver<?>> getReceivers() {
