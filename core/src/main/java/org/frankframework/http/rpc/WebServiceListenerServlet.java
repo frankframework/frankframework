@@ -44,6 +44,7 @@ import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.HttpStatusResolver;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.http.mime.HttpEntityFactory;
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.receivers.ServiceClient;
@@ -176,7 +177,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 		}
 		if (request.getMultipartXml() != null) {
 			session.putAll(request.getAttachments());
-			session.put(listener.getMultipartXmlSessionKey(), request.getMultipartXml());
+			session.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, request.getMultipartXml());
 		}
 
 		final Message output;
@@ -245,7 +246,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 	private static boolean writeToResponseStream(HttpServletResponse response, Message result, WebServiceListener listener, PipeLineSession session) throws IOException {
 		response.resetBuffer();
 
-		String attachmentXmlSessionKey = listener.getResponseMultipartXmlSessionKey();
+		String attachmentXmlSessionKey = listener.getMultipartXmlSessionKey();
 		final HttpEntityFactory entityFactory;
 		if (StringUtils.isNotEmpty(attachmentXmlSessionKey) && session.containsKey(attachmentXmlSessionKey)) {
 			log.debug("building multipart message with MultipartXmlSessionKey [{}]", attachmentXmlSessionKey);

@@ -15,6 +15,8 @@
 */
 package org.frankframework.http;
 
+import java.util.List;
+
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.ws.soap.SOAPBinding;
 
@@ -35,11 +37,14 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.cxf.AbstractSOAPProvider;
 import org.frankframework.http.cxf.MessageProvider;
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.StringUtil;
+import org.frankframework.util.XmlBuilder;
 
 /**
  * Listener that allows a {@link Receiver} to receive messages as a SOAP webservice.
@@ -49,17 +54,21 @@ import org.frankframework.util.AppConstants;
  * The WSDL documents that we generate document how the SOAP services can be accessed. In particular, the
  * URL of a SOAP service can be found in an XML element <code>&lt;soap:address&gt;</code> with
  * <code>soap</code> pointing to namespace <code>http://schemas.xmlsoap.org/wsdl/soap/</code>.
- *
- * <br/>If <code>address</code> is set, then for each request:<ul>
+ * <br/>
+ * When using CXF (pre version `10.3`) the following limitations apply:
+ * If <code>address</code> is set, then for each request:
+ * <ul>
  * <li>MIME headers are described in a 'mimeHeaders'-XML stored under session key 'mimeHeaders'</li>
  * <li>Attachments present in the request are described by an 'attachments'-XML stored under session key 'attachments'</li>
  * <li>SOAP protocol is stored under a session key 'soapProtocol'</li>
  * <li>SOAP action is stored under a session key 'SOAPAction'</li>
  * </ul>
- * and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by {@code multipartXmlSessionKey}.
+ * <br/>
+ * Since version `10.2.1` the following sessionKey is used for incoming attachments: {@value MultipartUtils#MULTIPART_ATTACHMENTS_SESSION_KEY}.
+ * It is possible to use the old sessionKey when the property {@code WebServiceListener.backwardsCompatibleMultipartNotation} has been set.
+ * <br/>
+ * A multipart response is constructed if a 'multipart'-XML is provided in sessionKey specified by {@code multipartXmlSessionKey}.
  *
- * @author Gerrit van Brakel
- * @author Jaco de Groot
  * @author Niels Meijer
  */
 @DestinationType(DestinationType.Type.HTTP)
@@ -73,9 +82,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	/* CXF Implementation */
 	private @Getter String address;
 	private @Getter boolean mtomEnabled = false;
-	private @Getter String attachmentSessionKeys = "";
+	private String defaultMultipartXml;
 	private @Getter String multipartXmlSessionKey = "multipartXml";
-	private @Getter String responseMultipartXmlSessionKey = "";
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 
@@ -88,13 +96,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (StringUtils.isEmpty(getAddress()) && isMtomEnabled())
 			throw new ConfigurationException("can only use MTOM when address attribute has been set");
 
-		if (StringUtils.isNotEmpty(getAttachmentSessionKeys()) && StringUtils.isEmpty(getResponseMultipartXmlSessionKey())) {
-			responseMultipartXmlSessionKey = multipartXmlSessionKey;
-		}
-
 		if (isSoap()) {
-//			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the use of attribute soap=true has been deprecated. Please use the SoapWrapperPipe instead";
-//			ConfigurationWarnings.getInstance().add(log, msg, true);
+			ConfigurationWarnings.add(this, log, "the use of attribute soap=true is discouraged. Please use the SoapWrapper instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 
 			soapWrapper = SoapWrapper.getInstance();
 		}
@@ -183,6 +186,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 
 	@Override
 	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
+		if (defaultMultipartXml != null && !session.containsKey(getMultipartXmlSessionKey())) {
+			session.put(getMultipartXmlSessionKey(), defaultMultipartXml);
+		}
+
 		if (!isSoap()) {
 			return super.processRequest(message, session);
 		}
@@ -271,29 +278,38 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	}
 
 	/**
-	 *  Comma separated list of session keys to hold contents of attachments of the request. Deprecated and no longer used.
+	 * Comma separated list of session keys to hold contents of attachments of the response.
+	 * When no {@code multipartXmlSessionkey} is provided, this will be used to generate an inline {@code multipartXml}.
+	 * For better control over the response, it is recommended to use {@code multipartXmlSessionKey} instead.
 	 */
 	@Deprecated
-	@ConfigurationWarning("No longer used, all attachments will be put in session")
+	@ConfigurationWarning("please use multipartXmlSessionKey to specify which session keys to return")
 	public void setAttachmentSessionKeys(String attachmentSessionKeys) {
-		this.attachmentSessionKeys = attachmentSessionKeys;
+		List<String>  attachments = StringUtil.split(attachmentSessionKeys, " ,;");
+		if (!attachments.isEmpty()) {
+			defaultMultipartXml = createMultipartXml(attachments);
+		}
 	}
 
-	/**
-	 * Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified
-	 * @ff.default multipartXml
-	 */
-	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
-		this.multipartXmlSessionKey = multipartXmlSessionKey;
+	private String createMultipartXml(List<String> attachments) {
+		XmlBuilder xmlMultipart = new XmlBuilder("parts");
+		for(String attachment: attachments) {
+			// Using the following format: <parts><part type=\"file\" name=\"document.pdf\" sessionKey=\"part_file\" size=\"12345\" mimeType=\"application/octet-stream\"/></parts>
+			XmlBuilder part = new XmlBuilder("part");
+			part.addAttribute("name", attachment);
+			part.addAttribute("sessionKey", attachment);
+			part.addAttribute("mimeType", "application/octet-stream");
+			xmlMultipart.addSubElement(part);
+		}
+		return xmlMultipart.asXmlString();
 	}
 
 	/**
 	 * Key of session variable that holds the description of the multipart attachments that should be sent back in
 	 * the response.
-	 * If not set or empty and the deprecated attribute {@code attachmmentSessionKeys} is set, then for backwards compatibility
-	 * this is set to the same value as {@code multipartXmlSessionKey}.
+	 * @ff.default multipartXml
 	 */
-	public void setResponseMultiPartXmlSessionKey(String responseMultiPartXmlSessionKey) {
-		this.responseMultipartXmlSessionKey = responseMultiPartXmlSessionKey;
+	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
+		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
 }
