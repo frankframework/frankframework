@@ -317,7 +317,7 @@ public class CmisUtils {
 							TemporalAccessor parse = formatter.parse(propertyValue);
 
 							gregorianCalendar = new GregorianCalendar();
-							gregorianCalendar.setTimeInMillis(Instant.from(parse).getEpochSecond());
+							gregorianCalendar.setTimeInMillis(Instant.from(parse).toEpochMilli());
 
 							if (StringUtils.isNotEmpty(timezoneAttr)) {
 								gregorianCalendar.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
