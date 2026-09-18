@@ -279,7 +279,8 @@ public class ClassUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	@Nullable
-	public static <T> T convertToType(Class<T> type, String value) throws IllegalArgumentException {
+	@Contract("_, null -> null; _, !null -> !null")
+	public static <T> T convertToType(Class<T> type, @Nullable String value) throws IllegalArgumentException {
 		return (T) convertToTypeRawTyped(type, value);
 	}
 

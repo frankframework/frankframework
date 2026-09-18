@@ -41,6 +41,7 @@ public class XmlEncodingUtils {
 	 * See {@link #encodeChars(String, boolean)}.
 	 */
 	@Nullable
+	@Contract("!null -> !null; null -> null")
 	public static String encodeChars(@Nullable String string) {
 		return encodeChars(string, false);
 	}
@@ -50,6 +51,7 @@ public class XmlEncodingUtils {
 	 * hence you might want to use {@link #replaceNonValidXmlCharacters(String)} or {@link #stripNonValidXmlCharacters(String, boolean)} too.
 	 */
 	@Nullable
+	@Contract("!null, _-> !null; null, _ -> null")
 	public static String encodeChars(@Nullable String string, boolean escapeNewLines) {
 		if (string == null) {
 			return null;
@@ -209,7 +211,7 @@ public class XmlEncodingUtils {
 	}
 
 	@Nullable
-	@Contract("!null, _, _, _ -> !null")
+	@Contract("!null, _, _, _ -> !null; null, _, _, _ -> null")
 	public static String replaceNonValidXmlCharacters(@Nullable String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
 		if (string == null) {
 			return null;

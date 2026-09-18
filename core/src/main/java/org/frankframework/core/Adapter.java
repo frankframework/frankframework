@@ -542,7 +542,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			case ContextStoppedEvent ignored -> publishEvent(new AdapterMessageEvent(this, "stopped"));
 			case ContextClosedEvent ignored -> publishEvent(new AdapterMessageEvent(this, "closed"));
 			default -> {
-				// No-op for other even types
+				// No-op for other event-types
 			}
 		}
 
@@ -646,7 +646,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
 			addErrorMessageToMessageKeeper(msg, e);
 
-			return new Message(errorMessage);
+			return Message.asMessage(errorMessage);
 		}
 	}
 	/**

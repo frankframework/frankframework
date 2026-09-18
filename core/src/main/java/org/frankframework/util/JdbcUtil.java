@@ -103,7 +103,7 @@ public class JdbcUtil {
 	}
 
 	@Deprecated
-	@Contract("!null -> !null")
+	@Contract("null -> null; !null -> !null")
 	public static @Nullable XmlBuilder warningsToXmlBuilder(@Nullable SQLWarning warnings) {
 		if (warnings == null) {
 			return null;
