@@ -60,7 +60,6 @@ public class ApiListenerTest {
 		assertEquals("method OPTIONS should not be added manually as it's automatically handled by the application", ex.getMessage());
 	}
 
-
 	@Test
 	public void testProducesTextWithCharset() throws ConfigurationException {
 		listener.setProduces(MediaTypes.TEXT);
