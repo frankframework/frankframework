@@ -15,9 +15,6 @@
 */
 package org.frankframework.http;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.ws.soap.SOAPBinding;
 
@@ -43,7 +40,6 @@ import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.StringUtil;
 
 /**
  * Listener that allows a {@link Receiver} to receive messages as a SOAP webservice.
@@ -79,7 +75,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private @Getter boolean mtomEnabled = false;
 	private @Getter String attachmentSessionKeys = "";
 	private @Getter String multipartXmlSessionKey = "multipartXml";
-	private final List<String> attachmentSessionKeysList = new ArrayList<>();
+	private @Getter String responseMultipartXmlSessionKey = "";
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 
@@ -92,8 +88,8 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (StringUtils.isEmpty(getAddress()) && isMtomEnabled())
 			throw new ConfigurationException("can only use MTOM when address attribute has been set");
 
-		if (StringUtils.isNotEmpty(getAttachmentSessionKeys())) {
-			attachmentSessionKeysList.addAll(StringUtil.split(getAttachmentSessionKeys(), " ,;"));
+		if (StringUtils.isNotEmpty(getAttachmentSessionKeys()) && StringUtils.isEmpty(getResponseMultipartXmlSessionKey())) {
+			responseMultipartXmlSessionKey = multipartXmlSessionKey;
 		}
 
 		if (isSoap()) {
@@ -274,7 +270,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		this.mtomEnabled = mtomEnabled;
 	}
 
-	/** Comma separated list of session keys to hold contents of attachments of the request */
+	/**
+	 *  Comma separated list of session keys to hold contents of attachments of the request. Deprecated and no longer used.
+	 */
 	@Deprecated
 	@ConfigurationWarning("No longer used, all attachments will be put in session")
 	public void setAttachmentSessionKeys(String attachmentSessionKeys) {
@@ -287,5 +285,15 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
+	}
+
+	/**
+	 * Key of session variable that holds the description of the multipart attachments that should be sent back in
+	 * the response.
+	 * If not set or empty and the deprecated attribute {@code attachmmentSessionKeys} is set, then for backwards compatibility
+	 * this is set to the same value as {@code multipartXmlSessionKey}.
+	 */
+	public void setResponseMultiPartXmlSessionKey(String responseMultiPartXmlSessionKey) {
+		this.responseMultipartXmlSessionKey = responseMultiPartXmlSessionKey;
 	}
 }

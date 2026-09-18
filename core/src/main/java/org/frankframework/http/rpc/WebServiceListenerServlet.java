@@ -245,7 +245,7 @@ public class WebServiceListenerServlet extends AbstractHttpServlet implements Dy
 	private static boolean writeToResponseStream(HttpServletResponse response, Message result, WebServiceListener listener, PipeLineSession session) throws IOException {
 		response.resetBuffer();
 
-		String attachmentXmlSessionKey = listener.getMultipartXmlSessionKey();
+		String attachmentXmlSessionKey = listener.getResponseMultipartXmlSessionKey();
 		final HttpEntityFactory entityFactory;
 		if (StringUtils.isNotEmpty(attachmentXmlSessionKey) && session.containsKey(attachmentXmlSessionKey)) {
 			log.debug("building multipart message with MultipartXmlSessionKey [{}]", attachmentXmlSessionKey);
