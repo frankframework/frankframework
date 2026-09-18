@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
 */
 package org.frankframework.xml;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 public class SaxDocumentBuilder extends SaxElementBuilder {
 
-	public SaxDocumentBuilder(String elementName, ContentHandler handler, boolean prettyPrint) throws SAXException {
+	public SaxDocumentBuilder(@Nullable String elementName, @NonNull ContentHandler handler, boolean prettyPrint) throws SAXException {
 		super(elementName, prettyPrint ? new PrettyPrintFilter(handler) : handler);
 		handler.startDocument();
 	}

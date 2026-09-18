@@ -41,13 +41,13 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
-	@SuppressWarnings({ "java:S1141", "java:S1181" })
+	@SuppressWarnings({ "java:S1141", "java:S1181", "java:S2629", "java:S1143", "java:S1163" }) // java:S2629: log arguments not evaluated lazily, b/c non-final variable; java:S1141: Ignore nested try-catch blocks; java:S1143, java:S1163: We want to throw from finally, sorry. java:S1181: Catching Throwable. Because we want to add the Throwable to suppressedExceptions.
 	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		try {
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
 			try {
 				TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
-				Throwable tCaught=null;
+				Throwable tThrown = null;
 				try {
 					tg.activateGuard(pipeLine.getTransactionTimeout());
 					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
@@ -68,14 +68,14 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 
 					return pipeLineResult;
 				} catch (Throwable t) {
-					tCaught=t;
-					throw tCaught;
+					tThrown = t;
+					throw tThrown;
 				} finally {
 					if (tg.cancel()) {
-						if (tCaught==null) {
+						if (tThrown == null) {
 							throw new InterruptedException(tg.getDescription()+" was interrupted");
 						}
-						log.warn("Thread interrupted, but propagating other caught exception of type [{}]", ClassUtils.nameOf(tCaught));
+						log.warn("Thread interrupted, but propagating other caught exception of type [{}]", ClassUtils.nameOf(tThrown));
 					}
 				}
 			} catch (Throwable t) {

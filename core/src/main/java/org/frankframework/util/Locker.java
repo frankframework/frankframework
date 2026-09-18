@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -154,6 +154,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	 * A wait timeout beyond the basic lockWaitTimeout and transactionTimeout can be set using numRetries in combination with retryDelay.
 	 *
 	 */
+	@SuppressWarnings({ "ReturnInsideFinallyBlock", "java:S1143" })
 	public @Nullable String acquire(MessageKeeper messageKeeper) throws JdbcException, SQLException, InterruptedException {
 
 		try (Connection conn = getConnection()) {

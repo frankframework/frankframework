@@ -15,6 +15,8 @@
 */
 package org.frankframework.core;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -34,11 +36,11 @@ public interface IMessageHandler<M> {
 	 * TODO Shouldn't this be a IPullingListener or at least an interface that contains {@link IListener#extractMessage} and {@link IListener#afterMessageProcessed}.
 	 * Then listeners should implement either A or B, and don't have to worry about implementing methods are will never be used...
 	 */
-	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
+	void processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
 	 * Alternative to functions above, will NOT use {@link IListener#extractMessage} as both input and output are a {@link Message}.
 	 */
-	Message processRequest(IPushingListener<M> origin, MessageWrapper<M> messageWrapper, PipeLineSession session) throws ListenerException;
+	@NonNull Message processRequest(@NonNull IPushingListener<M> origin, @NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession session) throws ListenerException;
 
 }

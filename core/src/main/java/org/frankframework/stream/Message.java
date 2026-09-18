@@ -375,6 +375,10 @@ public class Message implements Serializable {
 		return request.isNull();
 	}
 
+	public boolean isNotNull() {
+		return !request.isNull();
+	}
+
 	/** @return true if the request is or extends of the specified type at parameter clazz */
 	public boolean isRequestOfType(Class<?> clazz) {
 		Object data = request.asRawObject();
@@ -391,6 +395,10 @@ public class Message implements Serializable {
 	 */
 	public boolean isEmpty() {
 		return request.isEmpty();
+	}
+
+	public boolean isNotEmpty() {
+		return !request.isEmpty();
 	}
 
 	private void toStringPrefix(StringBuilder writer) {
@@ -468,14 +476,24 @@ public class Message implements Serializable {
 	 * @param message Message to check. Can be {@code null}.
 	 * @return Returns {@code true} if the message is {@code null}, otherwise the result of {@link Message#isEmpty()}.
 	 */
-	@Contract(value = "null -> true")
+	@Contract("null -> true")
 	public static boolean isEmpty(@Nullable Message message) {
 		return message == null || message.isEmpty();
 	}
 
-	@Contract(value = "null -> true")
+	@Contract("null -> false")
+	public static boolean isNotEmpty(@Nullable Message message) {
+		return message != null && message.isNotEmpty();
+	}
+
+	@Contract("null -> true")
 	public static boolean isNull(@Nullable Message message) {
 		return message == null || message.isNull();
+	}
+
+	@Contract("null -> false")
+	public static boolean isNotNull(@Nullable Message message) {
+		return message != null && message.isNotNull();
 	}
 
 	/*

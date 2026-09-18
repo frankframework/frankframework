@@ -198,7 +198,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					payload = rootTp.transform(payload);
 				}
 
-				if (outputNamespaceTp != null && !Message.isEmpty(payload)) {
+				if (outputNamespaceTp != null && Message.isNotEmpty(payload)) {
 					payload = new Message(outputNamespaceTp.transformToString(payload));
 				}
 

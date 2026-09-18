@@ -279,7 +279,8 @@ public class ClassUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	@Nullable
-	public static <T> T convertToType(Class<T> type, String value) throws IllegalArgumentException {
+	@Contract("_, null -> null; _, !null -> !null")
+	public static <T> T convertToType(Class<T> type, @Nullable String value) throws IllegalArgumentException {
 		return (T) convertToTypeRawTyped(type, value);
 	}
 
@@ -412,7 +413,7 @@ public class ClassUtils {
 			result.put("implementation", pkg.getImplementationTitle() + " version " + pkg.getImplementationVersion() + " by " + pkg.getImplementationVendor());
 
 			CodeSource codeSource = clazz.getProtectionDomain().getCodeSource();
-			result.put("codeSource", codeSource != null ? codeSource.getLocation().toString() : "unknown");
+			result.put("codeSource", codeSource != null && codeSource.getLocation() != null ? codeSource.getLocation().toString() : "unknown");
 
 			URL classLocation = clazz.getResource('/' + clazz.getName().replace('.', '/') + ".class");
 			result.put("location", classLocation != null ? classLocation.toString() : "unknown");

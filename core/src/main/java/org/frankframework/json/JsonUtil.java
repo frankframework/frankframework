@@ -93,7 +93,7 @@ public class JsonUtil {
 	 * @return Single scalar value from the message, an empty string if the value could not be reduced to a scalar, or {@code null} if there was no result.
 	 * @throws JsonException If an exception occurred evaluating the expression a {@link JsonException} is thrown.
 	 */
-	public static @Nullable String evaluateJsonPathToSingleValue(@NonNull JsonPath jsonPath, Message message) throws JsonException {
+	public static @Nullable String evaluateJsonPathToSingleValue(@NonNull JsonPath jsonPath, @Nullable Message message) throws JsonException {
 		if (Message.isNull(message)) {
 			return null;
 		}

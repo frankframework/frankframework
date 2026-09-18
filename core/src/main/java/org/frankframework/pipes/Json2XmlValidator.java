@@ -192,7 +192,7 @@ public class Json2XmlValidator extends XmlValidator {
 			if (!isAllowJson() && !responseMode) {
 				return getErrorResult("message is not XML, because it starts with [" + findFirstCharacter(input) + "] and not with '<'", session, responseMode);
 			}
-		} else if (!Message.isEmpty(input)) {
+		} else if (Message.isNotEmpty(input)) {
 			return getErrorResult("message is not XML or JSON, because it starts with [" + findFirstCharacter(input) + "] and not with '<', '{' or '['", session, responseMode);
 		}
 
@@ -218,10 +218,10 @@ public class Json2XmlValidator extends XmlValidator {
 		} else {
 			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
 
-			if (Message.isNull(input)) {
-				messageToValidate = new Message("{}");
-			} else {
+			if (Message.isNotNull(input)) {
 				messageToValidate = input;
+			} else {
+				messageToValidate = new Message("{}");
 			}
 		}
 		return messageToValidate;

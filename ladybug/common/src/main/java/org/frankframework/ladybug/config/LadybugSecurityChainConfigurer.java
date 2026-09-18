@@ -15,10 +15,13 @@
 */
 package org.frankframework.ladybug.config;
 
+import java.util.Objects;
+
 import jakarta.servlet.Filter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -73,12 +76,14 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware {
 
 	@Bean
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
-		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(ladybugAuthenticator));
+		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", () -> ClassUtils.classNameOf(ladybugAuthenticator));
+		Objects.requireNonNull(ladybugAuthenticator, "ladybugAuthenticator bean may not be null, cannot configure security chain");
 
 		registerServletWhenBeanExists(ladybugAuthenticator, "ladybugApiServletBean");
 		registerServletWhenBeanExists(ladybugAuthenticator, "ladybugFrontendServletBean");
 		registerServletWhenBeanExists(ladybugAuthenticator, "testtoolServletBean");
 
+		// noinspection java:S4502 Disabled because it should be configured in Ladybug, not here
 		http.csrf(CsrfConfigurer::disable); // Disable CSRF, should be configured in the Ladybug
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 		http.logout(LogoutConfigurer::disable); // Disable the logout filter
@@ -91,7 +96,7 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware {
 		return ladybugAuthenticator.configureHttpSecurity(http);
 	}
 
-	private void registerServletWhenBeanExists(IAuthenticator ladybugAuthenticator, String servletBeanName) {
+	private void registerServletWhenBeanExists(@NonNull IAuthenticator ladybugAuthenticator, @NonNull String servletBeanName) {
 		if (applicationContext.containsBean(servletBeanName)) {
 			ServletRegistration<?> bean = applicationContext.getBean(servletBeanName, ServletRegistration.class);
 			ladybugAuthenticator.registerServlet(bean.getServletConfiguration());

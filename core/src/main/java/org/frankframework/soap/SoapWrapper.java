@@ -34,6 +34,7 @@ import org.apache.wss4j.dom.message.WSSecSignature;
 import org.apache.wss4j.dom.message.WSSecTimestamp;
 import org.apache.wss4j.dom.message.WSSecUsernameToken;
 import org.apache.xml.security.algorithms.JCEMapper;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
@@ -150,7 +151,7 @@ public class SoapWrapper {
 	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException {
 		// First try with Soap 1.1 transform pool, when no result, try with Soap 1.2 transform pool
 		Message extractedBody = extractMessageWithTransformers(extractBodySoap11, extractBodySoap12, message, session, soapNamespaceSessionKey);
-		if (!Message.isEmpty(extractedBody)) {
+		if (Message.isNotEmpty(extractedBody)) {
 			return extractedBody;
 		}
 
@@ -166,33 +167,41 @@ public class SoapWrapper {
 		return allowPlainXml ? message : Message.nullMessage();
 	}
 
-	private @Nullable Message extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
+	private @Nullable Message extractMessageWithTransformers(@NonNull TransformerPool transformerS11, @NonNull TransformerPool transformerS12, @NonNull Message message, @Nullable PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
 		// If SOAP version is already determined in the session, directly use the SOAP 1.2 transformer
 		SoapVersion soapVersion = getSoapVersionFromSession(session);
 		Message extractedMessage;
-		if (soapVersion == SoapVersion.SOAP12) {
-			extractedMessage = transformerS12.transform(message);
-			// If session had the wrong SOAP version stored (e.g. multiple SoapWrappers), try SOAP 1.1 too. (#6032)
-			if (Message.isEmpty(extractedMessage)) {
-				extractedMessage = transformerS11.transform(message);
-				// TODO: previous SoapWrapper configurations can write the wrong SOAP version to the session (using the same name).
-				// Consider a solution to match the right saved SOAP version with the right SoapWrapper: e.g. cache SoapVersion inside Message.context
-			}
-		} else if (soapVersion == SoapVersion.NONE) {
-			return null;
-		} else {
-			extractedMessage = transformerS11.transform(message);
-			if (!Message.isEmpty(extractedMessage)) {
-				soapVersion = SoapVersion.SOAP11;
-			} else {
+		switch (soapVersion) {
+			case SOAP12 -> {
 				extractedMessage = transformerS12.transform(message);
-				if (!Message.isEmpty(extractedMessage)) {
-					soapVersion = SoapVersion.SOAP12;
+				// If session had the wrong SOAP version stored (e.g. multiple SoapWrappers), try SOAP 1.1 too. (#6032)
+				if (Message.isEmpty(extractedMessage)) {
+					extractedMessage = transformerS11.transform(message);
+					// TODO: previous SoapWrapper configurations can write the wrong SOAP version to the session (using the same name).
+					// Consider a solution to match the right saved SOAP version with the right SoapWrapper: e.g. cache SoapVersion inside Message.context
+				}
+			}
+			case NONE -> {
+				return null;
+			}
+			case null, default -> {
+				extractedMessage = transformerS11.transform(message);
+				if (Message.isNotEmpty(extractedMessage)) {
+					soapVersion = SoapVersion.SOAP11;
+				} else {
+					extractedMessage = transformerS12.transform(message);
+					if (Message.isNotEmpty(extractedMessage)) {
+						soapVersion = SoapVersion.SOAP12;
+					}
 				}
 			}
 		}
 
-		if (!Message.isEmpty(extractedMessage)) {
+		if (soapVersion == null) {
+			return null;
+		}
+
+		if (Message.isNotEmpty(extractedMessage)) {
 			extractedMessage.getContext().with(AbstractSOAPProvider.SOAP_VERSION_KEY, soapVersion.getLabel());
 
 			if (session != null) {
@@ -207,9 +216,9 @@ public class SoapWrapper {
 		return null;
 	}
 
-	private @Nullable SoapVersion getSoapVersionFromSession(final PipeLineSession session) {
+	private @Nullable SoapVersion getSoapVersionFromSession(final @Nullable PipeLineSession session) {
 		if (session == null) return null;
-		Object soapVersionObject = session.getOrDefault(SoapWrapper.SOAP_VERSION_SESSION_KEY, null);
+		Object soapVersionObject = session.get(SoapWrapper.SOAP_VERSION_SESSION_KEY);
 		if (soapVersionObject instanceof SoapVersion version) {
 			log.debug("Found SOAP version in session: {}", version.name());
 			return version;
@@ -237,7 +246,7 @@ public class SoapWrapper {
 
 	private @Nullable String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session) throws IOException, TransformerException, SAXException {
 		Message result = extractMessageWithTransformers(transformerS11, transformerS12, message, session, null);
-		return Message.isEmpty(result) ? null : result.asString();
+		return Message.isNotEmpty(result) ? result.asString() : null;
 	}
 
 	public String getHeader(final Message message, final PipeLineSession session) throws SAXException, TransformerException, IOException {

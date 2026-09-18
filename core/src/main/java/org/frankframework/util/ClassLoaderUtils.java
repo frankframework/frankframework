@@ -61,6 +61,7 @@ public class ClassLoaderUtils {
 	 *
 	 * @see IbisContext#init()
 	 */
+	@Nullable
 	public static URL getResourceURL(@Nullable IScopeProvider scopeProvider, @NonNull String resource) {
 		return getResourceURL(scopeProvider, resource, null);
 	}

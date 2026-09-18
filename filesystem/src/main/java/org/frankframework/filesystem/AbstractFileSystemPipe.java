@@ -119,7 +119,7 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
-		if (!Message.isNull(result)) {
+		if (Message.isNotNull(result)) {
 			return new PipeRunResult(getSuccessForward(), result);
 		}
 		return new PipeRunResult(getSuccessForward(), message);

@@ -45,6 +45,7 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 
 	@NonNull
 	@Override
+	@SuppressWarnings("java:S1181")
 	protected PipeRunResult processPipe(@NonNull PipeLine pipeline, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		TransactionDefinition txDef;
 		int txTimeout = 0;
@@ -88,21 +89,22 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 		return false;
 	}
 
-	private PipeRunResult executePipeProcess(IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
+	@SuppressWarnings({ "java:S1143", "java:S1163" }) // Throw from Finally
+	private @NonNull PipeRunResult executePipeProcess(IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
 		TimeoutGuard tg = new TimeoutGuard("transactional timeout guard for pipe [" + pipe.getName() + "]");
-		Exception tCaught = null;
+		Exception tThrown = null;
 		try {
 			tg.activateGuard(txTimeout);
 			return chain.apply(message);
 		} catch (PipeRunException t) {
-			tCaught = t;
-			throw tCaught;
+			tThrown = t;
+			throw tThrown;
 		} finally {
-			if(tg.cancel()) {
-				if(tCaught == null) {
+			if (tg.cancel()) {
+				if (tThrown == null) {
 					throw new PipeRunException(pipe, tg.getDescription() + " was interrupted");
 				}
-				log.warn("Thread interrupted, but propagating other caught exception of type [{}]", ClassUtils.nameOf(tCaught));
+				log.warn("Thread interrupted, but propagating other caught exception of type [{}]", ClassUtils.nameOf(tThrown));
 			}
 		}
 	}

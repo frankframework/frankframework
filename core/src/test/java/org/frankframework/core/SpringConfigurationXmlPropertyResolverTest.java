@@ -2,6 +2,7 @@ package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.IbisContext;
@@ -12,7 +13,7 @@ public class SpringConfigurationXmlPropertyResolverTest {
 	public void testSpringXmlPropertyResolver() {
 		try (IbisContext context = new IbisContext() {
 			@Override
-			protected String[] getSpringConfigurationFiles(ClassLoader classLoader) {
+			protected String @NonNull [] getSpringConfigurationFiles(@NonNull ClassLoader classLoader) {
 				String[] files = new String[1];
 				files[0] = "SpringXmlPropertyResolverTest.xml";
 				return files;

@@ -1009,18 +1009,22 @@ public class MessageTest {
 		Message message = Message.nullMessage();
 		assertTrue(message.isEmpty());
 		assertTrue(Message.isEmpty(message));
+		assertFalse(Message.isNotEmpty(message));
 	}
 
 	@Test
 	public void testNullMessageIsEmpty() {
 		assertTrue(Message.isEmpty(null));
+		assertFalse(Message.isNotEmpty(null));
 	}
 
 	@ParameterizedTest
 	@NullAndEmptySource
 	public void testMessageEmptiness(String value) {
 		assertTrue(Message.isEmpty(new Message(value)));
+		assertFalse(Message.isNotEmpty(new Message(value)));
 		assertTrue(Message.isEmpty(new Message(new byte[] {})));
+		assertFalse(Message.isNotEmpty(new Message(new byte[] {})));
 	}
 
 	@Test

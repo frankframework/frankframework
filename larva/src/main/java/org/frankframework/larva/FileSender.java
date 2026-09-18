@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.Enumeration;
+import java.util.Objects;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.io.IoBuilder;
@@ -73,7 +74,7 @@ public class FileSender implements IConfigurable, FrankElement {
 	public void configure() throws ConfigurationException {
 		String scenarioDirectory;
 		try {
-			URL scenarioDirectoryURL = ClassLoaderUtils.getResourceURL(this, ".");
+			URL scenarioDirectoryURL = Objects.requireNonNull(ClassLoaderUtils.getResourceURL(this, "."), "It should not be possible for Scenario Directory URL '.' to be NULL");
 			scenarioDirectory = new File(scenarioDirectoryURL.toURI()).getAbsolutePath();
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException("Could not find scenario root directory", e);

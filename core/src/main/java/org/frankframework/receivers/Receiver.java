@@ -829,9 +829,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
+	@SuppressWarnings({ "java:S1181", "java:S1141", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" })
 	private void openAllResources() {
 		// on exit resources must be in a state that runstate is or can be set to 'STARTED'
 		TimeoutGuard timeoutGuard = new TimeoutGuard(getStartTimeout(), "starting receiver ["+getName()+"]");
+		Throwable tThrown = null;
 		try {
 			try {
 				if (getSender()!=null) {
@@ -850,12 +852,19 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				throw new LifecycleException(e);
 			}
 			getListener().start();
+		} catch (Throwable e) {
+			tThrown = e;
+			throw e;
 		} finally {
 			if (timeoutGuard.cancel()) {
-				throw new LifecycleException("timeout of ["+getStartTimeout()+"] seconds exceeded while starting receiver");
+				LifecycleException lce = new LifecycleException("timeout of [" + getStartTimeout() + "] seconds exceeded while starting receiver");
+				if (tThrown != null) {
+					lce.addSuppressed(tThrown);
+				}
+				throw lce;
 			}
 		}
-		if (getListener() instanceof IPullingListener) {
+		if (getListener() instanceof IPullingListener && listenerContainer != null) {
 			// start all threads. Also sets runstate=STARTED
 			listenerContainer.start();
 		}
@@ -1091,7 +1100,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * </p>
 	 */
 	@Override
-	public Message processRequest(IPushingListener<M> origin, @NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession session) throws ListenerException {
+	public @NonNull Message processRequest(@NonNull IPushingListener<M> origin, @NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
@@ -1130,7 +1139,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
 	@Override
-	public void processRawMessage(@NonNull IListener<M> origin, @Nullable RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
+	public void processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
@@ -1289,7 +1298,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
 	 */
-	private Message processMessageInAdapter(MessageWrapper<M> messageWrapperOriginal, PipeLineSession session, boolean manualRetry,
+	@SuppressWarnings({ "java:S1143", "java:S1163", "ThrowFromFinallyBlock" }) // Throw from finally; catching Throwable not Exception. Cannot change these easily.
+	private @NonNull Message processMessageInAdapter(@NonNull MessageWrapper<M> messageWrapperOriginal, @NonNull PipeLineSession session, boolean manualRetry,
 											boolean retryStatusAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
@@ -1351,7 +1361,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						result = pipeLineResult.getResult();
 
 						statusMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { // Since we can determine the size, assume the message is preserved
+						if(Message.isNotEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { // Since we can determine the size, assume the message is preserved
 							String resultString = result.asString();
 							statusMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length(), resultString.length()));
 						} else {

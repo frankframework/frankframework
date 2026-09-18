@@ -33,32 +33,34 @@ public class JmsPoolUtil {
 
 	private static final String CLOSE = "], ";
 
+	private JmsPoolUtil() {
+		// Hide implicit public constructor
+	}
+
 	/** Returns pool info or NULL when it's not able to do so. */
 	public static @Nullable String getConnectionPoolInfo(@Nullable ConnectionFactory qcf) {
-		StringBuilder info = new StringBuilder();
-
-		if (qcf instanceof JmsPoolConnectionFactory targetQcf) {
-			getJmsPoolInfo(targetQcf, info);
-		} else if (qcf instanceof DelegatingConnectionFactory source) { // Perhaps it's wrapped?
-			return getConnectionPoolInfo(source.getTargetConnectionFactory());
-		} else {
-			return null;
-		}
-
-		return info.toString();
+		return switch (qcf) {
+			case JmsPoolConnectionFactory targetQcf -> getJmsPoolInfo(targetQcf);
+			case DelegatingConnectionFactory source -> getConnectionPoolInfo(source.getTargetConnectionFactory()); // Perhaps it's wrapped?
+			case null, default -> null;
+		};
 	}
 
 	@NonNull
-	public static String reflectionToString(ConnectionFactory qcf) {
+	public static String reflectionToString(@NonNull ConnectionFactory qcf) {
 		Object factory = getManagedConnectionFactory(qcf);
 		return StringUtil.reflectionToString(factory);
 	}
 
 	/** Retrieve the 'original' ConnectionFactory, used by the console (to get the Tibco QCF) in order to display queue message count. */
 	@Nullable
-	private static Object getManagedConnectionFactory(ConnectionFactory qcf) {
+	private static Object getManagedConnectionFactory(@NonNull ConnectionFactory qcf) {
 		if (qcf instanceof DelegatingConnectionFactory source) { // Perhaps it's wrapped?
-			return getManagedConnectionFactory(source.getTargetConnectionFactory());
+			ConnectionFactory targetConnectionFactory = source.getTargetConnectionFactory();
+			if (targetConnectionFactory == null) {
+				return null;
+			}
+			return getManagedConnectionFactory(targetConnectionFactory);
 		}
 		if (qcf instanceof JmsPoolConnectionFactory factory) { // Narayana with pooling
 			return factory.getConnectionFactory();
@@ -71,7 +73,7 @@ public class JmsPoolUtil {
 			// JCA ManagedConnectionFactory, but unsure who would be the owner
 			return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
 		} catch (NoSuchMethodException | NoSuchFieldException e) {
-			// Either the field or method does not exist. Unsure if this is the most outer factory, but lets use it!
+			// Either the field or method does not exist. Unsure if this is the most outer factory, but let's use it!
 			return qcf;
 		} catch (Exception e) {
 			// Unsure what went wrong here, return null.
@@ -80,16 +82,15 @@ public class JmsPoolUtil {
 		}
 	}
 
-	/** Return pooling info if present
-	 * @param info */
-	private static void getJmsPoolInfo(JmsPoolConnectionFactory poolcf, StringBuilder info) {
-		info.append(ClassUtils.classNameOf(poolcf)).append(" Pool Info: ");
-		info.append("current pool size [").append(poolcf.getNumConnections()).append(CLOSE);
-		info.append("max pool size [").append(poolcf.getMaxConnections()).append(CLOSE);
-		info.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append(CLOSE);
-		info.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append(CLOSE);
-		info.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append(CLOSE);
-		info.append("connection check interval (ms) [").append(poolcf.getConnectionCheckInterval()).append(CLOSE);
-		info.append("connection idle timeout (s) [").append(poolcf.getConnectionIdleTimeout() / 1000).append("]");
+	/** Return pooling info if present */
+	private static @NonNull String getJmsPoolInfo(@NonNull JmsPoolConnectionFactory poolcf) {
+		return ClassUtils.classNameOf(poolcf) + " Pool Info: " +
+				"current pool size [" + poolcf.getNumConnections() + CLOSE +
+				"max pool size [" + poolcf.getMaxConnections() + CLOSE +
+				"max sessions per connection [" + poolcf.getMaxSessionsPerConnection() + CLOSE +
+				"block if session pool is full [" + poolcf.isBlockIfSessionPoolIsFull() + CLOSE +
+				"block if session pool is full timeout [" + poolcf.getBlockIfSessionPoolIsFullTimeout() + CLOSE +
+				"connection check interval (ms) [" + poolcf.getConnectionCheckInterval() + CLOSE +
+				"connection idle timeout (s) [" + poolcf.getConnectionIdleTimeout() / 1000 + "]";
 	}
 }
