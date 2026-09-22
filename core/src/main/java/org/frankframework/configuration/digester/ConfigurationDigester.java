@@ -56,6 +56,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.configuration.filters.ClassNameRewriter;
 import org.frankframework.configuration.filters.ElementRoleFilter;
+import org.frankframework.configuration.filters.ExtensionAttributesFilter;
 import org.frankframework.configuration.filters.IncludeFilter;
 import org.frankframework.configuration.filters.InitialCapsFilter;
 import org.frankframework.configuration.filters.OnlyActiveFilter;
@@ -275,7 +276,7 @@ public class ConfigurationDigester implements ConfigurationAware {
 	protected ContentHandler getConfigurationCanonicalizer(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException {
 		try {
 			// Compose the core schema with any module-contributed extension schemas, and allowlist
-			// their namespaces so those elements are validated rather than stripped (#10490).
+			// their namespaces so those elements and attributes are validated rather than stripped (#10490).
 			List<Source> schemaSources = new ArrayList<>();
 			schemaSources.add(new StreamSource(ClassLoaderUtils.getResourceURL(frankConfigXSD).toExternalForm()));
 			Set<String> retainedNamespaces = new HashSet<>();
@@ -290,8 +291,11 @@ public class ConfigurationDigester implements ConfigurationAware {
 			}
 
 			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(handler);
+			// Module attributes on built-in elements arrive namespaced (they validate against the generated
+			// types' ##other wildcard); after validation they become plain attributes for the digester.
+			ExtensionAttributesFilter extensionAttributesFilter = new ExtensionAttributesFilter(elementRoleFilter, retainedNamespaces, errorHandler);
 			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaSources);
-			validatorHandler.setContentHandler(elementRoleFilter);
+			validatorHandler.setContentHandler(extensionAttributesFilter);
 
 			if (errorHandler != null) {
 				validatorHandler.setErrorHandler(errorHandler);

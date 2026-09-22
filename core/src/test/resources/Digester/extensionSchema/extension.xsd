@@ -5,6 +5,11 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 		   targetNamespace="urn:test:vf-ext"
 		   elementFormDefault="qualified">
+	<!-- An attribute the module adds to built-in elements. The generated types accept it through their
+	     ##other wildcard with processContents="skip", so this declaration documents it for editors and
+	     readers; it is not enforced during configuration validation. -->
+	<xs:attribute name="auditLevel" type="xs:string"/>
+
 	<xs:element name="CustomPipe">
 		<xs:complexType>
 			<xs:attribute name="name" type="xs:string" use="required"/>

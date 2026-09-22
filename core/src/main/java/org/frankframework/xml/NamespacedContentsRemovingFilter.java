@@ -25,7 +25,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Filter that removes all Elements and attributes that are in a namespace, retaining only
- * non-namespaced content and any elements in an allowlisted namespace (issue #10490).
+ * non-namespaced content and any elements and attributes in an allowlisted namespace (issue #10490).
  *
  * @author Gerrit van Brakel
  *
@@ -51,7 +51,7 @@ public class NamespacedContentsRemovingFilter extends FullXmlFilter {
 		} else if (removingDepth>0 || StringUtils.isNotEmpty(uri)) {
 			removingDepth++;
 		} else {
-			super.startElement("", localName, localName, new NamespacedContentsRemovingAttributesWrapper(atts));
+			super.startElement("", localName, localName, new NamespacedContentsRemovingAttributesWrapper(atts, retainedNamespaces));
 		}
 	}
 
