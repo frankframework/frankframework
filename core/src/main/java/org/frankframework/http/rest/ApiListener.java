@@ -173,6 +173,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if (StringUtils.isEmpty(getUriPattern()))
 			throw new ConfigurationException("uriPattern cannot be empty");
 
+		// getCleanPattern can only be null if UriPattern is empty, which is already checked above.
 		if (!isValidUriPattern(getCleanPattern())) {
 			throw new ConfigurationException("uriPattern contains invalid wildcards");
 		}
@@ -187,6 +188,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			if (hasMethod(HttpMethod.DELETE))
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
+
 		if (getConsumes() == MediaTypes.DETECT) {
 			throw new ConfigurationException("cannot set consumes attribute to [DETECT]");
 		}
@@ -208,6 +210,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if (responseType == null) {
 			responseType = HttpEntityType.BINARY;
 		}
+
 		responseEntityBuilder = HttpEntityFactory.Builder.create()
 				.entityType(responseType)
 				.multipartXmlSessionKey(responseMultipartXmlSessionKey)
@@ -223,11 +226,13 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 				ConfigurationWarnings.add(this, log, "[responseResultBodyPartName] should only be set when [responseType] is [MTOM] or [FORMDATA]");
 			}
 		}
+
 		if (responseType != HttpEntityType.MTOM && StringUtils.isNotBlank(responseMtomContentTransferEncoding)) {
 			ConfigurationWarnings.add(this, log, "[responseMtomContentTransferEncoding] should only be set when [responseType] is [MTOM]");
 		}
 
-		if (StringUtils.isNotEmpty(multipartBodyName)) {
+		// Only add if allow all params is not set because that relies on an empty set of allowed parameters.
+		if (StringUtils.isNotEmpty(multipartBodyName) && !isAllowAllParams()) {
 			allowedParameterSet.add(multipartBodyName);
 		}
 
