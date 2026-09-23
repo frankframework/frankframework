@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Integration Partners B.V.
+Copyright 2019-2026 Integration Partners B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,7 +69,6 @@ public class ApiListenerTest {
 		assertEquals(MediaTypes.TEXT, listener.getProduces());
 		assertEquals("text/plain;charset=UTF-8", listener.getContentType().toString());
 	}
-
 
 	@Test
 	public void testContentTypes() throws ConfigurationException {
@@ -405,5 +404,19 @@ public class ApiListenerTest {
 
 		// Expect/When
 		assertThrows(ConfigurationException.class, listener::configure, "[claim2] is not a valid key/value pair for [exactMatchClaims].");
+	}
+
+	@Test
+	public void testAllowAllParamsWithMultipartBodyName() throws ConfigurationException {
+		// Arrange
+		listener.setAllowAllParams(true);
+		listener.setMultipartBodyName("myMultipartBody");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		assertTrue(listener.isAllowAllParams());
+		assertTrue(listener.isParameterAllowed("blub")); // should be true because allowAllParams is true
 	}
 }
