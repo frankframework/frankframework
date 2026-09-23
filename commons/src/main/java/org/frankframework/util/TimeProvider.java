@@ -33,7 +33,7 @@ public class TimeProvider {
 	/**
 	 * Clock currently being used.
 	 */
-	private static Clock clock = Clock.systemDefaultZone();
+	private static final ThreadLocal<Clock> clock = ThreadLocal.withInitial(Clock::systemDefaultZone);
 
 	private TimeProvider() {
 		// Private constructor to prevent creating instances of static utility classes
@@ -43,28 +43,28 @@ public class TimeProvider {
 	 * Get the current system time as {@link Instant}.
 	 */
 	public static Instant now() {
-		return clock.instant();
+		return clock.get().instant();
 	}
 
 	/**
 	 * Get the current system time as clock millis (equivalent to {@link System#currentTimeMillis()}).
 	 */
 	public static long nowAsMillis() {
-		return clock.millis();
+		return clock.get().millis();
 	}
 
 	/**
 	 * Get the current system time as {@link ZonedDateTime}
 	 */
 	public static ZonedDateTime nowAsZonedDateTime() {
-		return ZonedDateTime.now(clock);
+		return ZonedDateTime.now(clock.get());
 	}
 
 	/**
 	 * Get the current system time as {@link LocalDateTime}
 	 */
 	public static LocalDateTime nowAsLocalDateTime() {
-		return LocalDateTime.now(clock);
+		return LocalDateTime.now(clock.get());
 	}
 
 	/**
@@ -74,53 +74,69 @@ public class TimeProvider {
 		return Date.from(now());
 	}
 
-	/**
-	 * ONLY FOR UNIT TESTING! Set a clock to use. Typically this is for testing, when you want to use a more specialized {@link Clock} to set a specific time or behaviour than can
-	 * be done by setting a clock with a fixed point in time.
-	 *
-	 * @param clock {@link Clock} to use.
-	 */
-	public static void setClock(@NonNull Clock clock) {
-		TimeProvider.clock = clock;
+	public static TimeTraveller timeTraveller() {
+		return new TimeTraveller();
 	}
 
-	/**
-	 * Get the {@link Clock} currently being used. This clock can be used to get the current time, or as a base-clock to create other specialized clocks for testing, which is the
-	 * reason to make it accessible.
-	 */
-	public static Clock getClock() {
-		return TimeProvider.clock;
-	}
+	public static class TimeTraveller implements AutoCloseable {
+		private TimeTraveller() {
+			// Make default constructor non-public
+		}
 
-	/**
-	 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the milliseconds since 1-1-1970 passed in.
-	 * @param millis Time in epoch-milliseconds to which to set the clock.
-	 */
-	public static void setTime(long millis) {
-		TimeProvider.clock = Clock.fixed(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
-	}
+		@Override
+		public void close() {
+			resetClock();
+		}
 
-	/**
-	 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the local date-time passed in.
-	 * @param localDateTime Time to which to set the clock.
-	 */
-	public static void setTime(LocalDateTime localDateTime) {
-		TimeProvider.clock = Clock.fixed(localDateTime.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
-	}
 
-	/**
-	 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the date-time & timezone passed in.
-	 * @param zonedDateTime The time to which to set the clock.
-	 */
-	public static void setTime(ZonedDateTime zonedDateTime) {
-		TimeProvider.clock = Clock.fixed(zonedDateTime.toInstant(), ZoneId.systemDefault());
-	}
+		/**
+		 * ONLY FOR UNIT TESTING! Set a clock to use. Typically this is for testing, when you want to use a more specialized {@link Clock} to set a specific time or behaviour than can
+		 * be done by setting a clock with a fixed point in time.
+		 *
+		 * @param clock {@link Clock} to use.
+		 */
+		public void setClock(@NonNull Clock clock) {
+			TimeProvider.clock.set(clock);
+		}
 
-	/**
-	 * ONLY FOR UNIT TESTING! Resets the clock to the default System UTC clock.
-	 * This should be used in the test-teardown method of unit tests when the unit tests have set the clock to a none-default clock.
-	 */
-	public static void resetClock() {
-		TimeProvider.clock = Clock.systemDefaultZone();
+		/**
+		 * Get the {@link Clock} currently being used. This clock can be used to get the current time, or as a base-clock to create other specialized clocks for testing, which is the
+		 * reason to make it accessible.
+		 */
+		public Clock getClock() {
+			return TimeProvider.clock.get();
+		}
+
+		/**
+		 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the milliseconds since 1-1-1970 passed in.
+		 * @param millis Time in epoch-milliseconds to which to set the clock.
+		 */
+		public void setTime(long millis) {
+			TimeProvider.clock.set(Clock.fixed(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
+		}
+
+		/**
+		 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the local date-time passed in.
+		 * @param localDateTime Time to which to set the clock.
+		 */
+		public void setTime(LocalDateTime localDateTime) {
+			TimeProvider.clock.set(Clock.fixed(localDateTime.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault()));
+		}
+
+		/**
+		 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the date-time & timezone passed in.
+		 * @param zonedDateTime The time to which to set the clock.
+		 */
+		public void setTime(ZonedDateTime zonedDateTime) {
+			TimeProvider.clock.set(Clock.fixed(zonedDateTime.toInstant(), ZoneId.systemDefault()));
+		}
+
+		/**
+		 * ONLY FOR UNIT TESTING! Resets the clock to the default System UTC clock.
+		 * This should be used in the test-teardown method of unit tests when the unit tests have set the clock to a none-default clock.
+		 */
+		public void resetClock() {
+			TimeProvider.clock.remove();
+		}
 	}
 }

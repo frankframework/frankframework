@@ -43,7 +43,6 @@ public class DateParameterTest {
 	void tearDown() {
 		System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		TimeZone.setDefault(systemTimeZone);
-		TimeProvider.resetClock();
 	}
 
 	@Test
@@ -420,14 +419,15 @@ public class DateParameterTest {
 	@Test
 	public void testUnixParameterConvertsToDateChangeTZ() throws Exception {
 		DateParameter p = new DateParameter();
-		try (PipeLineSession session = new PipeLineSession()) {
+		try (PipeLineSession session = new PipeLineSession();
+			 TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
 			p.setName("date");
 			p.setValue("1747401948"); // Value in seconds, not millis!!
 			p.setFormatType(DateParameter.DateFormatType.UNIX);
 			p.configure();
 
 			// Change the system timezone to see if that affects how the date is resolved
-			TimeProvider.setClock(Clock.systemUTC());
+			timeTraveller.setClock(Clock.systemUTC());
 			TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
 
 			Message message = new Message("fakeMessage");
@@ -440,36 +440,40 @@ public class DateParameterTest {
 
 	@Test
 	public void testUnixPatternConvertsToDate() throws Exception {
-		TimeProvider.setTime(1747401948_000L);
-		DateParameter p = new DateParameter();
-		try (PipeLineSession session = new PipeLineSession()) {
-			p.setName("unixTimestamp");
-			p.setPattern("{now,millis,#}");
-			p.setFormatType(DateFormatType.UNIX);
-			p.configure();
+		try (TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
+			timeTraveller.setTime(1747401948_000L);
+			DateParameter p = new DateParameter();
+			try (PipeLineSession session = new PipeLineSession()) {
+				p.setName("unixTimestamp");
+				p.setPattern("{now,millis,#}");
+				p.setFormatType(DateFormatType.UNIX);
+				p.configure();
 
-			Message message = new Message("fakeMessage");
+				Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(message, session).getValue();
-			Date resultDate = assertInstanceOf(Date.class, result);
-			assertEquals(1747401948_000L, resultDate.getTime());
+				Object result = p.getValue(message, session).getValue();
+				Date resultDate = assertInstanceOf(Date.class, result);
+				assertEquals(1747401948_000L, resultDate.getTime());
+			}
 		}
 	}
 
 	@Test
 	public void testUnixPatternConvertsToDateWithoutFormatType() throws Exception {
-		TimeProvider.setTime(1747401948_000L);
-		DateParameter p = new DateParameter();
-		try (PipeLineSession session = new PipeLineSession()) {
-			p.setName("unixTimestamp");
-			p.setPattern("{now,millis}");
-			p.configure();
+		try (TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
+			timeTraveller.setTime(1747401948_000L);
+			DateParameter p = new DateParameter();
+			try (PipeLineSession session = new PipeLineSession()) {
+				p.setName("unixTimestamp");
+				p.setPattern("{now,millis}");
+				p.configure();
 
-			Message message = new Message("fakeMessage");
+				Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(message, session).getValue();
-			Date resultDate = assertInstanceOf(Date.class, result);
-			assertEquals(1747401948_000L, resultDate.getTime());
+				Object result = p.getValue(message, session).getValue();
+				Date resultDate = assertInstanceOf(Date.class, result);
+				assertEquals(1747401948_000L, resultDate.getTime());
+			}
 		}
 	}
 
@@ -496,34 +500,37 @@ public class DateParameterTest {
 	@Test
 	public void testTimeParameterWithTimePatternWithoutFormatPattern() throws Exception {
 
-		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
-		DateParameter parameter = new DateParameter();
-		parameter.setName("time");
-		parameter.setFormatType(DateFormatType.TIME);
-		parameter.setPattern("{now}"); // Now no longer necessary to specify "time" as part of the pattern when type is TIME.
-		parameter.configure();
+		try (TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
 
-		Message message = new Message("fakeMessage");
-		PipeLineSession session = new PipeLineSession();
+			// Arrange
+			timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+			DateParameter parameter = new DateParameter();
+			parameter.setName("time");
+			parameter.setFormatType(DateFormatType.TIME);
+			parameter.setPattern("{now}"); // Now no longer necessary to specify "time" as part of the pattern when type is TIME.
+			parameter.configure();
 
-		// Act
-		Object result = parameter.getValue(message, session).getValue();
+			Message message = new Message("fakeMessage");
+			PipeLineSession session = new PipeLineSession();
 
-		// Assert
-		Date resultDate = assertInstanceOf(Date.class, result);
-		Calendar resultCalendar = Calendar.getInstance();
-		resultCalendar.setTime(resultDate);
+			// Act
+			Object result = parameter.getValue(message, session).getValue();
 
-		// Only a value for the time should be set. Year / Monday / Day are at Epoch start
-		assertEquals(1970, resultCalendar.get(Calendar.YEAR));
-		assertEquals(Calendar.JANUARY, resultCalendar.get(Calendar.MONTH));
-		assertEquals(1, resultCalendar.get(Calendar.DAY_OF_MONTH));
+			// Assert
+			Date resultDate = assertInstanceOf(Date.class, result);
+			Calendar resultCalendar = Calendar.getInstance();
+			resultCalendar.setTime(resultDate);
 
-		// Time-part should be set
-		assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
-		assertEquals(12, resultCalendar.get(Calendar.MINUTE));
-		assertEquals(55, resultCalendar.get(Calendar.SECOND));
+			// Only a value for the time should be set. Year / Monday / Day are at Epoch start
+			assertEquals(1970, resultCalendar.get(Calendar.YEAR));
+			assertEquals(Calendar.JANUARY, resultCalendar.get(Calendar.MONTH));
+			assertEquals(1, resultCalendar.get(Calendar.DAY_OF_MONTH));
+
+			// Time-part should be set
+			assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
+			assertEquals(12, resultCalendar.get(Calendar.MINUTE));
+			assertEquals(55, resultCalendar.get(Calendar.SECOND));
+		}
 	}
 
 	@Test
