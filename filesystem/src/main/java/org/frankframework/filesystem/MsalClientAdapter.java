@@ -187,8 +187,13 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 						EntityUtils.consume(entity);
 					}
 				}
+				EntityUtils.consume(response.getEntity());
+
 				return null;
 			}
+
+			// Make sure to consume the response entity to correctly free the connection and avoid connection leaks
+			EntityUtils.consume(response.getEntity());
 
 			throw new IOException(status.getReasonPhrase());
 		}
