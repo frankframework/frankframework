@@ -70,7 +70,6 @@ public class ApiListenerTest {
 		assertEquals("text/plain;charset=UTF-8", listener.getContentType().toString());
 	}
 
-
 	@Test
 	public void testContentTypes() throws ConfigurationException {
 		for(MediaTypes type : MediaTypes.values()) {
@@ -416,6 +415,19 @@ public class ApiListenerTest {
 		assertTrue(listener.getResponseHeaderSessionKeySet().contains("Header-A"));
 		assertTrue(listener.getResponseHeaderSessionKeySet().contains("Header-B"));
 		assertTrue(listener.getResponseHeaderSessionKeySet().contains("Header-3"));
+	}
 
+	@Test
+	public void testAllowAllParamsWithMultipartBodyName() throws ConfigurationException {
+		// Arrange
+		listener.setAllowAllParams(true);
+		listener.setMultipartBodyName("myMultipartBody");
+
+		// Act
+		listener.configure();
+
+		// Assert
+		assertTrue(listener.isAllowAllParams());
+		assertTrue(listener.isParameterAllowed("blub")); // should be true because allowAllParams is true
 	}
 }
