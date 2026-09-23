@@ -5,7 +5,8 @@ FROM ${REGISTRY}/frankframework:${FF_VERSION}
 
 # Copy additional environment configuration for iaf-test
 COPY --chown=tomcat src/scripts/catalinaAdditionalTest.properties /tmp/
-RUN cat /tmp/catalinaAdditionalTest.properties >> /usr/local/tomcat/conf/catalina.properties  && rm -f /tmp/catalinaAdditionalTest.properties
+RUN cat /tmp/catalinaAdditionalTest.properties >> /usr/local/tomcat/conf/catalina.properties  && \
+     rm -f /tmp/catalinaAdditionalTest.properties
 
 # Copy secrets
 COPY --chown=tomcat target/secrets/ /opt/frank/secrets/
@@ -27,5 +28,8 @@ RUN mv /usr/local/tomcat/webapps/ROOT /usr/local/tomcat/webapps/iaf-test
 
 # Ensure the container is healty
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 CMD curl --fail --silent http://localhost:8080/iaf-test/iaf/api/server/health || exit 1
+
+# Make double sure we run as tomcat user, not root
+USER tomcat
 
 # Note: Credentials need to be mounted in /opt/frank/secrets at runtime
