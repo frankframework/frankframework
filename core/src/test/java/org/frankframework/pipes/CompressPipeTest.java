@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Date;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -39,6 +39,7 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
 @SuppressWarnings("removal")
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
@@ -112,9 +113,14 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		// Assert
 		assertFalse(prr.getResult().isBinary());
 
-		GregorianCalendar cal = new GregorianCalendar();
+		Date now = TimeProvider.nowAsDate(); // make sure we use the same date determination as the AbstractParameter.
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(now);
+
+		String expectedName = "blaat-" + calendar.get(Calendar.YEAR) + ".zip";
+
 		String path = prr.getResult().asString();
-		String expectedName = "blaat-" + cal.get(Calendar.YEAR) + ".zip";
+
 		assertTrue(path.endsWith(expectedName), "path [" + path + "] does not end with [" + expectedName + "]");
 
 		try (ZipInputStream zipin = new ZipInputStream(new FileInputStream(path))) {
