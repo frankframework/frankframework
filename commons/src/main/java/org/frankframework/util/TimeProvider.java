@@ -33,7 +33,7 @@ public class TimeProvider {
 	/**
 	 * Clock currently being used.
 	 */
-	private static final ThreadLocal<Clock> clock = ThreadLocal.withInitial(Clock::systemDefaultZone);
+	private static Clock clock = Clock.systemDefaultZone();
 
 	private TimeProvider() {
 		// Private constructor to prevent creating instances of static utility classes
@@ -43,28 +43,28 @@ public class TimeProvider {
 	 * Get the current system time as {@link Instant}.
 	 */
 	public static Instant now() {
-		return clock.get().instant();
+		return clock.instant();
 	}
 
 	/**
 	 * Get the current system time as clock millis (equivalent to {@link System#currentTimeMillis()}).
 	 */
 	public static long nowAsMillis() {
-		return clock.get().millis();
+		return clock.millis();
 	}
 
 	/**
 	 * Get the current system time as {@link ZonedDateTime}
 	 */
 	public static ZonedDateTime nowAsZonedDateTime() {
-		return ZonedDateTime.now(clock.get());
+		return ZonedDateTime.now(clock);
 	}
 
 	/**
 	 * Get the current system time as {@link LocalDateTime}
 	 */
 	public static LocalDateTime nowAsLocalDateTime() {
-		return LocalDateTime.now(clock.get());
+		return LocalDateTime.now(clock);
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class TimeProvider {
 		 * @param clock {@link Clock} to use.
 		 */
 		public void setClock(@NonNull Clock clock) {
-			TimeProvider.clock.set(clock);
+			TimeProvider.clock = clock;
 		}
 
 		/**
@@ -104,7 +104,7 @@ public class TimeProvider {
 		 * reason to make it accessible.
 		 */
 		public Clock getClock() {
-			return TimeProvider.clock.get();
+			return TimeProvider.clock;
 		}
 
 		/**
@@ -112,7 +112,7 @@ public class TimeProvider {
 		 * @param millis Time in epoch-milliseconds to which to set the clock.
 		 */
 		public void setTime(long millis) {
-			TimeProvider.clock.set(Clock.fixed(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
+			TimeProvider.clock = Clock.fixed(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
 		}
 
 		/**
@@ -120,7 +120,7 @@ public class TimeProvider {
 		 * @param localDateTime Time to which to set the clock.
 		 */
 		public void setTime(LocalDateTime localDateTime) {
-			TimeProvider.clock.set(Clock.fixed(localDateTime.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault()));
+			TimeProvider.clock = Clock.fixed(localDateTime.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
 		}
 
 		/**
@@ -128,7 +128,7 @@ public class TimeProvider {
 		 * @param zonedDateTime The time to which to set the clock.
 		 */
 		public void setTime(ZonedDateTime zonedDateTime) {
-			TimeProvider.clock.set(Clock.fixed(zonedDateTime.toInstant(), ZoneId.systemDefault()));
+			TimeProvider.clock = Clock.fixed(zonedDateTime.toInstant(), ZoneId.systemDefault());
 		}
 
 		/**
@@ -136,7 +136,7 @@ public class TimeProvider {
 		 * This should be used in the test-teardown method of unit tests when the unit tests have set the clock to a none-default clock.
 		 */
 		public void resetClock() {
-			TimeProvider.clock.remove();
+			TimeProvider.clock = Clock.systemDefaultZone();
 		}
 	}
 }
