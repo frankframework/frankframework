@@ -17,14 +17,19 @@ package org.frankframework.configuration.digester;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.logging.log4j.Logger;
@@ -41,6 +46,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.components.ComponentLoader;
+import org.frankframework.components.ExtensionSchema;
+import org.frankframework.components.Module;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
@@ -48,6 +56,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.configuration.filters.ClassNameRewriter;
 import org.frankframework.configuration.filters.ElementRoleFilter;
+import org.frankframework.configuration.filters.ExtensionAttributesFilter;
 import org.frankframework.configuration.filters.IncludeFilter;
 import org.frankframework.configuration.filters.InitialCapsFilter;
 import org.frankframework.configuration.filters.OnlyActiveFilter;
@@ -266,20 +275,47 @@ public class ConfigurationDigester implements ConfigurationAware {
 	// Test method
 	protected ContentHandler getConfigurationCanonicalizer(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException {
 		try {
+			// Compose the core schema with any module-contributed extension schemas, and allowlist
+			// their namespaces so those elements and attributes are validated rather than stripped (#10490).
+			List<Source> schemaSources = new ArrayList<>();
+			schemaSources.add(new StreamSource(ClassLoaderUtils.getResourceURL(frankConfigXSD).toExternalForm()));
+			Set<String> retainedNamespaces = new HashSet<>();
+			for (ExtensionSchema extensionSchema : collectExtensionSchemas()) {
+				URL schemaUrl = ClassLoaderUtils.getResourceURL(extensionSchema.schemaResource());
+				if (schemaUrl == null) {
+					log.warn("cannot find extension schema [{}] for namespace [{}]", extensionSchema.schemaResource(), extensionSchema.namespaceUri());
+					continue;
+				}
+				schemaSources.add(new StreamSource(schemaUrl.toExternalForm()));
+				retainedNamespaces.add(extensionSchema.namespaceUri());
+			}
+
 			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(handler);
-			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassLoaderUtils.getResourceURL(frankConfigXSD));
-			validatorHandler.setContentHandler(elementRoleFilter);
+			// Module attributes on built-in elements arrive namespaced (they validate against the generated
+			// types' ##other wildcard); after validation they become plain attributes for the digester.
+			ExtensionAttributesFilter extensionAttributesFilter = new ExtensionAttributesFilter(elementRoleFilter, retainedNamespaces, errorHandler);
+			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaSources);
+			validatorHandler.setContentHandler(extensionAttributesFilter);
 
 			if (errorHandler != null) {
 				validatorHandler.setErrorHandler(errorHandler);
 			}
 
-			NamespacedContentsRemovingFilter namespacedContentsRemovingFilter = new NamespacedContentsRemovingFilter(validatorHandler);
+			NamespacedContentsRemovingFilter namespacedContentsRemovingFilter = new NamespacedContentsRemovingFilter(validatorHandler, retainedNamespaces);
 			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(namespacedContentsRemovingFilter);
 			return new InitialCapsFilter(skipContainersFilter);
 		} catch (SAXException e) {
 			throw new IOException("cannot get canonicalizer using ["+frankConfigXSD+"]", e);
 		}
+	}
+
+	/** Extension schemas contributed by modules on the classpath ({@link Module#getExtensionSchemas()}). */
+	protected List<ExtensionSchema> collectExtensionSchemas() {
+		List<ExtensionSchema> result = new ArrayList<>();
+		for (Module module : ComponentLoader.getModules()) {
+			result.addAll(module.getExtensionSchemas());
+		}
+		return result;
 	}
 
 	/**

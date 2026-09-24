@@ -1556,4 +1556,11 @@ public class XmlUtils {
 		Schema schema = sf.newSchema(schemaSource);
 		return schema.newValidatorHandler();
 	}
+
+	/** Compose one {@link ValidatorHandler} from several schema sources (issue #10490). */
+	public static ValidatorHandler getValidatorHandler(List<Source> schemaSources) throws SAXException {
+		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = sf.newSchema(schemaSources.toArray(new Source[0]));
+		return schema.newValidatorHandler();
+	}
 }
