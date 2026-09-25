@@ -30,6 +30,8 @@ COPY --chown=tomcat src/scripts/ /scripts/
 RUN cat "/scripts/loggingAdditional.properties" >> "${CATALINA_HOME}/conf/logging.properties" && \
     cat "/scripts/catalinaAdditional.properties" >> "${CATALINA_HOME}/conf/catalina.properties" && \
     rm -f "/scripts/*Additional.properties" && \
+    cp "/scripts/server.xml" "${CATALINA_HOME}/conf" && \
+    rm -f "/scripts/server.xml" && \
     cp "/scripts/tomcat-users.xml" "${CATALINA_HOME}/conf" && \
     rm -f "/scripts/tomcat-users.xml" && \
     rm -rf "${CATALINA_HOME}/webapps.dist"
