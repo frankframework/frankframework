@@ -24,34 +24,37 @@ RUN apt-get update && \
 	chown -hR tomcat:tomcat "${CATALINA_HOME}" && \
 	chown -hR tomcat:tomcat /opt/frank
 
-# All previous actions are performed as root. Run following instructions and start container as tomcat.
-USER tomcat
-
 # Copy environment configuration
 COPY --chown=tomcat src/scripts/ /scripts/
 
 RUN cat "/scripts/loggingAdditional.properties" >> "${CATALINA_HOME}/conf/logging.properties" && \
     cat "/scripts/catalinaAdditional.properties" >> "${CATALINA_HOME}/conf/catalina.properties" && \
-    rm -f "/scripts/*Additional.properties"
+    rm -f "/scripts/*Additional.properties" && \
+    cp "/scripts/tomcat-users.xml" "${CATALINA_HOME}/conf" && \
+    rm -f "/scripts/tomcat-users.xml" && \
+    rm -rf "${CATALINA_HOME}/webapps.dist"
 
 # copy h2 driver to drivers folder
 COPY --chown=tomcat target/dependencies/h2.jar /opt/frank/drivers/
 
 # copy additional needed libraries to tomcat/lib folder, make sure they cannot be overwritten by tomcat user
-COPY --chown=root:root --chmod=rX target/dependencies/credentialprovider-fatjar.jar /usr/local/tomcat/lib/
-COPY --chown=root:root --chmod=rX target/dependencies/frankframework-kubernetes-fatjar.jar /usr/local/tomcat/lib/
-COPY --chown=root:root --chmod=rX target/dependencies/jakarta*.jar /usr/local/tomcat/lib/
-COPY --chown=root:root --chmod=rX target/dependencies/log4j*.jar /usr/local/tomcat/lib/
-COPY --chown=root:root --chmod=rX target/dependencies/slf4j-api.jar /usr/local/tomcat/lib/
+COPY --chown=root:root --chmod=a=r target/dependencies/credentialprovider-fatjar.jar /usr/local/tomcat/lib/
+COPY --chown=root:root --chmod=a=r target/dependencies/frankframework-kubernetes-fatjar.jar /usr/local/tomcat/lib/
+COPY --chown=root:root --chmod=a=r target/dependencies/jakarta*.jar /usr/local/tomcat/lib/
+COPY --chown=root:root --chmod=a=r target/dependencies/log4j*.jar /usr/local/tomcat/lib/
+COPY --chown=root:root --chmod=a=r target/dependencies/slf4j-api.jar /usr/local/tomcat/lib/
 
 # Copy webapp war
-COPY --chown=root:root --chmod=rX target/dependencies/war/ /usr/local/tomcat/webapps/ROOT/
+COPY --chown=root:root --chmod=a=rX target/dependencies/war/ /usr/local/tomcat/webapps/ROOT/
 
 # Disable JSP re-compilation for Tomcat.
 RUN sed -i "s/<\/web-app>//g" /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml && \
     cat /scripts/web.xml >> /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml && \
     echo "</web-app>" >> /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml && \
     rm -f /scripts/web.xml
+
+# All previous actions are performed as root. Run following instructions and start container as tomcat.
+USER tomcat
 
 # Ensure the container is healty
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 CMD curl --fail --silent http://localhost:8080/iaf/api/server/health || exit 1
