@@ -1,0 +1,38 @@
+name: Manage stale issues
+
+on:
+  schedule:
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/stale@3467b6485bf80d2be20f30ec1a3d2d2aea0330e9
+        with:
+          only-issue-labels: "Needs Information"
+
+          days-before-issue-stale: 5
+          days-before-issue-close: 10
+
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+
+          stale-issue-label: "Stale"
+          close-issue-reason: "not_planned"
+
+          stale-issue-message: >
+            This issue has been marked as stale because it needs additional
+            information. Please provide the requested details within 10 days,
+            or this issue will be closed automatically.
+
+          close-issue-message: >
+            This issue was closed because the requested information was not
+            provided. If you can provide the missing details, feel free to
+            reopen it or open a new issue.
