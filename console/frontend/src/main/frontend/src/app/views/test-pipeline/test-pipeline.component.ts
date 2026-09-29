@@ -1,4 +1,4 @@
-import { KeyValuePipe } from '@angular/common';
+import { KeyValue, KeyValuePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, OnInit, Signal, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
@@ -39,6 +39,12 @@ type TestPipelineSession = {
   configuration: string;
   form: Form;
   sessionKeys: Record<string, string>;
+};
+
+type EncodedSessionKey = {
+  key: string;
+  encodedKey: string;
+  value: string;
 };
 
 @Component({
@@ -114,27 +120,28 @@ export class TestPipelineComponent implements OnInit {
       this.state = [];
       this.newSessionKey = { key: '', value: '' };
       setTimeout(() => {
-        const sessionKeyElement = document.querySelector(`#sessionKeyValue${key}`) as HTMLInputElement;
+        const { encodedKey } = this.encodeSessionKey({ key, value });
+        const sessionKeyElement = document.querySelector(`#sessionKeyValue${encodedKey}`) as HTMLInputElement;
         sessionKeyElement?.focus();
       });
     }
   }
 
-  protected updateSessionKey(key: string): void {
-    const input = document.querySelector(`#sessionKey${key}`) as HTMLInputElement;
-    if (input && key !== input.value) {
+  protected updateSessionKey(sessionKey: EncodedSessionKey): void {
+    const { key, encodedKey } = sessionKey;
+    const input = document.querySelector(`#sessionKey${encodedKey}`) as HTMLInputElement;
+    if (!input || key === input.value) return;
       const newKey = input.value;
       if (newKey === '') {
         delete this.formSessionKeys[key];
         return;
       } else if (this.formSessionKeys[newKey]) {
-        this.addNote('warning', 'Session keys cannot have the same name!');
-        return;
-      }
-
-      this.formSessionKeys[newKey] = this.formSessionKeys[key];
-      delete this.formSessionKeys[key];
+      this.addNote('warning', 'Session keys cannot have the same name!');
+      return;
     }
+
+    this.formSessionKeys[newKey] = this.formSessionKeys[key];
+    delete this.formSessionKeys[key];
   }
 
   protected updateFile(file: File | null): void {
@@ -191,11 +198,11 @@ export class TestPipelineComponent implements OnInit {
         this.addNote(warnLevel, returnData.state);
         this.result = returnData.result;
         this.processingMessage = false;
-        if (this.file != null) {
-          this.formFile.reset();
-          this.file = null;
-          this.form.message = returnData.message;
-        }
+        if (this.file == null) return;
+
+        this.formFile.reset();
+        this.file = null;
+        this.form.message = returnData.message;
       },
       error: (errorData) => {
         const error = errorData.error?.error ?? 'An error occured!';
@@ -224,13 +231,17 @@ export class TestPipelineComponent implements OnInit {
     this.setAdapterOptions(this.selectedConfiguration, this.adapters());
   }
 
+  protected encodedSessionKeys(sessionKeys: KeyValue<string, string>[]): EncodedSessionKey[] {
+    return sessionKeys.map((sessionKey) => this.encodeSessionKey(sessionKey));
+  }
+
   private setTestPipelineSession(): void {
     const testPipelineSession = this.webStorageService.get<TestPipelineSession>('testPipeline');
-    if (testPipelineSession) {
-      this.selectedConfiguration = testPipelineSession.configuration;
-      this.form = testPipelineSession.form;
-      this.formSessionKeys = testPipelineSession.sessionKeys;
-    }
+    if (!testPipelineSession) return;
+
+    this.selectedConfiguration = testPipelineSession.configuration;
+    this.form = testPipelineSession.form;
+    this.formSessionKeys = testPipelineSession.sessionKeys;
   }
 
   private setAdapterOptions(selectedConfiguration: string, adapters: Record<string, Adapter>): void {
@@ -243,5 +254,10 @@ export class TestPipelineComponent implements OnInit {
 
   private addNote(type: string, message: string): void {
     this.state.push({ type: type, message: message });
+  }
+
+  private encodeSessionKey(sessionKey: { key: string; value: string }): EncodedSessionKey {
+    const encodedKey = sessionKey.key.replaceAll(/[^a-zA-Z0-9_]/g, '_');
+    return { ...sessionKey, encodedKey };
   }
 }
