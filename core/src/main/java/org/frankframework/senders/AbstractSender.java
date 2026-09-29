@@ -61,10 +61,11 @@ public abstract class AbstractSender implements ISender, Lifecycle {
 	}
 
 	/**
-	 * final method to ensure nobody overrides this...
+	 * Because we use AOP we're not allowed to make this method file.
+	 * But PLEASE don't ever override this method in a subclass, because it will break the Spring lifecycle.
 	 */
 	@Override
-	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 

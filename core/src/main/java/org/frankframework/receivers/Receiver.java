@@ -443,8 +443,12 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
+	/**
+	 * Not final because of AOP, but should not be overridden by subclasses.
+	 * @param context the ApplicationContext object to be used by this object
+	 */
 	@Override
-	public final void setApplicationContext(@NonNull ApplicationContext context) {
+	public void setApplicationContext(@NonNull ApplicationContext context) {
 		if (!(context instanceof Adapter adapter)) {
 			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
 		}
@@ -1356,7 +1360,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						tg.activateGuard(getTransactionTimeout());
 
 						setPipelineCallerInMessageContext(getListener().getName(), compactedMessage);
-						pipeLineResult = adapter.processMessageWithExceptions(this, messageId, compactedMessage, session);
+						pipeLineResult = getAdapter().processMessageWithExceptions(this, messageId, compactedMessage, session);
 						session.setExitState(pipeLineResult);
 						result = pipeLineResult.getResult();
 

@@ -26,14 +26,12 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
-import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.integration.core.MessageSelector;
@@ -51,47 +49,58 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
 
-public class MessageDispatcher implements InitializingBean, ApplicationContextAware {
+/**
+ * Scans the classpath for beans annotated with {@link BusAware} and registers their methods annotated with {@link TopicSelector} as service activators on the specified bus channel.
+ * We cannot use AnnotationConfigApplicationContext because we cannot configure the scanner to only scan for beans annotated with {@link BusAware}.
+ */
+public class MessageDispatcher extends GenericApplicationContext implements InitializingBean, ApplicationContextAware {
+
+	private final ClassPathBeanDefinitionScanner scanner;
+
 	private final Logger log = LogUtil.getLogger(this);
 	private @Setter String packageName;
 	private @Setter ApplicationContext applicationContext;
 	private MessageChannel nullChannel;
 
+	MessageDispatcher() {
+		this.scanner = createScanner();
+	}
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); // Messages that do not match the TopicSelector will be discarded
+		setParent(applicationContext);
 
-		ClassPathBeanDefinitionScanner scanner = scan();
-		BeanDefinitionRegistry registry = scanner.getRegistry();
-		if (registry == null) {
-			throw new IllegalStateException("registry is null");
-		}
+		scan();
+		refresh();
 
-		String[] names = registry.getBeanDefinitionNames();
+		nullChannel = getBean("nullChannel", MessageChannel.class); // Messages that do not match the TopicSelector will be discarded
+
+		String[] names = getBeanDefinitionNames();
 		for (String beanName : names) {
 			log.debug("scanning bean [{}] for ServiceActivators", beanName);
 
-			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
+			BeanDefinition beanDef = getBeanDefinition(beanName);
 			findServiceActivators(beanDef);
 		}
 	}
 
-	private ClassPathBeanDefinitionScanner scan() {
-		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
-		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
-		scanner.setIncludeAnnotationConfig(false);
-		scanner.addIncludeFilter(new AnnotationTypeFilter(BusAware.class));
-
-		BeanNameGenerator beanNameGenerator = new FullyQualifiedAnnotationBeanNameGenerator();
-		scanner.setBeanNameGenerator(beanNameGenerator);
-
+	private void scan() {
 		int numberOfBeans = scanner.scan(packageName);
 		log.debug("found [{}] BusAware beans", numberOfBeans);
 		if(numberOfBeans < 1) {
 			throw new IllegalStateException("did not find any BusAware beans");
 		}
+	}
 
-		return scanner;
+	private ClassPathBeanDefinitionScanner createScanner() {
+		ClassPathBeanDefinitionScanner cpDefScanner = new ClassPathBeanDefinitionScanner(this);
+		cpDefScanner.setIncludeAnnotationConfig(false);
+		cpDefScanner.addIncludeFilter(new AnnotationTypeFilter(BusAware.class));
+
+		BeanNameGenerator beanNameGenerator = new FullyQualifiedAnnotationBeanNameGenerator();
+		cpDefScanner.setBeanNameGenerator(beanNameGenerator);
+
+		return cpDefScanner;
 	}
 
 	private void findServiceActivators(BeanDefinition beanDef) throws ClassNotFoundException, IntrospectionException {
@@ -102,7 +111,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
 		MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
 		TopicSelector classTopicSelector = AnnotationUtils.findAnnotation(beanClass, TopicSelector.class);
-		Object bean = SpringUtils.createBean(applicationContext, beanClass);
+		Object bean = SpringUtils.createBean(this, beanClass);
 
 		for (MethodDescriptor methodDescriptor : methodDescriptors) {
 			Method method = methodDescriptor.getMethod();
@@ -125,7 +134,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 //		serviceActivator.setRequiresReply(method.getReturnType() != void.class); // forces methods to return something, but this might not be required
 		serviceActivator.setComponentName(componentName);
 		serviceActivator.setManagedName("@"+componentName);
-		initializeBean(serviceActivator);
+		initializeBean(serviceActivator, componentName);
 
 		MessageSelectorChain selectors = new MessageSelectorChain();
 		ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
@@ -133,11 +142,11 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 			selectors.add(headerSelector(action.value(), BusAction.ACTION_HEADER_NAME));
 		}
 		selectors.add(headerSelector(topic, BusTopic.TOPIC_HEADER_NAME));
-		selectors.add(activeSelector(applicationContext));
+		selectors.add(activeSelector());
 
 		MessageFilter filter = new MessageFilter(selectors);
 		filter.setDiscardChannel(nullChannel);
-		initializeBean(filter);
+		initializeBean(filter, componentName+".filter");
 
 		List<MessageHandler> handlers = new ArrayList<>();
 		handlers.add(filter);
@@ -145,8 +154,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 		MessageHandlerChain chain = new MessageHandlerChain();
 		chain.setHandlers(handlers);
-		chain.setComponentName(componentName);
-		initializeBean(chain);
+		initializeBean(chain, componentName+".chain");
 		if(channel.subscribe(chain)) {
 			log.debug("registered new ServiceActivator [{}] on topic [{}] with action [{}] requires-reply [{}]", componentName, topic, (action != null?action.value():"*"), method.getReturnType() != void.class);
 		} else {
@@ -154,8 +162,8 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		}
 	}
 
-	private MessageSelector activeSelector(ApplicationContext applicationContext) {
-		return message -> ((AbstractApplicationContext) applicationContext).isActive();
+	private MessageSelector activeSelector() {
+		return message -> this.isActive();
 	}
 
 	public static <E extends Enum<E>> MessageSelector headerSelector(E enumType, String headerName) {
@@ -168,7 +176,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	private Class<?> getBeanClass(BeanDefinition beanDef) throws ClassNotFoundException {
 		String className = beanDef.getBeanClassName();
 
-		ClassLoader classLoader = applicationContext.getClassLoader();
+		ClassLoader classLoader = getClassLoader();
 		return Class.forName(className, true, classLoader);
 	}
 
@@ -179,10 +187,11 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		}
 		String busName = busAware.value();
 
-		return applicationContext.getBean(busName, SubscribableChannel.class);
+		return getBean(busName, SubscribableChannel.class);
 	}
 
-	private void initializeBean(Object bean) {
-		applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getCanonicalName());
+	private void initializeBean(Object bean, String componentName) {
+		getAutowireCapableBeanFactory().initializeBean(bean, componentName);
+		SpringUtils.registerSingleton(this, componentName, bean);
 	}
 }
