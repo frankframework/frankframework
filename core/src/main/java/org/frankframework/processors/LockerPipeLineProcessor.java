@@ -40,6 +40,9 @@ public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 		if (locker != null) {
 			try {
 				objectId = locker.acquire();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new PipeRunException(null, "Thread interrupted while setting lock ["+locker+"]", e);
 			} catch (Exception e) {
 				throw new PipeRunException(null, "error while setting lock ["+locker+"]", e);
 			}

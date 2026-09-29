@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -142,14 +143,14 @@ public abstract class AbstractDigesterRule implements ApplicationContextAware {
 	 * @param value or values to resolve
 	 * @return The resolved value(s) using the configuration AppConstants
 	 */
-	protected final String resolveValue(String value) {
+	protected final @NonNull String resolveValue(@NonNull String value) {
 		String result = StringResolver.substVars(value, AppConstants.getInstance(getClassLoader()));
-		log.trace("resolved [{}] to [{}] using ClassLoader [{}]", ()->value, ()->result, ()->getClassLoader());
+		log.trace("resolved [{}] to [{}] using ClassLoader [{}]", ()->value, ()->result, this::getClassLoader);
 		return result;
 	}
 
 	@SuppressWarnings("deprecation")
-	public final void begin(String elementName, Attributes attributes) throws Exception {
+	public final void begin(Attributes attributes) throws Exception {
 		Object top = getBean();
 
 		Map<String, String> map = copyAttrsToMap(attributes);

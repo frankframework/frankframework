@@ -354,6 +354,9 @@ public class IbisTester {
 					resultString = future.get(timeout, TimeUnit.SECONDS);
 				} catch (TimeoutException e) {
 					debug(scenarioInfo + " timed out, retries left [" + count + "]");
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					debug(scenarioInfo + " interrupted, retries left [" + count + "]");
 				} catch (Exception e) {
 					debug(scenarioInfo + " got error, retries left [" + count + "]");
 				}
