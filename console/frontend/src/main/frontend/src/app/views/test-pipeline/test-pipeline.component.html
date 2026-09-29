@@ -44,7 +44,7 @@
                 />
               </div>
             </div>
-            @for (sessionKey of formSessionKeys | keyvalue; track sessionKey.key) {
+            @for (sessionKey of encodedSessionKeys(formSessionKeys | keyvalue); track sessionKey.key) {
               <div class="row form-group test-pipeline-session-keys">
                 <div class="col-sm-3">
                   @if ($first) {
@@ -57,10 +57,10 @@
                     class="form-control"
                     placeholder="Name"
                     type="text"
-                    [name]="`sessionKey${sessionKey.key}`"
-                    [id]="`sessionKey${sessionKey.key}`"
+                    [name]="`sessionKey${sessionKey.encodedKey}`"
+                    [id]="`sessionKey${sessionKey.encodedKey}`"
                     [value]="sessionKey.key"
-                    (blur)="updateSessionKey(sessionKey.key)"
+                    (blur)="updateSessionKey(sessionKey)"
                   />
                 </div>
                 <div class="col-sm-5">
@@ -69,8 +69,8 @@
                     class="form-control"
                     placeholder="Value"
                     type="text"
-                    [name]="`sessionKeyValue${sessionKey.key}`"
-                    [id]="`sessionKeyValue${sessionKey.key}`"
+                    [name]="`sessionKeyValue${sessionKey.encodedKey}`"
+                    [id]="`sessionKeyValue${sessionKey.encodedKey}`"
                     [(ngModel)]="formSessionKeys[sessionKey.key]"
                   />
                 </div>
