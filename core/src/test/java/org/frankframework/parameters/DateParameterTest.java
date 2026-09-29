@@ -18,7 +18,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.util.ConfigurationUtils;
@@ -26,10 +25,11 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.TimeProvider;
 
-@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
+@WithTimeTravel
 public class DateParameterTest {
 
 	private TimeZone systemTimeZone;
@@ -417,10 +417,9 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testUnixParameterConvertsToDateChangeTZ() throws Exception {
+	public void testUnixParameterConvertsToDateChangeTZ(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 		DateParameter p = new DateParameter();
-		try (PipeLineSession session = new PipeLineSession();
-			 TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("date");
 			p.setValue("1747401948"); // Value in seconds, not millis!!
 			p.setFormatType(DateParameter.DateFormatType.UNIX);
@@ -439,41 +438,37 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testUnixPatternConvertsToDate() throws Exception {
-		try (TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
-			timeTraveller.setTime(1747401948_000L);
-			DateParameter p = new DateParameter();
-			try (PipeLineSession session = new PipeLineSession()) {
-				p.setName("unixTimestamp");
-				p.setPattern("{now,millis,#}");
-				p.setFormatType(DateFormatType.UNIX);
-				p.configure();
+	public void testUnixPatternConvertsToDate(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(1747401948_000L);
+		DateParameter p = new DateParameter();
+		try (PipeLineSession session = new PipeLineSession()) {
+			p.setName("unixTimestamp");
+			p.setPattern("{now,millis,#}");
+			p.setFormatType(DateFormatType.UNIX);
+			p.configure();
 
-				Message message = new Message("fakeMessage");
+			Message message = new Message("fakeMessage");
 
-				Object result = p.getValue(message, session).getValue();
-				Date resultDate = assertInstanceOf(Date.class, result);
-				assertEquals(1747401948_000L, resultDate.getTime());
-			}
+			Object result = p.getValue(message, session).getValue();
+			Date resultDate = assertInstanceOf(Date.class, result);
+			assertEquals(1747401948_000L, resultDate.getTime());
 		}
 	}
 
 	@Test
-	public void testUnixPatternConvertsToDateWithoutFormatType() throws Exception {
-		try (TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
-			timeTraveller.setTime(1747401948_000L);
-			DateParameter p = new DateParameter();
-			try (PipeLineSession session = new PipeLineSession()) {
-				p.setName("unixTimestamp");
-				p.setPattern("{now,millis}");
-				p.configure();
+	public void testUnixPatternConvertsToDateWithoutFormatType(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(1747401948_000L);
+		DateParameter p = new DateParameter();
+		try (PipeLineSession session = new PipeLineSession()) {
+			p.setName("unixTimestamp");
+			p.setPattern("{now,millis}");
+			p.configure();
 
-				Message message = new Message("fakeMessage");
+			Message message = new Message("fakeMessage");
 
-				Object result = p.getValue(message, session).getValue();
-				Date resultDate = assertInstanceOf(Date.class, result);
-				assertEquals(1747401948_000L, resultDate.getTime());
-			}
+			Object result = p.getValue(message, session).getValue();
+			Date resultDate = assertInstanceOf(Date.class, result);
+			assertEquals(1747401948_000L, resultDate.getTime());
 		}
 	}
 
@@ -498,46 +493,43 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testTimeParameterWithTimePatternWithoutFormatPattern() throws Exception {
+	public void testTimeParameterWithTimePatternWithoutFormatPattern(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
-		try (TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
+		// Arrange
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		DateParameter parameter = new DateParameter();
+		parameter.setName("time");
+		parameter.setFormatType(DateFormatType.TIME);
+		parameter.setPattern("{now}"); // Now no longer necessary to specify "time" as part of the pattern when type is TIME.
+		parameter.configure();
 
-			// Arrange
-			timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
-			DateParameter parameter = new DateParameter();
-			parameter.setName("time");
-			parameter.setFormatType(DateFormatType.TIME);
-			parameter.setPattern("{now}"); // Now no longer necessary to specify "time" as part of the pattern when type is TIME.
-			parameter.configure();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
 
-			Message message = new Message("fakeMessage");
-			PipeLineSession session = new PipeLineSession();
+		// Act
+		Object result = parameter.getValue(message, session).getValue();
 
-			// Act
-			Object result = parameter.getValue(message, session).getValue();
+		// Assert
+		Date resultDate = assertInstanceOf(Date.class, result);
+		Calendar resultCalendar = Calendar.getInstance();
+		resultCalendar.setTime(resultDate);
 
-			// Assert
-			Date resultDate = assertInstanceOf(Date.class, result);
-			Calendar resultCalendar = Calendar.getInstance();
-			resultCalendar.setTime(resultDate);
+		// Only a value for the time should be set. Year / Monday / Day are at Epoch start
+		assertEquals(1970, resultCalendar.get(Calendar.YEAR));
+		assertEquals(Calendar.JANUARY, resultCalendar.get(Calendar.MONTH));
+		assertEquals(1, resultCalendar.get(Calendar.DAY_OF_MONTH));
 
-			// Only a value for the time should be set. Year / Monday / Day are at Epoch start
-			assertEquals(1970, resultCalendar.get(Calendar.YEAR));
-			assertEquals(Calendar.JANUARY, resultCalendar.get(Calendar.MONTH));
-			assertEquals(1, resultCalendar.get(Calendar.DAY_OF_MONTH));
-
-			// Time-part should be set
-			assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
-			assertEquals(12, resultCalendar.get(Calendar.MINUTE));
-			assertEquals(55, resultCalendar.get(Calendar.SECOND));
-		}
+		// Time-part should be set
+		assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals(12, resultCalendar.get(Calendar.MINUTE));
+		assertEquals(55, resultCalendar.get(Calendar.SECOND));
 	}
 
 	@Test
-	public void testTimeParameterWithTimePatternWithoutFormat() throws Exception {
+	public void testTimeParameterWithTimePatternWithoutFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -568,10 +560,10 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testTimeParameterWithTimePatternWithFormat() throws Exception {
+	public void testTimeParameterWithTimePatternWithFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -603,10 +595,10 @@ public class DateParameterTest {
 
 	@Test
 	@Disabled("Formatting time without seconds does not yet work and the change to make that possible looks too big to add to this PR")
-	public void testTimeParameterWithTimePatternWithFormatNoSeconds() throws Exception {
+	public void testTimeParameterWithTimePatternWithFormatNoSeconds(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -637,10 +629,10 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testDateParameterWithDatePatternWithoutFormat() throws Exception {
+	public void testDateParameterWithDatePatternWithoutFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("date");
 		parameter.setFormatType(DateFormatType.DATE);
@@ -670,10 +662,10 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testDateParameterWithDatePatternWithFormat() throws Exception {
+	public void testDateParameterWithDatePatternWithFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("date");
 		parameter.setFormatType(DateFormatType.DATE);

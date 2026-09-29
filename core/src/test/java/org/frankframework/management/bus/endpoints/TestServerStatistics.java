@@ -8,37 +8,35 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.time.Clock;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.messaging.Message;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.TimeProvider;
 
-@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class TestServerStatistics extends BusTestBase {
 
 	@Test
-	public void getServerInformation() {
-		try (TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller()) {
-			timeTraveller.setClock(Clock.systemUTC());
-			MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.GET);
-			Message<?> response = callSyncGateway(request);
+	@WithTimeTravel
+	public void getServerInformation(TimeProvider.TimeTraveller timeTraveller) {
+		timeTraveller.setClock(Clock.systemUTC());
+		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.GET);
+		Message<?> response = callSyncGateway(request);
 
-			String result = response.getPayload().toString();
-			assertThat(result, containsString("\"fileSystem\":{")); // Object
-			assertThat(result, containsString("\"framework\":{")); // Object
-			assertThat(result, containsString("\"instance\":{")); // Object
-			assertThat(result, containsString("\"applicationServer\":\"")); // String
-			assertThat(result, containsString("\"javaVersion\":\"")); // String
-			assertThat(result, containsString("\"dtap.stage\":\"")); // String
-			assertThat(result, containsString("\"dtap.side\":\"")); // String
-			assertThat(result, containsString("\"processMetrics\":{")); // Object
-			assertThat(result, containsString("\"machineName\":\"")); // String
-			assertThat(result, containsString("\"serverTimezone\":\"ETC/UTC\"")); // String
-			assertThat(result, not(containsString("\"Z\""))); // String
-		}
+		String result = response.getPayload().toString();
+		assertThat(result, containsString("\"fileSystem\":{")); // Object
+		assertThat(result, containsString("\"framework\":{")); // Object
+		assertThat(result, containsString("\"instance\":{")); // Object
+		assertThat(result, containsString("\"applicationServer\":\"")); // String
+		assertThat(result, containsString("\"javaVersion\":\"")); // String
+		assertThat(result, containsString("\"dtap.stage\":\"")); // String
+		assertThat(result, containsString("\"dtap.side\":\"")); // String
+		assertThat(result, containsString("\"processMetrics\":{")); // Object
+		assertThat(result, containsString("\"machineName\":\"")); // String
+		assertThat(result, containsString("\"serverTimezone\":\"ETC/UTC\"")); // String
+		assertThat(result, not(containsString("\"Z\""))); // String
 	}
 
 	@Test

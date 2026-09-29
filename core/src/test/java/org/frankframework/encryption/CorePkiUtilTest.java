@@ -12,20 +12,14 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.jspecify.annotations.NonNull;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.TimeProvider;
 
-@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
+@WithTimeTravel
 public class CorePkiUtilTest {
 	private static final String MULTI_KEY_KEYSTORE = "Encryption/MultiKeyKeystore.jks";
-
-	@AfterEach
-	public void tearDown() {
-		TimeProvider.resetClock();
-	}
 
 	@NonNull
 	private static ZonedDateTime getTimeBeforeCertificateExpiryCheckWindow() {
@@ -68,8 +62,8 @@ public class CorePkiUtilTest {
 	}
 
 	@Test
-	public void testExpiredCertificateFromJKS() throws Exception {
-		TimeProvider.setTime(getTimeAfterCertificateExpiryDate());
+	public void testExpiredCertificateFromJKS(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(getTimeAfterCertificateExpiryDate());
 
 		KeystoreOwner keystoreOwner = new KeystoreOwner("Encryption/expiredCert.jks");
 		keystoreOwner.setKeystoreType(KeystoreType.JKS);
@@ -87,8 +81,8 @@ public class CorePkiUtilTest {
 	}
 
 	@Test
-	public void testExpiredCertificateFromPKCS12() throws Exception {
-		TimeProvider.setTime(getTimeAfterCertificateExpiryDate());
+	public void testExpiredCertificateFromPKCS12(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(getTimeAfterCertificateExpiryDate());
 
 		KeystoreOwner keystoreOwner = new KeystoreOwner("Encryption/common_name.p12");
 		keystoreOwner.setKeystoreType(KeystoreType.PKCS12);
@@ -104,8 +98,8 @@ public class CorePkiUtilTest {
 	}
 
 	@Test
-	public void testSoonToExpireCertificateFromJKS() throws Exception {
-		TimeProvider.setTime(getTimeWhenCertificateSoonToExpire());
+	public void testSoonToExpireCertificateFromJKS(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(getTimeWhenCertificateSoonToExpire());
 
 		KeystoreOwner keystoreOwner = new KeystoreOwner("Encryption/expiredCert.jks");
 		keystoreOwner.setKeystoreType(KeystoreType.JKS);
@@ -123,8 +117,8 @@ public class CorePkiUtilTest {
 	}
 
 	@Test
-	public void testSoonToExpireCertificateFromPKCS12() throws Exception {
-		TimeProvider.setTime(getTimeWhenCertificateSoonToExpire());
+	public void testSoonToExpireCertificateFromPKCS12(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(getTimeWhenCertificateSoonToExpire());
 
 		KeystoreOwner keystoreOwner = new KeystoreOwner("Encryption/common_name.p12");
 		keystoreOwner.setKeystoreType(KeystoreType.PKCS12);
@@ -140,8 +134,8 @@ public class CorePkiUtilTest {
 	}
 
 	@Test
-	public void testNoExpiredCertificatesFromJKS() throws Exception {
-		TimeProvider.setTime(getTimeBeforeCertificateExpiryCheckWindow());
+	public void testNoExpiredCertificatesFromJKS(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(getTimeBeforeCertificateExpiryCheckWindow());
 
 		KeystoreOwner keystoreOwner = new KeystoreOwner("Encryption/expiredCert.jks");
 		keystoreOwner.setKeystoreType(KeystoreType.JKS);
@@ -159,8 +153,8 @@ public class CorePkiUtilTest {
 	}
 
 	@Test
-	public void testNoExpiredCertificateFromPKCS12() throws Exception {
-		TimeProvider.setTime(getTimeBeforeCertificateExpiryCheckWindow());
+	public void testNoExpiredCertificateFromPKCS12(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(getTimeBeforeCertificateExpiryCheckWindow());
 
 		KeystoreOwner keystoreOwner = new KeystoreOwner("Encryption/common_name.p12");
 		keystoreOwner.setKeystoreType(KeystoreType.PKCS12);
