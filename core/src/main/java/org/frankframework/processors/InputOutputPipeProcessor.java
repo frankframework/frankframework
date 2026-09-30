@@ -173,19 +173,20 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		if (Message.isEmpty(result)) {
 			return result;
 		}
-		log.debug("compacting result message");
 		InputSource inputSource = getInputSourceFromResult(result, pipe);
-
+		if (inputSource == null) {
+			return result;
+		}
+		log.debug("compacting result message");
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();
 
-			CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter());
+			CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter(), pipeLineSession);
 			handler.setChompCharSize(pipe.getChompCharSize());
 			handler.setElementToMove(pipe.getElementToMove());
 			handler.setElementToMoveChain(pipe.getElementToMoveChain());
 			handler.setElementToMoveSessionKey(pipe.getElementToMoveSessionKey());
 			handler.setRemoveCompactMsgNamespaces(pipe.isRemoveCompactMsgNamespaces());
-			handler.setContext(pipeLineSession);
 			XmlUtils.parseXml(inputSource, handler);
 
 			Message compactedResult = messageBuilder.build();

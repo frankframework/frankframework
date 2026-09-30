@@ -63,7 +63,7 @@ public class Misc {
 	 * Converts the file size to bytes.
 	 * <pre>Misc.toFileSize("14GB", 20); // gives out 15032385536</pre>
 	 */
-	public static long toFileSize(String value, long defaultValue) {
+	public static long toFileSize(@Nullable String value, long defaultValue) {
 		if(value == null)
 			return defaultValue;
 
