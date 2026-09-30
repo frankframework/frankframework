@@ -368,11 +368,7 @@ public class LarvaTool {
 	public @Nullable String messageToString(Message message) {
 		// TODO: This should just throw instead of returning NULL, and the caller should catch instead of checking NULL return value
 		try {
-			String r = message.asString();
-			if (r == null) {
-				return "";
-			}
-			return r;
+			return message.asString();
 		} catch (IOException e) {
 			errorMessage("Could not read file into string", e);
 			return null;

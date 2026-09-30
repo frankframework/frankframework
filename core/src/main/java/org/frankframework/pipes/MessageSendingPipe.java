@@ -384,6 +384,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 				}
 				throw new PipeRunException(this, "caught timeout-exception", toe);
 
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
+				throw new PipeRunException(this, "Sending thread interrupted", e);
 			} catch (Exception e) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 				throw new PipeRunException(this, "caught exception", e);

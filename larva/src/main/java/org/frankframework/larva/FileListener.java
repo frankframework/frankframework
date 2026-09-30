@@ -133,6 +133,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 				try {
 					Thread.sleep(interval);
 				} catch(InterruptedException e) {
+					Thread.currentThread().interrupt();
 					throw new ListenerException("Exception waiting for file: " + e.getMessage(), e);
 				}
 				if (filename == null) {

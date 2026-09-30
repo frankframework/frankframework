@@ -97,7 +97,7 @@ public class ValidateAttributeRuleTest {
 		};
 		configuration.autowireByName(rule);
 
-		rule.begin(beanClass.getSimpleName(), copyMapToAttrs(attributes));
+		rule.begin(copyMapToAttrs(attributes));
 
 		// Test the bean name with and without NameAware interface
 		if (topBean instanceof ConfigWarningTestClass) {
