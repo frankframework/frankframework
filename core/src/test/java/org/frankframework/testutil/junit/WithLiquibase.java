@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Annotation that works in tandem with {@link DatabaseTest}, executes Liquibase before it runs the test and cleansup after the test has ran.
+ * Annotation that works in tandem with {@link DatabaseTest}, executes Liquibase before it runs the test and cleans up after the test has ran. The annotation
+ * can be repeated if multiple Liquibase files need to be executed for a test.
  * Is executed AFTER the @BeforeEach step.
  *
  * @author Niels Meijer

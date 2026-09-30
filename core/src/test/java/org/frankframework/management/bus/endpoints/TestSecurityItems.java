@@ -11,7 +11,6 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -31,19 +30,18 @@ import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TimeProvider;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
+@WithTimeTravel
 public class TestSecurityItems extends BusTestBase {
 
 	@BeforeEach
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
+	public void setUp(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 		ZonedDateTime testTime = ZonedDateTime.of(2025, 6, 15, 10, 0, 0, 0, ZoneId.systemDefault());
-		TimeProvider.setTime(testTime);
+		timeTraveller.setTime(testTime);
 
 		JmsRealmFactory.getInstance().clear();
 		JmsRealm jdbcRealm = new JmsRealm();
@@ -79,7 +77,6 @@ public class TestSecurityItems extends BusTestBase {
 	@Override
 	@AfterEach
 	public void tearDown() {
-		TimeProvider.resetClock();
 		super.tearDown();
 	}
 

@@ -7,27 +7,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.Clock;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.messaging.Message;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.TimeProvider;
 
-@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class TestServerStatistics extends BusTestBase {
 
-	@AfterEach
-	void afterEach() {
-		TimeProvider.resetClock();
-	}
-
 	@Test
-	public void getServerInformation() {
-		TimeProvider.setClock(Clock.systemUTC());
+	@WithTimeTravel
+	public void getServerInformation(TimeProvider.TimeTraveller timeTraveller) {
+		timeTraveller.setClock(Clock.systemUTC());
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 
