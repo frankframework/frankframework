@@ -149,7 +149,7 @@ public abstract class AbstractDigesterRule implements ApplicationContextAware {
 		return result;
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({"deprecation", "java:S112" }) // Allow generic-exceptions
 	public final void begin(Attributes attributes) throws Exception {
 		Object top = getBean();
 
