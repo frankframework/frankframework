@@ -94,6 +94,9 @@ public class ApiMemcached implements IApiCache {
 			// Fetching a none-existing key to test the connection
 			Future<Object> future = client.asyncGet("test-connection");
 			future.get(timeout, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			ApplicationWarnings.add(log, "Thread interrupted while trying to connect to one or more memcached servers.");
 		} catch (Exception e) {
 			ApplicationWarnings.add(log, "Unable to connect to one or more memcached servers.");
 		}

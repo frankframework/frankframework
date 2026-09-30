@@ -33,7 +33,6 @@ import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.protocol.HttpContext;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
@@ -42,17 +41,13 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TimeProvider;
 
 @Log4j2
 public class NetStorageSenderResultTest {
 	private static final String BASEDIR = "/http/responses/";
-
-	@AfterEach
-	void tearDown() {
-		TimeProvider.resetClock();
-	}
 
 	private NetStorageSender createHttpSender(CloseableHttpResponse httpResponse) throws IOException {
 		CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
@@ -199,12 +194,13 @@ public class NetStorageSenderResultTest {
 	}
 
 	@Test
-	public void detectDrift() {
+	@WithTimeTravel
+	public void detectDrift(TimeProvider.TimeTraveller timeTraveller) {
 		NetStorageSender sender = new NetStorageSender();
 		assertFalse(sender.detectedTimeDrift("", 10));
 		assertTrue(sender.detectedTimeDrift("Wed, 01 Jan 2020 00:00:00 GMT", 10));
 
-		TimeProvider.setTime(ZonedDateTime.of(2025, 7, 25, 0, 0, 10, 0, ZoneId.of("GMT")));
+		timeTraveller.setTime(ZonedDateTime.of(2025, 7, 25, 0, 0, 10, 0, ZoneId.of("GMT")));
 		assertFalse(sender.detectedTimeDrift("Fri, 25 Jul 2025 00:00:10 GMT", 1)); // Drift is 0 ms
 		assertTrue(sender.detectedTimeDrift("Fri, 25 Jul 2025 00:00:00 GMT", 9999)); // Drift is 10_000 ms
 		assertFalse(sender.detectedTimeDrift("Fri, 25 Jul 2025 00:00:00 GMT", 30_000)); // Drift is 10_000 ms

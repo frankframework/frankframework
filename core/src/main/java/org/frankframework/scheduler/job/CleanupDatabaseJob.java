@@ -88,6 +88,11 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 					mlo.expiryDateField.equals(expiryDateField);
 		}
 
+		@Override
+		public int hashCode() {
+			return Objects.hash(datasourceName, tableName, expiryDateField);
+		}
+
 		public String getDatasourceName() {
 			return datasourceName;
 		}

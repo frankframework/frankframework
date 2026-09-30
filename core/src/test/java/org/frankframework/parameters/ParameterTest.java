@@ -40,7 +40,6 @@ import org.apache.commons.io.ByteOrderMark;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
@@ -55,18 +54,17 @@ import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
-@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class ParameterTest {
 
 	@AfterEach
 	void tearDown() {
 		System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
-		TimeProvider.resetClock();
 	}
 
 	private Transformer createTransformer() throws TransformerConfigurationException {
@@ -1062,9 +1060,10 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testPatternNowWithStringType() throws Exception {
+	@WithTimeTravel
+	public void testPatternNowWithStringType(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 		Parameter p = new Parameter();
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 22, 22, 22));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 22, 22, 22));
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("date");
 			p.setPattern("{now}");
@@ -1082,9 +1081,10 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testPatternNowWithDateFormatType() throws Exception {
+	@WithTimeTravel
+	public void testPatternNowWithDateFormatType(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 		Parameter p = new Parameter();
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 22, 22, 22));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 22, 22, 22));
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
@@ -1139,8 +1139,9 @@ public class ParameterTest {
 	}
 
 	@Test
-	public void testMultiplePatternsInParameterFixedDateWithUnixTimestamp() throws Exception {
-		TimeProvider.setTime(1747401948_000L);
+	@WithTimeTravel
+	public void testMultiplePatternsInParameterFixedDateWithUnixTimestamp(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(1747401948_000L);
 		Parameter p = new Parameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put("aSessionKey", "Session Value");

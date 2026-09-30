@@ -299,6 +299,10 @@ public class ConfigurationDigester implements ConfigurationAware {
 		ContentHandler currentHandler = handler;
 		for (String file : StringUtil.split(stubFile)) {
 			Resource xslt = Resource.getResource(scope, file);
+			if (xslt == null) {
+				log.warn("unable to find resource [{}]", file);
+				continue;
+			}
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 			TransformerFilter filter = tp.getTransformerFilter(currentHandler);
 			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);

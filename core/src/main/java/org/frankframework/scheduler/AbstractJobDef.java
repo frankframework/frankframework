@@ -390,9 +390,13 @@ public abstract class AbstractJobDef extends TransactionAttributes implements IJ
 					String objectId = null;
 					try {
 						objectId = getLocker().acquire(getMessageKeeper());
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
+						log.error("Thread interrupted while trying to acquire lock", e);
 					} catch (Exception e) {
 						getMessageKeeper().add(e.getMessage(), MessageKeeperLevel.ERROR);
-						log.error("unable to aquire lock", e);
+						log.error("unable to acquire lock", e);
 					}
 					if (objectId != null) {
 						TimeoutGuard tg = new TimeoutGuard("Job "+getName());

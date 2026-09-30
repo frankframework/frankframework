@@ -18,6 +18,7 @@ package org.frankframework.statistics;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -113,7 +114,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	public DistributionSummary createThreadBasedDistributionSummary(Receiver<?> receiver, FrankMeterType type, int threadNumber) {
-		List<Tag> tags = getTags(receiver, receiver.getName(), Collections.singletonList(Tag.of("thread", ""+threadNumber)));
+		List<Tag> tags = getTags(receiver, Objects.requireNonNull(receiver.getName(), "Receiver name cannot be null"), Collections.singletonList(Tag.of("thread", ""+threadNumber)));
 		return createDistributionSummary(type, tags);
 	}
 
@@ -209,7 +210,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 
 	private String getElementType(@NonNull FrankElement frankElement) {
 		return switch (frankElement) {
-			case Receiver ignored -> "receiver";
+			case Receiver<?> ignored -> "receiver";
 			case PipeLine ignored -> "pipeline";
 			case IPipe ignored -> "pipe";
 			case Adapter ignored -> "adapter";
