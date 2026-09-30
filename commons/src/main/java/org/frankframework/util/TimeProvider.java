@@ -30,10 +30,11 @@ import org.jspecify.annotations.NonNull;
 @SuppressWarnings("JavaTimeDefaultTimeZone")
 public class TimeProvider {
 
+	private static final Clock DEFAULT_CLOCK = Clock.systemDefaultZone();
 	/**
 	 * Clock currently being used.
 	 */
-	private static Clock clock = Clock.systemDefaultZone();
+	private static Clock clock = DEFAULT_CLOCK;
 
 	private TimeProvider() {
 		// Private constructor to prevent creating instances of static utility classes
@@ -74,10 +75,22 @@ public class TimeProvider {
 		return Date.from(now());
 	}
 
+	private static void setClock(Clock clock) {
+		TimeProvider.clock = clock;
+	}
+
+	private static void resetClock() {
+		TimeProvider.clock = DEFAULT_CLOCK;
+	}
+
 	public static TimeTraveller timeTraveller() {
 		return new TimeTraveller();
 	}
 
+	/**
+	 * TimeTraveller instances provide scoped access to modifying the "current time" in code. Closing the TimeTraveller instance will reset the clock to actual system time.
+	 */
+	@SuppressWarnings("java:S2696") // TimeTraveller instance scopes access to modifying TimeProvider so instance methods will update static fields
 	public static class TimeTraveller implements AutoCloseable {
 		private TimeTraveller() {
 			// Make default constructor non-public
@@ -96,7 +109,7 @@ public class TimeProvider {
 		 * @param clock {@link Clock} to use.
 		 */
 		public void setClock(@NonNull Clock clock) {
-			TimeProvider.clock = clock;
+			TimeProvider.setClock(clock);
 		}
 
 		/**
@@ -112,7 +125,7 @@ public class TimeProvider {
 		 * @param millis Time in epoch-milliseconds to which to set the clock.
 		 */
 		public void setTime(long millis) {
-			TimeProvider.clock = Clock.fixed(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
+			TimeProvider.setClock(Clock.fixed(Instant.ofEpochMilli(millis), ZoneId.systemDefault()));
 		}
 
 		/**
@@ -120,7 +133,7 @@ public class TimeProvider {
 		 * @param localDateTime Time to which to set the clock.
 		 */
 		public void setTime(LocalDateTime localDateTime) {
-			TimeProvider.clock = Clock.fixed(localDateTime.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
+			TimeProvider.setClock(Clock.fixed(localDateTime.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault()));
 		}
 
 		/**
@@ -128,7 +141,7 @@ public class TimeProvider {
 		 * @param zonedDateTime The time to which to set the clock.
 		 */
 		public void setTime(ZonedDateTime zonedDateTime) {
-			TimeProvider.clock = Clock.fixed(zonedDateTime.toInstant(), ZoneId.systemDefault());
+			TimeProvider.setClock(Clock.fixed(zonedDateTime.toInstant(), ZoneId.systemDefault()));
 		}
 
 		/**
@@ -136,7 +149,7 @@ public class TimeProvider {
 		 * This should be used in the test-teardown method of unit tests when the unit tests have set the clock to a none-default clock.
 		 */
 		public void resetClock() {
-			TimeProvider.clock = Clock.systemDefaultZone();
+			TimeProvider.resetClock();
 		}
 	}
 }
