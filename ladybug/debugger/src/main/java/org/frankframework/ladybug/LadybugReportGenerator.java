@@ -31,7 +31,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.components.FrankPlugin;
-import org.frankframework.core.Adapter;
 import org.frankframework.core.HasName;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IPipe;
@@ -39,7 +38,6 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
@@ -93,40 +91,6 @@ public class LadybugReportGenerator implements InitializingBean {
 		}
 
 		return Collections.emptyMap();
-	}
-
-	public Message receiverInput(Receiver<?> receiver, String correlationId, Message input) {
-		return testTool.startpoint(correlationId, classNameOf(receiver), "receiver", input, extractMessageContext(input));
-	}
-
-	public Message receiverOutput(Receiver<?> receiver, String correlationId, Message output) {
-		return testTool.endpoint(correlationId, classNameOf(receiver), "receiver", output, extractMessageContext(output));
-	}
-
-	public Message receiverAbort(Receiver<?> receiver, String correlationId, Message output) {
-		return testTool.abortpoint(correlationId, classNameOf(receiver), "receiver", output, extractMessageContext(output));
-	}
-
-	public Throwable receiverAbort(Receiver<?> receiver, String correlationId, Throwable throwable) {
-		testTool.abortpoint(correlationId, classNameOf(receiver), "receiver", throwable);
-		return throwable;
-	}
-
-	public Message adapterInput(Adapter adapter, String correlationId, Message input) {
-		return testTool.startpoint(correlationId, classNameOf(adapter), adapter.getName(), input, extractMessageContext(input));
-	}
-
-	public Message adapterOutput(Adapter adapter, String correlationId, Message output) {
-		return testTool.endpoint(correlationId, classNameOf(adapter), adapter.getName(), output, extractMessageContext(output));
-	}
-
-	public Message adapterAbort(Adapter adapter, String correlationId, Message output) {
-		return testTool.abortpoint(correlationId, classNameOf(adapter), adapter.getName(), output, extractMessageContext(output));
-	}
-
-	public Throwable adapterAbort(Adapter adapter, String correlationId, Throwable throwable) {
-		testTool.abortpoint(correlationId, classNameOf(adapter), adapter.getName(), throwable);
-		return throwable;
 	}
 
 	public Message pipelineInput(PipeLine pipeLine, String correlationId, Message input) {
