@@ -96,6 +96,9 @@ public class TimeProvider {
 			// Make default constructor non-public
 		}
 
+		/**
+		 * Closing the TimeTraveller resets the clock to the system default clock, this ends the scope of the time-travel.
+		 */
 		@Override
 		public void close() {
 			resetClock();

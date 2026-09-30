@@ -18,25 +18,33 @@ public class JUnitTimeTravelExtension implements BeforeEachCallback, AfterEachCa
 	private static final ExtensionContext.Namespace TIME_TRAVEL_NAMESPACE = ExtensionContext.Namespace.create(JUnitTimeTravelExtension.class);
 	private static final String TIME_TRAVELLER_STORE_KEY = "timeTraveller";
 
+	private static TimeProvider.@Nullable TimeTraveller getTimeTraveller(ExtensionContext context) {
+		return getStore(context).get(TIME_TRAVELLER_STORE_KEY, TimeProvider.TimeTraveller.class);
+	}
+
+	private static ExtensionContext.Store getStore(ExtensionContext extensionContext) {
+		return extensionContext.getStore(TIME_TRAVEL_NAMESPACE);
+	}
+
 	@Override
 	public void beforeEach(ExtensionContext context) {
 		TimeProvider.TimeTraveller timeTraveller = TimeProvider.timeTraveller();
-		context.getStore(TIME_TRAVEL_NAMESPACE).put(TIME_TRAVELLER_STORE_KEY, timeTraveller);
+		getStore(context).put(TIME_TRAVELLER_STORE_KEY, timeTraveller);
 	}
 
 	@Override
 	public void afterEach(ExtensionContext context) {
-		TimeProvider.TimeTraveller timeTraveller = (TimeProvider.TimeTraveller) context.getStore(TIME_TRAVEL_NAMESPACE).get(TIME_TRAVELLER_STORE_KEY);
+		TimeProvider.TimeTraveller timeTraveller = getTimeTraveller(context);
 		CloseUtils.closeSilently(timeTraveller);
 	}
 
 	@Override
 	public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-		return TimeProvider.TimeTraveller.class.isAssignableFrom(parameterContext.getParameter().getType());
+		return TimeProvider.TimeTraveller.class.isAssignableFrom(parameterContext.getParameter().getType()) && getTimeTraveller(extensionContext) != null;
 	}
 
 	@Override
 	public @Nullable Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-		return extensionContext.getStore(TIME_TRAVEL_NAMESPACE).get(TIME_TRAVELLER_STORE_KEY);
+		return getTimeTraveller(extensionContext);
 	}
 }
