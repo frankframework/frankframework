@@ -38,6 +38,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
@@ -132,9 +133,12 @@ public class SecurityItems extends BusEndpointBase {
 				.collect(Collectors.toMap(JmsRealm::getRealmName, JmsRealm::toString));
 	}
 
+	/**
+	 * We need to search the parent BeanFactory for ObjectFactories, because the ObjectFactories are registered in the ApplicationContext.
+	 */
 	@SuppressWarnings("rawtypes")
 	private List<ObjectFactoryDTO> addResourceFactories() {
-		Map<String, ObjectFactory> objectFactories = getApplicationContext().getBeansOfType(ObjectFactory.class);
+		Map<String, ObjectFactory> objectFactories = BeanFactoryUtils.beansOfTypeIncludingAncestors(getApplicationContext(), ObjectFactory.class);
 		List<ObjectFactoryDTO> mappedFactories = new ArrayList<>();
 
 		for (Entry<String, ObjectFactory> entry : objectFactories.entrySet()) {

@@ -22,11 +22,16 @@ import java.beans.MethodDescriptor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
+import org.springframework.aop.config.AopConfigUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -42,6 +47,7 @@ import org.springframework.integration.selector.MessageSelectorChain;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
+import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
 
 import lombok.Setter;
 
@@ -70,17 +76,33 @@ public class MessageDispatcher extends GenericApplicationContext implements Init
 	public void afterPropertiesSet() throws Exception {
 		setParent(applicationContext);
 
+		// Equivalent of proxy-target-class="true": auto-proxying using CGLIB.
+		AopConfigUtils.registerAutoProxyCreatorIfNecessary(this);
+		AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(this);
+
+		// Register the JSR-250 AuthorizationMethodInterceptor to enable @RolesAllowed annotations on service activator methods.
+		registerBean("jsr250AuthorizationMethodInterceptor",
+				AuthorizationManagerBeforeMethodInterceptor.class,
+				(Supplier<AuthorizationManagerBeforeMethodInterceptor>) AuthorizationManagerBeforeMethodInterceptor::jsr250,
+				bd -> bd.setRole(BeanDefinition.ROLE_INFRASTRUCTURE));
+
+		// Find all beans annotated with @BusAware.
 		scan();
+
+		// Initialize the context so the AOP config is loaded.
 		refresh();
 
 		nullChannel = getBean("nullChannel", MessageChannel.class); // Messages that do not match the TopicSelector will be discarded
 
+		// Register @BusAware beans as service activators.
 		String[] names = getBeanDefinitionNames();
 		for (String beanName : names) {
 			log.debug("scanning bean [{}] for ServiceActivators", beanName);
 
 			BeanDefinition beanDef = getBeanDefinition(beanName);
-			findServiceActivators(beanDef);
+			Class<?> beanClass = getBeanClass(beanDef);
+
+			findServiceActivators(beanClass);
 		}
 	}
 
@@ -103,10 +125,11 @@ public class MessageDispatcher extends GenericApplicationContext implements Init
 		return cpDefScanner;
 	}
 
-	private void findServiceActivators(BeanDefinition beanDef) throws ClassNotFoundException, IntrospectionException {
-		Class<?> beanClass = getBeanClass(beanDef);
-
+	private void findServiceActivators(Class<?> beanClass) throws IntrospectionException {
 		SubscribableChannel inputChannel = findChannel(beanClass); // Validate the channel exists before continuing
+		if (inputChannel == null) {
+			return;
+		}
 
 		BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
 		MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
@@ -176,22 +199,28 @@ public class MessageDispatcher extends GenericApplicationContext implements Init
 	private Class<?> getBeanClass(BeanDefinition beanDef) throws ClassNotFoundException {
 		String className = beanDef.getBeanClassName();
 
-		ClassLoader classLoader = getClassLoader();
+		ClassLoader classLoader = Objects.requireNonNull(getClassLoader(), "no classloader found");
 		return Class.forName(className, true, classLoader);
 	}
 
-	private SubscribableChannel findChannel(Class<?> beanClass) {
+	private @Nullable SubscribableChannel findChannel(Class<?> beanClass) {
 		BusAware busAware = AnnotationUtils.findAnnotation(beanClass, BusAware.class);
 		if(busAware == null) {
-			throw new IllegalStateException("found a bean that does not implement BusAware");
+			return null;
 		}
-		String busName = busAware.value();
 
+		String busName = busAware.value();
 		return getBean(busName, SubscribableChannel.class);
 	}
 
-	private void initializeBean(Object bean, String componentName) {
+	private <T> void initializeBean(T bean, String componentName) {
 		getAutowireCapableBeanFactory().initializeBean(bean, componentName);
-		SpringUtils.registerSingleton(this, componentName, bean);
+
+		// And register the bean definition so it will partake in the lifecycle of the application context.
+		RootBeanDefinition beanDefinition = new RootBeanDefinition();
+		beanDefinition.setInstanceSupplier(() -> bean);
+		beanDefinition.setBeanClass(bean.getClass());
+		beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
+		registerBeanDefinition(componentName, beanDefinition);
 	}
 }
