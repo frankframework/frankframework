@@ -60,16 +60,15 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			throw new ConfigurationException("filenameSessionKey must be specified");
 		}
 		String sft = getStatusFieldType();
-		if (StringUtils.isNotEmpty(sft)) {
-			if (!"timestamp".equalsIgnoreCase(sft)) {
-				throw new ConfigurationException("illegal value for statusFieldType [" + sft + "], must be 'timestamp'");
-			}
+		if (StringUtils.isNotEmpty(sft) && !"timestamp".equalsIgnoreCase(sft)) {
+			throw new ConfigurationException("illegal value for statusFieldType [" + sft + "], must be 'timestamp'");
 		}
-		eolArray = System.getProperty("line.separator").getBytes();
+
+		eolArray = System.lineSeparator().getBytes();
 	}
 
 	@Override
-	protected SenderResult executeStatementSet(@NonNull QueryExecutionContext queryExecutionContext, @NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
+	protected @NonNull SenderResult executeStatementSet(@NonNull QueryExecutionContext queryExecutionContext, @NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		String fileName = session.getString(getFilenameSessionKey());
 		if (fileName == null) {
 			throw new SenderException("unable to get filename from session key ["+getFilenameSessionKey()+"]");
@@ -77,7 +76,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			try {
-				maxRecords = session.getInteger(getMaxRecordsSessionKey());
+				maxRecords = session.get(getMaxRecordsSessionKey(), -1);
 			} catch (Exception e) {
 				throw new SenderException("unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
 			}

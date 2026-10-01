@@ -16,8 +16,6 @@
 package org.frankframework.jdbc;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.sql.Connection;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -51,14 +49,11 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
-import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -82,12 +77,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private @Getter String correlationIdField;
 	private @Getter String additionalFields;
 	private @Getter @NonNull List<String> additionalFieldsList = List.of();
-	private @Getter MessageFieldType messageFieldType=MessageFieldType.STRING;
-	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
-
-	private @Getter String blobCharset = null;
-	private @Getter boolean blobsCompressed = true;
-	private @Getter boolean blobSmartGet = false;
+	private @Getter @NonNull MessageFieldType messageFieldType=MessageFieldType.STRING;
 
 	private @Setter @Getter boolean trace=false;
 	private @Getter boolean peekUntransacted=true;
@@ -153,16 +143,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		if (StringUtils.isEmpty(preparedPeekQuery)) {
 			return true;
 		}
-		try (Connection c = getConnection()) {
-			return hasRawMessageAvailable(c);
-		} catch (JdbcException | SQLException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	protected boolean hasRawMessageAvailable(Connection conn) throws ListenerException {
 		try {
-			return !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery);
+			return withConnection(conn ->  !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery));
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
 		}
@@ -170,11 +152,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public @Nullable RawMessageWrapper<M> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
-		try (Connection c = getConnection()) {
+		return withConnection(c -> {
 			return getRawMessage(c, threadContext);
-		} catch (JdbcException | SQLException e) {
-			throw new ListenerException(e);
-		}
+		});
 	}
 
 	protected @Nullable RawMessageWrapper<M> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
@@ -243,29 +223,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			String key = rs.getString(getKeyField());
 			Message message;
 			if (StringUtils.isNotEmpty(getMessageField())) {
-				switch (getMessageFieldType()) {
-					case CLOB:
-						try (Reader clobReader = getDbmsSupport().getClobReader(rs, getMessageField())) {
-							// Since the blobReader is closed before the message is returned, make sure the entire stream is read while creating the message
-							message = MessageUtils.fromReader(clobReader);
-						}
-						break;
-					case BLOB:
-						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
-							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(), getBlobCharset(), isBlobsCompressed(), isBlobSmartGet(),false));
-						} else {
-							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
-								// Since the blobStream is closed before the message is returned, make sure the entire stream is read while creating the message
-								message = MessageUtils.fromInputStream(blobStream);
-							}
-						}
-						break;
-					case STRING:
-						message = new Message(rs.getString(getMessageField()));
-						break;
-					default:
-						throw new IllegalArgumentException("Illegal messageFieldType [" + getMessageFieldType() + "]");
-				}
+				message = JdbcUtil.getValueAsMessage(getDbmsSupport(), rs, rs.findColumn(getMessageField()), rs.getMetaData(), getBlobCharset(), isBlobsCompressed(), false, isBlobSmartGet(), false);
 			} else {
 				message = new Message(key);
 			}
@@ -340,11 +298,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		if (!knownProcessStates().contains(toState)) {
 			return null; // if toState does not exist, the message can/will not be moved to it, so return null.
 		}
-		try (Connection conn = getConnection()) {
-			return changeProcessState(conn, rawMessage, toState, reason);
-		} catch (JdbcException | SQLException e) {
-			throw new ListenerException(e);
-		}
+		return withConnection(c -> {
+			return changeProcessState(c, rawMessage, toState, reason);
+		});
 	}
 
 	protected @Nullable RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
@@ -371,13 +327,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			}
 		}
 		return false;
-	}
-
-	protected String convertQuery(String query) throws DbmsException {
-		if (StringUtils.isEmpty(getSqlDialect())) {
-			return query;
-		}
-		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
 
 	protected void setUpdateStatusQuery(ProcessState state, String query) {
@@ -430,7 +379,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 * Type of the field containing the message data
 	 * @ff.default <i>String</i>
 	 */
-	public void setMessageFieldType(MessageFieldType value) {
+	public void setMessageFieldType(@NonNull MessageFieldType value) {
 		messageFieldType = value;
 	}
 
@@ -450,27 +399,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	 */
 	public void setCorrelationIdField(String fieldname) {
 		correlationIdField = fieldname;
-	}
-
-	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
-	public void setSqlDialect(String string) {
-		sqlDialect = string;
-	}
-
-	/**
-	 * Controls whether BLOB is considered stored compressed in the database
-	 * @ff.default true
-	 */
-	public void setBlobsCompressed(boolean b) {
-		blobsCompressed = b;
-	}
-
-	/**
-	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string
-	 * @ff.default false
-	 */
-	public void setBlobSmartGet(boolean b) {
-		blobSmartGet = b;
 	}
 
 	/**

@@ -44,7 +44,7 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 	}
 
 	@Override
-	public Connection getConnection() throws JdbcException {
+	public @NonNull Connection getConnection() throws JdbcException {
 		ResultSet mock = mocks.get(getQuery());
 		if(mock != null) {
 			try {
