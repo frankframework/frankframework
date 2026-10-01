@@ -425,6 +425,10 @@ public class ClassUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <T> Class<T> getClassOf(T[] array) {
-		return (Class<T>) array.getClass().getComponentType();
+		Class<T> componentType = (Class<T>) array.getClass().getComponentType();
+		if (componentType == null) {
+			throw new IllegalStateException("Component type of array should never be null");
+		}
+		return componentType;
 	}
 }
