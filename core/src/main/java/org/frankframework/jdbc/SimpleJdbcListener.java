@@ -33,7 +33,6 @@ import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -72,11 +71,9 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
-		try (Connection c = getConnection()) {
+		return withConnection(c -> {
 			return getRawMessage(c, threadContext);
-		} catch (JdbcException | SQLException e) {
-			throw new ListenerException(e);
-		}
+		});
 	}
 
 	protected @Nullable RawMessageWrapper<String> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {

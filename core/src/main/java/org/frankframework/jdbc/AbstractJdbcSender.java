@@ -39,6 +39,7 @@ import org.frankframework.stream.Message;
 
 /**
  * Base class for building JDBC-senders.
+ * TODO: This class has only a single (abstract) subclass so it can be merged into the AbstractJdbcQuerySender
  *
  * @author  Gerrit van Brakel
  * @since 	4.2.h
@@ -51,7 +52,7 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 
 	protected @NonNull ParameterList paramList = new ParameterList();
 
-	public AbstractJdbcSender() {
+	protected AbstractJdbcSender() {
 		super();
 	}
 
@@ -78,7 +79,7 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 
 	/* Only here for statistic purposes */
 	@Override
-	public Connection getConnection() throws JdbcException {
+	public @NonNull Connection getConnection() throws JdbcException {
 		long t0 = System.currentTimeMillis();
 		try {
 			return super.getConnection();
