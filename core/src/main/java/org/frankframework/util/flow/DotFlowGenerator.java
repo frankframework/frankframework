@@ -18,6 +18,7 @@ package org.frankframework.util.flow;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import javax.xml.transform.TransformerException;
 
@@ -40,9 +41,11 @@ public class DotFlowGenerator implements IFlowGenerator {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		Resource xsltSourceConfig = Resource.getResource(ADAPTER2DOT_XSLT);
+		Objects.requireNonNull(xsltSourceConfig, "resource [" + ADAPTER2DOT_XSLT + "] not found");
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceConfig, 2);
 
 		Resource xsltSourceIbis = Resource.getResource(CONFIGURATION2DOT_XSLT);
+		Objects.requireNonNull(xsltSourceIbis, "resource [" + CONFIGURATION2DOT_XSLT + "] not found");
 		transformerPoolConfig = TransformerPool.getInstance(xsltSourceIbis, 2);
 	}
 

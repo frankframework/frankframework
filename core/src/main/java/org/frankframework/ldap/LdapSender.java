@@ -300,6 +300,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private boolean principalParameterFound = false;
 	private @Nullable Map<Object, Object> jndiEnv = null;
 
+	@SuppressWarnings("java:S2637") // Set via Spring Autowiring so this check should not apply
 	public LdapSender() {
 		super();
 		setInitialContextFactoryName(INITIAL_CONTEXT_FACTORY);

@@ -357,7 +357,9 @@ public class JdbcUtil {
 
 	public static void streamBlob(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int columnIndex, @Nullable String charset, boolean blobIsCompressed, Direction blobBase64Direction, MessageBuilder msgBuilder) throws JdbcException, SQLException, IOException {
 		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
-			streamBlob(blobInputStream, charset, blobBase64Direction, msgBuilder);
+			if (blobInputStream != null) {
+				streamBlob(blobInputStream, charset, blobBase64Direction, msgBuilder);
+			}
 		}
 	}
 
