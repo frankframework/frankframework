@@ -241,7 +241,7 @@ public class ClassUtils {
 	 * Throws IllegalArgumentException if the argument type is incompatible
 	 * Throws IllegalStateException if the argument cannot be set on the target bean
 	 */
-	public static void invokeSetter(Object clazz, Method method, String valueToSet) {
+	public static void invokeSetter(Object clazz, Method method, @Nullable String valueToSet) {
 		if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
 			throw new IllegalStateException("method must start with [set] and may only contain [1] parameter");
 		}
@@ -258,7 +258,7 @@ public class ClassUtils {
 	}
 
 	@Nullable
-	private static Object parseValueToSet(Method method, String value) throws IllegalArgumentException {
+	private static Object parseValueToSet(Method method, @Nullable String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = method.getParameters()[0].getType();
 
 		// Try to parse as primitive
