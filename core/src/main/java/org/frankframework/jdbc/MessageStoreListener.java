@@ -295,7 +295,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 
 	@Override
 	@Protected
-	public void setMessageFieldType(MessageFieldType fieldtype) {
+	public void setMessageFieldType(@NonNull MessageFieldType fieldtype) {
 		throw new UnsupportedOperationException("MessageFieldType is always BLOB for the MessageStoreListener, use a JdbcTableListener instead if you need CLOB of VARCHAR support");
 	}
 

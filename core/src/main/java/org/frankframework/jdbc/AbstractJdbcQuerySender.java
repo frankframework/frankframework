@@ -47,7 +47,6 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -65,7 +64,6 @@ import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DB2DocumentWriter;
 import org.frankframework.util.DB2XMLWriter;
@@ -120,20 +118,13 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	private @Getter String columnsReturned=null;
 	private @Getter String resultQuery=null;
 	private @Getter boolean trimSpaces=true;
-	// 2020-11-18: blobCharset is set to null! Clobs are for character data, blobs for binary. When blobs contain character data,
-	// blobCharset can be set to "UTF-8", or set blobBase64Direction to 'encode'.
-	// By default, BLOBs are no longer read as strings
-	private @Getter String blobCharset = null;
 	private @Getter Base64Pipe.Direction blobBase64Direction=null;
 	private @Getter String streamCharset = null;
-	private @Getter boolean blobsCompressed=true;
-	private @Getter boolean blobSmartGet=false;
 	private @Getter Boolean useNamedParams=null;
 	private @Getter boolean includeFieldDefinition=XmlUtils.isIncludeFieldDefinitionByDefault();
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
 	private @Getter String[] columnsReturnedList=null;
-	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
 	private @Getter boolean avoidLocking=false;
@@ -196,17 +187,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 				throw new LifecycleException("Cannot convert result query",e);
 			}
 		}
-	}
-
-	@NonNull
-	protected String convertQuery(@NonNull String query) throws DbmsException {
-		if (StringUtils.isEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getTargetSqlDialect())) {
-			return query;
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("converting query [{}] from [{}] to [{}]", query::trim, this::getSqlDialect, () -> getDbmsSupport().getTargetSqlDialect());
-		}
-		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
 
 	protected final PreparedStatement getStatement(@NonNull Connection con, @NonNull String query, @Nullable QueryType queryType) throws JdbcException, SQLException {
@@ -281,14 +261,17 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 
-	protected Connection getConnectionForSendMessage() throws JdbcException, TimeoutException {
+	protected @NonNull Connection getConnectionForSendMessage() throws JdbcException, TimeoutException {
 		if (isConnectionsArePooled()) {
 			return getConnectionWithTimeout(getTimeout());
+		}
+		if (connection == null) {
+			throw new IllegalStateException("Global Connection is not open, should not happen when connections are not pooled");
 		}
 		return connection;
 	}
 
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) {
+	protected void closeConnectionForSendMessage(@Nullable Connection connection, PipeLineSession session) {
 		if (isConnectionsArePooled() && connection != null) {
 			try {
 				connection.close();
@@ -298,7 +281,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		}
 	}
 
-	protected void closeStatementSet(QueryExecutionContext queryExecutionContext) {
+	protected void closeStatementSet(@NonNull QueryExecutionContext queryExecutionContext) {
 		try (PreparedStatement statement = queryExecutionContext.getStatement()) {
 			if (getBatchSize()>0) {
 				statement.executeBatch();
@@ -314,7 +297,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		}
 	}
 
-	protected SenderResult executeStatementSet(@NonNull QueryExecutionContext queryExecutionContext, @NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
+	protected @NonNull SenderResult executeStatementSet(@NonNull QueryExecutionContext queryExecutionContext, @NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
@@ -917,11 +900,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		rowIdSessionKey = string;
 	}
 
-	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
-	public void setSqlDialect(String string) {
-		sqlDialect = string;
-	}
-
 	/**
 	 * When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)
 	 * @ff.default false
@@ -970,14 +948,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	/**
-	 * Controls whether blobdata is stored compressed in the database.
-	 * @ff.default true
-	 */
-	public void setBlobsCompressed(boolean b) {
-		blobsCompressed = b;
-	}
-
-	/**
 	 * Controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.
 	 * Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String.
 	 * This is no longer the case and since 9.0 streaming binary data will be faster then converting from/to a Base64 string.
@@ -987,29 +957,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	public void setBlobBase64Direction(Base64Pipe.Direction value) {
 		blobBase64Direction = value;
 	}
-
-	/**
-	 * Charset that is used to read and write BLOBs. This assumes the blob contains character data.
-	 * If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being
-	 * read to accommodate for the fact that senders need to return a String. This is no longer the case.
-	 */
-	@Deprecated(since = "9.3.0", forRemoval = true)
-	@ConfigurationWarning("Charset will be read from the message")
-	public void setBlobCharset(String string) {
-		if (StringUtils.isEmpty(string)) {
-			ConfigurationWarnings.add(this, log, "setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
-		}
-		blobCharset = string;
-	}
-
-	/**
-	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database
-	 * @ff.default false
-	 */
-	public void setBlobSmartGet(boolean b) {
-		blobSmartGet = b;
-	}
-
 
 	/**
 	 * Only for querytype 'updateClob': column that contains the CLOB to be updated

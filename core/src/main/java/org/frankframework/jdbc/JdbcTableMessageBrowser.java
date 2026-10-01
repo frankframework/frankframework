@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -194,7 +195,7 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 
 
 	@Override
-	public String getPhysicalDestinationName() {
+	public @NonNull String getPhysicalDestinationName() {
 		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
 	}
 

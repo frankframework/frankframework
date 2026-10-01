@@ -40,6 +40,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.lang.Contract;
 
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
@@ -430,5 +431,19 @@ public class ClassUtils {
 			throw new IllegalStateException("Component type of array should never be null");
 		}
 		return componentType;
+	}
+
+	@SneakyThrows
+	public static <E extends Throwable> E wrapAs(Throwable throwable, E... reified) throws E {
+		Class<E> exceptionClass = getClassOf(reified);
+		Constructor<E> exceptionClassConstructor = exceptionClass.getConstructor(Throwable.class);
+		return exceptionClassConstructor.newInstance(throwable);
+	}
+
+	@SneakyThrows
+	public static <E extends Throwable> E wrapAs(String message, Throwable throwable, E... reified) throws E {
+		Class<E> exceptionClass = getClassOf(reified);
+		Constructor<E> exceptionClassConstructor = exceptionClass.getConstructor(String.class, Throwable.class);
+		return exceptionClassConstructor.newInstance(message, throwable);
 	}
 }

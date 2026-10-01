@@ -41,7 +41,7 @@ import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.DbmsException;
-import org.frankframework.dbms.JdbcException;
+import org.frankframework.functional.ThrowingConsumer;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 
@@ -113,23 +113,16 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	private void validateQueryFields() throws LifecycleException {
-		if (!isConnectionsArePooled()) {
-			try {
-				validateQueryFields(connection);
-			} catch (SQLException | DbmsException e) {
-				throw new LifecycleException("Error requesting database metadata", e);
-			}
-		} else {
-			try (Connection conn = getConnection()) {
-				validateQueryFields(conn);
-			} catch (JdbcException | SQLException e) {
-				throw new LifecycleException("Error requesting database metadata", e);
-			}
-		}
+		withConnection((ThrowingConsumer<Connection, LifecycleException>) this::validateQueryFields);
 	}
 
-	private void validateQueryFields(Connection conn) throws LifecycleException, SQLException, DbmsException {
-		Set<String> columnNames = getTableColumnNames(conn, tableName);
+	private void validateQueryFields(Connection conn) throws LifecycleException {
+		Set<String> columnNames;
+		try {
+			columnNames = getTableColumnNames(conn, tableName);
+		} catch (SQLException | DbmsException e) {
+			throw new LifecycleException("Cannot query database for table column names: " + e.getMessage(), e);
+		}
 		if (columnNames.isEmpty()) {
 			throw new LifecycleException("Cannot find any columns for table [%s]".formatted(tableName));
 		}
@@ -246,7 +239,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	@Override
-	public String getPhysicalDestinationName() {
+	public @NonNull String getPhysicalDestinationName() {
 		return super.getPhysicalDestinationName()+" "+getTableName();
 	}
 

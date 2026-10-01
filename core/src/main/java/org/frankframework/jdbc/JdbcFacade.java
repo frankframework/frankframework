@@ -25,24 +25,32 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.support.JdbcUtils;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.functional.ThrowingConsumer;
+import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.jdbc.factory.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 
@@ -70,6 +78,14 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	private @Getter String name;
 
+	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
+	// 2020-11-18: blobCharset is set to null! Clobs are for character data, blobs for binary. When blobs contain character data,
+	// blobCharset can be set to "UTF-8", or set blobBase64Direction to 'encode'.
+	// By default, BLOBs are no longer read as strings
+	private @Getter String blobCharset = null;
+	private @Getter boolean blobsCompressed = true;
+	private @Getter boolean blobSmartGet = false;
+
 	private String datasourceName = null;
 	@Getter private String authAlias = null;
 	@Getter private String username = null;
@@ -86,6 +102,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
 
 	private DataSource datasource = null;
+	protected Connection connection = null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -110,12 +127,41 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	@Override
 	public void start() {
+		if (!isConnectionsArePooled()) {
+			// Open a global connection that stays open
+			try {
+				connection = getConnection();
+				connection.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
+			} catch (Exception e) {
+				// Cleanup on failure
+				JdbcUtils.closeConnection(connection);
+				connection = null;
+				throw new LifecycleException(e);
+			}
+		} else {
+			// Test the connection from the pool, close it after validation
+			try (Connection c = getConnection()) {
+				c.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
+			} catch (Exception e) {
+				throw new LifecycleException(e);
+			}
+
+		}
 		started = true;
 	}
 
 	@Override
 	public void stop() {
-		started = false;
+		try {
+			if (connection != null) {
+				connection.close();
+			}
+		} catch (SQLException e) {
+			log.warn(() -> "%scaught exception stopping %s".formatted(getLogPrefix(), getName()), e);
+		} finally {
+			connection = null;
+			started = false;
+		}
 	}
 
 	@Override
@@ -159,7 +205,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	/**
 	 * Obtains a connection to the datasource.
 	 */
-	protected Connection getConnection() throws JdbcException {
+	protected @NonNull Connection getConnection() throws JdbcException {
 		DataSource ds = getDatasource();
 		try {
 			if (cf!=null) {
@@ -171,8 +217,31 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		}
 	}
 
+	@SuppressWarnings("SynchronizeOnNonFinalField")
+	protected <T, E extends Exception> T withConnection(ThrowingFunction<Connection, T, E> function) throws E {
+		try {
+			if (isConnectionsArePooled()) {
+				try (Connection c = getConnection()) {
+					return function.apply(c);
+				}
+			}
+			synchronized (connection) {
+				return function.apply(connection);
+			}
+		} catch (JdbcException | SQLException e) {
+			throw ClassUtils.wrapAs(e);
+		}
+	}
+
+	protected <E extends Exception> void withConnection(ThrowingConsumer<Connection, E> consumer) throws E {
+		withConnection((ThrowingFunction<Connection, Void, E>) c -> {
+			consumer.accept(c);
+			return null;
+		});
+	}
+
 	@SuppressWarnings({ "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" }) // java:S1143, java:S1163: We want to throw from finally, sorry. java:S1181: Catching Throwable. Because we want to add the Throwable to suppressedExceptions.
-	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
+	public @NonNull Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
 		if (timeout<=0) {
 			return getConnection();
 		}
@@ -196,6 +265,17 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		}
 	}
 
+	@NonNull
+	protected String convertQuery(@NonNull String query) throws DbmsException {
+		if (StringUtils.isEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getTargetSqlDialect())) {
+			return query;
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("converting query [{}] from [{}] to [{}]", query::trim, this::getSqlDialect, () -> getDbmsSupport().getTargetSqlDialect());
+		}
+		return getDbmsSupport().convertQuery(query, getSqlDialect());
+	}
+
 	/**
 	 * Returns the name and location of the database that this objects operates on.
 	 * If no previous connection was made or it cannot determine the destination
@@ -204,7 +284,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	 * @see HasPhysicalDestination#getPhysicalDestinationName()
 	 */
 	@Override
-	public String getPhysicalDestinationName() {
+	public @NonNull String getPhysicalDestinationName() {
 		try {
 			DataSource dataSource = getDatasource();
 			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
@@ -274,4 +354,37 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		return connectionsArePooled || isTransacted();
 	}
 
+	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
+	public void setSqlDialect(String string) {
+		sqlDialect = string;
+	}
+
+	/**
+	 * Controls whether BLOB is considered stored compressed in the database
+	 * @ff.default true
+	 */
+	public void setBlobsCompressed(boolean b) {
+		blobsCompressed = b;
+	}
+
+	/**
+	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string
+	 * @ff.default false
+	 */
+	public void setBlobSmartGet(boolean b) {
+		blobSmartGet = b;
+	}
+	/**
+	 * Charset that is used to read and write BLOBs. This assumes the blob contains character data.
+	 * If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being
+	 * read to accommodate for the fact that senders need to return a String. This is no longer the case.
+	 */
+	@Deprecated(since = "9.3.0", forRemoval = true)
+	@ConfigurationWarning("Charset will be read from the message")
+	public void setBlobCharset(String string) {
+		if (StringUtils.isEmpty(string)) {
+			ConfigurationWarnings.add(this, log, "setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
+		}
+		blobCharset = string;
+	}
 }
