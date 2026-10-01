@@ -11,6 +11,7 @@ allowBuilds:
   msgpackr-extract: false
 minimumReleaseAgeExclude:
   - prettier@3.9.3
+  - '@angular/router@20.3.33'
 overrides:
   diff@>=6.0.0 <8.0.3: '~8.0.4'
   dompurify@<3.4.0: '>=3.4.11'
