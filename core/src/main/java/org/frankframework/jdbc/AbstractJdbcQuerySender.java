@@ -118,7 +118,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	private @Getter String columnsReturned=null;
 	private @Getter String resultQuery=null;
 	private @Getter boolean trimSpaces=true;
-	private @Getter Base64Pipe.Direction blobBase64Direction=null;
+	private @Getter Base64Pipe. @Nullable Direction blobBase64Direction=null;
 	private @Getter String streamCharset = null;
 	private @Getter Boolean useNamedParams=null;
 	private @Getter boolean includeFieldDefinition=XmlUtils.isIncludeFieldDefinitionByDefault();

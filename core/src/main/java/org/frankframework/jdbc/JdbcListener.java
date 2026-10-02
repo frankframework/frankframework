@@ -99,8 +99,8 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 
 	@Override
 	public @Nullable RawMessageWrapper<M> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
-		return withConnection(c -> {
-			return getRawMessage(c, threadContext);
+		return withConnection(conn -> {
+			return getRawMessage(conn, threadContext);
 		});
 	}
 
@@ -108,8 +108,9 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 		String query = preparedSelectQuery;
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
-			if (trace && log.isDebugEnabled()) log.debug("executing query for [{}]", query);
-			try (ResultSet rs=stmt.executeQuery(query)) {
+			if (trace && log.isDebugEnabled()) log.debug("executing query for [{}]", preparedSelectQuery);
+			//noinspection SqlSourceToSinkFlow
+			try (ResultSet rs=stmt.executeQuery(preparedSelectQuery)) {
 				if (!rs.next()) {
 					return null;
 				}
@@ -117,7 +118,7 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 			} catch (SQLException e) {
 				if (!getDbmsSupport().hasSkipLockedFunctionality()) {
 					String errorMessage = e.getMessage();
-					if (errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
+					if (errorMessage != null && errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
 						log.debug("{}caught lock timeout exception, returning null: ({}){}", getLogPrefix(), e.getClass().getName(), e.getMessage());
 						return null; // resolve locking conflict for dbmses that do not support SKIP LOCKED
 					}
