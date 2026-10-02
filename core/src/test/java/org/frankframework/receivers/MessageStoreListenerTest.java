@@ -59,6 +59,10 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 				}
 				return result;
 			}
+			@Override
+			public void start() {
+				// Override to suppress validations that will fail
+			}
 		});
 		DatabaseMetaData md = mock();
 		doReturn("product").when(md).getDatabaseProductName();
