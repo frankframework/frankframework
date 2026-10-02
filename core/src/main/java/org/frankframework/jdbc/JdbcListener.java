@@ -15,33 +15,25 @@
 */
 package org.frankframework.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
-import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
-import lombok.Lombok;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IHasProcessState;
 import org.frankframework.core.IPeekableListener;
 import org.frankframework.core.IRedeliveringListener;
@@ -50,13 +42,9 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
-import org.frankframework.stream.Message;
-import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.StringUtil;
 
 /**
  * JdbcListener base class.
@@ -66,37 +54,12 @@ import org.frankframework.util.StringUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, IRedeliveringListener<M>, ReceiverAware<M> {
-
-	public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
+public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekableListener<M>, IHasProcessState<M>, IRedeliveringListener<M>, ReceiverAware<M> {
 
 	private @Getter @Setter Receiver<M> receiver;
 
-	private @Getter String selectQuery;
-	private @Getter String peekQuery;
-
-	private @Getter String keyField;
-	private @Getter String messageField;
-	private @Getter String messageIdField;
-	private @Getter String correlationIdField;
-	private @Getter String additionalFields;
-	private @Getter @NonNull List<String> additionalFieldsList = List.of();
-	private @Getter @NonNull MessageFieldType messageFieldType=MessageFieldType.STRING;
-
-	private @Setter @Getter boolean trace=false;
-	private @Getter boolean peekUntransacted=true;
-
 	private Map<ProcessState, String> updateStatusQueries = new EnumMap<>(ProcessState.class);
 	private Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
-
-	private String preparedSelectQuery;
-	private String preparedPeekQuery;
-
-	public enum MessageFieldType {
-		STRING,
-		CLOB,
-		BLOB
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -129,32 +92,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	@NonNull
-	@Override
-	public Map<String,Object> openThread() {
-		return new HashMap<>();
-	}
-
-	@Override
-	public void closeThread(@NonNull Map<String, Object> threadContext) {
-		// nothing special
-	}
-
 	@Override
 	public boolean messageWillBeRedeliveredOnExitStateError() {
 		return knownProcessStates().contains(ProcessState.INPROCESS);
-	}
-
-	@Override
-	public boolean hasRawMessageAvailable() throws ListenerException {
-		if (StringUtils.isEmpty(preparedPeekQuery)) {
-			return true;
-		}
-		try {
-			return withConnection(conn ->  !JdbcUtil.isQueryResultEmpty(conn, preparedPeekQuery));
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix() + "caught exception retrieving message trigger using query [" + preparedPeekQuery + "]", e);
-		}
 	}
 
 	@Override
@@ -189,84 +129,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	/**
-	 * Get column value from {@link ResultSet}, or the default if either the column-name is empty (unconfigured) or if
-	 * the result-set does not contain a column of this name.
-	 *
-	 * @param rs The {@link ResultSet} from which to get the column.
-	 * @param columnName The name of the column, can be {@code null} or empty.
-	 * @param defaultValue Default value for the column if column name was empty, or not present in the {@code ResultSet}. Can be {@code null}.
-	 * @return Value from the {@code ResultSet}, or the default.
-	 * @throws SQLException Propagates the {@link SQLException} which may be thrown from the {@link ResultSet}.
-	 */
-	private String getColumnValueOrDefault(ResultSet rs, String columnName, String defaultValue) throws SQLException {
-		if (StringUtils.isEmpty(columnName)) {
-			return defaultValue;
-		}
-		int index;
-		try {
-			index = rs.findColumn(columnName);
-		} catch (SQLException e) {
-			// Assume the cause of exception is that the column does not exist in this ResultSet and return default
-			return defaultValue;
-		}
-		return rs.getString(index);
-	}
-
-	/**
-	 * This method returns a {@link MessageWrapper} containing contents of the message stored in the database.
-	 *
-	 * @param rs JDBC {@link ResultSet} from which to extract message data.
-	 * @return Either a {@link String} being the message key, or a {@link MessageWrapper}.
-	 * The message key as {@link String} is returned if {@link #messageField}, {@link #messageIdField} and {@link #correlationIdField} all are not
-	 * set.
-	 * If {@link #messageIdField} and / or {@link  #correlationIdField} are set but {@link #messageField} is not, then the
-	 * message key is returned as value of a {@link Message} wrapped in a {@link MessageWrapper}.
-	 * Otherwise the message is loaded from the {@code rs} parameter and returned wrapped in a {@link MessageWrapper}.
-	 * @throws JdbcException If loading the message resulted in a database exception.
-	 */
-	protected @NonNull RawMessageWrapper<M> extractRawMessage(@NonNull ResultSet rs) throws JdbcException {
-		try {
-			String key = rs.getString(getKeyField());
-			Message message;
-			if (StringUtils.isNotEmpty(getMessageField())) {
-				message = JdbcUtil.getValueAsMessage(getDbmsSupport(), rs, rs.findColumn(getMessageField()), rs.getMetaData(), getBlobCharset(), isBlobsCompressed(), false, isBlobSmartGet(), false);
-			} else {
-				message = new Message(key);
-			}
-			log.debug("building wrapper for key [{}], message [{}]", key, message);
-			String messageId = getColumnValueOrDefault(rs, getMessageIdField(), key);
-			String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
-			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId); // Creating instance of MessageWrapper instead of RawMessageWrapper means the Receiver will not call #extractMessage
-			mw.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
-			addAdditionalValuesToMessageWrapper(rs, mw);
-			return mw;
-		} catch (SQLException | IOException e) {
-			throw new JdbcException(e);
-		}
-	}
-
-	protected void addAdditionalValuesToMessageWrapper(ResultSet rs, RawMessageWrapper<M> mw) throws SQLException {
-		ResultSetMetaData metaData = rs.getMetaData();
-		Function<String, Map.Entry<String, Message>> extractFieldValue = fieldName -> {
-			try {
-				int colNum = rs.findColumn(fieldName);
-				Message value = JdbcUtil.getValueAsMessage(getDbmsSupport(), rs, colNum, metaData, getBlobCharset(), isBlobsCompressed());
-				return Map.entry(fieldName, value);
-			} catch (Exception e) {
-				throw Lombok.sneakyThrow(e);
-			}
-		};
-		// Make sure that the sub-map supports case-insensitive lookup of entries
-		Map<String, Message> additionalValues = getAdditionalFieldsList().stream()
-				.map(extractFieldValue)
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (m1, m2) -> m2, () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
-
-		if (!additionalValues.isEmpty()) {
-			mw.getContext().put(ADDITIONAL_QUERY_FIELDS_KEY, additionalValues);
-		}
-	}
-
 	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) {
 
 		Map<String, Object> mwContext = rawMessage.getContext();
@@ -275,14 +137,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			return key;
 		}
 		throw new IllegalArgumentException("Cannot extract JDBC message key from raw message [" + rawMessage + "]");
-	}
-
-	@Override
-	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
-		if (rawMessage.getRawMessage() instanceof MessageWrapper<?> messageWrapper) {
-			return messageWrapper.getMessage();
-		}
-		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override
@@ -316,26 +170,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return execute(connection, query, List.of(key)) ? rawMessage : null;
 	}
 
-	protected boolean execute(Connection conn, String query, List<String> parameters) throws ListenerException {
-		if (StringUtils.isNotEmpty(query)) {
-			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
-			try (PreparedStatement stmt=conn.prepareStatement(query)) {
-				stmt.clearParameters();
-				ParameterMetaData parameterMetaData = stmt.getParameterMetaData();
-				int i = 1;
-				for (String parameter : parameters) {
-					log.debug("setting parameter {} to [{}]", i, parameter);
-					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired(), parameterMetaData);
-				}
-
-				return stmt.executeUpdate() > 0;
-			} catch (SQLException e) {
-				throw new ListenerException(getLogPrefix()+"exception executing statement ["+query+"]",e);
-			}
-		}
-		return false;
-	}
-
 	protected void setUpdateStatusQuery(ProcessState state, String query) {
 		if (StringUtils.isNotEmpty(query)) {
 			updateStatusQueries.put(state, query);
@@ -348,73 +182,13 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return updateStatusQueries.get(state);
 	}
 
-	protected void setSelectQuery(String string) {
-		selectQuery = string;
-	}
-
-	@Override
-	public void setPeekUntransacted(boolean b) {
-		peekUntransacted = b;
-	}
-
 	/**
-	 * (only used when <code>peekUntransacted</code>=<code>true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock
-	 * @ff.default selectQuery
+	 * Type of the field containing the message data - no longer needed as the listener will now automatically determine the message field type
+	 * @deprecated No longer needed, automatically determined
 	 */
-	public void setPeekQuery(String string) {
-		peekQuery = string;
-	}
-
-
-	/**
-	 * Primary key field of the table, used to identify and differentiate messages.
-	 * <b>NB: there should be an index on this field!</b>
-	 */
-	public void setKeyField(String fieldname) {
-		keyField = fieldname;
-	}
-
-	/**
-	 * Field containing the message data
-	 * @ff.default <i>same as keyField</i>
-	 */
-	public void setMessageField(String fieldname) {
-		messageField = fieldname;
-	}
-
-	/**
-	 * Type of the field containing the message data
-	 * @ff.default <i>String</i>
-	 */
-	public void setMessageFieldType(@NonNull MessageFieldType value) {
-		messageFieldType = value;
-	}
-
-	/**
-	 * Field containing the <code>messageId</code>.
-	 * <b>NB: If this column is not set the default (primary key) {@link #setKeyField(String) keyField} will be used as messageId!</b>
-	 * @ff.default <i>same as keyField</i>
-	 */
-	public void setMessageIdField(String fieldname) {
-		messageIdField = fieldname;
-	}
-
-	/**
-	 * Field containing the <code>correlationId</code>.
-	 * <b>NB: If this column is not set, the <code>messageId</code> and <code>correlationId</code> will be the same!</b>
-	 * @ff.default <i>same as messageIdField</i>
-	 */
-	public void setCorrelationIdField(String fieldname) {
-		correlationIdField = fieldname;
-	}
-
-	/**
-	 * Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
-	 * be added to the session as session-variables, with the prefix {@literal ADDITIONAL_QUERY_FIELDS_KEY}. So if for example you specify {@code additionalFields = "updated_at"},
-	 * then in the session there will be a variable {@code ADDITIONAL_QUERY_FIELDS.updated_at}.
-	 */
-	public void setAdditionalFields(String fieldNames) {
-		this.additionalFields = fieldNames;
-		this.additionalFieldsList = StringUtil.split(getAdditionalFields());
+	@Deprecated(forRemoval = true, since = "10.4")
+	@ConfigurationWarning("It is no longer necessary to configure this")
+	public void setMessageFieldType(@NonNull String ignored) {
+		// No-op
 	}
 }

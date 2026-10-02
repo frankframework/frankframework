@@ -323,11 +323,11 @@ public class JdbcUtil {
 		return result.asString();
 	}
 
-	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int column, final boolean blobIsCompressed) throws SQLException, JdbcException {
+	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int column, final boolean blobIsCompressed) throws SQLException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
-	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final String column, final boolean blobIsCompressed) throws SQLException, JdbcException {
+	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final String column, final boolean blobIsCompressed) throws SQLException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
@@ -341,7 +341,7 @@ public class JdbcUtil {
 		return blobInputStream;
 	}
 
-	public static Reader getBlobReader(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int column, @Nullable String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+	public static Reader getBlobReader(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int column, @Nullable String charset, boolean blobIsCompressed) throws IOException, SQLException {
 		return getBlobReader(getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed), charset);
 	}
 
