@@ -25,7 +25,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -234,29 +233,21 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 
 	@Override
-	public @Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, int column) throws SQLException, DbmsException {
-		try {
-			Blob blob = rs.getBlob(column);
-			if (blob == null) {
-				return null;
-			}
-			return blob.getBinaryStream();
-		} catch (SQLDataException e) {
-			throw new DbmsException("Column not compatible with BLOB type", e);
+	public @Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, int column) throws SQLException {
+		Blob blob = rs.getBlob(column);
+		if (blob == null) {
+			return null;
 		}
+		return blob.getBinaryStream();
 	}
 
 	@Override
-	public @Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, String column) throws SQLException, DbmsException {
-		try {
-			Blob blob = rs.getBlob(column);
-			if (blob == null) {
-				return null;
-			}
-			return blob.getBinaryStream();
-		} catch (SQLDataException e) {
-			throw new DbmsException("Column not compatible with BLOB type", e);
+	public @Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, String column) throws SQLException {
+		Blob blob = rs.getBlob(column);
+		if (blob == null) {
+			return null;
 		}
+		return blob.getBinaryStream();
 	}
 
 	@Override

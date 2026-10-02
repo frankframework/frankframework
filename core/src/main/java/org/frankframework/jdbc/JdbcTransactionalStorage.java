@@ -16,7 +16,6 @@
 package org.frankframework.jdbc;
 
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -57,7 +56,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
-import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.factory.JdbcPoolUtil;
@@ -634,27 +632,29 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 				}
 			} catch (ClassNotFoundException e) {
 				throw new JdbcException("Cannot read object from database", e);
-			} catch (ZipException | EOFException e) {
-				throw new JdbcException("unknown compression method", e);
 			}
 		}
 	}
 
 	@Override
-	protected RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException, JdbcException {
-		if (isBlobsCompressed()) {
-			try {
-				return retrieveObject(storageKey, rs,columnIndex,true);
-			} catch (ZipException e1) {
-				log.warn("{}could not extract compressed blob, trying non-compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
-				return retrieveObject(storageKey, rs,columnIndex,false);
-			}
-		}
+	protected RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws JdbcException {
 		try {
-			return retrieveObject(storageKey, rs,columnIndex,false);
-		} catch (Exception e1) {
-			log.warn("{}could not extract non-compressed blob, trying compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
-			return retrieveObject(storageKey, rs,columnIndex,true);
+			if (isBlobsCompressed()) {
+				try {
+					return retrieveObject(storageKey, rs,columnIndex,true);
+				} catch (ZipException e1) {
+					log.warn("{}could not extract compressed blob, trying non-compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
+					return retrieveObject(storageKey, rs,columnIndex,false);
+				}
+			}
+			try {
+				return retrieveObject(storageKey, rs,columnIndex,false);
+			} catch (Exception e1) {
+				log.warn("{}could not extract non-compressed blob, trying compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
+				return retrieveObject(storageKey, rs,columnIndex,true);
+			}
+		} catch (Exception e2) {
+			throw new JdbcException("could not extract message", e2);
 		}
 	}
 
@@ -681,7 +681,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 		}
 	}
 
-	private static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws DbmsException, SQLException {
+	private static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws SQLException {
 		OutputStream result;
 		OutputStream out = dbmsSupport.getBlobOutputStream(stmt, columnIndex, blobUpdateHandle);
 		if (compressBlob) {

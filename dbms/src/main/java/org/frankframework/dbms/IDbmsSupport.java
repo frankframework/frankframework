@@ -108,9 +108,9 @@ public interface IDbmsSupport {
 
 	boolean isBlobType(@NonNull final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
 
-	@Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, int column) throws SQLException, DbmsException;
+	@Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, int column) throws SQLException;
 
-	@Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, String column) throws SQLException, DbmsException;
+	@Nullable InputStream getBlobInputStream(@NonNull ResultSet rs, String column) throws SQLException;
 
 	@NonNull Object getBlobHandle(@NonNull ResultSet rs, int column) throws SQLException;
 
