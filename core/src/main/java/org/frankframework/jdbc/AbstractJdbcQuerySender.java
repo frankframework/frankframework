@@ -275,12 +275,12 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	protected void closeConnectionForSendMessage(@Nullable Connection connection, PipeLineSession session) {
-		if (connection != null) {
-			try {
+		try {
+			if (connection != null) {
 				connection.close();
-			} catch (SQLException e) {
-				log.warn(new SenderException("caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 			}
+		} catch (SQLException e) {
+			log.warn(new SenderException("caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 		}
 	}
 
