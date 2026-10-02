@@ -66,7 +66,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		}
 		int incrementBy = increment;
 		ParameterList pl = getParameterList();
-		if(pl != null && !pl.isEmpty()) {
+		if(!pl.isEmpty()) {
 			try {
 				ParameterValueList pvl = pl.getValues(message, session);
 				ParameterValue pv = pvl.get(PARAMETER_INCREMENT);
@@ -77,9 +77,10 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
-		session.put(sessionKey, sessionKeyInteger + incrementBy + "");
+		int newValue = sessionKeyInteger + incrementBy;
+		session.put(sessionKey, newValue);
 
-		log.debug("stored [{}] in pipeLineSession under key [{}]", sessionKeyInteger + incrementBy, getSessionKey());
+		log.debug("stored [{}] in pipeLineSession under key [{}]", newValue, getSessionKey());
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
