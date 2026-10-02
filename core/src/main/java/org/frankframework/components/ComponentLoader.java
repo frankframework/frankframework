@@ -67,7 +67,7 @@ public class ComponentLoader {
 			AppConstants.setGlobalProperty(moduleInfo.getArtifactId() + ".version", moduleInfo.getVersion()); // Should look like `frankframework-core.version`
 			APPLICATION_LOG.debug("Loading {}", moduleInfo);
 		} catch (NoSuchFileException e) {
-			log.info("unable to find module manifest file", e);
+			log.info("unable to find module manifest file");
 		} catch (IOException e) {
 			log.warn("unable to open module manifest file", e);
 		}

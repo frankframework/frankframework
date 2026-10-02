@@ -107,6 +107,22 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
+	 * Wrap all PipeLineSession values via the TestTool inputpoint, so that they can be logged and/or replaced by the TestTool.
+	 */
+	private void logAllPipelineSessionValues(PipeLineSession pipeLineSession) {
+		if (reportGenerator == null) {
+			return;
+		}
+
+		TreeSet<String> keys = new TreeSet<>(pipeLineSession.keySet());
+		String correlationId = getCorrelationId(pipeLineSession);
+		for (String sessionKey : keys) {
+			Object sessionValue = reportGenerator.sessionInputPoint(correlationId, sessionKey, pipeLineSession.get(sessionKey));
+			pipeLineSession.put(sessionKey, sessionValue);
+		}
+	}
+
+	/**
 	 * Provides advice for {@link PipeLineProcessor#processPipeLine(org.frankframework.receivers.Receiver, PipeLine, String, Message, PipeLineSession, String)}
 	 */
 	@SuppressWarnings({ "java:S1172", "unused" }) // The unused parameters are needed to make the AOP work
@@ -115,16 +131,15 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return (PipeLineResult)proceedingJoinPoint.proceed();
 		}
 		String correlationId = getCorrelationId(pipeLineSession);
-		reportGenerator.pipelineInput(pipeLine, correlationId, message);
-		TreeSet<String> keys = new TreeSet<>(pipeLineSession.keySet());
-		for (String sessionKey : keys) {
-			Object sessionValue = reportGenerator.sessionInputPoint(correlationId, sessionKey, pipeLineSession.get(sessionKey));
-			pipeLineSession.put(sessionKey, sessionValue);
-		}
+		Message pipelineInput = reportGenerator.pipelineInput(pipeLine, correlationId, message);
+
+		logAllPipelineSessionValues(pipeLineSession);
+
 		PipeLineResult pipeLineResult;
 		try {
 			PipeLineSession pipeLineSessionDebugger = PipeLineSessionDebugger.newInstance(pipeLineSession, reportGenerator);
 			Object[] args = proceedingJoinPoint.getArgs();
+			args[3] = pipelineInput;
 			args[4] = pipeLineSessionDebugger;
 			pipeLineResult = (PipeLineResult)proceedingJoinPoint.proceed(args);
 		} catch (Throwable throwable) {
@@ -135,15 +150,16 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			reportGenerator.showOutputValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
 		}
 
+		Message result;
 		if (!pipeLineResult.isSuccessful()) {
-			reportGenerator.pipelineAbort(pipeLine, correlationId, pipeLineResult.getResult());
+			result = reportGenerator.pipelineAbort(pipeLine, correlationId, pipeLineResult.getResult());
 		} else {
-			Message result = reportGenerator.pipelineOutput(pipeLine, correlationId, pipeLineResult.getResult());
-			if (Message.isNull(result) && Message.isNotNull(pipeLineResult.getResult())) {
-				log.info("debugger returned NULL, pipeline result was: [{}]", pipeLineResult.getResult());
-			}
-			pipeLineResult.setResult(result);
+			result = reportGenerator.pipelineOutput(pipeLine, correlationId, pipeLineResult.getResult());
 		}
+		if (Message.isNull(result) && Message.isNotNull(pipeLineResult.getResult())) {
+			log.info("debugger returned NULL, pipeline result was: [{}]", pipeLineResult.getResult());
+		}
+		pipeLineResult.setResult(result);
 
 		return pipeLineResult;
 	}
