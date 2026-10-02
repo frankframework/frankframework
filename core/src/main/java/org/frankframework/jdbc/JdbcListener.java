@@ -68,9 +68,6 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 		}
 		super.configure();
 		try {
-			String convertedSelectQuery = convertQuery(getSelectQuery());
-			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, convertedSelectQuery);
-			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? convertQuery(getPeekQuery()) : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, convertedSelectQuery);
 			Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();
 			for (ProcessState state : ProcessState.values()) {
 				if(updateStatusQueries.containsKey(state)) {
@@ -82,13 +79,6 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 			targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
-		}
-		// Check that the SELECT query contains the fields wanted
-		List<String> fieldsNotInQuery = getAdditionalFieldsList().stream()
-				.filter(f -> !selectQuery.matches(".*\\W" + f + "\\W.*"))
-				.toList();
-		if (!fieldsNotInQuery.isEmpty()) {
-			throw new ConfigurationException("additionalFields contains fields not in the select query: " + fieldsNotInQuery);
 		}
 	}
 
