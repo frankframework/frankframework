@@ -24,7 +24,6 @@ class JdbcQueryListenerTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		listener = spy(new JdbcQueryListener());
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.STRING);
 		listener.setKeyField("TKEY");
 		listener.setMessageField("FM");
 		listener.setMessageIdField("MID");

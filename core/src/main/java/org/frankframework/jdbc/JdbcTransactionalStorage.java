@@ -613,7 +613,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 	}
 
 	@SuppressWarnings("unchecked")
-	private @Nullable RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	private @Nullable RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws IOException, SQLException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream == null) {
 				return null;
@@ -631,29 +631,27 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 					rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 					return rawMessageWrapper;
 				}
+			} catch (ClassNotFoundException e) {
+				throw new IOException("Cannot read object from database", e);
 			}
 		}
 	}
 
 	@Override
-	protected RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws JdbcException {
-		try {
-			if (isBlobsCompressed()) {
-				try {
-					return retrieveObject(storageKey, rs,columnIndex,true);
-				} catch (ZipException e1) {
-					log.warn("{}could not extract compressed blob, trying non-compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
-					return retrieveObject(storageKey, rs,columnIndex,false);
-				}
-			}
+	protected RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException {
+		if (isBlobsCompressed()) {
 			try {
-				return retrieveObject(storageKey, rs,columnIndex,false);
-			} catch (Exception e1) {
-				log.warn("{}could not extract non-compressed blob, trying compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
 				return retrieveObject(storageKey, rs,columnIndex,true);
+			} catch (ZipException e1) {
+				log.warn("{}could not extract compressed blob, trying non-compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
+				return retrieveObject(storageKey, rs,columnIndex,false);
 			}
-		} catch (Exception e2) {
-			throw new JdbcException("could not extract message", e2);
+		}
+		try {
+			return retrieveObject(storageKey, rs,columnIndex,false);
+		} catch (Exception e1) {
+			log.warn("{}could not extract non-compressed blob, trying compressed: ({}) {}", getLogPrefix(), ClassUtils.nameOf(e1), e1.getMessage());
+			return retrieveObject(storageKey, rs,columnIndex,true);
 		}
 	}
 
