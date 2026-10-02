@@ -262,22 +262,16 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 
 
 	protected @NonNull Connection getConnectionForSendMessage() throws JdbcException, TimeoutException {
-		if (isConnectionsArePooled()) {
-			return getConnectionWithTimeout(getTimeout());
-		}
-		if (connection == null) {
-			throw new IllegalStateException("Global Connection is not open, should not happen when connections are not pooled");
-		}
-		return connection;
+		return getConnectionWithTimeout(getTimeout());
 	}
 
 	protected void closeConnectionForSendMessage(@Nullable Connection connection, PipeLineSession session) {
-		if (isConnectionsArePooled() && connection != null) {
-			try {
+		try {
+			if (connection != null) {
 				connection.close();
-			} catch (SQLException e) {
-				log.warn(new SenderException("caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 			}
+		} catch (SQLException e) {
+			log.warn(new SenderException("caught exception closing sender after sending message, ID=["+(session==null?null:session.getMessageId())+"]", e));
 		}
 	}
 

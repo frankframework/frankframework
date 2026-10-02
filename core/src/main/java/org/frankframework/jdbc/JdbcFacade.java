@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.support.JdbcUtils;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -93,7 +92,6 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	private boolean started = false;
 	private boolean transacted = false;
-	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
 
 	private DbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
@@ -102,7 +100,6 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	private @Setter @Getter IDataSourceFactory dataSourceFactory = null; // Spring should wire this!
 
 	private DataSource datasource = null;
-	protected Connection connection = null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -127,41 +124,18 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	@Override
 	public void start() {
-		if (!isConnectionsArePooled()) {
-			// Open a global connection that stays open
-			try {
-				connection = getConnection();
-				connection.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
-			} catch (Exception e) {
-				// Cleanup on failure
-				JdbcUtils.closeConnection(connection);
-				connection = null;
-				throw new LifecycleException(e);
-			}
-		} else {
-			// Test the connection from the pool, close it after validation
-			try (Connection c = getConnection()) {
-				c.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
-			} catch (Exception e) {
-				throw new LifecycleException(e);
-			}
-
+		// Test the connection from the pool, close it after validation
+		try (Connection c = getConnection()) {
+			c.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
+		} catch (Exception e) {
+			throw new LifecycleException(e);
 		}
 		started = true;
 	}
 
 	@Override
 	public void stop() {
-		try {
-			if (connection != null) {
-				connection.close();
-			}
-		} catch (SQLException e) {
-			log.warn(() -> "%scaught exception stopping %s".formatted(getLogPrefix(), getName()), e);
-		} finally {
-			connection = null;
-			started = false;
-		}
+		started = false;
 	}
 
 	@Override
@@ -217,27 +191,44 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		}
 	}
 
-	@SuppressWarnings("SynchronizeOnNonFinalField")
+	/**
+	 * Utility wrapper function to execute code with a database connection, handling exceptions and wrapping them in the generic E type. Returns
+	 * a value of type T.
+	 * <br/>
+	 * Using this function can reduce the amount of exception-handling boilerplate in your code.
+	 *
+	 * @param function Methord-reference or code to be executed with the connection. This method must have only a single parameter, the connection. If you need to call a
+	 *                 function that takes multiple parameters or execute code that uses multiple local values, pass a lambda-function.
+	 * @return Result of the executed code
+	 * @param <T> Return type of the code to be executed
+	 * @param <E> Exception type that can be thrown
+	 * @throws E Exception of type E
+	 */
 	protected <T, E extends Exception> T withConnection(ThrowingFunction<Connection, T, E> function) throws E {
-		try {
-			if (isConnectionsArePooled()) {
-				try (Connection c = getConnection()) {
-					return function.apply(c);
-				}
-			}
-			synchronized (connection) {
-				return function.apply(connection);
-			}
+		try (Connection conn = getConnection()) {
+			return function.apply(conn);
 		} catch (JdbcException | SQLException e) {
-			throw ClassUtils.wrapAs(e);
+			throw ClassUtils.wrapException(e);
 		}
 	}
 
+	/**
+	 * Utility wrapper method to execute code with a database connection, handling exceptions and wrapping them in the generic E type. Does not
+	 * return any values.
+	 * <br/>
+	 * Using this method can reduce the amount of exception-handling boilerplate in your code.
+	 *
+	 * @param consumer Method-reference or code to be executed with the connection. This method must have only a single parameter, the connection. If you need to call a
+	 *                 method that takes multiple parameters or execute code that uses multiple local values, pass a lambda-function.
+	 * @param <E> Exception type that can be thrown
+	 * @throws E Exception of type E
+	 */
 	protected <E extends Exception> void withConnection(ThrowingConsumer<Connection, E> consumer) throws E {
-		withConnection((ThrowingFunction<Connection, Void, E>) c -> {
-			consumer.accept(c);
-			return null;
-		});
+		try (Connection conn = getConnection()) {
+			consumer.accept(conn);
+		} catch (JdbcException | SQLException e) {
+			throw ClassUtils.wrapException(e);
+		}
 	}
 
 	@SuppressWarnings({ "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" }) // java:S1143, java:S1163: We want to throw from finally, sorry. java:S1181: Catching Throwable. Because we want to add the Throwable to suppressedExceptions.
@@ -344,14 +335,11 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	}
 
 	/**
-	 * informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed)
-	 * @ff.default true
+	 * @deprecated All connections are now always pooled; old implementation was anyways broken / inconsistent
 	 */
+	@Deprecated(forRemoval = true, since = "10.4")
 	public void setConnectionsArePooled(boolean b) {
-		connectionsArePooled = b;
-	}
-	public boolean isConnectionsArePooled() {
-		return connectionsArePooled || isTransacted();
+		// No-op
 	}
 
 	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
