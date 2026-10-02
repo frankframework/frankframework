@@ -454,27 +454,4 @@ public class ClassUtils {
 		Constructor<E> exceptionClassConstructor = exceptionClass.getConstructor(Throwable.class);
 		return exceptionClassConstructor.newInstance(throwable);
 	}
-
-	/**
-	 * Utility function to wrap an exception in a generically typed exception which cannot be directly instantiated in code. The
-	 * class E must have a constructor that takes only a String and another Throwable as argument.
-	 *
-	 * @param message Message to add to the exception of type E
-	 * @param throwable Exception to wrap
-	 * @param reified Type of the generic exception, do not pass, the type will be derived by the compiler
-	 * @return Exception of type E
-	 * @param <E> Exception type to return
-	 * @throws E Should not throw in practice
-	 */
-	@SafeVarargs
-	@SneakyThrows
-	public static <E extends Throwable> E wrapException(String message, Throwable throwable, E... reified) throws E {
-		Class<E> exceptionClass = getClassOf(reified);
-		if (exceptionClass.isInstance(throwable)) {
-			//noinspection unchecked
-			return (E) throwable;
-		}
-		Constructor<E> exceptionClassConstructor = exceptionClass.getConstructor(String.class, Throwable.class);
-		return exceptionClassConstructor.newInstance(message, throwable);
-	}
 }
