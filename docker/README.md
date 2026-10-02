@@ -24,7 +24,7 @@ First make sure that you can access the auxiliary images. This can be done by:
 - or by using the prebuild images in the private Docker registry `ghcr.io`. The private repository
 requires [login](https://docs.docker.com/engine/reference/commandline/login/).
 
-Use Docker compose to run any combination of test image, database and Messaging Systems. The properties will be resolved automatically.
+Use Docker Compose to run any combination of test image, database and Messaging Systems. The properties will be resolved automatically.
 For example, to start Tomcat with the default H2 in-memory database:
 
 ```shell
