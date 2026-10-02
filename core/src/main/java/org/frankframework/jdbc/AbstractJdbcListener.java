@@ -136,9 +136,10 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 		}
 	}
 
-	protected boolean execute(Connection conn, String query, List<String> parameters) throws ListenerException {
+	protected boolean execute(@NonNull Connection conn, @Nullable String query, @NonNull List<String> parameters) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
 			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
+			//noinspection SqlSourceToSinkFlow
 			try (PreparedStatement stmt=conn.prepareStatement(query)) {
 				stmt.clearParameters();
 				ParameterMetaData parameterMetaData = stmt.getParameterMetaData();
