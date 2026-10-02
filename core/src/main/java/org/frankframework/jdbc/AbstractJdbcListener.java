@@ -40,6 +40,7 @@ import lombok.Setter;
 import org.frankframework.core.IPeekableListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.dbms.DbmsException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -229,7 +230,7 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 	 * @throws SQLException If loading the message resulted in a database exception.
 	 * @throws IOException If loading the message resulted in an IO exception
 	 */
-	protected @NonNull RawMessageWrapper<M> extractRawMessage(@NonNull ResultSet rs) throws SQLException, IOException {
+	protected @NonNull RawMessageWrapper<M> extractRawMessage(@NonNull ResultSet rs) throws SQLException, IOException, DbmsException {
 		String key = getColumnValueOrDefault(rs, getKeyField(), null);
 		Message message;
 		if (StringUtils.isNotEmpty(getMessageField())) {
