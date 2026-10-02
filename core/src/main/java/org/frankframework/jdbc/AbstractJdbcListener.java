@@ -37,10 +37,12 @@ import lombok.Getter;
 import lombok.Lombok;
 import lombok.Setter;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IPeekableListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsException;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -66,6 +68,28 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 	protected @Getter boolean peekUntransacted=true;
 
 	protected @Setter @Getter boolean trace=false;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (StringUtils.isEmpty(selectQuery)) {
+			throw new ConfigurationException(getLogPrefix() + "selectQuery may not be empty");
+		}
+		try {
+			String convertedSelectQuery = convertQuery(getSelectQuery());
+			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, convertedSelectQuery);
+			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? convertQuery(getPeekQuery()) : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, convertedSelectQuery);
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		}
+		// Check that the SELECT query contains the fields wanted
+		List<String> fieldsNotInQuery = getAdditionalFieldsList().stream()
+				.filter(f -> !selectQuery.matches(".*\\W" + f + "\\W.*"))
+				.toList();
+		if (!fieldsNotInQuery.isEmpty()) {
+			throw new ConfigurationException("additionalFields contains fields not in the select query: " + fieldsNotInQuery);
+		}
+	}
 
 	@Override
 	public @NonNull Map<String,Object> openThread() {
