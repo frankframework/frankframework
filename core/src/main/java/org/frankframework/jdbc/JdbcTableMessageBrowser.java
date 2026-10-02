@@ -101,7 +101,7 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 	}
 
 	@Override
-	protected RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException {
+	protected RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException, JdbcException {
 		if (tableListener!=null) {
 			return tableListener.extractRawMessage(rs);
 		}

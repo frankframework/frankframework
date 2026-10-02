@@ -16,6 +16,7 @@
 package org.frankframework.jdbc;
 
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -613,7 +614,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 	}
 
 	@SuppressWarnings("unchecked")
-	private @Nullable RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws IOException, SQLException {
+	private @Nullable RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws IOException, SQLException, JdbcException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream == null) {
 				return null;
@@ -632,13 +633,15 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 					return rawMessageWrapper;
 				}
 			} catch (ClassNotFoundException e) {
-				throw new IOException("Cannot read object from database", e);
+				throw new JdbcException("Cannot read object from database", e);
+			} catch (ZipException | EOFException e) {
+				throw new JdbcException("unknown compression method", e);
 			}
 		}
 	}
 
 	@Override
-	protected RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException {
+	protected RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException, JdbcException {
 		if (isBlobsCompressed()) {
 			try {
 				return retrieveObject(storageKey, rs,columnIndex,true);

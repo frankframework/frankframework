@@ -38,6 +38,7 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
+import org.frankframework.dbms.DbmsException;
 import org.frankframework.doc.Default;
 import org.frankframework.doc.Optional;
 import org.frankframework.receivers.MessageWrapper;
@@ -142,7 +143,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	protected @NonNull RawMessageWrapper<Serializable> extractRawMessage(@NonNull ResultSet rs) throws SQLException, IOException {
+	protected @NonNull RawMessageWrapper<Serializable> extractRawMessage(@NonNull ResultSet rs) throws SQLException, IOException, DbmsException {
 		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
 			ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
 
