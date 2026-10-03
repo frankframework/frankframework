@@ -30,7 +30,6 @@ class JdbcQueryListenerTest {
 
 		listener = spy(new JdbcQueryListener());
 		listener.setReceiver(receiver);
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.STRING);
 		listener.setKeyField("TKEY");
 		listener.setMessageField("FM");
 		listener.setMessageIdField("MID");

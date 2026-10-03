@@ -15,6 +15,7 @@
 */
 package org.frankframework.jdbc;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -293,7 +294,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 		}
 	}
 
-	protected abstract RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws SQLException, JdbcException;
+	protected abstract RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws SQLException, JdbcException, IOException;
 
 	@Override
 	public int getMessageCount() throws ListenerException {
@@ -372,7 +373,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 					return retrieveObject(storageKey, rs, 2);
 				}
 			}
-		} catch (ListenerException e) { // Don't catch ListenerExceptions, unnecessarily and ugly
+		} catch (ListenerException e) { // Don't wrap ListenerExceptions, unnecessarily and ugly
 			throw e;
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);

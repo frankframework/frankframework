@@ -40,6 +40,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.lang.Contract;
 
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
@@ -430,5 +431,27 @@ public class ClassUtils {
 			throw new IllegalStateException("Component type of array should never be null");
 		}
 		return componentType;
+	}
+
+	/**
+	 * Utility function to wrap an exception in a generically typed exception which cannot be directly instantiated in code. The
+	 * class E must have a constructor that takes only another Throwable as argument.
+	 *
+	 * @param throwable Exception to wrap
+	 * @param reified Type of the generic exception, do not pass, the type will be derived by the compiler
+	 * @return Exception of type E
+	 * @param <E> Exception type to return
+	 * @throws E Should not throw in practice
+	 */
+	@SafeVarargs
+	@SneakyThrows
+	public static <E extends Throwable> E wrapException(Throwable throwable, E... reified) throws E {
+		Class<E> exceptionClass = getClassOf(reified);
+		if (exceptionClass.isInstance(throwable)) {
+			//noinspection unchecked
+			return (E) throwable;
+		}
+		Constructor<E> exceptionClassConstructor = exceptionClass.getConstructor(Throwable.class);
+		return exceptionClassConstructor.newInstance(throwable);
 	}
 }
