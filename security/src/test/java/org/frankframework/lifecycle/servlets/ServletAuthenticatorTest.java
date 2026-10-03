@@ -79,7 +79,7 @@ abstract class ServletAuthenticatorTest<T extends AbstractServletAuthenticator> 
 
 	protected abstract T createAuthenticator();
 
-	private HttpSecurity createHttpSecurity() {
+	protected final HttpSecurity createHttpSecurity() {
 		ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<>() {
 			@Override
 			public <O> O postProcess(O object) {
