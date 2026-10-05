@@ -294,32 +294,11 @@ public class JdbcUtil {
 			log.debug("message in column [{}] is probably not a serialized object: {}", colNum, e.getMessage());
 			return intermediateMessage;
 		}
-		if (result instanceof Message message) {
-			return message;
-		} else if (result instanceof MessageWrapper<?> mw) {
-			return mw.getMessage();
-		} else {
-			return Message.asMessage(result);
-		}
-	}
-
-	/**
-	 * Get value of column-nr from record-set current record and return it as String.
-	 *
-	 * @deprecated Where possible prefer to use the new method {@link #getValueAsMessage(IDbmsSupport, ResultSet, int, ResultSetMetaData, String, boolean)} because
-	 * it is more flexible, and the result can always still be turned into a String value with {@link Message#asString()}. If flags missing from the old method
-	 * are needed on the new method, they can be added as needed.
-	 */
-	@Deprecated(since = "10.3")
-	public static @Nullable String getValue(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int colNum, @NonNull final ResultSetMetaData rsmeta, @Nullable String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
-		Message result = getValueAsMessage(dbmsSupport, rs, colNum, rsmeta, blobCharset, decompressBlobs, trimSpaces, getBlobSmart, encodeBlobBase64);
-		if (result.isNull()) {
-			return nullValue;
-		}
-		if (trimSpaces) {
-			return result.asString().trim();
-		}
-		return result.asString();
+		return switch (result) {
+			case Message message -> message;
+			case MessageWrapper<?> mw -> mw.getMessage();
+			case null, default -> Message.asMessage(result);
+		};
 	}
 
 	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int column, final boolean blobIsCompressed) throws SQLException {
