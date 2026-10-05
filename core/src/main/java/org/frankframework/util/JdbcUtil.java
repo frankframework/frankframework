@@ -191,6 +191,7 @@ public class JdbcUtil {
 		return getValueAsMessage(dbmsSupport, rs, colNum, rsmeta, blobCharset, decompressBlobs, false, false, false);
 	}
 
+	@SuppressWarnings("java:S107")
 	public static @NonNull Message getValueAsMessage(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, boolean trimSpaces, boolean blobSmartGet, boolean blobEncodeBase64) throws SQLException, IOException {
 		try {
 			if (dbmsSupport.isBlobType(rsmeta, colNum)) {
@@ -203,56 +204,55 @@ public class JdbcUtil {
 			return Message.nullMessage();
 		}
 		int columnType = rsmeta.getColumnType(colNum);
-		switch (columnType) {
-			case Types.BOOLEAN:
-			case Types.BIT: {
+		return switch (columnType) {
+			case Types.BOOLEAN, Types.BIT -> {
 				boolean value = rs.getBoolean(colNum);
-				return Message.asMessage(value);
+				yield Message.asMessage(value);
 			}
 			// return as specified date format
-			case Types.TIMESTAMP: {
+			case Types.TIMESTAMP -> {
 				Timestamp timestamp = rs.getTimestamp(colNum);
 				if (timestamp == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(timestamp.toLocalDateTime());
+				yield Message.asMessage(timestamp.toLocalDateTime());
 			}
-			case Types.DATE: {
+			case Types.DATE -> {
 				java.sql.Date sqlDate = rs.getDate(colNum);
 				if (sqlDate == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(sqlDate.toLocalDate());
+				yield Message.asMessage(sqlDate.toLocalDate());
 			}
-			case Types.TIME: {
+			case Types.TIME -> {
 				Time time = rs.getTime(colNum);
 				if (time == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(time.toLocalTime());
+				yield Message.asMessage(time.toLocalTime());
 			}
-			case Types.TIMESTAMP_WITH_TIMEZONE: {
+			case Types.TIMESTAMP_WITH_TIMEZONE -> {
 				Timestamp timestamp = rs.getTimestamp(colNum);
 				if (timestamp == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(timestamp.toInstant());
+				yield Message.asMessage(timestamp.toInstant());
 			}
-			case Types.VARCHAR, Types.NVARCHAR: {
+			case Types.VARCHAR, Types.NVARCHAR -> {
 				String str = rs.getString(colNum);
 				if (rs.wasNull()) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(trimSpaces ? str.trim() : str);
+				yield Message.asMessage(trimSpaces ? str.trim() : str);
 			}
-			default: {
+			default -> {
 				Object value = rs.getObject(colNum);
 				if (value == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(value);
+				yield Message.asMessage(value);
 			}
-		}
+		};
 	}
 
 	private static @NonNull Message getBlobValueAsMessage(@NonNull IDbmsSupport dbmsSupport, @NonNull ResultSet rs, int colNum, @NonNull ResultSetMetaData rsmeta, @Nullable String blobCharset, boolean decompressBlobs, boolean blobSmartGet, boolean blobEncodeBase64) throws SQLException, JdbcException, IOException {
