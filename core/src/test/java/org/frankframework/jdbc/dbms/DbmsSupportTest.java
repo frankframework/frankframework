@@ -32,6 +32,7 @@ import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
@@ -601,8 +602,8 @@ public class DbmsSupportTest {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = resultSet.getMetaData();
 					resultSet.next();
-					String actual1 = JdbcUtil.getValue(dbmsSupport, resultSet, 1, rsmeta, "UTF-8", false, null, true, false, false);
-					String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 2, rsmeta, "UTF-8", false, null, true, false, false);
+					String actual1 = JdbcUtil.getValueAsMessage(dbmsSupport, resultSet, 1, rsmeta, "UTF-8", false, true, false, false).asString();
+					String actual2 = JdbcUtil.getValueAsMessage(dbmsSupport, resultSet, 2, rsmeta, "UTF-8", false, true, false, false).asString();
 					assertEquals(blobContents, actual1);
 					assertEquals(clobContents, actual2);
 				}
@@ -760,10 +761,10 @@ public class DbmsSupportTest {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = resultSet.getMetaData();
 					resultSet.next();
-					String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, null, true, false, false);
+					Message actual2 = JdbcUtil.getValueAsMessage(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, true, false, false);
 
-					assertEquals(rsmeta.getColumnTypeName(3), "timestamp");
-					assertNotNull(actual2);
+					assertEquals("timestamp", rsmeta.getColumnTypeName(3));
+					assertFalse(actual2.isNull());
 				}
 			}
 		}
