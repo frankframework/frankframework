@@ -21,9 +21,6 @@ import org.frankframework.stream.Message;
 
 public class MockPushingListenerWithCustomMessageType implements IPushingListener<MockPushingListenerWithCustomMessageType.CustomMessageClass>, IKnowsDeliveryCount<MockPushingListenerWithCustomMessageType.CustomMessageClass> {
 
-	private boolean started;
-	private IMessageHandler<CustomMessageClass> handler;
-	private IbisExceptionListener listener;
 	private String name;
 	private ApplicationContext applicationContext;
 
@@ -34,12 +31,12 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 
 	@Override
 	public void setHandler(IMessageHandler<CustomMessageClass> handler) {
-		this.handler = handler;
+		// No-op
 	}
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener listener) {
-		this.listener = listener;
+		// No-op
 	}
 
 	@Override
@@ -49,12 +46,12 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 
 	@Override
 	public void start() {
-		started = true;
+		// No-op
 	}
 
 	@Override
 	public void stop() {
-		started = false;
+		// No-op
 	}
 
 	@Override
@@ -88,7 +85,7 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
