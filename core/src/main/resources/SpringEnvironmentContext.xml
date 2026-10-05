@@ -14,7 +14,6 @@
 	>
 	<bean id="LogPropertiesConfigurer" class="org.frankframework.lifecycle.LogPropertiesConfigurer" />
 
-<!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
 	<integration:publish-subscribe-channel id="frank-management-bus" />
 
 	<context:property-placeholder />
@@ -30,16 +29,17 @@
 		<context:exclude-filter type="regex" expression="org\.frankframework\.ladybug\..*"/>
 		<context:exclude-filter type="regex" expression="org\.frankframework\.web\..*"/>
 		<context:exclude-filter type="regex" expression="org\.frankframework\.console\..*"/>
+		<context:exclude-filter type="regex" expression="org\.frankframework\.management\..*"/>
 	</context:component-scan>
-
-	<bean id="cxf" class="org.frankframework.http.cxf.SpringSoapBus">
-		<property name="id" value="ff-soap-bus"/>
-	</bean>
 
 	<bean id="NoopSecurityFilterChain" class="org.frankframework.lifecycle.servlets.NoopSecurityFilterChain" />
 
 	<bean id="inboundGatewayFactory" class="org.frankframework.management.bus.InboundGatewayFactory">
 		<property name="gatewayClassnames" value="${management.gateway.inbound.class}" />
+	</bean>
+
+	<bean id="cxf" class="org.frankframework.http.cxf.SpringSoapBus">
+		<property name="id" value="ff-soap-bus"/>
 	</bean>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>

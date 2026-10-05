@@ -19,8 +19,6 @@
 		<property name="requestChannel" ref="frank-management-bus" />
 	</bean>
 
-	<security:method-security jsr250-enabled="true" pre-post-enabled="false" proxy-target-class="true" secured-enabled="false" />
-
 	<context:property-placeholder />
 
 	<bean id="messageDispatcher" class="org.frankframework.management.bus.MessageDispatcher">
