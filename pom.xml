@@ -97,7 +97,7 @@
 		<spring-integration.version>7.1.1</spring-integration.version>
 		<spring.boot.version>4.1.1</spring.boot.version>
 		<tomcat.version>11.0.26</tomcat.version>
-		<tika.version>4.0.0</tika.version>
+		<tika.version>4.1.0</tika.version>
 		<mcp-sdk.version>2.0.1</mcp-sdk.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
@@ -1225,7 +1225,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>14.1.0</version>
+							<version>14.3.0</version>
 						</dependency>
 					</dependencies>
 					<executions>
