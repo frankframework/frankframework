@@ -15,6 +15,8 @@
 */
 package org.frankframework.components;
 
+import java.util.Iterator;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.pf4j.PluginDescriptor;
@@ -27,8 +29,12 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.components.plugins.PluginLoader;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.digester.ConfigurationDigester;
+import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.Resource;
+import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.ParameterList;
+import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.SpringUtils;
 
@@ -39,10 +45,16 @@ public class FrankPlugin extends PipeLine {
 	private String pluginName;
 	private String configurationFile;
 	private ConfigurationDigester configurationDigester;
+	private ParameterList parameterList;
 
 	// Test method
 	public PluginLoader getPluginLoader(ApplicationContext applicationContext) {
 		return applicationContext.getBean(PluginLoader.class);
+	}
+
+	public void setParameterList(ParameterList parameterList) {
+		// Parameters to set on pipes.
+		this.parameterList = parameterList;
 	}
 
 	// Currently called in the Configure step of callee's.
@@ -67,11 +79,28 @@ public class FrankPlugin extends PipeLine {
 
 	}
 
+	private void copyParams() {
+		System.out.println("Copying params");
+		if (parameterList == null)
+			return;
+		for (IPipe pipe : getPipes()) {
+			if (pipe instanceof AbstractPipe p) {
+				System.out.println("found pipe " + pipe.toString());
+				Iterator<IParameter> params = parameterList.iterator();
+					while(params.hasNext()) {
+						IParameter q = params.next();
+						p.getParameterList().add(q);
+				}
+			}
+		}
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		// Load all beans, and propagate them on their parent.
 		Resource resource = getConfigurationFile();
 		digestPluginInClassloader(resource);
+		copyParams();
 		log.info("successfully loaded plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
 
 		// After loading all beans, configure them.
