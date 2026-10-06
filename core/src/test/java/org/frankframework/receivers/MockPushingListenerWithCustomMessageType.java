@@ -19,6 +19,10 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
+/**
+ * This listener roughly imitates how a JMS listener handles retry-count and message conversion, and is used in tests to make sure that
+ * retried messages from an error-storage are not passed to this listener when formats are incompatible.
+ */
 public class MockPushingListenerWithCustomMessageType implements IPushingListener<MockPushingListenerWithCustomMessageType.CustomMessageClass>, IKnowsDeliveryCount<MockPushingListenerWithCustomMessageType.CustomMessageClass> {
 
 	private String name;
