@@ -40,8 +40,16 @@
 			 Define a non-SSL/TLS HTTP/1.1 Connector on port 8080
 		-->
 		<Connector port="8080" protocol="HTTP/1.1"
-			connectionTimeout="20000"
-			redirectPort="8443">
+			connectionTimeout="120000"
+			redirectPort="8443"
+			compression="on"
+			compressionMinSize="1024"
+			maxThreads="300"
+			minSpareThreads="40"
+			acceptCount="500"
+			keepAliveTimeout="15000"
+			maxKeepAliveRequests="200"
+		>
 			<UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
 		</Connector>
 		<!-- An Engine represents the entry point (within Catalina) that processes
