@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@angular/animations": "^22.2.0",
-    "@angular/cdk": "^22.2.0",
+    "@angular/cdk": "^22.2.1",
     "@angular/common": "^22.2.0",
     "@angular/compiler": "^22.2.0",
     "@angular/core": "^22.2.0",
@@ -45,15 +45,15 @@
     "ladda": "^2.0.3",
     "lodash.merge": "^4.6.2",
     "markdown-it": "^15.0.2",
-    "monaco-editor": "0.56.0",
-    "ng2-charts": "^10.0.0",
+    "monaco-editor": "0.57.0",
+    "ng2-charts": "^11.0.0",
     "pace-js": "1.2.4",
     "rxjs": "^7.8.2",
     "sockjs-client": "^1.6.1",
     "sweetalert2": "^11.26.25",
     "tinycon": "0.6.8",
     "tslib": "^2.8.1",
-    "ws": "^8.21.3",
+    "ws": "^8.22.0",
     "zone.js": "0.16.3"
   },
   "devDependencies": {
@@ -73,13 +73,13 @@
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
-    "eslint-plugin-sonarjs": "^4.2.1",
-    "eslint-plugin-unicorn": "^76.0.0",
+    "eslint-plugin-sonarjs": "^4.2.2",
+    "eslint-plugin-unicorn": "^77.0.0",
     "happy-dom": "^20.14.5",
     "prettier": "^3.9.9",
     "typescript": "~6.0.3",
-    "typescript-eslint": "8.70.0",
-    "vitest": "^5.0.1"
+    "typescript-eslint": "8.71.0",
+    "vitest": "^5.0.2"
   },
-  "packageManager": "pnpm@11.25.0+sha512.5cde925b4f075f725eb71fbae18a42ffe784524789f19b61c731cb8721ec28aaee160e01a8d5af4fedb2a42cdbf300efe23db356b0d4a17b4d63e11f8ab7c956"
+  "packageManager": "pnpm@12.9.1+sha512.06b055fff5cd20dc12781de173ced3310ce0951bf2ec620211a16045d5444d5c93a663210764ef29a653a610459ba0368f0e74f84d80c54723cf95aae7bc0d6d"
 }

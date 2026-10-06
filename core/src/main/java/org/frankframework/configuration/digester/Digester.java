@@ -195,7 +195,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		}
 
 		try {
-			handleAttributeRule.begin(localName, atts);
+			handleAttributeRule.begin(atts);
 		} catch (Exception e) {
 			throw new SAXParseException("unable to populate bean attributes for element [%s]".formatted(localName), getDocumentLocator(), e);
 		}

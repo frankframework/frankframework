@@ -1,6 +1,7 @@
 package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import org.frankframework.core.PipeLineSession;
@@ -41,10 +43,9 @@ class CompactSaxHandlerTest {
 
 	@BeforeEach
 	void setUp() {
-		handler = new CompactSaxHandler(xmlWriter);
-		handler.setRemoveCompactMsgNamespaces(false);
 		session = new PipeLineSession();
-		handler.setContext(session);
+		handler = new CompactSaxHandler(xmlWriter, session);
+		handler.setRemoveCompactMsgNamespaces(false);
 	}
 
 	@AfterEach
@@ -149,7 +150,9 @@ class CompactSaxHandlerTest {
 		handler.setElementToMoveChain("Envelope;Body;edcLk01;object;identificatie");
 
 		// Act
-		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
+		InputSource inputSource = defaultInputMessage.asInputSource();
+		assertNotNull(inputSource);
+		XmlUtils.parseXml(inputSource, handler);
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
@@ -158,10 +161,9 @@ class CompactSaxHandlerTest {
 		assertEquals(testOutputFile, xmlWriter.toString());
 
 		// Act 2: retry with already parsed input
-		handler = new CompactSaxHandler(new XmlWriter());
+		handler = new CompactSaxHandler(new XmlWriter(), session);
 		handler.setChompLength(80);
 		handler.setRemoveCompactMsgNamespaces(true);
-		handler.setContext(session);
 		handler.setElementToMoveChain("Envelope;Body;edcLk01;object;identificatie");
 		XmlUtils.parseXml(testOutputFile, handler);
 
@@ -179,7 +181,9 @@ class CompactSaxHandlerTest {
 		handler.setElementToMoveChain("Envelope;Body;edcLk01;stuurgegevens;tijdstipBericht");
 
 		// Act
-		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
+		InputSource inputSource = defaultInputMessage.asInputSource();
+		assertNotNull(inputSource);
+		XmlUtils.parseXml(inputSource, handler);
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chainchomptest.xml");

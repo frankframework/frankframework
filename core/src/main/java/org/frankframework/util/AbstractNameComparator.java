@@ -102,7 +102,7 @@ public abstract class AbstractNameComparator<T> implements Comparator<T> {
 		}
 		result = f0.compareTo(f1);
 		if (result==0) {
-			long lendif = f1.length()-f0.length();
+			int lendif = f1.length()-f0.length();
 			if (lendif > 0) {
 				result=1;
 			} else if (lendif < 0) {

@@ -21,7 +21,7 @@ import org.junit.platform.commons.util.ReflectionUtils;
 
 public class JUnitDatabaseExtension implements TestTemplateInvocationContextProvider {
 
-	static final Namespace NAMESPACE = Namespace.create(DatabaseTestOptions.class);
+	@SuppressWarnings("unused") static final Namespace NAMESPACE = Namespace.create(DatabaseTestOptions.class);
 	static final String DB_INSTANCE = "DB_CONTEXT";
 
 	@Override

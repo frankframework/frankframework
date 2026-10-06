@@ -362,8 +362,10 @@ public class JdbcUtil {
 	}
 
 	// This should not have a charset nor base64 argument...
-	private static void streamBlob(@NonNull final InputStream blobInputStream, @Nullable String charset, Direction blobBase64Direction, @NonNull MessageBuilder msgBuilder) throws IOException {
-		if (charset == null) {
+	private static void streamBlob(@Nullable final InputStream blobInputStream, @Nullable String charset, Direction blobBase64Direction, @NonNull MessageBuilder msgBuilder) throws IOException {
+		if (blobInputStream == null) {
+			msgBuilder.asOutputStream().close();
+		} else if (charset == null) {
 			try (OutputStream outputStream = msgBuilder.asOutputStream()) {
 				if (blobBase64Direction == Direction.DECODE) {
 					Base64InputStream base64DecodedStream = new Base64InputStream(blobInputStream);

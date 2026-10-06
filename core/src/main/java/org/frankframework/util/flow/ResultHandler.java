@@ -44,6 +44,7 @@ public class ResultHandler {
 			}
 			throw new FlowGenerationException(v);
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new FlowGenerationException("Waiting for result interrupted", e);
 		}
 	}

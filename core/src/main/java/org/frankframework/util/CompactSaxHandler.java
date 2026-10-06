@@ -17,8 +17,9 @@ package org.frankframework.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -26,6 +27,7 @@ import org.xml.sax.SAXException;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.NamespaceRemovingAttributesWrapper;
@@ -45,14 +47,15 @@ public class CompactSaxHandler extends FullXmlFilter {
 	@Getter @Setter private String elementToMoveChain = null;
 	@Getter @Setter private boolean removeCompactMsgNamespaces = true;
 
-	private final StringBuilder charDataBuilder = new StringBuilder();
-	private final List<String> elements = new ArrayList<>();
-	@Setter private Map<String, Object> context = null;
+	private final @NonNull StringBuilder charDataBuilder = new StringBuilder();
+	private final @NonNull List<String> elements = new ArrayList<>();
+	private final @NonNull PipeLineSession session;
 	private boolean moveElementFound = false;
 	private boolean inCDATASection = false;
 
-	public CompactSaxHandler(ContentHandler handler) {
+	public CompactSaxHandler(@NonNull ContentHandler handler, @NonNull PipeLineSession session) {
 		super(handler);
+		this.session = session;
 	}
 
 	@Override
@@ -60,8 +63,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 		printCharData(true);
 		elements.add(localName);
 
-		moveElementFound = context != null &&
-				(getElementToMove() != null && localName.equals(getElementToMove())) ||
+		moveElementFound = (getElementToMove() != null && localName.equals(getElementToMove())) ||
 				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain()));
 
 		if (isRemoveCompactMsgNamespaces()) {
@@ -128,7 +130,6 @@ public class CompactSaxHandler extends FullXmlFilter {
 		// Detection Moving elements; only when not already moved session key is found
 		int length = charDataBuilder.length();
 		moveElementFound = moveElementFound
-				&& context != null
 				&& !startElement
 				&& !(length > VALUE_MOVE_START.length()
 				&& charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)
@@ -139,7 +140,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 			int lastIndex = elements.size() - 1;
 			String lastElement = elements.get(lastIndex);
 			String elementToMoveSK = determineElementToMoveSessionKey(lastElement);
-			context.put(elementToMoveSK, message);
+			session.put(elementToMoveSK, message);
 
 			super.characters(VALUE_MOVE_START.toCharArray(), 0, VALUE_MOVE_START.length());
 			super.characters(elementToMoveSK.toCharArray(), 0, elementToMoveSK.length());
@@ -167,17 +168,17 @@ public class CompactSaxHandler extends FullXmlFilter {
 		charDataBuilder.setLength(0);
 	}
 
-	private String determineElementToMoveSessionKey(final String lastElement) {
+	private String determineElementToMoveSessionKey(final @NonNull String lastElement) {
 		String elementToMoveSK;
 		if (getElementToMoveSessionKey() == null) {
 			elementToMoveSK = "ref_" + lastElement;
 		} else {
 			elementToMoveSK = getElementToMoveSessionKey();
 		}
-		if (context.containsKey(elementToMoveSK)) {
+		if (session.containsKey(elementToMoveSK)) {
 			String baseName = elementToMoveSK;
 			int counter = 1;
-			while (context.containsKey(elementToMoveSK)) {
+			while (session.containsKey(elementToMoveSK)) {
 				counter++;
 				elementToMoveSK = baseName + counter;
 			}
@@ -197,7 +198,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 		return chain;
 	}
 
-	public void setChompCharSize(String input) {
+	public void setChompCharSize(@Nullable String input) {
 		chompLength = (int) Misc.toFileSize(input, -1);
 	}
 

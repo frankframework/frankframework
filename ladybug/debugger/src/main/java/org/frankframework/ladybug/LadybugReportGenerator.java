@@ -81,10 +81,6 @@ public class LadybugReportGenerator implements InitializingBean {
 		return REPORT_PIPELINE_PREFIX + configName + "/" + adapterName;
 	}
 
-	public Message pipelineInput(PipeLine pipeLine, String correlationId, Message input) {
-		return testTool.startpoint(correlationId, classNameOf(pipeLine), getName(pipeLine), input, extractMessageContext(input));
-	}
-
 	@NonNull
 	private Map<String, Object> extractMessageContext(Object input) {
 		if (input instanceof Message message) {
@@ -95,6 +91,10 @@ public class LadybugReportGenerator implements InitializingBean {
 		}
 
 		return Collections.emptyMap();
+	}
+
+	public Message pipelineInput(PipeLine pipeLine, String correlationId, Message input) {
+		return testTool.startpoint(correlationId, classNameOf(pipeLine), getName(pipeLine), input, extractMessageContext(input));
 	}
 
 	public Message pipelineOutput(PipeLine pipeLine, String correlationId, Message output) {

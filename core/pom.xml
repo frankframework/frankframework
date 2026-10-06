@@ -13,7 +13,7 @@
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
-		<graalvm.version>25.3.4.1</graalvm.version>
+		<graalvm.version>25.4.4.1.1</graalvm.version>
 
 		<!-- From version 11, duplicate imported resources cause an exception. -->
 		<saxon.version>10.9</saxon.version>
@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>org.pf4j</groupId>
 			<artifactId>pf4j</artifactId>
-			<version>3.15.1</version>
+			<version>3.16.0</version>
 		</dependency>
 
 		<!-- Logging -->
@@ -276,7 +276,7 @@
 		<dependency>
 			<groupId>org.apache.wss4j</groupId>
 			<artifactId>wss4j-ws-security-dom</artifactId>
-			<version>4.0.1</version>
+			<version>4.0.2</version>
 			<exclusions>
 				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
 				<exclusion>
@@ -395,7 +395,7 @@
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
-			<version>5.4.0</version>
+			<version>5.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sendgrid</groupId>

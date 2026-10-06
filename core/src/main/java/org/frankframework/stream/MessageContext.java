@@ -78,6 +78,7 @@ public class MessageContext implements Serializable {
 		withAllFrom(base);
 	}
 
+	@SuppressWarnings("CopyConstructorMissesField")
 	public MessageContext(@NonNull MessageContext base) {
 		this(base.data);
 	}
@@ -129,7 +130,7 @@ public class MessageContext implements Serializable {
 	 */
 	@SafeVarargs
 	@SuppressWarnings("unchecked")
-	public final @Nullable <T> T get(@NonNull String key, T... reified) {
+	public final @Nullable <T extends Serializable> T get(@NonNull String key, T... reified) {
 		Serializable value = getRawValue(key);
 
 		Class<T> classType = ClassUtils.getClassOf(reified);
@@ -138,6 +139,11 @@ public class MessageContext implements Serializable {
 			return (T) value;
 		}
 		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Serializable> @NonNull T getOrDefault(@NonNull String key, @NonNull T defaultValue) {
+		return (T) data.getOrDefault(key, defaultValue);
 	}
 
 	public Map<String, Serializable> getAll() {

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.TimeProvider;
 
 public class NumberParameterTest {
@@ -326,8 +327,9 @@ public class NumberParameterTest {
 	}
 
 	@Test
-	public void testPatternFixedDateWithUnixTimestamp() throws Exception {
-		TimeProvider.setTime(1747401948_000L);
+	@WithTimeTravel
+	public void testPatternFixedDateWithUnixTimestamp(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(1747401948_000L);
 		NumberParameter p = new NumberParameter();
 		p.setType(ParameterType.NUMBER);
 		try (PipeLineSession session = new PipeLineSession()) {
@@ -344,8 +346,9 @@ public class NumberParameterTest {
 	}
 
 	@Test
-	public void testPatternFixedDateWithUnixTimestampNoHashInFormat() throws Exception {
-		TimeProvider.setTime(1747401948_000L);
+	@WithTimeTravel
+	public void testPatternFixedDateWithUnixTimestampNoHashInFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(1747401948_000L);
 		NumberParameter p = new NumberParameter();
 		p.setType(ParameterType.NUMBER);
 		try (PipeLineSession session = new PipeLineSession()) {

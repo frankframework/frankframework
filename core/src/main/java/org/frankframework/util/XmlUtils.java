@@ -517,15 +517,13 @@ public class XmlUtils {
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
 	@SuppressWarnings("java:S107") // Suppress 'Method has 8 parameters, which is greater than 7 authorized.' for now this is accepted.
-	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, String xPathExpression, TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, String xPathExpression, TransformerPool. @Nullable OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
-		final String copyMethod;
-		if (outputMethod == TransformerPool.OutputType.XML) {
-			copyMethod = "copy-of";
-		} else {
-			copyMethod = "value-of";
-		}
+		final String copyMethod = switch (outputMethod) {
+			case XML -> "copy-of";
+			case null, default -> "value-of";
+		};
 
 		return createXPathEvaluatorSource(xPath -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlEncodingUtils.encodeChars(xPath) + "\" />", xPathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
 	}
@@ -546,7 +544,7 @@ public class XmlUtils {
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
 	@SuppressWarnings("java:S107") // Suppress 'Method has 8 parameters, which is greater than 7 authorized.' for now this is accepted.
-	public static String createXPathEvaluatorSource(UnaryOperator<String> xpathContainerSupplier, String xPathExpression, TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+	public static String createXPathEvaluatorSource(UnaryOperator<String> xpathContainerSupplier, String xPathExpression, TransformerPool. @Nullable OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		if (StringUtils.isEmpty(xPathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}

@@ -15,7 +15,6 @@
 */
 package org.frankframework.processors;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -38,18 +37,23 @@ public class CoreListenerProcessor<M> implements ListenerProcessor<M> {
 	public Message getMessage(ICorrelatedPullingListener<M> listener, String correlationId, PipeLineSession pipeLineSession) throws ListenerException, TimeoutException {
 		if (log.isDebugEnabled())
 			log.debug("{}starts listening for return message with correlationID [{}]", getLogPrefix(listener, pipeLineSession), correlationId);
-		Message result;
-		Map<String,Object> threadContext = new HashMap<>();
+		Map<String,Object> threadContext;
 		try {
 			threadContext = listener.openThread();
+		} catch (ListenerException e) {
+			log.error("Listener cannot open thread to begin receiving reply: [{}]", e.getMessage()); // Logging stacktrace will be done in caller
+			throw e;
+		}
+		try {
 			RawMessageWrapper<M> msg = listener.getRawMessage(correlationId, threadContext);
 			// TODO: Add a method to check if it is an empty / null RawMessageWrapper?
 			if (msg==null) {
 				log.info("{}received null reply message", getLogPrefix(listener, pipeLineSession));
+				return Message.nullMessage();
 			} else {
 				log.info("{}received reply message", getLogPrefix(listener, pipeLineSession));
 			}
-			result = listener.extractMessage(msg, threadContext);
+			return listener.extractMessage(msg, threadContext);
 		} finally {
 			try {
 				log.debug("{}is closing", getLogPrefix(listener, pipeLineSession));
@@ -58,7 +62,6 @@ public class CoreListenerProcessor<M> implements ListenerProcessor<M> {
 				log.error("{}got error on closing", getLogPrefix(listener, pipeLineSession), le);
 			}
 		}
-		return result;
 	}
 
 	protected String getLogPrefix(ICorrelatedPullingListener<M> listener, PipeLineSession session){

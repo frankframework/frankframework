@@ -81,7 +81,7 @@ public class Dir2Xml {
 		if (includeDirectories && !"*.*".equals(wildcard)) {
 			dirXml.addAttribute("count", count);
 		} else {
-			dirXml.addAttribute("count", count - numberOfDirectories);
+			dirXml.addAttribute("count", (long)count - numberOfDirectories);
 		}
 
 		return dirXml.asXmlString();

@@ -634,6 +634,7 @@ public class SchemaUtils {
 		return new StringReader(toString(wsdlDefinition, wsdlSchema));
 	}
 
+	@SuppressWarnings({ "SynchronizationOnLocalVariableOrMethodParameter", "java:S2445" }) // I believe this synch on parameter is OK here
 	public static String toString(javax.wsdl.Definition wsdlDefinition, javax.wsdl.extensions.schema.Schema wsdlSchema) throws javax.wsdl.WSDLException {
 		StringWriter w = new StringWriter();
 		PrintWriter res = new PrintWriter(w);

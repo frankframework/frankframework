@@ -52,6 +52,7 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import io.micrometer.core.instrument.Counter;
@@ -443,8 +444,12 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 	}
 
+	/**
+	 * Not final because of AOP, but should not be overridden by subclasses.
+	 * @param context the ApplicationContext object to be used by this object
+	 */
 	@Override
-	public final void setApplicationContext(@NonNull ApplicationContext context) {
+	public void setApplicationContext(@NonNull ApplicationContext context) {
 		if (!(context instanceof Adapter adapter)) {
 			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
 		}
@@ -1356,7 +1361,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						tg.activateGuard(getTransactionTimeout());
 
 						setPipelineCallerInMessageContext(getListener().getName(), compactedMessage);
-						pipeLineResult = adapter.processMessageWithExceptions(this, messageId, compactedMessage, session);
+						pipeLineResult = getAdapter().processMessageWithExceptions(this, messageId, compactedMessage, session);
 						session.setExitState(pipeLineResult);
 						result = pipeLineResult.getResult();
 
@@ -1638,17 +1643,20 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return businessCorrelationId;
 	}
 
-	private Message compactMessage(Message message, PipeLineSession session) throws IOException, SAXException {
+	private @NonNull Message compactMessage(@NonNull Message message, @NonNull PipeLineSession session) throws IOException, SAXException {
+		InputSource inputSource = message.asInputSource();
+		if (inputSource == null) {
+			return message;
+		}
 		MessageBuilder msgBuilder = new MessageBuilder();
-		CompactSaxHandler handler = new CompactSaxHandler(msgBuilder.asXmlWriter());
+		CompactSaxHandler handler = new CompactSaxHandler(msgBuilder.asXmlWriter(), session);
 		handler.setChompCharSize(getChompCharSize());
 		handler.setElementToMove(getElementToMove());
 		handler.setElementToMoveChain(getElementToMoveChain());
 		handler.setElementToMoveSessionKey(getElementToMoveSessionKey());
 		handler.setRemoveCompactMsgNamespaces(isRemoveCompactMsgNamespaces());
-		handler.setContext(session);
 
-		XmlUtils.parseXml(message.asInputSource(), handler);
+		XmlUtils.parseXml(inputSource, handler);
 		return msgBuilder.build();
 	}
 

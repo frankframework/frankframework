@@ -264,6 +264,7 @@ public class Configurations {
 
 	public record ConfigurationParameters(Boolean loadedConfiguration, String flow, String datasourceName) {}
 
+	@SuppressWarnings("java:S6218") // Override equals, hashCode, toString to include array contents: not needed for this class
 	public record ActionModel(String action, String[] configurations) {}
 
 	public record UpdateConfigurationModel(String action) {}

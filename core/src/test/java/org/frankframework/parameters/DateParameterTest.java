@@ -18,7 +18,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.util.ConfigurationUtils;
@@ -26,10 +25,11 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.junit.WithTimeTravel;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.TimeProvider;
 
-@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
+@WithTimeTravel
 public class DateParameterTest {
 
 	private TimeZone systemTimeZone;
@@ -43,7 +43,6 @@ public class DateParameterTest {
 	void tearDown() {
 		System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		TimeZone.setDefault(systemTimeZone);
-		TimeProvider.resetClock();
 	}
 
 	@Test
@@ -418,7 +417,7 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testUnixParameterConvertsToDateChangeTZ() throws Exception {
+	public void testUnixParameterConvertsToDateChangeTZ(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 		DateParameter p = new DateParameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("date");
@@ -427,7 +426,7 @@ public class DateParameterTest {
 			p.configure();
 
 			// Change the system timezone to see if that affects how the date is resolved
-			TimeProvider.setClock(Clock.systemUTC());
+			timeTraveller.setClock(Clock.systemUTC());
 			TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
 
 			Message message = new Message("fakeMessage");
@@ -439,8 +438,8 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testUnixPatternConvertsToDate() throws Exception {
-		TimeProvider.setTime(1747401948_000L);
+	public void testUnixPatternConvertsToDate(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(1747401948_000L);
 		DateParameter p = new DateParameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
@@ -457,8 +456,8 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testUnixPatternConvertsToDateWithoutFormatType() throws Exception {
-		TimeProvider.setTime(1747401948_000L);
+	public void testUnixPatternConvertsToDateWithoutFormatType(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		timeTraveller.setTime(1747401948_000L);
 		DateParameter p = new DateParameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
@@ -494,10 +493,10 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testTimeParameterWithTimePatternWithoutFormatPattern() throws Exception {
+	public void testTimeParameterWithTimePatternWithoutFormatPattern(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -527,10 +526,10 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testTimeParameterWithTimePatternWithoutFormat() throws Exception {
+	public void testTimeParameterWithTimePatternWithoutFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -561,10 +560,10 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testTimeParameterWithTimePatternWithFormat() throws Exception {
+	public void testTimeParameterWithTimePatternWithFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -596,10 +595,10 @@ public class DateParameterTest {
 
 	@Test
 	@Disabled("Formatting time without seconds does not yet work and the change to make that possible looks too big to add to this PR")
-	public void testTimeParameterWithTimePatternWithFormatNoSeconds() throws Exception {
+	public void testTimeParameterWithTimePatternWithFormatNoSeconds(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -630,10 +629,10 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testDateParameterWithDatePatternWithoutFormat() throws Exception {
+	public void testDateParameterWithDatePatternWithoutFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("date");
 		parameter.setFormatType(DateFormatType.DATE);
@@ -663,10 +662,10 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testDateParameterWithDatePatternWithFormat() throws Exception {
+	public void testDateParameterWithDatePatternWithFormat(TimeProvider.TimeTraveller timeTraveller) throws Exception {
 
 		// Arrange
-		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		timeTraveller.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("date");
 		parameter.setFormatType(DateFormatType.DATE);

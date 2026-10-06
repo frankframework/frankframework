@@ -91,7 +91,7 @@ public class Message implements Serializable {
 	private boolean failedToDetermineCharset = false;
 
 	private Message(final MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
-		this.request = createRequestWrapper(request);
+		this.request = createRequestWrapper(convertRequestData(request, context));
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
@@ -121,15 +121,7 @@ public class Message implements Serializable {
 	}
 
 	public Message(Reader request, MessageContext context) throws IOException {
-		this.context = context;
-		this.requestClass = ClassUtils.nameOf(request);
-		Message temporaryMessage = MessageUtils.fromReader(request);
-		copyFromTemporaryMessage(temporaryMessage);
-		this.request = createRequestWrapper(temporaryMessage.request.asRawObject());
-		if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
-			// Ensure charset is now always UTF-8 because that's what it is after converting from stream
-			this.context.withCharset(StandardCharsets.UTF_8);
-		}
+		this(context, request, request.getClass());
 	}
 
 	public Message(Reader request) throws IOException {
@@ -163,11 +155,7 @@ public class Message implements Serializable {
 	}
 
 	protected Message(InputStream request, MessageContext context, Class<?> requestClass) throws IOException {
-		this.context = context;
-		this.requestClass = ClassUtils.nameOf(requestClass);
-		Message temporaryMessage = MessageUtils.fromInputStream(request);
-		copyFromTemporaryMessage(temporaryMessage);
-		this.request = createRequestWrapper(temporaryMessage.request.asRawObject());
+		this(context, request, requestClass);
 	}
 
 	public Message(InputStream request) throws IOException {
@@ -211,16 +199,55 @@ public class Message implements Serializable {
 		context.withCharset(charset);
 	}
 
-	private void copyFromTemporaryMessage(Message temporaryMessage) {
+	private static void copyMessageContext(Message temporaryMessage, MessageContext context) {
 		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
-		temporaryMessage.context.getAll().keySet()
+		temporaryMessage.context.getAll().entrySet()
 				.stream()
-				.filter(key -> !key.equals(MessageContext.METADATA_NAME))
-				.forEachOrdered(key -> this.context.put(key, temporaryMessage.context.get(key)));
+				.filter(entry -> !entry.getKey().equals(MessageContext.METADATA_NAME))
+				.forEachOrdered(entry -> context.put(entry.getKey(), entry.getValue()));
 	}
 
 	private DataConverter createRequestWrapper(@Nullable Object request) {
 		return DataConverterFactory.getConverter(request, this::computeCharsetOrNull);
+	}
+
+	/**
+	 * Convert request-data to form for internal storage. InputStreams and Readers are consumed, Strings and byte[] that are too large are externalized.
+	 * The MessageContext may be updated.
+	 * If no conversion is required the original request object is returned.
+	 *
+	 * @param request Request object to convert.
+	 * @param context MessageContext used for conversions
+	 * @return Object suitable for internal storage (NB: May still fail if not supported by any current DataConverter).
+	 */
+	@SneakyThrows(IOException.class)
+	@Contract("null, _ -> null; !null, _ -> !null")
+	private static @Nullable Object convertRequestData(@Nullable Object request, MessageContext context) {
+		return switch (request) {
+			case byte[] bytes when bytes.length > MESSAGE_MAX_IN_MEMORY -> SerializableFileReference.of(bytes);
+			case String string when string.length() > MESSAGE_MAX_IN_MEMORY -> SerializableFileReference.of(string, context.getOrDefault(MessageContext.METADATA_CHARSET, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
+			case Reader reader -> convertReader(reader, context);
+			case InputStream inputStream -> convertInputStream(inputStream, context);
+			case null, default -> request;
+		};
+	}
+
+	@Contract("_, _ -> !null")
+	private static @Nullable Object convertInputStream(InputStream inputStream, MessageContext context) throws IOException {
+		Message temporaryMessage = MessageUtils.fromInputStream(inputStream);
+		copyMessageContext(temporaryMessage, context);
+		return temporaryMessage.request.asRawObject();
+	}
+
+	@Contract("_, _ -> !null")
+	private static @Nullable Object convertReader(Reader reader, MessageContext context) throws IOException {
+		Message temporaryMessage = MessageUtils.fromReader(reader);
+		copyMessageContext(temporaryMessage, context);
+		if (context.containsKey(MessageContext.METADATA_CHARSET)) {
+			// Ensure charset is now always UTF-8 because that's what it is after converting from stream
+			context.withCharset(StandardCharsets.UTF_8);
+		}
+		return temporaryMessage.request.asRawObject();
 	}
 
 	/**
@@ -461,7 +488,7 @@ public class Message implements Serializable {
 			case Message message -> message;
 			case Reader reader -> MessageUtils.fromReader(reader);
 			case InputStream stream -> MessageUtils.fromInputStream(stream);
-			case URL rL -> new UrlMessage(rL);
+			case URL url -> new UrlMessage(url);
 			case File file -> new FileMessage(file);
 			case Path path -> new PathMessage(path);
 			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / unwrapping should be done via Listener.");

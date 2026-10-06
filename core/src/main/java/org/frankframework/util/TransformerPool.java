@@ -250,7 +250,7 @@ public class TransformerPool {
 	 */
 	@NonNull
 	@Deprecated
-	public static TransformerPool configureTransformer0(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws ConfigurationException {
+	public static TransformerPool configureTransformer0(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nullable OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws ConfigurationException {
 		if (StringUtils.isNotEmpty(xPathExpression)) {
 			if (StringUtils.isNotEmpty(styleSheetName)) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
@@ -319,7 +319,7 @@ public class TransformerPool {
 	}
 
 	@NonNull
-	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @NonNull String xPathExpression, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws TransformerConfigurationException {
+	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @NonNull String xPathExpression, @Nullable OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws TransformerConfigurationException {
 		String xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, params, true, StringUtils.isEmpty(namespaceDefs), xsltVersion);
 		log.debug("xpath [{}] resulted in xslt [{}]", xPathExpression, xslt);
 

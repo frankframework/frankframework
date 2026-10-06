@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -103,7 +104,7 @@ public class ValidateAttributeRule extends AbstractDigesterRule {
 			// When it's unable to convert to the provided type and:
 			// The type is not a String AND The value is empty
 			// Do not create a warning.
-			if(!"".equals(value)) {
+			if(!value.isEmpty()) {
 				addLocalWarning(e.getMessage());
 			}
 		}
@@ -130,13 +131,14 @@ public class ValidateAttributeRule extends AbstractDigesterRule {
 	}
 
 	/** Fancy equals that type-checks the attribute value against the defaultValue. */
-	private boolean equals(Object defaultValue, String value) {
-		if(defaultValue == null) {
+	private boolean equals(@Nullable Object defaultValue, @NonNull String value) {
+		if (defaultValue == null) {
 			return false;
 		}
 
 		try {
-			return ClassUtils.convertToType(defaultValue.getClass(), value).equals(defaultValue);
+			Class<?> defaultValueClass = defaultValue.getClass(); // Extracted this because that avoids a warning about nullability issue??
+			return ClassUtils.convertToType(defaultValueClass, value).equals(defaultValue);
 		} catch (IllegalArgumentException e) {
 			return false;
 		}

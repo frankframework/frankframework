@@ -72,7 +72,7 @@ public class ProcessUtil {
 	}
 
 	public static List<String> splitUpCommandString(String command) {
-		return Arrays.asList(command.split("(\\s|\f)+"));
+		return Arrays.asList(command.split("([\\s\f])+"));
 	}
 
 	public static Message executeCommand(String command) throws IOException {
