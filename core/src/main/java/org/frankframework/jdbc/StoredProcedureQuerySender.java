@@ -45,6 +45,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.JdbcUtil;
 
@@ -146,6 +147,7 @@ import org.frankframework.util.JdbcUtil;
  *
  * @since 7.9
  */
+@SuppressWarnings("java:S1185") // We override methods without changing implementation in order to change documentation for the specific class, so ignore Sonar warning about it
 public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	/**
@@ -226,20 +228,25 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	@Override
 	protected PreparedStatement prepareQueryWithResultSet(Connection con, String query, boolean resultSetUpdatable) throws SQLException {
 		final CallableStatement callableStatement = con.prepareCall(query, ResultSet.TYPE_FORWARD_ONLY, resultSetUpdatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
-		ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
-		for (Map.Entry<Integer, IParameter> entry : outputParameters.entrySet()) {
-			final int position = entry.getKey();
-			final IParameter param = entry.getValue();
-			final int typeNr;
-			// Parameter metadata are more accurate than our parameter type mapping and
-			// for some databases, this can cause exceptions.
-			// But for Oracle we do need our own mapping.
-			if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != ParameterType.LIST) {
-				typeNr = parameterMetaData.getParameterType(position);
-			} else {
-				typeNr = JdbcUtil.mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();
+		try {
+			ParameterMetaData parameterMetaData = callableStatement.getParameterMetaData();
+			for (Map.Entry<Integer, IParameter> entry : outputParameters.entrySet()) {
+				final int position = entry.getKey();
+				final IParameter param = entry.getValue();
+				final int typeNr;
+				// Parameter metadata are more accurate than our parameter type mapping and
+				// for some databases, this can cause exceptions.
+				// But for Oracle we do need our own mapping.
+				if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != ParameterType.LIST) {
+					typeNr = parameterMetaData.getParameterType(position);
+				} else {
+					typeNr = JdbcUtil.mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();
+				}
+				callableStatement.registerOutParameter(position, typeNr);
 			}
-			callableStatement.registerOutParameter(position, typeNr);
+		} catch (SQLException e) {
+			CloseUtils.closeSilently(callableStatement);
+			throw e;
 		}
 		return callableStatement;
 	}
