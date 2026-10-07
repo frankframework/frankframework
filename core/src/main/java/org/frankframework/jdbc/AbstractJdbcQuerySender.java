@@ -683,7 +683,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	protected Message executeOtherQuery(@NonNull Connection connection, @NonNull PreparedStatement statement, @NonNull String query, @Nullable String resultQuery, @Nullable PreparedStatement resStmt, @Nullable Message message, @Nullable PipeLineSession session, @Nullable ParameterList parameterList) throws SenderException {
-		try (statement) {
+		try {
 			int numRowsAffected = 0;
 			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
 				try (CallableStatement cstmt = getCallWithRowIdReturned(connection, query)) {
@@ -725,7 +725,9 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			}
 		}
 		if (getColumnsReturnedList() != null) {
-			return getResult(getReturnedColumns(statement));
+			try (ResultSet returnedColumns = getReturnedColumns(statement)) {
+				return getResult(returnedColumns);
+			}
 		}
 		if (isScalar()) {
 			return new Message(Integer.toString(numRowsAffected));

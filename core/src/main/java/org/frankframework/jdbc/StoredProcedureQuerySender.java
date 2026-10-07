@@ -274,7 +274,9 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			return getUpdateStatementResult(callableStatement, resultQuery, resStmt, updateCount);
 		}
 		if (isScalar() || isScalarExtended()) {
-			return getResult(new StoredProcedureResultWrapper(getDbmsSupport(), callableStatement, outputParameters), null);
+			try (StoredProcedureResultWrapper resultset = new StoredProcedureResultWrapper(getDbmsSupport(), callableStatement, outputParameters)) {
+				return getResult(resultset, null);
+			}
 		}
 
 		DB2XMLWriter db2xml = buildDb2XMLWriter();

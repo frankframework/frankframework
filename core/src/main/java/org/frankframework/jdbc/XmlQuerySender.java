@@ -287,8 +287,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		if (where != null) {
 			query = query + " WHERE " + where;
 		}
-		try {
-			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
+		try (PreparedStatement statement = getStatement(connection, query, QueryType.OTHER)) {
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException("got exception executing a DELETE SQL command [" + query + "]", e);
@@ -340,8 +339,7 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	private Message executeUpdate(Connection connection, String query, List<Column> columns) throws SenderException {
-		try {
-			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
+		try (PreparedStatement statement = getStatement(connection, query, QueryType.OTHER)) {
 			applyParameters(statement, columns);
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (Exception t) {
