@@ -179,7 +179,7 @@ importers:
         specifier: 8.71.0
         version: 8.71.0(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       vitest:
-        specifier: ^5.0.2
+        specifier: ^5.0.3
         version: 5.0.3(@types/node@26.6.2)(@vitest/browser-webdriverio@5.0.0)(happy-dom@20.14.5)(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(yaml@2.9.1))
 
   console/frontend/src/main/frontend/cypress:
@@ -189,13 +189,13 @@ importers:
         version: 16.1.1
       cypress-multi-reporters:
         specifier: ^2.0.5
-        version: 2.0.5(mocha@12.0.2)(supports-color@8.1.1)
+        version: 2.0.5(mocha@12.0.3)(supports-color@8.1.1)
       mocha:
-        specifier: ^12.0.2
-        version: 12.0.2
+        specifier: ^12.0.3
+        version: 12.0.3
       mochawesome:
         specifier: ^8.1.1
-        version: 8.1.1(mocha@12.0.2)
+        version: 8.1.1(mocha@12.0.3)
       typescript:
         specifier: ~5.9.3
         version: 5.9.3
@@ -3422,10 +3422,6 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
-  lru-cache@11.5.2:
-    resolution: {integrity: sha512-4pfM1Ff0x50o0tQwb5ucw/RzNyD0/YJME6IVcStalZuMWxdt3sR3huStTtxz4PUmvZfRguvDejasvQ2kifR11g==}
-    engines: {node: 20 || >=22}
-
   lru-cache@11.5.3:
     resolution: {integrity: sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==}
     engines: {node: 20 || >=22}
@@ -3503,8 +3499,8 @@ packages:
   mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
 
-  mocha@12.0.2:
-    resolution: {integrity: sha512-SjAulGHxlMJLCD1bhvJBAiYwYxglydRzA9PDQ5MALq1oLRMMtIhxSQJ0olCFgA7c9YbTdxC0KOV0wl8JEDYVhA==}
+  mocha@12.0.3:
+    resolution: {integrity: sha512-beammieDdiWdkjANWeWPpkxUROYGi5FN88fPOkLiticz7HTg3Y+Pho3EYE6SUdcuWnZ3h2WD8EXCA55JF4o6wg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
@@ -6777,11 +6773,11 @@ snapshots:
 
   css-what@8.0.0: {}
 
-  cypress-multi-reporters@2.0.5(mocha@12.0.2)(supports-color@8.1.1):
+  cypress-multi-reporters@2.0.5(mocha@12.0.3)(supports-color@8.1.1):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       lodash: 4.18.1
-      mocha: 12.0.2
+      mocha: 12.0.3
       semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
@@ -7814,8 +7810,6 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
-  lru-cache@11.5.2: {}
-
   lru-cache@11.5.3: {}
 
   lru-cache@5.1.1:
@@ -7880,7 +7874,7 @@ snapshots:
 
   mitt@3.0.1: {}
 
-  mocha@12.0.2:
+  mocha@12.0.3:
     dependencies:
       browser-stdout: 1.3.1
       chokidar: 5.0.0
@@ -7913,11 +7907,11 @@ snapshots:
       tcomb-validation: 3.4.1
       yargs: 17.7.3
 
-  mochawesome@8.1.1(mocha@12.0.2):
+  mochawesome@8.1.1(mocha@12.0.3):
     dependencies:
       diff: 9.0.0
       json-stringify-safe: 5.0.1
-      mocha: 12.0.2
+      mocha: 12.0.3
       mochawesome-report-generator: 6.3.2
 
   modern-tar@0.7.6: {}
@@ -8141,7 +8135,7 @@ snapshots:
 
   path-scurry@2.0.2:
     dependencies:
-      lru-cache: 11.5.2
+      lru-cache: 11.5.3
       minipass: 7.1.3
 
   pathe@2.0.3: {}
