@@ -92,6 +92,11 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 		this.applicationContext = applicationContext;
 	}
 
+	@Override
+	public boolean messageWillBeRedeliveredOnExitStateError() {
+		return true;
+	}
+
 	public static class CustomMessageClass {
 		private final @Getter String message;
 		private int deliveryCount;

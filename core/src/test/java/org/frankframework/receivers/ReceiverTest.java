@@ -222,9 +222,9 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public Receiver<Serializable> setupReceiverWithListener(Adapter adapter, IListener<Serializable> listener, ITransactionalStorage errorStorage) {
+	public <M> Receiver<M> setupReceiverWithListener(Adapter adapter, IListener<M> listener, ITransactionalStorage errorStorage) {
 		@SuppressWarnings("unchecked")
-		Receiver<Serializable> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
+		Receiver<M> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
 		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
 		receiver.setListener(listener);
 		receiver.setName("receiver");
@@ -817,16 +817,16 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		Adapter adapter = setupAdapter();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
-		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		ITransactionalStorage errorStorage = setupErrorStorage();
 		MockPushingListenerWithCustomMessageType listener = new MockPushingListenerWithCustomMessageType();
-		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
+		Receiver<?> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
-		MessageWrapper<Object> messageWrapper = new MessageWrapper<>(Message.asMessage(testMessage), "1", "1");
-		doReturn(messageWrapper).when(errorStorage).consumeMessage("1");
+		MessageWrapper<Serializable> messageWrapper = new MessageWrapper<>(Message.asMessage(testMessage), "1", "1");
+		doReturn(messageWrapper).when(errorStorage).consumeMessage("1", new PipeLineSession());
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setResult(Message.asMessage("dummy"));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
 
 		// start adapter
 		configuration.configure();
