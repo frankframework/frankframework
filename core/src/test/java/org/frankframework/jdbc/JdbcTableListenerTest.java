@@ -953,7 +953,7 @@ public class JdbcTableListenerTest {
 		listener.setOrderField("TKEY, tINT");
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.CLOB);
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.configure();
 		listener.start();
 
@@ -967,7 +967,7 @@ public class JdbcTableListenerTest {
 		listener.setOrderField("TKEY, MISSING1, MISSING2");
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.CLOB);
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.configure();
 
 		LifecycleException exception = assertThrows(LifecycleException.class, listener::start);
@@ -996,7 +996,7 @@ public class JdbcTableListenerTest {
 	public void testSelectQueryWithAdditionalFieldsNotFound() throws ConfigurationException {
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(AbstractJdbcListener.MessageFieldType.CLOB);
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.setAdditionalFields("MISSING, tVARCHAR");
 		listener.configure();
 
