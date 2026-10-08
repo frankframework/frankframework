@@ -19,5 +19,6 @@ services:
     environment:
       application.server.type.custom: NARAYANA
       larva.adapter.active: false
+      active.javascript-j2v8: false
       JPDA_ADDRESS: \*:8001
       JPDA_TRANSPORT: dt_socket

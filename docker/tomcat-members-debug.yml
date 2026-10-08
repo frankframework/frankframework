@@ -25,4 +25,5 @@ services:
       - "5710-5720:5700-5710"
     environment:
       larva.adapter.active: false
+      active.javascript-j2v8: false
       management.gateway.inbound.class: org.frankframework.management.gateway.HazelcastInboundGateway
