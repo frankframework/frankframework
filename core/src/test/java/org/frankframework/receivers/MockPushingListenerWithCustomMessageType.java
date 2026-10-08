@@ -2,8 +2,7 @@ package org.frankframework.receivers;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
@@ -59,7 +58,7 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<CustomMessageClass> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<CustomMessageClass> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		return Message.asMessage(rawMessage.rawMessage.getMessage());
 	}
 
@@ -89,7 +88,7 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 	}
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
