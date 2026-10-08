@@ -218,11 +218,12 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public Receiver<Serializable> setupReceiverWithListener(Adapter adapter, IListener<Serializable> listener, ITransactionalStorage<Serializable> errorStorage) {
+	public Receiver<Serializable> setupReceiverWithListener(Adapter adapter, IListener<?> listener, ITransactionalStorage<Serializable> errorStorage) {
 		@SuppressWarnings("unchecked")
 		Receiver<Serializable> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
 		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
-		receiver.setListener(listener);
+		//noinspection unchecked
+		receiver.setListener((IListener<Serializable>) listener);
 		receiver.setName("receiver");
 		DummySender sender = configuration.createBean(DummySender.class);
 		receiver.setSender(sender);
