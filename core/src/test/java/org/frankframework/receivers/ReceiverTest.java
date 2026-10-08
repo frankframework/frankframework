@@ -23,6 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -614,7 +615,7 @@ public class ReceiverTest {
 		);
 
 		listener.setMockedDeliveryCount(receiver.getMaxRetries());
-		receiver.updateMessageReceiveCount(messageWrapper);
+		receiver.updateMessageReceiveCount(messageWrapper, false);
 
 		assertAll(
 				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
@@ -622,7 +623,7 @@ public class ReceiverTest {
 		);
 
 		listener.setMockedDeliveryCount(receiver.getMaxRetries() - 1);
-		receiver.updateMessageReceiveCount(messageWrapper);
+		receiver.updateMessageReceiveCount(messageWrapper, false);
 
 		assertAll(
 				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
@@ -630,7 +631,7 @@ public class ReceiverTest {
 		);
 
 		listener.setMockedDeliveryCount(receiver.getMaxRetries() + 1);
-		receiver.updateMessageReceiveCount(messageWrapper);
+		receiver.updateMessageReceiveCount(messageWrapper, false);
 
 		assertAll(
 				()-> assertFalse(receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, new PipeLineSession(), false)),
@@ -638,7 +639,7 @@ public class ReceiverTest {
 		);
 
 		listener.setMockedDeliveryCount(receiver.getMaxRetries() + 2);
-		receiver.updateMessageReceiveCount(messageWrapper);
+		receiver.updateMessageReceiveCount(messageWrapper, false);
 
 		assertAll(
 				()-> assertTrue(receiver.isDeliveryRetryLimitExceededAfterMessageProcessed(messageWrapper)),
@@ -807,6 +808,33 @@ public class ReceiverTest {
 
 		verify(listener).changeProcessState(any(), eq(ProcessState.DONE), any());
 
+		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
+	}
+
+	@Test
+	public void testManualRetryWithErrorStorageCustomListener() throws Exception {
+		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		Adapter adapter = setupAdapter();
+		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MockPushingListenerWithCustomMessageType listener = new MockPushingListenerWithCustomMessageType();
+		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
+
+		MessageWrapper<Object> messageWrapper = new MessageWrapper<>(Message.asMessage(testMessage), "1", "1");
+		doReturn(messageWrapper).when(errorStorage).consumeMessage("1");
+
+		PipeLineResult plr = new PipeLineResult();
+		plr.setResult(Message.asMessage("dummy"));
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
+
+		// start adapter
+		configuration.configure();
+
+		// Act
+		assertDoesNotThrow(()-> receiver.retryMessage("1"));
+
+		// Assert
 		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 	}
 
