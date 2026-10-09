@@ -49,7 +49,7 @@ public class PropertyLoader extends Properties {
 	private static final long serialVersionUID = 1L;
 	private final String rootPropertyFile;
 
-	public PropertyLoader(File propertiesFile, Properties defaults) throws IOException {
+	public PropertyLoader(File propertiesFile, @Nullable Properties defaults) throws IOException {
 		super(defaults);
 		rootPropertyFile = propertiesFile.getAbsolutePath();
 		loadResource(propertiesFile.toURI().toURL());
@@ -347,5 +347,17 @@ public class PropertyLoader extends Properties {
 				default -> throw new IllegalArgumentException("Extension not supported: " + extension);
 			}
 		}
+	}
+
+	@Override
+	public synchronized boolean equals(Object o) {
+		// For benefit of Sonar
+		return o instanceof PropertyLoader other && rootPropertyFile.equals(other.rootPropertyFile) && super.equals(o);
+	}
+
+	@Override
+	public synchronized int hashCode() {
+		// For benefit of Sonar
+		return super.hashCode() * 31 + rootPropertyFile.hashCode();
 	}
 }

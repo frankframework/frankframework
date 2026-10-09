@@ -72,10 +72,14 @@ public abstract class AbstractMailListener<M, A, S extends IMailFileSystem<M,A>>
 
 	@Override
 	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
+		M file = rawMessage.getRawMessage();
+		if (file == null) {
+			throw new ListenerException("File is null");
+		}
 		return switch (getMessageType().name()) {
 			case "MIME" -> {
 				try {
-					yield getFileSystem().getMimeContent(rawMessage.getRawMessage());
+					yield getFileSystem().getMimeContent(file);
 				} catch (FileSystemException e) {
 					throw new ListenerException("cannot get MimeContents",e);
 				}
@@ -84,9 +88,9 @@ public abstract class AbstractMailListener<M, A, S extends IMailFileSystem<M,A>>
 				try {
 					final MessageBuilder msgBuilder = new MessageBuilder();
 					try (SaxDocumentBuilder emailXml = new SaxDocumentBuilder("email", msgBuilder.asXmlWriter(), false)) {
-						emailXml.addAttribute("name", getFileSystem().getName(rawMessage.getRawMessage()));
+						emailXml.addAttribute("name", getFileSystem().getName(file));
 
-						getFileSystem().extractEmail(rawMessage.getRawMessage(), emailXml);
+						getFileSystem().extractEmail(file, emailXml);
 					}
 					yield msgBuilder.build();
 				} catch (SAXException | FileSystemException e) {
