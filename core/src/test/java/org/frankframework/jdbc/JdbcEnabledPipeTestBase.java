@@ -32,7 +32,7 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
 		this.env = env;
-		adapter = env.createBean(Adapter.class);
+		adapter = env.createBean();
 		pipe = createPipe();
 		env.autowire(pipe);
 		pipe.addForward(new PipeForward("success", "exit"));

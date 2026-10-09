@@ -88,7 +88,7 @@ public class JdbcTableListenerTest {
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
-		listener = env.createBean(JdbcTableListener.class);
+		listener = env.createBean();
 		listener.setTableName(TEST_TABLE);
 		listener.setKeyField("TKEY");
 		listener.setStatusField("TINT");

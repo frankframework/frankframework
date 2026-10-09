@@ -39,12 +39,12 @@ public class MessageStoreListenerTest {
 	public void setup(DatabaseTestEnvironment env) {
 		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms()); // tests are based on H2 syntax queries
 
-		listener = env.createBean(MessageStoreListener.class);
+		listener = env.createBean();
 		listener.setTableName(TEST_TABLE_NAME);
 		listener.setMessageIdField(MESSAGE_ID_FIELD);
 		listener.setSlotId(SLOT_ID);
 
-		storage = env.createBean(JdbcTransactionalStorage.class);
+		storage = env.createBean();
 		storage.setTableName(TEST_TABLE_NAME);
 		storage.setIdField(MESSAGE_ID_FIELD);
 		storage.setSlotId(SLOT_ID);

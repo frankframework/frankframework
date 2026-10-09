@@ -24,6 +24,7 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.DatabaseTestOptions;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageBrowsingFilter;
 import org.frankframework.util.TimeProvider;
 
@@ -39,13 +40,13 @@ class JdbcTableMessageBrowserTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
-		listener = env.createBean(MessageStoreListener.class);
+		listener = env.createBean();
 		listener.setTableName(TEST_TABLE_NAME);
 		listener.setMessageIdField(MESSAGE_ID_FIELD);
 		listener.setSlotId(SLOT_ID);
 		listener.configure();
 
-		storage = env.createBean(JdbcTransactionalStorage.class);
+		storage = env.createBean();
 		storage.setTableName(TEST_TABLE_NAME);
 		storage.setIdField(MESSAGE_ID_FIELD);
 		storage.setSlotId(SLOT_ID);
@@ -57,10 +58,10 @@ class JdbcTableMessageBrowserTest {
 
 	@AfterEach
 	public void teardown() {
+		CloseUtils.closeSilently(session);
 		if (listener != null) {
 			listener.stop(); // does this trigger an exception
 		}
-		session.close();
 	}
 
 	@DatabaseTest

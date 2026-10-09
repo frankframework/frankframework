@@ -63,7 +63,7 @@ public class JdbcTransactionalStorageTest {
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
 		this.env = env;
-		storage = env.createBean(JdbcTransactionalStorage.class);
+		storage = env.createBean();
 		storage.setTableName(TABLE_NAME);
 		storage.setMessageField(messageField);
 		storage.setKeyField(keyField);
