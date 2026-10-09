@@ -117,8 +117,9 @@ public class DatabaseTestEnvironment implements AutoCloseable {
 		}
 	}
 
-	public <T> T createBean(Class<T> beanClass) {
-		T bean = SpringUtils.createBean(configuration, beanClass);
+	@SafeVarargs
+	public final <T> T createBean(T... reified) {
+		T bean = SpringUtils.createBean(configuration, reified);
 		if(bean instanceof JdbcFacade facade) {
 			facade.setDatasourceName(getDataSourceName());
 		}
