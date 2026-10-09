@@ -199,8 +199,30 @@ public class WebContentServletTest {
 
 		// Assert
 		assertEquals(302, response.getStatus());
-		assertEquals("/webcontent/" + TestConfiguration.TEST_CONFIGURATION_NAME + "/sub/", response.getRedirectedUrl());
+		assertEquals("./sub/", response.getRedirectedUrl());
 		assertTrue(StringUtils.isBlank(response.getContentAsString()));
+	}
+
+	@Test
+	void testSubFolderRedirectStaysRelativeForDoubleSlashRequestUri() throws IOException, ServletException, ClassLoaderException {
+		TestConfiguration config = createWebContentConfiguration();
+		WebContentServlet webContentServlet = spy(WebContentServlet.class);
+		IbisManager ibisManager = new IbisManager();
+		ibisManager.addConfiguration(config);
+		doReturn(ibisManager).when(webContentServlet).getIbisManager();
+		webContentServlet.init();
+
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "");
+		request.setPathInfo("/" + TestConfiguration.TEST_CONFIGURATION_NAME + "/sub");
+		request.setRequestURI("//webcontent/" + TestConfiguration.TEST_CONFIGURATION_NAME + "/sub");
+		MockHttpServletResponse response = new MockHttpServletResponse();
+
+		// Act
+		webContentServlet.doGet(request, response);
+
+		// Assert
+		assertEquals(302, response.getStatus());
+		assertEquals("./sub/", response.getRedirectedUrl());
 	}
 
 	@Test
@@ -212,7 +234,7 @@ public class WebContentServletTest {
 
 		// Assert
 		assertEquals(302, response.getStatus());
-		assertEquals("/webcontent/" + TestConfiguration.TEST_CONFIGURATION_NAME + "/sub/?a=b&c=d", response.getRedirectedUrl());
+		assertEquals("./sub/?a=b&c=d", response.getRedirectedUrl());
 	}
 
 	@Test

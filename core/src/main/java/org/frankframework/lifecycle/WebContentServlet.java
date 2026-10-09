@@ -196,8 +196,14 @@ public class WebContentServlet extends AbstractHttpServlet {
 		return MediaType.APPLICATION_OCTET_STREAM;
 	}
 
+	/**
+	 * Relative to the current URL, so the redirect can only ever point at the folder itself:
+	 * the raw request URI may start with a double slash, which a browser would read as a host.
+	 * The leading {@code ./} keeps a folder name containing a colon from being read as a scheme.
+	 */
 	private String getFolderRedirectUrl(HttpServletRequest req) {
-		String location = req.getRequestURI() + "/";
+		String requestUri = req.getRequestURI();
+		String location = "./" + requestUri.substring(requestUri.lastIndexOf('/') + 1) + "/";
 		String queryString = req.getQueryString();
 		if (StringUtils.isNotEmpty(queryString)) {
 			location += "?" + queryString;
