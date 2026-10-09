@@ -94,9 +94,8 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 
 	private DataSource datasource = null;
 
-	public AbstractJdbcMessageBrowser() {
+	protected AbstractJdbcMessageBrowser() {
 		super();
-		setTransacted(true);
 	}
 
 	@Override

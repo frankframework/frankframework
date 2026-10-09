@@ -63,9 +63,6 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getReceiver().isTransacted()) {
-			setTransacted(true);
-		}
 		super.configure();
 		try {
 			Map<ProcessState, String> orderedUpdateStatusQueries = new LinkedHashMap<>();

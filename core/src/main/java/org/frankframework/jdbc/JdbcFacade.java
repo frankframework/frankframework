@@ -35,7 +35,6 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.DbmsException;
@@ -68,7 +67,7 @@ import org.frankframework.util.LogUtil;
  * @since 	4.1
  */
 @DestinationType(DestinationType.Type.JDBC)
-public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, ConfigurableLifecycle, FrankElement, NameAware {
+public class JdbcFacade implements HasPhysicalDestination, ConfigurableLifecycle, FrankElement, NameAware {
 	// Unused here, uses 'this' lookup so subclasses use the correct implementation class.
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -91,7 +90,6 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	private String password = null;
 
 	private boolean started = false;
-	private boolean transacted = false;
 
 	private DbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
@@ -322,17 +320,6 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	}
 	protected String getPassword() {
 		return password;
-	}
-
-	/**
-	 * controls the use of transactions
-	 */
-	public void setTransacted(boolean transacted) {
-		this.transacted = transacted;
-	}
-	@Override
-	public boolean isTransacted() {
-		return transacted;
 	}
 
 	/**
