@@ -26,12 +26,12 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.HasSender;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IPipe;
-import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.TransactionAware;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.stream.Message;
@@ -84,7 +84,7 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 	/** If the pipe implements HasSender and the sender is TX Capable, it should mark RollBackOnly! */
 	private boolean hasTxCapableSender(IPipe pipe) {
 		if(pipe instanceof HasSender hasSender) {
-			return hasSender.getSender() instanceof IXAEnabled;
+			return hasSender.getSender() instanceof TransactionAware;
 		}
 		return false;
 	}

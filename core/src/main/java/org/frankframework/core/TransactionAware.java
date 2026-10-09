@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 206 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,17 +16,7 @@
 package org.frankframework.core;
 
 /**
- * Indicates a Pipe, Sender or Listener to be capable of supporting XA-transactions.
- * When isTransacted() returns true, alternative XA enabled versions of resources like
- * connection factories should be used by implementing classes.
- * @author Gerrit van Brakel
- * @since  4.1
+ * Marker Interface to indicate a class is aware of current transaction. This is used in checks such as in the {@link org.frankframework.processors.TransactionAttributePipeProcessor}.
  */
-public interface IXAEnabled {
-
-	/**
-	 * indicates implementing object is under transaction control, using XA-transactions
-	 */
-	boolean isTransacted();
-
+public interface TransactionAware {
 }

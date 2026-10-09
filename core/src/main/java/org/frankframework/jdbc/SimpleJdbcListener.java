@@ -34,7 +34,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -52,38 +51,11 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	private String selectQuery;
 	private boolean trace = false;
 
-	protected Connection connection = null;
-
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT_COUNT)) {
 			throw new ConfigurationException(getLogPrefix() + "query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT_COUNT + "]");
-		}
-	}
-
-	@Override
-	public void start() {
-		if (!isConnectionsArePooled()) {
-			try {
-				connection = getConnection();
-			} catch (JdbcException e) {
-				throw new LifecycleException(e);
-			}
-		}
-	}
-
-	@Override
-	public void stop() {
-		try {
-			if (connection != null) {
-				connection.close();
-			}
-		} catch (SQLException e) {
-			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
-		} finally {
-			connection = null;
-			super.stop();
 		}
 	}
 
@@ -100,15 +72,10 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
-		if (isConnectionsArePooled()) {
-			try (Connection c = getConnection()) {
-				return getRawMessage(c, threadContext);
-			} catch (JdbcException | SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		synchronized (connection) {
-			return getRawMessage(connection, threadContext);
+		try (Connection c = getConnection()) {
+			return getRawMessage(c, threadContext);
+		} catch (JdbcException | SQLException e) {
+			throw new ListenerException(e);
 		}
 	}
 
