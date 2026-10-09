@@ -120,6 +120,7 @@ public class Message implements Serializable {
 		this(new MessageContext(), request);
 	}
 
+	@SuppressWarnings("java:S1130") // IOException can be thrown, Sonar doesn't know b/c of SneakyThrows in parent constructor
 	public Message(Reader request, MessageContext context) throws IOException {
 		this(context, request, request.getClass());
 	}
@@ -154,6 +155,7 @@ public class Message implements Serializable {
 		this(request, context, request.getClass());
 	}
 
+	@SuppressWarnings("java:S1130") // IOException can be thrown, Sonar doesn't know b/c of SneakyThrows in parent constructor
 	protected Message(InputStream request, MessageContext context, Class<?> requestClass) throws IOException {
 		this(context, request, requestClass);
 	}
