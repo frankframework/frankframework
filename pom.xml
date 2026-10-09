@@ -287,7 +287,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>33.7.1-jre</version>
+				<version>33.7.2-jre</version>
 			</dependency>
 			<dependency>
 				<!-- needed for io.fabric8:kubernetes-client transitive deps -->
@@ -921,7 +921,7 @@
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
 						<!-- Because of this mockito agent property, mockito now needs to be a dependency of every single module even when not used in tests in that module -->
-						<argLine>@{argLine} -javaagent:${project.build.directory}/mockito-core.jar -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI</argLine>
+						<argLine>@{argLine} -javaagent:${project.build.directory}/mockito-core.jar -Dfile.encoding=CP-1252 --add-opens java.base/java.io=ALL-UNNAMED</argLine>
 					</configuration>
 					<executions>
 						<execution>
@@ -1456,7 +1456,7 @@
 							<configuration>
 								<rules>
 									<requireJavaVersion>
-										<version>[21,27)</version>
+										<version>[21,28)</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>
