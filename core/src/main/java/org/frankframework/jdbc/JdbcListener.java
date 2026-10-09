@@ -29,9 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IHasProcessState;
@@ -43,8 +40,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.receivers.Receiver;
-import org.frankframework.receivers.ReceiverAware;
 
 /**
  * JdbcListener base class.
@@ -55,8 +50,6 @@ import org.frankframework.receivers.ReceiverAware;
  * @since   4.7
  */
 public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekableListener<M>, IHasProcessState<M>, IRedeliveringListener<M> {
-
-	private @Getter @Setter Receiver<M> receiver;
 
 	private Map<ProcessState, String> updateStatusQueries = new EnumMap<>(ProcessState.class);
 	private Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
