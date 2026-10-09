@@ -310,7 +310,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						try {
 							try (PipeLineSession session = new PipeLineSession()) {
 								session.putAll(threadContext);
-								receiver.updateMessageReceiveCount(rawMessage);
+								receiver.updateMessageReceiveCount(rawMessage, false);
 								if (receiver.isSupportProgrammaticRetry() || !receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, session, false)) {
 									receiver.processRawMessage(listener, rawMessage, session, true);
 								} else {

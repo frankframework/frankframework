@@ -93,6 +93,7 @@ public class JsonUtil {
 	 * @return Single scalar value from the message, an empty string if the value could not be reduced to a scalar, or {@code null} if there was no result.
 	 * @throws JsonException If an exception occurred evaluating the expression a {@link JsonException} is thrown.
 	 */
+	@SuppressWarnings("java:S2637") // Sonar false positive on message potentially being null when calling evaluateJsonPathWithBom; Sonar doesn't understand @Contract on Message#isNull
 	public static @Nullable String evaluateJsonPathToSingleValue(@NonNull JsonPath jsonPath, @Nullable Message message) throws JsonException {
 		if (Message.isNull(message)) {
 			return null;

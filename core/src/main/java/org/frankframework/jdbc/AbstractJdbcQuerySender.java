@@ -191,7 +191,12 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 
 	protected final PreparedStatement getStatement(@NonNull Connection con, @NonNull String query, @Nullable QueryType queryType) throws JdbcException, SQLException {
 		PreparedStatement preparedStatement = prepareQuery(con, query, queryType);
-		preparedStatement.setQueryTimeout(getTimeout());
+		try {
+			preparedStatement.setQueryTimeout(getTimeout());
+		} catch (SQLException e) {
+			CloseUtils.closeSilently(preparedStatement);
+			throw e;
+		}
 		return preparedStatement;
 	}
 
@@ -251,11 +256,15 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		PreparedStatement statement = getStatement(connection, query, getQueryType());
 		log.debug("obtained prepared statement to execute");
 		PreparedStatement resultQueryStatement;
+		resultQueryStatement = null;
 		if (convertedResultQuery != null) {
-			resultQueryStatement = connection.prepareStatement(convertedResultQuery);
-			resultQueryStatement.setQueryTimeout(getTimeout());
-		} else {
-			resultQueryStatement = null;
+			try {
+				resultQueryStatement = connection.prepareStatement(convertedResultQuery);
+				resultQueryStatement.setQueryTimeout(getTimeout());
+			} catch (SQLException e) {
+				CloseUtils.closeSilently(statement, resultQueryStatement);
+				throw e;
+			}
 		}
 		return new QueryExecutionContext(query, convertedResultQuery, getQueryType(), newParameterList, connection, statement, resultQueryStatement);
 	}
@@ -520,7 +529,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		return blobOutputStream.getWarnings().asMessage();
 	}
 
-	private ClobWriter getClobWriter(PreparedStatement statement, int clobColumn) throws SQLException, JdbcException {
+	private ClobWriter getClobWriter(PreparedStatement statement, int clobColumn) throws SQLException {
 		log.debug("executing an update CLOB command");
 		ResultSet rs = statement.executeQuery();
 		XmlBuilder result=new XmlBuilder("result");
@@ -550,7 +559,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			} finally {
 				CloseUtils.closeSilently(clobWriter);
 			}
-		} catch (SQLException|JdbcException|IOException e) {
+		} catch (SQLException | IOException e) {
 			throw new SenderException("got exception executing an update CLOB command", e);
 		}
 		return clobWriter.getWarnings().asMessage();
@@ -561,7 +570,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	private SenderResult executeSelectQuery(PreparedStatement statement, @Nullable Path blobOrClobFilename) throws SenderException {
-		try {
+		try (statement) {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
@@ -693,7 +702,9 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			}
 		}
 		if (getColumnsReturnedList() != null) {
-			return getResult(getReturnedColumns(statement));
+			try (ResultSet returnedColumns = getReturnedColumns(statement)) {
+				return getResult(returnedColumns);
+			}
 		}
 		if (isScalar()) {
 			return new Message(Integer.toString(numRowsAffected));
