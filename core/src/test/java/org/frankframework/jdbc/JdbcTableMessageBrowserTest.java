@@ -1,8 +1,7 @@
 package org.frankframework.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
 import org.frankframework.management.bus.dto.StorageItemDTO;
 import org.frankframework.management.bus.dto.StorageItemsDTO;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.DatabaseTestOptions;
@@ -41,14 +39,10 @@ class JdbcTableMessageBrowserTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
-		Receiver<Serializable> receiver = mock(Receiver.class);
-		when(receiver.isTransacted()).thenReturn(false);
-
 		listener = env.createBean(MessageStoreListener.class);
 		listener.setTableName(TEST_TABLE_NAME);
 		listener.setMessageIdField(MESSAGE_ID_FIELD);
 		listener.setSlotId(SLOT_ID);
-		listener.setReceiver(receiver);
 		listener.configure();
 
 		storage = env.createBean(JdbcTransactionalStorage.class);
@@ -78,6 +72,7 @@ class JdbcTableMessageBrowserTest {
 		createTestMessages(150);
 
 		JdbcTableMessageBrowser<Serializable> messageBrowser = (JdbcTableMessageBrowser<Serializable>)listener.getMessageBrowser(ProcessState.AVAILABLE);
+		assertNotNull(messageBrowser);
 		messageBrowser.configure();
 
 		// Act
@@ -108,6 +103,7 @@ class JdbcTableMessageBrowserTest {
 		createTestMessages(250);
 
 		JdbcTableMessageBrowser<Serializable> messageBrowser = (JdbcTableMessageBrowser<Serializable>)listener.getMessageBrowser(ProcessState.AVAILABLE);
+		assertNotNull(messageBrowser);
 		messageBrowser.configure();
 
 		MessageBrowsingFilter filter = new MessageBrowsingFilter(100, 200);
