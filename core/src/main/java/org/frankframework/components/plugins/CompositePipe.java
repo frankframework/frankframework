@@ -87,6 +87,7 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 		if (frankPlugin == null) {
 			frankPlugin = ClassUtils.newInstance(FrankPlugin.class);
 		}
+		frankPlugin.setParameterList(getParameterList());
 	}
 
 	@Override
