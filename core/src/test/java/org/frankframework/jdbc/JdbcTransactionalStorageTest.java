@@ -49,10 +49,10 @@ import org.frankframework.testutil.junit.DatabaseTestOptions;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.TimeProvider;
 
-@WithLiquibase(tableName = JdbcTransactionalStorageTest.tableName)
+@WithLiquibase(tableName = JdbcTransactionalStorageTest.TABLE_NAME)
 public class JdbcTransactionalStorageTest {
 
-	static final String tableName = "JDBCTRANSACTIONALSTORAGETEST";
+	static final String TABLE_NAME = "JDBCTRANSACTIONALSTORAGETEST";
 
 	private JdbcTransactionalStorage storage;
 	private DatabaseTestEnvironment env;
@@ -64,11 +64,11 @@ public class JdbcTransactionalStorageTest {
 	public void setup(DatabaseTestEnvironment env) {
 		this.env = env;
 		storage = env.createBean(JdbcTransactionalStorage.class);
-		storage.setTableName(tableName);
+		storage.setTableName(TABLE_NAME);
 		storage.setMessageField(messageField);
 		storage.setKeyField(keyField);
 		storage.setCheckTable(false);
-		storage.setSequenceName("SEQ_" + tableName);
+		storage.setSequenceName("SEQ_" + TABLE_NAME);
 		storage.setSlotId("test");
 		storage.setOnlyStoreWhenMessageIdUnique(true);
 	}
@@ -89,7 +89,7 @@ public class JdbcTransactionalStorageTest {
 		storage.setBlobsCompressed(blobsCompressed);
 		storage.configure();
 		// check created query
-		String expected = "SELECT " + keyField + "," + messageField + " FROM " + tableName + " WHERE " + keyField + "=?";
+		String expected = "SELECT " + keyField + "," + messageField + " FROM " + TABLE_NAME + " WHERE " + keyField + "=?";
 		String query = storage.selectDataQuery;
 		assertEquals(expected, query);
 
@@ -131,7 +131,7 @@ public class JdbcTransactionalStorageTest {
 			stmt.setBytes(1, baos.toByteArray());
 			stmt.execute();
 
-			String selectQuery = "SELECT * FROM " + tableName;
+			String selectQuery = "SELECT * FROM " + TABLE_NAME;
 			try (PreparedStatement statement = connection.prepareStatement(selectQuery)) {
 				ResultSet rs = statement.executeQuery();
 				if (rs.next()) {
@@ -187,7 +187,7 @@ public class JdbcTransactionalStorageTest {
 
 	private PreparedStatement prepareStatement(Connection connection, char type) throws SQLException {
 		IDbmsSupport dbmsSupport = env.getDbmsSupport();
-		String query = "INSERT INTO " + tableName + " (" +
+		String query = "INSERT INTO " + TABLE_NAME + " (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField() + "," : "")
 				+ storage.getTypeField() + ","
 				+ storage.getSlotIdField() + ","
@@ -229,7 +229,7 @@ public class JdbcTransactionalStorageTest {
 			String storeMessageOutput = storage.storeMessage(connection, "1", "correlationId", TimeProvider.nowAsDate(), "comment", "label", message);
 
 			String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">") + 1, storeMessageOutput.lastIndexOf("<"));
-			String selectQuery = "SELECT * FROM " + tableName + " where " + storage.getKeyField() + "=" + key;
+			String selectQuery = "SELECT * FROM " + TABLE_NAME + " where " + storage.getKeyField() + "=" + key;
 
 			try (ResultSet rs = connection.prepareStatement(selectQuery).executeQuery()) {
 				if (rs.next()) {
