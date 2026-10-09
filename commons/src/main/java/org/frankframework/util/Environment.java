@@ -174,9 +174,15 @@ public class Environment {
 		try {
 			final String cleanPath = new URI(urlPath).getPath();
 			if (new File(cleanPath).exists()) {
-				// if URL-encoded file exists, don't decode it
+				// If URL-encoded file exists, don't decode it.
+				// Verify it's not a directory.
+				if (new File(cleanPath).isDirectory()) {
+					throw new NoSuchFileException("unable to load manifest from directory");
+				}
+
 				return cleanPath;
 			}
+
 			return URLDecoder.decode(urlPath, StandardCharsets.UTF_8);
 		} catch (URISyntaxException e) {
 			throw new IOException("unable to read path from URL ["+url+"]", e);

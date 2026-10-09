@@ -43,6 +43,9 @@ public class BusTestBase {
 			qsPostProcessor.setApplicationContext(applicationContext);
 			applicationContext.getBeanFactory().addBeanPostProcessor(qsPostProcessor);
 
+			MessageDispatcher dispatcher = applicationContext.getBean(MessageDispatcher.class);
+			dispatcher.getBeanFactory().addBeanPostProcessor(qsPostProcessor);
+
 			parentContext = applicationContext;
 		}
 		return parentContext;

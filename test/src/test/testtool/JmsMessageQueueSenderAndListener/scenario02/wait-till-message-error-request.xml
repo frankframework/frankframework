@@ -1,0 +1,24 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISSTORE</tableName>
+		<columns>
+			<column>
+				<name>MESSAGEKEY</name>
+			</column>
+			<column>
+				<name>TYPE</name>
+			</column>
+			<column>
+				<name>SLOTID</name>
+			</column>
+			<column>
+				<name>MESSAGEID</name>
+			</column>
+			<column>
+				<name>CORRELATIONID</name>
+			</column>
+		</columns>
+		<where>SLOTID = 'TestMessageQueueSenderAndListener-ReadErrors'</where>
+		<order>MESSAGEKEY</order>
+	</select>
+</manageDatabaseREQ>
