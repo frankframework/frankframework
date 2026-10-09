@@ -47,7 +47,7 @@ public class LockerTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
-		locker = env.createBean(Locker.class);
+		locker = env.createBean();
 		locker.setFirstDelay(0);
 
 		try(Connection conn = env.getConnection()) {

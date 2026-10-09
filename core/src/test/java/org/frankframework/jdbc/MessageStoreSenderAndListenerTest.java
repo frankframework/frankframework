@@ -37,11 +37,11 @@ public class MessageStoreSenderAndListenerTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
-		listener = env.createBean(MessageStoreListener.class);
+		listener = env.createBean();
 		listener.setTableName(TEST_TABLE_NAME);
 		listener.setSlotId(SLOT_ID);
 
-		sender = env.createBean(MessageStoreSender.class);
+		sender = env.createBean();
 		sender.setTableName(TEST_TABLE_NAME);
 		sender.setSlotId(SLOT_ID);
 
