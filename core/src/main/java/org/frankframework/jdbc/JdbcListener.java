@@ -69,7 +69,6 @@ import org.frankframework.util.StringUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-@SuppressWarnings("SynchronizeOnNonFinalField")
 public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, IRedeliveringListener<M> {
 
 	public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
