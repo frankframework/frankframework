@@ -93,10 +93,6 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 
 	private DataSource datasource = null;
 
-	public AbstractJdbcMessageBrowser() {
-		super();
-	}
-
 	@Override
 	protected String getLogPrefix() {
 		return "JdbcMessageBrowser ["+getName()+"] ";
