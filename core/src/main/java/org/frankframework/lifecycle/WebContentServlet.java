@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import java.io.InputStream;
 import java.io.Serial;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -120,6 +123,11 @@ public class WebContentServlet extends AbstractHttpServlet {
 		URL resource = findResource(req);
 
 		if (resource == null) {
+			if (!path.endsWith("/") && findResource(req, path + "/") != null) {
+				// Folder with a welcome file, redirect so relative links in the welcome file resolve against the folder.
+				resp.sendRedirect(getFolderRedirectUrl(req));
+				return;
+			}
 			resp.sendError(HttpStatus.NOT_FOUND.value(), "resource not found");
 			return;
 		}
@@ -188,11 +196,31 @@ public class WebContentServlet extends AbstractHttpServlet {
 		return MediaType.APPLICATION_OCTET_STREAM;
 	}
 
+	private String getFolderRedirectUrl(HttpServletRequest req) {
+		String location = req.getRequestURI() + "/";
+		String queryString = req.getQueryString();
+		if (StringUtils.isNotEmpty(queryString)) {
+			location += "?" + queryString;
+		}
+		return location;
+	}
+
 	/**
 	 * Should fail fast, always return null / HTTP 404.
 	 */
 	private @Nullable URL findResource(HttpServletRequest req) {
-		String normalizedPath = FilenameUtils.normalize(req.getPathInfo(), true);
+		return findResource(req, req.getPathInfo());
+	}
+
+	/**
+	 * Finds the resource for the given path, which starts with the configuration name.
+	 * A folder resolves to its welcome file. A folder itself is never returned, its contents must not be listed.
+	 */
+	private @Nullable URL findResource(HttpServletRequest req, String path) {
+		String normalizedPath = FilenameUtils.normalize(path, true);
+		if (normalizedPath == null) {
+			return null;
+		}
 		if (normalizedPath.startsWith("/")) {
 			normalizedPath = normalizedPath.substring(1);
 		}
@@ -209,6 +237,9 @@ public class WebContentServlet extends AbstractHttpServlet {
 		if(StringUtils.isEmpty(resource) || "/".equals(resource)) {
 			log.debug("unable to determine resource from path [{}] returning welcome file [{}]", normalizedPath, WELCOME_FILE);
 			resource = WELCOME_FILE;
+		} else if (resource.endsWith("/")) {
+			log.debug("resource [{}] is a folder, returning welcome file [{}]", resource, WELCOME_FILE);
+			resource = resource + WELCOME_FILE;
 		}
 
 		AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
@@ -216,7 +247,28 @@ public class WebContentServlet extends AbstractHttpServlet {
 			log.warn("configuration [{}] has no ClassLoader", configuration);
 			return null;
 		}
-		return classLoader.getResource(WEBCONTENT + "/" + resource, false);
+		URL url = classLoader.getResource(WEBCONTENT + "/" + resource, false);
+		if (url != null && isDirectory(url)) {
+			log.debug("resource [{}] is a directory, not serving it", url);
+			return null;
+		}
+		return url;
+	}
+
+	private boolean isDirectory(URL url) {
+		if (url.getPath().endsWith("/")) {
+			return true;
+		}
+
+		try {
+			if ("file".equals(url.getProtocol())) {
+				return Files.isDirectory(Path.of(url.toURI()));
+			}
+		} catch (URISyntaxException | IllegalArgumentException e) {
+			log.warn("unable to determine if resource [{}] is a directory, not serving it", url, e);
+			return true;
+		}
+		return false;
 	}
 
 	private Configuration findConfiguration(String configurationName) {
