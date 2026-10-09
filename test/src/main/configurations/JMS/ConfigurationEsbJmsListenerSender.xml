@@ -255,48 +255,48 @@
 	<adapter name="EsbJmsRRSender" description="Test the functioning of the EsbJmsSender (RR)"
 		active="${active.jms}">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-EsbJmsRRSender" />
 		</receiver>
 		<pipeline firstPipe="switchAction">
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				  xpathExpression="EsbJmsRRListenerSenderREQ" />
 			<pipe name="BYTES"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.extensions.esb.EsbJmsSender"
 					destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 					messageProtocol="RR" messageClass="BYTES" timeout="5000">
 					<param name="SOURCE" value="FFTest_esbJmsRR_2" />
 				</sender>
 				<inputWrapper
-					className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+					className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 					mode="i2t" addOutputNamespace="true">
 					<param name="cpaId" value="cpa1509" />
 					<param name="conversationId" value="conv0807" />
 					<param name="externalRefToMessageId" value="ext2608" />
 				</inputWrapper>
-				<outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				<outputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 					mode="i2t" direction="unwrap" removeOutputNamespaces="true" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="TEXT"
-				  className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
+				  className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.extensions.esb.EsbJmsSender"
 						destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 						messageProtocol="RR" messageClass="TEXT" timeout="5000">
 					<param name="SOURCE" value="FFTest_esbJmsRR_2" />
 				</sender>
 				<inputWrapper
-						className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+						className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 						mode="i2t" addOutputNamespace="true">
 					<param name="cpaId" value="cpa1509" />
 					<param name="conversationId" value="conv0807" />
 					<param name="externalRefToMessageId" value="ext2608" />
 				</inputWrapper>
-				<outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				<outputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 							   mode="i2t" direction="unwrap" removeOutputNamespaces="true" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -307,7 +307,7 @@
 		<soapErrorMessageFormatter
 			className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver>
-			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
 		  		destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf"
 				messageProtocol="RR"
 				messageSelector="SOURCE='FFTest_esbJmsRR_2'"
@@ -319,12 +319,12 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 			<inputWrapper
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				mode="i2t" direction="unwrap" />
 			<outputWrapper
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				mode="i2t" addOutputNamespace="true" />
-			<pipe name="makeReply" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="makeReply" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
