@@ -37,6 +37,7 @@ import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.TransactionAware;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
@@ -67,7 +68,7 @@ import org.frankframework.util.LogUtil;
  * @since 	4.1
  */
 @DestinationType(DestinationType.Type.JDBC)
-public class JdbcFacade implements HasPhysicalDestination, ConfigurableLifecycle, FrankElement, NameAware {
+public class JdbcFacade implements HasPhysicalDestination, TransactionAware, ConfigurableLifecycle, FrankElement, NameAware {
 	// Unused here, uses 'this' lookup so subclasses use the correct implementation class.
 	protected Logger log = LogUtil.getLogger(this);
 
