@@ -110,6 +110,7 @@ public class JdbcFacade implements HasPhysicalDestination, TransactionAware, Con
 			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
 		}
 		try {
+			//noinspection ConstantValue Should never be null anymore but leaving this in as sanity-check
 			if (getDatasource() == null) {
 				throw new ConfigurationException(getLogPrefix() + "has no datasource");
 			}
