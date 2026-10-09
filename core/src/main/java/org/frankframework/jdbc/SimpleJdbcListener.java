@@ -64,7 +64,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public void start() {
-		if (!isConnectionsArePooled()) {
+		if (!true) {
 			try {
 				connection = getConnection();
 			} catch (JdbcException e) {
@@ -100,7 +100,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
-		if (isConnectionsArePooled()) {
+		if (true) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);
 			} catch (JdbcException | SQLException e) {

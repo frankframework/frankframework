@@ -95,7 +95,6 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 
 	public AbstractJdbcMessageBrowser() {
 		super();
-		setTransacted(true);
 	}
 
 	@Override

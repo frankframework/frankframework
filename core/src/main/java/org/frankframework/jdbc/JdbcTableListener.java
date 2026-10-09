@@ -115,18 +115,10 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	private void validateQueryFields() throws LifecycleException {
-		if (!isConnectionsArePooled()) {
-			try {
-				validateQueryFields(connection);
-			} catch (SQLException | DbmsException e) {
-				throw new LifecycleException("Error requesting database metadata", e);
-			}
-		} else {
-			try (Connection conn = getConnection()) {
-				validateQueryFields(conn);
-			} catch (JdbcException | SQLException e) {
-				throw new LifecycleException("Error requesting database metadata", e);
-			}
+		try (Connection conn = getConnection()) {
+			validateQueryFields(conn);
+		} catch (JdbcException | SQLException e) {
+			throw new LifecycleException("Error requesting database metadata", e);
 		}
 	}
 

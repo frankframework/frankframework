@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -22,7 +19,6 @@ import org.frankframework.core.SenderException;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
@@ -42,14 +38,11 @@ public class MessageStoreListenerTest {
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
 		assumeTrue(Dbms.H2 == env.getDbmsSupport().getDbms()); // tests are based on H2 syntax queries
-		Receiver<Serializable> receiver = mock();
-		when(receiver.isTransacted()).thenReturn(false);
 
 		listener = env.createBean(MessageStoreListener.class);
 		listener.setTableName(TEST_TABLE_NAME);
 		listener.setMessageIdField(MESSAGE_ID_FIELD);
 		listener.setSlotId(SLOT_ID);
-		listener.setReceiver(receiver);
 
 		storage = env.createBean(JdbcTransactionalStorage.class);
 		storage.setTableName(TEST_TABLE_NAME);

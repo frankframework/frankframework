@@ -33,14 +33,15 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.TransactionAware;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.factory.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
@@ -61,7 +62,7 @@ import org.frankframework.util.LogUtil;
  * @since 	4.1
  */
 @DestinationType(DestinationType.Type.JDBC)
-public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, ConfigurableLifecycle, FrankElement, NameAware {
+public class JdbcFacade implements HasPhysicalDestination, TransactionAware, ConfigurableLifecycle, FrankElement, NameAware {
 	// Unused here, uses 'this' lookup so subclasses use the correct implementation class.
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -76,8 +77,6 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	private String password = null;
 
 	private boolean started = false;
-	private boolean transacted = false;
-	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
 
 	private DbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
@@ -110,6 +109,11 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	@Override
 	public void start() {
+		try (Connection conn = getConnection()) {
+			conn.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
+		} catch (Exception e) {
+			throw new LifecycleException(e);
+		}
 		started = true;
 	}
 
@@ -251,27 +255,4 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	protected String getPassword() {
 		return password;
 	}
-
-	/**
-	 * controls the use of transactions
-	 */
-	public void setTransacted(boolean transacted) {
-		this.transacted = transacted;
-	}
-	@Override
-	public boolean isTransacted() {
-		return transacted;
-	}
-
-	/**
-	 * informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed)
-	 * @ff.default true
-	 */
-	public void setConnectionsArePooled(boolean b) {
-		connectionsArePooled = b;
-	}
-	public boolean isConnectionsArePooled() {
-		return connectionsArePooled || isTransacted();
-	}
-
 }
