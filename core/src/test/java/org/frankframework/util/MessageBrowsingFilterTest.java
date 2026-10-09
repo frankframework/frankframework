@@ -48,7 +48,7 @@ public class MessageBrowsingFilterTest {
 
 	@AfterEach
 	public void tearDown() {
-		pipeLineSession.close();
+		CloseUtils.closeSilently(pipeLineSession);
 	}
 
 	@TxManagerTest
@@ -60,7 +60,7 @@ public class MessageBrowsingFilterTest {
 		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", "out filter");
 
 		int count = 0 ;
-		try(IMessageBrowsingIterator iterator = storage.getIterator()){
+		try (IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 					count += filter.matchAll(item) ? 1 : 0;
