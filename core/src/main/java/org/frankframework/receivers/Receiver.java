@@ -1477,7 +1477,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 			ProcessStatusCacheItem cachedProcessResult;
 			if (!retryStatusAlreadyChecked) {
-				cachedProcessResult = updateMessageReceiveCount(messageWrapper);
+				cachedProcessResult = updateMessageReceiveCount(messageWrapper, manualRetry);
 			} else {
 				cachedProcessResult = getCachedProcessStatus(messageWrapper);
 			}
@@ -1568,8 +1568,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * If the listener implements {@link IKnowsDeliveryCount} then the receiveCount will be set to the {@link IKnowsDeliveryCount#getDeliveryCount(RawMessageWrapper)}.
 	 *
 	 * @param rawMessageWrapper The raw message for which to set the receiveCount.
+	 * @param manualRetry Flag to indicate the current process is triggered by a manual retry from error storage.
 	 */
-	protected synchronized @NonNull ProcessStatusCacheItem updateMessageReceiveCount(@NonNull RawMessageWrapper<M> rawMessageWrapper) {
+	protected synchronized @NonNull ProcessStatusCacheItem updateMessageReceiveCount(@NonNull RawMessageWrapper<M> rawMessageWrapper, boolean manualRetry) {
 		String messageId = Objects.requireNonNull(rawMessageWrapper.getId(), () -> "Message must have an ID! No ID for raw message [" + rawMessageWrapper + "]");
 		// We need to know here if a result was previously cached, otherwise we cannot reliably maintain the receiveCount for listeners that don't know the deliveryCount.
 		final ProcessStatusCacheItem prci = processStatusCache.computeIfAbsent(messageId, key -> {
@@ -1579,7 +1580,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			item.receiveDate = TimeProvider.now();
 			return item;
 		});
-		if (getListener() instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
+		// When we do a manual retry of a message, it is retrieved from the error storage and not from the listener, so we shouldn't ask the listener -- message formats incompatible
+		// Also, to not limit the number of manual retries that can be done, we always set the receiveCount to 1
+		if (manualRetry) {
+			prci.receiveCount = 1;
+		} else if (getListener() instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
 			prci.receiveCount = knowsDeliveryCount.getDeliveryCount(rawMessageWrapper);
 		} else {
 			prci.receiveCount++;
