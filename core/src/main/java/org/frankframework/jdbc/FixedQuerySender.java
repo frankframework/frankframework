@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -121,7 +122,7 @@ public class FixedQuerySender extends AbstractJdbcQuerySender<QueryExecutionCont
 	}
 
 	@Override
-	protected void closeStatementSet(QueryExecutionContext statementSet) {
+	protected void closeStatementSet(@NonNull QueryExecutionContext statementSet) {
 		// postpone close to closeBlock()
 	}
 

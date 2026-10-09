@@ -30,19 +30,26 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.TransactionAware;
+import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.functional.ThrowingConsumer;
+import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.jdbc.factory.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
 
@@ -61,7 +68,7 @@ import org.frankframework.util.LogUtil;
  * @since 	4.1
  */
 @DestinationType(DestinationType.Type.JDBC)
-public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, ConfigurableLifecycle, FrankElement, NameAware {
+public class JdbcFacade implements HasPhysicalDestination, TransactionAware, ConfigurableLifecycle, FrankElement, NameAware {
 	// Unused here, uses 'this' lookup so subclasses use the correct implementation class.
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -70,14 +77,20 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	private @Getter String name;
 
+	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
+	// 2020-11-18: blobCharset is set to null! Clobs are for character data, blobs for binary. When blobs contain character data,
+	// blobCharset can be set to "UTF-8", or set blobBase64Direction to 'encode'.
+	// By default, BLOBs are no longer read as strings
+	private @Getter String blobCharset = null;
+	private @Getter boolean blobsCompressed = true;
+	private @Getter boolean blobSmartGet = false;
+
 	private String datasourceName = null;
 	@Getter private String authAlias = null;
 	@Getter private String username = null;
 	private String password = null;
 
 	private boolean started = false;
-	private boolean transacted = false;
-	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
 
 	private DbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
@@ -97,6 +110,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
 		}
 		try {
+			//noinspection ConstantValue Should never be null anymore but leaving this in as sanity-check
 			if (getDatasource() == null) {
 				throw new ConfigurationException(getLogPrefix() + "has no datasource");
 			}
@@ -110,6 +124,12 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	@Override
 	public void start() {
+		// Test the connection from the pool, close it after validation
+		try (Connection c = getConnection()) {
+			c.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
+		} catch (Exception e) {
+			throw new LifecycleException(e);
+		}
 		started = true;
 	}
 
@@ -159,7 +179,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	/**
 	 * Obtains a connection to the datasource.
 	 */
-	protected Connection getConnection() throws JdbcException {
+	protected @NonNull Connection getConnection() throws JdbcException {
 		DataSource ds = getDatasource();
 		try {
 			if (cf!=null) {
@@ -171,8 +191,48 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		}
 	}
 
+	/**
+	 * Utility wrapper function to execute code with a database connection, handling exceptions and wrapping them in the generic E type. Returns
+	 * a value of type T.
+	 * <br/>
+	 * Using this function can reduce the amount of exception-handling boilerplate in your code.
+	 *
+	 * @param function Methord-reference or code to be executed with the connection. This method must have only a single parameter, the connection. If you need to call a
+	 *                 function that takes multiple parameters or execute code that uses multiple local values, pass a lambda-function.
+	 * @return Result of the executed code
+	 * @param <T> Return type of the code to be executed
+	 * @param <E> Exception type that can be thrown
+	 * @throws E Exception of type E
+	 */
+	protected <T, E extends Exception> T withConnection(ThrowingFunction<Connection, T, E> function) throws E {
+		try (Connection conn = getConnection()) {
+			return function.apply(conn);
+		} catch (JdbcException | SQLException e) {
+			throw ClassUtils.wrapException(e);
+		}
+	}
+
+	/**
+	 * Utility wrapper method to execute code with a database connection, handling exceptions and wrapping them in the generic E type. Does not
+	 * return any values.
+	 * <br/>
+	 * Using this method can reduce the amount of exception-handling boilerplate in your code.
+	 *
+	 * @param consumer Method-reference or code to be executed with the connection. This method must have only a single parameter, the connection. If you need to call a
+	 *                 method that takes multiple parameters or execute code that uses multiple local values, pass a lambda-function.
+	 * @param <E> Exception type that can be thrown
+	 * @throws E Exception of type E
+	 */
+	protected <E extends Exception> void withConnection(ThrowingConsumer<Connection, E> consumer) throws E {
+		try (Connection conn = getConnection()) {
+			consumer.accept(conn);
+		} catch (JdbcException | SQLException e) {
+			throw ClassUtils.wrapException(e);
+		}
+	}
+
 	@SuppressWarnings({ "java:S1181", "java:S1143", "java:S1163", "ThrowFromFinallyBlock" }) // java:S1143, java:S1163: We want to throw from finally, sorry. java:S1181: Catching Throwable. Because we want to add the Throwable to suppressedExceptions.
-	public Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
+	public @NonNull Connection getConnectionWithTimeout(int timeout) throws JdbcException, TimeoutException {
 		if (timeout<=0) {
 			return getConnection();
 		}
@@ -196,6 +256,17 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		}
 	}
 
+	@NonNull
+	protected String convertQuery(@NonNull String query) throws DbmsException {
+		if (StringUtils.isEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getTargetSqlDialect())) {
+			return query;
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("converting query [{}] from [{}] to [{}]", query::trim, this::getSqlDialect, () -> getDbmsSupport().getTargetSqlDialect());
+		}
+		return getDbmsSupport().convertQuery(query, getSqlDialect());
+	}
+
 	/**
 	 * Returns the name and location of the database that this objects operates on.
 	 * If no previous connection was made or it cannot determine the destination
@@ -204,7 +275,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	 * @see HasPhysicalDestination#getPhysicalDestinationName()
 	 */
 	@Override
-	public String getPhysicalDestinationName() {
+	public @NonNull String getPhysicalDestinationName() {
 		try {
 			DataSource dataSource = getDatasource();
 			if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy proxy) {
@@ -253,25 +324,44 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 	}
 
 	/**
-	 * controls the use of transactions
+	 * @deprecated All connections are now always pooled; old implementation was anyways broken / inconsistent
 	 */
-	public void setTransacted(boolean transacted) {
-		this.transacted = transacted;
+	@Deprecated(forRemoval = true, since = "10.4")
+	public void setConnectionsArePooled(boolean b) {
+		// No-op
 	}
-	@Override
-	public boolean isTransacted() {
-		return transacted;
+
+	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
+	public void setSqlDialect(String string) {
+		sqlDialect = string;
 	}
 
 	/**
-	 * informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed)
+	 * Controls whether BLOB is considered stored compressed in the database
 	 * @ff.default true
 	 */
-	public void setConnectionsArePooled(boolean b) {
-		connectionsArePooled = b;
-	}
-	public boolean isConnectionsArePooled() {
-		return connectionsArePooled || isTransacted();
+	public void setBlobsCompressed(boolean b) {
+		blobsCompressed = b;
 	}
 
+	/**
+	 * Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string
+	 * @ff.default false
+	 */
+	public void setBlobSmartGet(boolean b) {
+		blobSmartGet = b;
+	}
+	/**
+	 * Charset that is used to read and write BLOBs. This assumes the blob contains character data.
+	 * If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being
+	 * read to accommodate for the fact that senders need to return a String. This is no longer the case.
+	 */
+	@Deprecated(since = "9.3.0", forRemoval = true)
+	@ConfigurationWarning("Charset will be read from the message")
+	public void setBlobCharset(String string) {
+		if (StringUtils.isEmpty(string)) {
+			ConfigurationWarnings.add(this, log, "setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
+		}
+		blobCharset = string;
+	}
 }

@@ -15,6 +15,7 @@
 */
 package org.frankframework.jdbc;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -99,7 +101,7 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 	}
 
 	@Override
-	protected RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws JdbcException, SQLException {
+	protected RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException, JdbcException {
 		if (tableListener!=null) {
 			return tableListener.extractRawMessage(rs);
 		}
@@ -194,7 +196,7 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 
 
 	@Override
-	public String getPhysicalDestinationName() {
+	public @NonNull String getPhysicalDestinationName() {
 		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
 	}
 

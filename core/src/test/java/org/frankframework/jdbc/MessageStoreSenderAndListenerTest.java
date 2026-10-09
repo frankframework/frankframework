@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.io.StringReader;
@@ -17,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
@@ -40,15 +37,11 @@ public class MessageStoreSenderAndListenerTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
-		Receiver<Serializable> receiver = mock(Receiver.class);
-		when(receiver.isTransacted()).thenReturn(false);
-
-		listener = env.createBean(MessageStoreListener.class);
+		listener = env.createBean();
 		listener.setTableName(TEST_TABLE_NAME);
 		listener.setSlotId(SLOT_ID);
-		listener.setReceiver(receiver);
 
-		sender = env.createBean(MessageStoreSender.class);
+		sender = env.createBean();
 		sender.setTableName(TEST_TABLE_NAME);
 		sender.setSlotId(SLOT_ID);
 

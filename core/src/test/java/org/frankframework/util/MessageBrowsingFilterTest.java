@@ -25,29 +25,30 @@ import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
 
-@WithLiquibase(tableName = MessageBrowsingFilterTest.tableName)
+@WithLiquibase(tableName = MessageBrowsingFilterTest.TABLE_NAME)
 public class MessageBrowsingFilterTest {
+
+	static final String TABLE_NAME = "MESSAGEBROWSINGFILTERTEST";
 
 	private MessageBrowsingFilter filter;
 	private JdbcTransactionalStorage storage = null;
 	private IListener<?> listener = null;
 	private PipeLineSession pipeLineSession = null;
-	static final String tableName = "MESSAGEBROWSINGFILTERTEST";
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
-		filter = env.createBean(MessageBrowsingFilter.class);
-		storage = env.createBean(JdbcTransactionalStorage.class);
+		filter = env.createBean();
+		storage = env.createBean();
 		storage.setSlotId("MessageBrowsingFilter");
-		storage.setTableName(tableName);
-		storage.setSequenceName("SEQ_"+tableName);
+		storage.setTableName(TABLE_NAME);
+		storage.setSequenceName("SEQ_"+ TABLE_NAME);
 		listener = new JavaListener<>();
 		pipeLineSession = new PipeLineSession();
 	}
 
 	@AfterEach
 	public void tearDown() {
-		pipeLineSession.close();
+		CloseUtils.closeSilently(pipeLineSession);
 	}
 
 	@TxManagerTest
@@ -59,7 +60,7 @@ public class MessageBrowsingFilterTest {
 		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", "out filter");
 
 		int count = 0 ;
-		try(IMessageBrowsingIterator iterator = storage.getIterator()){
+		try (IMessageBrowsingIterator iterator = storage.getIterator()){
 			while(iterator.hasNext()) {
 				try (IMessageBrowsingIteratorItem item = iterator.next()) {
 					count += filter.matchAll(item) ? 1 : 0;
@@ -73,7 +74,7 @@ public class MessageBrowsingFilterTest {
 	private void fillTable(DatabaseTestEnvironment env) throws Exception {
 		IDbmsSupport dbmsSupport = env.getDbmsSupport();
 
-		StringBuilder sb = new StringBuilder("INSERT INTO "+tableName+" (" +
+		StringBuilder sb = new StringBuilder("INSERT INTO "+ TABLE_NAME +" (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
 				+ storage.getTypeField() + ","
 				+ storage.getSlotIdField() + ","

@@ -136,7 +136,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
 
-		FixedQuerySender sender = env.createBean(FixedQuerySender.class);
+		FixedQuerySender sender = env.createBean();
 		sender.setQuery("UPDATE "+TEST_TABLE+" SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
 		Parameter param = new Parameter();
 		param.setName("ID");
@@ -165,7 +165,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
 
-		FixedQuerySender sender = env.createBean(FixedQuerySender.class);
+		FixedQuerySender sender = env.createBean();
 		sender.setQuery("UPDATE "+TEST_TABLE+" SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
 		Parameter param = new Parameter();
 		param.setName("ID");

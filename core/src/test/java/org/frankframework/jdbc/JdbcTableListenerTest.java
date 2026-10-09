@@ -28,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -61,7 +59,6 @@ import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
@@ -91,17 +88,13 @@ public class JdbcTableListenerTest {
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
-		Receiver<String> receiver = mock(Receiver.class);
-		when(receiver.isTransacted()).thenReturn(false);
-
-		listener = env.createBean(JdbcTableListener.class);
+		listener = env.createBean();
 		listener.setTableName(TEST_TABLE);
 		listener.setKeyField("TKEY");
 		listener.setStatusField("TINT");
 		listener.setStatusValueAvailable("1");
 		listener.setStatusValueProcessed("2");
 		listener.setStatusValueError("3");
-		listener.setReceiver(receiver);
 		this.env = env;
 	}
 
@@ -114,6 +107,7 @@ public class JdbcTableListenerTest {
 
 	private JdbcTableMessageBrowser<String> getMessageBrowser(ProcessState state) throws ConfigurationException {
 		JdbcTableMessageBrowser<String> browser = (JdbcTableMessageBrowser<String>)listener.getMessageBrowser(state);
+		assertNotNull(browser);
 		browser.configure();
 		return browser;
 	}
@@ -186,6 +180,7 @@ public class JdbcTableListenerTest {
 
 		// Assert
 		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
+		assertNotNull(warnings);
 		assertFalse(warnings.isEmpty());
 		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [T_TIMESTAMP]")));
 	}
@@ -202,6 +197,7 @@ public class JdbcTableListenerTest {
 
 		// Assert
 		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
+		assertNotNull(warnings);
 		assertFalse(warnings.isEmpty());
 		assertThat(warnings.getWarnings(), hasItem(containsString("may not reference the timestampField or commentField. Found: [TCMNT2]")));
 	}
@@ -219,6 +215,7 @@ public class JdbcTableListenerTest {
 
 		// Assert
 		ConfigurationWarnings warnings = env.getConfiguration().getConfigurationWarnings();
+		assertNotNull(warnings);
 		assertThat(warnings.getWarnings(), not(hasItem(containsString("may not reference the timestampField or commentField. Found: [TCMNT]"))));
 		assertThat(warnings.getWarnings(), not(hasItem(containsString("may not reference the timestampField or commentField. Found: [T_TIMESTAMP]"))));
 	}
@@ -370,7 +367,6 @@ public class JdbcTableListenerTest {
 	@DatabaseTest
 	public void testGetRawMessageWithMessageFieldIsClob() throws Exception {
 		listener.setMessageField("TCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.configure();
 		listener.start();
 
@@ -379,6 +375,7 @@ public class JdbcTableListenerTest {
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
+		assertNotNull(rawMessage);
 		Message message = listener.extractMessage(rawMessage, new PipeLineSession());
 		assertEquals("TEST",message.asString());
 	}
@@ -386,7 +383,6 @@ public class JdbcTableListenerTest {
 	@DatabaseTest
 	public void testGetRawMessageWithMessageFieldIsBlob() throws Exception {
 		listener.setMessageField("TBLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.BLOB);
 		listener.setBlobSmartGet(false);
 		listener.setBlobsCompressed(false);
 		listener.configure();
@@ -405,6 +401,7 @@ public class JdbcTableListenerTest {
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
+		assertNotNull(rawMessage);
 		Message message = listener.extractMessage(rawMessage, new PipeLineSession());
 		assertEquals("TEST",message.asString());
 	}
@@ -412,7 +409,6 @@ public class JdbcTableListenerTest {
 	@DatabaseTest
 	public void testGetRawMessageWithMessageFieldIsVarchar() throws Exception {
 		listener.setMessageField("TVARCHAR");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.STRING);
 		listener.configure();
 		listener.start();
 
@@ -421,6 +417,7 @@ public class JdbcTableListenerTest {
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
+		assertNotNull(rawMessage);
 		Message message = listener.extractMessage(rawMessage, new PipeLineSession());
 		assertEquals("TEST",message.asString());
 	}
@@ -590,6 +587,7 @@ public class JdbcTableListenerTest {
 		}
 
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(new HashMap<>());
+		assertNotNull(rawMessage);
 
 		String mid = rawMessage.getId();
 		String cid = rawMessage.getCorrelationId();
@@ -615,6 +613,7 @@ public class JdbcTableListenerTest {
 			connection1.setAutoCommit(false);
 			boolean shouldStillCommitBeforeClose;
 			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1,null);
+			assertNotNull(rawMessage1);
 			assertEquals("Message 1", rawMessage1.getRawMessage());
 			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test") != null) {
 				connection1.commit();
@@ -627,6 +626,7 @@ public class JdbcTableListenerTest {
 				JdbcTestUtil.executeStatement(env.getDbmsSupport(), connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TVARCHAR) VALUES (11,1,'Message 2')", null);
 			}
 			RawMessageWrapper<String> rawMessage2 = listener.getRawMessage(new HashMap<>());
+			assertNotNull(rawMessage2);
 
 			// Clean connection status before we assert
 			if (shouldStillCommitBeforeClose) {
@@ -740,6 +740,7 @@ public class JdbcTableListenerTest {
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
 			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1, null);
+			assertNotNull(rawMessage1);
 			assertEquals("10",rawMessage1.getRawMessage());
 			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test")!=null) {
 				connection1.commit();
@@ -765,6 +766,7 @@ public class JdbcTableListenerTest {
 			connection1.setAutoCommit(false);
 			boolean shouldStillCommitBeforeClose;
 			RawMessageWrapper<String> rawMessage1 = listener.getRawMessage(connection1, null);
+			assertNotNull(rawMessage1);
 			assertEquals("10", rawMessage1.getRawMessage());
 			if (listener.changeProcessState(connection1, rawMessage1, ProcessState.INPROCESS, "test") != null) {
 				connection1.commit();
@@ -802,6 +804,7 @@ public class JdbcTableListenerTest {
 		try (Connection connection1 = env.getConnection()) {
 			connection1.setAutoCommit(false);
 			rawMessage = listener.getRawMessage(connection1,null);
+			assertNotNull(rawMessage);
 			assertEquals("10",rawMessage.getRawMessage());
 			useStatusInProcess = listener.changeProcessState(connection1, rawMessage, ProcessState.INPROCESS, "test") != null;
 			if (useStatusInProcess) {
@@ -884,6 +887,7 @@ public class JdbcTableListenerTest {
 
 							if (checkpoint == 4) secondaryRead = getMessageInParallel();
 
+							//noinspection ConstantValue
 							if (useUpdateRow) {
 								rs.updateInt(2, 4);
 								if (checkpoint == 5) secondaryRead = getMessageInParallel();
@@ -953,7 +957,6 @@ public class JdbcTableListenerTest {
 		listener.setOrderField("TKEY, tINT");
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.configure();
 		listener.start();
 
@@ -967,7 +970,6 @@ public class JdbcTableListenerTest {
 		listener.setOrderField("TKEY, MISSING1, MISSING2");
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.configure();
 
 		LifecycleException exception = assertThrows(LifecycleException.class, listener::start);
@@ -982,7 +984,6 @@ public class JdbcTableListenerTest {
 		listener.setOrderField("ORDRFLD");
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.setAdditionalFields(", tBLOB, tVARCHAR,  ");
 		listener.configure();
 
@@ -996,7 +997,6 @@ public class JdbcTableListenerTest {
 	public void testSelectQueryWithAdditionalFieldsNotFound() throws ConfigurationException {
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.setAdditionalFields("MISSING, tVARCHAR");
 		listener.configure();
 
@@ -1009,7 +1009,6 @@ public class JdbcTableListenerTest {
 	public void testGetExtraValues() throws Exception {
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.setAdditionalFields("tBLOB, tVARCHAR");
 		listener.setBlobsCompressed(false);
 		listener.setBlobSmartGet(false);
@@ -1030,6 +1029,7 @@ public class JdbcTableListenerTest {
 
 		PipeLineSession session = new PipeLineSession();
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(session);
+		assertNotNull(rawMessage);
 		Message message = listener.extractMessage(rawMessage, session);
 		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
 
@@ -1046,7 +1046,6 @@ public class JdbcTableListenerTest {
 	public void testGetExtraValuesSameAsOtherFields() throws Exception {
 		listener.setMessageIdField("tINT");
 		listener.setMessageField("tCLOB");
-		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
 		listener.setAdditionalFields("tBLOB, tVARCHAR, tCLOB, tINT");
 		listener.setBlobsCompressed(false);
 		listener.setBlobSmartGet(false);
@@ -1066,9 +1065,10 @@ public class JdbcTableListenerTest {
 		}
 		Map<String, Object> threadContext = listener.openThread();
 		RawMessageWrapper<String> rawMessage = listener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
 
 		PipeLineSession session = new PipeLineSession();
-		assertTrue(rawMessage.getContext().containsKey(JdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain map of additional fields");
+		assertTrue(rawMessage.getContext().containsKey(AbstractJdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain map of additional fields");
 
 		// Extract message, then the additional fields should be copied to the session.
 		Message message = listener.extractMessage(rawMessage, session);

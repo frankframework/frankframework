@@ -16,7 +16,6 @@
 package org.frankframework.jdbc;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jspecify.annotations.NonNull;
@@ -32,16 +31,15 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
-import org.frankframework.util.JdbcUtil;
 
 /**
  * Base class for building JDBC-senders.
+ * TODO: This class has only a single (abstract) subclass so it can be merged into the AbstractJdbcQuerySender
  *
  * @author  Gerrit van Brakel
  * @since 	4.2.h
@@ -52,10 +50,9 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 
 	@Getter private int timeout = 0;
 
-	protected Connection connection=null;
 	protected @NonNull ParameterList paramList = new ParameterList();
 
-	public AbstractJdbcSender() {
+	protected AbstractJdbcSender() {
 		super();
 	}
 
@@ -80,41 +77,9 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 		paramList.configure();
 	}
 
-	@Override
-	public void start() {
-		try {
-			connection = getConnection();
-			connection.getMetaData(); // We have to perform some DB action, it could be stale or not present (yet)
-		} catch (Exception e) {
-			JdbcUtil.close(connection);
-			connection = null;
-
-			throw new LifecycleException(e);
-		}
-
-		// When we use pooling connections we need to ask for a new connection every time we want to use it
-		if (isConnectionsArePooled()) {
-			this.stop();
-		}
-	}
-
-	@Override
-	public void stop() {
-		try {
-			if (connection != null) {
-				connection.close();
-			}
-		} catch (SQLException e) {
-			log.warn("caught exception stopping sender", e);
-		} finally {
-			connection = null;
-			super.stop();
-		}
-	}
-
 	/* Only here for statistic purposes */
 	@Override
-	public Connection getConnection() throws JdbcException {
+	public @NonNull Connection getConnection() throws JdbcException {
 		long t0 = System.currentTimeMillis();
 		try {
 			return super.getConnection();
