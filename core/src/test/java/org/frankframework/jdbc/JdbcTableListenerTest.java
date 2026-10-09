@@ -85,6 +85,7 @@ public class JdbcTableListenerTest {
 	 * Doing that, however, increases the amount of locks on the table. For now, the overhead of peeking some messages that do not exist is considered
 	 * less expensive than setting locks on the database to have a more secure peek.
 	 */
+	@SuppressWarnings("FieldCanBeLocal")
 	private final boolean testNegativePeekWhileGet = false;
 
 	@SuppressWarnings("unchecked")
@@ -948,6 +949,35 @@ public class JdbcTableListenerTest {
 	}
 
 	@DatabaseTest
+	public void testSelectQueryWithOrderByMultipleFields() throws ConfigurationException {
+		listener.setOrderField("TKEY, tINT");
+		listener.setMessageIdField("tINT");
+		listener.setMessageField("tCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.configure();
+		listener.start();
+
+		String expected = "SELECT TKEY,tINT,tCLOB FROM " + TEST_TABLE + " t WHERE TINT='1' ORDER BY TKEY, tINT";
+
+		assertEquals(expected, listener.getSelectQuery());
+	}
+
+	@DatabaseTest
+	public void testSelectQueryWithOrderFieldNotFound() throws ConfigurationException {
+		listener.setOrderField("TKEY, MISSING1, MISSING2");
+		listener.setMessageIdField("tINT");
+		listener.setMessageField("tCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.configure();
+
+		LifecycleException exception = assertThrows(LifecycleException.class, listener::start);
+		assertThat("Exception should contain field type", exception.getMessage(), containsString("orderField1"));
+		assertThat("Exception should contain field name", exception.getMessage(), containsString("MISSING1"));
+		assertThat("Exception should contain field type", exception.getMessage(), containsString("orderField2"));
+		assertThat("Exception should contain field name", exception.getMessage(), containsString("MISSING2"));
+	}
+
+	@DatabaseTest
 	public void testSelectQueryWithAdditionalFields() throws ConfigurationException {
 		listener.setOrderField("ORDRFLD");
 		listener.setMessageIdField("tINT");
@@ -960,6 +990,19 @@ public class JdbcTableListenerTest {
 
 		assertEquals(expected, listener.getSelectQuery());
 		assertEquals(List.of("tBLOB", "tVARCHAR"), listener.getAdditionalFieldsList());
+	}
+
+	@DatabaseTest
+	public void testSelectQueryWithAdditionalFieldsNotFound() throws ConfigurationException {
+		listener.setMessageIdField("tINT");
+		listener.setMessageField("tCLOB");
+		listener.setMessageFieldType(JdbcListener.MessageFieldType.CLOB);
+		listener.setAdditionalFields("MISSING, tVARCHAR");
+		listener.configure();
+
+		LifecycleException exception = assertThrows(LifecycleException.class, listener::start);
+		assertThat("Exception should contain field type", exception.getMessage(), containsString("additionalFields0"));
+		assertThat("Exception should contain field name", exception.getMessage(), containsString("MISSING"));
 	}
 
 	@DatabaseTest
