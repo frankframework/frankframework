@@ -181,67 +181,6 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 		return false;
 	}
 
-	protected void setSelectQuery(String string) {
-		selectQuery = string;
-	}
-
-	@Override
-	public void setPeekUntransacted(boolean b) {
-		peekUntransacted = b;
-	}
-
-	/**
-	 * (only used when <code>peekUntransacted</code>=<code>true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock
-	 * @ff.default selectQuery
-	 */
-	public void setPeekQuery(String string) {
-		peekQuery = string;
-	}
-
-	/**
-	 * Primary key field of the table, used to identify and differentiate messages.
-	 * <b>NB: there should be an index on this field!</b>
-	 */
-	public void setKeyField(String fieldname) {
-		keyField = fieldname;
-	}
-
-	/**
-	 * Field containing the message data
-	 * @ff.default <i>same as keyField</i>
-	 */
-	public void setMessageField(String fieldname) {
-		messageField = fieldname;
-	}
-
-	/**
-	 * Field containing the <code>messageId</code>.
-	 * <b>NB: If this column is not set the default (primary key) {@link #setKeyField(String) keyField} will be used as messageId!</b>
-	 * @ff.default <i>same as keyField</i>
-	 */
-	public void setMessageIdField(String fieldname) {
-		messageIdField = fieldname;
-	}
-
-	/**
-	 * Field containing the <code>correlationId</code>.
-	 * <b>NB: If this column is not set, the <code>messageId</code> and <code>correlationId</code> will be the same!</b>
-	 * @ff.default <i>same as messageIdField</i>
-	 */
-	public void setCorrelationIdField(String fieldname) {
-		correlationIdField = fieldname;
-	}
-
-	/**
-	 * Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
-	 * be added to the session as session-variables, with the prefix {@literal ADDITIONAL_QUERY_FIELDS_KEY}. So if for example you specify {@code additionalFields = "updated_at"},
-	 * then in the session there will be a variable {@code ADDITIONAL_QUERY_FIELDS.updated_at}.
-	 */
-	public void setAdditionalFields(String fieldNames) {
-		this.additionalFields = fieldNames;
-		this.additionalFieldsList = StringUtil.split(getAdditionalFields());
-	}
-
 	/**
 	 * This method returns a {@link MessageWrapper} containing contents of the message stored in the database.
 	 *
@@ -280,5 +219,70 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 			return messageWrapper.getMessage();
 		}
 		return Message.asMessage(rawMessage.getRawMessage());
+	}
+
+	protected void setSelectQuery(String string) {
+		selectQuery = string;
+	}
+
+	@Override
+	public void setPeekUntransacted(boolean b) {
+		peekUntransacted = b;
+	}
+
+	/**
+	 * (only used when <code>peekUntransacted</code>=<code>true</code>) peek query to determine if the select query should be executed. Peek queries are, unlike select queries, executed without a transaction and without a rowlock
+	 * @ff.default selectQuery
+	 */
+	public void setPeekQuery(String string) {
+		peekQuery = string;
+	}
+
+	/**
+	 * Primary key field of the table, used to identify and differentiate messages.
+	 * <b>NB: there should be an index on this field!</b>
+	 */
+	public void setKeyField(String fieldname) {
+		keyField = fieldname;
+	}
+
+	/**
+	 * Field containing the message data
+	 * @ff.default <i>same as keyField</i>
+	 */
+	public void setMessageField(String fieldname) {
+		messageField = fieldname;
+	}
+
+	/**
+	 * Field containing the <code>messageId</code>.
+	 * <b>NB: If this column is not, or set to a column which cannot be found in the query result, the default (primary key) {@link #setKeyField(String) keyField}
+	 * will be used as messageId!</b>
+	 *
+	 * @ff.default <i>same as keyField</i>
+	 */
+	public void setMessageIdField(String fieldname) {
+		messageIdField = fieldname;
+	}
+
+	/**
+	 * Field containing the <code>correlationId</code>.
+	 * <b>NB: If this column is not set, or set to a column which cannot be found in the query result, the <code>messageId</code> and <code>correlationId</code>
+	 * will be the same!</b>
+	 *
+	 * @ff.default <i>same as messageIdField</i>
+	 */
+	public void setCorrelationIdField(String fieldname) {
+		correlationIdField = fieldname;
+	}
+
+	/**
+	 * Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
+	 * be added to the session as session-variables, with the prefix {@literal ADDITIONAL_QUERY_FIELDS_KEY}. So if for example you specify {@code additionalFields = "updated_at"},
+	 * then in the session there will be a variable {@code ADDITIONAL_QUERY_FIELDS.updated_at}.
+	 */
+	public void setAdditionalFields(String fieldNames) {
+		this.additionalFields = fieldNames;
+		this.additionalFieldsList = StringUtil.split(getAdditionalFields());
 	}
 }
