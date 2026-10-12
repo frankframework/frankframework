@@ -14,6 +14,7 @@ import static org.junit.jupiter.params.provider.Arguments.of;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -43,6 +44,7 @@ import org.xml.sax.XMLReader;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.Resource;
+import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
@@ -434,6 +436,23 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></";
 
 		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedWithEmptyMessage() {
+		String source = "";
+
+		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedWithEmptyStreamingMessage() {
+		ThrowingSupplier<InputStream, IOException> supplier = InputStream::nullInputStream;
+		Message source = Message.asMessage(supplier);
+
+		boolean result = XmlUtils.isWellFormed(source, null);
 		Assertions.assertThat(result).isFalse();
 	}
 
