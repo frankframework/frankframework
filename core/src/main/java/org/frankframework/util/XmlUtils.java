@@ -1123,10 +1123,7 @@ public class XmlUtils {
 			return false;
 		}
 
-		RootValidations rootValidations = null;
-		if (StringUtils.isNotEmpty(root)) {
-			rootValidations = new RootValidations(root);
-		}
+		RootValidations rootValidations = StringUtils.isNotEmpty(root) ? new RootValidations(root) : null;
 		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, rootValidations, null, true);
 		try {
 			InputSource inputSource = input.asInputSource();
