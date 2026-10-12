@@ -210,6 +210,14 @@ public class MessageUtilsTest {
 		assertNull(mimeType);
 	}
 
+	@Test
+	public void testComputeMimeTypeWithOnlyWhitespace() {
+		Message empty = new Message("\t\t  \n\n");
+		MimeType mimeType = MessageUtils.computeMimeType(empty);
+		assertNotNull(mimeType);
+		assertEquals("text/plain", mimeType.toString());
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"<root><child>value</child></root>",
