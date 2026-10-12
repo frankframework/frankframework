@@ -15,7 +15,6 @@
 */
 package org.frankframework.components;
 
-import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -86,9 +85,7 @@ public class FrankPlugin extends PipeLine {
 		for (IPipe pipe : getPipes()) {
 			if (pipe instanceof AbstractPipe p) {
 				System.out.println("found pipe " + pipe.toString());
-				Iterator<IParameter> params = parameterList.iterator();
-					while(params.hasNext()) {
-						IParameter q = params.next();
+					for(IParameter q : parameterList) {
 						p.getParameterList().add(q);
 				}
 			}
