@@ -113,9 +113,14 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		assertEquals("<test>\n	<a a=\"1\" b=\"2\" c=\"3\">9</a>\n</test>", attributes);
 	}
 
-	@Test
-	void testParseXml() throws IOException, SAXException {
-		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>",
+			"\t\t   <root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>",
+			"<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>  \n\n\n"
+	})
+	// Also test parser with leading / trailing spaces (see https://github.com/frankframework/frankframework/issues/11765)
+	void testParseXml(String source) throws IOException, SAXException {
 		String expected = """
 				startDocument
 				startElement root
