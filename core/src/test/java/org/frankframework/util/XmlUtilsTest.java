@@ -412,4 +412,52 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		// Assert
 		assertEqualsIgnoreWhitespaces(expected, result.asString());
 	}
+
+	@Test
+	void testIsXmlWellFormedNoRoot() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isTrue();
+	}
+
+	@Test
+	void testIsXmlWellFormedWithInvalidXml1() {
+		String source = "<root><elem_a>val_a<elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedWithInvalidXml2() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></";
+
+		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedValidRoot() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source, "root");
+		Assertions.assertThat(result).isTrue();
+	}
+
+	@Test
+	void testIsXmlWellFormedInvalidRoot() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source, "invalid");
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedMultipleRoots() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source, "root1,root2,root");
+		Assertions.assertThat(result).isTrue();
+	}
 }
