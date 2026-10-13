@@ -68,9 +68,16 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	}
 
 	@Test
-	void basic() throws Exception {
+	void basicTestWithXml() throws Exception {
 		pipe.addForward(new PipeForward("Envelope","Envelope-Path"));
-		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+		Message input = MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+		testSwitch(input,"Envelope");
+	}
+
+	@Test
+	void basicTestWithXmlWithLeadingWhitespace() throws Exception {
+		pipe.addForward(new PipeForward("Envelope","Envelope-Path"));
+		Message input = new Message("\t\t  " + MessageTestUtils.getMessage("/SwitchPipe/in.xml").asString());
 		testSwitch(input,"Envelope");
 	}
 
@@ -254,6 +261,16 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.setJsonPathExpression("$.status");
 
 		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simple.json"),"Success");
+	}
+
+	@Test
+	void basicSelectionWithJsonPathExpressionWithLeadingWhitespace() throws Exception {
+		pipe.addForward(new PipeForward("Error", "statusError-Path"));
+		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
+		pipe.setJsonPathExpression("$.status");
+
+		Message input = new Message("\t\t  " + MessageTestUtils.getMessage("/SwitchPipe/simple.json").asString());
+		testSwitch(input,"Success");
 	}
 
 	@Test
@@ -455,7 +472,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 
 		pipe.addForward(new PipeForward("notFound2", "test"));
 
-		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> configureAndStartPipe());
+		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertEquals("Exception configuring SwitchPipe [SwitchPipe under test]: has the notFoundForwardName attribute. However, the forward [trilili] does not exist.", ex.getMessage());
 	}
 
@@ -465,7 +482,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	void emptyForward(Message input) {
 		pipe.setEmptyForwardName("tralalal");
 
-		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> configureAndStartPipe());
+		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertEquals("Exception configuring SwitchPipe [SwitchPipe under test]: has the emptyForwardName attribute. However, the forward [tralalal] does not exist.", ex.getMessage());
 	}
 
