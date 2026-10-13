@@ -35,6 +35,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junitpioneer.jupiter.Issue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -116,10 +117,10 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>",
-			"\t\t   <root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>",
-			"<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>  \n\n\n"
+			"\t\t   <root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>", // Test parser with leading spaces
+			"<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>  \n\n\n" // Test parser with trailing spaces
 	})
-	// Also test parser with leading / trailing spaces (see https://github.com/frankframework/frankframework/issues/11765)
+	@Issue("11765")
 	void testParseXml(String source) throws IOException, SAXException {
 		String expected = """
 				startDocument
