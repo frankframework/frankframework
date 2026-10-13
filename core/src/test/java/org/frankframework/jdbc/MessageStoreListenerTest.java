@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -258,10 +259,10 @@ public class MessageStoreListenerTest {
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
 
-		RawMessageWrapper ro = browser.browseMessage(storageKey);
+		RawMessageWrapper<Serializable> ro = browser.browseMessage(storageKey);
 		assertEquals(storageKey, ro.getId());
 		Object o = ro.getRawMessage();
-		if (o instanceof MessageWrapper mw) {
+		if (o instanceof MessageWrapper<?> mw) {
 			assertEquals(message, mw.getMessage().asString());
 		} else {
 			assertEquals(message, o);
@@ -293,6 +294,7 @@ public class MessageStoreListenerTest {
 		assertEquals("fakeComments", item.getCommentString());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private String insertARecord(String message, char type) throws SenderException, ConfigurationException {
 		storage.setType(type+"");
 		storage.configure();
