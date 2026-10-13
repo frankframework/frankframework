@@ -109,10 +109,11 @@ public class JdbcListener extends AbstractJdbcListener implements IPeekableListe
 		}
 	}
 
-	protected String getKeyFromRawMessage(RawMessageWrapper<Serializable> rawMessage) {
-
-		Map<String, Object> mwContext = rawMessage.getContext();
-		String key = (String) mwContext.get(PipeLineSession.STORAGE_ID_KEY);
+	/**
+	 * Get the storage-key for the Message from the {@link RawMessageWrapper}. Throw an exception if not found, key-field is mandatory for state-changing listeners.
+	 */
+	protected @NonNull String getKeyFromRawMessage(RawMessageWrapper<Serializable> rawMessage) {
+		String key = getMessageKeyOrNull(rawMessage);
 		if (StringUtils.isNotEmpty(key)) {
 			return key;
 		}

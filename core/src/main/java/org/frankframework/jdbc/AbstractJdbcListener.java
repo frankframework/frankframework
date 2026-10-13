@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -161,24 +162,28 @@ public abstract class AbstractJdbcListener extends JdbcFacade implements IPeekab
 	}
 
 	protected boolean execute(@NonNull Connection conn, @Nullable String query, @NonNull List<String> parameters) throws ListenerException {
-		if (StringUtils.isNotEmpty(query)) {
-			if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
-			//noinspection SqlSourceToSinkFlow
-			try (PreparedStatement stmt=conn.prepareStatement(query)) {
-				stmt.clearParameters();
-				ParameterMetaData parameterMetaData = stmt.getParameterMetaData();
-				int i = 1;
-				for (String parameter : parameters) {
-					log.debug("setting parameter {} to [{}]", i, parameter);
-					JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired(), parameterMetaData);
-				}
-
-				return stmt.executeUpdate() > 0;
-			} catch (SQLException e) {
-				throw new ListenerException(getLogPrefix()+"exception executing statement ["+query+"]",e);
-			}
+		if (StringUtils.isEmpty(query)) {
+			return false;
 		}
-		return false;
+		if (trace && log.isDebugEnabled()) log.debug("executing statement [{}]", query);
+		//noinspection SqlSourceToSinkFlow
+		try (PreparedStatement stmt=conn.prepareStatement(query)) {
+			stmt.clearParameters();
+			ParameterMetaData parameterMetaData = stmt.getParameterMetaData();
+			int i = 1;
+			for (String parameter : parameters) {
+				if (i > parameterMetaData.getParameterCount()) {
+					log.debug("Query [{}] has {} parameters but {} values passed; remaining parameters not applied", query, parameterMetaData.getParameterCount(), parameters.size());
+					break;
+				}
+				if (trace && log.isDebugEnabled()) log.debug("setting parameter {} to [{}]", i, parameter);
+				JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired(), parameterMetaData);
+			}
+
+			return stmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			throw new ListenerException(getLogPrefix()+"exception executing statement ["+query+"]",e);
+		}
 	}
 
 	/**
@@ -219,6 +224,13 @@ public abstract class AbstractJdbcListener extends JdbcFacade implements IPeekab
 			return messageWrapper.getMessage();
 		}
 		return Message.asMessage(rawMessage.getRawMessage());
+	}
+
+	/**
+	 * Get the storage-key for the Message from the {@link RawMessageWrapper}, or NULL allowing for key-field not being configured for the listener.
+	 */
+	protected static @Nullable String getMessageKeyOrNull(RawMessageWrapper<Serializable> messageWrapper) {
+		return Objects.toString(messageWrapper.getContext().get(PipeLineSession.STORAGE_ID_KEY), null);
 	}
 
 	protected void setSelectQuery(String string) {
