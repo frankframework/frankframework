@@ -15,6 +15,7 @@
 */
 package org.frankframework.jdbc;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,7 +53,7 @@ import org.frankframework.util.StringUtil;
  *
  * @since   4.7
  */
-public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMessageBrowsers<M> {
+public class JdbcTableListener extends JdbcListener implements IProvidesMessageBrowsers<Serializable> {
 
 	private @Getter String tableName;
 	private @Getter String tableAlias="t";
@@ -215,7 +216,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	@Override
-	protected @Nullable RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
+	protected @Nullable RawMessageWrapper<Serializable> changeProcessState(Connection connection, RawMessageWrapper<Serializable> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key = getKeyFromRawMessage(rawMessage);
 		List<String> parameters = new ArrayList<>();
@@ -231,11 +232,11 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	@Override
-	public @Nullable IMessageBrowser<M> getMessageBrowser(ProcessState state) {
+	public @Nullable IMessageBrowser<Serializable> getMessageBrowser(ProcessState state) {
 		if (!knownProcessStates().contains(state)) {
 			return null;
 		}
-		JdbcTableMessageBrowser<M> browser = new JdbcTableMessageBrowser<>(this, getStatusValue(state), getStorageType(state));
+		JdbcTableMessageBrowser browser = new JdbcTableMessageBrowser(this, getStatusValue(state), getStorageType(state));
 		if (StringUtils.isNotEmpty(getCommentField())) {
 			browser.setCommentField(commentField);
 		}

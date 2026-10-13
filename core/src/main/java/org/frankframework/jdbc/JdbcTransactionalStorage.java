@@ -110,7 +110,7 @@ import org.frankframework.util.TimeProvider;
  * @author Jaco de Groot
  * @since 4.1
  */
-public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializable> implements ITransactionalStorage {
+public class JdbcTransactionalStorage extends JdbcTableMessageBrowser implements ITransactionalStorage {
 
 	private @Getter boolean checkTable; 		// default set from appConstant jdbc.storage.checkTable
 	private @Getter boolean checkIndices;		// default set from appConstant jdbc.storage.checkIndices
