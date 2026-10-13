@@ -352,21 +352,29 @@ public class MessageUtils {
 	private static MimeType guessMimeType(Message message) {
 		// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
 		// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
-		String firstChar;
-		try {
-			firstChar = message.peek(1);
+		char firstChar;
+		try (Reader in = message.asReader()) {
+			do {
+				int n = in.read();
+				if (n == -1) {
+					return MediaType.TEXT_PLAIN;
+				}
+				firstChar = (char)n;
+			} while (Character.isWhitespace(firstChar));
 		} catch (IOException e) {
 			return MediaType.TEXT_PLAIN;
 		}
-		if ("<".equals(firstChar)) {
+		if ('<' == firstChar) {
 			return MediaType.APPLICATION_XML;
 		}
-		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
+		if ('{' != firstChar && '[' != firstChar) {
 			return MediaType.TEXT_PLAIN;
 		}
 		try (InputStream inputStream = message.asInputStream(); JsonParser parser = Json.createParser(inputStream)) {
-			while (parser.hasNext()) {
+			int i = 0;
+			while (parser.hasNext() && i < 20) { // Don't validate whole file, max 20 parser-events, should be enough and improves performance.
 				parser.next(); // Throw away the parse results as we only want to validate
+				++i;
 			}
 			// If we can reach this we are JSON
 			return MediaType.APPLICATION_JSON;
