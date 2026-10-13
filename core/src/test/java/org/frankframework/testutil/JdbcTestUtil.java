@@ -7,7 +7,13 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -149,13 +155,16 @@ public class JdbcTestUtil {
 	static void applyParameters(PreparedStatement stmt, Object... params) throws SQLException {
 		for (int i = 0; i < params.length; i++) {
 			Object param = params[i];
-			if (param == null) continue;
-
 			int sqlType = deriveSqlType(param);
-			stmt.setObject(i + 1, param, sqlType);
+			if (param == null) {
+				stmt.setNull(i + 1, sqlType);
+			} else {
+				stmt.setObject(i + 1, param, sqlType);
+			}
 		}
 	}
 
+	@SuppressWarnings("unused") // I don't want all the unused case-variables renamed to 'ignored' so rather suppress warning about them
 	private static int deriveSqlType(final Object param) {
 		// NB: So far this is not exhaustive, but previously only INTEGER and VARCHAR were supported, so for now this should do.
 		return switch (param) {
@@ -166,6 +175,13 @@ public class JdbcTestUtil {
 			case Timestamp timestamp -> Types.TIMESTAMP;
 			case Time time -> Types.TIME;
 			case java.sql.Date date -> Types.DATE;
+			case Date date -> Types.TIMESTAMP;
+			case LocalDate localDate -> Types.DATE;
+			case LocalTime localTime -> Types.TIME;
+			case LocalDateTime localDateTime -> Types.TIMESTAMP;
+			case ZonedDateTime zonedDateTime -> Types.TIMESTAMP;
+			case Instant instant -> Types.TIMESTAMP;
+			case Boolean b -> Types.BOOLEAN;
 			case null, default -> Types.VARCHAR;
 		};
 	}
