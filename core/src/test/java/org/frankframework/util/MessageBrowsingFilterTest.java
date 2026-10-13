@@ -71,6 +71,7 @@ public class MessageBrowsingFilterTest {
 		assertEquals(1, count);
 	}
 
+	@SuppressWarnings("deprecation")
 	private void fillTable(DatabaseTestEnvironment env) throws Exception {
 		IDbmsSupport dbmsSupport = env.getDbmsSupport();
 
@@ -188,8 +189,8 @@ public class MessageBrowsingFilterTest {
 
 	@TxManagerTest
 	public void testMessageFilterWithMessageWrapper() throws Exception {
-		MessageWrapper messageInFilter = new MessageWrapper(new Message("message"), "firstMessageID", null);
-		MessageWrapper messageOutOfFilter = new MessageWrapper(new Message("out filter"), "id", null);
+		MessageWrapper<?> messageInFilter = new MessageWrapper<>(new Message("message"), "firstMessageID", null);
+		MessageWrapper<?> messageOutOfFilter = new MessageWrapper<>(new Message("out filter"), "id", null);
 		testMessageFilterWithJavaListenerHelper(messageInFilter, messageOutOfFilter);
 	}
 

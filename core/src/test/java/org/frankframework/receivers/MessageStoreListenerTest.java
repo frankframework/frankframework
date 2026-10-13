@@ -17,6 +17,7 @@ package org.frankframework.receivers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Serializable;
@@ -88,6 +89,8 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 
 		String input = "test-message";
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
+		assertNotNull(rawMessage);
+		assertNotNull(rawMessage.getRawMessage());
 		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
 
 		Message message = listener.extractMessage(rawMessage, session);
@@ -103,6 +106,8 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 
 		String input = "test-message";
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
+		assertNotNull(rawMessage);
+		assertNotNull(rawMessage.getRawMessage());
 		assertTrue(rawMessage.getContext().containsKey(AbstractJdbcListener.ADDITIONAL_QUERY_FIELDS_KEY), "RawMessage Context should contain additional fields");
 		assertEquals(input, rawMessage.getRawMessage().toString(), "MessageStoreListener should not manipulate the rawMessage");
 
@@ -130,6 +135,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		wrapper.getContext().put("sessionKey3", "value3");
 
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(wrapper);
+		assertNotNull(rawMessage);
 		Message message = listener.extractMessage(rawMessage, session);
 		session.putAll(rawMessage.getContext()); // This is normally done by the receiver
 
@@ -149,6 +155,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		String input = "test-message,\"value1\",value2,value3";
 
 		RawMessageWrapper<Serializable> rawMessage = getRawMessage(input);
+		assertNotNull(rawMessage);
 		Message message = listener.extractMessage(rawMessage, session);
 		assertEquals("test-message", message.asString());
 

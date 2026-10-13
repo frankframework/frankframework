@@ -78,6 +78,7 @@ public class MessageStoreSenderAndListenerTest {
 		// Act
 		sender.sendMessage(input, session);
 		RawMessageWrapper<Serializable> rawMessage = listener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
 		result = listener.extractMessage(rawMessage, threadContext);
 
 		// Assert
@@ -103,6 +104,7 @@ public class MessageStoreSenderAndListenerTest {
 		// Act
 		sender.sendMessage(input, session);
 		RawMessageWrapper<Serializable> rawMessage = listener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
 		result = listener.extractMessage(rawMessage, threadContext);
 
 		// Assert

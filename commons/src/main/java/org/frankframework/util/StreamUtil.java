@@ -55,7 +55,7 @@ public class StreamUtil {
 		return readerToString(reader, endOfLineString, false);
 	}
 
-	public static String streamToString(InputStream stream, @Nullable String endOfLineString, String streamEncoding) throws IOException {
+	public static String streamToString(InputStream stream, @Nullable String endOfLineString, @Nullable String streamEncoding) throws IOException {
 		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString);
 	}
 
