@@ -271,7 +271,8 @@ public class DbmsSupportTest {
 
 			// Act
 			Object result1 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null);
-			Object result2 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TDATE FROM " + TEST_TABLE + " WHERE TKEY=1", null);
+			// Select with conversion TimestampAsDate b/c of Oracle, despite it being a DATE column
+			Object result2 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATE") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null);
 
 			// Assert
 			assertNotNull(result1);
@@ -291,7 +292,8 @@ public class DbmsSupportTest {
 
 			// Act
 			Object result1 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null);
-			Object result2 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TDATE FROM " + TEST_TABLE + " WHERE TKEY=2", null);
+			// Select with conversion TimestampAsDate b/c of Oracle, despite it being a DATE column
+			Object result2 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATE") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null);
 
 			// Assert
 			assertNotNull(result1);
