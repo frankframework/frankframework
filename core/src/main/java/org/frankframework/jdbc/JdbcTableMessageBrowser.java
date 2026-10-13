@@ -16,6 +16,7 @@
 package org.frankframework.jdbc;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -37,7 +38,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 
-public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
+public class JdbcTableMessageBrowser extends AbstractJdbcMessageBrowser {
 
 	private @Getter String tableName="IBISSTORE";
 	private @Getter String indexName="IX_IBISSTORE";
@@ -45,7 +46,7 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 	private String tableAlias;
 
 	private JdbcFacade parent=null;
-	private final JdbcTableListener<M> tableListener;
+	private final JdbcTableListener tableListener;
 
 	private static final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
 	private static final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
@@ -53,11 +54,11 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 	protected boolean useIndexHint;
 	private boolean useFirstRowsHint;
 
-	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener) {
+	public JdbcTableMessageBrowser(JdbcTableListener tableListener) {
 		this.tableListener = tableListener;
 	}
 
-	public JdbcTableMessageBrowser(JdbcTableListener<M> tableListener, String statusValue, StorageType storageType) {
+	public JdbcTableMessageBrowser(JdbcTableListener tableListener, String statusValue, StorageType storageType) {
 		this(tableListener);
 		parent=tableListener;
 		setKeyField(tableListener.getKeyField());
@@ -101,12 +102,11 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 	}
 
 	@Override
-	protected RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException, JdbcException {
+	protected RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws IOException, SQLException, JdbcException {
 		if (tableListener!=null) {
 			return tableListener.extractRawMessage(rs);
 		}
-		// noinspection unchecked
-		RawMessageWrapper<M> rawMessageWrapper = (RawMessageWrapper<M>) new RawMessageWrapper<>(rs.getString(columnIndex), storageKey, null);
+		RawMessageWrapper<Serializable> rawMessageWrapper = new RawMessageWrapper<>(rs.getString(columnIndex), storageKey, null);
 		rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 		return rawMessageWrapper;
 	}

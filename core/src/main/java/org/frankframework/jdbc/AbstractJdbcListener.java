@@ -16,6 +16,7 @@
 package org.frankframework.jdbc;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -51,9 +52,8 @@ import org.frankframework.util.StringUtil;
 
 /**
  * Abstract base class for JDBC listeners (excluding the deprecated and broken "SimpleJdbcListener").
- * @param <M> Type of messages
  */
-public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPeekableListener<M> {
+public abstract class AbstractJdbcListener extends JdbcFacade implements IPeekableListener<Serializable> {
 	public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
 	protected @Getter String selectQuery;
 	protected @Getter String messageField;
@@ -139,7 +139,7 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 		return rs.getString(index);
 	}
 
-	protected void addAdditionalValuesToMessageWrapper(ResultSet rs, RawMessageWrapper<M> mw) throws SQLException {
+	protected void addAdditionalValuesToMessageWrapper(ResultSet rs, MessageWrapper<Serializable> mw) throws SQLException {
 		ResultSetMetaData metaData = rs.getMetaData();
 		Function<String, Map.Entry<String, Message>> extractFieldValue = fieldName -> {
 			try {
@@ -194,7 +194,7 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 	 * @throws SQLException If loading the message resulted in a database exception.
 	 * @throws IOException If loading the message resulted in an IO exception
 	 */
-	protected @NonNull RawMessageWrapper<M> extractRawMessage(@NonNull ResultSet rs) throws SQLException, IOException, DbmsException {
+	protected @NonNull MessageWrapper<Serializable> extractRawMessage(@NonNull ResultSet rs) throws SQLException, IOException, DbmsException {
 		String key = getColumnValueOrDefault(rs, getKeyField(), null);
 		Message message;
 		if (StringUtils.isNotEmpty(getMessageField())) {
@@ -205,7 +205,7 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 		log.debug("building wrapper for key [{}], message [{}]", key, message);
 		String messageId = getColumnValueOrDefault(rs, getMessageIdField(), key);
 		String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
-		MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId); // Creating instance of MessageWrapper instead of RawMessageWrapper means the Receiver will not call #extractMessage
+		MessageWrapper<Serializable> mw = new MessageWrapper<>(message, messageId, correlationId); // Creating instance of MessageWrapper instead of RawMessageWrapper means the Receiver will not call #extractMessage
 		if (key != null) {
 			mw.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 		}
@@ -214,8 +214,8 @@ public abstract class AbstractJdbcListener<M> extends JdbcFacade implements IPee
 	}
 
 	@Override
-	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
-		if (rawMessage.getRawMessage() instanceof MessageWrapper<?> messageWrapper) {
+	public Message extractMessage(@NonNull RawMessageWrapper<Serializable> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
+		if (rawMessage instanceof MessageWrapper<?> messageWrapper) {
 			return messageWrapper.getMessage();
 		}
 		return Message.asMessage(rawMessage.getRawMessage());

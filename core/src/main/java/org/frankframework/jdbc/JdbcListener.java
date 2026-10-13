@@ -15,6 +15,7 @@
 */
 package org.frankframework.jdbc;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,12 +45,10 @@ import org.frankframework.receivers.RawMessageWrapper;
 /**
  * JdbcListener base class.
  *
- * @param <M> MessageWrapper or key. Key is also used as messageId
- *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekableListener<M>, IHasProcessState<M>, IRedeliveringListener<M> {
+public class JdbcListener extends AbstractJdbcListener implements IPeekableListener<Serializable>, IHasProcessState<Serializable>, IRedeliveringListener<Serializable> {
 
 	private Map<ProcessState, String> updateStatusQueries = new EnumMap<>(ProcessState.class);
 	private Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
@@ -78,13 +77,13 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 	}
 
 	@Override
-	public @Nullable RawMessageWrapper<M> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
+	public @Nullable RawMessageWrapper<Serializable> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		return withConnection(conn -> {
 			return getRawMessage(conn, threadContext);
 		});
 	}
 
-	protected @Nullable RawMessageWrapper<M> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
+	protected @Nullable RawMessageWrapper<Serializable> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		String query = preparedSelectQuery;
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
@@ -110,7 +109,7 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 		}
 	}
 
-	protected String getKeyFromRawMessage(RawMessageWrapper<M> rawMessage) {
+	protected String getKeyFromRawMessage(RawMessageWrapper<Serializable> rawMessage) {
 
 		Map<String, Object> mwContext = rawMessage.getContext();
 		String key = (String) mwContext.get(PipeLineSession.STORAGE_ID_KEY);
@@ -121,7 +120,7 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Serializable> rawMessage, PipeLineSession pipeLineSession) {
 		// required action already done via ChangeProcessState()
 	}
 
@@ -136,7 +135,7 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 	}
 
 	@Override
-	public @Nullable RawMessageWrapper<M> changeProcessState(RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
+	public @Nullable RawMessageWrapper<Serializable> changeProcessState(RawMessageWrapper<Serializable> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		if (!knownProcessStates().contains(toState)) {
 			return null; // if toState does not exist, the message can/will not be moved to it, so return null.
 		}
@@ -145,7 +144,7 @@ public class JdbcListener<M> extends AbstractJdbcListener<M> implements IPeekabl
 		});
 	}
 
-	protected @Nullable RawMessageWrapper<M> changeProcessState(Connection connection, RawMessageWrapper<M> rawMessage, ProcessState toState, String reason) throws ListenerException {
+	protected @Nullable RawMessageWrapper<Serializable> changeProcessState(Connection connection, RawMessageWrapper<Serializable> rawMessage, ProcessState toState, String reason) throws ListenerException {
 		String query = getUpdateStatusQuery(toState);
 		String key=getKeyFromRawMessage(rawMessage);
 		return execute(connection, query, List.of(key)) ? rawMessage : null;

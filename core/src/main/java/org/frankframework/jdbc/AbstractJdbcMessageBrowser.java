@@ -16,6 +16,7 @@
 package org.frankframework.jdbc;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,7 +53,7 @@ import org.frankframework.util.StringUtil;
  * @author Gerrit van Brakel
  */
 @SuppressWarnings("SqlSourceToSinkFlow") // Do not need warnings about unsafe SQL on this class
-public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser<M> {
+public abstract class AbstractJdbcMessageBrowser extends JdbcFacade implements IMessageBrowser<Serializable> {
 
 	private @Getter String keyField=null;
 	private @Getter String idField=null;
@@ -297,7 +298,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 		}
 	}
 
-	protected abstract RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws SQLException, JdbcException, IOException;
+	protected abstract RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws SQLException, JdbcException, IOException;
 
 	@Override
 	public int getMessageCount() throws ListenerException {
@@ -360,7 +361,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 	}
 
 	@Override
-	public RawMessageWrapper<M> browseMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<Serializable> browseMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
 				applyStandardParameters(stmt, storageKey, true);

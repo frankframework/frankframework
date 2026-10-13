@@ -3,7 +3,6 @@ package org.frankframework.jdbc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -72,7 +71,7 @@ class JdbcTableMessageBrowserTest {
 		storage.start();
 		createTestMessages(150);
 
-		JdbcTableMessageBrowser<Serializable> messageBrowser = (JdbcTableMessageBrowser<Serializable>)listener.getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser messageBrowser = (JdbcTableMessageBrowser)listener.getMessageBrowser(ProcessState.AVAILABLE);
 		assertNotNull(messageBrowser);
 		messageBrowser.configure();
 
@@ -103,7 +102,7 @@ class JdbcTableMessageBrowserTest {
 		storage.start();
 		createTestMessages(250);
 
-		JdbcTableMessageBrowser<Serializable> messageBrowser = (JdbcTableMessageBrowser<Serializable>)listener.getMessageBrowser(ProcessState.AVAILABLE);
+		JdbcTableMessageBrowser messageBrowser = (JdbcTableMessageBrowser)listener.getMessageBrowser(ProcessState.AVAILABLE);
 		assertNotNull(messageBrowser);
 		messageBrowser.configure();
 
