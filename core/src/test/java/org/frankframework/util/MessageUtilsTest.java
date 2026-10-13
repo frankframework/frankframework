@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.util.MimeType;
 
@@ -198,20 +199,46 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testXmlMessage() {
-		Message json = new Message("<root><child>value</child></root>");
-		MimeType mimeType = MessageUtils.computeMimeType(json);
+	public void testComputeMimeTypeWithEmptyMessage() {
+		Message empty = new Message("");
+		MimeType mimeType = MessageUtils.computeMimeType(empty);
+		assertNull(mimeType);
+	}
+
+	@Test
+	public void testComputeMimeTypeWithOnlyWhitespace() {
+		Message empty = new Message("\t\t  \n\n");
+		MimeType mimeType = MessageUtils.computeMimeType(empty);
+		assertNotNull(mimeType);
+		assertEquals("text/plain", mimeType.toString());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"<root><child>value</child></root>",
+			"\t\t\t   <root><child>value</child></root>",
+			"<root><child>value</child></root>  \n\n\n"
+	})
+	// Also test mimetype-determination with messages with leading / trailing spaces (see https://github.com/frankframework/frankframework/issues/11765)
+	public void testXmlMessage(String input) {
+		Message xml = new Message(input);
+		MimeType mimeType = MessageUtils.computeMimeType(xml);
 		assertNotNull(mimeType);
 		assertEquals("application/xml", mimeType.toString());
 	}
 
-	@Test
-	public void testJsonMessage() throws IOException {
-		Message json = new Message(JSON_TEST_INPUT);
+	@ParameterizedTest
+	@ValueSource(strings = {
+			JSON_TEST_INPUT,
+			"\t\t   " + JSON_TEST_INPUT,
+			JSON_TEST_INPUT + "\n\n  "
+	})
+	// Also test mimetype-determination with messages with leading / trailing spaces (see https://github.com/frankframework/frankframework/issues/11765)
+	public void testJsonMessage(String input) {
+		Message json = new Message(input);
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
 		assertEquals("application/json", mimeType.toString());
-		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 
 	@Test
