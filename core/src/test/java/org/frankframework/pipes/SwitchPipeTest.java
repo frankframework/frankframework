@@ -57,9 +57,16 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	}
 
 	@Test
-	void basic() throws Exception {
+	void basicTestWithXml() throws Exception {
 		pipe.addForward(new PipeForward("Envelope","Envelope-Path"));
-		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+		Message input = MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+		testSwitch(input,"Envelope");
+	}
+
+	@Test
+	void basicTestWithXmlWithLeadingWhitespace() throws Exception {
+		pipe.addForward(new PipeForward("Envelope","Envelope-Path"));
+		Message input = new Message("\t\t  " + MessageTestUtils.getMessage("/SwitchPipe/in.xml").asString());
 		testSwitch(input,"Envelope");
 	}
 
@@ -246,6 +253,16 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.setJsonPathExpression("$.status");
 
 		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simple.json"),"Success");
+	}
+
+	@Test
+	void basicSelectionWithJsonPathExpressionWithLeadingWhitespace() throws Exception {
+		pipe.addForward(new PipeForward("Error", "statusError-Path"));
+		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
+		pipe.setJsonPathExpression("$.status");
+
+		Message input = new Message("\t\t  " + MessageTestUtils.getMessage("/SwitchPipe/simple.json").asString());
+		testSwitch(input,"Success");
 	}
 
 	@Test
