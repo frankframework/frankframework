@@ -111,7 +111,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.validation.RootValidations;
 import org.frankframework.validation.XmlValidatorContentHandler;
-import org.frankframework.validation.XmlValidatorErrorHandler;
 import org.frankframework.xml.BodyOnlyFilter;
 import org.frankframework.xml.CanonicalizeFilter;
 import org.frankframework.xml.ClassLoaderEntityResolver;
@@ -1124,20 +1123,14 @@ public class XmlUtils {
 			return false;
 		}
 
-		RootValidations rootValidations = null;
-		if (StringUtils.isNotEmpty(root)) {
-			rootValidations = new RootValidations(root);
-		}
+		RootValidations rootValidations = StringUtils.isNotEmpty(root) ? new RootValidations(root) : null;
 		XmlValidatorContentHandler xmlHandler = new XmlValidatorContentHandler(null, rootValidations, null, true);
-		XmlValidatorErrorHandler xmlValidatorErrorHandler = new XmlValidatorErrorHandler(xmlHandler, "Is not well formed");
-		xmlHandler.setXmlValidatorErrorHandler(xmlValidatorErrorHandler);
 		try {
-			// set ErrorHandler to prevent message in System.err: [Fatal Error] :-1:-1: Premature end of file.
 			InputSource inputSource = input.asInputSource();
 			if (inputSource == null) {
 				return false;
 			}
-			parseXml(inputSource, xmlHandler, xmlValidatorErrorHandler);
+			parseXml(inputSource, xmlHandler, null);
 		} catch (Exception e) {
 			return false;
 		}

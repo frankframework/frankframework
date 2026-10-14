@@ -39,7 +39,7 @@ public class RootValidation {
 	}
 
 	public void check(HasApplicationContext source, Set<IXSD> xsds) {
-		String validElements = rootValidation.getLast();
+		String validElements = rootValidation.getFirst();
 		if (StringUtils.isEmpty(validElements)) {
 			return;
 		}

@@ -14,6 +14,7 @@ import static org.junit.jupiter.params.provider.Arguments.of;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -35,6 +36,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junitpioneer.jupiter.Issue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -43,6 +45,7 @@ import org.xml.sax.XMLReader;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.Resource;
+import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
@@ -113,9 +116,14 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		assertEquals("<test>\n	<a a=\"1\" b=\"2\" c=\"3\">9</a>\n</test>", attributes);
 	}
 
-	@Test
-	void testParseXml() throws IOException, SAXException {
-		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>",
+			"\t\t   <root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>", // Test parser with leading spaces
+			"<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>  \n\n\n" // Test parser with trailing spaces
+	})
+	@Issue("11765")
+	void testParseXml(String source) throws IOException, SAXException {
 		String expected = """
 				startDocument
 				startElement root
@@ -411,5 +419,70 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 		// Assert
 		assertEqualsIgnoreWhitespaces(expected, result.asString());
+	}
+
+	@Test
+	void testIsXmlWellFormedNoRoot() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isTrue();
+	}
+
+	@Test
+	void testIsXmlWellFormedWithInvalidXml1() {
+		String source = "<root><elem_a>val_a<elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedWithInvalidXml2() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></";
+
+		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedWithEmptyMessage() {
+		String source = "";
+
+		boolean result = XmlUtils.isWellFormed(source);
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedWithEmptyStreamingMessage() {
+		ThrowingSupplier<InputStream, IOException> supplier = InputStream::nullInputStream;
+		Message source = Message.asMessage(supplier);
+
+		boolean result = XmlUtils.isWellFormed(source, null);
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedValidRoot() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source, "root");
+		Assertions.assertThat(result).isTrue();
+	}
+
+	@Test
+	void testIsXmlWellFormedInvalidRoot() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source, "invalid");
+		Assertions.assertThat(result).isFalse();
+	}
+
+	@Test
+	void testIsXmlWellFormedMultipleRoots() {
+		String source = "<root><elem_a>val_a</elem_a><elem_b>val_b</elem_b></root>";
+
+		boolean result = XmlUtils.isWellFormed(source, "root1,root2,root");
+		Assertions.assertThat(result).isTrue();
 	}
 }
