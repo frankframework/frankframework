@@ -27,6 +27,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 
 /**
@@ -50,6 +51,13 @@ public class SenderWrapper extends AbstractSenderWrapper {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
+		// because sender might not have been set when addPipe() is called.
+		if (getSender() instanceof ISenderWithParameters senderWithParams) {
+			for (IParameter p : getParameterList()) {
+				senderWithParams.addParameter(p);
+			}
+		}
 		getSender().configure();
 	}
 	@Override
