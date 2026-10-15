@@ -94,7 +94,7 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
 		}
-		// Skip Locked is allowed only with select-for-update; we may not need select-for-update in the PEEK query, but we do want to skip locked rows and anyway we will not keep rows locked for long.
+		// take shared lock, to be able to use 'skip locked' or 'wait'
 		if (wait < 0) {
 			return selectQuery + (batchSize > 0 ? " LIMIT " + batchSize : "") + " LOCK IN SHARE MODE " + (hasSkipLockedFunctionality() ? "SKIP LOCKED" : "WAIT 1"); // Mariadb used to have no 'skip locked', WAIT 1 is next best
 		}
