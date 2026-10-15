@@ -183,7 +183,7 @@ public class JdbcTableListener extends JdbcListener implements IProvidesMessageB
 	private static void addFields(String fieldTag, List<String> fieldsList, Map<String, String> configuredColumnNames) {
 		// Only add index-number if there's more than 1
 		if (fieldsList.size() == 1) {
-			configuredColumnNames.put(fieldTag, fieldsList.get(0).toUpperCase());
+			configuredColumnNames.put(fieldTag, fieldsList.getFirst().toUpperCase());
 		} else {
 			for (ListIterator<String> iter = fieldsList.listIterator(); iter.hasNext(); ) {
 				configuredColumnNames.put(fieldTag + iter.nextIndex(), iter.next().toUpperCase());
