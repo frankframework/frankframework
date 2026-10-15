@@ -141,20 +141,20 @@ public class DatabaseTestEnvironment implements AutoCloseable {
 		}
 	}
 
-	private TransactionDefinition getTxDef(int transactionAttribute, int timeout) {
-		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute, timeout);
+	private TransactionDefinition getTxDef(int transactionPropagation, int timeout) {
+		return SpringTxManagerProxy.getTransactionDefinition(transactionPropagation, timeout);
 	}
 
-	private TransactionDefinition getTxDef(int transactionAttribute) {
-		return getTxDef(transactionAttribute, 20);
+	private TransactionDefinition getTxDef(int transactionPropagation) {
+		return getTxDef(transactionPropagation, 20);
 	}
 
-	public TransactionStatus startTransaction(final int transactionAttribute) {
-		return startTransaction(getTxDef(transactionAttribute));
+	public TransactionStatus startTransaction(final int transactionPropagation) {
+		return startTransaction(getTxDef(transactionPropagation));
 	}
 
-	public TransactionStatus startTransaction(final int transactionAttribute, int timeout) {
-		return startTransaction(getTxDef(transactionAttribute,  timeout));
+	public TransactionStatus startTransaction(final int transactionPropagation, final int timeout) {
+		return startTransaction(getTxDef(transactionPropagation, timeout));
 	}
 
 	protected TransactionStatus startTransaction(@NonNull final TransactionDefinition txDef) {

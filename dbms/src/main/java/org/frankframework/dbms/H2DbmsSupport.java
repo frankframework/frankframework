@@ -137,11 +137,10 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
-		String query = super.prepareQueryTextForWorkQueuePeeking(batchSize, selectQuery, wait);
 		if (hasSkipLockedFunctionality()) {
-			return query + " FOR UPDATE SKIP LOCKED";
+			return selectQuery + " FOR UPDATE SKIP LOCKED";
 		}
-		return query;
+		return selectQuery;
 	}
 
 	@Override

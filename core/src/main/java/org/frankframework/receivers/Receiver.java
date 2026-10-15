@@ -584,7 +584,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					RCV_SHUTDOWN_MONITOR_EVENT, RCV_SUSPENDED_MONITOR_EVENT, RCV_RESUMED_MONITOR_EVENT, RCV_THREAD_EXIT_MONITOR_EVENT
 			).forEach(this::registerEvent);
 
-			txNewWithTimeout = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
+			txNewWithTimeout = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, getTransactionTimeout());
 
 			this.validatorsAndWrappers = configureSpecialPipes();
 

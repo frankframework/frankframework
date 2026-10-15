@@ -21,7 +21,7 @@ public class ConcurrentManagedTransactionTester extends ConcurrentActionTester {
 
 	@Override
 	public void initAction() throws SQLException {
-		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
+		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 20);
 		mainItx = new IbisTransaction(txManager, txDef, "ConcurrentManagedTransactionTester");
 	}
 
