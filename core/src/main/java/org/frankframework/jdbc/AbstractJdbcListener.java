@@ -77,9 +77,9 @@ public abstract class AbstractJdbcListener extends JdbcFacade implements IPeekab
 			throw new ConfigurationException(getLogPrefix() + "selectQuery may not be empty");
 		}
 		try {
-			String convertedSelectQuery = convertQuery(getSelectQuery());
+			String convertedSelectQuery = convertQuery(selectQuery);
 			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, convertedSelectQuery);
-			preparedPeekQuery = StringUtils.isNotEmpty(getPeekQuery()) ? convertQuery(getPeekQuery()) : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, convertedSelectQuery);
+			preparedPeekQuery = StringUtils.isNotEmpty(peekQuery) ? convertQuery(peekQuery) : getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, convertedSelectQuery);
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
