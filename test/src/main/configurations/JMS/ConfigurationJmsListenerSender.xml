@@ -375,9 +375,9 @@
 			</pipe>
 
 			<!-- when the incoming message is 'listenerException' validates the elementToMove has done it's job -->
-			<pipe name="listenerException" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="listenerException" className="org.frankframework.pipes.XmlSwitch"
 				forwardNameSessionKey="ref_location" notFoundForwardName="EXIT" />
-			<pipe name="move-me" className="nl.nn.adapterframework.pipes.ExceptionPipe"
+			<pipe name="move-me" className="org.frankframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>

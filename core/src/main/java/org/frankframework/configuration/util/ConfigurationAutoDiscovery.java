@@ -172,10 +172,10 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return databaseConfigurations;
 	}
 
+	@SuppressWarnings("java:S2637") // Sonar gives false positive here, Contract annotation should tell it that classLoaderType cannot be NULL when canonicalName is not NULL.
 	private @NonNull Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType() {
 		String canonicalName = Objects.requireNonNull(DirectoryClassLoader.class.getCanonicalName());
 		String classLoaderType = APP_CONSTANTS.getString("configurations.directory.classLoaderType", canonicalName);
-		// noinspection java:S2637  Sonar gives false positive here, Contract annotation should tell it that classLoaderType cannot be NULL when canonicalName is not NULL.
 		return getDefaultDirectoryClassLoaderType(classLoaderType);
 	}
 

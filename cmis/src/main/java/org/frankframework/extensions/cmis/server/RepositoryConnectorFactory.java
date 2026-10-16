@@ -72,7 +72,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 
 		LOG.debug("retrieve repository service");
 
-		// Make sure that each thread in the HTTP CONN POOL has it's own BridgedCmisService
+		// Make sure that each thread in the HTTP CONN POOL has its own BridgedCmisService
 		CallContextAwareCmisService service = CMIS_SERVICE.get();
 		if (service == null) {
 			service = new ConformanceCmisServiceWrapper(createService(context));

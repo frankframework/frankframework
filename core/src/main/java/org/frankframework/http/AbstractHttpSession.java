@@ -682,6 +682,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 * won't read or close the response.
 	 * This will cause the connection to become stale.
 	 */
+	@SuppressWarnings({ "java:S1181", "java:S1163", "ThrowFromFinallyBlock" }) // Catching Throwable to be able to suppress it; thrown from a Finally block b/c we kinda have to.
 	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase, PipeLineSession session) throws IOException, TimeoutException {
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
 		CloseableHttpClient client = getHttpClient();
@@ -699,12 +700,20 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		TimeoutGuard tg = new TimeoutGuard(1+hardTimeout/1000, getName(), httpRequestBase::abort);
 
+		Throwable thrownException = null;
 		try {
 			log.trace("executing request using HttpClient [{}] HttpContext [{}] timeout [{}]", client::hashCode, () -> context, () -> hardTimeout);
 			return client.execute(targetHost, httpRequestBase, context);
+		} catch (Throwable t) {
+			thrownException = t;
+			throw t;
 		} finally {
 			if (tg.cancel()) {
-				throw new TimeoutException("timeout of ["+hardTimeout+"] ms exceeded");
+				TimeoutException timeoutException = new TimeoutException("timeout of [" + hardTimeout + "] ms exceeded");
+				if (thrownException != null) {
+					timeoutException.addSuppressed(thrownException);
+				}
+				throw timeoutException;
 			}
 		}
 	}

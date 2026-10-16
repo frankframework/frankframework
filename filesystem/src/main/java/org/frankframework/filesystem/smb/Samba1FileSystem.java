@@ -160,7 +160,9 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 
 	@Override
 	public Message readFile(SmbFile f, String charset) throws IOException, FileSystemException {
-		return new Message(new SmbFileInputStream(f), FileSystemUtils.getContext(this, f, charset));
+		try (SmbFileInputStream is = new SmbFileInputStream(f)) {
+			return new Message(is, FileSystemUtils.getContext(this, f, charset));
+		}
 	}
 
 	@Override

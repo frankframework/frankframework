@@ -366,16 +366,18 @@ public class MessageUtils {
 	private static @NonNull MimeType guessMimeType(@NonNull Message message) {
 		// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
 		// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
-		String head;
-		try {
-			head = message.peek(1);
+		char firstChar;
+		try (Reader in = message.asReader()) {
+			do {
+				int n = in.read();
+				if (n == -1) {
+					return MediaType.TEXT_PLAIN;
+				}
+				firstChar = (char)n;
+			} while (Character.isWhitespace(firstChar));
 		} catch (IOException e) {
 			return MediaType.TEXT_PLAIN;
 		}
-		if (head.isEmpty()) {
-			return MediaType.TEXT_PLAIN;
-		}
-		char firstChar = head.charAt(0);
 		if ('<' == firstChar) {
 			return MediaType.APPLICATION_XML;
 		}

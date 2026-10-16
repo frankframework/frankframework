@@ -23,6 +23,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -44,6 +45,7 @@ import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.util.StringUtil;
 
 /**
  * Database Listener that operates on a table having at least a key and a status field.
@@ -141,7 +143,8 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * Get a set of all column names of the table. If the table cannot be found in the database schema, then the result will be an empty set.
+	 * Get a set of all column names of the table. This is used in validation of the configuration. If the table cannot be found in the database schema,
+	 * then the result will be an empty set. Column names in the set will be all-caps.
 	 */
 	@NonNull
 	private Set<String> getTableColumnNames(@NonNull Connection conn, @NonNull String table) throws SQLException, DbmsException {
@@ -155,16 +158,16 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	}
 
 	/**
-	 * Get a map with all configured column names. The key is the functional name of the field and the value the column name in the database. Subclasses
-	 * may potentially override this method to add more fields that the subclass defines.
-	 * The returned map must be modifiable.
+	 * Get a map with all configured column names. This is used in validation of the configuration. The key is the functional name of the field and the value
+	 * the column name in the database. Subclasses may potentially override this method to add more fields that the subclass defines.
+	 * The returned map must be modifiable, and all column names must be in all-caps.
 	 */
 	@NonNull
 	protected Map<String, String> getConfiguredColumnNames() {
 		// Some of these fields might be NULL. Map.of() constructor doesn't allow NULL values so we need a roundabout way to define the full map.
 		String[][] columnNames = {{"keyField", getKeyField()}, {"statusField", getStatusField()}, {"messageField", getMessageField()},
 				{"messageIdField", getMessageIdField()}, {"correlationIdField", getCorrelationIdField()}, {"commentField", getCommentField()},
-				{"statusField", getStatusField()}, {"timestampField", getTimestampField()}, {"orderField", getOrderField()}};
+				{"statusField", getStatusField()}, {"timestampField", getTimestampField()}};
 
 		Map<String, String> configuredColumnNames = new HashMap<>();
 		for (String[] columnDefinition : columnNames) {
@@ -174,11 +177,24 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		}
 
 		// We may have additional fields that need to be added and checked, so need to add those.
-		int i = 0;
-		for (String additionalField : getAdditionalFieldsList()) {
-			configuredColumnNames.put("AdditionalField" + i++, additionalField.toUpperCase());
+		addFields("additionalFields", getAdditionalFieldsList(), configuredColumnNames);
+
+		// orderField may be a comma-separated list so we need to validate it as such
+		if (StringUtils.isNotEmpty(getOrderField())) {
+			addFields("orderField", StringUtil.split(getOrderField()), configuredColumnNames);
 		}
 		return configuredColumnNames;
+	}
+
+	private static void addFields(String fieldTag, List<String> fieldsList, Map<String, String> configuredColumnNames) {
+		// Only add index-number if there's more than 1
+		if (fieldsList.size() == 1) {
+			configuredColumnNames.put(fieldTag, fieldsList.get(0).toUpperCase());
+		} else {
+			for (ListIterator<String> iter = fieldsList.listIterator(); iter.hasNext(); ) {
+				configuredColumnNames.put(fieldTag + iter.nextIndex(), iter.next().toUpperCase());
+			}
+		}
 	}
 
 	private void verifySelectCondition() {

@@ -108,6 +108,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		private final @Nullable Object parameter;
 		private final @Nullable String queryValue;
 
+		@SuppressWarnings("java:S2637") // Sonar false positive on setting formatString: it thinks the constant TYPE_DATETIME_PATTERN could be null
 		public Column(@Nullable String name, @Nullable String value, @Nullable String type, @Nullable String decimalSeparator, @Nullable String groupingSeparator, @Nullable String formatString) throws SenderException {
 			this.name = name;
 			this.value = value;
@@ -255,11 +256,10 @@ public class XmlQuerySender extends DirectQuerySender {
 		if (order != null) {
 			queryBuilder.append(" ORDER BY ").append(order);
 		}
+		setBlobSmartGet(true);
 		try {
 			String query = queryBuilder.toString();
-			PreparedStatement statement = getStatement(connection, query, QueryType.SELECT);
-			setBlobSmartGet(true);
-			return executeSelectQuery(statement);
+			return executeSelectQuery(getStatement(connection, query, QueryType.SELECT));
 		} catch (SQLException e) {
 			throw new SenderException("got exception executing a SELECT SQL command ["+ queryBuilder +"]", e);
 		}
@@ -287,8 +287,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		if (where != null) {
 			query = query + " WHERE " + where;
 		}
-		try {
-			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
+		try (PreparedStatement statement = getStatement(connection, query, QueryType.OTHER)) {
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
 		} catch (SQLException e) {
 			throw new SenderException("got exception executing a DELETE SQL command [" + query + "]", e);
@@ -314,8 +313,7 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	private Message sql(Connection connection, String query, String type) throws SenderException, JdbcException {
-		try {
-			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
+		try (PreparedStatement statement = getStatement(connection, query, QueryType.OTHER)) {
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && "select".equalsIgnoreCase(type)) {
 				return executeSelectQuery(statement).getResult();
@@ -323,11 +321,12 @@ public class XmlQuerySender extends DirectQuerySender {
 				// TODO: Strip SQL comments, everything between -- and newline
 				StringBuilder result = new StringBuilder();
 				for (String q : StringUtil.split(query, ";")) {
-					statement = getStatement(connection, q, QueryType.OTHER);
-					if (q.trim().toLowerCase().startsWith("select")) {
-						result.append(executeSelectQuery(statement).getResult().asString());
-					} else {
-						result.append(executeOtherQuery(connection, statement, q, null, null, null, null, null).asString());
+					try (PreparedStatement statement2 = getStatement(connection, q, QueryType.OTHER)) {
+						if (q.trim().toLowerCase().startsWith("select")) {
+							result.append(executeSelectQuery(statement2).getResult().asString());
+						} else {
+							result.append(executeOtherQuery(connection, statement2, q, null, null, null, null, null).asString());
+						}
 					}
 				}
 				return new Message(result.toString());
@@ -340,11 +339,10 @@ public class XmlQuerySender extends DirectQuerySender {
 	}
 
 	private Message executeUpdate(Connection connection, String query, List<Column> columns) throws SenderException {
-		try {
-			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
+		try (PreparedStatement statement = getStatement(connection, query, QueryType.OTHER)) {
 			applyParameters(statement, columns);
 			return executeOtherQuery(connection, statement, query, null, null, null, null, null);
-		} catch (Throwable t) {
+		} catch (Exception t) {
 			throw new SenderException(t);
 		}
 	}

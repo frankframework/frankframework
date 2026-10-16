@@ -59,6 +59,7 @@ final class BinaryDataConverter<T> extends AbstractDataConverter<T> implements D
 		return charsetSupplier.get();
 	}
 
+	@SuppressWarnings("java:S2637") // Sonar false-positive that null could be returned; StreamUtil.DEFAULT_INPUT_STREAM_ENCODING cannot be NULL
 	private String getCharsetOrDefault() throws IOException {
 		return Optional.ofNullable(charsetSupplier.get()).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 	}
