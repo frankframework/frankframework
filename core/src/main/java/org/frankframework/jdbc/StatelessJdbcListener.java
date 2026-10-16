@@ -41,6 +41,7 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.doc.Category;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.JdbcUtil;
@@ -50,18 +51,26 @@ import org.frankframework.util.JdbcUtil;
  * key field, message-id field, correlation-id and additional fields from the first record returned by the select-query.
  *
  * <p>
- * This listener does not maintain any processing-state in the table, like the {@link JdbcTableListener} or {@link MessageStoreListener} do. Therefore,
- * it is possible for the same record to be picked up by multiple instances of this listener if it is running in multiple threads, or multiple instances
- * in a cluster.
+ * This listener does not maintain any processing-state in the table, like the {@link JdbcTableListener} or {@link MessageStoreListener} do. To prevent messages
+ * from being picked up by multiple instances of the same listener, queries will always use {@code SELECT .... FOR UPDATE} to make sure the rows are locked.
  * </p>
  * <p>
- * To avoid this, you have several options:
+ * In transactional {@link org.frankframework.receivers.Receiver}s this will keep the row locked for the entire duration of the pipeline, potentially stalling
+ * other processes. Because there is no state-change management, everything will happen in a single transaction.
+ * </p>
+ * <p>
+ *     To prevent the same message being picked up again after the pipeline completes, you should either remove it, or update it so that it no longer matches the {@code SELECT}
+ *     conditions of the query. You can either:
  *     <ul>
- *         <li>Use a {@code select for update} in your select query to lock the row, and manually delete the row in your pipeline at some point</li>
- *         <li>Use a {@code select for update} to lock the row, and have it deleted in an {@link #setAfterProcessQuery(String)} which is automatically executed when the pipeline finishes</li>
+ *         <li>Use a {@link FixedQuerySender} in your pipeline to delete the row</li>
+ *         <li>Use a {@link #setAfterProcessQuery(String)} which is automatically executed when the pipeline finishes</li>
  *         <li>Use a {@link #setAfterSelectQuery(String)} which can delete the row immediately after it has been selected and read</li>
  *     </ul>
- *     <em>NB: If the pipeline fails and was executed transactionally, the transaction will be rolled back and so any SQL statements that have deleted the row will also be rolled back.</em>
+ *     <em>NB: If the pipeline fails and was executed transactionally, the transaction will be rolled back and so any SQL statements that have deleted or updated the row will also be rolled back.</em>
+ * </p>
+ * <p>
+ *     The {@link #setSelectQuery(String)} and {@link #setPeekQuery(String)} will be automatically modified to be {@code SELECT ... FOR UPDATE} or {@code SELECT ... FOR SHARE SKIP LOCKED}
+ *     queries. With some databases this means you cannot grouping queries or queries using {@code COUNT(...)}, {@code SUM(...)} or similar statements.
  * </p>
  * <p>
  *     This listener does not do any validation of the queries in configuration, or when opened. Any errors in your queries can result in a heavy load on the
@@ -75,6 +84,7 @@ import org.frankframework.util.JdbcUtil;
  */
 @Log4j2
 @SuppressWarnings("SqlSourceToSinkFlow") // Do not need warnings about unsafe SQL on this class
+@Category(Category.Type.EXPERIMENTAL)
 public class StatelessJdbcListener extends AbstractJdbcListener implements IPeekableListener<Serializable>, IPullingListener<Serializable> {
 
 	private @Getter String afterSelectQuery;
