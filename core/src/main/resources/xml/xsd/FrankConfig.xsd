@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -22207,7 +22207,7 @@ Useful when sending messages to MQ which expects this value to be in hexadecimal
   <xs:attribute name="additionalFields" type="xs:string">
     <xs:annotation>
       <xs:documentation>Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
-be added to the session as session-variables.</xs:documentation>
+be added to the session as session-variables, with their names lower-cased and prefixed with &lt;code&gt;additional_query_fields.&lt;/code&gt;.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="trace" type="frankBoolean" />

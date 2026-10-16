@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.2.1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -18675,7 +18675,7 @@ the sender specified reply destination takes precedence over this one.</xs:docum
   <xs:attribute name="additionalFields" type="xs:string">
     <xs:annotation>
       <xs:documentation>Comma-separated list of additional fields to be loaded from the table, besides Message, Key, MessageID and CorrelationID. Any fields listed here will
-be added to the session as session-variables.</xs:documentation>
+be added to the session as session-variables, with their names lower-cased and prefixed with &lt;code&gt;additional_query_fields.&lt;/code&gt;.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="trace" type="frankBoolean" />
