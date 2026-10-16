@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.3.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.3.0">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -533,12 +533,13 @@ This is so that errors coming from external systems so not overload those extern
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access keystore.</xs:documentation>
+        <xs:documentation>Default password to access keystore.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="type">
       <xs:annotation>
-        <xs:documentation>Type of keystore. Default: pkcs12</xs:documentation>
+        <xs:documentation>Type of keystore to use, typically a JKS (Java 'vault') or P12 (standalone X.509) file. Default: pkcs12</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -556,7 +557,8 @@ This is so that errors coming from external systems so not overload those extern
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyManagerAlgorithm" type="xs:string">
@@ -990,7 +992,8 @@ element configured it will be initialized with one Exit having state SUCCESS (an
     </xs:attribute>
     <xs:attribute name="responseRoot" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state &lt;code&gt;SUCCESS&lt;/code&gt;, the last for the other exits.</xs:documentation>
+        <xs:documentation>Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains
+multiple (comma separated) values, the first will be used for the exits with state &lt;code&gt;SUCCESS&lt;/code&gt;, the last for the other exits.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="empty" type="frankBoolean">
@@ -1462,6 +1465,9 @@ Using the new elements enables the use of auto-completion for the specified type
         </xs:complexType>
       </xs:element>
       <xs:element name="XmlParam">
+        <xs:annotation>
+          <xs:documentation>Turns the Parameter output into a `DOMDOC` or XML `NODE`-set for processing in an XSLT.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="XmlParameterType">
@@ -1505,8 +1511,12 @@ value '*' then all existing sessionkeys are added as parameter (except tsReceive
     </xs:attribute>
     <xs:attribute name="contextKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of org.frankframework.stream.MessageContext variable to use as source, instead of the Message found from input message or sessionKey itself. Use a &lt;pre&gt;*&lt;/pre&gt;
-to get an XML or JSON document containing all values from the org.frankframework.stream.MessageContext.</xs:documentation>
+        <xs:documentation>Key of a org.frankframework.stream.MessageContext variable to use, instead of the Parameter value found from the input message or sessionKey. Use a &lt;pre&gt;*&lt;/pre&gt;
+to get an XML or JSON document containing all values from the org.frankframework.stream.MessageContext.
+This assumes that the input of this parameter is a Message, in which the contextKey will be looked up.
+&lt;p&gt;
+For instance: &lt;code&gt;&amp;lt;Param name=&amp;quot;context.value&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; contextKey=&amp;quot;Header.content-type&amp;quot; /&amp;gt;&lt;/code&gt; - this will look up the value of the
+context variable "Header.content-type" from the message found in the session variable "originalMessage".</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sessionKeyXPath" type="xs:string">
@@ -2561,14 +2571,20 @@ find these documents in the Frank!Console under main menu item Webservices, head
 The WSDL documents that we generate document how the SOAP services can be accessed. In particular, the
 URL of a SOAP service can be found in an XML element &lt;code&gt;&amp;lt;soap:address&amp;gt;&lt;/code&gt; with
 &lt;code&gt;soap&lt;/code&gt; pointing to namespace &lt;code&gt;http://schemas.xmlsoap.org/wsdl/soap/&lt;/code&gt;.
-
-&lt;br/&gt;If &lt;code&gt;address&lt;/code&gt; is set, then for each request:&lt;ul&gt;
+&lt;br/&gt;
+When using CXF (pre version `10.3`) the following limitations apply:
+If &lt;code&gt;address&lt;/code&gt; is set, then for each request:
+&lt;ul&gt;
 &lt;li&gt;MIME headers are described in a 'mimeHeaders'-XML stored under session key 'mimeHeaders'&lt;/li&gt;
 &lt;li&gt;Attachments present in the request are described by an 'attachments'-XML stored under session key 'attachments'&lt;/li&gt;
 &lt;li&gt;SOAP protocol is stored under a session key 'soapProtocol'&lt;/li&gt;
 &lt;li&gt;SOAP action is stored under a session key 'SOAPAction'&lt;/li&gt;
 &lt;/ul&gt;
-and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by &lt;code&gt;multipartXmlSessionKey&lt;/code&gt;.</xs:documentation>
+&lt;br/&gt;
+Since version `10.2.1` the following sessionKey is used for incoming attachments: &lt;code&gt;multipartAttachments&lt;/code&gt;.
+It is possible to use the old sessionKey when the property &lt;code&gt;WebServiceListener.backwardsCompatibleMultipartNotation&lt;/code&gt; has been set.
+&lt;br/&gt;
+A multipart response is constructed if a 'multipart'-XML is provided in sessionKey specified by &lt;code&gt;multipartXmlSessionKey&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -3437,7 +3453,8 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -3684,7 +3701,8 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -4578,14 +4596,10 @@ This is slightly different from the namespaceURI which routes messages based on 
         <xs:documentation>If set, MTOM is enabled on the SOAP binding</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="attachmentSessionKeys" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Comma separated list of session keys to hold contents of attachments of the request</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="multipartXmlSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified Default: multipartXml</xs:documentation>
+        <xs:documentation>Key of session variable that holds the description of the multipart attachments that should be sent back in
+the response. Default: multipartXml</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -4695,7 +4709,13 @@ This class sends messages with JMS.</xs:documentation>
           <xs:documentation>Send messages to another org.frankframework.core.Adapter, including message-metadata
 (the org.frankframework.stream.MessageContext of the input Message), and optionally
 a number of PipeLineSession keys. This is the JMS-based alternative for the database-based
-org.frankframework.jdbc.MessageStoreSender.</xs:documentation>
+org.frankframework.jdbc.MessageStoreSender.
+
+Provides functions for jms connections, queues and topics and acts as a facade
+to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+&lt;br/&gt;
+The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -5445,6 +5465,13 @@ The SOAP header can only contain the following schema (or it's empty):
         </xs:complexType>
       </xs:element>
       <xs:element name="CryptoSoapInputValidator">
+        <xs:annotation>
+          <xs:documentation>Validator that can sign, encrypt, verify and decrypt SOAP messages.
+At least one operation is required, you may combine `sign,encrypt` and `verify,decrypt` operations.
+&lt;br/&gt;
+This validator extends the SoapValidator and can be used to validate SOAP messages with additional security features.
+If you wish to use it without validating the soap message, set the attribute &lt;code&gt;allowPlainXml&lt;/code&gt; to true.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;It is not possible to use this validator as a Mixed input-output validator.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CryptoSoapValidatorType">
@@ -5636,12 +5663,8 @@ SoapValidator is will also add the SOAP envelope XSD.</xs:documentation>
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractPipeDeclaredAttributeGroup" />
@@ -5743,12 +5766,8 @@ SoapValidator is will also add the SOAP envelope XSD.</xs:documentation>
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SoapValidatorType">
@@ -5822,12 +5841,8 @@ SoapValidator is will also add the SOAP envelope XSD.</xs:documentation>
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="Json2XmlValidatorType">
@@ -6005,12 +6020,8 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractValidatorDeclaredAttributeGroup">
@@ -6056,12 +6067,8 @@ The value of the schema attribute is only used if the schemaLocation attribute a
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CryptoSoapValidatorType">
@@ -6103,30 +6110,45 @@ If this time has exceeded, the message is rejected.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="removeSecurityHeader" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Remove the `WSSE:Security` part from the SOAP:Header.</xs:documentation>
+        <xs:documentation>Remove the `WSSE:Security` part from the SOAP:Header. Should only be used when `VERIFY` or `DECRYPT` are used, otherwise the message will be invalid.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyEncryptionAlgorithm">
+      <xs:annotation>
+        <xs:documentation>&lt;code&gt;xenc:EncryptionMethod&lt;/code&gt; encryption algorithm to use for encrypting the symmetric key.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeyEncryptionAlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="dataEncryptionAlgorithm">
+      <xs:annotation>
+        <xs:documentation>&lt;code&gt;xenc:EncryptionMethod&lt;/code&gt; encryption algorithm to use for encrypting the SOAP (body) data.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DataEncryptionAlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="keyIdentifier">
+      <xs:annotation>
+        <xs:documentation>&lt;code&gt;wsse:KeyIdentifier&lt;/code&gt; type to detect which certificate to use to verify the SOAP message.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeyIdentifierTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="digestAlgorithm">
+      <xs:annotation>
+        <xs:documentation>Which &lt;code&gt;ds:DigestMethod&lt;/code&gt; hash algorithm to use for signing the SOAP message.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DigestAlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="signatureAlgorithm">
+      <xs:annotation>
+        <xs:documentation>Which &lt;code&gt;ds:SignatureMethod&lt;/code&gt; signature algorithm to use for signing the SOAP message.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="SignatureAlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
@@ -6171,7 +6193,8 @@ If this time has exceeded, the message is rejected.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6337,12 +6360,8 @@ validator if you want to validate both input and output. Default: false</xs:docu
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:group name="OutputValidatorElementGroup">
@@ -6392,6 +6411,13 @@ The SOAP header can only contain the following schema (or it's empty):
         </xs:complexType>
       </xs:element>
       <xs:element name="CryptoSoapOutputValidator">
+        <xs:annotation>
+          <xs:documentation>Validator that can sign, encrypt, verify and decrypt SOAP messages.
+At least one operation is required, you may combine `sign,encrypt` and `verify,decrypt` operations.
+&lt;br/&gt;
+This validator extends the SoapValidator and can be used to validate SOAP messages with additional security features.
+If you wish to use it without validating the soap message, set the attribute &lt;code&gt;allowPlainXml&lt;/code&gt; to true.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;It is not possible to use this validator as a Mixed input-output validator.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CryptoSoapValidatorType">
@@ -6982,12 +7008,8 @@ value specified by ${fxf.retention}).</xs:documentation>
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="EsbSoapWrapperPipeType">
@@ -9066,7 +9088,13 @@ Otherwise, errors like the following might occur: &lt;code&gt;NoClassDefFoundExc
           <xs:documentation>Send messages to another org.frankframework.core.Adapter, including message-metadata
 (the org.frankframework.stream.MessageContext of the input Message), and optionally
 a number of PipeLineSession keys. This is the JMS-based alternative for the database-based
-org.frankframework.jdbc.MessageStoreSender.</xs:documentation>
+org.frankframework.jdbc.MessageStoreSender.
+
+Provides functions for jms connections, queues and topics and acts as a facade
+to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+&lt;br/&gt;
+The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -10019,7 +10047,8 @@ Defaults to 10000, inherited from HttpSender#setTimeout. Default: 10000</xs:docu
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -10378,7 +10407,8 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -10655,7 +10685,8 @@ The set of available sessionKeys to be returned might be limited by the returned
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -12493,7 +12524,8 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -13238,7 +13270,6 @@ This field controls how to read the input and does not determine the output. Def
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:group ref="ParamElementGroup" />
-              <xs:group ref="SenderElementGroup_2" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -13295,18 +13326,6 @@ This field controls how to read the input and does not determine the output. Def
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="Result2StringWriterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="ResultBlock2SenderResultHandler">
-        <xs:annotation>
-          <xs:documentation>ResultHandler that collects a number of records and sends them together to a sender.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ResultBlock2SenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -13462,22 +13481,6 @@ is handled as a block. Default: true</xs:documentation>
     <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.Result2StringWriter" use="prohibited" />
   </xs:complexType>
-  <xs:complexType name="ResultBlock2SenderType">
-    <xs:group ref="ResultBlock2SenderCumulativeChildGroup" />
-    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.ResultBlock2Sender" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="ResultBlock2SenderDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="SenderElementGroup_2" minOccurs="0" maxOccurs="1" />
-    </xs:sequence>
-  </xs:group>
-  <xs:group name="ResultBlock2SenderCumulativeChildGroup">
-    <xs:sequence>
-      <xs:group ref="ResultBlock2SenderDeclaredChildGroup" />
-      <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
-    </xs:sequence>
-  </xs:group>
   <xs:group name="PipeElementGroupBase">
     <xs:choice>
       <xs:element name="Adios2XmlPipe">
@@ -13858,6 +13861,13 @@ Example configuration:
         </xs:complexType>
       </xs:element>
       <xs:element name="CryptoSoapValidatorPipe">
+        <xs:annotation>
+          <xs:documentation>Validator that can sign, encrypt, verify and decrypt SOAP messages.
+At least one operation is required, you may combine `sign,encrypt` and `verify,decrypt` operations.
+&lt;br/&gt;
+This validator extends the SoapValidator and can be used to validate SOAP messages with additional security features.
+If you wish to use it without validating the soap message, set the attribute &lt;code&gt;allowPlainXml&lt;/code&gt; to true.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;It is not possible to use this validator as a Mixed input-output validator.&lt;/p&gt;</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="CryptoSoapValidatorType">
@@ -14595,15 +14605,21 @@ The supported integrity &lt;i&gt;and&lt;/i&gt; authenticity algorithms are:
 &lt;p&gt;With both expression languages, you'll be able to select one or multiple nodes from this collection.&lt;/p&gt;
 
 &lt;p&gt;Using this pipe, there are two options. Use it only with an &lt;code&gt;expression&lt;/code&gt; or combine it with an &lt;code&gt;expressionValue&lt;/code&gt;. When using the expression,
-the pipe evaluates to &lt;code&gt;thenForwardName&lt;/code&gt; when &lt;em&gt;there is a match&lt;/em&gt;, even if it is empty. In the given example, this might be one of:&lt;/p&gt;
+the pipe evaluates to the &lt;code&gt;then&lt;/code&gt; Forward when &lt;em&gt;there is a match&lt;/em&gt;. In the given example, this might be one of:&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;$.store
   $.store.book[1]
   $.store.book[?(@.price == 22.99)].author
   $.store.book[?(@.category == 'fiction')]&lt;/code&gt;&lt;/pre&gt;
 
 &lt;h4&gt;expressionValue&lt;/h4&gt;
-&lt;p&gt;When using expression combined with expressionValue, the pipe evaluates to &lt;code&gt;thenForwardName&lt;/code&gt; when &lt;em&gt;the matched value is equal to
-expressionValue&lt;/em&gt;. This needs to be an exact match.&lt;/p&gt;
+&lt;p&gt;When using expression combined with expressionValue, the pipe evaluates to the &lt;code&gt;then&lt;/code&gt; Forward when &lt;em&gt;the matched value is equal to
+expressionValue&lt;/em&gt;. This needs to be an exact match. If the result does not match the expressionValue, the pipe evaluates to the &lt;code&gt;else&lt;/code&gt; Forward.&lt;/p&gt;
+&lt;p&gt;The matched value is either the result of an Xpath or JsonPath expression if either is set, or the value of the input message as string.&lt;/p&gt;
+
+&lt;h4&gt;No expressionValue&lt;/h4&gt;
+&lt;p&gt;When no expressionValue has been set, the &lt;code&gt;then&lt;/code&gt; Forward is chosen when the matched value is anything not &lt;code&gt;null&lt;/code&gt; or the string  &lt;code&gt;&amp;quot;false&amp;quot;&lt;/code&gt;.
+An empty string, &lt;code&gt;&amp;quot;&amp;quot;&lt;/code&gt;, will also follow the &lt;code&gt;then&lt;/code&gt; Forward.
+If the matched value is &lt;code&gt;null&lt;/code&gt; or the string &lt;code&gt;&amp;quot;false&amp;quot;&lt;/code&gt; the &lt;code&gt;else&lt;/code&gt; Forward is chosen.&lt;/p&gt;
 
 &lt;h4&gt;XML/XPATH&lt;/h4&gt;
 &lt;p&gt;Xpath has been around a long time. Information about the syntax can be found everywhere on the internet.
@@ -15603,7 +15619,7 @@ The contents of the archive is available as a Stream or a String in a session va
           <xs:documentation>Pipe that creates a ZIP archive (on action close).
 &lt;p&gt;
 A chain of zipWriterPipes can be used to create a ZIP archive. You can use the pipe with different actions (see specified below).
-Action &lt;code&gt;CLOSE&lt;/code&gt; will generate the ZIP archive which is returned as the pipe ouput.
+Action &lt;code&gt;CLOSE&lt;/code&gt; will generate the ZIP archive which is returned as the pipe output.
 &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -15894,12 +15910,8 @@ exceeds the timeout, or in other situations no reply message is received.</xs:do
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="Base64PipeType">
@@ -16485,12 +16497,8 @@ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_sepa
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DirectWrapperPipeType">
@@ -16560,12 +16568,8 @@ See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_sepa
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="EscapePipeType">
@@ -16858,7 +16862,12 @@ Be aware that memory consumption appears to increase with file size when this at
   <xs:attributeGroup name="IfPipeDeclaredAttributeGroup">
     <xs:attribute name="expressionValue" type="xs:string">
       <xs:annotation>
-        <xs:documentation>A string to compare the result of the xpathExpression (or the input message itself) to. If not specified, a non-empty result leads to the 'then' forward, and an empty result leads to the 'else' forward.</xs:documentation>
+        <xs:documentation>A string to compare to the result of the xpathExpression / jsonPathExpression, or to the string-value of the input message itself if neither the xpathExpression nor the
+ jsonPathExpression is set.
+ &lt;br/&gt;
+ If set, this must be an exact match.
+ &lt;br/&gt;
+ If not set, then any result that is not &lt;code&gt;null&lt;/code&gt; or &lt;code&gt;&amp;quot;false&amp;quot;&lt;/code&gt; leads to the 'then' forward, and a result that is &lt;code&gt;null&lt;/code&gt; or a zero-length string leads to the 'else' forward.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="xpathExpression" type="xs:string">
@@ -16929,12 +16938,8 @@ Be aware that memory consumption appears to increase with file size when this at
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IncreaseIntegerPipeType">
@@ -17003,12 +17008,8 @@ Be aware that memory consumption appears to increase with file size when this at
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IsXmlPipeType">
@@ -17066,12 +17067,8 @@ Be aware that memory consumption appears to increase with file size when this at
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JsonPathPipeType">
@@ -17701,12 +17698,8 @@ When the root is left unspecified, absolute paths to files and folders can be us
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="MailSenderPipeType">
@@ -17966,12 +17959,8 @@ separately.
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PutSystemDateInSessionType">
@@ -18495,7 +18484,8 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -18674,12 +18664,8 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="Text2XmlPipeType">
@@ -18903,12 +18889,8 @@ with the inverted question mark (0x00bf) Default: true</xs:documentation>
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
     <xs:attribute ref="skipOnEmptyInput" />
-    <xs:attribute ref="ifParam" />
-    <xs:attribute ref="ifValue" />
     <xs:attribute ref="onlyIfSessionKey" />
-    <xs:attribute ref="onlyIfValue" />
     <xs:attribute ref="unlessSessionKey" />
-    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ZipIteratorPipeType">
@@ -21289,23 +21271,58 @@ This mode reduces the session overhead. If JMS fails, the consumer may receive d
   </xs:simpleType>
   <xs:simpleType name="KeyEncryptionAlgorithmAttributeValuesType">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="RSA_15" />
       <xs:enumeration value="RSA_OAEP" />
+      <xs:enumeration value="RSA_OAEP_ENC11" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DataEncryptionAlgorithmAttributeValuesType">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="AES_128" />
+      <xs:enumeration value="AES_192" />
       <xs:enumeration value="AES_256" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="KeyIdentifierTypeAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="ISSUER_SERIAL" />
-      <xs:enumeration value="ISSUER_SERIAL_QUOTE_FORMAT" />
-      <xs:enumeration value="BST_DIRECT_REFERENCE" />
-      <xs:enumeration value="X509_KEY_IDENTIFIER" />
-      <xs:enumeration value="THUMBPRINT_IDENTIFIER" />
-      <xs:enumeration value="SKI_KEY_IDENTIFIER" />
-      <xs:enumeration value="KEY_VALUE" />
+      <xs:enumeration value="ISSUER_SERIAL">
+        <xs:annotation>
+          <xs:documentation>In contrast to BST_DIRECT_REFERENCE only the `issuer name` and the `serial number` of the signing certificate are sent to the receiver.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ISSUER_SERIAL_QUOTE_FORMAT">
+        <xs:annotation>
+          <xs:documentation>In contrast to BST_DIRECT_REFERENCE only the `issuer name` and the `serial number` of the signing certificate are sent to the receiver.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BST_DIRECT_REFERENCE">
+        <xs:annotation>
+          <xs:documentation>The signing method takes the signing certificate, converts it to a BinarySecurityToken, puts it in the security header,
+and inserts a Reference to the binary security token into the wsse:SecurityReferenceToken.
+The X.509 profile recommends to use `ISSUER_SERIAL` instead of sending the whole certificate.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="X509_KEY_IDENTIFIER">
+        <xs:annotation>
+          <xs:documentation>The certificate is converted into a `KeyIdentifier` token and the complete certificate data is transferred to receiver.
+The X.509 profile recommends to use `ISSUER_SERIAL` instead of sending the whole certificate.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="THUMBPRINT_SHA1">
+        <xs:annotation>
+          <xs:documentation>This identifier uses the SHA-1 digest of a security token to identify the security token.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="SUBJECT_KEY_IDENTIFIER">
+        <xs:annotation>
+          <xs:documentation>Identify the X.509 signing certificate using its 'SubjectKey'.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="KEY_VALUE">
+        <xs:annotation>
+          <xs:documentation>Used to set a ds:KeyInfo/ds:KeyValue element to refer to either an RSA or DSA public key.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DigestAlgorithmAttributeValuesType">
@@ -22577,34 +22594,14 @@ with &lt;code&gt;mode = 0&lt;/code&gt; for how regular expressions are matched a
       <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty. Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="ifParam" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>If set, this pipe is only executed when the value of the parameter with the name &lt;code&gt;ifParam&lt;/code&gt; equals &lt;code&gt;ifValue&lt;/code&gt;. Otherwise, this pipe is skipped.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="ifValue" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>See &lt;code&gt;ifParam&lt;/code&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="onlyIfSessionKey" type="xs:string">
     <xs:annotation>
       <xs:documentation>Key of the session variable to check if the action must be executed. The pipe is only executed if the session variable exists and is not null.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="onlyIfValue" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Value of session variable 'onlyIfSessionKey' to check if the action must be executed. The pipe is only executed if the session variable has the specified value.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="unlessSessionKey" type="xs:string">
     <xs:annotation>
       <xs:documentation>Key of the session variable to check if the action must be executed. The pipe is not executed if the session variable exists and is not null.</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="unlessValue" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Value of session variable 'unlessSessionKey' to check if the action must be executed. The pipe is not executed if the session variable has the specified value.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="transactionTimeout" type="frankInt">
@@ -23088,7 +23085,8 @@ See the Java Security Standard Algorithm Names Specification for all available o
   </xs:attribute>
   <xs:attribute name="keystoreAliasPassword" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="truststore" type="xs:string">
