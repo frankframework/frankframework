@@ -28,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -61,7 +59,6 @@ import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.dbms.ConcurrentJdbcActionTester;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
@@ -91,9 +88,6 @@ public class JdbcTableListenerTest {
 	@SuppressWarnings("unchecked")
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
-		Receiver<String> receiver = mock(Receiver.class);
-		when(receiver.isTransacted()).thenReturn(false);
-
 		listener = env.createBean(JdbcTableListener.class);
 		listener.setTableName(TEST_TABLE);
 		listener.setKeyField("TKEY");
@@ -101,7 +95,6 @@ public class JdbcTableListenerTest {
 		listener.setStatusValueAvailable("1");
 		listener.setStatusValueProcessed("2");
 		listener.setStatusValueError("3");
-		listener.setReceiver(receiver);
 		this.env = env;
 	}
 
