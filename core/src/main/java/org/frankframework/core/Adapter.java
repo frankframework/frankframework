@@ -39,6 +39,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
@@ -75,6 +76,8 @@ import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.lifecycle.events.MessageKeepingEventListener;
 import org.frankframework.logging.IbisMaskingLayout;
+import org.frankframework.receivers.MessageHandler;
+import org.frankframework.receivers.PullingListenerContainer;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
@@ -383,8 +386,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		refresh();
 
 		// Once the BeanFactory has initialized, create and register a FlowGenerator
-		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this);
-		getBeanFactory().registerSingleton("FlowGenerator", bean);
+		registerBean("FlowGenerator", SpringContextFlowDiagramProvider.class);
+
+		registerBean("listenerContainer", PullingListenerContainer.class, bd -> bd.setScope(BeanDefinition.SCOPE_PROTOTYPE));
+		registerBean("messageHandler", MessageHandler.class, bd -> bd.setScope(BeanDefinition.SCOPE_PROTOTYPE));
 	}
 
 	/**

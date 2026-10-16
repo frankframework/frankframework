@@ -28,7 +28,7 @@ import com.sap.conn.jco.JCoFunction;
 import com.sap.conn.jco.server.JCoServerContext;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IListener;
+import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
@@ -38,7 +38,6 @@ import org.frankframework.extensions.sap.SapListener;
 import org.frankframework.extensions.sap.SapSystem;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SapSystemListItem;
 
@@ -48,7 +47,7 @@ public class SapListenerTest {
 
 	private SapListener listener;
 	private SapSystem sapSystem;
-	private Receiver receiver;
+	private IMessageHandler handler;
 
 	@BeforeEach
 	public void setUp() throws SapException {
@@ -57,8 +56,8 @@ public class SapListenerTest {
 		listener = spy(new SapListener());
 		listener.setName(listener.getClass().getSimpleName()+" under test");
 
-		receiver = mock(Receiver.class);
-		listener.setHandler(receiver);
+		handler = mock(IMessageHandler.class);
+		listener.setHandler(handler);
 
 		sapSystem = spy(SapSystem.class);
 		doNothing().when(sapSystem).openSystem();
@@ -111,7 +110,7 @@ public class SapListenerTest {
 		listener.setSapSystemName(sapSystemName);
 
 		ArgumentCaptor<RawMessageWrapper> messageCaptor = ArgumentCaptor.forClass(RawMessageWrapper.class);
-		doNothing().when(receiver).processRawMessage(any(IListener.class), messageCaptor.capture(), any(PipeLineSession.class), anyBoolean());
+		doNothing().when(handler).processRawMessage(any(IPushingListener.class), messageCaptor.capture(), any(PipeLineSession.class), anyBoolean());
 
 		JCoFunction function = mock(JCoFunction.class);
 		doReturn("function-name").when(function).getName();
@@ -138,7 +137,7 @@ public class SapListenerTest {
 		doReturn(mock(IDocXMLProcessor.class)).when(listener).getIDocXMLProcessor();
 
 		ArgumentCaptor<MessageWrapper> messageCaptor = ArgumentCaptor.forClass(MessageWrapper.class);
-		doReturn(mock(Message.class)).when(receiver).processRequest(any(IPushingListener.class), messageCaptor.capture(), any(PipeLineSession.class));
+		doReturn(mock(Message.class)).when(handler).processRequest(any(IPushingListener.class), messageCaptor.capture(), any(PipeLineSession.class));
 
 		assertDoesNotThrow(() -> listener.configure());
 		assertDoesNotThrow(() -> listener.handleRequest(mock(JCoServerContext.class), documentList));

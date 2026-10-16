@@ -28,14 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import java.util.Date;
 
@@ -46,13 +38,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.stubbing.Answer;
-import org.springframework.context.ApplicationContext;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.DistributionSummary;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowsingIterator;
@@ -61,10 +46,8 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.ProcessState;
-import org.frankframework.receivers.PullingListenerContainer;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
-import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
@@ -363,18 +346,6 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		Receiver<F> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("testReceiver");
 		receiver.setListener(fileSystemListener);
-		MetricsInitializer metrics = mock();
-		when(metrics.createCounter(any(), any())).thenAnswer(invocation -> mock(Counter.class));
-		when(metrics.createDistributionSummary(any(), any())).thenAnswer(invocation -> mock(DistributionSummary.class));
-		when(metrics.createThreadBasedDistributionSummary(any(), any(), anyInt())).thenAnswer(invocation -> mock(DistributionSummary.class));
-		receiver.setConfigurationMetrics(metrics);
-		PlatformTransactionManager transactionManager = mock();
-		when(transactionManager.getTransaction(any())).thenAnswer(invocation -> mock(TransactionStatus.class));
-		ApplicationContext applicationContext = spy(receiver.getApplicationContext());
-		doAnswer((Answer<PullingListenerContainer<F>>) invocation -> new PullingListenerContainer<F>()).when(applicationContext).getBean(eq("listenerContainer"));
-		doReturn(transactionManager).when(applicationContext).getBean(eq("transactionManager"));
-		receiver.setApplicationContext(applicationContext);
-		receiver.setTxManager(transactionManager);
 		receiver.configure();
 
 		// Act 1 -- get message and move to InProcess state

@@ -1,5 +1,6 @@
 package org.frankframework.receivers;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -8,10 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,13 +25,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.SpringUtils;
 
 class FrankListenerTest {
 	private static final String ADAPTER_NAME = "The Adapter";
@@ -39,14 +48,19 @@ class FrankListenerTest {
 	PipeLineSession session;
 
 	@BeforeEach
-	void setUp() {
+	void setUp() throws ConfigurationException {
 		configuration = new TestConfiguration(false);
-		adapter = mock();
-		receiver = mock();
-		when(receiver.getAdapter()).thenReturn(adapter);
-		when(adapter.getName()).thenReturn(ADAPTER_NAME);
-		listener = configuration.createBean();
-		listener.setHandler(receiver);
+		adapter = configuration.createBean();
+		adapter.setName(ADAPTER_NAME);
+		Receiver<Message> stupidMockitoReifiedReceiver = SpringUtils.createBean(adapter);
+		receiver = spy(stupidMockitoReifiedReceiver);
+		adapter.addReceiver(receiver);
+		listener = SpringUtils.createBean(adapter);
+		receiver.setListener(listener);
+		listener.setName(LISTENER_NAME);
+		adapter.setPipeLine(mock(PipeLine.class));
+		adapter.configure();
+
 		message = new Message("Tada");
 		session = new PipeLineSession();
 		session.put(PipeLineSession.CORRELATION_ID_KEY, "cid");
@@ -56,11 +70,11 @@ class FrankListenerTest {
 	@AfterEach
 	void tearDown() {
 		CloseUtils.closeSilently(session, configuration);
-		listener.stop();
+		if (listener != null) listener.stop();
 	}
 
 	@Test
-	void getPhysicalDestinationName() {
+	void getPhysicalDestinationName() throws ConfigurationException {
 		// Arrange
 		listener.setName(LISTENER_NAME);
 		listener.configure();
@@ -73,7 +87,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void wrapRawMessage() {
+	void wrapRawMessage() throws ConfigurationException {
 		// Arrange
 		listener.configure();
 
@@ -88,7 +102,7 @@ class FrankListenerTest {
 
 	@ParameterizedTest
 	@CsvSource({"," + ADAPTER_NAME, LISTENER_NAME + "," + LISTENER_NAME})
-	void configure(String listenerName, String expected) {
+	void configure(String listenerName, String expected) throws ConfigurationException {
 		// Arrange
 		listener.setName(listenerName);
 
@@ -100,7 +114,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void startSuccess() {
+	void startSuccess() throws ConfigurationException {
 		// Arrange
 		listener.configure();
 
@@ -118,7 +132,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void openAlreadyStart() {
+	void openAlreadyStart() throws ConfigurationException {
 		// Arrange
 		listener.configure();
 
@@ -135,10 +149,9 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void startAlreadyRegistered() {
+	void startAlreadyRegistered() throws ConfigurationException {
 		// Arrange
-		FrankListener otherListener = configuration.createBean();
-		otherListener.setHandler(receiver);
+		FrankListener otherListener = SpringUtils.createBean(adapter);
 		otherListener.setName(LISTENER_NAME);
 		otherListener.configure();
 		listener.setName(LISTENER_NAME);
@@ -154,7 +167,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void stop() {
+	void stop() throws ConfigurationException {
 		// Arrange
 		listener.configure();
 		listener.start();
@@ -172,7 +185,7 @@ class FrankListenerTest {
 	}
 
 	@Test
-	void extractMessage() {
+	void extractMessage() throws ConfigurationException {
 		// Arrange
 		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(message);
 		listener.configure();
@@ -189,20 +202,24 @@ class FrankListenerTest {
 		// Testing with real objects instead of mocks is done in the FrankSenderTest
 
 		// Arrange
-		listener.configure();
-		listener.start();
-		when(receiver.processRequest(any(), any(), any())).thenReturn(message);
+		adapter.start();
+
+		await().pollInterval(5, TimeUnit.SECONDS)
+				.atMost(Duration.ofMinutes(5))
+				.until(adapter::isRunning);
+
+		doReturn(message).when(receiver).processRawMessage(eq(listener), any(), eq(session), anyBoolean());
 
 		// Act
 		Message result = listener.processRequest(message, session);
 
 		// Assert
 		assertSame(message, result);
-		verify(receiver).processRequest(eq(listener), any(), eq(session));
+		verify(receiver).processRawMessage(eq(listener), any(), eq(session), anyBoolean());
 	}
 
 	@Test
-	void processRequestWhenNotStart() {
+	void processRequestWhenNotStart() throws ConfigurationException {
 		// Arrange
 		listener.configure();
 

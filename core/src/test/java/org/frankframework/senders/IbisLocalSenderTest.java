@@ -530,8 +530,6 @@ class IbisLocalSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		listener.setHandler(receiver);
-
 		adapter.setPipeLine(pipeline);
 
 		listener.start();
