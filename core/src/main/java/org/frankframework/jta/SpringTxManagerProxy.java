@@ -43,12 +43,12 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	private @Getter @Setter PlatformTransactionManager realTxManager;
 
 	/**
-	 * @param txOption e.q. TransactionDefinition.PROPAGATION_REQUIRES_NEW
-	 * @param timeout Set the timeout to apply in seconds. Default timeout is {@value org.springframework.transaction.TransactionDefinition#TIMEOUT_DEFAULT}.
+	 * @param transactionPropagation e.q. TransactionDefinition.PROPAGATION_REQUIRES_NEW
+	 * @param timeout                Set the timeout to apply in seconds. Default timeout is {@value TransactionDefinition#TIMEOUT_DEFAULT}.
 	 * @return IbisTransaction
 	 */
-	public static TransactionDefinition getTransactionDefinition(int txOption, int timeout) {
-		DefaultTransactionDefinition result=new DefaultTransactionDefinition(txOption);
+	public static TransactionDefinition getTransactionDefinition(int transactionPropagation, int timeout) {
+		DefaultTransactionDefinition result=new DefaultTransactionDefinition(transactionPropagation);
 		if (timeout > 0) {
 			result.setTimeout(timeout);
 		}

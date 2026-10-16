@@ -38,10 +38,8 @@ import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.doc.Default;
 import org.frankframework.doc.Optional;
-import org.frankframework.doc.Protected;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -82,7 +80,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author Jaco de Groot
  */
-public class MessageStoreListener extends JdbcTableListener<Serializable> {
+public class MessageStoreListener extends JdbcTableListener {
 
 	private static final String DEFAULT_TABLE_NAME="IBISSTORE";
 	private static final String DEFAULT_KEY_FIELD="MESSAGEKEY";
@@ -109,7 +107,6 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 		setMessageField(DEFAULT_MESSAGE_FIELD);
 		setMessageIdField(DEFAULT_MESSAGEID_FIELD);
 		setCorrelationIdField(DEFAULT_CORRELATIONID_FIELD);
-		super.setMessageFieldType(MessageFieldType.BLOB);
 		setBlobSmartGet(true);
 		setStatusField(DEFAULT_STATUS_FIELD);
 		setTimestampField(DEFAULT_TIMESTAMP_FIELD);
@@ -145,7 +142,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	protected @NonNull RawMessageWrapper<Serializable> extractRawMessage(@NonNull ResultSet rs) throws JdbcException {
+	protected @NonNull MessageWrapper<Serializable> extractRawMessage(@NonNull ResultSet rs) throws SQLException, IOException {
 		try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed());
 			ObjectInputStream ois = new RenamingObjectInputStream(blobStream)) {
 
@@ -156,20 +153,20 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 			String cid = getStringFieldOrNull(rs, getCorrelationIdField());
 			String mid = getStringFieldOrNull(rs, getMessageIdField());
 
-			RawMessageWrapper<Serializable> rawMessageWrapper;
-			if (rawMessage instanceof RawMessageWrapper<?>) {
+			MessageWrapper<Serializable> messageWrapper;
+			if (rawMessage instanceof MessageWrapper<?>) {
 				// noinspection unchecked
-				rawMessageWrapper = (RawMessageWrapper<Serializable>) rawMessage; // If the stored object is an instance of subclass MessageWrapper then the Receiver will not call #extractMessage()
+				messageWrapper = (MessageWrapper<Serializable>) rawMessage; // If the stored object is an instance of subclass MessageWrapper then the Receiver will not call #extractMessage()
 			} else {
-				rawMessageWrapper = new RawMessageWrapper<>((Serializable) rawMessage, mid != null ? mid : key, cid);
+				messageWrapper = new MessageWrapper<>(Message.asMessage(rawMessage), mid != null ? mid : key, cid);
 			}
 			if (key != null) {
-				rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
+				messageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, key);
 			}
-			addAdditionalValuesToMessageWrapper(rs, rawMessageWrapper);
-			return rawMessageWrapper;
-		} catch (Exception e) {
-			throw new JdbcException(e);
+			addAdditionalValuesToMessageWrapper(rs, messageWrapper);
+			return messageWrapper;
+		} catch (ClassNotFoundException e) {
+			throw new IOException("Cannot read object from database", e);
 		}
 	}
 
@@ -217,7 +214,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	protected IMessageBrowser<Serializable> augmentMessageBrowser(IMessageBrowser<Serializable> browser) {
-		if (browser instanceof JdbcTableMessageBrowser<?> jtmb) {
+		if (browser instanceof JdbcTableMessageBrowser jtmb) {
 			jtmb.setExpiryDateField("EXPIRYDATE");
 			jtmb.setHostField("HOST");
 		}
@@ -294,12 +291,6 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	@Protected
-	public void setMessageFieldType(MessageFieldType fieldtype) {
-		throw new UnsupportedOperationException("MessageFieldType is always BLOB for the MessageStoreListener, use a JdbcTableListener instead if you need CLOB of VARCHAR support");
-	}
-
-	@Override
 	@Default ("<code>true</code>")
 	public void setBlobSmartGet(boolean b) {
 		super.setBlobSmartGet(b);
@@ -330,6 +321,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	 * @ff.default <code>M</code>
 	 */
 	@Override
+	@SuppressWarnings("java:S1185") // We override method to change documentation not implementation so ignore warning
 	public void setStatusValueAvailable(String string) {
 		super.setStatusValueAvailable(string);
 	}

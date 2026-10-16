@@ -33,7 +33,7 @@ import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.dbms.JdbcException;
+import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -72,14 +72,10 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
-		try (Connection c = getConnection()) {
-			return getRawMessage(c, threadContext);
-		} catch (JdbcException | SQLException e) {
-			throw new ListenerException(e);
-		}
+		return withConnection((ThrowingFunction<Connection, RawMessageWrapper<String>, ListenerException>) this::getRawMessage);
 	}
 
-	protected @Nullable RawMessageWrapper<String> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
+	protected @Nullable RawMessageWrapper<String> getRawMessage(Connection conn) throws ListenerException {
 		String query = getSelectQuery();
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
@@ -101,7 +97,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 
 	@Override
 	public Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String,Object> context) {
-		return new Message(rawMessage.getRawMessage());
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	protected ResultSet executeQuery(Connection conn, String query) throws ListenerException {

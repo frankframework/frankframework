@@ -136,6 +136,14 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
+		if (hasSkipLockedFunctionality()) {
+			return selectQuery + " FOR UPDATE SKIP LOCKED";
+		}
+		return selectQuery;
+	}
+
+	@Override
 	public String getSchema(Connection conn) throws DbmsException {
 		return DbmsUtil.executeStringQuery(conn, "SELECT SCHEMA()");
 	}

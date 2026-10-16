@@ -44,11 +44,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean hasSkipLockedFunctionality() {
-		return true;
-	}
-
-	@Override
 	public String getSysDate() {
 		return "CURRENT_TIMESTAMP";
 	}
