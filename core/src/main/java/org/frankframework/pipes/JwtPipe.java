@@ -85,6 +85,9 @@ public class JwtPipe extends FixedForwardPipe {
 			try {
 				CredentialFactory credentialFactory = new CredentialFactory(authAlias, null, sharedSecret);
 				String factoryPassword = credentialFactory.getPassword();
+				if (StringUtils.isBlank(factoryPassword)) {
+					throw new ConfigurationException("no sharedSecret provided");
+				}
 				if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(factoryPassword)) {
 					factoryPassword = StringUtils.rightPad(factoryPassword, 32, "\0");
 				}
