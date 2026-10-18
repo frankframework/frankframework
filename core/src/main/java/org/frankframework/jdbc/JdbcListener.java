@@ -53,11 +53,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.receivers.Receiver;
-import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
@@ -72,12 +69,9 @@ import org.frankframework.util.StringUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-@SuppressWarnings("SynchronizeOnNonFinalField")
-public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, IRedeliveringListener<M>, ReceiverAware<M> {
+public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, IRedeliveringListener<M> {
 
 	public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
-
-	private @Getter @Setter Receiver<M> receiver;
 
 	private @Getter String selectQuery;
 	private @Getter String peekQuery;
@@ -101,8 +95,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private Map<ProcessState, String> updateStatusQueries = new EnumMap<>(ProcessState.class);
 	private Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
 
-	protected Connection connection = null;
-
 	private String preparedSelectQuery;
 	private String preparedPeekQuery;
 
@@ -114,9 +106,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getReceiver().isTransacted()) {
-			setTransacted(true);
-		}
 		super.configure();
 		try {
 			String convertedSelectQuery = convertQuery(getSelectQuery());
@@ -143,38 +132,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	@Override
-	public void start() {
-		if (!isConnectionsArePooled()) {
-			try {
-				connection = getConnection();
-			} catch (JdbcException e) {
-				throw new LifecycleException(e);
-			}
-		} else {
-			// noinspection EmptyTryBlock
-			try (Connection ignored = getConnection()) {
-				// do nothing, eat a connection from the pool to validate connectivity
-			} catch (JdbcException | SQLException e) {
-				throw new LifecycleException(e);
-			}
-		}
-	}
-
-	@Override
-	public void stop() {
-		try {
-			if (connection != null) {
-				connection.close();
-			}
-		} catch (SQLException e) {
-			log.warn("{}caught exception stopping listener", getLogPrefix(), e);
-		} finally {
-			connection = null;
-			super.stop();
-		}
-	}
-
 	@NonNull
 	@Override
 	public Map<String,Object> openThread() {
@@ -196,15 +153,10 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		if (StringUtils.isEmpty(preparedPeekQuery)) {
 			return true;
 		}
-		if (isConnectionsArePooled()) {
-			try (Connection c = getConnection()) {
-				return hasRawMessageAvailable(c);
-			} catch (JdbcException|SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		synchronized (connection) {
-			return hasRawMessageAvailable(connection);
+		try (Connection c = getConnection()) {
+			return hasRawMessageAvailable(c);
+		} catch (JdbcException | SQLException e) {
+			throw new ListenerException(e);
 		}
 	}
 
@@ -218,15 +170,10 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 
 	@Override
 	public @Nullable RawMessageWrapper<M> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
-		if (isConnectionsArePooled()) {
-			try (Connection c = getConnection()) {
-				return getRawMessage(c, threadContext);
-			} catch (JdbcException | SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		synchronized (connection) {
-			return getRawMessage(connection, threadContext);
+		try (Connection c = getConnection()) {
+			return getRawMessage(c, threadContext);
+		} catch (JdbcException | SQLException e) {
+			throw new ListenerException(e);
 		}
 	}
 
@@ -393,15 +340,10 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		if (!knownProcessStates().contains(toState)) {
 			return null; // if toState does not exist, the message can/will not be moved to it, so return null.
 		}
-		if (isConnectionsArePooled()) {
-			try (Connection conn = getConnection()) {
-				return changeProcessState(conn, rawMessage, toState, reason);
-			} catch (JdbcException|SQLException e) {
-				throw new ListenerException(e);
-			}
-		}
-		synchronized (connection) {
-			return changeProcessState(connection, rawMessage, toState, reason);
+		try (Connection conn = getConnection()) {
+			return changeProcessState(conn, rawMessage, toState, reason);
+		} catch (JdbcException | SQLException e) {
+			throw new ListenerException(e);
 		}
 	}
 

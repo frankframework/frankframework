@@ -241,7 +241,6 @@ public class ReceiverTest {
 	public MessageStoreListener setupMessageStoreListener() throws Exception {
 		MessageStoreListener listener = spy(new MessageStoreListener());
 		listener.setDataSourceFactory(new DataSourceFactoryMock());
-		listener.setConnectionsArePooled(true);
 		listener.setName("messageStoreListener");
 		listener.setSessionKeys("ANY-KEY");
 		listener.extractSessionKeyList();

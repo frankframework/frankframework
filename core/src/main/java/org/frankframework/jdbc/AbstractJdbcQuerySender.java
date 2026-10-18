@@ -291,14 +291,11 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 
 
 	protected Connection getConnectionForSendMessage() throws JdbcException, TimeoutException {
-		if (isConnectionsArePooled()) {
-			return getConnectionWithTimeout(getTimeout());
-		}
-		return connection;
+		return getConnectionWithTimeout(getTimeout());
 	}
 
 	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) {
-		if (isConnectionsArePooled() && connection != null) {
+		if (connection != null) {
 			try {
 				connection.close();
 			} catch (SQLException e) {

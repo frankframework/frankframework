@@ -32,11 +32,9 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.GenericDbmsSupport;
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcListener;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jdbc.factory.DataSourceFactory;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
 @SuppressWarnings("unchecked")
@@ -65,11 +63,6 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 			@Override
 			public void start() {
 				// Override to suppress validations that will fail
-				try {
-					connection = getConnection();
-				} catch (JdbcException e) {
-					throw new LifecycleException(e);
-				}
 			}
 		});
 		DatabaseMetaData md = mock();
@@ -83,14 +76,8 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		factory.add(dataSource, dataSourceName);
 		listener.setDataSourceFactory(factory);
 		doReturn(conn).when(dataSource).getConnection();
-		listener.setConnectionsArePooled(false);
 		listener.setDatasourceName(dataSourceName);
 		doReturn(new GenericDbmsSupport()).when(listener).getDbmsSupport();
-
-		Receiver<Serializable> receiver = mock(Receiver.class);
-		when(receiver.isTransacted()).thenReturn(false);
-		listener.setReceiver(receiver);
-
 		return listener;
 	}
 

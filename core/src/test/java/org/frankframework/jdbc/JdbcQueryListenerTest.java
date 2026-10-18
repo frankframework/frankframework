@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import javax.sql.DataSource;
 
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.dbms.H2DbmsSupport;
-import org.frankframework.receivers.Receiver;
 
 @SuppressWarnings("removal")
 class JdbcQueryListenerTest {
@@ -25,11 +23,7 @@ class JdbcQueryListenerTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		Receiver<?> receiver = mock(Receiver.class);
-		when(receiver.isTransacted()).thenReturn(false);
-
 		listener = spy(new JdbcQueryListener());
-		listener.setReceiver(receiver);
 		listener.setMessageFieldType(JdbcListener.MessageFieldType.STRING);
 		listener.setKeyField("TKEY");
 		listener.setMessageField("FM");
