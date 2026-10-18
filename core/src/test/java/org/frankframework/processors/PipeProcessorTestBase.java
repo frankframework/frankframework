@@ -15,7 +15,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.mock.TransactionManagerMock;
 import org.frankframework.util.SpringUtils;
 
 public class PipeProcessorTestBase {
@@ -28,8 +27,6 @@ public class PipeProcessorTestBase {
 	@BeforeEach
 	public void setUp() {
 		configuration = new TestConfiguration();
-		TransactionManagerMock txManager = configuration.createBean(TransactionManagerMock.class);
-		SpringUtils.registerSingleton(configuration, "txManager", txManager);
 
 		createAdapterAndPipeLine();
 		session = new PipeLineSession();

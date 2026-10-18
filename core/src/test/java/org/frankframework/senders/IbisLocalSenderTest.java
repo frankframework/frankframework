@@ -505,7 +505,7 @@ class IbisLocalSenderTest {
 		configuration.configure();
 		configuration.start();
 
-		waitForState((Receiver<?>) listener.getHandler(), RunState.STARTED);
+		waitForState((Adapter) listener.getApplicationContext(), RunState.STARTED);
 	}
 
 	private static Adapter createAdapter(TestConfiguration configuration) {

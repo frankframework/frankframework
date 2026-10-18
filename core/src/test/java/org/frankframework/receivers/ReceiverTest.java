@@ -822,7 +822,7 @@ public class ReceiverTest {
 		Receiver<?> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
 		MessageWrapper<Serializable> messageWrapper = new MessageWrapper<>(Message.asMessage(testMessage), "1", "1");
-		doReturn(messageWrapper).when(errorStorage).consumeMessage("1", new PipeLineSession());
+		doReturn(messageWrapper).when(errorStorage).consumeMessage(eq("1"), any(PipeLineSession.class));
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setResult(Message.asMessage("dummy"));
