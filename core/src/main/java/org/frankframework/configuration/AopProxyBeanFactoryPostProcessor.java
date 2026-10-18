@@ -29,6 +29,7 @@ public class AopProxyBeanFactoryPostProcessor implements BeanDefinitionRegistryP
 
 	@Override
 	public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry registry) throws BeansException {
+		// Equivalent of proxy-target-class="true": auto-proxying using CGLIB.
 		AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry);
 		AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
 	}
