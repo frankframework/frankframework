@@ -74,6 +74,7 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 	@Override
 	public void processRawMessage(@NonNull IPushingListener<M> origin, @NonNull RawMessageWrapper<M> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 		shouldProcess(origin);
+
 		doProcess(message, session, duplicatesAlreadyChecked);
 	}
 
@@ -84,9 +85,6 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 	 * <p>
 	 *     If the receiver is transactional, then this method will enforce the transactional requirements specified
 	 *     by {@link Receiver#setTransactionAttribute(TransactionAttribute)}.
-	 * </p>
-	 * <p>
-	 * N.B. callers of this method should clear the remaining ThreadContext if it's not to be returned to their callers.
 	 * </p>
 	 */
 	@Override
