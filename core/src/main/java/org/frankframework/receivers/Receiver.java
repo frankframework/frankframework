@@ -607,15 +607,12 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				listenerContainer = createListenerContainer();
 			}
 			getListener().configure();
-			if (getListener() instanceof HasPhysicalDestination) {
-				info("has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+			if (getListener() instanceof HasPhysicalDestination physicalDestination) {
+				info("has listener on "+physicalDestination.getPhysicalDestinationName());
 			}
-			if (getListener() instanceof HasSender) {
+			if (getListener() instanceof HasSender hasSender && hasSender.getSender() instanceof HasPhysicalDestination destination) {
 				// only informational
-				ISender sender = ((HasSender)getListener()).getSender();
-				if (sender instanceof HasPhysicalDestination destination) {
-					info("Listener has answer-sender on "+destination.getPhysicalDestinationName());
-				}
+				info("Listener has answer-sender on "+destination.getPhysicalDestinationName());
 			}
 			if (getListener() instanceof ITransactionRequirements tr && tr.transactionalRequired() && !isTransacted()) {
 				ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY);
@@ -2064,7 +2061,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		@SuppressWarnings("unchecked")
 		PullingListenerContainer<M> plc = applicationContext.getBean("listenerContainer", PullingListenerContainer.class);
 		plc.setReceiver(this);
-		plc.setMetricsInitializer(configurationMetrics);
 		plc.configure();
 		return plc;
 	}

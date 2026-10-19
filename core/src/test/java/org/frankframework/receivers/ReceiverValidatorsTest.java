@@ -42,7 +42,7 @@ class ReceiverValidatorsTest {
 	void setUp() {
 		configuration = TransactionManagerType.DATASOURCE.create(false);
 		adapter = createAdapter(configuration);
-		listener = createListener();
+		listener = createListener(adapter);
 		receiver = createReceiver(adapter, listener);
 
 		session = new PipeLineSession();
@@ -69,8 +69,8 @@ class ReceiverValidatorsTest {
 		return receiver;
 	}
 
-	private static @NonNull JavaListener<String> createListener() {
-		JavaListener<String> listener = new JavaListener<>();
+	private static @NonNull JavaListener<String> createListener(Adapter adapter) {
+		JavaListener<String> listener = SpringUtils.createBean(adapter);
 		listener.setName("TEST");
 		return listener;
 	}
@@ -148,7 +148,7 @@ class ReceiverValidatorsTest {
 		MessageWrapper<String> messageWrapper = new MessageWrapper<>(inputMessage, "my-mid", "my-cid");
 
 		// Act
-		Message result = assertDoesNotThrow(() -> receiver.processRequest(listener, messageWrapper, session));
+		Message result = assertDoesNotThrow(() -> listener.getHandler().processRequest(listener, messageWrapper, session));
 
 		// Assert
 		assertNotNull(result);
@@ -168,7 +168,7 @@ class ReceiverValidatorsTest {
 		MessageWrapper<String> messageWrapper = new MessageWrapper<>(inputMessage, "my-mid", "my-cid");
 
 		// Act
-		Message result = assertDoesNotThrow(() -> receiver.processRequest(listener, messageWrapper, session));
+		Message result = assertDoesNotThrow(() -> listener.getHandler().processRequest(listener, messageWrapper, session));
 
 		// Assert
 		assertNotNull(result);
@@ -196,7 +196,7 @@ class ReceiverValidatorsTest {
 		MessageWrapper<String> messageWrapper = new MessageWrapper<>(inputMessage, "my-mid", "my-cid");
 
 		// Act
-		Message result = assertDoesNotThrow(() -> receiver.processRequest(listener, messageWrapper, session));
+		Message result = assertDoesNotThrow(() -> listener.getHandler().processRequest(listener, messageWrapper, session));
 
 		// Assert
 		assertNotNull(result);

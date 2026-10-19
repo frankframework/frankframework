@@ -29,7 +29,7 @@ import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
  *
  * @author Niels Meijer
  */
-// Careful.. don't log here!!
+// Careful... don't log here!!
 public class IafTestInitializer {
 
 	public static void main(String[] args) throws IOException {

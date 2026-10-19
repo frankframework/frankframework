@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.SchedulingAwareRunnable;
@@ -34,6 +33,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IHasProcessState;
@@ -48,7 +48,6 @@ import org.frankframework.core.TransactionAttribute;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TimeProvider;
@@ -60,30 +59,41 @@ import org.frankframework.util.TimeProvider;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
+@Log4j2
 public class PullingListenerContainer<M> implements IThreadCountControllable {
-	protected Logger log = LogUtil.getLogger(this);
 
-	private TransactionDefinition txNew = null;
+	// Spring injected fields
+	private final TaskExecutor taskExecutor;
+	private final MetricsInitializer metricsInitializer;
+	private final PlatformTransactionManager txManager;
 
-	private @Setter MetricsInitializer metricsInitializer;
-	private DistributionSummary messagePeekingStatistics;
-	private DistributionSummary messageReceivingStatistics;
-
-	private @Getter @Setter Receiver<M> receiver;
-	private @Getter @Setter PlatformTransactionManager txManager;
 	private final AtomicInteger threadsRunning = new AtomicInteger();
 	private final AtomicInteger tasksStarted = new AtomicInteger();
+	private final AtomicBoolean idle = new AtomicBoolean(false); // true if the last messages received was null, will cause wait loop
+
+	// Has to be set manually
+	private @Getter @Setter Receiver<M> receiver;
+
+	// Configure
+	private TransactionDefinition txNew = null;
+	private DistributionSummary messagePeekingStatistics;
+	private DistributionSummary messageReceivingStatistics;
 	private ResourceLimiter processToken = null; // guard against to many messages being processed at the same time
 	private ResourceLimiter pollToken = null; // guard against to many threads polling at the same time
-	private final AtomicBoolean idle = new AtomicBoolean(false); // true if the last messages received was null, will cause wait loop
 	private int retryInterval = 1;
 
-	/**
-	 * The thread-pool for spawning threads, injected by Spring
-	 */
-	private @Getter @Setter TaskExecutor taskExecutor;
+	// Spring injected fields
+	public PullingListenerContainer(TaskExecutor taskExecutor, MetricsInitializer metricsInitializer, PlatformTransactionManager txManager) {
+		this.taskExecutor = taskExecutor;
+		this.metricsInitializer = metricsInitializer;
+		this.txManager = txManager;
+	}
 
 	public void configure() {
+		if (receiver == null) {
+			throw new IllegalStateException("receiver has not been set");
+		}
+
 		if (receiver.getNumThreadsPolling() > 0 && receiver.getNumThreadsPolling() < receiver.getNumThreads()) {
 			pollToken = new ResourceLimiter(receiver.getNumThreadsPolling());
 		}
@@ -227,14 +237,12 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						try {
 							try {
 								boolean messageAvailable = true;
-								if (isIdle() && listener instanceof IPeekableListener peekableListener) {
-									if (peekableListener.isPeekUntransacted()) {
-										long start = System.currentTimeMillis();
-										messageAvailable = peekableListener.hasRawMessageAvailable();
-										long end = System.currentTimeMillis();
+								if (isIdle() && listener instanceof IPeekableListener<M> peekableListener && peekableListener.isPeekUntransacted()) {
+									long start = System.currentTimeMillis();
+									messageAvailable = peekableListener.hasRawMessageAvailable();
+									long end = System.currentTimeMillis();
 
-										messagePeekingStatistics.record((double) end - start);
-									}
+									messagePeekingStatistics.record((double) end - start);
 								}
 								if (messageAvailable) {
 									// Start a transaction if the entire processing is transacted, or
@@ -413,37 +421,37 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 				}
 			}
 		}
-	}
 
-	private void resetRetryInterval() {
-		synchronized (receiver) {
-			if (retryInterval > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+		private void resetRetryInterval() {
+			synchronized (receiver) {
+				if (retryInterval > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+					receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
+				}
+				retryInterval = 1;
+			}
+		}
+
+		private void increaseRetryIntervalAndWait(Throwable t) {
+			long currentInterval;
+			synchronized (receiver) {
+				currentInterval = retryInterval;
+				retryInterval = retryInterval * 2;
+				if (retryInterval > 3600) {
+					retryInterval = 3600;
+				}
+			}
+			receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
+			if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 				receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
 			}
-			retryInterval = 1;
-		}
-	}
-
-	private void increaseRetryIntervalAndWait(Throwable t) {
-		long currentInterval;
-		synchronized (receiver) {
-			currentInterval = retryInterval;
-			retryInterval = retryInterval * 2;
-			if (retryInterval > 3600) {
-				retryInterval = 3600;
-			}
-		}
-		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
-		if (currentInterval*2 > Receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-			receiver.throwEvent(Receiver.RCV_SUSPENDED_MONITOR_EVENT);
-		}
-		while (receiver.isInRunState(RunState.STARTED) && currentInterval-- > 0) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e2) {
-				Thread.currentThread().interrupt();
-				receiver.error("sleep interrupted", e2);
-				receiver.stop();
+			while (receiver.isInRunState(RunState.STARTED) && currentInterval-- > 0) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e2) {
+					Thread.currentThread().interrupt();
+					receiver.error("sleep interrupted", e2);
+					receiver.stop();
+				}
 			}
 		}
 	}
