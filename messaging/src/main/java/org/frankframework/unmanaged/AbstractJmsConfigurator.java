@@ -27,7 +27,6 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.IbisExceptionListener;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -42,7 +41,6 @@ public abstract class AbstractJmsConfigurator {
 	private @Getter @Setter IPortConnectedListener<Message> listener;
 	private @Getter @Setter ConnectionFactory connectionFactory;
 	private @Getter @Setter Destination destination;
-	private @Getter Receiver<Message> receiver;
 	private @Getter IbisExceptionListener exceptionListener;
 
 	public void configureEndpointConnection(IPortConnectedListener<Message> listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener) throws ConfigurationException {
@@ -55,8 +53,6 @@ public abstract class AbstractJmsConfigurator {
 		setListener(listener);
 		setConnectionFactory(connectionFactory);
 		setDestination(destination);
-		this.receiver = getListener().getReceiver();
 		this.exceptionListener = exceptionListener;
 	}
-
 }
