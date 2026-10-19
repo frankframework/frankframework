@@ -62,12 +62,12 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.IbisException;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.TransactionAware;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jms.factory.IConnectionFactoryFactory;
@@ -94,7 +94,7 @@ import org.frankframework.util.XmlException;
  * @author 	Gerrit van Brakel
  */
 @DestinationType(DestinationType.Type.JMS)
-public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankElement, NameAware, HasPhysicalDestination, IXAEnabled {
+public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankElement, NameAware, HasPhysicalDestination, TransactionAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

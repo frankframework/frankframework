@@ -25,7 +25,7 @@ import org.frankframework.receivers.RawMessageWrapper;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public interface IMessageBrowser<M> extends IXAEnabled {
+public interface IMessageBrowser<M> {
 
 	enum SortOrder { NONE, ASC, DESC }
 

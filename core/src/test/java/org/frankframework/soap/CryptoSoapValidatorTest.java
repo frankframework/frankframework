@@ -1,6 +1,5 @@
 package org.frankframework.soap;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -120,7 +119,7 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 		pipe.setSchemaLocation("http://www.ing.com/testxmlns " + ValidatorTestBase.BASE_DIR_VALIDATION + "/Basic/xsd/A_correct.xsd");
 		pipe.setSoapVersion(SoapVersion.AUTO);
 
-		assertDoesNotThrow(this::configureAndStartPipe);
+		configureAndStartPipe();
 
 		Message encrypted = createEncryptedSoapMessage(keystore, certificateName);
 		assertTrue(encrypted.asString().contains("<SOAP:Header>"));
@@ -161,7 +160,7 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 		pipe.setSchemaLocation("http://www.ing.com/testxmlns " + ValidatorTestBase.BASE_DIR_VALIDATION + "/Basic/xsd/A_correct.xsd");
 		pipe.setSoapVersion(SoapVersion.AUTO);
 
-		assertDoesNotThrow(this::configureAndStartPipe);
+		configureAndStartPipe();
 
 		PipeRunResult result = doPipe(new UrlMessage(TEST_FILE));
 		assertNotNull(result);

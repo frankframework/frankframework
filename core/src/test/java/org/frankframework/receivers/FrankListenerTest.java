@@ -205,7 +205,7 @@ class FrankListenerTest {
 		adapter.start();
 
 		await().pollInterval(5, TimeUnit.SECONDS)
-				.atMost(Duration.ofMinutes(5))
+				.atMost(Duration.ofSeconds(90))
 				.until(adapter::isRunning);
 
 		doReturn(message).when(receiver).processRawMessage(eq(listener), any(), eq(session), anyBoolean());

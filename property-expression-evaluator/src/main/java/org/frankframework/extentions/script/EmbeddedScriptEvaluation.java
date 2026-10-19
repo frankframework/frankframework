@@ -43,6 +43,7 @@ import org.jspecify.annotations.Nullable;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.AdditionalStringResolver;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -199,7 +200,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 				.map(context::get)
 				.filter(Objects::nonNull)
 				.map(Object::toString)
-				.sorted(Comparator.comparing(String::length))
+				.sorted(Comparator.comparingInt(String::length))
 				.toList().reversed(); // Sort by longest string first to properly hide partially overlapping values
 		if (propValuesToHide.isEmpty()) {
 			return value;
@@ -250,7 +251,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 
 	private static void tryAddClassDynamically(JexlContext context, String className) {
 		try {
-			Class<?> cls = EmbeddedScriptEvaluation.class.getClassLoader().loadClass(className);
+			Class<?> cls = ClassUtils.loadClass(className);
 			context.set(cls.getSimpleName(), cls);
 		} catch (Exception e) {
 			log.info("Cannot load class [{}]: {}",  className, e.getMessage());

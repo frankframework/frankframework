@@ -35,7 +35,7 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 	private final Map<String, Message> mocks = new HashMap<>();
 
 	@Override
-	public Connection getConnection() throws JdbcException {
+	public @NonNull Connection getConnection() throws JdbcException {
 		if(mocks.containsKey(getName())) {
 			try {
 				Connection conn = Mockito.mock(Connection.class);

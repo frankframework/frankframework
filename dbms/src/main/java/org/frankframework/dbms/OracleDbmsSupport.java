@@ -37,11 +37,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean hasSkipLockedFunctionality() {
-		return true;
-	}
-
-	@Override
 	public String getSysDate() {
 		return "SYSDATE";
 	}
@@ -89,13 +84,21 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		 * http://www.ss64.com/ora/select.html
 		 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
 		 */
-		if (wait < 0) {
+		if (wait <= 0) {
 			return selectQuery + " FOR UPDATE SKIP LOCKED";
 		} else {
 			return selectQuery + " FOR UPDATE WAIT " + wait;
 		}
 	}
 
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
+		if (wait <= 0) {
+			return selectQuery + " FOR UPDATE SKIP LOCKED";
+		} else {
+			return selectQuery + " FOR UPDATE WAIT " + wait;
+		}
+	}
 
 	@Override
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {

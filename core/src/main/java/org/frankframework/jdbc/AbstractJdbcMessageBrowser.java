@@ -15,6 +15,8 @@
 */
 package org.frankframework.jdbc;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,7 +52,8 @@ import org.frankframework.util.StringUtil;
  *
  * @author Gerrit van Brakel
  */
-public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implements IMessageBrowser<M> {
+@SuppressWarnings("SqlSourceToSinkFlow") // Do not need warnings about unsafe SQL on this class
+public abstract class AbstractJdbcMessageBrowser extends JdbcFacade implements IMessageBrowser<Serializable> {
 
 	private @Getter String keyField=null;
 	private @Getter String idField=null;
@@ -93,11 +96,6 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 
 	private DataSource datasource = null;
 
-	public AbstractJdbcMessageBrowser() {
-		super();
-		setTransacted(true);
-	}
-
 	@Override
 	protected String getLogPrefix() {
 		return "JdbcMessageBrowser ["+getName()+"] ";
@@ -132,8 +130,14 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 		selector = createSelector();
 		if(getOrder() == null) {
 			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
+				if (StringUtils.isEmpty(errorsOrder)) {
+					throw new ConfigurationException("Property 'browse.errors.order' is empty or missing");
+				}
 				setOrder(EnumUtils.parse(SortOrder.class, errorsOrder)); // Defaults to ASC
 			} else {
+				if (StringUtils.isEmpty(messagesOrder)) {
+					throw new ConfigurationException("Property 'browse.messages.order' is empty or missing");
+				}
 				setOrder(EnumUtils.parse(SortOrder.class, messagesOrder)); // Defaults to DESC
 			}
 		}
@@ -240,6 +244,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 	}
 
 	@Override
+	@SuppressWarnings("java:S2093") // Cannot use try-with-resources because we return an iterator that uses the connection and statement after we return from this method
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
 		Connection conn;
 		PreparedStatement stmt = null;
@@ -293,7 +298,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 		}
 	}
 
-	protected abstract RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws SQLException, JdbcException;
+	protected abstract RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws SQLException, JdbcException, IOException;
 
 	@Override
 	public int getMessageCount() throws ListenerException {
@@ -315,23 +320,18 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 
 	@Override
 	public boolean containsMessageId(String originalMessageId) throws ListenerException {
-		try (Connection conn = getConnection()) {
-			try (PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery)) {
-				applyStandardParameters(stmt, originalMessageId, false);
-				try (ResultSet rs =  stmt.executeQuery()) {
-					return rs.next();
-				}
-			}
-		} catch (Exception e) {
-			throw new ListenerException("cannot deserialize message",e);
-		}
+		return checkIfQueryHasResults(checkMessageIdQuery, originalMessageId);
 	}
 
 	@Override
 	public boolean containsCorrelationId(String correlationId) throws ListenerException {
+		return checkIfQueryHasResults(checkCorrelationIdQuery, correlationId);
+	}
+
+	private boolean checkIfQueryHasResults(String query, String parameter) throws ListenerException {
 		try (Connection conn = getConnection()) {
-			try (PreparedStatement stmt = conn.prepareStatement(checkCorrelationIdQuery)) {
-				applyStandardParameters(stmt, correlationId, false);
+			try (PreparedStatement stmt = conn.prepareStatement(query)) {
+				applyStandardParameters(stmt, parameter, false);
 				try (ResultSet rs =  stmt.executeQuery()) {
 					return rs.next();
 				}
@@ -361,7 +361,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 	}
 
 	@Override
-	public RawMessageWrapper<M> browseMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<Serializable> browseMessage(String storageKey) throws ListenerException {
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement stmt = conn.prepareStatement(selectDataQuery)) {
 				applyStandardParameters(stmt, storageKey, true);
@@ -372,7 +372,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 					return retrieveObject(storageKey, rs, 2);
 				}
 			}
-		} catch (ListenerException e) { // Don't catch ListenerExceptions, unnecessarily and ugly
+		} catch (ListenerException e) { // Don't wrap ListenerExceptions, unnecessarily and ugly
 			throw e;
 		} catch (Exception e) {
 			throw new ListenerException("cannot deserialize message",e);

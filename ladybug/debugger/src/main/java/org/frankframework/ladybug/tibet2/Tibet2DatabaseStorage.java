@@ -265,12 +265,12 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 		query.append(" order by ");
 		query.append(metadataNames.getFirst() + " desc");
 		log.debug("Metadata query: {}", query.toString());
-		List<List<Object>> metadata;
+		List<List<@Nullable Object>> metadata;
 		try {
 			metadata = jdbcTemplate.query(query.toString(), args.toArray(), argTypes.stream().mapToInt(i -> i).toArray(),
 					(rs, rowNum) ->
 						{
-							List<Object> row = new ArrayList<Object>();
+							List<Object> row = new ArrayList<>();
 							for (int i = 0; i < metadataNames.size(); i++) {
 								if (integerColumns.contains(metadataNames.get(i))) {
 									row.add(rs.getInt(i + 1));
@@ -468,7 +468,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 
 	private String getValue(ResultSet rs, int columnIndex) throws SQLException {
 		try {
-			return JdbcUtil.getValue(getDbmsSupport(), rs, columnIndex, rs.getMetaData(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, "", false, true, false);
+			return JdbcUtil.getValueAsMessage(getDbmsSupport(), rs, columnIndex, rs.getMetaData(), StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true, false, true, false).asString();
 		} catch (IOException e) {
 			throw new SQLException("IOException reading value");
 		}
