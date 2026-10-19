@@ -61,11 +61,6 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return true;
 	}
 
-	@Override
-	public boolean hasSkipLockedFunctionality() {
-		return true;
-	}
-
 
 	@Override
 	public String getDatetimeLiteral(Date date) {

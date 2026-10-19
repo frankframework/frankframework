@@ -84,7 +84,10 @@ public class MessageUtils {
 	 * Fully read {@link InputStream} and create a message from it, so that the InputStream can be closed
 	 * without losing the message contents.
 	 */
-	public static @NonNull Message fromInputStream(@NonNull InputStream inputStream, @NonNull MessageContext context, long expectedSize) throws IOException {
+	public static @NonNull Message fromInputStream(@Nullable InputStream inputStream, @NonNull MessageContext context, long expectedSize) throws IOException {
+		if (inputStream == null) {
+			return Message.nullMessage(context);
+		}
 		MessageBuilder messageBuilder = new MessageBuilder(expectedSize);
 		try (inputStream; OutputStream outputStream = messageBuilder.asOutputStream()) {
 			StreamUtil.copyStream(inputStream, outputStream, StreamUtil.BUFFER_SIZE);
@@ -96,7 +99,7 @@ public class MessageUtils {
 	 * Fully read {@link InputStream} and create a message from it, so that the InputStream can be closed
 	 * without losing the message contents.
 	 */
-	public static @NonNull Message fromInputStream(@NonNull InputStream inputStream) throws IOException {
+	public static @NonNull Message fromInputStream(@Nullable InputStream inputStream) throws IOException {
 		return fromInputStream(inputStream, new MessageContext(), Message.MESSAGE_MAX_IN_MEMORY);
 	}
 
@@ -104,7 +107,10 @@ public class MessageUtils {
 	 * Fully read {@link Reader} and create a Message from it, so that the Reader can be closed
 	 * without losing the message contents.
 	 */
-	public static @NonNull Message fromReader(@NonNull Reader reader) throws IOException {
+	public static @NonNull Message fromReader(@Nullable Reader reader) throws IOException {
+		if (reader == null) {
+			return Message.nullMessage();
+		}
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (reader; Writer writer = messageBuilder.asWriter()) {
 			reader.transferTo(writer);

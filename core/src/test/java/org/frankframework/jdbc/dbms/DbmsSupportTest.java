@@ -14,16 +14,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
@@ -31,7 +35,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
@@ -258,16 +262,44 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testGetDateTimeLiteral() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(TimeProvider.nowAsDate()), 4) + "," + dbmsSupport.getDatetimeLiteral(TimeProvider.nowAsDate()) + ")");
-			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null);
+			// Arrange
+			ZonedDateTime now = TimeProvider.nowAsZonedDateTime();
+			LocalDate nowLocalDate = now.toLocalDate();
+			Date nowDate = new Date(now.toInstant().toEpochMilli());
+
+			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(nowDate), 4) + "," + dbmsSupport.getDatetimeLiteral(nowDate) + ")");
+
+			// Act
+			Object result1 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null);
+			// Select with conversion TimestampAsDate b/c of Oracle, despite it being a DATE column
+			Object result2 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATE") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null);
+
+			// Assert
+			assertNotNull(result1);
+			assertEquals(nowLocalDate.toString(), result1.toString());
+
+			assertNotNull(result2);
+			assertEquals(nowLocalDate.plusDays(4).toString(), result2.toString());
 		}
 	}
 
 	@DatabaseTest
 	public void testSysDate() throws Exception {
 		try (Connection connection = env.getConnection()) {
+			// Arrange
+			LocalDate nowDate = LocalDate.now();
 			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3," + dbmsSupport.getSysDate() + "," + dbmsSupport.getSysDate() + ")");
-			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null);
+
+			// Act
+			Object result1 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null);
+			// Select with conversion TimestampAsDate b/c of Oracle, despite it being a DATE column
+			Object result2 = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATE") + " FROM " + TEST_TABLE + " WHERE TKEY=2", null);
+
+			// Assert
+			assertNotNull(result1);
+			assertNotNull(result2);
+			assertEquals(nowDate.toString(), result1.toString());
+			assertEquals(nowDate.toString(), result2.toString());
 		}
 	}
 
@@ -283,7 +315,7 @@ public class DbmsSupportTest {
 			stmt.execute();
 		}
 
-		try (Connection connection = env.getConnection(); PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM " + TEST_TABLE + " WHERE TKEY=3", QueryType.SELECT)) {
+		try (Connection connection = env.getConnection(); PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TNUMBER FROM " + TEST_TABLE + " WHERE TKEY=3")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertTrue(resultSet.getString(1).startsWith(number));
@@ -304,7 +336,7 @@ public class DbmsSupportTest {
 				stmt.execute();
 			}
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM " + TEST_TABLE + " WHERE TKEY=4", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TNUMBER FROM " + TEST_TABLE + " WHERE TKEY=4")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					assertEquals(number, resultSet.getFloat(1), 0.01);
@@ -325,7 +357,7 @@ public class DbmsSupportTest {
 				stmt.execute();
 			}
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, selectQuery, QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, selectQuery)) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					assertEquals(5, resultSet.getInt(1));
@@ -351,7 +383,7 @@ public class DbmsSupportTest {
 			stmt.execute();
 		}
 
-		try (Connection connection = env.getConnection(); PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM " + TEST_TABLE + " WHERE TKEY=5", QueryType.SELECT)) {
+		try (Connection connection = env.getConnection(); PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM " + TEST_TABLE + " WHERE TKEY=5")) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertTrue(resultSet.getString(1).startsWith(number));
@@ -384,7 +416,7 @@ public class DbmsSupportTest {
 			stmt.execute();
 		}
 
-		try (Connection connection = env.getConnection(); PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM " + TEST_TABLE + " WHERE TKEY=" + key, QueryType.SELECT)) {
+		try (Connection connection = env.getConnection(); PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM " + TEST_TABLE + " WHERE TKEY=" + key)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertNull(resultSet.getString(1));
@@ -399,8 +431,8 @@ public class DbmsSupportTest {
 	public void testWriteAndReadClob() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			String clobContents = "Dit is de content van de clob";
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (10,EMPTY_CLOB())", QueryType.OTHER);
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=10 FOR UPDATE", QueryType.SELECT, true)) {
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (10,EMPTY_CLOB())");
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=10 FOR UPDATE", true)) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					Object clobHandle = dbmsSupport.getClobHandle(resultSet, 1);
@@ -412,10 +444,11 @@ public class DbmsSupportTest {
 				}
 			}
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=10", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=10")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					Reader clobReader = dbmsSupport.getClobReader(resultSet, 1);
+					assertNotNull(clobReader);
 					String actual = StreamUtil.readerToString(clobReader, null);
 					assertEquals(clobContents, actual);
 				}
@@ -426,12 +459,13 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testReadEmptyClob() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (11,EMPTY_CLOB())", QueryType.OTHER);
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (11,EMPTY_CLOB())");
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=11", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=11")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					Reader clobReader = dbmsSupport.getClobReader(resultSet, 1);
+					assertNotNull(clobReader);
 					String actual = StreamUtil.readerToString(clobReader, null);
 					assertEquals("", actual);
 				}
@@ -442,9 +476,9 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testReadNullClob() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY) VALUES (11)", QueryType.OTHER);
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY) VALUES (11)");
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=11", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=11")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					assertNull(dbmsSupport.getClobReader(resultSet, 1));
@@ -461,15 +495,16 @@ public class DbmsSupportTest {
 			String clobContents = "Dit is de content van de clob";
 			String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (12,?)";
 			String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
-			try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
+			try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 				stmt.setString(1, clobContents);
 				stmt.execute();
 			}
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=12", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TCLOB FROM " + TEST_TABLE + " WHERE TKEY=12")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					Reader clobReader = dbmsSupport.getClobReader(resultSet, 1);
+					assertNotNull(clobReader);
 					String actual = StreamUtil.readerToString(clobReader, null);
 					assertEquals(clobContents, actual);
 				}
@@ -481,22 +516,23 @@ public class DbmsSupportTest {
 	public void testWriteAndReadBlob() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			String blobContents = "Dit is de content van de blob";
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (20,EMPTY_BLOB())", QueryType.OTHER);
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=20 FOR UPDATE", QueryType.SELECT, true)) {
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (20,EMPTY_BLOB())");
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=20 FOR UPDATE", true)) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
 					try (OutputStream out = dbmsSupport.getBlobOutputStream(resultSet, 1, blobHandle)) {
-						out.write(blobContents.getBytes("UTF-8"));
+						out.write(blobContents.getBytes(StandardCharsets.UTF_8));
 					}
 					dbmsSupport.updateBlob(resultSet, 1, blobHandle);
 					resultSet.updateRow();
 				}
 			}
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=20", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=20")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					InputStream blobStream = dbmsSupport.getBlobInputStream(resultSet, 1);
+					assertNotNull(blobStream);
 					String actual = StreamUtil.streamToString(blobStream, null, "UTF-8");
 					assertEquals(blobContents, actual);
 				}
@@ -509,20 +545,20 @@ public class DbmsSupportTest {
 	public void testWriteAndReadBlobCompressed() throws Exception {
 		try (Connection connection = env.getConnection()) {
 			String blobContents = "Dit is de content van de blob";
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (21,EMPTY_BLOB())", QueryType.OTHER);
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=21 FOR UPDATE", QueryType.SELECT, true)) {
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (21,EMPTY_BLOB())");
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=21 FOR UPDATE", true)) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					Object blobHandle = dbmsSupport.getBlobHandle(resultSet, 1);
 
 					try (OutputStream blobOutputStream = JdbcUtil.getBlobOutputStream(dbmsSupport, blobHandle, resultSet, 1, true)) {
-						blobOutputStream.write(blobContents.getBytes("UTF-8"));
+						blobOutputStream.write(blobContents.getBytes(StandardCharsets.UTF_8));
 					}
 					dbmsSupport.updateBlob(resultSet, 1, blobHandle);
 					resultSet.updateRow();
 				}
 			}
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=21", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=21")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", true, false, false);
@@ -535,12 +571,13 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testReadEmptyBlob() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (22,EMPTY_BLOB())", QueryType.OTHER);
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (22,EMPTY_BLOB())");
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=22", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=22")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					InputStream inputStream = dbmsSupport.getBlobInputStream(resultSet, 1);
+					assertNotNull(inputStream);
 					String actual = StreamUtil.streamToString(inputStream, null, null);
 					assertEquals("", actual);
 				}
@@ -551,9 +588,9 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testReadNullBlob() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY) VALUES (23)", QueryType.OTHER);
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY) VALUES (23)");
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=23", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=23")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					assertNull(dbmsSupport.getClobReader(resultSet, 1));
@@ -569,12 +606,12 @@ public class DbmsSupportTest {
 			String blobContents = "Dit is de content van de blob";
 			String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (24,?)";
 			String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
-			try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
-				stmt.setBytes(1, blobContents.getBytes("UTF-8"));
+			try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
+				stmt.setBytes(1, blobContents.getBytes(StandardCharsets.UTF_8));
 				stmt.execute();
 			}
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=24", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TBLOB FROM " + TEST_TABLE + " WHERE TKEY=24")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					resultSet.next();
 					String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false);
@@ -591,18 +628,18 @@ public class DbmsSupportTest {
 			String clobContents = "Dit is de content van de clob";
 			String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB,TCLOB) VALUES (24,?,?)";
 			String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
-			try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
-				stmt.setBytes(1, blobContents.getBytes("UTF-8"));
+			try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
+				stmt.setBytes(1, blobContents.getBytes(StandardCharsets.UTF_8));
 				stmt.setString(2, clobContents);
 				stmt.execute();
 			}
 
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TBLOB,TCLOB FROM " + TEST_TABLE + " WHERE TKEY=24", QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT TBLOB,TCLOB FROM " + TEST_TABLE + " WHERE TKEY=24")) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = resultSet.getMetaData();
 					resultSet.next();
-					String actual1 = JdbcUtil.getValue(dbmsSupport, resultSet, 1, rsmeta, "UTF-8", false, null, true, false, false);
-					String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 2, rsmeta, "UTF-8", false, null, true, false, false);
+					String actual1 = JdbcUtil.getValueAsMessage(dbmsSupport, resultSet, 1, rsmeta, "UTF-8", false, true, false, false).asString();
+					String actual2 = JdbcUtil.getValueAsMessage(dbmsSupport, resultSet, 2, rsmeta, "UTF-8", false, true, false, false).asString();
 					assertEquals(blobContents, actual1);
 					assertEquals(clobContents, actual2);
 				}
@@ -613,8 +650,8 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testBooleanHandling() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBOOLEAN) VALUES (30,99," + dbmsSupport.getBooleanValue(false) + ")", QueryType.OTHER);
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBOOLEAN) VALUES (31,99," + dbmsSupport.getBooleanValue(true) + ")", QueryType.OTHER);
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBOOLEAN) VALUES (30,99," + dbmsSupport.getBooleanValue(false) + ")");
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT,TBOOLEAN) VALUES (31,99," + dbmsSupport.getBooleanValue(true) + ")");
 
 			assertEquals(30, JdbcTestUtil.executeIntQuery(connection, "SELECT TKEY FROM " + TEST_TABLE + " WHERE TINT=99 AND TBOOLEAN=" + dbmsSupport.getBooleanValue(false)));
 			assertEquals(31, JdbcTestUtil.executeIntQuery(connection, "SELECT TKEY FROM " + TEST_TABLE + " WHERE TINT=99 AND TBOOLEAN=" + dbmsSupport.getBooleanValue(true)));
@@ -631,7 +668,7 @@ public class DbmsSupportTest {
 	public void testQueueHandling() throws Exception {
 		assumeTrue(dbmsSupport.hasSkipLockedFunctionality(), "This test works only when locked records can be skipped, not supported for DBMS [" + dbmsSupport.getDbmsName() + "]");
 		try (Connection connection = env.getConnection()) {
-			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (40,100)", QueryType.OTHER);
+			executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (40,100)");
 
 			String selectQuery = "SELECT TKEY FROM " + TEST_TABLE + " WHERE TINT=100";
 			assertEquals(40, JdbcTestUtil.executeIntQuery(connection, selectQuery));
@@ -668,7 +705,7 @@ public class DbmsSupportTest {
 						}
 
 						// insert another record
-						executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
+						executeTranslatedQuery(connection, "INSERT INTO " + TEST_TABLE + " (TKEY,TINT) VALUES (41,100)");
 						if (testPeekFindsRecordsWhenTheyAreAvailable)
 							assertTrue(peek(peekQueueQuery), "second record should have been seen by peek query");// assert that record is seen
 
@@ -732,22 +769,26 @@ public class DbmsSupportTest {
 		assertTrue(dbmsSupport.hasSkipLockedFunctionality());
 	}
 
-	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
-		return executeTranslatedQuery(connection, query, queryType, false);
+	protected PreparedStatement prepareTranslatedSelectQuery(Connection connection, String query) throws JdbcException, SQLException {
+		return prepareTranslatedSelectQuery(connection, query, false);
 	}
 
-	protected @Nullable PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
+	@SuppressWarnings("SqlSourceToSinkFlow")
+	protected @NonNull PreparedStatement prepareTranslatedSelectQuery(Connection connection, String query, boolean selectForUpdate) throws JdbcException, SQLException {
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 
 		log.debug("executing translated query [{}]", translatedQuery);
-		if (queryType==QueryType.SELECT) {
-			if(!selectForUpdate) {
-				return connection.prepareStatement(translatedQuery);
-			}
-			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+		if(!selectForUpdate) {
+			return connection.prepareStatement(translatedQuery);
 		}
+		return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+	}
+
+	protected void executeTranslatedQuery(Connection connection, String query) throws JdbcException, SQLException {
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+
+		log.debug("executing translated query [{}]", translatedQuery);
 		JdbcTestUtil.executeStatement(connection, translatedQuery);
-		return null;
 	}
 
 	@DatabaseTest
@@ -756,14 +797,14 @@ public class DbmsSupportTest {
 		assumeTrue(dbmsSupport.getDbms() == Dbms.MSSQL, "This test is only relevant for MSSQL");
 
 		try (Connection connection = env.getConnection()) {
-			try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT * FROM " + ROW_VERSION_TEST_TABLE_NAME, QueryType.SELECT)) {
+			try (PreparedStatement stmt = prepareTranslatedSelectQuery(connection, "SELECT * FROM " + ROW_VERSION_TEST_TABLE_NAME)) {
 				try (ResultSet resultSet = stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = resultSet.getMetaData();
 					resultSet.next();
-					String actual2 = JdbcUtil.getValue(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, null, true, false, false);
+					Message actual2 = JdbcUtil.getValueAsMessage(dbmsSupport, resultSet, 3, rsmeta, "UTF-8", false, true, false, false);
 
-					assertEquals(rsmeta.getColumnTypeName(3), "timestamp");
-					assertNotNull(actual2);
+					assertEquals("timestamp", rsmeta.getColumnTypeName(3));
+					assertFalse(actual2.isNull());
 				}
 			}
 		}
