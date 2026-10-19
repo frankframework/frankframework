@@ -1144,7 +1144,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 
 			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, retryStatusAlreadyChecked);
-			log.debug("Pipeline result message [{}]", output);
+			// Cannot log Message here because of the ThreadContext which should apply HideRegex.
+			log.debug("Pipeline result message [{}]", output::getObjectId);
 
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 			return output;
