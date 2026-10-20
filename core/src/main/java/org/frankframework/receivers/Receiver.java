@@ -41,7 +41,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.ThreadContext;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
@@ -1103,7 +1102,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
 
-		return processRawMessage(rawMessage, session, false, retryStatusAlreadyChecked);
+		return processMessage(rawMessage, session, false, retryStatusAlreadyChecked);
 	}
 
 	/**
@@ -1114,7 +1113,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
 	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
-	private Message processRawMessage(@Nullable RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry,
+	private Message processMessage(@Nullable RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry,
 								   boolean retryStatusAlreadyChecked) throws ListenerException {
 		Objects.requireNonNull(rawMessageWrapper, "MessageWrapper can not be null");
 		Objects.requireNonNull(session, "Session can not be null");
@@ -1149,9 +1148,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 			return output;
-		} finally {
-			// Ensure we always clear the MDC.
-			ThreadContext.clearAll();
 		}
 	}
 
@@ -1187,7 +1183,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				// This deletes the message from the error store! Because that's the way JMS works and so it works that way for all TransactionStorage implementations
 				msg = errorStorage.consumeMessage(storageKey, session);
 				// noinspection unchecked
-				processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
+				processMessage((RawMessageWrapper<M>) msg, session, true, false);
 			} catch (ListenerException e) {
 				itx.setRollbackOnly();
 				throw e;
@@ -1226,7 +1222,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		IbisTransaction itx = new IbisTransaction(transactionManager, getTxDef(), "receiver [" + getName() + "]");
 		try {
 			RawMessageWrapper<M> msg = getMessageToRetryFromErrorBrowser(storageKey);
-			processRawMessage(msg, session, true, false);
+			processMessage(msg, session, true, false);
 		} catch (ListenerException e) {
 			itx.setRollbackOnly();
 			throw e;

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.apache.logging.log4j.ThreadContext;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -75,7 +76,12 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 	public void processRawMessage(@NonNull IPushingListener<M> origin, @NonNull RawMessageWrapper<M> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 		shouldProcess(origin);
 
-		doProcess(message, session, duplicatesAlreadyChecked);
+		try {
+			doProcess(message, session, duplicatesAlreadyChecked);
+		} finally {
+			// Ensure we always clear the MDC.
+			ThreadContext.clearAll();
+		}
 	}
 
 	/**
@@ -85,6 +91,9 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 	 * <p>
 	 *     If the receiver is transactional, then this method will enforce the transactional requirements specified
 	 *     by {@link Receiver#setTransactionAttribute(TransactionAttribute)}.
+	 * </p>
+	 * <p>
+	 * N.B. callers of this method should clear the remaining ThreadContext if it's not to be returned to their callers.
 	 * </p>
 	 */
 	@Override
