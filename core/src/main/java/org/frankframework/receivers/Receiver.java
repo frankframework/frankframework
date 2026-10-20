@@ -1097,7 +1097,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
 	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
-	public Message processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
+	Message processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (origin != getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
