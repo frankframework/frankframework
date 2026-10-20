@@ -121,7 +121,7 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 		PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
 
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(session)) {
-			return receiver.processRawMessage(listener, message, session, duplicatesAlreadyChecked);
+			return receiver.processRawMessage(message, session, duplicatesAlreadyChecked);
 		}
 	}
 

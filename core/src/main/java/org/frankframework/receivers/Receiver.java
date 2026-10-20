@@ -1097,11 +1097,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
 	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
-	Message processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
-		if (origin != getListener()) {
-			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
-		}
-
+	Message processRawMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
 		return processMessage(rawMessage, session, false, retryStatusAlreadyChecked);
 	}
 
@@ -1113,8 +1109,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
 	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
-	private Message processMessage(@Nullable RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry,
-								   boolean retryStatusAlreadyChecked) throws ListenerException {
+	private Message processMessage(@Nullable RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
 		Objects.requireNonNull(rawMessageWrapper, "MessageWrapper can not be null");
 		Objects.requireNonNull(session, "Session can not be null");
 
