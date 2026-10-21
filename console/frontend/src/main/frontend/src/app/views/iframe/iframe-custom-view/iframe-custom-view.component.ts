@@ -31,7 +31,7 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
     this.routeSubscription?.unsubscribe();
   }
 
-  loadPage(): void {
+  private loadPage(): void {
     const routeState = this.location.getState() as Record<string, { name: string; url: string }>;
 
     if (!('view' in routeState) || routeState['view'].url == '') {
@@ -40,7 +40,7 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
 
     const view = routeState['view'];
 
-    const url = view['url'].startsWith('/') ? view['url'] : this.appService.getServerPath() + view['url'];
+    const url = this.isRelativeOrExternalUrl(view['url']) ? view['url'] : this.appService.getServerPath() + view['url'];
     this.url.set(url);
 
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
@@ -48,5 +48,9 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
       // run after router events have passed
       this.setIframeSource(url, view['name']);
     }, 50);
+  }
+
+  private isRelativeOrExternalUrl(url: string): boolean {
+    return url.startsWith('/') || url.startsWith('http');
   }
 }
