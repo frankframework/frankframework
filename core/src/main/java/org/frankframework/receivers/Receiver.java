@@ -823,6 +823,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			info("starts listening"); // Don't log that it's ready before it's ready!?
 			runState.setRunState(RunState.STARTED);
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
+			processStatusCache.clear();
 		} catch (Throwable t) {
 			error("error occurred while starting", t);
 
@@ -866,7 +867,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				throw lce;
 			}
 		}
-		if (getListener() instanceof IPullingListener && listenerContainer != null) {
+		if (listenerContainer != null) {
 			// start all threads. Also sets runstate=STARTED
 			listenerContainer.start();
 		}
@@ -1949,7 +1950,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.getCurrentThreadCount();
 		}
-		if (getListener() instanceof IPullingListener) {
+		if (listenerContainer != null) {
 			return listenerContainer.getCurrentThreadCount();
 		}
 		return -1;
@@ -1960,7 +1961,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (getListener() instanceof IThreadCountControllable tcc) {
 			return tcc.getMaxThreadCount();
 		}
-		if (getListener() instanceof IPullingListener) {
+		if (listenerContainer != null) {
 			return listenerContainer.getMaxThreadCount();
 		}
 		return -1;
@@ -1971,7 +1972,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (getListener() instanceof IThreadCountControllable tcc) {
 			tcc.increaseThreadCount();
 		}
-		if (getListener() instanceof IPullingListener) {
+		if (listenerContainer != null) {
 			listenerContainer.increaseThreadCount();
 		}
 	}
@@ -1981,7 +1982,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (getListener() instanceof IThreadCountControllable tcc) {
 			tcc.decreaseThreadCount();
 		}
-		if (getListener() instanceof IPullingListener) {
+		if (listenerContainer != null) {
 			listenerContainer.decreaseThreadCount();
 		}
 	}
@@ -2022,6 +2023,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	private String sendResultToSender(Message result, PipeLineSession parentSession) {
+		if (getSender() == null) {
+			throw new IllegalStateException("Cannot send result message; no sender");
+		}
 		String errorMessage = null;
 		try(PipeLineSession session = new PipeLineSession()) {
 			if (getSender().getLinkMethod() == LinkMethod.MESSAGEID) {
@@ -2176,7 +2180,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * One of 'continue', 'recover' or 'close'. Controls the behaviour of the Receiver, when it encounters an error during processing of a message.
 	 * @ff.default CONTINUE
 	 */
-	public void setOnError(OnError value) {
+	public void setOnError(@NonNull OnError value) {
 		this.onError = value;
 	}
 
@@ -2233,7 +2237,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * (Only used when <code>checkForDuplicates=true</code>) Indicates whether the messageid or the correlationid is used for checking presence in the message log
 	 * @ff.default MESSAGEID
 	 */
-	public void setCheckForDuplicatesMethod(CheckForDuplicatesMethod method) {
+	public void setCheckForDuplicatesMethod(@NonNull CheckForDuplicatesMethod method) {
 		checkForDuplicatesMethod=method;
 	}
 
