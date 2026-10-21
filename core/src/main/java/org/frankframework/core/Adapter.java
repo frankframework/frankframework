@@ -76,6 +76,7 @@ import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.lifecycle.events.MessageKeepingEventListener;
 import org.frankframework.logging.IbisMaskingLayout;
+import org.frankframework.receivers.MessageHandler;
 import org.frankframework.receivers.PullingListenerContainer;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
@@ -386,7 +387,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		// Once the BeanFactory has initialized, create and register a FlowGenerator
 		registerBean("FlowGenerator", SpringContextFlowDiagramProvider.class);
+
 		registerBean("listenerContainer", PullingListenerContainer.class, bd -> bd.setScope(BeanDefinition.SCOPE_PROTOTYPE));
+		registerBean("messageHandler", MessageHandler.class, bd -> bd.setScope(BeanDefinition.SCOPE_PROTOTYPE));
 	}
 
 	/**
