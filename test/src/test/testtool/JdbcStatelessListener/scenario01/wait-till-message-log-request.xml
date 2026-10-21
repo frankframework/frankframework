@@ -1,0 +1,21 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISTEMP</tableName>
+		<columns>
+			<column>
+				<name>TKEY</name>
+			</column>
+			<column>
+				<name>TCHAR</name>
+			</column>
+			<column>
+				<name>TNUMBER</name>
+			</column>
+			<column>
+				<name>TVARCHAR</name>
+			</column>
+		</columns>
+		<where>TCHAR = 'R' AND TNUMBER=${jdbc.statelesslistener.key}</where>
+		<order>TKEY</order>
+	</select>
+</manageDatabaseREQ>

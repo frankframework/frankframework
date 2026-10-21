@@ -1,0 +1,34 @@
+<Module
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+	<Adapter name="JdbcStatelessListener">
+		<Receiver transactionAttribute="Required" maxRetries="1">
+			<StatelessJdbcListener
+				selectQuery="SELECT TKEY, TVARCHAR, TBLOB
+										FROM IBISTEMP
+										WHERE TCHAR = '1'
+										AND TNUMBER=${jdbc.statelesslistener.key}"
+				afterSelectQuery="UPDATE IBISTEMP SET TCHAR='2' WHERE TKEY=?"
+				afterProcessQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
+				messageField="TBLOB"
+				correlationIdField="TVARCHAR"
+				keyField="TKEY"
+			/>
+		</Receiver>
+
+		<Pipeline>
+			<Exits>
+				<Exit name="DONE" state="SUCCESS" />
+				<Exit name="FAIL" state="ERROR" />
+			</Exits>
+
+			<!-- This pipe is to record each message-id received so we can verify each message is processed only once -->
+			<SenderPipe name="Insert record in DB">
+				<FixedQuerySender query="INSERT INTO IBISTEMP(TKEY, TCHAR, TNUMBER, TVARCHAR)
+				 							VALUES (SEQ_IBISTEMP.NEXTVAL, 'R', ${jdbc.statelesslistener.key}, ?)">
+					<Param name="id" pattern="cid-{cid}"/>
+				</FixedQuerySender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+</Module>
