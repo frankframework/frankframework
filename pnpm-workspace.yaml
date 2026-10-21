@@ -27,3 +27,5 @@ minimumReleaseAgeExclude:
   - "@angular/common@22.1.6"
   # Renovate security update: @angular/router@22.2.1
   - "@angular/router@22.2.1"
+  # Renovate security update: markdown-it@15.0.3
+  - markdown-it@15.0.3
