@@ -16,3 +16,6 @@ overrides:
   serialize-javascript@<7.0.5: '~7.1.2'
   uuid@<14.0.0: '>=14.0.2'
   ws@<8.20.1: '~8.22.0'
+minimumReleaseAgeExclude:
+  # Renovate security update: markdown-it@15.0.3
+  - markdown-it@15.0.3
