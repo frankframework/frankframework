@@ -208,14 +208,14 @@ class FrankListenerTest {
 				.atMost(Duration.ofSeconds(90))
 				.until(adapter::isRunning);
 
-		doReturn(message).when(receiver).processRawMessage(eq(listener), any(), eq(session), anyBoolean());
+		doReturn(message).when(receiver).processRawMessage(any(), eq(session), anyBoolean());
 
 		// Act
 		Message result = listener.processRequest(message, session);
 
 		// Assert
 		assertSame(message, result);
-		verify(receiver).processRawMessage(eq(listener), any(), eq(session), anyBoolean());
+		verify(receiver).processRawMessage(any(), eq(session), anyBoolean());
 	}
 
 	@Test

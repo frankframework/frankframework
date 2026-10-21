@@ -357,7 +357,7 @@ public class ReceiverTest {
 									return String.valueOf(count);
 								});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, messageWrapper, session, false);
+							receiver.processRawMessage(messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							log.warn("Caught exception in Receiver:", e);
@@ -473,7 +473,7 @@ public class ReceiverTest {
 									return String.valueOf(count);
 								});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, messageWrapper, session, false);
+							receiver.processRawMessage(messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							log.warn("Caught exception in Receiver:", e);
@@ -672,7 +672,7 @@ public class ReceiverTest {
 		// Act
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
-			receiver.processRawMessage(listener, rawMessageWrapper, session, false);
+			receiver.processRawMessage(rawMessageWrapper, session, false);
 		} catch (Exception e) {
 			// Exception might occur here...
 		}
@@ -1366,7 +1366,7 @@ public class ReceiverTest {
 
 		// Act
 		try (PipeLineSession session = new PipeLineSession()) {
-			receiver.processRawMessage(listener, messageWrapper, session, false);
+			receiver.processRawMessage(messageWrapper, session, false);
 		} catch (Exception e) {
 			fail("Caught exception in Receiver:", e);
 		}

@@ -221,7 +221,7 @@ public class ReceiverSubAdapterTest {
 
 		log.info("*>>> Starting Tests, Run 1");
 		try (PipeLineSession session = new PipeLineSession()) {
-			mainAdapterReceiver.processRawMessage(mockListener, rawMessage, session, false);
+			mainAdapterReceiver.processRawMessage(rawMessage, session, false);
 		}
 		// Assert
 		verify(mockErrorStorage, times(1)).storeMessage(any(), any(), any(), any(), any(), any());
