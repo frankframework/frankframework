@@ -5,8 +5,14 @@
 	</fielddefinition>
 	<rowset>
 		<row number="0">
+			<field name="TCHAR">3</field>
+			<field name="TVARCHAR">MSG-CID</field>
+			<field name="TBLOB">good-path</field>
+		</row>
+		<row number="1">
 			<field name="TCHAR">R</field>
 			<field name="TVARCHAR">cid-MSG-CID</field>
+			<field name="TBLOB">good-path</field>
 		</row>
 	</rowset>
 </result>
