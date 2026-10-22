@@ -24,6 +24,7 @@ import org.apache.logging.log4j.ThreadContext;
 import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.Lifecycle;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import org.frankframework.core.Adapter;
@@ -130,7 +131,10 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
 		if (receiver.getRunState() != RunState.STARTED) {
-			throw new ListenerException("Receiver ["+receiver.getName()+"] is not started");
+			throw new ListenerException("Receiver is not started");
+		}
+		if (origin instanceof Lifecycle lifecycle && !lifecycle.isRunning()) {
+			throw new ListenerException("Listener is not started");
 		}
 	}
 

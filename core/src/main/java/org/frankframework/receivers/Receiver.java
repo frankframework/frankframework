@@ -1105,9 +1105,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * This method processes the raw message from the listener, or in case of a manual retry, from the error storage.
 	 * <br/>
 	 * The method assumes that a transaction has been started where necessary.
-	 * <p>If the {@code rawMessage} parameter is an instance of {@link org.frankframework.receivers.MessageWrapper} then this method
-	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
-	 * {@link RawMessageWrapper#getContext()}</p>.
 	 */
 	private Message processMessage(@Nullable RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry, boolean retryStatusAlreadyChecked) throws ListenerException {
 		Objects.requireNonNull(rawMessageWrapper, "MessageWrapper can not be null");
@@ -1118,24 +1115,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				session.put(Receiver.RETRY_FLAG_SESSION_KEY, "true");
 			}
 
-			String messageId = rawMessageWrapper.getId();
-			String correlationId = rawMessageWrapper.getCorrelationId();
+			// Update the PipeLineSession with the context, provided by the IListener.
 			session.putAll(rawMessageWrapper.getContext());
-			LogUtil.setIdsToThreadContext(ctc, messageId, correlationId);
 
-			MessageWrapper<M> messageWrapper;
-			if (rawMessageWrapper instanceof MessageWrapper) {
-				messageWrapper = (MessageWrapper<M>) rawMessageWrapper;
-			} else {
-				try {
-					Message message = getListener().extractMessage(rawMessageWrapper, session);
-					messageWrapper = new MessageWrapper<>(rawMessageWrapper, message);
-				} catch (ListenerException e) {
-					throw e;
-				} catch (Exception e) {
-					throw new ListenerException(e);
-				}
-			}
+			MessageWrapper<M> messageWrapper = extractRawMessage(rawMessageWrapper, session);
+
+			// Update the ThreadContext with the messageId and correlationId, so that it can be used in logging.
+			LogUtil.setIdsToThreadContext(ctc, messageWrapper.getId(), messageWrapper.getCorrelationId());
 
 			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, retryStatusAlreadyChecked);
 			// Cannot log Message here because of the ThreadContext which should apply HideRegex.
@@ -1144,6 +1130,42 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 			return output;
 		}
+	}
+
+	/**
+	 * This method converts the {@code rawMessageWrapper} to a {@link MessageWrapper} by calling {@link IListener#extractMessage(RawMessageWrapper, Map)}.
+	 * <p/>
+	 * If the {@code rawMessageWrapper} parameter is an instance of {@link org.frankframework.receivers.MessageWrapper} then this method
+	 * will not call {@link IListener#extractMessage(RawMessageWrapper, Map)} but directly access the enclosed {@link org.frankframework.stream.Message} and the
+	 * {@link RawMessageWrapper#getContext()}.
+	 */
+	private MessageWrapper<M> extractRawMessage(@NonNull RawMessageWrapper<M> rawMessageWrapper, PipeLineSession session) throws ListenerException {
+		if (rawMessageWrapper instanceof MessageWrapper<M> msgWrapper) {
+			return updateMessageId(msgWrapper, session);
+		} else {
+			try {
+				Message message = getListener().extractMessage(rawMessageWrapper, session);
+				return updateMessageId(new MessageWrapper<>(rawMessageWrapper, message), session);
+			} catch (ListenerException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new ListenerException(e);
+			}
+		}
+	}
+
+	/**
+	 * Updates the messageId and correlationId of the given {@code MessageWrapper} and returns a new {@link MessageWrapper} with the updated values.
+	 * Also updates the {@link PipeLineSession} with the new messageId and correlationId.
+	 */
+	private MessageWrapper<M> updateMessageId(@NonNull MessageWrapper<M> messageWrapperOriginal, PipeLineSession session) {
+		final String messageId = ensureMessageIdNotEmpty(messageWrapperOriginal.getId());
+		session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+
+		final String businessCorrelationId = getBusinessCorrelationId(messageWrapperOriginal, messageId, session);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, businessCorrelationId);
+
+		return new MessageWrapper<>(messageWrapperOriginal, messageWrapperOriginal.getMessage(), messageId, businessCorrelationId);
 	}
 
 	private CloseableThreadContext.Instance getLoggingContext(@NonNull IListener<M> listener, @NonNull PipeLineSession session) {
@@ -1249,26 +1271,23 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * All messages for the receiver eventually go through this method, this is the method that calls the Adapter.
 	 * <br/>
 	 * Assumes message is read, and when transacted, transaction is still open.
+	 * Assumes the PipeLineSession is final, messageId and correlationId are set.
 	 */
 	@SuppressWarnings({ "java:S1143", "java:S1163", "java:S3776", "ThrowFromFinallyBlock" }) // S1143 - Return in finally block; S1163 - Throw from finally; S3776 - Cognitive Complexity; catching Throwable not Exception.
-	private @NonNull Message processMessageInAdapter(@NonNull MessageWrapper<M> messageWrapperOriginal, @NonNull PipeLineSession session, boolean manualRetry,
+	private @NonNull Message processMessageInAdapter(@NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession session, boolean manualRetry,
 											boolean retryStatusAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
+		String messageId = messageWrapper.getId();
+		String businessCorrelationId = messageWrapper.getCorrelationId();
 
 		// Add all hideRegexes at the same point so sensitive information is hidden in a consistent manner
-		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapperOriginal.getId(), session);
+		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session);
 			 final IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(hideRegexPattern);
 			 final IbisMaskingLayout.HideRegexContext ignored3 = IbisMaskingLayout.pushToThreadLocalReplace(getAdapter().getComposedHideRegexPattern());
 		) {
 			lastMessageDate = startProcessingTimestamp;
-			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapperOriginal.getId(), messageWrapperOriginal.getCorrelationId());
-
-			String messageId = ensureMessageIdNotEmpty(messageWrapperOriginal.getId());
-			final String businessCorrelationId = getBusinessCorrelationId(messageWrapperOriginal, messageId, session);
-			session.put(PipeLineSession.CORRELATION_ID_KEY, businessCorrelationId);
-
-			MessageWrapper<M> messageWrapper = new MessageWrapper<>(messageWrapperOriginal, messageWrapperOriginal.getMessage(), messageId, businessCorrelationId);
+			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
 
 			boolean exitWithoutProcessing = checkMessageHistory(messageWrapper, session, manualRetry, retryStatusAlreadyChecked);
 			if (exitWithoutProcessing) {
