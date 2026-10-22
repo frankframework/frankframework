@@ -36,7 +36,7 @@ public interface IMessageHandler<M> {
 	 * TODO Shouldn't this be a IPullingListener or at least an interface that contains {@link IListener#extractMessage} and {@link IListener#afterMessageProcessed}.
 	 * Then listeners should implement either A or B, and don't have to worry about implementing methods are will never be used...
 	 */
-	void processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
+	void processRawMessage(@NonNull IPushingListener<M> origin, @NonNull RawMessageWrapper<M> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
 	 * Alternative to functions above, will NOT use {@link IListener#extractMessage} as both input and output are a {@link Message}.

@@ -329,7 +329,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							session.putAll(threadContext);
 							receiver.updateMessageReceiveCount(rawMessage, false);
 							if (receiver.isSupportProgrammaticRetry() || !receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, session, false)) {
-								receiver.processRawMessage(listener, rawMessage, session, true);
+								receiver.processRawMessage(rawMessage, session, true);
 							} else {
 								Instant receivedDate = TimeProvider.now();
 								String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(rawMessage));

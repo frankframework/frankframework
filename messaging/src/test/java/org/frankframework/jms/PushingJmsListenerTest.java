@@ -185,7 +185,7 @@ public class PushingJmsListenerTest {
 			@Override
 			public void run() {
 				try (PipeLineSession session = new PipeLineSession()) {
-					receiver.processRawMessage(listener, messageWrapper, session, false);
+					listener.getHandler().processRawMessage(listener, messageWrapper, session, false);
 				} catch (Exception e) {
 					log.warn("Caught exception in Receiver:", e);
 				} finally {
