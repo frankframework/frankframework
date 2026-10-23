@@ -151,6 +151,7 @@ public class PushingJmsListenerTest {
 		listener.setAcknowledgeMode(JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE);
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).start();
+		doReturn(true).when(listener).isRunning();
 		doNothing().when(listener).configure();
 
 		createMessagingSource(listener);
