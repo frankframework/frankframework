@@ -22,9 +22,7 @@
             "methods": [
                 "POST"
             ],
-            "uriPattern": "/api-uri-pattern",
-            "receiver": "ReceiverName2",
-            "adapter": "ApiTestAdapter"
+            "uriPattern": "/api-uri-pattern"
         }
     ]
 }

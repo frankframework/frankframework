@@ -2,6 +2,7 @@ package org.frankframework.larva;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.spy;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ public class TestListenerMessageHandler {
 		PipeLineSession session = new PipeLineSession();
 		handler.putResponseMessage(new ListenerMessage(new Message("fixed response"), session));
 
-		PushingListenerAdapter listener = new PushingListenerAdapter();
+		PushingListenerAdapter listener = spy(PushingListenerAdapter.class);
 		listener.setHandler(handler);
 
 		try (PipeLineSession newSession = new PipeLineSession()) {

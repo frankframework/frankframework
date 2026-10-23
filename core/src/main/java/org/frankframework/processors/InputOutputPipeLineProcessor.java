@@ -43,9 +43,9 @@ public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 
 		// Store message and messageId in the pipeLineSession
 		pipeLineSession.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
-		pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+		pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId); // Perhaps we can remove this now?
 
-		// Store messageId in the LogContext, it may already be present but we want to make sure it is set for log traceability.
+		// Store messageId in the LogContext, it may already be present, but we want to make sure it is set for log traceability.
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_MESSAGE_ID_KEY, messageId)) {
 			return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}

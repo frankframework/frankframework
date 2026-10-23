@@ -18,12 +18,13 @@ package org.frankframework.receivers;
 import org.frankframework.core.IListener;
 
 /**
- * When a listener implements this interface it will get a reference to it's
- * parent receiver.
+ * When a listener implements this interface it will get a reference to its receiver.
  *
  * @author Jaco de Groot
  *
+ * @deprecated only used by JMS, accepted there, but should not be used in new code.
  */
+@Deprecated
 public interface ReceiverAware<M> extends IListener<M> {
 
 	void setReceiver(Receiver<M> receiver);
