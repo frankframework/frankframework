@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -207,14 +208,14 @@ class FrankListenerTest {
 				.atMost(Duration.ofSeconds(90))
 				.until(adapter::isRunning);
 
-		doReturn(message).when(receiver).processRequest(eq(listener), any(), eq(session));
+		doReturn(message).when(receiver).processRawMessage(any(), eq(session), anyBoolean());
 
 		// Act
 		Message result = listener.processRequest(message, session);
 
 		// Assert
 		assertSame(message, result);
-		verify(receiver).processRequest(eq(listener), any(), eq(session));
+		verify(receiver).processRawMessage(any(), eq(session), anyBoolean());
 	}
 
 	@Test

@@ -15,6 +15,7 @@
 */
 package org.frankframework.core;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -76,6 +77,7 @@ import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.lifecycle.events.MessageKeepingEventListener;
 import org.frankframework.logging.IbisMaskingLayout;
+import org.frankframework.receivers.MessageHandler;
 import org.frankframework.receivers.PullingListenerContainer;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
@@ -386,7 +388,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		// Once the BeanFactory has initialized, create and register a FlowGenerator
 		registerBean("FlowGenerator", SpringContextFlowDiagramProvider.class);
+
 		registerBean("listenerContainer", PullingListenerContainer.class, bd -> bd.setScope(BeanDefinition.SCOPE_PROTOTYPE));
+		registerBean("messageHandler", MessageHandler.class, bd -> bd.setScope(BeanDefinition.SCOPE_PROTOTYPE));
 	}
 
 	/**
@@ -738,10 +742,18 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		return new Date(statsUpSince);
 	}
 
+	/**
+	 * Log to the request/response message to the message-log, only logs the contents of the message if the message log is not 'hidden'.
+	 */
 	public void logToMessageLogWithMessageContentsOrSize(Level level, String logMessage, String dataPrefix, Message data) {
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(dataPrefix+".size", getFileSizeAsBytes(data))) {
 			if (!isMsgLogHidden()) {
-				ctc.put(dataPrefix, data.toString());
+				try {
+					ctc.put(dataPrefix, data.asString());
+				} catch (IOException e) {
+					// We don't care about the exception. Opposed to silently ignoring it, log 'unknown' to the message log.
+					ctc.put(dataPrefix, "unknown");
+				}
 			}
 			msgLog.log(level, logMessage);
 		}
@@ -875,18 +887,18 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
+	// Only for the EsbJmsListener.
+	@Deprecated
+	@NonNull
 	private static String getAdditionalLogging(final PipeLineSession pipeLineSession) {
-		// xPathLogKeys is an EsbJmsListener thing
-		String additionalLogging;
 		String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
 		if(StringUtils.isNotEmpty(xPathLogKeys)) {
-			additionalLogging = StringUtil.splitToStream(xPathLogKeys)
+			return StringUtil.splitToStream(xPathLogKeys)
 					.map(logName -> logName + " [" + pipeLineSession.get(logName) + "]")
 					.collect(Collectors.joining(" and "));
-		} else {
-			additionalLogging = "";
 		}
-		return additionalLogging;
+
+		return "";
 	}
 
 	/**
@@ -1282,7 +1294,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	/**
 	 * If set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message
-	 * @ff.default <code>false</code>
+	 * @ff.default <code>true</code>
 	 */
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
