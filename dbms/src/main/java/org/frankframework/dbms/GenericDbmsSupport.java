@@ -314,7 +314,12 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public String getSchema(Connection conn) throws DbmsException {
-		return null;
+		// This *should* work except it doesn't with Narayan because Narayana doesn't implement JDBC methods added with JDK7 ...
+		try {
+			return conn.getSchema();
+		} catch (SQLException e) {
+			throw new DbmsException(e.getMessage(), e);
+		}
 	}
 
 	@Override
