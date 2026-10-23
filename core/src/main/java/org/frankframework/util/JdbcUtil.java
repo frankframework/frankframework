@@ -663,10 +663,10 @@ public class JdbcUtil {
 				case Types.INTEGER -> statement.setInt(parameterIndex, Integer.parseInt(value.trim()));
 				case Types.NUMERIC, Types.DOUBLE -> statement.setDouble(parameterIndex, Double.parseDouble(value.trim()));
 				case Types.BIGINT -> statement.setLong(parameterIndex, Long.parseLong(value.trim()));
-				case Types.BLOB -> statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
+				case Types.BLOB, Types.LONGVARBINARY, Types.BINARY -> statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
 				case Types.DATE -> statement.setDate(parameterIndex, new java.sql.Date(DateFormatUtils.parseAnyDate(value).getTime()));
 				case Types.TIMESTAMP -> statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
-				case Types.CHAR, Types.VARCHAR -> statement.setString(parameterIndex, value);
+				case Types.CHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.CLOB, Types.NCLOB -> statement.setString(parameterIndex, value);
 				default -> {
 					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlType).getName());
 					statement.setString(parameterIndex, value);
