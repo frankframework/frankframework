@@ -15,6 +15,7 @@
 */
 package org.frankframework.lifecycle.servlets;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +23,9 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
+
+import org.frankframework.credentialprovider.CredentialFactory;
+import org.frankframework.credentialprovider.ICredentials;
 
 /**
  * Authenticator for in-memory authentication.
@@ -42,24 +46,43 @@ public class InMemoryAuthenticator extends AbstractServletAuthenticator {
 	 * The username to use for authentication.
 	 */
 	private @Setter String username = null;
+
 	/**
 	 * The password to use for authentication.
 	 */
 	private @Setter String password = null;
 
+	/**
+	 * AuthAlias to retrieve the username and password from.
+	 * Is an alternative to setting the username and password directly.
+	 */
+	private @Setter String authAlias = null;
+
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) {
-		http.httpBasic(basic -> basic.realmName("Frank")); // Uses a BasicAuthenticationEntryPoint to force users to log in
+		ICredentials credentials = CredentialFactory.getCredentials(authAlias, username, password);
+		UserDetails userDetails = createUserDetails(credentials);
 
-		UserDetails user = User.builder()
-				.username(username)
-				.password("{noop}"+password)
-				.roles(getSecurityRoles().toArray(new String[0]))
-				.build();
-
-		InMemoryUserDetailsManager udm = new InMemoryUserDetailsManager(user);
+		InMemoryUserDetailsManager udm = new InMemoryUserDetailsManager(userDetails);
 		http.userDetailsService(udm);
 
+		http.httpBasic(basic -> basic.realmName("Frank")); // Uses a BasicAuthenticationEntryPoint to force users to log in
+
 		return http.build();
+	}
+
+	protected UserDetails createUserDetails(ICredentials credentials) {
+		String user = credentials.getUsername();
+		String pass = credentials.getPassword();
+
+		if (StringUtils.isBlank(user) || StringUtils.isBlank(pass)) {
+			throw new IllegalArgumentException("Username and Password must be provided either directly or via an AuthAlias");
+		}
+
+		return User.builder()
+				.username(user)
+				.password("{noop}"+pass)
+				.roles(getSecurityRoles().toArray(new String[0]))
+				.build();
 	}
 }
