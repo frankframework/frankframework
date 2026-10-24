@@ -21,3 +21,5 @@ minimumReleaseAgeExclude:
   - markdown-it@15.0.3
   # Renovate security update: dompurify@3.4.17
   - dompurify@3.4.17
+  # Renovate security update: happy-dom@21.0.4
+  - happy-dom@21.0.4
