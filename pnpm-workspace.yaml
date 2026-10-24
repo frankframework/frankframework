@@ -29,3 +29,5 @@ minimumReleaseAgeExclude:
   - "@angular/router@22.2.1"
   # Renovate security update: markdown-it@15.0.3
   - markdown-it@15.0.3
+  # Renovate security update: happy-dom@21.0.4
+  - happy-dom@21.0.4
