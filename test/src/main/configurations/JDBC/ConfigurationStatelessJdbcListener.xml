@@ -31,7 +31,7 @@
 				<FixedQuerySender query="INSERT INTO IBISTEMP(TKEY, TCHAR, TNUMBER, TVARCHAR, TBLOB)
 				 							VALUES (SEQ_IBISTEMP.NEXTVAL, 'R', ${jdbc.statelesslistener.key}, ?, ?)">
 					<Param name="id" pattern="cid-{cid}"/>
-					<Param name="msg" sessionKey="originalMessage"/>
+					<Param name="msg" sessionKey="originalMessage" type="BINARY"/>
 				</FixedQuerySender>
 			</SenderPipe>
 
