@@ -41,11 +41,13 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 @SuppressWarnings({"JavaTimeDefaultTimeZone", "TimeInStaticInitializer"})
 public class DateFormatUtils {
-	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz";
+	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz"; // ...:mm:ssCEST (or any zone ID)
+	public static final String FORMAT_FULL_ISO_8601_TZ_OFFSET = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; // ...:mm:ss+02:00
 	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	public static final String FORMAT_FULL_GENERIC = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String FORMAT_DATETIME_GENERIC = "yyyy-MM-dd HH:mm:ss";
 	public static final DateTimeFormatter FULL_ISO_FORMATTER = buildFormatter(FORMAT_FULL_ISO);
+	private static final DateTimeFormatter FULL_ISO_FORMAT_PARSER = buildIso8601Parser(); // Optional milliseconds and timezone or timezone offset
 	public static final DateTimeFormatter FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER = buildFormatter(FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
 	public static final DateTimeFormatter FULL_GENERIC_FORMATTER = buildFormatter(FORMAT_FULL_GENERIC);
 	public static final DateTimeFormatter GENERIC_DATETIME_FORMATTER = buildFormatter(FORMAT_DATETIME_GENERIC);
@@ -94,8 +96,7 @@ public class DateFormatUtils {
 				Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd-MM-yyyy HH:mm:ss")),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), GENERIC_DATETIME_FORMATTER),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_GENERIC_FORMATTER),
-				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER),
-				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\w+$"), FULL_ISO_FORMATTER),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}.*"), FULL_ISO_FORMAT_PARSER),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm:ss")),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm")),
 				Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm:ss")),
@@ -107,6 +108,29 @@ public class DateFormatUtils {
 
 	public static DateTimeFormatter buildFormatter(String format) {
 		return DateTimeFormatter.ofPattern(format).withZone(ZoneId.systemDefault()).withResolverStyle(ResolverStyle.LENIENT);
+	}
+
+	/**
+	 * Builds a DateTimeFormatter that can parse ISO 8601 date-time strings with optional milliseconds and timezone information.
+	 * The timezone can be either a zone ID (e.g., "Europe/Amsterdam") or an offset (e.g., "+02:00").
+	 * Merges DateTimeFormatter.ISO_ZONED_DATE_TIME and DateTimeFormatter.ISO_OFFSET_DATE_TIME into one formatter.
+	 */
+	public static DateTimeFormatter buildIso8601Parser() {
+		return new DateTimeFormatterBuilder()
+				.appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+				.appendOptional(DateTimeFormatter.ofPattern(".SSS"))
+				.optionalStart()
+				.appendZoneOrOffsetId()
+				.optionalEnd()
+				.optionalStart()
+				.appendLiteral('[')
+				.parseCaseSensitive()
+				.appendZoneRegionId()
+				.appendLiteral(']')
+				.optionalEnd()
+				.toFormatter()
+				.withZone(ZoneId.systemDefault())
+				.withResolverStyle(ResolverStyle.LENIENT);
 	}
 
 	public static String now() {

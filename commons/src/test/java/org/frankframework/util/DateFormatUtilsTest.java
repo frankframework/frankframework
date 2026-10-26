@@ -10,6 +10,7 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.TimeZone;
@@ -188,6 +189,24 @@ public class DateFormatUtilsTest {
 		assertEquals(1386633600000L, date.toEpochMilli());
 	}
 
+	@Test
+	public void testParseGenericDate6() {
+		assertEquals(1792677851000L, DateFormatUtils.parseGenericDate("2026-10-22T16:04:11").toEpochMilli());
+		assertEquals(1792677851000L, DateFormatUtils.parseGenericDate("2026-10-22T16:04:11Europe/Amsterdam").toEpochMilli());
+		assertEquals(1792677851000L, DateFormatUtils.parseGenericDate("2026-10-22T16:04:11+02:00").toEpochMilli());
+		assertEquals(1792677851000L, DateFormatUtils.parseGenericDate("2026-10-22T16:04:11+02:00[Europe/Amsterdam]").toEpochMilli());
+
+		assertEquals(1792677851727L, DateFormatUtils.parseGenericDate("2026-10-22T16:04:11.727").toEpochMilli());
+		assertEquals(1792677851727L, DateFormatUtils.parseGenericDate("2026-10-22T16:04:11.727Europe/Amsterdam").toEpochMilli());
+		assertEquals(1792677851727L, DateFormatUtils.parseGenericDate("2026-10-22T16:04:11.727+02:00").toEpochMilli());
+		assertEquals(1792677851727L, DateFormatUtils.parseGenericDate("2026-10-22T16:04:11.727+02:00[Europe/Amsterdam]").toEpochMilli());
+	}
+
+	@Test
+	public void testConversionToString() {
+		assertEquals("2026-10-22T16:04:11.727", DateFormatUtils.format(1792677851727L, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER));
+		assertEquals("2026-10-22T16:04:11CEST", DateFormatUtils.format(1792677851727L, DateFormatUtils.FULL_ISO_FORMATTER));
+	}
 
 	@Test
 	public void testInstantInsteadOfDate() {
