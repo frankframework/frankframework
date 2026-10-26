@@ -132,7 +132,7 @@ public class XmlWriterTest {
 		assertFalse(writer.closeCalled);
 	}
 
-	private class CloseObservableWriter extends StringWriter {
+	private static class CloseObservableWriter extends StringWriter {
 		public boolean closeCalled;
 
 		@Override

@@ -95,7 +95,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		return new ArrayList<>(objects.keySet());
 	}
 
-	public class QueueBrowserMock implements QueueBrowser {
+	public static class QueueBrowserMock implements QueueBrowser {
 		private Queue queue;
 
 		public QueueBrowserMock(Queue queue) {

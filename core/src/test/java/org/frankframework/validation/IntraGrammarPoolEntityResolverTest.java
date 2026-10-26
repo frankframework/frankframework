@@ -165,7 +165,7 @@ public class IntraGrammarPoolEntityResolverTest {
 		return cl;
 	}
 
-	private class ResourceIdentifier implements XMLResourceIdentifier {
+	private static class ResourceIdentifier implements XMLResourceIdentifier {
 		private @Getter @Setter String publicId;
 		private @Getter @Setter String expandedSystemId;
 		private @Getter @Setter String literalSystemId;

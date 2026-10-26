@@ -327,7 +327,7 @@ public class OpenApiTestBase extends Mockito {
 			}
 		}
 
-		private class SysOutMessageKeeper implements ApplicationListener<AdapterMessageEvent> {
+		private static class SysOutMessageKeeper implements ApplicationListener<AdapterMessageEvent> {
 			@Override
 			public void onApplicationEvent(AdapterMessageEvent event) {
 				if (MessageEventLevel.ERROR == event.getLevel()) fail(event.getMessage());
