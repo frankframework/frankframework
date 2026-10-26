@@ -47,7 +47,7 @@ import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
 
-@SuppressWarnings("SqlResolve")
+@SuppressWarnings({ "SqlResolve", "SameParameterValue" })
 @WithLiquibase(tableName = "TEMP", file = "JdbcUtil/JdbcUtilTest.xml")
 public class JdbcUtilTest {
 	private Connection connection;
@@ -322,32 +322,26 @@ public class JdbcUtilTest {
 	}
 
 	private static void assertBlobSize(Object result, int expectedLength) throws SQLException {
-		if (result instanceof Blob blob) {
-			assertEquals(expectedLength, blob.length());
-		} else if (result instanceof byte[] bytes) {
-			assertEquals(expectedLength, bytes.length);
-		} else {
-			fail("result is not instance of Blob or byte[]: " + result);
+		switch (result) {
+			case Blob blob -> assertEquals(expectedLength, blob.length());
+			case byte[] bytes -> assertEquals(expectedLength, bytes.length);
+			case null, default -> fail("result is not instance of Blob or byte[]: " + result);
 		}
 	}
 
 	private static void assertClobSize(Object result, int expectedLength) throws SQLException {
-		if (result instanceof Clob clob) {
-			assertEquals(expectedLength, clob.length());
-		} else if (result instanceof char[] chars) {
-			assertEquals(expectedLength, chars.length);
-		} else if (result instanceof String string) {
-			assertEquals(expectedLength, string.length());
-		} else {
-			fail("result is not instance of Clob or char[]: " + result);
+		switch (result) {
+			case Clob clob -> assertEquals(expectedLength, clob.length());
+			case char[] chars -> assertEquals(expectedLength, chars.length);
+			case String string -> assertEquals(expectedLength, string.length());
+			case null, default -> fail("result is not instance of Clob, char[] or String: " + result);
 		}
 	}
 
-	private void assertNumericValue(Object result, long expectedValue) throws SQLException {
-		if (result instanceof Number number) {
-			assertEquals(expectedValue, number.longValue());
-		} else {
-			fail("result is not instance of Number: " + result);
+	private void assertNumericValue(Object result, long expectedValue) {
+		switch (result) {
+			case Number number -> assertEquals(expectedValue, number.longValue());
+			case null, default -> fail("result is not instance of Number: " + result);
 		}
 	}
 }
