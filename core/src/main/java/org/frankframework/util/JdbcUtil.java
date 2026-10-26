@@ -639,9 +639,13 @@ public class JdbcUtil {
 		setParameter(statement, parameterIndex, value, parameterTypeMatchSupported, parameterTypeMatchSupported ? statement.getParameterMetaData() : null);
 	}
 
-	/** Set a parameter in a prepared statement. If {@code parameterTypeMatchSupported = true} then you should also pass {@code ParameterMetaData}. Intended
+	/**
+	 * Set a parameter in a prepared statement. If {@code parameterTypeMatchSupported = true} then you should also pass {@code ParameterMetaData}. Intended
 	 * for use when multiple parameters need to be set in the prepared statement, so that ParameterMetaData is fetched only once. (For some databases
-	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those). */
+	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those).
+	 * <br/>
+	 * For Oracle DB, this method may give an error when trying to set values for a {@link JDBCType#BLOB}, {@link JDBCType#BINARY}, {@link JDBCType#LONGVARBINARY} or {@link JDBCType#VARBINARY} column.
+	 */
 	public static void setParameter(@NonNull PreparedStatement statement, int parameterIndex, @Nullable String value, boolean parameterTypeMatchSupported, @Nullable ParameterMetaData parameterMetaData) throws SQLException {
 		if (!parameterTypeMatchSupported || parameterMetaData == null) {
 			if (value != null) {

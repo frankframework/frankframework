@@ -218,7 +218,12 @@ public class JdbcTestUtil {
 				if (!rs.next()) {
 					return null;
 				}
-				return rs.getString(1);
+				Object result = rs.getObject(1);
+				if (result == null) {
+					return null;
+				}
+				return result.toString();
+//				return rs.getString(1);
 			}
 		} catch (Exception e) {
 			throw new DbmsException("could not obtain value using query [" + query + "]" + displayQueryParameters(params), e);
