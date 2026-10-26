@@ -33,6 +33,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
@@ -110,7 +111,10 @@ public class LarvaActionUtils {
 			try {
 				ParameterType paramType = StringUtils.isBlank(type) ? ParameterType.STRING : EnumUtils.parse(ParameterType.class, type);
 				IParameter parameter = ClassUtils.newInstance(paramType.getTypeClass());
-
+				// We need this to support some parameter-types like Binary, which we need to insert BLOB data from a Larva scenario
+				if (parameter instanceof Parameter p && p.getType() != paramType) {
+					p.setType(paramType);
+				}
 				parameter.setName(name);
 				parameter.setPattern(pattern);
 
