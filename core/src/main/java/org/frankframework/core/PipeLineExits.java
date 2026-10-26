@@ -32,7 +32,7 @@ import org.frankframework.doc.FrankDocGroupValue;
  * <b>example:</b>
  * <pre>{@code
  * <Exits>
- *    <Exit name="{@value PipeLine#DEFAULT_SUCCESS_EXIT_NAME}" state="{@value PipeLine.ExitState#SUCCESS_EXIT_STATE}" />
+ *    <Exit name="Ready" state="SUCCESS" />
  *    <Exit name="Created" state="ERROR" code="201" empty="true" />
  *    <Exit name="NotModified" state="ERROR" code="304" empty="true" />
  *    <Exit name="BadRequest" state="ERROR" code="400" empty="true" />
