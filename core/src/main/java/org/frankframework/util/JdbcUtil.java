@@ -523,14 +523,14 @@ public class JdbcUtil {
 	}
 
 	public static void applyParameters(@NonNull IDbmsSupport dbmsSupport, @NonNull PreparedStatement statement, @NonNull ParameterValueList parameters) throws JdbcException {
-		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
+		boolean parameterTypeMatchSupported = dbmsSupport.isParameterTypeMatchSupported();
 		for (int i = 0; i < parameters.size(); i++) {
 			ParameterValue parameterValue = parameters.getValue(i);
 			if (parameterValue.getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
 				continue;
 			}
 			try {
-				applyParameter(statement, parameterValue, i + 1, parameterTypeMatchRequired);
+				applyParameter(statement, parameterValue, i + 1, parameterTypeMatchSupported);
 			} catch (SQLException | IOException e) {
 				throw new JdbcException(
 						"Could not set parameter [" + parameterValue.getName() +
@@ -559,7 +559,7 @@ public class JdbcUtil {
 		};
 	}
 
-	private static void applyParameter(@NonNull PreparedStatement statement, @NonNull ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired) throws SQLException, IOException {
+	private static void applyParameter(@NonNull PreparedStatement statement, @NonNull ParameterValue pv, int parameterIndex, boolean parameterTypeMatchSupported) throws SQLException, IOException {
 		String paramName = pv.getDefinition().getName();
 		ParameterType paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
@@ -630,20 +630,20 @@ public class JdbcUtil {
 			}
 			default:
 				Message message = Message.asMessage(value);
-				setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchRequired);
+				setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchSupported);
 		}
 	}
 
 	/** Set a parameter in a prepared statement. Optimized for single-parameter statements */
-	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired) throws SQLException {
-		setParameter(statement, parameterIndex, value, parameterTypeMatchRequired, parameterTypeMatchRequired ? statement.getParameterMetaData() : null);
+	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchSupported) throws SQLException {
+		setParameter(statement, parameterIndex, value, parameterTypeMatchSupported, parameterTypeMatchSupported ? statement.getParameterMetaData() : null);
 	}
 
-	/** Set a parameter in a prepared statement. If {@code parameterTypeMatchRequired = true} then you should also pass {@code ParameterMetaData}. Intended
+	/** Set a parameter in a prepared statement. If {@code parameterTypeMatchSupported = true} then you should also pass {@code ParameterMetaData}. Intended
 	 * for use when multiple parameters need to be set in the prepared statement, so that ParameterMetaData is fetched only once. (For some databases
 	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those). */
-	public static void setParameter(@NonNull PreparedStatement statement, int parameterIndex, @Nullable String value, boolean parameterTypeMatchRequired, @Nullable ParameterMetaData parameterMetaData) throws SQLException {
-		if (!parameterTypeMatchRequired || parameterMetaData == null) {
+	public static void setParameter(@NonNull PreparedStatement statement, int parameterIndex, @Nullable String value, boolean parameterTypeMatchSupported, @Nullable ParameterMetaData parameterMetaData) throws SQLException {
+		if (!parameterTypeMatchSupported || parameterMetaData == null) {
 			if (value != null) {
 				statement.setString(parameterIndex, value);
 			} else {

@@ -50,7 +50,19 @@ public interface IDbmsSupport {
 		return getDbmsName();
 	}
 
-	default boolean isParameterTypeMatchRequired() {
+	/**
+	 * When applying query parameters in String to JDBC prepared statements, some databases can convert from string to the correct type
+	 * server-side without explicit casting.
+	 * <br/>
+	 * Some databases require the correct types to be used when setting the value in the {@link PreparedStatement}, however our generic code can only
+	 * get that information from the {@link ResultSetMetaData}.
+	 * <br/>
+	 * This method indicates if the database supports retrieving column type information need for the parameter type matching from the {@link ResultSetMetaData},
+	 * before the query has been executed.
+	 *
+	 * @return {@code true} for PostgreSQL, H2 and MS SQL Server. {@code false} for Oracle, MySQL and MariaDB.
+	 */
+	default boolean isParameterTypeMatchSupported() {
 		return false;
 	}
 

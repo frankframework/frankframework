@@ -86,7 +86,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isParameterTypeMatchRequired() {
+	public boolean isParameterTypeMatchSupported() {
 		return true;
 	}
 
