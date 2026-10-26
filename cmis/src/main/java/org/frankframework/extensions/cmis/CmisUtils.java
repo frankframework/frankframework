@@ -140,8 +140,9 @@ import org.frankframework.util.XmlUtils;
 
 public class CmisUtils {
 
-	public static final String FORMATSTRING_BY_DEFAULT = AppConstants.getInstance().getString("cmis.datetime.formatstring", "yyyy-MM-dd'T'HH:mm:ss");
-	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(FORMATSTRING_BY_DEFAULT);
+	private static final DateTimeFormatter DATE_TIME_PARSER;
+	private static final DateTimeFormatter DATE_TIME_FORMATTER;
+
 	public static final String ORIGINAL_OBJECT_KEY = "originalObject";
 	public static final String CMIS_VERSION_KEY = "cmisVersion";
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
@@ -152,6 +153,20 @@ public class CmisUtils {
 
 	private CmisUtils() {
 		// Private constructor so that no instance of utility-class can be created
+	}
+
+	static {
+		String defaultFormat = AppConstants.getInstance().getProperty("cmis.datetime.formatstring");
+		if (StringUtils.isBlank(defaultFormat))	{
+			log.debug("No default format string for CMIS datetime specified, using FULL_ISO_FORMAT_PARSER");
+			DATE_TIME_PARSER = DateFormatUtils.FULL_ISO_FORMAT_PARSER;
+			DATE_TIME_FORMATTER = DateFormatUtils.FULL_ISO_TIMESTAMP_WITH_TZ_FORMATTER;
+		} else {
+			log.debug("Using default format string for CMIS datetime: [{}]", defaultFormat);
+			DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(defaultFormat);
+			DATE_TIME_PARSER = DATE_TIME_FORMATTER;
+		}
+
 	}
 
 	public static void populateCmisAttributes(PipeLineSession session) {
@@ -248,9 +263,9 @@ public class CmisUtils {
 	private static <T> AbstractPropertyDefinition<T> addStandardDefinitions(AbstractPropertyDefinition<T> propertyDefinition, Element propertyElement, PropertyType propertyType) {
 
 		String nameAttr = propertyElement.getAttribute("name");
-		String displayNameAttr = propertyElement.getAttribute("displayName");
-		String localNameAttr = propertyElement.getAttribute("localName");
-		String queryNameAttr = propertyElement.getAttribute("queryName");
+		String displayNameAttr = StringUtils.trimToNull(propertyElement.getAttribute("displayName"));
+		String localNameAttr = StringUtils.trimToNull(propertyElement.getAttribute("localName"));
+		String queryNameAttr = StringUtils.trimToNull(propertyElement.getAttribute("queryName"));
 
 		propertyDefinition.setId(nameAttr);
 		propertyDefinition.setDisplayName(displayNameAttr);
@@ -302,11 +317,14 @@ public class CmisUtils {
 					if (StringUtils.isNotEmpty(propertyValue)) {
 						String formatStringAttr = propertyElement.getAttribute("formatString");
 						String timezoneAttr = propertyElement.getAttribute("timezone");
-						if (StringUtils.isEmpty(formatStringAttr)) {
-							formatStringAttr = FORMATSTRING_BY_DEFAULT;
+
+						final DateTimeFormatter formatter;
+						if (StringUtils.isNotEmpty(formatStringAttr)) {
+							formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
+						} else {
+							formatter = DATE_TIME_PARSER;
 						}
 
-						DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
 						try {
 							TemporalAccessor parse = formatter.parse(propertyValue);
 

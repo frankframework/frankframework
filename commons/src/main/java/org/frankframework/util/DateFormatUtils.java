@@ -42,12 +42,13 @@ import org.jspecify.annotations.Nullable;
 @SuppressWarnings({"JavaTimeDefaultTimeZone", "TimeInStaticInitializer"})
 public class DateFormatUtils {
 	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz"; // ...:mm:ssCEST (or any zone ID)
-	public static final String FORMAT_FULL_ISO_8601_TZ_OFFSET = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; // ...:mm:ss+02:00
+	public static final String FORMAT_FULL_ISO_8601_TZ_OFFSET = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"; // ...:mm:ss+02:00
 	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	public static final String FORMAT_FULL_GENERIC = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String FORMAT_DATETIME_GENERIC = "yyyy-MM-dd HH:mm:ss";
 	public static final DateTimeFormatter FULL_ISO_FORMATTER = buildFormatter(FORMAT_FULL_ISO);
-	private static final DateTimeFormatter FULL_ISO_FORMAT_PARSER = buildIso8601Parser(); // Optional milliseconds and timezone or timezone offset
+	public static final DateTimeFormatter FULL_ISO_FORMAT_PARSER = buildIso8601Parser(); // Optional milliseconds and timezone or timezone offset
+	public static final DateTimeFormatter FULL_ISO_TIMESTAMP_WITH_TZ_FORMATTER = buildFormatter(FORMAT_FULL_ISO_8601_TZ_OFFSET);
 	public static final DateTimeFormatter FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER = buildFormatter(FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
 	public static final DateTimeFormatter FULL_GENERIC_FORMATTER = buildFormatter(FORMAT_FULL_GENERIC);
 	public static final DateTimeFormatter GENERIC_DATETIME_FORMATTER = buildFormatter(FORMAT_DATETIME_GENERIC);
@@ -229,6 +230,7 @@ public class DateFormatUtils {
 	public static DateTimeFormatter getDateTimeFormatterWithOptionalComponents(String format) {
 		return new DateTimeFormatterBuilder()
 				.appendPattern(format)
+				.appendOptional(DateTimeFormatter.ofPattern(".SSS"))
 				.parseDefaulting(ChronoField.YEAR_OF_ERA, 1970)
 				.parseDefaulting(ChronoField.MONTH_OF_YEAR, LocalDate.MIN.getMonthValue())
 				.parseDefaulting(ChronoField.DAY_OF_MONTH, LocalDate.MIN.getDayOfMonth())
@@ -236,6 +238,9 @@ public class DateFormatUtils {
 				.parseDefaulting(ChronoField.MINUTE_OF_HOUR, LocalTime.MIN.getMinute())
 				.parseDefaulting(ChronoField.SECOND_OF_MINUTE, LocalTime.MIN.getSecond())
 				.parseDefaulting(ChronoField.NANO_OF_SECOND, LocalTime.MIN.getNano())
+				.optionalStart()
+				.appendZoneOrOffsetId() // Append optional timezone or offset, e.g. +02:00 or CEST
+				.optionalEnd()
 				.toFormatter()
 				.withZone(ZoneId.systemDefault());
 	}

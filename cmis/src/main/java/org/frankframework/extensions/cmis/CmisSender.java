@@ -505,7 +505,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 				} else if ("datetime".equalsIgnoreCase(typeAttr)) {
 					String formatStringAttr = propertyElement.getAttribute("formatString");
 					if (StringUtils.isEmpty(formatStringAttr)) {
-						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
+						formatStringAttr = DateFormatUtils.FORMAT_FULL_GENERIC;
 					}
 					// TODO to be removed in a few versions
 					if (AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
