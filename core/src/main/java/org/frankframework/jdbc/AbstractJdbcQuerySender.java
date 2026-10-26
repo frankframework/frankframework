@@ -336,7 +336,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			if (e.getCause() instanceof SQLException sqle && sqle.getErrorCode() == 1013) {
 				throw new TimeoutException("Timeout of ["+getTimeout()+"] sec expired");
 			}
-			throw new SenderException(e);
+			throw e;
 		} catch (Throwable t) {
 			throw new SenderException("got exception sending message", t);
 		} finally {
