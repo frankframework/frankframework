@@ -55,9 +55,9 @@ public interface IDbmsSupport {
 	 * server-side without explicit casting.
 	 * <br/>
 	 * Some databases require the correct types to be used when setting the value in the {@link PreparedStatement}, however our generic code can only
-	 * get that information from the {@link ResultSetMetaData}.
+	 * get that information from the {@link java.sql.ParameterMetaData}.
 	 * <br/>
-	 * This method indicates if the database supports retrieving column type information need for the parameter type matching from the {@link ResultSetMetaData},
+	 * This method indicates if the database supports retrieving the column-type information that is needed for the parameter type matching from the {@link java.sql.ParameterMetaData},
 	 * before the query has been executed.
 	 *
 	 * @return {@code true} for PostgreSQL, H2 and MS SQL Server. {@code false} for Oracle, MySQL and MariaDB.
