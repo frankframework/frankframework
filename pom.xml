@@ -89,8 +89,8 @@
 		<junit.excludedTags />
 		<junit.includedTags />
 
-		<jackson.version>2.22.3</jackson.version>
-		<tools.jackson.version>3.2.3</tools.jackson.version>
+		<jackson.version>2.22.4</jackson.version>
+		<tools.jackson.version>3.2.4</tools.jackson.version>
 		<cxf.version>4.2.4</cxf.version>
 		<spring.version>7.0.9</spring.version>
 		<spring-security.version>7.1.1</spring-security.version>
@@ -98,7 +98,7 @@
 		<spring.boot.version>4.1.1</spring.boot.version>
 		<tomcat.version>11.0.27</tomcat.version>
 		<tika.version>4.1.0</tika.version>
-		<mcp-sdk.version>2.0.1</mcp-sdk.version>
+		<mcp-sdk.version>2.1.0</mcp-sdk.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>

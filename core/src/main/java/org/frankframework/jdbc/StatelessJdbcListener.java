@@ -66,7 +66,6 @@ import org.frankframework.util.JdbcUtil;
  *         <li>Use a {@link #setAfterProcessQuery(String)} which is automatically executed when the pipeline finishes</li>
  *         <li>Use a {@link #setAfterSelectQuery(String)} which can delete the row immediately after it has been selected and read</li>
  *     </ul>
- *     <em>NB: If the pipeline fails and was executed transactionally, the transaction will be rolled back and so any SQL statements that have deleted or updated the row will also be rolled back.</em>
  * </p>
  * <p>
  *     The {@link #setSelectQuery(String)} and {@link #setPeekQuery(String)} will be automatically modified to be {@code SELECT ... FOR UPDATE} or {@code SELECT ... FOR SHARE SKIP LOCKED}
@@ -81,6 +80,14 @@ import org.frankframework.util.JdbcUtil;
  *     <br/>
  *     If a field is missing or incorrectly spelled, it will either be silently dropped or may default to another value.
  * </p>
+ *
+ * @ff.info If the pipeline fails and was executed transactionally, the transaction will be rolled back and so any SQL statements that have deleted or updated the row will also be rolled back.
+ * This means the message will be tried again, and you are responsible for handling errors from messages that cannot be processed.
+ * If you want to update the message even if the transaction will be rolled back, the database row should be updated in a new transaction. However,
+ * the original transaction of the {@link org.frankframework.receivers.Receiver} will block that.
+ * What you can do to work around this problem is to execute the receiver with {@code transactionAttribute="NotSupported"}, and then add
+ * {@code transactionAttribute="Required"} on the {@link org.frankframework.core.PipeLine}. The record is then not locked for updates during
+ * the pipeline execution, but you can update it in a (new) transaction with a {@link FixedQuerySender}.
  */
 @Log4j2
 @SuppressWarnings("SqlSourceToSinkFlow") // Do not need warnings about unsafe SQL on this class

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.3.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="10.4.0-SNAPSHOT">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -327,12 +327,13 @@ This is so that errors coming from external systems so not overload those extern
     </xs:attribute>
     <xs:attribute name="password" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to access keystore.</xs:documentation>
+        <xs:documentation>Default password to access keystore.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="type">
       <xs:annotation>
-        <xs:documentation>Type of keystore. Default: pkcs12</xs:documentation>
+        <xs:documentation>Type of keystore to use, typically a JKS (Java 'vault') or P12 (standalone X.509) file. Default: pkcs12</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeystoreTypeAttributeValuesType variableRef" />
@@ -350,7 +351,8 @@ This is so that errors coming from external systems so not overload those extern
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyManagerAlgorithm" type="xs:string">
@@ -559,12 +561,14 @@ Possible values for transactionAttribute:
         <xs:documentation>Password for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="transacted" type="frankBoolean">
+    <xs:attribute ref="sqlDialect" />
+    <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>controls the use of transactions</xs:documentation>
+        <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="connectionsArePooled" />
+    <xs:attribute ref="blobSmartGet" />
+    <xs:attribute ref="blobCharset" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.util.Locker" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="locker" />
@@ -689,7 +693,8 @@ element configured it will be initialized with one Exit having state SUCCESS (an
     </xs:attribute>
     <xs:attribute name="responseRoot" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains multiple (comma separated) values, the first will be used for the exits with state &lt;code&gt;SUCCESS&lt;/code&gt;, the last for the other exits.</xs:documentation>
+        <xs:documentation>Configures the responseRoot in the OpenAPI schema for this exit. If not set, the responseRoot value of the validator will be used. If that contains
+multiple (comma separated) values, the first will be used for the exits with state &lt;code&gt;SUCCESS&lt;/code&gt;, the last for the other exits.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="empty" type="frankBoolean">
@@ -1114,8 +1119,12 @@ value '*' then all existing sessionkeys are added as parameter (except tsReceive
     </xs:attribute>
     <xs:attribute name="contextKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of org.frankframework.stream.MessageContext variable to use as source, instead of the Message found from input message or sessionKey itself. Use a &lt;pre&gt;*&lt;/pre&gt;
-to get an XML or JSON document containing all values from the org.frankframework.stream.MessageContext.</xs:documentation>
+        <xs:documentation>Key of a org.frankframework.stream.MessageContext variable to use, instead of the Parameter value found from the input message or sessionKey. Use a &lt;pre&gt;*&lt;/pre&gt;
+to get an XML or JSON document containing all values from the org.frankframework.stream.MessageContext.
+This assumes that the input of this parameter is a Message, in which the contextKey will be looked up.
+&lt;p&gt;
+For instance: &lt;code&gt;&amp;lt;Param name=&amp;quot;context.value&amp;quot; sessionKey=&amp;quot;originalMessage&amp;quot; contextKey=&amp;quot;Header.content-type&amp;quot; /&amp;gt;&lt;/code&gt; - this will look up the value of the
+context variable "Header.content-type" from the message found in the session variable "originalMessage".</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sessionKeyXPath" type="xs:string">
@@ -2513,7 +2522,8 @@ Defaults to 10000, inherited from HttpSender#setTimeout. Default: 10000</xs:docu
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -2707,12 +2717,14 @@ Defaults to &lt;code&gt;Configuration.xml&lt;/code&gt; but can be any XML file. 
         <xs:documentation>Password for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="transacted" type="frankBoolean">
+    <xs:attribute ref="sqlDialect" />
+    <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>controls the use of transactions</xs:documentation>
+        <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="connectionsArePooled" />
+    <xs:attribute ref="blobSmartGet" />
+    <xs:attribute ref="blobCharset" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -2755,11 +2767,6 @@ Works for H2 and Oracle. Could work for MS_SQL with a single identity column, wi
         <xs:documentation>If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for &lt;code&gt;querytype=other&lt;/code&gt;). &lt;b&gt;Note:&lt;/b&gt; If multiple rows are processed a SqlException is thrown.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="sqlDialect" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="lockRows" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;, exclusive row-level locks are obtained on all the rows identified by the select statement (e.g. by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query) Default: false</xs:documentation>
@@ -2787,11 +2794,6 @@ The same result can be achieved by using storeResultInSessionKey.
 You no longer need to use a filename handle.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="blobsCompressed" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Controls whether blobdata is stored compressed in the database. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="blobBase64Direction">
       <xs:annotation>
         <xs:documentation>Controls whether the streamed blobdata will need to be base64 &lt;code&gt;encode&lt;/code&gt; or &lt;code&gt;decode&lt;/code&gt; or not.
@@ -2801,18 +2803,6 @@ This is no longer the case and since 9.0 streaming binary data will be faster th
       <xs:simpleType>
         <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
       </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="blobCharset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Charset that is used to read and write BLOBs. This assumes the blob contains character data.
-If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being
-read to accommodate for the fact that senders need to return a String. This is no longer the case.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobSmartGet" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database Default: false</xs:documentation>
-      </xs:annotation>
     </xs:attribute>
     <xs:attribute name="clobColumn" type="frankInt">
       <xs:annotation>
@@ -3214,7 +3204,8 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -3525,7 +3516,8 @@ The set of available sessionKeys to be returned might be limited by the returned
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -4932,7 +4924,34 @@ This field should be set.</xs:documentation>
     <xs:attribute ref="retention" />
     <xs:attribute ref="schemaOwner4Check" />
     <xs:attribute ref="storeFullMessage" />
-    <xs:attributeGroup ref="JdbcTableMessageBrowserCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcTableMessageBrowserDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractJdbcMessageBrowserDeclaredAttributeGroup" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the sender or the listener</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="datasourceName" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to authenticate when connecting to database</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>User name for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="sqlDialect" />
+    <xs:attribute ref="blobSmartGet" />
+    <xs:attribute ref="blobCharset" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcTransactionalStorageType">
     <xs:sequence>
@@ -4979,7 +4998,34 @@ set to &lt;code&gt;true&lt;/code&gt;.</xs:documentation>
   </xs:attributeGroup>
   <xs:attributeGroup name="JdbcTransactionalStorageCumulativeAttributeGroup">
     <xs:attributeGroup ref="JdbcTransactionalStorageDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JdbcTableMessageBrowserCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="JdbcTableMessageBrowserDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractJdbcMessageBrowserDeclaredAttributeGroup" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the sender or the listener</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="datasourceName" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to authenticate when connecting to database</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>User name for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="sqlDialect" />
+    <xs:attribute ref="blobSmartGet" />
+    <xs:attribute ref="blobCharset" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcTableMessageBrowserType">
     <xs:sequence>
@@ -5765,7 +5811,8 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -6039,16 +6086,35 @@ Using any other value will be rejected.
     <xs:attribute ref="useNamedParams" />
     <xs:attribute ref="includeFieldDefinition" />
     <xs:attribute ref="trimSpaces" />
-    <xs:attribute name="sqlDialect" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute ref="synchronous" />
     <xs:attribute ref="streamCharset" />
     <xs:attribute ref="prettyPrint" />
     <xs:attribute ref="outputFormat" />
-    <xs:attributeGroup ref="AbstractJdbcSenderCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractJdbcSenderDeclaredAttributeGroup" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the sender or the listener</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="datasourceName" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to authenticate when connecting to database</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>User name for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="sqlDialect" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="WebServiceSenderType">
     <xs:sequence>
@@ -6590,6 +6656,15 @@ Alternatively, warnings can be switched off using suppression properties Suppres
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SimpleJdbcListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="StatelessJdbcListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="StatelessJdbcListenerType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
             </xs:extension>
           </xs:complexContent>
@@ -7440,7 +7515,8 @@ If the attribute tenantId is not empty, the username and password are treated as
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -7695,7 +7771,8 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="truststore" type="xs:string">
@@ -7902,6 +7979,17 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcListener" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcListenerDeclaredAttributeGroup">
+    <xs:attribute name="messageFieldType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Type of the field containing the message data - no longer needed as the listener will now automatically determine the message field type</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JdbcListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JdbcListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractJdbcListenerCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AbstractJdbcListenerDeclaredAttributeGroup">
     <xs:attribute ref="peekUntransacted" />
     <xs:attribute ref="peekQuery" />
     <xs:attribute name="keyField" type="xs:string">
@@ -7915,46 +8003,25 @@ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatib
         <xs:documentation>Field containing the message data Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="messageFieldType">
-      <xs:annotation>
-        <xs:documentation>Type of the field containing the message data Default: &lt;i&gt;String&lt;/i&gt;</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MessageFieldTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
     <xs:attribute name="messageIdField" type="xs:string">
       <xs:annotation>
         <xs:documentation>Field containing the &lt;code&gt;messageId&lt;/code&gt;.
-&lt;b&gt;NB: If this column is not set the default (primary key) keyField will be used as messageId!&lt;/b&gt; Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
+&lt;b&gt;NB: If this column is not, or set to a column which cannot be found in the query result, the default (primary key) keyField
+will be used as messageId!&lt;/b&gt; Default: &lt;i&gt;same as keyField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIdField" type="xs:string">
       <xs:annotation>
         <xs:documentation>Field containing the &lt;code&gt;correlationId&lt;/code&gt;.
-&lt;b&gt;NB: If this column is not set, the &lt;code&gt;messageId&lt;/code&gt; and &lt;code&gt;correlationId&lt;/code&gt; will be the same!&lt;/b&gt; Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="sqlDialect" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobsCompressed" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobSmartGet" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string Default: false</xs:documentation>
+&lt;b&gt;NB: If this column is not set, or set to a column which cannot be found in the query result, the &lt;code&gt;messageId&lt;/code&gt; and &lt;code&gt;correlationId&lt;/code&gt;
+will be the same!&lt;/b&gt; Default: &lt;i&gt;same as messageIdField&lt;/i&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="additionalFields" />
     <xs:attribute ref="trace" />
   </xs:attributeGroup>
-  <xs:attributeGroup name="JdbcListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="JdbcListenerDeclaredAttributeGroup" />
+  <xs:attributeGroup name="AbstractJdbcListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AbstractJdbcListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcQueryListenerType">
@@ -8203,13 +8270,15 @@ If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back unde
     <xs:attribute name="messageIdField" type="xs:string">
       <xs:annotation>
         <xs:documentation>Field containing the &lt;code&gt;messageId&lt;/code&gt;.
-&lt;b&gt;NB: If this column is not set the default (primary key) keyField will be used as messageId!&lt;/b&gt; Default: MESSAGEID</xs:documentation>
+&lt;b&gt;NB: If this column is not, or set to a column which cannot be found in the query result, the default (primary key) keyField
+will be used as messageId!&lt;/b&gt; Default: MESSAGEID</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIdField" type="xs:string">
       <xs:annotation>
         <xs:documentation>Field containing the &lt;code&gt;correlationId&lt;/code&gt;.
-&lt;b&gt;NB: If this column is not set, the &lt;code&gt;messageId&lt;/code&gt; and &lt;code&gt;correlationId&lt;/code&gt; will be the same!&lt;/b&gt; Default: CORRELATIONID</xs:documentation>
+&lt;b&gt;NB: If this column is not set, or set to a column which cannot be found in the query result, the &lt;code&gt;messageId&lt;/code&gt; and &lt;code&gt;correlationId&lt;/code&gt;
+will be the same!&lt;/b&gt; Default: CORRELATIONID</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobSmartGet" type="frankBoolean">
@@ -8270,21 +8339,41 @@ If set &lt;code&gt;true&lt;/code&gt;, messages are committed or rolled back unde
     <xs:attribute ref="orderField" />
     <xs:attribute ref="maxCommentLength" />
     <xs:attribute ref="selectCondition" />
+    <xs:attributeGroup ref="JdbcListenerDeclaredAttributeGroup" />
     <xs:attribute ref="peekUntransacted" />
     <xs:attribute ref="peekQuery" />
-    <xs:attribute name="sqlDialect" type="xs:string">
+    <xs:attribute ref="additionalFields" />
+    <xs:attribute ref="trace" />
+    <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+        <xs:documentation>Name of the sender or the listener</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute ref="datasourceName" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used to authenticate when connecting to database</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>User name for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password for authentication when connecting to database, when none found from &lt;code&gt;authAlias&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="sqlDialect" />
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="additionalFields" />
-    <xs:attribute ref="trace" />
-    <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
+    <xs:attribute ref="blobCharset" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="MqttListenerType">
     <xs:sequence>
@@ -8663,6 +8752,59 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     <xs:attributeGroup ref="SimpleJdbcListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="StatelessJdbcListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="StatelessJdbcListenerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.StatelessJdbcListener" />
+  </xs:complexType>
+  <xs:attributeGroup name="StatelessJdbcListenerDeclaredAttributeGroup">
+    <xs:attribute name="afterSelectQuery" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>A SQL statement (&lt;code&gt;UPDATE&lt;/code&gt; or &lt;code&gt;DELETE&lt;/code&gt;) that can optionally be used to make sure the &lt;code&gt;SELECT&lt;/code&gt; query does not pick up the same row again. The
+&lt;code&gt;afterSelectQuery&lt;/code&gt; is executed immediately after the &lt;code&gt;SELECT&lt;/code&gt; query, before the pipeline is executed.
+&lt;br/&gt;
+The query can have up to 3 parameters, values of which are taken in order from the fields mapped to #setKeyField(String), #setMessageIdField(String)
+and #setCorrelationIdField(String) in the #setSelectQuery(String).
+&lt;p&gt;
+Deleting or updating the selected row immediately might reduce lock-contention on the table, however the row is not available anymore in the pipeline
+for other queries.
+&lt;/p&gt;
+&lt;p&gt;
+    If the org.frankframework.receivers.Receiver is transactional, and the pipeline fails, the transaction is rolled back so the
+    &lt;code&gt;afterSelectQuery&lt;/code&gt; is rolled back.
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="afterProcessQuery" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>A SQL statement (&lt;code&gt;UPDATE&lt;/code&gt; or &lt;code&gt;DELETE&lt;/code&gt;) that can optionally be used to make sure the &lt;code&gt;SELECT&lt;/code&gt; query does not pick up the same row again. The
+&lt;code&gt;afterProcessQuery&lt;/code&gt; is executed after the pipeline has finished.
+&lt;br/&gt;
+The query can have up to 3 parameters, values of which are taken in order from the fields mapped to #setKeyField(String), #setMessageIdField(String)
+and #setCorrelationIdField(String) in the #setSelectQuery(String).
+&lt;p&gt;
+Deleting or updating the selected row after processing in the pipeline is complete means the data of the row can be queried again in the pipeline, but
+also keeps the row locked for other queries outside the transaction.
+&lt;/p&gt;
+&lt;p&gt;
+    The &lt;code&gt;afterProcessQuery&lt;/code&gt; is executed only when the pipeline has finished successfully.
+&lt;/p&gt;
+&lt;p&gt;
+    If the org.frankframework.receivers.Receiver is transactional, and the transaction is rolled back, the
+    &lt;code&gt;afterProcessQuery&lt;/code&gt; is rolled back if it was executed.
+&lt;/p&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="selectQuery" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="StatelessJdbcListenerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="StatelessJdbcListenerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractJdbcListenerCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="TibcoLogJmsListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -8714,12 +8856,15 @@ This is slightly different from the namespaceURI which routes messages based on 
     </xs:attribute>
     <xs:attribute name="attachmentSessionKeys" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated list of session keys to hold contents of attachments of the request</xs:documentation>
+        <xs:documentation>Comma separated list of session keys to hold contents of attachments of the response.
+When no &lt;code&gt;multipartXmlSessionkey&lt;/code&gt; is provided, this will be used to generate an inline &lt;code&gt;multipartXml&lt;/code&gt;.
+For better control over the response, it is recommended to use &lt;code&gt;multipartXmlSessionKey&lt;/code&gt; instead.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="multipartXmlSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified Default: multipartXml</xs:documentation>
+        <xs:documentation>Key of session variable that holds the description of the multipart attachments that should be sent back in
+the response. Default: multipartXml</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -9644,30 +9789,45 @@ If this time has exceeded, the message is rejected.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="removeSecurityHeader" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Remove the `WSSE:Security` part from the SOAP:Header.</xs:documentation>
+        <xs:documentation>Remove the `WSSE:Security` part from the SOAP:Header. Should only be used when `VERIFY` or `DECRYPT` are used, otherwise the message will be invalid.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="keyEncryptionAlgorithm">
+      <xs:annotation>
+        <xs:documentation>&lt;code&gt;xenc:EncryptionMethod&lt;/code&gt; encryption algorithm to use for encrypting the symmetric key.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeyEncryptionAlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="dataEncryptionAlgorithm">
+      <xs:annotation>
+        <xs:documentation>&lt;code&gt;xenc:EncryptionMethod&lt;/code&gt; encryption algorithm to use for encrypting the SOAP (body) data.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DataEncryptionAlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="keyIdentifier">
+      <xs:annotation>
+        <xs:documentation>&lt;code&gt;wsse:KeyIdentifier&lt;/code&gt; type to detect which certificate to use to verify the SOAP message.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="KeyIdentifierTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="digestAlgorithm">
+      <xs:annotation>
+        <xs:documentation>Which &lt;code&gt;ds:DigestMethod&lt;/code&gt; hash algorithm to use for signing the SOAP message.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DigestAlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="signatureAlgorithm">
+      <xs:annotation>
+        <xs:documentation>Which &lt;code&gt;ds:SignatureMethod&lt;/code&gt; signature algorithm to use for signing the SOAP message.</xs:documentation>
+      </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="SignatureAlgorithmAttributeValuesType variableRef" />
       </xs:simpleType>
@@ -9712,7 +9872,8 @@ If this time has exceeded, the message is rejected.</xs:documentation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -11072,7 +11233,7 @@ This field controls how to read the input and does not determine the output. Def
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Controls whether blobdata is stored compressed in the database. Default: true</xs:documentation>
+        <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobCharset" type="xs:string">
@@ -13146,12 +13307,12 @@ read to accommodate for the fact that senders need to return a String. This is n
     </xs:attribute>
     <xs:attribute name="blobSmartGet" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database Default: false</xs:documentation>
+        <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Controls whether blobdata is stored compressed in the database. Default: true</xs:documentation>
+        <xs:documentation>Controls whether BLOB is considered stored compressed in the database Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15906,7 +16067,8 @@ Stored in &lt;code&gt;java.security.krb5.realm&lt;/code&gt;</xs:documentation>
     </xs:attribute>
     <xs:attribute name="keystoreAliasPassword" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+        <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -17523,13 +17685,6 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[pP][aA][tT][hH]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="MessageFieldTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[sS][tT][rR][iI][nN][gG]" />
-      <xs:pattern value="[cC][lL][oO][bB]" />
-      <xs:pattern value="[bB][lL][oO][bB]" />
-    </xs:restriction>
-  </xs:simpleType>
   <xs:simpleType name="MediaTypesAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[xX][mM][lL]" />
@@ -17582,11 +17737,15 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
   </xs:simpleType>
   <xs:simpleType name="KeyEncryptionAlgorithmAttributeValuesType">
     <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][sS][aA][__][11][55]" />
       <xs:pattern value="[rR][sS][aA][__][oO][aA][eE][pP]" />
+      <xs:pattern value="[rR][sS][aA][__][oO][aA][eE][pP][__][eE][nN][cC][11][11]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DataEncryptionAlgorithmAttributeValuesType">
     <xs:restriction base="xs:string">
+      <xs:pattern value="[aA][eE][sS][__][11][22][88]" />
+      <xs:pattern value="[aA][eE][sS][__][11][99][22]" />
       <xs:pattern value="[aA][eE][sS][__][22][55][66]" />
     </xs:restriction>
   </xs:simpleType>
@@ -17596,8 +17755,8 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:pattern value="[iI][sS][sS][uU][eE][rR][__][sS][eE][rR][iI][aA][lL][__][qQ][uU][oO][tT][eE][__][fF][oO][rR][mM][aA][tT]" />
       <xs:pattern value="[bB][sS][tT][__][dD][iI][rR][eE][cC][tT][__][rR][eE][fF][eE][rR][eE][nN][cC][eE]" />
       <xs:pattern value="[xX][55][00][99][__][kK][eE][yY][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
-      <xs:pattern value="[tT][hH][uU][mM][bB][pP][rR][iI][nN][tT][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
-      <xs:pattern value="[sS][kK][iI][__][kK][eE][yY][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
+      <xs:pattern value="[tT][hH][uU][mM][bB][pP][rR][iI][nN][tT][__][sS][hH][aA][11]" />
+      <xs:pattern value="[sS][uU][bB][jJ][eE][cC][tT][__][kK][eE][yY][__][iI][dD][eE][nN][tT][iI][fF][iI][eE][rR]" />
       <xs:pattern value="[kK][eE][yY][__][vV][aA][lL][uU][eE]" />
     </xs:restriction>
   </xs:simpleType>
@@ -17877,9 +18036,21 @@ A value of 0 in combination with function 'sendMessage' will set dependencyTimeo
       <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="connectionsArePooled" type="frankBoolean">
+  <xs:attribute name="sqlDialect" type="xs:string">
     <xs:annotation>
-      <xs:documentation>informs the sender that the obtained connection is from a pool (and thus connections are reused and never closed) Default: true</xs:documentation>
+      <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="blobSmartGet" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>Controls automatically whether blobdata is stored compressed and/or serialized in the database. N.B. When set true, then the BLOB will be converted into a string Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="blobCharset" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Charset that is used to read and write BLOBs. This assumes the blob contains character data.
+If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being
+read to accommodate for the fact that senders need to return a String. This is no longer the case.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="packageContent" type="xs:string">
@@ -18357,7 +18528,8 @@ See the Java Security Standard Algorithm Names Specification for all available o
   </xs:attribute>
   <xs:attribute name="keystoreAliasPassword" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;</xs:documentation>
+      <xs:documentation>Default password to authenticate access to certificate or key indicated by &lt;code&gt;keystoreAlias&lt;/code&gt;.
+NB: When using a PKCS12 certificate, the password for the P12 is the same as the certificate's private-key password.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="truststore" type="xs:string">
@@ -19020,7 +19192,12 @@ Setting this attributes to &lt;code&gt;false&lt;/code&gt; is often required to e
   </xs:attribute>
   <xs:attribute name="expressionValue" type="xs:string">
     <xs:annotation>
-      <xs:documentation>A string to compare the result of the xpathExpression (or the input message itself) to. If not specified, a non-empty result leads to the 'then' forward, and an empty result leads to the 'else' forward.</xs:documentation>
+      <xs:documentation>A string to compare to the result of the xpathExpression / jsonPathExpression, or to the string-value of the input message itself if neither the xpathExpression nor the
+ jsonPathExpression is set.
+ &lt;br/&gt;
+ If set, this must be an exact match.
+ &lt;br/&gt;
+ If not set, then any result that is not &lt;code&gt;null&lt;/code&gt; or &lt;code&gt;&amp;quot;false&amp;quot;&lt;/code&gt; leads to the 'then' forward, and a result that is &lt;code&gt;null&lt;/code&gt; or a zero-length string leads to the 'else' forward.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="defaultMediaType">
