@@ -17,7 +17,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
@@ -48,7 +47,7 @@ public class IbisJavaSenderTest {
 	}
 
 	@Test
-	public void sendMessage() throws SenderException, TimeoutException, IOException {
+	public void sendMessage() throws SenderException, IOException {
 		// Arrange
 		Message message = new Message("MESSAGE");
 		ibisJavaSender.setServiceName(ECHO_SERVICE);
@@ -61,7 +60,7 @@ public class IbisJavaSenderTest {
 	}
 
 	@Test
-	public void sendMessageWithParams() throws SenderException, TimeoutException, IOException, ConfigurationException {
+	public void sendMessageWithParams() throws SenderException, IOException, ConfigurationException {
 		// Arrange
 		Message message = new Message("my-parameter");
 		ibisJavaSender.setServiceName(VALUE_FROM_CONTEXT_SERVICE);
@@ -80,7 +79,7 @@ public class IbisJavaSenderTest {
 	}
 
 	@Test
-	public void sendMessageReturnContextToSession() throws SenderException, TimeoutException, IOException, ConfigurationException {
+	public void sendMessageReturnContextToSession() throws SenderException, IOException, ConfigurationException {
 		// Arrange
 		Message message = new Message("MESSAGE");
 		ibisJavaSender.setServiceName(ECHO_SERVICE);
@@ -103,7 +102,7 @@ public class IbisJavaSenderTest {
 	}
 
 	@Test
-	public void sendMessageServiceNameFromSession() throws SenderException, TimeoutException, IOException {
+	public void sendMessageServiceNameFromSession() throws SenderException, IOException {
 		// Arrange
 		Message message = new Message("MESSAGE");
 		// Initialise with different service name as we will actually use

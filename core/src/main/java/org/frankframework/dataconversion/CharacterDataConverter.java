@@ -55,12 +55,12 @@ final class CharacterDataConverter<T> extends AbstractDataConverter<T> implement
 	}
 
 	@Override
-	public String asString() throws IOException {
+	public String asString() {
 		return converter.asString(data);
 	}
 
 	@Override
-	public Reader asReader() throws IOException {
+	public Reader asReader() {
 		return converter.asReader(data);
 	}
 

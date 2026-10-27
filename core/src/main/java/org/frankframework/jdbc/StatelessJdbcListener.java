@@ -152,7 +152,7 @@ public class StatelessJdbcListener extends AbstractJdbcListener implements IPeek
 				}
 				return extractRawMessage(resultSet);
 			}
-		} catch (SQLException | IOException | DbmsException e) {
+		} catch (SQLException | IOException e) {
 			throw new ListenerException("Cannot load message from database", e);
 		}
 

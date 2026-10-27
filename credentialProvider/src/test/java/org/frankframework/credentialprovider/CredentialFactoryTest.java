@@ -107,7 +107,7 @@ class CredentialFactoryTest {
 	}
 
 	@Test
-	void testGetAliases() throws Exception {
+	void testGetAliases() {
 		Collection<String> aliases = CredentialFactory.getConfiguredAliases();
 		assertEquals("[aliasWith, alias1, account, noUsername, alias2, withSlashes]", aliases.toString());
 	}
@@ -213,7 +213,7 @@ class CredentialFactoryTest {
 	}
 
 	@Test
-	void testRightOrderMockFirst() throws Exception {
+	void testRightOrderMockFirst() {
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.MockCredentialFactory, org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 		MockCredentialFactory.add("account", "fakeUsername", "mockGoesFirst");
 		MockCredentialFactory.add("alias1", "alias1Username", "alias1Password");
@@ -238,7 +238,7 @@ class CredentialFactoryTest {
 	}
 
 	@Test
-	void testRightOrderMockLast() throws Exception {
+	void testRightOrderMockLast() {
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory, org.frankframework.credentialprovider.MockCredentialFactory, ");
 		MockCredentialFactory.add("account", "mockUsername", "mockGoesSecond");
 		MockCredentialFactory.add("alias1", "alias1Username", "alias1Password");
