@@ -30,6 +30,7 @@ public class PipeProcessorTestBase {
 
 		createAdapterAndPipeLine();
 		session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "fake-mid");
 	}
 
 	@SuppressWarnings("deprecation")
@@ -61,7 +62,7 @@ public class PipeProcessorTestBase {
 
 		PipeLineProcessor cpp = configuration.getBean("pipeLineProcessor", PipeLineProcessor.class);
 		String firstPipe = pipeLine.getPipe(0).getName();
-		PipeLineResult plr = cpp.processPipeLine(null, pipeLine, "fake-mid", inputMessage, session, firstPipe);
+		PipeLineResult plr = cpp.processPipeLine(null, pipeLine, session.getMessageId(), inputMessage, session, firstPipe);
 		return plr.getResult();
 	}
 
