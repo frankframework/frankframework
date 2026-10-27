@@ -74,7 +74,7 @@ public class StreamPipe extends FixedForwardPipe {
 	private boolean antiVirusFailureAsSoapFault = false;
 	private String antiVirusFailureReasonSessionKey;
 
-	private class AntiVirusObject {
+	private static class AntiVirusObject {
 		private final String fileName;
 		private final String status;
 		private final String message;

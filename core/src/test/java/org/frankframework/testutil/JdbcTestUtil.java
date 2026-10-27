@@ -15,6 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
@@ -218,7 +219,8 @@ public class JdbcTestUtil {
 				if (!rs.next()) {
 					return null;
 				}
-				return rs.getString(1);
+				// Get object and call .toString() instead of calling rs.getString() to get more reliable output with date-time fields
+				return Objects.toString(rs.getObject(1), null);
 			}
 		} catch (Exception e) {
 			throw new DbmsException("could not obtain value using query [" + query + "]" + displayQueryParameters(params), e);

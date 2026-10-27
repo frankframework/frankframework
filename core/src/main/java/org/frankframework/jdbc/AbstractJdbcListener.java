@@ -177,7 +177,7 @@ public abstract class AbstractJdbcListener extends JdbcFacade implements IPeekab
 					break;
 				}
 				if (trace && log.isDebugEnabled()) log.debug("setting parameter {} to [{}]", i, parameter);
-				JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchRequired(), parameterMetaData);
+				JdbcUtil.setParameter(stmt, i++, parameter, getDbmsSupport().isParameterTypeMatchSupported(), parameterMetaData);
 			}
 
 			return stmt.executeUpdate() > 0;

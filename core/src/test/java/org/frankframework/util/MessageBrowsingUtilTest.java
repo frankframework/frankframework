@@ -83,7 +83,7 @@ public class MessageBrowsingUtilTest {
 	}
 
 
-	private class TestListenerMessage {
+	private static class TestListenerMessage {
 		private @Getter @Setter String text;
 	}
 

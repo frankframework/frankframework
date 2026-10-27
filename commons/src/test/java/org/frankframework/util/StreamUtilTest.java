@@ -182,7 +182,7 @@ public class StreamUtilTest {
 		assertEquals("&lt;root&gt; 23    &lt;name&gt;GeeksforGeeks&lt;/name&gt; 23    &lt;address&gt; 23        &lt;sector&gt;142&lt;/sector&gt; 23        &lt;location&gt;Noida&lt;/location&gt; 23    &lt;/address&gt; 23&lt;/root&gt; r", s);
 	}
 
-	private class CloseChecker extends FilterInputStream {
+	private static class CloseChecker extends FilterInputStream {
 
 		boolean inputStreamClosed;
 

@@ -39,7 +39,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isParameterTypeMatchRequired() {
+	public boolean isParameterTypeMatchSupported() {
 		return true;
 	}
 
