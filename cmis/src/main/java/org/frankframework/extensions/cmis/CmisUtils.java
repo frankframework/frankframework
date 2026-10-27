@@ -22,7 +22,6 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
@@ -122,51 +121,37 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.TypeMutabilityImpl
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.server.support.TypeDefinitionFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.extensions.cmis.server.CmisSecurityHandler;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
+@Log4j2
 public class CmisUtils {
 
-	private static final DateTimeFormatter DATE_TIME_PARSER;
-	private static final DateTimeFormatter DATE_TIME_FORMATTER;
+	private static final String FORMATSTRING_BY_DEFAULT = AppConstants.getInstance().getString("cmis.datetime.formatstring", "yyyy-MM-dd'T'HH:mm:ss");
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.buildFormatter(FORMATSTRING_BY_DEFAULT);
 
 	public static final String ORIGINAL_OBJECT_KEY = "originalObject";
 	public static final String CMIS_VERSION_KEY = "cmisVersion";
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
 	public static final String CMIS_CALLCONTEXT_KEY = "cmisCallContext";
 
-	private static final Logger log = LogUtil.getLogger(CmisUtils.class);
 	private static final String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
 	private CmisUtils() {
 		// Private constructor so that no instance of utility-class can be created
-	}
-
-	static {
-		String defaultFormat = AppConstants.getInstance().getProperty("cmis.datetime.formatstring");
-		if (StringUtils.isBlank(defaultFormat))	{
-			log.debug("No default format string for CMIS datetime specified, using FULL_ISO_FORMAT_PARSER");
-			DATE_TIME_PARSER = DateFormatUtils.FULL_ISO_FORMAT_PARSER;
-			DATE_TIME_FORMATTER = DateFormatUtils.FULL_ISO_TIMESTAMP_WITH_TZ_FORMATTER;
-		} else {
-			log.debug("Using default format string for CMIS datetime: [{}]", defaultFormat);
-			DATE_TIME_FORMATTER = DateFormatUtils.buildFormatter(defaultFormat);
-			DATE_TIME_PARSER = DateFormatUtils.buildParser(defaultFormat);
-		}
-
 	}
 
 	public static void populateCmisAttributes(PipeLineSession session) {
@@ -318,18 +303,17 @@ public class CmisUtils {
 						String formatStringAttr = propertyElement.getAttribute("formatString");
 						String timezoneAttr = propertyElement.getAttribute("timezone");
 
-						final DateTimeFormatter dateParser;
+						final Instant parsedInstant;
 						if (StringUtils.isNotEmpty(formatStringAttr)) {
-							dateParser = DateFormatUtils.buildParser(formatStringAttr);
+							DateTimeFormatter formatParser = DateFormatUtils.buildParser(formatStringAttr);
+							parsedInstant = DateFormatUtils.parseToInstant(propertyValue, formatParser);
 						} else {
-							dateParser = DATE_TIME_PARSER;
+							parsedInstant = DateFormatUtils.parseGenericDate(propertyValue);
 						}
 
 						try {
-							TemporalAccessor parse = dateParser.parse(propertyValue);
-
 							gregorianCalendar = new GregorianCalendar();
-							gregorianCalendar.setTimeInMillis(Instant.from(parse).toEpochMilli());
+							gregorianCalendar.setTimeInMillis(parsedInstant.toEpochMilli());
 
 							if (StringUtils.isNotEmpty(timezoneAttr)) {
 								gregorianCalendar.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
