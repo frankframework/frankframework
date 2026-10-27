@@ -1,0 +1,46 @@
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+
+	<Adapter name="TestJmsUntransacted" active="${active.jms}">
+		<Pipeline>
+			<Exits>
+				<Exit name="DONE" state="SUCCESS"/>
+			</Exits>
+
+			<PutInSessionPipe name="Combo-to-Test into Session" sessionKey="jmsTestCombo"/>
+			<SenderPipe name="Select mode to test">
+				<JmsSender jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
+					<Param name="SOURCE" value="${hostname}-TestJmsUntransacted"/>
+					<Param name="COMBO" sessionKey="jmsTestCombo"/>
+				</JmsSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="JmsUntransacted-Listener" active="${active.jms}">
+		<Receiver transactionAttribute="NotSupported">
+			<PullingJmsListener acknowledgeMode="auto" jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" messageSelector="SOURCE='${hostname}-TestJmsUntransacted' and COMBO='Pull-Auto'"/>
+			<JdbcErrorStorage slotId="JmsUntransacted-Pull-Acknowledge-Auto"/>
+			<JdbcMessageLog slotId="JmsUntransacted-Pull-Acknowledge-Auto"/>
+		</Receiver>
+		<Receiver transactionAttribute="NotSupported">
+			<PullingJmsListener acknowledgeMode="client" jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" messageSelector="SOURCE='${hostname}-TestJmsUntransacted' and COMBO='Pull-Client'"/>
+			<JdbcErrorStorage slotId="JmsUntransacted-Pull-Acknowledge-Client"/>
+			<JdbcMessageLog slotId="JmsUntransacted-Pull-Acknowledge-Client"/>
+		</Receiver>
+		<Receiver transactionAttribute="NotSupported">
+			<PushingJmsListener acknowledgeMode="auto" jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" messageSelector="SOURCE='${hostname}-TestJmsUntransacted' and COMBO='Push-Auto'"/>
+			<JdbcErrorStorage slotId="JmsUntransacted-Push-Acknowledge-Auto"/>
+			<JdbcMessageLog slotId="JmsUntransacted-Push-Acknowledge-Auto"/>
+		</Receiver>
+		<Receiver transactionAttribute="NotSupported">
+			<PushingJmsListener acknowledgeMode="client" jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" messageSelector="SOURCE='${hostname}-TestJmsUntransacted' and COMBO='Push-Client'"/>
+			<JdbcErrorStorage slotId="JmsUntransacted-Push-Acknowledge-Client"/>
+			<JdbcMessageLog slotId="JmsUntransacted-Push-Acknowledge-Client"/>
+		</Receiver>
+
+		<Pipeline>
+			<EchoPipe name="Echo-O-Oh"/>
+		</Pipeline>
+	</Adapter>
+</Module>
