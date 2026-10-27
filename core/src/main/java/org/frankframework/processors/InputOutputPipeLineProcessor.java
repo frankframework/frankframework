@@ -38,12 +38,19 @@ public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		if (StringUtils.isBlank(messageId)) {
 			// This should not be touched anymore
-			throw new PipeRunException(null, "Adapter ["+ pipeLine.getAdapter().getName()+"]: Unable to process message without messageID");
+			throw new PipeRunException(null, "Unable to process message without messageID");
+		}
+		String existingMessageId = pipeLineSession.getMessageId();
+		if (StringUtils.isNotBlank(existingMessageId)) {
+			if (!existingMessageId.equals(messageId)) {
+				throw new PipeRunException(null, "Unable to process message with messageID [%s] because the PipeLineSession already contains a messageID [%s]".formatted(messageId, existingMessageId));
+			}
+		} else {
+			throw new PipeRunException(null, "Unable to process message with messageID ["+ messageId+ "] because the PipeLineSession does not contain a messageID");
 		}
 
 		// Store message and messageId in the pipeLineSession
 		pipeLineSession.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
-		pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId); // Perhaps we can remove this now?
 
 		// Store messageId in the LogContext, it may already be present, but we want to make sure it is set for log traceability.
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_MESSAGE_ID_KEY, messageId)) {
