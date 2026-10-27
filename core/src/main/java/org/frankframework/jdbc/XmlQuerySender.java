@@ -159,10 +159,10 @@ public class XmlQuerySender extends DirectQuerySender {
 					}
 				}
 				case TYPE_DATETIME -> {
-					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatString);
+					DateTimeFormatter dateFormatParser = DateFormatUtils.buildParser(formatString);
 
 					try {
-						TemporalAccessor parsed = formatter.parse(value);
+						TemporalAccessor parsed = dateFormatParser.parse(value);
 						yield Timestamp.from(Instant.from(parsed));
 					} catch (DateTimeParseException e) {
 						throw new SenderException("got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);

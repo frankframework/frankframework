@@ -15,6 +15,7 @@
 */
 package org.frankframework.util;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -181,12 +182,13 @@ public class DateFormatUtils {
 		return GENERIC_DATETIME_FORMATTER.format(TimeProvider.now());
 	}
 
-	public static Instant parseToInstant(String dateString, DateTimeFormatter parser) throws DateTimeParseException {
+	public static Instant parseToInstant(String dateString, DateTimeFormatter parser) throws DateTimeException {
 		TemporalAccessor temporalAccessor = parser.parse(dateString);
 		if (temporalAccessor.isSupported(ChronoField.INSTANT_SECONDS)) {
 			return Instant.from(temporalAccessor);
 		} else {
 			LocalDate localDate = temporalAccessor.query(TemporalQueries.localDate());
+			if (localDate == null) throw new DateTimeException("unable to parse date [" + dateString + "] to LocalDate");
 			return Instant.ofEpochSecond(localDate.toEpochSecond(LocalTime.MIN, ZoneOffset.UTC));
 		}
 	}
@@ -224,10 +226,14 @@ public class DateFormatUtils {
 
 	/**
 	 * Java time API is more strict compared to the old Date API. This method allows for parsing dates with optional components.
+	 * Lenient parser, nanoseconds and timezone is optional. If the timezone is not present, the system default timezone will be used.
+	 * <p>
+	 *     Should not be used for formatting, only for parsing. For formatting, use {@link #buildFormatter(String)}.
+	 * </p>
 	 *
 	 * @param format Date formatting pattern according to the rules of the JDK {@link DateTimeFormatter}.
 	 */
-	public static DateTimeFormatter getDateTimeFormatterWithOptionalComponents(String format) {
+	public static DateTimeFormatter buildParser(String format) {
 		return new DateTimeFormatterBuilder()
 				.appendPattern(format)
 				.appendOptional(DateTimeFormatter.ofPattern(".SSS"))

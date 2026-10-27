@@ -511,11 +511,11 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 					if (AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
 						formatStringAttr = "yyyy-MM-dd HH:mm:ss";
 					}
-					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
+					DateTimeFormatter formatParser = DateFormatUtils.buildParser(formatStringAttr);
 					GregorianCalendar calendar = new GregorianCalendar();
 
 					try {
-						TemporalAccessor parse = formatter.parse(property);
+						TemporalAccessor parse = formatParser.parse(property);
 						calendar.setTimeInMillis(Instant.from(parse).toEpochMilli());
 					} catch (DateTimeParseException e) {
 						throw new SenderException("exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);

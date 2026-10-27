@@ -163,8 +163,8 @@ public class CmisUtils {
 			DATE_TIME_FORMATTER = DateFormatUtils.FULL_ISO_TIMESTAMP_WITH_TZ_FORMATTER;
 		} else {
 			log.debug("Using default format string for CMIS datetime: [{}]", defaultFormat);
-			DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(defaultFormat);
-			DATE_TIME_PARSER = DATE_TIME_FORMATTER;
+			DATE_TIME_FORMATTER = DateFormatUtils.buildFormatter(defaultFormat);
+			DATE_TIME_PARSER = DateFormatUtils.buildParser(defaultFormat);
 		}
 
 	}
@@ -318,15 +318,15 @@ public class CmisUtils {
 						String formatStringAttr = propertyElement.getAttribute("formatString");
 						String timezoneAttr = propertyElement.getAttribute("timezone");
 
-						final DateTimeFormatter formatter;
+						final DateTimeFormatter dateParser;
 						if (StringUtils.isNotEmpty(formatStringAttr)) {
-							formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
+							dateParser = DateFormatUtils.buildParser(formatStringAttr);
 						} else {
-							formatter = DATE_TIME_PARSER;
+							dateParser = DATE_TIME_PARSER;
 						}
 
 						try {
-							TemporalAccessor parse = formatter.parse(propertyValue);
+							TemporalAccessor parse = dateParser.parse(propertyValue);
 
 							gregorianCalendar = new GregorianCalendar();
 							gregorianCalendar.setTimeInMillis(Instant.from(parse).toEpochMilli());

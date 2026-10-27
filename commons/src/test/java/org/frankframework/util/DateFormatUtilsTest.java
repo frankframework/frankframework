@@ -210,7 +210,7 @@ public class DateFormatUtilsTest {
 
 	@Test
 	public void testOptionalComponentDate() {
-		DateTimeFormatter parser = DateFormatUtils.getDateTimeFormatterWithOptionalComponents("yyyy-MM-dd'T'HH:mm:ss.SSS");
+		DateTimeFormatter parser = DateFormatUtils.buildParser("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
 		assertThrows(DateTimeParseException.class, () -> DateFormatUtils.parseToInstant("2026-10-22T16:04:11", parser));
 		assertEquals(1792677851727L, DateFormatUtils.parseToInstant("2026-10-22T16:04:11.727", parser).toEpochMilli());
