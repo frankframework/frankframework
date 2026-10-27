@@ -30,7 +30,7 @@ import org.frankframework.util.SpringUtils;
 
 public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPipe> {
 
-	final class IteratingTestPipe extends IteratingPipe<String> {
+	static final class IteratingTestPipe extends IteratingPipe<String> {
 
 		@Override
 		protected @Nullable IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {

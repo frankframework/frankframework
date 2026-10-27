@@ -128,7 +128,7 @@ public class BrowseQueue extends BusEndpointBase {
 		}
 	}
 
-	private class MessageBrowsingItemDOA {
+	private static class MessageBrowsingItemDOA {
 		private @Getter Date expiryDate;
 		private final @Getter String host;
 		private @Getter Date insertDate;

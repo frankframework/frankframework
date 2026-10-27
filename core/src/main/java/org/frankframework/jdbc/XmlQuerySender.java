@@ -405,7 +405,7 @@ public class XmlQuerySender extends DirectQuerySender {
 
 	private void applyParameters(PreparedStatement statement, List<Column> columns) throws SQLException {
 		ParameterMetaData parameterMetaData = null;
-		boolean parameterTypeMatchRequired = getDbmsSupport().isParameterTypeMatchRequired();
+		boolean parameterTypeMatchSupported = getDbmsSupport().isParameterTypeMatchSupported();
 
 		int pos = 1;
 		for (Column column : columns) {
@@ -445,11 +445,11 @@ public class XmlQuerySender extends DirectQuerySender {
 					// NO-OP: Skip null values
 				}
 				default -> {
-					if (parameterMetaData == null && parameterTypeMatchRequired) {
+					if (parameterMetaData == null && parameterTypeMatchSupported) {
 						parameterMetaData = statement.getParameterMetaData();
 					}
 					log.debug("param [{}] is a {} with value [{}]", pos, columnValue.getClass().getSimpleName(), columnValue);
-					JdbcUtil.setParameter(statement, pos, columnValue.toString(), parameterTypeMatchRequired, parameterMetaData);
+					JdbcUtil.setParameter(statement, pos, columnValue.toString(), parameterTypeMatchSupported, parameterMetaData);
 					++pos;
 				}
 			}

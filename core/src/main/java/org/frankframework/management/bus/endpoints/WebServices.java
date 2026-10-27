@@ -223,6 +223,7 @@ public class WebServices extends BusEndpointBase {
 		return wsdls;
 	}
 
+	@SuppressWarnings("removal")
 	public List<ListenerDAO> getRestListeners() {
 		List<ListenerDAO> restListeners = new ArrayList<>();
 
@@ -243,13 +244,14 @@ public class WebServices extends BusEndpointBase {
 	}
 
 	@JsonInclude(Include.NON_NULL)
-	public class ListenerDAO {
+	public static class ListenerDAO {
 		private final @Getter String name;
 		private final @Getter List<HttpMethod> methods;
 		private final @Getter String uriPattern;
 		private @Getter String receiver;
 		private @Getter String adapter;
 
+		@SuppressWarnings("removal")
 		public ListenerDAO(RestListener listener) {
 			this.name = listener.getName();
 

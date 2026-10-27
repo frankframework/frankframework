@@ -377,9 +377,9 @@ public class DbmsSupportTest {
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 
 		try (Connection connection = env.getConnection(); PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
-			JdbcUtil.setParameter(stmt, 1, number, dbmsSupport.isParameterTypeMatchRequired());
-			JdbcUtil.setParameter(stmt, 2, date, dbmsSupport.isParameterTypeMatchRequired());
-			JdbcUtil.setParameter(stmt, 3, datetime, dbmsSupport.isParameterTypeMatchRequired());
+			JdbcUtil.setParameter(stmt, 1, number, dbmsSupport.isParameterTypeMatchSupported());
+			JdbcUtil.setParameter(stmt, 2, date, dbmsSupport.isParameterTypeMatchSupported());
+			JdbcUtil.setParameter(stmt, 3, datetime, dbmsSupport.isParameterTypeMatchSupported());
 			stmt.execute();
 		}
 
@@ -401,7 +401,7 @@ public class DbmsSupportTest {
 			testSetParameterWithNullValues(false, 7);
 		} else {
 			// For all non-H2 databases, make sure it works with whatever the DBMS Support says should work
-			testSetParameterWithNullValues(dbmsSupport.isParameterTypeMatchRequired(), 6);
+			testSetParameterWithNullValues(dbmsSupport.isParameterTypeMatchSupported(), 6);
 		}
 	}
 

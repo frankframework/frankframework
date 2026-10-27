@@ -180,7 +180,7 @@ public abstract class AbstractJdbcMessageBrowser extends JdbcFacade implements I
 
 	protected int applyStandardParameters(PreparedStatement stmt, String paramValue, boolean primaryKeyIsPartOfClause) throws SQLException {
 		int position=applyStandardParameters(stmt,true,primaryKeyIsPartOfClause);
-		JdbcUtil.setParameter(stmt, position++, paramValue, getDbmsSupport().isParameterTypeMatchRequired());
+		JdbcUtil.setParameter(stmt, position++, paramValue, getDbmsSupport().isParameterTypeMatchSupported());
 		return position;
 	}
 
