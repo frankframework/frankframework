@@ -36,6 +36,8 @@ import java.util.regex.Pattern;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * Utilities for formatting and parsing dates.
  */
