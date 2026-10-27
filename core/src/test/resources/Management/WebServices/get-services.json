@@ -5,9 +5,7 @@
             "methods": [
                 "GET"
             ],
-            "uriPattern": "rest-uri-pattern",
-            "receiver": "ReceiverName1",
-            "adapter": "TestAdapter"
+            "uriPattern": "rest-uri-pattern"
         }
     ],
     "wsdls": [
