@@ -39,6 +39,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Utilities for formatting and parsing dates.
  */
+@Log4j2
 @NullMarked
 @SuppressWarnings({"JavaTimeDefaultTimeZone", "TimeInStaticInitializer"})
 public class DateFormatUtils {
@@ -258,6 +259,8 @@ public class DateFormatUtils {
 				return entry.getValue();
 			}
 		}
+
+		log.debug("could not determine date format for input [{}]", dateString);
 		return null;
 	}
 }
