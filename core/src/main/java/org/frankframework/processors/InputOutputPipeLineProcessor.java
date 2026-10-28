@@ -15,8 +15,6 @@
 */
 package org.frankframework.processors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.CloseableThreadContext;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -26,36 +24,18 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
 /**
  * @author Jaco de Groot
  */
 public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 
-	// We have tests to validate that the messageId, if already set in the LogContext, is technically overwritten, but not removed upon the try-with-resources closure.
 	@Override
 	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
-		if (StringUtils.isBlank(messageId)) {
-			// This should not be touched anymore
-			throw new PipeRunException(null, "Unable to process message without messageID");
-		}
-		String existingMessageId = pipeLineSession.getMessageId();
-		if (StringUtils.isNotBlank(existingMessageId)) {
-			if (!existingMessageId.equals(messageId)) {
-				throw new PipeRunException(null, "Unable to process message with messageID [%s] because the PipeLineSession already contains a messageID [%s]".formatted(messageId, existingMessageId));
-			}
-		} else {
-			throw new PipeRunException(null, "Unable to process message with messageID ["+ messageId+ "] because the PipeLineSession does not contain a messageID");
-		}
-
-		// Store message and messageId in the pipeLineSession
+		// Store the original message in the PipeLineSession, so that it can be used by the pipes in the pipeline.
 		pipeLineSession.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 
-		// Store messageId in the LogContext, it may already be present, but we want to make sure it is set for log traceability.
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_MESSAGE_ID_KEY, messageId)) {
-			return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
-		}
+		return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
 	}
 
 }
