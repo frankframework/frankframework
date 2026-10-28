@@ -263,8 +263,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		 */
 		ApiListener listener = config.getApiListener(method);
 		if(listener == null) {
-			response.setStatus(405);
 			LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
+			response.setStatus(405);
 			return;
 		}
 
@@ -502,8 +502,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						}
 						pipelineSession.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, parts.multipartXml());
 					} catch(IOException e) {
-						response.sendError(400, "Could not read mime multipart request");
-						LOG.warn("{} Could not read mime multipart request: {}", () -> createAbortMessage(remoteUser, 400), e::getMessage);
+						LOG.warn(() -> "%s Could not read mime multipart request: %s".formatted(createAbortMessage(remoteUser, 400), e.getMessage()), e);
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not read mime multipart request");
 						return;
 					}
 
