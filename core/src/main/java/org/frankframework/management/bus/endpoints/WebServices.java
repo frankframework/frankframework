@@ -189,11 +189,7 @@ public class WebServices extends BusEndpointBase {
 		for (Entry<String, ApiDispatchConfig> client : patternClients.entrySet()) {
 			ApiDispatchConfig config = client.getValue();
 			ApiListener listener = config.getApiListener(config.getMethods().iterator().next()); // The first httpMethod will resolve in the right listener
-			Receiver<?> receiver = listener.getReceiver();
-			Adapter adapter = receiver == null ? null : receiver.getAdapter();
 			ListenerDAO dao = new ListenerDAO(listener);
-			if (adapter != null) dao.setAdapter(adapter);
-			if (receiver != null) dao.setReceiver(receiver);
 
 			apiListeners.add(dao);
 		}
@@ -232,10 +228,7 @@ public class WebServices extends BusEndpointBase {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					IListener<?> listener = receiver.getListener();
 					if (listener instanceof RestListener restListener) {
-						ListenerDAO dao = new ListenerDAO(restListener);
-						dao.setAdapter(adapter);
-						dao.setReceiver(receiver);
-						restListeners.add(dao);
+						restListeners.add(new ListenerDAO(restListener));
 					}
 				}
 			}
@@ -248,8 +241,6 @@ public class WebServices extends BusEndpointBase {
 		private final @Getter String name;
 		private final @Getter List<HttpMethod> methods;
 		private final @Getter String uriPattern;
-		private @Getter String receiver;
-		private @Getter String adapter;
 
 		@SuppressWarnings("removal")
 		public ListenerDAO(RestListener listener) {
@@ -270,14 +261,6 @@ public class WebServices extends BusEndpointBase {
 			this.name = listener.getName();
 			this.methods = listener.getAllMethods();
 			this.uriPattern = listener.getUriPattern();
-		}
-
-		public void setReceiver(Receiver<?> receiver) {
-			this.receiver = receiver.getName();
-		}
-
-		public void setAdapter(Adapter adapter) {
-			this.adapter = adapter.getName();
 		}
 	}
 }

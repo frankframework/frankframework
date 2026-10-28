@@ -168,7 +168,7 @@ public class OpenApiTestBase extends Mockito {
 		private Json2XmlValidator outputValidator;
 
 		public AdapterBuilder(String name, String description) {
-			adapter = spy(SpringUtils.createBean(configuration, Adapter.class));
+			adapter = SpringUtils.createBean(configuration, Adapter.class);
 			adapter.addApplicationListener(new SysOutMessageKeeper());
 			adapter.setName(name);
 			adapter.setDescription(description);
