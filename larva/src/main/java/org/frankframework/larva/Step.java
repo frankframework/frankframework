@@ -28,7 +28,6 @@ import lombok.Getter;
 
 import org.frankframework.larva.actions.LarvaActionUtils;
 import org.frankframework.stream.Message;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
 
 /**
@@ -95,7 +94,7 @@ public class Step implements Comparable<Step> {
 	}
 
 	@NonNull
-	public Message getStepMessage(AppConstants appConstants) throws IOException {
+	public Message getStepMessage(Properties properties) throws IOException {
 		if (isInline() || isIgnore()) {
 			return new Message(value);
 		}
@@ -108,7 +107,7 @@ public class Step implements Comparable<Step> {
 			return fileMessage;
 		}
 		String fileData = fileMessage.asString();
-		return new Message(StringResolver.substVars(fileData, appConstants), fileMessage.copyContext());
+		return new Message(StringResolver.substVars(fileData, properties), fileMessage.copyContext());
 	}
 
 	public Properties getStepParameters() {

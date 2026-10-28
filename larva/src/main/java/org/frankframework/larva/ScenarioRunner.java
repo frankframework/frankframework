@@ -54,7 +54,6 @@ public class ScenarioRunner {
 
 	private final LarvaTool larvaTool;
 	private final ApplicationContext applicationContext;
-	private final AppConstants appConstants;
 	private final TestRunStatus testRunStatus;
 	private final int waitBeforeCleanUp;
 	private @Setter boolean multipleThreads;
@@ -72,7 +71,7 @@ public class ScenarioRunner {
 
 		this.waitBeforeCleanUp = larvaConfig.getWaitBeforeCleanup();
 		this.multipleThreads = larvaConfig.isMultiThreaded();
-		this.appConstants = AppConstants.getInstance();
+		AppConstants appConstants = AppConstants.getInstance();
 
 		String blackListDirs = appConstants.getProperty("larva.parallel.blacklistDirs", "");
 		parallelBlacklistDirs = StringUtil.split(blackListDirs);
@@ -287,7 +286,7 @@ public class ScenarioRunner {
 
 		// Read the scenario file for this step
 		try {
-			fileContent = step.getStepMessage(appConstants);
+			fileContent = step.getStepMessage(properties);
 		} catch (Exception e) {
 			scenarioError(scenario, "Error reading data for step " + step + ":" + e.getMessage(), e);
 			return LarvaTool.RESULT_ERROR;

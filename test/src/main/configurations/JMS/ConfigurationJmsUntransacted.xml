@@ -2,7 +2,7 @@
 	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
 
 	<Adapter name="TestJmsUntransacted" active="${active.jms}">
-		<Pipeline>
+		<Pipeline expectsSessionKeys="msg.count,listener.type,listener.acknowledgeMode">
 			<Exits>
 				<Exit name="DONE" state="SUCCESS"/>
 			</Exits>
