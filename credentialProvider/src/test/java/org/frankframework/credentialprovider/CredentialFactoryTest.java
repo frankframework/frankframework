@@ -31,13 +31,13 @@ class CredentialFactoryTest {
 		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
 
 		// Make sure the defaults are always the same
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialConstants.getInstance().setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 	}
 
 	@AfterEach
 	void tearDown() {
 		// Since credential constants is a singleton, make sure to clean up what we set up in the beforeEach
-		CredentialConstants.getInstance().remove("credentialFactory.class");
+		CredentialConstants.getInstance().remove(CredentialFactory.CREDENTIAL_FACTORY_KEY);
 		MockCredentialFactory.getInstance().clear();
 	}
 

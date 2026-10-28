@@ -6,16 +6,24 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.util.CredentialConstants;
 
 public class InMemoryAuthenticatorTest extends ServletAuthenticatorTest<InMemoryAuthenticator> {
 
 	@Override
 	protected InMemoryAuthenticator createAuthenticator() {
 		return spy(new InMemoryAuthenticator());
+	}
+
+	@AfterEach
+	void tearDown() {
+		CredentialConstants.getInstance().remove(CredentialFactory.CREDENTIAL_FACTORY_KEY);
 	}
 
 	@Test
