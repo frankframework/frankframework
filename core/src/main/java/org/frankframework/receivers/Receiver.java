@@ -1328,7 +1328,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						tg.activateGuard(getTransactionTimeout());
 
 						setPipelineCallerInMessageContext(getListener().getName(), compactedMessage);
-						pipeLineResult = getAdapter().processMessageWithExceptions(this, messageId, compactedMessage, session);
+						pipeLineResult = getAdapter().processMessageWithReceiver(this, messageId, compactedMessage, session);
 						session.setExitState(pipeLineResult);
 						result = pipeLineResult.getResult();
 
