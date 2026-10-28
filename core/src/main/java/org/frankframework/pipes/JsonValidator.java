@@ -91,11 +91,7 @@ public class JsonValidator extends AbstractValidator {
 		}
 
 		SchemaValidationResult result;
-		try {
-			result = validateJson(curSchema, messageToValidate);
-		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot validate", e);
-		}
+		result = validateJson(curSchema, messageToValidate);
 
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			session.put(getReasonSessionKey(), result.validationMessages.toString());
@@ -112,7 +108,7 @@ public class JsonValidator extends AbstractValidator {
 		}
 	}
 
-	private SchemaValidationResult validateJson(Schema jsonSchema, Message message) throws IOException {
+	private SchemaValidationResult validateJson(Schema jsonSchema, Message message) {
 		try {
 			List<Error> validationMessages = jsonSchema.validate(
 					message.asString(), InputFormat.JSON,

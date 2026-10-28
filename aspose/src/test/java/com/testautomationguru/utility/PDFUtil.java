@@ -347,9 +347,8 @@ public class PDFUtil {
    * @param file Absolute file path of the file
    * @param startPage Starting page number of the document
    * @return List list of image file names with absolute path
-   * @throws java.io.IOException when file is not found.
-   */
-	public List<String> savePdfAsImage(String file, int startPage) throws IOException{
+	*/
+	public List<String> savePdfAsImage(String file, int startPage) {
 		return this.saveAsImage(file, startPage, -1);
 	}
 
@@ -360,9 +359,8 @@ public class PDFUtil {
    * @param startPage Starting page number of the document
    * @param endPage Ending page number of the document
    * @return List list of image file names with absolute path
-   * @throws java.io.IOException when file is not found.
-   */
-	public List<String> savePdfAsImage(String file, int startPage, int endPage) throws IOException{
+	*/
+	public List<String> savePdfAsImage(String file, int startPage, int endPage) {
 		return this.saveAsImage(file, startPage, endPage);
 	}
 
@@ -371,9 +369,8 @@ public class PDFUtil {
    *
    * @param file Absolute file path of the file
    * @return List list of image file names with absolute path
-   * @throws java.io.IOException when file is not found.
-   */
-	public List<String> savePdfAsImage(String file) throws IOException{
+	*/
+	public List<String> savePdfAsImage(String file) {
 		return this.saveAsImage(file, -1, -1);
 	}
 

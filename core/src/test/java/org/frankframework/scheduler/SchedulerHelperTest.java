@@ -21,8 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.text.ParseException;
-
 import org.junit.jupiter.api.Test;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
@@ -62,7 +60,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testGetJobDetail() throws SchedulerException, ParseException {
+	public void testGetJobDetail() throws SchedulerException {
 		schedulerHelper.scheduleJob(createConfiguredJob("testJob"), 1000);
 
 		JobDetail result = schedulerHelper.getJobDetail("testJob");
@@ -72,7 +70,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testScheduleCronJob() throws SchedulerException, ParseException {
+	public void testScheduleCronJob() throws SchedulerException {
 		JobDetail jobDetail = createConfiguredJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, "0 0 1 * * ?");
@@ -80,7 +78,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testScheduleIntervalJob() throws SchedulerException, ParseException {
+	public void testScheduleIntervalJob() throws SchedulerException {
 		JobDetail jobDetail = createConfiguredJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, 0);
@@ -88,7 +86,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void addTwoTheSameJobs() throws SchedulerException, ParseException {
+	public void addTwoTheSameJobs() throws SchedulerException {
 		JobDetail jobDetail = createConfiguredJob("testJob");
 
 		schedulerHelper.scheduleJob(jobDetail, 0);
@@ -98,7 +96,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void addTwoTheSameJobsWithOverride() throws SchedulerException, ParseException {
+	public void addTwoTheSameJobsWithOverride() throws SchedulerException {
 		JobDetail jobDetail = createConfiguredJob("testJob");
 		String jobName = jobDetail.getKey().getName();
 
@@ -113,7 +111,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testScheduleJobWithoutSchedule() throws SchedulerException, ParseException {
+	public void testScheduleJobWithoutSchedule() throws SchedulerException {
 		JobDetail jobDetail = createConfiguredJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, null, -1, false);
@@ -121,7 +119,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testScheduleDuplicateJob() throws SchedulerException, ParseException {
+	public void testScheduleDuplicateJob() throws SchedulerException {
 		JobDetail jobDetail = createConfiguredJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, "0 0 1 * * ?");

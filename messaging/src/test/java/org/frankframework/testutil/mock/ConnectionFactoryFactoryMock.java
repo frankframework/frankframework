@@ -139,7 +139,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public void send(Message message) throws JMSException {
+		public void send(Message message) {
 			send(null, message);
 		}
 
@@ -149,7 +149,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 
 		@Override
-		public Message receive() throws JMSException {
+		public Message receive() {
 			return receive(0);
 		}
 

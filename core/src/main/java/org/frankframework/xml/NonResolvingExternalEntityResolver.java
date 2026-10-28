@@ -15,13 +15,11 @@
 */
 package org.frankframework.xml;
 
-import java.io.IOException;
 import java.io.StringReader;
 
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
 import org.frankframework.util.LogUtil;
@@ -37,7 +35,7 @@ public class NonResolvingExternalEntityResolver implements EntityResolver2 {
 	private final Logger log = LogUtil.getLogger(this);
 
 	@Override
-	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+	public InputSource resolveEntity(String publicId, String systemId) {
 		return resolveEntity(null, publicId, null, systemId);
 	}
 

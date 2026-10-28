@@ -435,7 +435,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser implements
 	}
 
 	@NonNull
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, SenderException {
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		if (isOnlyStoreWhenMessageIdUnique()) {
 			String resultString = checkIfMessageIdAlreadyStored(conn, messageId, message);
@@ -606,7 +606,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser implements
 			final String storedLabel = StringUtils.truncate(label, MAXLABELLEN);
 
 			return storeMessageInDatabase(conn, storedMessageId, storedCorrelationId, receivedDateTime, storedComments, storedLabel, message);
-		} catch (IOException | JdbcException | SQLException e) {
+		} catch (IOException | SQLException e) {
 			throw new SenderException("cannot serialize message", e);
 		}
 	}

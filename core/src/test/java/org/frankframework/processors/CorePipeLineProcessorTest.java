@@ -134,7 +134,7 @@ class CorePipeLineProcessorTest {
 		return pl;
 	}
 
-	private void addValidators(PipeLine pipeLine, boolean failDirectlyToExit, boolean outputValidationFailsAll) throws ConfigurationException {
+	private void addValidators(PipeLine pipeLine, boolean failDirectlyToExit, boolean outputValidationFailsAll) {
 		IValidator inputValidator = new TestDummyValidator("fail-validator-input");
 		inputValidator.addForward(new PipeForward("failure", failDirectlyToExit ? "error" : "err1"));
 
