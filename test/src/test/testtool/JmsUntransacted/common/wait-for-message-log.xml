@@ -18,7 +18,7 @@
 				<name>CORRELATIONID</name>
 			</column>
 		</columns>
-		<where>SLOTID = 'JmsUntransacted-Pull-Acknowledge-Client' and TYPE = 'A'</where>
+		<where>SLOTID = 'JmsUntransacted-${listener.type}-Acknowledge-${listener.acknowledgeMode}' and TYPE = 'A'</where>
 		<order>MESSAGEKEY</order>
 	</select>
 </manageDatabaseREQ>
