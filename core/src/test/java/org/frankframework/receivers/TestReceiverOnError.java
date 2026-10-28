@@ -103,7 +103,7 @@ public class TestReceiverOnError {
 		adapter.setName(adapterName);
 
 		doAnswer(invocation -> {
-			Message m = invocation.getArgument(2);
+			Message m = invocation.getArgument(1);
 			if("processMessageException".equals(m.asString())) {
 				throw new ListenerException(m.asString());
 			}

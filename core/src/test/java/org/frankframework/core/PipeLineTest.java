@@ -487,6 +487,7 @@ public class PipeLineTest {
 		Adapter adapter = buildTestAdapter();
 
 		PipeLineSession session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "dummy");
 		session.put("k1", "v1");
 		session.put("k2", "v2");
 		session.put("k3", "v3");
@@ -501,6 +502,7 @@ public class PipeLineTest {
 		Adapter adapter = buildTestAdapter();
 
 		PipeLineSession session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "dummy");
 		session.put("k1", "v1");
 
 		// Act // Assert

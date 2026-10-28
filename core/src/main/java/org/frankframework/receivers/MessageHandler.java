@@ -77,12 +77,7 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 	public void processRawMessage(@NonNull IPushingListener<M> origin, @NonNull RawMessageWrapper<M> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 		shouldProcess(origin);
 
-		try {
-			doProcess(message, session, duplicatesAlreadyChecked);
-		} finally {
-			// Ensure we always clear the MDC.
-			ThreadContext.clearAll();
-		}
+		doProcess(message, session, duplicatesAlreadyChecked);
 	}
 
 	/**
@@ -123,6 +118,11 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(session)) {
 			return receiver.processRawMessage(message, session, duplicatesAlreadyChecked);
+		} finally {
+			// If this is the outermost call to process a request, then clear the ThreadContext. Otherwise, leave it for the caller to clear.
+			if (ThreadContext.getDepth() == 0) {
+				ThreadContext.clearAll();
+			}
 		}
 	}
 
