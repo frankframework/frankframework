@@ -78,9 +78,9 @@ import org.frankframework.xml.SaxElementBuilder;
 public class JdbcUtil {
 
 	private static final String DATEFORMAT = AppConstants.getInstance().getString("jdbc.dateFormat", "yyyy-MM-dd");
-	public static final DateTimeFormatter DATEFORMAT_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(DATEFORMAT);
+	public static final DateTimeFormatter DATEFORMAT_DATE_TIME_FORMATTER = DateFormatUtils.buildFormatter(DATEFORMAT);
 	private static final String TIMESTAMPFORMAT = AppConstants.getInstance().getString("jdbc.timestampFormat", "yyyy-MM-dd HH:mm:ss");
-	public static final DateTimeFormatter TIMESTAMP_DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(TIMESTAMPFORMAT);
+	public static final DateTimeFormatter TIMESTAMP_DATE_TIME_FORMATTER = DateFormatUtils.buildFormatter(TIMESTAMPFORMAT);
 
 	@Deprecated
 	public static String warningsToString(SQLWarning warnings) {
