@@ -159,7 +159,7 @@ public class XmlQuerySender extends DirectQuerySender {
 					}
 				}
 				case TYPE_DATETIME -> {
-					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatString);
+					DateTimeFormatter formatter = DateFormatUtils.buildParser(formatString);
 
 					try {
 						TemporalAccessor parsed = formatter.parse(value);
