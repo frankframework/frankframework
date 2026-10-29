@@ -7,12 +7,19 @@
 				<Exit name="DONE" state="SUCCESS"/>
 			</Exits>
 
+			<LogContextPipe name="Log Test Variation">
+				<Param name="test-variant" sessionKey="originalMessage"/>
+			</LogContextPipe>
 			<ForPipe name="ForPipe">
 				<Param name="stopAt" sessionKey="msg.count"/>
 				<Forward name="stop" path="Return Count"/>
-				<Forward name="continue" path="Send Test Message"/>
+				<Forward name="continue" path="Loop"/>
 			</ForPipe>
-			<SenderPipe name="Send Test Message">
+			<PutInSessionPipe name="Loop" sessionKey="loop-count" getInputFromSessionKey="ForPipe.iteration"/>
+			<LogContextPipe name="Log Iter Count">
+				<NumberParam name="iteration" sessionKey="loop-count"/>
+			</LogContextPipe>
+			<SenderPipe name="Send Test Message" getInputFromSessionKey="loop-count">
 				<JmsSender jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
 					<Param name="SOURCE" value="${hostname}-TestJmsUntransacted"/>
 					<Param name="TYPE" sessionKey="listener.type"/>
@@ -21,33 +28,36 @@
 				<Forward name="success" path="ForPipe"/>
 			</SenderPipe>
 
-			<GetFromSessionPipe name="Return Count" sessionKey="msg.count"/>
+			<GetFromSessionPipe name="Return Count" sessionKey="loop-count"/>
 		</Pipeline>
 	</Adapter>
 
 	<Adapter name="JmsUntransacted-Listener" active="${active.jms}">
-		<Receiver transactionAttribute="NotSupported">
+		<Receiver name="JmsUntransacted-Pull-Acknowledge-Auto" transactionAttribute="NotSupported">
 			<PullingJmsListener acknowledgeMode="auto" jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" messageSelector="SOURCE='${hostname}-TestJmsUntransacted' and TYPE='Pull' and MODE='Auto'"/>
 			<JdbcErrorStorage slotId="JmsUntransacted-Pull-Acknowledge-Auto"/>
 			<JdbcMessageLog slotId="JmsUntransacted-Pull-Acknowledge-Auto"/>
 		</Receiver>
-		<Receiver transactionAttribute="NotSupported">
+		<Receiver name="JmsUntransacted-Pull-Acknowledge-Client" transactionAttribute="NotSupported">
 			<PullingJmsListener acknowledgeMode="client" jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" messageSelector="SOURCE='${hostname}-TestJmsUntransacted' and TYPE='Pull' and MODE='Client'"/>
 			<JdbcErrorStorage slotId="JmsUntransacted-Pull-Acknowledge-Client"/>
 			<JdbcMessageLog slotId="JmsUntransacted-Pull-Acknowledge-Client"/>
 		</Receiver>
-		<Receiver transactionAttribute="NotSupported">
+		<Receiver name="JmsUntransacted-Push-Acknowledge-Auto" transactionAttribute="NotSupported">
 			<PushingJmsListener acknowledgeMode="auto" jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" messageSelector="SOURCE='${hostname}-TestJmsUntransacted' and TYPE='Push' and MODE='Auto'"/>
 			<JdbcErrorStorage slotId="JmsUntransacted-Push-Acknowledge-Auto"/>
 			<JdbcMessageLog slotId="JmsUntransacted-Push-Acknowledge-Auto"/>
 		</Receiver>
-		<Receiver transactionAttribute="NotSupported">
+		<Receiver name="JmsUntransacted-Push-Acknowledge-Client" transactionAttribute="NotSupported">
 			<PushingJmsListener acknowledgeMode="client" jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}" messageSelector="SOURCE='${hostname}-TestJmsUntransacted' and TYPE='Push' and MODE='Client'"/>
 			<JdbcErrorStorage slotId="JmsUntransacted-Push-Acknowledge-Client"/>
 			<JdbcMessageLog slotId="JmsUntransacted-Push-Acknowledge-Client"/>
 		</Receiver>
 
 		<Pipeline>
+			<LogContextPipe name="LogContext">
+				<Param name="iteration" sessionKey="originalMessage"/>
+			</LogContextPipe>
 			<EchoPipe name="Echo-O-Oh"/>
 		</Pipeline>
 	</Adapter>
