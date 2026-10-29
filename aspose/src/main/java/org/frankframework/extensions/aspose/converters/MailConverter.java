@@ -61,7 +61,6 @@ class MailConverter extends AbstractConverter {
 	private static final float MAX_IMAGE_WIDTH_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
 	private static final float MAX_IMAGE_HEIGHT_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.buildFormatter("dd-MM-yyyy HH:mm:ss");
-	private final CisConversionService cisConversionService;
 
 	// contains mapping from MediaType to the LoadOption for the Aspose Word conversion.
 	private static final Map<MediaType, Class<? extends LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
