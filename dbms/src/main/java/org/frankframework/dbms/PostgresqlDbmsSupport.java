@@ -254,27 +254,31 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws DbmsException {
-		return super.getTableColumns(conn, schemaName, tableName.toLowerCase(), columnNamePattern != null ? columnNamePattern.toLowerCase() : null);
+		return super.getTableColumns(conn, getSchemaIfNull(conn, schemaName), tableName.toLowerCase(), columnNamePattern != null ? columnNamePattern.toLowerCase() : null);
 	}
 
 	@Override
 	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws DbmsException {
-		return super.isTablePresent(conn, schemaName, tableName.toLowerCase());
+		return super.isTablePresent(conn, getSchemaIfNull(conn, schemaName), tableName.toLowerCase());
 	}
 
 	@Override
 	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
-		return super.isColumnPresent(conn, schemaName != null ? schemaName : "public", tableName.toLowerCase(), columnName.toLowerCase());
+		return super.isColumnPresent(conn, getSchemaIfNull(conn, schemaName), tableName.toLowerCase(), columnName.toLowerCase());
+	}
+
+	private String getSchemaIfNull(Connection conn, String schemaName) throws DbmsException {
+		return schemaName != null ? schemaName : getSchema(conn);
 	}
 
 	@Override
 	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws DbmsException {
-		return super.hasIndexOnColumn(conn, schemaOwner != null ? schemaOwner : "public", tableName.toLowerCase(), columnName.toLowerCase());
+		return super.hasIndexOnColumn(conn, getSchemaIfNull(conn, schemaOwner), tableName.toLowerCase(), columnName.toLowerCase());
 	}
 
 	@Override
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws DbmsException {
-		String schema = schemaOwner != null ? schemaOwner : "public";
+		String schema = getSchemaIfNull(conn, schemaOwner);
 		String query = "SELECT pg_get_indexdef(indexrelid) FROM pg_index WHERE indrelid=?::regclass";
 		StringBuilder target = new StringBuilder().append(" (").append(columns.get(0).toLowerCase());
 
