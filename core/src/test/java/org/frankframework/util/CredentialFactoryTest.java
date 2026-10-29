@@ -6,9 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.NoSuchElementException;
 
+import org.junit.jupiter.api.AfterEach;
+
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.credentialprovider.util.CredentialConstants;
+
 public class CredentialFactoryTest {
+
+	@AfterEach
+	void tearDown() {
+		// Since credential constants is a singleton, make sure to clean up after each test
+		CredentialConstants.getInstance().remove(org.frankframework.credentialprovider.CredentialFactory.CREDENTIAL_FACTORY_KEY);
+	}
 
 	@Test
 	public void testCredentialFactory() {
