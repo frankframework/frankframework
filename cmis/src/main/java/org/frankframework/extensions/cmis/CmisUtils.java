@@ -124,8 +124,6 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.TypeMutabilityImpl
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.server.support.TypeDefinitionFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
