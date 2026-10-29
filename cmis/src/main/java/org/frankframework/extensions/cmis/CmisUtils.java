@@ -22,7 +22,6 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
@@ -122,32 +121,33 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.TypeMutabilityImpl
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.server.support.TypeDefinitionFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.extensions.cmis.server.CmisSecurityHandler;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
+@Log4j2
 public class CmisUtils {
 
-	public static final String FORMATSTRING_BY_DEFAULT = AppConstants.getInstance().getString("cmis.datetime.formatstring", "yyyy-MM-dd'T'HH:mm:ss");
-	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(FORMATSTRING_BY_DEFAULT);
+	private static final String FORMATSTRING_BY_DEFAULT = AppConstants.getInstance().getString("cmis.datetime.formatstring", "yyyy-MM-dd'T'HH:mm:ss");
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateFormatUtils.buildFormatter(FORMATSTRING_BY_DEFAULT);
+
 	public static final String ORIGINAL_OBJECT_KEY = "originalObject";
 	public static final String CMIS_VERSION_KEY = "cmisVersion";
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
 	public static final String CMIS_CALLCONTEXT_KEY = "cmisCallContext";
 
-	private static final Logger log = LogUtil.getLogger(CmisUtils.class);
 	private static final String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
 	private CmisUtils() {
@@ -254,9 +254,9 @@ public class CmisUtils {
 	private static <T> AbstractPropertyDefinition<T> addStandardDefinitions(AbstractPropertyDefinition<T> propertyDefinition, Element propertyElement, PropertyType propertyType) {
 
 		String nameAttr = propertyElement.getAttribute("name");
-		String displayNameAttr = propertyElement.getAttribute("displayName");
-		String localNameAttr = propertyElement.getAttribute("localName");
-		String queryNameAttr = propertyElement.getAttribute("queryName");
+		String displayNameAttr = StringUtils.trimToNull(propertyElement.getAttribute("displayName"));
+		String localNameAttr = StringUtils.trimToNull(propertyElement.getAttribute("localName"));
+		String queryNameAttr = StringUtils.trimToNull(propertyElement.getAttribute("queryName"));
 
 		propertyDefinition.setId(nameAttr);
 		propertyDefinition.setDisplayName(displayNameAttr);
@@ -308,16 +308,18 @@ public class CmisUtils {
 					if (StringUtils.isNotEmpty(propertyValue)) {
 						String formatStringAttr = propertyElement.getAttribute("formatString");
 						String timezoneAttr = propertyElement.getAttribute("timezone");
-						if (StringUtils.isEmpty(formatStringAttr)) {
-							formatStringAttr = FORMATSTRING_BY_DEFAULT;
+
+						final Instant parsedInstant;
+						if (StringUtils.isNotEmpty(formatStringAttr)) {
+							DateTimeFormatter formatParser = DateFormatUtils.buildParser(formatStringAttr);
+							parsedInstant = DateFormatUtils.parseToInstant(propertyValue, formatParser);
+						} else {
+							parsedInstant = DateFormatUtils.parseGenericDate(propertyValue);
 						}
 
-						DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
 						try {
-							TemporalAccessor parse = formatter.parse(propertyValue);
-
 							gregorianCalendar = new GregorianCalendar();
-							gregorianCalendar.setTimeInMillis(Instant.from(parse).toEpochMilli());
+							gregorianCalendar.setTimeInMillis(parsedInstant.toEpochMilli());
 
 							if (StringUtils.isNotEmpty(timezoneAttr)) {
 								gregorianCalendar.setTimeZone(TimeZone.getTimeZone(timezoneAttr));

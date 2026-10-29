@@ -15,6 +15,7 @@
 */
 package org.frankframework.util;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,11 +42,14 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 @SuppressWarnings({"JavaTimeDefaultTimeZone", "TimeInStaticInitializer"})
 public class DateFormatUtils {
-	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz";
+	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz"; // ...:mm:ssCEST (or any zone ID)
+	public static final String FORMAT_FULL_ISO_8601_TZ_OFFSET = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"; // ...:mm:ss+02:00
 	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	public static final String FORMAT_FULL_GENERIC = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String FORMAT_DATETIME_GENERIC = "yyyy-MM-dd HH:mm:ss";
 	public static final DateTimeFormatter FULL_ISO_FORMATTER = buildFormatter(FORMAT_FULL_ISO);
+	public static final DateTimeFormatter FULL_ISO_FORMAT_PARSER = buildIso8601Parser(); // Optional milliseconds and timezone or timezone offset
+	public static final DateTimeFormatter FULL_ISO_TIMESTAMP_WITH_TZ_FORMATTER = buildFormatter(FORMAT_FULL_ISO_8601_TZ_OFFSET);
 	public static final DateTimeFormatter FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER = buildFormatter(FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
 	public static final DateTimeFormatter FULL_GENERIC_FORMATTER = buildFormatter(FORMAT_FULL_GENERIC);
 	public static final DateTimeFormatter GENERIC_DATETIME_FORMATTER = buildFormatter(FORMAT_DATETIME_GENERIC);
@@ -94,8 +98,7 @@ public class DateFormatUtils {
 				Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd-MM-yyyy HH:mm:ss")),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), GENERIC_DATETIME_FORMATTER),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_GENERIC_FORMATTER),
-				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER),
-				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\w+$"), FULL_ISO_FORMATTER),
+				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}.*"), FULL_ISO_FORMAT_PARSER),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm:ss")),
 				Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm")),
 				Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm:ss")),
@@ -107,6 +110,29 @@ public class DateFormatUtils {
 
 	public static DateTimeFormatter buildFormatter(String format) {
 		return DateTimeFormatter.ofPattern(format).withZone(ZoneId.systemDefault()).withResolverStyle(ResolverStyle.LENIENT);
+	}
+
+	/**
+	 * Builds a DateTimeFormatter that can parse ISO 8601 date-time strings with optional milliseconds and timezone information.
+	 * The timezone can be either a zone ID (e.g., "Europe/Amsterdam") or an offset (e.g., "+02:00").
+	 * Merges DateTimeFormatter.ISO_ZONED_DATE_TIME and DateTimeFormatter.ISO_OFFSET_DATE_TIME into one formatter.
+	 */
+	public static DateTimeFormatter buildIso8601Parser() {
+		return new DateTimeFormatterBuilder()
+				.appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+				.appendOptional(DateTimeFormatter.ofPattern(".SSS"))
+				.optionalStart()
+				.appendZoneOrOffsetId()
+				.optionalEnd()
+				.optionalStart()
+				.appendLiteral('[')
+				.parseCaseSensitive()
+				.appendZoneRegionId()
+				.appendLiteral(']')
+				.optionalEnd()
+				.toFormatter()
+				.withZone(ZoneId.systemDefault())
+				.withResolverStyle(ResolverStyle.LENIENT);
 	}
 
 	public static String now() {
@@ -156,12 +182,13 @@ public class DateFormatUtils {
 		return GENERIC_DATETIME_FORMATTER.format(TimeProvider.now());
 	}
 
-	public static Instant parseToInstant(String dateString, DateTimeFormatter parser) throws DateTimeParseException {
+	public static Instant parseToInstant(String dateString, DateTimeFormatter parser) throws DateTimeException {
 		TemporalAccessor temporalAccessor = parser.parse(dateString);
 		if (temporalAccessor.isSupported(ChronoField.INSTANT_SECONDS)) {
 			return Instant.from(temporalAccessor);
 		} else {
 			LocalDate localDate = temporalAccessor.query(TemporalQueries.localDate());
+			if (localDate == null) throw new DateTimeException("unable to parse date [" + dateString + "] to LocalDate");
 			return Instant.ofEpochSecond(localDate.toEpochSecond(LocalTime.MIN, ZoneOffset.UTC));
 		}
 	}
@@ -199,12 +226,17 @@ public class DateFormatUtils {
 
 	/**
 	 * Java time API is more strict compared to the old Date API. This method allows for parsing dates with optional components.
+	 * Lenient parser, nanoseconds and timezone is optional. If the timezone is not present, the system default timezone will be used.
+	 * <p>
+	 *     Should not be used for formatting, only for parsing. For formatting, use {@link #buildFormatter(String)}.
+	 * </p>
 	 *
 	 * @param format Date formatting pattern according to the rules of the JDK {@link DateTimeFormatter}.
 	 */
-	public static DateTimeFormatter getDateTimeFormatterWithOptionalComponents(String format) {
+	public static DateTimeFormatter buildParser(String format) {
 		return new DateTimeFormatterBuilder()
 				.appendPattern(format)
+				.appendOptional(DateTimeFormatter.ofPattern(".SSS"))
 				.parseDefaulting(ChronoField.YEAR_OF_ERA, 1970)
 				.parseDefaulting(ChronoField.MONTH_OF_YEAR, LocalDate.MIN.getMonthValue())
 				.parseDefaulting(ChronoField.DAY_OF_MONTH, LocalDate.MIN.getDayOfMonth())
@@ -212,6 +244,9 @@ public class DateFormatUtils {
 				.parseDefaulting(ChronoField.MINUTE_OF_HOUR, LocalTime.MIN.getMinute())
 				.parseDefaulting(ChronoField.SECOND_OF_MINUTE, LocalTime.MIN.getSecond())
 				.parseDefaulting(ChronoField.NANO_OF_SECOND, LocalTime.MIN.getNano())
+				.optionalStart()
+				.appendZoneOrOffsetId() // Append optional timezone or offset, e.g. +02:00 or CEST
+				.optionalEnd()
 				.toFormatter()
 				.withZone(ZoneId.systemDefault());
 	}
