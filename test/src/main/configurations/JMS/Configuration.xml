@@ -12,4 +12,5 @@
 	<Include ref="ConfigurationPubSub.xml"/>
 	<Include ref="ConfigurationMessageStoreListeners.xml"/>
 	<Include ref="ConfigurationMessageQueueSenderAndListener.xml"/>
+	<Include ref="ConfigurationJmsUntransacted.xml"/>
 </Configuration>
