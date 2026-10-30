@@ -103,12 +103,12 @@ public class TestReceiverOnError {
 		adapter.setName(adapterName);
 
 		doAnswer(invocation -> {
-			Message m = invocation.getArgument(2);
+			Message m = invocation.getArgument(1);
 			if("processMessageException".equals(m.asString())) {
 				throw new ListenerException(m.asString());
 			}
 			return invocation.callRealMethod();
-		}).when(adapter).processMessageWithReceiver(any(), anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(adapter).processMessageWithReceiver(any(), any(Message.class), any(PipeLineSession.class));
 
 		PipeLine pl = spy(SpringUtils.createBean(adapter, PipeLine.class));
 		doAnswer(p -> {

@@ -134,7 +134,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	}
 
 	@Override
-	public @Nullable String rerun(String correlationId, Report originalReport, SecurityContext ingored, ReportRunner reportRunner) {
+	public @Nullable String rerun(String correlationId, Report originalReport, SecurityContext ignored, ReportRunner reportRunner) {
 		if (!isAllowed()) {
 			return "Not allowed";
 		}
@@ -178,8 +178,8 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 							}
 							// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 							String messageId = MessageUtils.generateMessageId("ladybug");
-							pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-							adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
+							PipeLineSession.updateListenerParameters(pipeLineSession, messageId, correlationId);
+							adapter.processMessageDirect(inputMessage, pipeLineSession);
 						}
 						return null;
 					} finally {

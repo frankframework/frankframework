@@ -1328,7 +1328,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						tg.activateGuard(getTransactionTimeout());
 
 						setPipelineCallerInMessageContext(getListener().getName(), compactedMessage);
-						pipeLineResult = getAdapter().processMessageWithReceiver(this, messageId, compactedMessage, session);
+						pipeLineResult = getAdapter().processMessageWithReceiver(this, compactedMessage, session);
 						session.setExitState(pipeLineResult);
 						result = pipeLineResult.getResult();
 
@@ -1452,7 +1452,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					}
 				}
 			}
-			if (log.isDebugEnabled()) log.debug("{} messageId [{}] correlationId [{}] returning result [{}]", logPrefix, messageId, businessCorrelationId, result);
+			log.debug("{} messageId [{}] correlationId [{}] returning result [{}]", logPrefix, messageId, businessCorrelationId, result);
 
 			return result;
 		}

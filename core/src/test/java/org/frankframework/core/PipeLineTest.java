@@ -487,12 +487,13 @@ public class PipeLineTest {
 		Adapter adapter = buildTestAdapter();
 
 		PipeLineSession session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "dummy");
 		session.put("k1", "v1");
 		session.put("k2", "v2");
 		session.put("k3", "v3");
 
 		// Act // Assert
-		assertDoesNotThrow(() -> adapter.processMessageDirect("m1", Message.nullMessage(), session));
+		assertDoesNotThrow(() -> adapter.processMessageDirect(Message.nullMessage(), session));
 	}
 
 	@Test
@@ -501,10 +502,11 @@ public class PipeLineTest {
 		Adapter adapter = buildTestAdapter();
 
 		PipeLineSession session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "dummy");
 		session.put("k1", "v1");
 
 		// Act // Assert
-		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageDirect("m1", Message.nullMessage(), session));
+		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageDirect(Message.nullMessage(), session));
 
 		// Assert
 		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());

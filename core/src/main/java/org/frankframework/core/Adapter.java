@@ -767,20 +767,22 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * This method does not throw any exceptions, and will always return a {@link PipeLineResult}. If an
 	 * error occurred, the error information is in the {@code PipeLineResult}.
 	 *
-	 * @param messageId ID of the message
-	 * @param message {@link Message} to be processed
+	 * @param message         {@link Message} to be processed
 	 * @param pipeLineSession {@link PipeLineSession} session in which message is to be processed
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
 	@SuppressWarnings("java:S1181")
-	public @NonNull PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
+	public @NonNull PipeLineResult processMessageDirect(@NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
+		// Should never be null
+		String messageId = Objects.requireNonNull(pipeLineSession.getMessageId());
+
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
 			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
 		) {
 			PipeLineResult result = new PipeLineResult();
 			boolean success = false;
 			try {
-				result = processMessageInternal(null, messageId, message, pipeLineSession);
+				result = processMessageInternal(null, message, pipeLineSession);
 				success = true;
 			} catch (Throwable t) {
 				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
@@ -821,21 +823,20 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * was an exception from the {@link PipeLine}, a {@link ListenerException} might be thrown.
 	 *
 	 * @param receiver Receiver calling the method, may not be null with this call.
-	 * @param messageId ID of the message
 	 * @param message {@link Message} to be processed
 	 * @param pipeLineSession {@link PipeLineSession} in which the message is to be processed
 	 * @return {@link PipeLineResult} with result from processing the message in the {@link PipeLine}.
 	 * @throws ListenerException If there was an exception, throws a {@link ListenerException}.
 	 */
-	public @NonNull PipeLineResult processMessageWithReceiver(@NonNull Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
-		return processMessageInternal(receiver, messageId, message, pipeLineSession);
+	public @NonNull PipeLineResult processMessageWithReceiver(@NonNull Receiver<?> receiver, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
+		return processMessageInternal(receiver, message, pipeLineSession);
 	}
 
 	/**
 	 * This method does the real processing of messages by the adapter. This method is to
-	 * be called either from the {@link Receiver} via {@link #processMessageWithReceiver(Receiver, String, Message, PipeLineSession)}, or from {@link #processMessageDirect(String, Message, PipeLineSession)}.
+	 * be called either from the {@link Receiver} via {@link #processMessageWithReceiver(Receiver, Message, PipeLineSession)}, or from {@link #processMessageDirect(Message, PipeLineSession)}.
 	 * <br/>
-	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information
+	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information (HideRegexContext)
 	 * is among things that should be set up by the caller.</em>
 	 * <br/>
 	 * This method will return a {@link PipeLineResult} with results of the processing. This
@@ -843,17 +844,20 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * was an exception from the {@link PipeLine}, a {@link ListenerException} might be thrown.
 	 *
 	 * @param receiver Receiver, may be null.
-	 * @param messageId ID of the message
 	 * @param message {@link Message} to be processed
 	 * @param pipeLineSession {@link PipeLineSession} in which the message is to be processed
 	 * @return {@link PipeLineResult} with result from processing the message in the {@link PipeLine}.
 	 * @throws ListenerException If there was an exception, throws a {@link ListenerException}.
 	 */
-	private @NonNull PipeLineResult processMessageInternal(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
+	private @NonNull PipeLineResult processMessageInternal(@Nullable Receiver<?> receiver, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never know....
 		RunState currentRunState = getRunState();
+
+		// Should never be null
+		String messageId = Objects.requireNonNull(pipeLineSession.getMessageId());
+
 		if (currentRunState!=RunState.STARTED && currentRunState!=RunState.STOPPING) {
 			String msgAdapterNotOpen = "Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
 			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
