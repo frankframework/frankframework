@@ -34,10 +34,14 @@ import org.frankframework.util.AppConstants;
 public class AppConstantsValidatorTest {
 
 	private AppConstants appConstants;
+	CredentialConstants credentialConstants;
+	String credentialFactoryOriginalValue;
 
 	@BeforeEach
 	public void setUp() {
 		appConstants = AppConstants.getInstance();
+		credentialConstants = CredentialConstants.getInstance();
+		credentialFactoryOriginalValue = credentialConstants.getProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY);
 	}
 
 	@AfterEach
@@ -47,7 +51,7 @@ public class AppConstantsValidatorTest {
 		appConstants.remove("configurations.autoDatabaseClassLoader");
 		appConstants.remove("instance.name");
 
-		CredentialConstants.getInstance().remove(CredentialFactory.CREDENTIAL_FACTORY_KEY);
+		credentialConstants.setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, credentialFactoryOriginalValue);
 		ApplicationWarnings.removeInstance();
 		AppConstants.removeInstance();
 	}
