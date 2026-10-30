@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.frankframework.credentialprovider.CredentialAlias;
+import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.credentialprovider.ISecret;
-import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
  * Test class for {@link DelineaCredentialFactory} with auto comment value enabled. Since Autocomment is a separate setting in the platform which we can't
@@ -36,10 +36,10 @@ public class DelineaCredentialFactoryWithAutoCommentTest {
 	@BeforeEach
 	public void beforeEach() {
 		// setup constants
-		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.API_ROOT_URL_KEY, "http://localhost:8080");
-		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY, "http://localhost:8080");
-		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.TENANT_KEY, "testTenant");
-		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.USE_AUTO_COMMENT_VALUE, AUTO_COMMENT_VALUE);
+		CredentialFactory.setProperty(DelineaCredentialFactory.API_ROOT_URL_KEY, "http://localhost:8080");
+		CredentialFactory.setProperty(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY, "http://localhost:8080");
+		CredentialFactory.setProperty(DelineaCredentialFactory.TENANT_KEY, "testTenant");
+		CredentialFactory.setProperty(DelineaCredentialFactory.USE_AUTO_COMMENT_VALUE, AUTO_COMMENT_VALUE);
 
 		client = mock(DelineaClient.class);
 		credentialFactory = new DelineaCredentialFactory();
@@ -50,10 +50,7 @@ public class DelineaCredentialFactoryWithAutoCommentTest {
 	@AfterAll
 	public static void tearDown() {
 		// Since credential constants is a singleton, make sure to clean up what we set up in the beforeEach
-		CredentialConstants.getInstance().remove(DelineaCredentialFactory.API_ROOT_URL_KEY);
-		CredentialConstants.getInstance().remove(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY);
-		CredentialConstants.getInstance().remove(DelineaCredentialFactory.TENANT_KEY);
-		CredentialConstants.getInstance().remove(DelineaCredentialFactory.USE_AUTO_COMMENT_VALUE);
+		CredentialFactory.reset();
 	}
 
 	@Test

@@ -26,13 +26,14 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.credentialprovider.CredentialFactory;
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.AppConstants;
 
+@Isolated
 public class AppConstantsValidatorTest {
 
 	private AppConstants appConstants;
@@ -44,12 +45,7 @@ public class AppConstantsValidatorTest {
 
 	@AfterEach
 	public void tearDown() {
-		appConstants.remove("jdbc.convertFieldnamesToUppercase");
-		appConstants.remove(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY);
-		appConstants.remove("configurations.autoDatabaseClassLoader");
-		appConstants.remove("instance.name");
-
-		CredentialConstants.removeInstance();
+		CredentialFactory.reset();
 		ApplicationWarnings.removeInstance();
 		AppConstants.removeInstance();
 	}
@@ -136,7 +132,7 @@ public class AppConstantsValidatorTest {
 	@Test
 	public void testLegacyCredentialFactoryPackageNameTriggersWarning() {
 		// Arrange
-		CredentialConstants.getInstance().setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "nl.nn.credentialprovider.SomeFactory");
+		CredentialFactory.setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "nl.nn.credentialprovider.SomeFactory");
 
 		// Act
 		AppConstantsValidator.validate();
@@ -151,7 +147,7 @@ public class AppConstantsValidatorTest {
 	@Test
 	public void testNonLegacyCredentialFactoryPackageNameDoesNotTriggerWarning() {
 		// Arrange
-		CredentialConstants.getInstance().setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "org.frankframework.credentialprovider.SomeFactory");
+		CredentialFactory.setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "org.frankframework.credentialprovider.SomeFactory");
 
 		// Act
 		AppConstantsValidator.validate();
@@ -167,7 +163,7 @@ public class AppConstantsValidatorTest {
 		appConstants.setProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, ".propmap");
 		appConstants.setProperty("configurations.autoDatabaseClassLoader", "not-empty");
 
-		CredentialConstants.getInstance().setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "nl.nn.credentialprovider.PropertyFileCredentialFactory");
+		CredentialFactory.setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "nl.nn.credentialprovider.PropertyFileCredentialFactory");
 
 		// Act
 		AppConstantsValidator.validate();

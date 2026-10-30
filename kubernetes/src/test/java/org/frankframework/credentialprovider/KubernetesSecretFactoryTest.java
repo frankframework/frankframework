@@ -35,7 +35,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Environment;
 
 class KubernetesSecretFactoryTest {
@@ -65,7 +65,8 @@ class KubernetesSecretFactoryTest {
 		));
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
-		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
+		CredentialFactory.reset();
+		CredentialFactory.setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
 
 		credentialFactory.setClient(client);
 		credentialFactory.initialize();
@@ -73,15 +74,14 @@ class KubernetesSecretFactoryTest {
 
 	@AfterAll
 	static void tearDown() {
-		if (environmentMock != null) {
-			environmentMock.close();
-		}
-		credentialFactory.close();
+		CredentialFactory.reset();
+		CloseUtils.closeSilently(environmentMock, credentialFactory);
 	}
 
 	@Test
 	void testGetAliases() throws UnsupportedOperationException {
 		CredentialAlias alias1 = CredentialAlias.parse("alias1"); // need to fetch the alias first
+		assertNotNull(alias1);
 		assertTrue(credentialFactory.hasSecret(alias1));
 
 		List<String> aliases = List.copyOf(credentialFactory.getConfiguredAliases());
@@ -92,6 +92,7 @@ class KubernetesSecretFactoryTest {
 	@Test
 	void testGetCredential1() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("alias1");
+		assertNotNull(alias);
 		ISecret credential = credentialFactory.getSecret(alias);
 		assertEquals("testUsername1", credential.getField("username"));
 		assertEquals("testPassword1", credential.getField("password"));
@@ -100,6 +101,7 @@ class KubernetesSecretFactoryTest {
 	@Test
 	void testGetCredential2() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("alias2");
+		assertNotNull(alias);
 		ISecret credential = credentialFactory.getSecret(alias);
 		assertEquals("testUsername2", credential.getField("username"));
 		assertEquals("testPassword2", credential.getField("password"));
@@ -108,6 +110,7 @@ class KubernetesSecretFactoryTest {
 	@Test
 	void testGetCredentialWithoutPassword() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("alias4");
+		assertNotNull(alias);
 		ISecret credential = credentialFactory.getSecret(alias);
 		assertEquals("noPassword", credential.getField("username"));
 		assertNull(credential.getField("password"));
@@ -116,6 +119,7 @@ class KubernetesSecretFactoryTest {
 	@Test
 	void testGetCredentialWithoutUsername() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("alias5");
+		assertNotNull(alias);
 		ISecret credential = credentialFactory.getSecret(alias);
 		assertNull(credential.getField("username"));
 		assertEquals("noUsername", credential.getField("password"));
@@ -124,15 +128,18 @@ class KubernetesSecretFactoryTest {
 	@Test
 	void testHasCredential() throws UnsupportedOperationException {
 		CredentialAlias alias1 = CredentialAlias.parse("alias1");
+		assertNotNull(alias1);
 		assertTrue(credentialFactory.hasSecret(alias1));
 
 		CredentialAlias aliasX = CredentialAlias.parse("aliasX");
+		assertNotNull(aliasX);
 		assertFalse(credentialFactory.hasSecret(aliasX));
 	}
 
 	@Test
 	void testGetCredentialsWithDetails() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("alias1");
+		assertNotNull(alias);
 		ISecret credential1 = credentialFactory.getSecret(alias);
 		assertEquals("testUsername1", credential1.getField("username"));
 		assertEquals("testPassword1", credential1.getField("password"));
@@ -145,6 +152,7 @@ class KubernetesSecretFactoryTest {
 	@Test
 	void testUnknownAliasNoDefaults() {
 		CredentialAlias alias = CredentialAlias.parse("fakeAlias");
+		assertNotNull(alias);
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 
@@ -166,6 +174,7 @@ class KubernetesSecretFactoryTest {
 		rootLogger.addHandler(handler);
 
 		CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
+		assertNotNull(illegalChars);
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
 		assertTrue(handler.contains("must start and end with an alphanumeric"));
 
