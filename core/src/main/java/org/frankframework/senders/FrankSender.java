@@ -304,6 +304,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private @Getter Scope scope = Scope.ADAPTER;
 	private @Getter String target;
 	private @Getter String returnedSessionKeys=""; // do not initialize with null, returned session keys must be set explicitly
+	private @Getter boolean rethrowPipelineExceptions = false;
 
 	private @Getter boolean synchronous=true;
 
@@ -483,11 +484,11 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private ServiceClient getAdapterServiceClient(String target) throws SenderException {
 		Adapter adapter = findAdapter(target);
 		return (message, session) -> {
-			PipeLineResult plr = adapter.processMessageDirect(message, session);
+			PipeLineResult plr = adapter.processMessage(message, session, rethrowPipelineExceptions);
 			session.setExitState(plr);
 			// TODO: The code here seems rather dubious actually. Check if we really want to keep this special behaviour on having the text "ListenerException" in our error message.
 			if (plr.getState() == PipeLine.ExitState.ERROR) {
-				// Adapter.processMessageDirect() catches ListenerException and makes an error message from it, but
+				// Adapter.processMessage() catches ListenerException and makes an error message from it, but
 				// we want to actually throw it.
 				String errorResult;
 				try {
@@ -495,7 +496,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 				} catch (IOException e) {
 					throw new ListenerException("Call resulted in error, but cannot get error message:", e);
 				}
-				if (errorResult != null && errorResult.contains("ListenerException")) {
+				if (errorResult.contains("ListenerException")) {
 					throw new ListenerException(errorResult);
 				}
 			}
@@ -611,5 +612,15 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
+	}
+
+	/**
+	 * If set to {@code true} <em>and</em> {@code targt="adapter"} then any exceptions thrown by the target {@link Adapter} will be
+	 * rethrown, triggering the {@link SenderPipe}'s {@code exceptionForward} if set or the pipeline exception handler otherwise.
+	 *
+	 * @ff.default false
+	 */
+	public void setRethrowPipelineExceptions(boolean rethrowPipelineExceptions) {
+		this.rethrowPipelineExceptions = rethrowPipelineExceptions;
 	}
 }

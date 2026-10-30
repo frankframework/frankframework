@@ -493,7 +493,7 @@ public class PipeLineTest {
 		session.put("k3", "v3");
 
 		// Act // Assert
-		assertDoesNotThrow(() -> adapter.processMessageWithExceptions(null, Message.nullMessage(), session));
+		assertDoesNotThrow(() -> adapter.processMessage(Message.nullMessage(), session, true));
 	}
 
 	@Test
@@ -506,7 +506,7 @@ public class PipeLineTest {
 		session.put("k1", "v1");
 
 		// Act // Assert
-		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions(null, Message.nullMessage(), session));
+		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessage(Message.nullMessage(), session, true));
 
 		// Assert
 		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());

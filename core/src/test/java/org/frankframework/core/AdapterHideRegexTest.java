@@ -195,13 +195,15 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession, false);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
 
 			// Stop capturing logs
 			verifyLoglinesBasicScenario(appender);
+		} catch (ListenerException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -215,13 +217,15 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession, false);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
 
 			// Stop capturing logs
 			verifyLoglinesBasicScenario(appender);
+		} catch (ListenerException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -234,13 +238,15 @@ public class AdapterHideRegexTest {
 		// Start capturing logs
 		try (TestAppender appender = getAppender()) {
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession, false);
 
 			// Assert
 			assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
 
 			// Stop capturing logs
 			verifyLoglinesBasicScenario(appender);
+		} catch (ListenerException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
