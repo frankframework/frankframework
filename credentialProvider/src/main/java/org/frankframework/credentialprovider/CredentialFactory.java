@@ -91,7 +91,7 @@ public class CredentialFactory {
 	 * @param value New value of the property, may not be null.
 	 * @return Previous value of the property if set, otherwise null.
 	 */
-	public static @Nullable String setProperty(String key, String value) {
+	public static synchronized @Nullable String setProperty(String key, String value) {
 		clearFactoryInstance();
 		String oldValue = properties.getProperty(key);
 		properties.setProperty(key, value);
