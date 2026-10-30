@@ -82,7 +82,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlException;
 
 /**
  * Provides functions for jms connections, queues and topics and acts as a facade
@@ -724,7 +723,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	 * Supports only
 	 * {@link jakarta.jms.TextMessage}s and {@link jakarta.jms.BytesMessage}.<br/><br/>
 	 */
-	public Message extractMessage(jakarta.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException, XmlException {
+	public Message extractMessage(jakarta.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		Message message = switch (jmsMessage) {
 			case TextMessage textMessage -> new Message(textMessage.getText(), getContext(jmsMessage));
 			case BytesMessage bytesMsg -> {

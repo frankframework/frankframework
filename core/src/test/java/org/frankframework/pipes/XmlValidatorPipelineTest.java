@@ -98,7 +98,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 		assertEquals(0, ApplicationWarnings.getSize(), "No ApplicationWarnings expected, got " + ApplicationWarnings.getWarningsList());
 	}
 
-	public static XmlValidator getUnconfiguredValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) throws ConfigurationException {
+	public static XmlValidator getUnconfiguredValidator(String schemaLocation, Class<AbstractXmlValidator> implementation) {
 		return getUnconfiguredValidator(schemaLocation, false, implementation);
 	}
 

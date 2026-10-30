@@ -333,14 +333,19 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		log.debug("Extract message from raw message");
 		try {
 			F file = rawMessage.getRawMessage();
+			if (file == null) {
+				throw new ListenerException("No file in Message");
+			}
 
 			return switch (getMessageType().name()) {
-				case "NAME" -> new Message(getFileSystem().getName(file));
-				case "PATH" -> new Message(getFileSystem().getCanonicalName(file));
+				case "NAME" -> Message.asMessage(getFileSystem().getName(file));
+				case "PATH" -> Message.asMessage(getFileSystem().getCanonicalName(file));
 				case "CONTENTS" -> getFileSystem().readFile(file, getCharset());
 				case "INFO" -> new Message(FileSystemUtils.getFileInfo(getFileSystem(), file, getOutputFormat()));
 				default -> throw new ListenerException("Unknown messageType [" + getMessageType().name() + "]");
 			};
+		} catch (ListenerException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}

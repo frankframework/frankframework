@@ -41,7 +41,7 @@ interface TypedCharacterDataConverter<T> extends TypedConverter<T> {
 
 	InputStream asInputStream(T data, String encodingCharset) throws IOException;
 
-	default InputSource asInputSource(T data) throws IOException {
+	default InputSource asInputSource(T data) {
 		return new InputSource(asReader(data));
 	}
 }

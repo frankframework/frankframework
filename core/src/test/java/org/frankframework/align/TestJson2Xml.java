@@ -29,7 +29,7 @@ import org.frankframework.xml.XmlWriter;
 @Log4j2
 public class TestJson2Xml extends AlignTestBase {
 
-	public void testJsonNoRoundTrip(String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactConversion, boolean strictSyntax, String expectedFailureReason, String description) throws Exception {
+	public void testJsonNoRoundTrip(String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactConversion, boolean strictSyntax, String expectedFailureReason, String description) {
 		testJson(jsonIn, null, false, schemaUrl, targetNamespace, rootElement, compactConversion, strictSyntax, null, expectedFailureReason, description);
 	}
 	public void testJson(String jsonIn, Map<String,Object> properties, boolean deepSearch, URL schemaUrl, String targetNamespace, String rootElement, boolean compactConversion, boolean strictSyntax, String resultJsonExpected, String expectedFailureReason, String description) {

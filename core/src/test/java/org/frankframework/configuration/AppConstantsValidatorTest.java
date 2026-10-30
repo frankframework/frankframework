@@ -49,7 +49,7 @@ public class AppConstantsValidatorTest {
 		appConstants.remove("configurations.autoDatabaseClassLoader");
 		appConstants.remove("instance.name");
 
-		CredentialConstants.getInstance().remove(CredentialFactory.CREDENTIAL_FACTORY_KEY);
+		CredentialConstants.removeInstance();
 		ApplicationWarnings.removeInstance();
 		AppConstants.removeInstance();
 	}
@@ -167,33 +167,20 @@ public class AppConstantsValidatorTest {
 		appConstants.setProperty(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, ".propmap");
 		appConstants.setProperty("configurations.autoDatabaseClassLoader", "not-empty");
 
-		CredentialConstants credentialConstants = CredentialConstants.getInstance();
-		Object credentialFactoryOriginalValue = credentialConstants.setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "nl.nn.credentialprovider.PropertyFileCredentialFactory");
+		CredentialConstants.getInstance().setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, "nl.nn.credentialprovider.PropertyFileCredentialFactory");
 
 		// Act
 		AppConstantsValidator.validate();
 
 		// Assert
-		try {
-			List<String> warnings = ApplicationWarnings.getWarningsList();
+		List<String> warnings = ApplicationWarnings.getWarningsList();
 
-			assertEquals(4, warnings.size());
-			assertThat(warnings, containsInAnyOrder(
-					containsString("DEPRECATED: legacy classnames from package [" + CredentialFactory.LEGACY_PACKAGE_NAME + "] used for creating CredentialProviders"),
-					containsString("DEPRECATED: [configurations.autoDatabaseClassLoader] is set to [not-empty]"),
-					containsString("DEPRECATED: [ADDITIONAL.PROPERTIES.FILE.SUFFIX] is set to [.propmap]"),
-					containsString("DEPRECATED: [jdbc.convertFieldnamesToUppercase] is set to [false]")
-					));
-		} finally {
-			// Clean up properties set for this test to make sure we do not mess up any other tests
-			AppConstants.removeInstance();
-			ApplicationWarnings.removeInstance();
-
-			if (credentialFactoryOriginalValue == null) {
-				credentialConstants.remove(CredentialFactory.CREDENTIAL_FACTORY_KEY);
-			} else {
-				credentialConstants.setProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY, credentialFactoryOriginalValue.toString());
-			}
-		}
+		assertEquals(4, warnings.size());
+		assertThat(warnings, containsInAnyOrder(
+				containsString("DEPRECATED: legacy classnames from package [" + CredentialFactory.LEGACY_PACKAGE_NAME + "] used for creating CredentialProviders"),
+				containsString("DEPRECATED: [configurations.autoDatabaseClassLoader] is set to [not-empty]"),
+				containsString("DEPRECATED: [ADDITIONAL.PROPERTIES.FILE.SUFFIX] is set to [.propmap]"),
+				containsString("DEPRECATED: [jdbc.convertFieldnamesToUppercase] is set to [false]")
+				));
 	}
 }

@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import org.frankframework.util.LogUtil;
@@ -35,7 +34,7 @@ public abstract class AbstractDigesterRulesHandler extends DefaultHandler {
 	 * Parse all digester rules as {@link DigesterRule}
 	 */
 	@Override
-	public final void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+	public final void startElement(String uri, String localName, String qName, Attributes attributes) {
 		if("rule".equals(qName)) {
 			DigesterRule rule = new DigesterRule();
 			for (int i = 0; i < attributes.getLength(); ++i) {
