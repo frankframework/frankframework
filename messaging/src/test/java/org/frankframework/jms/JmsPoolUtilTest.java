@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSContext;
-import jakarta.jms.JMSException;
 import jakarta.jms.XAConnection;
 import jakarta.jms.XAConnectionFactory;
 import jakarta.jms.XAJMSContext;
@@ -99,7 +98,7 @@ public class JmsPoolUtilTest {
 		private String password = "top-secret";
 
 		@Override
-		public Connection createConnection() throws JMSException {
+		public Connection createConnection() {
 			return createConnection(null, null);
 		}
 
@@ -129,7 +128,7 @@ public class JmsPoolUtilTest {
 		}
 
 		@Override
-		public XAConnection createXAConnection() throws JMSException {
+		public XAConnection createXAConnection() {
 			return createXAConnection(null, null);
 		}
 

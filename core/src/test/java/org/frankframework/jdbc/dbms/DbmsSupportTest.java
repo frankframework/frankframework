@@ -784,7 +784,7 @@ public class DbmsSupportTest {
 		return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 	}
 
-	protected void executeTranslatedQuery(Connection connection, String query) throws JdbcException, SQLException {
+	protected void executeTranslatedQuery(Connection connection, String query) throws JdbcException {
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 
 		log.debug("executing translated query [{}]", translatedQuery);

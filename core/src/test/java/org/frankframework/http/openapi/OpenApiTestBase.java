@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +110,7 @@ public class OpenApiTestBase extends Mockito {
 		return request;
 	}
 
-	protected String callOpenApi(String uri) throws ServletException, IOException {
+	protected String callOpenApi(String uri) throws ServletException {
 		return service(createRequest("get", uri + "/openapi.json"));
 	}
 

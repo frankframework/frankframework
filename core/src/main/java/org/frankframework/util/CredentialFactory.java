@@ -62,7 +62,7 @@ public class CredentialFactory {
 		return StringUtils.defaultIfBlank(credentials.getPassword(), defaultPassword);
 	}
 
-	public static Collection<String> getConfiguredAliases() throws Exception {
+	public static Collection<String> getConfiguredAliases() {
 		return org.frankframework.credentialprovider.CredentialFactory.getConfiguredAliases();
 	}
 

@@ -71,7 +71,7 @@ public class TestReceiverOnError {
 	}
 
 	@AfterEach
-	void tearDown() throws Exception {
+	void tearDown() {
 		log.info("!> tearing down test");
 		configuration.removeAdapters();
 		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); // Meters are cached...
