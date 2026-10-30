@@ -42,4 +42,11 @@ public final class CredentialConstants extends PropertyLoader {
 		}
 		return instance;
 	}
+
+	/**
+	 * Clear the existing static instance, for testing purposes only
+	 */
+	public static synchronized void removeInstance() {
+		instance = null;
+	}
 }
