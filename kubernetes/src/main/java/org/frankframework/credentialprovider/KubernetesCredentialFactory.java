@@ -79,7 +79,7 @@ public class KubernetesCredentialFactory extends AbstractKubernetesCredentialPro
 	}
 
 	@Override
-	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
+	public @NonNull ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		warnIfAliasNameInvalid(alias);
 
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::findSecretByName);
@@ -90,7 +90,7 @@ public class KubernetesCredentialFactory extends AbstractKubernetesCredentialPro
 	}
 
 	@Override
-	public Collection<String> getConfiguredAliases() {
+	public @NonNull Collection<String> getConfiguredAliases() {
 		return configuredAliases.keySet();
 	}
 

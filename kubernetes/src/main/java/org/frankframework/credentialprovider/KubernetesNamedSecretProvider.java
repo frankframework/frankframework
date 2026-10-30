@@ -92,7 +92,7 @@ public class KubernetesNamedSecretProvider extends AbstractKubernetesCredentialP
 	}
 
 	@Override
-	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
+	public @NonNull ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		warnIfAliasNameInvalid(alias);
 
 		final String aliasName = alias.getName();
@@ -114,8 +114,11 @@ public class KubernetesNamedSecretProvider extends AbstractKubernetesCredentialP
 	}
 
 	@Override
-	public Collection<String> getConfiguredAliases() {
+	public @NonNull Collection<String> getConfiguredAliases() {
 		Set<String> aliases = configuredAliasesCache.computeIfAbsentOrExpired("ALL", k -> discoverAliases());
+		if (aliases == null) {
+			return Set.of();
+		}
 		return Collections.unmodifiableSet(aliases);
 	}
 

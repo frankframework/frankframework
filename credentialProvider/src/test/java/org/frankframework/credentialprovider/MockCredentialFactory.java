@@ -10,7 +10,6 @@ import org.jspecify.annotations.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@SuppressWarnings("serial")
 @NullMarked
 public class MockCredentialFactory extends HashMap<String, ISecret> implements ISecretProvider {
 

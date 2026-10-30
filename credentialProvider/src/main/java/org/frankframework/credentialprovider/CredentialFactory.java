@@ -32,8 +32,8 @@ import org.springframework.lang.Contract;
 import lombok.extern.java.Log;
 
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.ImmutableProperties;
 import org.frankframework.util.PropertyLoader;
-import org.frankframework.util.ReadOnlyProperties;
 
 @Log
 public class CredentialFactory {
@@ -73,14 +73,14 @@ public class CredentialFactory {
 	 */
 	public static synchronized void reset() {
 		resetProperties();
-		clearInstance();
+		clearFactoryInstance();
 	}
 
 	/**
 	 * Get the configuration properties of the CredentialFactory. This is a convenience method; you should never modify the properties obtained via this method.
 	 */
 	public static Properties getProperties() {
-		return new ReadOnlyProperties(properties);
+		return new ImmutableProperties(properties);
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class CredentialFactory {
 	 * @return Previous value of the property if set, otherwise null.
 	 */
 	public static @Nullable String setProperty(String key, String value) {
-		clearInstance();
+		clearFactoryInstance();
 		String oldValue = properties.getProperty(key);
 		properties.setProperty(key, value);
 		return oldValue;
@@ -117,7 +117,7 @@ public class CredentialFactory {
 	 * Create an instance using the given {@link ISecretProvider}s, ignoring the providers specified in the configuration.
 	 */
 	public static synchronized void createInstance(ISecretProvider... providers) throws Exception {
-		clearInstance();
+		clearFactoryInstance();
 		self = new CredentialFactory(providers);
 	}
 
@@ -175,7 +175,7 @@ public class CredentialFactory {
 	/**
 	 * Clear the existing static instance, for testing purposes only
 	 */
-	private static void clearInstance() {
+	private static void clearFactoryInstance() {
 		self = null;
 	}
 
@@ -321,6 +321,7 @@ public class CredentialFactory {
 	 * String split method, includes the characters to split on.
 	 * When the input is abc@def, the output will be a list ['abc', '@', 'def'].
 	 */
+	@SuppressWarnings("SameParameterValue")
 	private static List<String> splitWithSeparators(String str, String charsToSplitOn) {
 		final char[] c = str.toCharArray();
 		final List<String> list = new ArrayList<>();
@@ -344,10 +345,7 @@ public class CredentialFactory {
 		for (ISecretProvider factory : getInstance().delegates) {
 			try {
 				Collection<String> configuredAliases = factory.getConfiguredAliases();
-				// It should never be null
-				if (configuredAliases != null) {
-					aliases.addAll(configuredAliases);
-				}
+				aliases.addAll(configuredAliases);
 			} catch (Exception e) {
 				log.log(Level.WARNING, e, () -> "unable to find configured aliases in factory [" + factory + "]");
 			}
