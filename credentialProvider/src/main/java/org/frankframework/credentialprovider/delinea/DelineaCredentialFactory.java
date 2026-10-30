@@ -25,10 +25,10 @@ import org.jspecify.annotations.Nullable;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.CredentialAlias;
+import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.credentialprovider.ISecret;
 import org.frankframework.credentialprovider.ISecretProvider;
 import org.frankframework.credentialprovider.util.Cache;
-import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
  * <p>CredentialFactory that reads its credentials from Delinea (formerly Thycotic) Secret Server.</p>
@@ -126,18 +126,17 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	private DelineaClientSettings readConfiguration() {
-		CredentialConstants appConstants = CredentialConstants.getInstance();
 
 		return new DelineaClientSettings(
-				appConstants.get(TENANT_KEY),
-				appConstants.get(API_ROOT_URL_KEY),
-				appConstants.get(API_ROOT_URL_TEMPLATE_KEY),
-				appConstants.get(OAUTH_TOKEN_URL_TEMPLATE_KEY),
-				appConstants.get(OAUTH_TOKEN_URL_KEY),
-				appConstants.get(OAUTH_USERNAME_KEY),
-				appConstants.get(OAUTH_PASSWORD_KEY),
-				appConstants.get(TLD_KEY),
-				appConstants.get(USE_AUTO_COMMENT_VALUE)
+				CredentialFactory.getProperty(TENANT_KEY),
+				CredentialFactory.getProperty(API_ROOT_URL_KEY),
+				CredentialFactory.getProperty(API_ROOT_URL_TEMPLATE_KEY),
+				CredentialFactory.getProperty(OAUTH_TOKEN_URL_TEMPLATE_KEY),
+				CredentialFactory.getProperty(OAUTH_TOKEN_URL_KEY),
+				CredentialFactory.getProperty(OAUTH_USERNAME_KEY),
+				CredentialFactory.getProperty(OAUTH_PASSWORD_KEY),
+				CredentialFactory.getProperty(TLD_KEY),
+				CredentialFactory.getProperty(USE_AUTO_COMMENT_VALUE)
 		);
 	}
 

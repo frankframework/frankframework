@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import net.wedjaa.ansible.vault.crypto.data.Util;
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -59,9 +58,9 @@ public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory 
 	private static final String DEFAULT_VAULT_KEY_FILE = ".secure-vault-keyfile";
 
 	@Override
-	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, DEFAULT_VAULT_FILE);
-			InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, DEFAULT_VAULT_KEY_FILE)) {
+	protected Map<String, String> getCredentialMap(Properties configurationProperties) throws IOException {
+		try (InputStream vaultStream = getInputStream(configurationProperties, VAULT_PROPERTY, DEFAULT_VAULT_FILE);
+			 InputStream keyStream = getInputStream(configurationProperties, VAULT_KEY_PROPERTY, DEFAULT_VAULT_KEY_FILE)) {
 
 			String vaultKey = StreamUtil.streamToString(keyStream).trim();
 			String encrypted = StreamUtil.streamToString(vaultStream);

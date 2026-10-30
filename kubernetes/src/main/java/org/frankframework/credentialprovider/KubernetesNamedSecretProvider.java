@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,6 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
-import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
  * Credential provider that resolves auth aliases from a fixed set of named Kubernetes secrets.
@@ -66,15 +66,15 @@ public class KubernetesNamedSecretProvider extends AbstractKubernetesCredentialP
 	private final Cache<String, Set<String>, NoSuchElementException> configuredAliasesCache = new Cache<>(CACHE_DURATION_MILLIS);
 
 	@Override
-	protected void postInitialize(CredentialConstants appConstants) {
-		loadConfiguredSecretNames(appConstants);
+	protected void postInitialize(Properties properties) {
+		loadConfiguredSecretNames(properties);
 		log.info("configured " + configuredSecretNames.size() + " Kubernetes named secret(s) in namespace " + namespace);
 	}
 
-	private void loadConfiguredSecretNames(CredentialConstants appConstants) {
+	private void loadConfiguredSecretNames(Properties properties) {
 		configuredSecretNames.clear();
 
-		String configuredNames = appConstants.getProperty(K8_SECRET_NAMES_PROPERTY, null);
+		String configuredNames = properties.getProperty(K8_SECRET_NAMES_PROPERTY, null);
 		if (StringUtils.isBlank(configuredNames)) {
 			throw new KubernetesClientException("no Kubernetes secret names configured; property [" + K8_SECRET_NAMES_PROPERTY + "] is empty");
 		}

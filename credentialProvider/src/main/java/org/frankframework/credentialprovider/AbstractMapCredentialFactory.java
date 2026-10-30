@@ -25,11 +25,11 @@ import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StringUtil;
 
@@ -39,15 +39,15 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 
 	@Override
 	public void initialize() throws IOException {
-		CredentialConstants appConstants = CredentialConstants.getInstance();
+		Properties properties = CredentialFactory.getProperties();
 
-		aliases = getCredentialMap(appConstants);
+		aliases = getCredentialMap(properties);
 	}
 
-	protected abstract Map<String,String> getCredentialMap(CredentialConstants appConstants) throws IOException;
+	protected abstract Map<String,String> getCredentialMap(Properties configurationProperties) throws IOException;
 
-	protected InputStream getInputStream(CredentialConstants appConstants, String key, String defaultValue) throws IOException {
-		String filename = appConstants.getProperty(key, defaultValue);
+	protected InputStream getInputStream(Properties properties, String key, String defaultValue) throws IOException {
+		String filename = properties.getProperty(key, defaultValue);
 		if (StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("property ["+key+"] may not be empty");
 		}

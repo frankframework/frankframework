@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -43,13 +42,14 @@ public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory 
 	private static final String DEFAULT_PROPERTIES_FILE = "credentials.properties";
 
 	@Override
-	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream propertyStream = getInputStream(appConstants, PROPERTY_FILE_KEY, DEFAULT_PROPERTIES_FILE);
-			Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
-			Properties properties = new Properties();
-			properties.load(reader);
+	protected Map<String, String> getCredentialMap(Properties configurationProperties) throws IOException {
+		try (InputStream propertyStream = getInputStream(configurationProperties, PROPERTY_FILE_KEY, DEFAULT_PROPERTIES_FILE);
+			 Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
 
-			return properties.entrySet().stream()
+			Properties credentials = new Properties();
+			credentials.load(reader);
+
+			return credentials.entrySet().stream()
 				.collect(Collectors.toMap(
 					entry -> (String) entry.getKey(),
 					entry -> (String) entry.getValue(),

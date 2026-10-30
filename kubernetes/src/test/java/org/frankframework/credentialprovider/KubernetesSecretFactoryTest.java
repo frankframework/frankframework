@@ -35,7 +35,6 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.Environment;
 
 class KubernetesSecretFactoryTest {
@@ -65,7 +64,7 @@ class KubernetesSecretFactoryTest {
 		));
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
-		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
+		CredentialFactory.setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
 
 		credentialFactory.setClient(client);
 		credentialFactory.initialize();

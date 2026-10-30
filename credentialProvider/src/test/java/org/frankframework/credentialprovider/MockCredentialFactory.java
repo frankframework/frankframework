@@ -42,7 +42,7 @@ public class MockCredentialFactory extends HashMap<String, ISecret> implements I
 		return credentials;
 	}
 
-	public static void add(String alias, String username, String password) {
+	public static void add(String alias, @Nullable String username, String password) {
 		getInstance().put(alias, new MockCredential(alias, username, password));
 	}
 

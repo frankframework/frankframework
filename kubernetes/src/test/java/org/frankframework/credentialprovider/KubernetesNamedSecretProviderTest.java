@@ -32,7 +32,6 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.Environment;
 
 class KubernetesNamedSecretProviderTest {
@@ -78,8 +77,8 @@ class KubernetesNamedSecretProviderTest {
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
 
-		CredentialConstants.getInstance().setProperty(AbstractKubernetesCredentialProvider.K8_MASTER_URL, "http://localhost:8080");
-		CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
+		CredentialFactory.setProperty(AbstractKubernetesCredentialProvider.K8_MASTER_URL, "http://localhost:8080");
+		CredentialFactory.setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
 
 		provider.setClient(client);
 		provider.initialize();
@@ -174,13 +173,13 @@ class KubernetesNamedSecretProviderTest {
 
 	@Test
 	void testMissingSecretNamesPropertyThrows() {
-		CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, "");
+		CredentialFactory.setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, "");
 		try {
 			KubernetesNamedSecretProvider freshProvider = new KubernetesNamedSecretProvider();
 			freshProvider.setClient(client);
 			assertThrows(KubernetesClientException.class, freshProvider::initialize);
 		} finally {
-			CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
+			CredentialFactory.setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
 		}
 	}
 

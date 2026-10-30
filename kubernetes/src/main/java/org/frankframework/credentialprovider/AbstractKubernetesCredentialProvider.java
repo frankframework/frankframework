@@ -18,6 +18,7 @@ package org.frankframework.credentialprovider;
 import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -28,7 +29,6 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.extern.java.Log;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.Environment;
 
 /**
@@ -39,11 +39,11 @@ import org.frankframework.util.Environment;
  * verifying connectivity to the cluster, and validating alias names against the
  * Kubernetes RFC 1123 naming rules (must start and end with an alphanumeric character).
  *
- * <p>Subclasses implement {@link #postInitialize(CredentialConstants)} to perform
+ * <p>Subclasses implement {@link #postInitialize(Properties)} to perform
  * their own startup work after the client is ready, and must provide implementations
  * of {@link #getSecret(CredentialAlias)} and {@link #getConfiguredAliases()}.
  *
- * <p>The following properties are read from {@link CredentialConstants} during initialization:
+ * <p>The following properties are read from {@link CredentialFactory} during initialization:
  * <ul>
  *   <li>{@value #K8_MASTER_URL} — override the Kubernetes API server URL</li>
  *   <li>{@value #K8_USERNAME} — optional username for cluster authentication</li>
@@ -66,7 +66,7 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 
 	@Override
 	public final void initialize() {
-		CredentialConstants appConstants = CredentialConstants.getInstance();
+		Properties appConstants = CredentialFactory.getProperties();
 
 		// Check if we are running on kubernetes
 		if (!Environment.isRunningOnKubernetes()) {
@@ -94,13 +94,13 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 		}
 	}
 
-	private void configureClient(CredentialConstants appConstants) {
+	private void configureClient(Properties properties) {
 		String defaultNamespace = Optional.ofNullable(client.getNamespace()).orElse(DEFAULT_NAMESPACE);
-		namespace = appConstants.getProperty(K8_NAMESPACE_PROPERTY, defaultNamespace);
+		namespace = properties.getProperty(K8_NAMESPACE_PROPERTY, defaultNamespace);
 
-		String k8Username = appConstants.getProperty(K8_USERNAME, null);
-		String k8Passwd = appConstants.getProperty(K8_PASSWORD, null);
-		String k8MasterURL = appConstants.getProperty(K8_MASTER_URL, null);
+		String k8Username = properties.getProperty(K8_USERNAME, null);
+		String k8Passwd = properties.getProperty(K8_PASSWORD, null);
+		String k8MasterURL = properties.getProperty(K8_MASTER_URL, null);
 
 		Config config = client.getConfiguration();
 		if (k8Username != null) config.setUsername(k8Username);
@@ -121,7 +121,7 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 		}
 	}
 
-	protected abstract void postInitialize(CredentialConstants appConstants);
+	protected abstract void postInitialize(Properties properties);
 
 	@Override
 	public boolean hasSecret(@NonNull CredentialAlias alias) {

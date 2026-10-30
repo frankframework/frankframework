@@ -22,16 +22,18 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.logging.Level;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Contract;
 
 import lombok.extern.java.Log;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.PropertyLoader;
+import org.frankframework.util.ReadOnlyProperties;
 
 @Log
 public class CredentialFactory {
@@ -48,8 +50,10 @@ public class CredentialFactory {
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
-	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
-	private static final boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
+	private static CredentialConstants properties = new CredentialConstants();
+
+	protected static boolean ALLOW_DEFAULT_PASSWORD = properties.getBoolean("credentialFactory.allowDefaultPassword", true);
+	private static final boolean ALLOW_FALLBACK = properties.getBoolean("credentialFactory.allowFallbackProvider", true);
 
 	private static @Nullable CredentialFactory self;
 
@@ -60,7 +64,59 @@ public class CredentialFactory {
 		return self;
 	}
 
-	public static synchronized void createInstance(@NonNull ISecretProvider... providers) throws Exception {
+	private static synchronized void resetProperties() {
+		properties = new CredentialConstants();
+	}
+
+	/**
+	 * Reset factory to its default state.
+	 */
+	public static synchronized void reset() {
+		resetProperties();
+		clearInstance();
+	}
+
+	/**
+	 * Get the configuration properties of the CredentialFactory. This is a convenience method; you should never modify the properties obtained via this method.
+	 */
+	public static Properties getProperties() {
+		return new ReadOnlyProperties(properties);
+	}
+
+	/**
+	 * Update the value of a property. This method is for test-usage. Changing the value of any property will clear the loaded CredentialProviders, so that the
+	 * changes will be reflected in any CredentialProviders accessed since.
+	 *
+	 * @param key Name of property to update
+	 * @param value New value of the property, may not be null.
+	 * @return Previous value of the property if set, otherwise null.
+	 */
+	public static @Nullable String setProperty(String key, String value) {
+		clearInstance();
+		String oldValue = properties.getProperty(key);
+		properties.setProperty(key, value);
+		return oldValue;
+	}
+
+	/**
+	 * Get a property of the CredentialFactory, or null if not set
+	 */
+	public static @Nullable String getProperty(String key) {
+		return properties.getProperty(key);
+	}
+
+	/**
+	 * Get a property of the CredentialFactory, or defaultValue if not set
+	 */
+	@Contract("_, !null -> !null")
+	public static @Nullable String getProperty(String key, @Nullable String defaultValue) {
+		return properties.getProperty(key, defaultValue);
+	}
+
+	/**
+	 * Create an instance using the given {@link ISecretProvider}s, ignoring the providers specified in the configuration.
+	 */
+	public static synchronized void createInstance(ISecretProvider... providers) throws Exception {
 		clearInstance();
 		self = new CredentialFactory(providers);
 	}
@@ -84,7 +140,7 @@ public class CredentialFactory {
 		}
 	}
 
-	private CredentialFactory(@NonNull ISecretProvider... providers) throws Exception {
+	private CredentialFactory(ISecretProvider... providers) throws Exception {
 		List<ISecretProvider> providerList = Arrays.asList(providers);
 		if (providerList.isEmpty()) {
 			throw new IllegalArgumentException("No CredentialFactory installed");
@@ -100,7 +156,7 @@ public class CredentialFactory {
 	 * @return true if we've found one or more factories
 	 */
 	private boolean loadFactoryClasses() {
-		String factoryClassNames = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
+		String factoryClassNames = getProperty(CREDENTIAL_FACTORY_KEY);
 
 		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
 		if (StringUtils.isNotEmpty(factoryClassNames) && factoryClassNames.contains(LEGACY_PACKAGE_NAME)) {
@@ -119,7 +175,7 @@ public class CredentialFactory {
 	/**
 	 * Clear the existing static instance, for testing purposes only
 	 */
-	public static void clearInstance() {
+	private static void clearInstance() {
 		self = null;
 	}
 
@@ -297,5 +353,15 @@ public class CredentialFactory {
 			}
 		}
 		return aliases;
+	}
+
+	static final class CredentialConstants extends PropertyLoader {
+
+		private static final String APP_CONSTANTS_PROPERTIES_FILE = "credentialprovider.properties";
+
+		private CredentialConstants() {
+			super(Thread.currentThread().getContextClassLoader(), APP_CONSTANTS_PROPERTIES_FILE);
+		}
+
 	}
 }

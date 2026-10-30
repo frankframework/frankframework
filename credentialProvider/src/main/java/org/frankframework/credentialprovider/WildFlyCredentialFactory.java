@@ -32,8 +32,6 @@ import org.wildfly.security.credential.store.CredentialStoreException;
 
 import lombok.extern.java.Log;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
-
 /**
  * <p>This CredentialFactory implementation uses the WildFly Credential Store to retrieve credentials.</p>
  *
@@ -58,8 +56,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	@Override
 	public void initialize() {
 		log.info("Initializing WildFlyCredentialFactory");
-		CredentialConstants appConstants = CredentialConstants.getInstance();
-		credentialStore = appConstants.getProperty(WILDFLY_CREDENTIAL_STORE_PROPERTY, credentialStore);
+		credentialStore = CredentialFactory.getProperty(WILDFLY_CREDENTIAL_STORE_PROPERTY, credentialStore);
 		if (StringUtils.isEmpty(credentialStore)) {
 			throw new IllegalStateException("No valid property [" + WILDFLY_CREDENTIAL_STORE_PROPERTY + "] found");
 		}
