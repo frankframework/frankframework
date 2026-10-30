@@ -42,8 +42,9 @@ public class AppConstantsValidator {
 	);
 
 	private static final Map<String, String> propertyRegexMatchers = Map.of(
-			// Validates that the instance name is between 1 and 253 characters, starts and ends with an alphanumeric character, and may contain dots and hyphens in between
-			"instance.name", "(?=.{1,253}\\.?$)[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?\\.?"
+			// Validates that the instance name is between 1 and 253 characters, starts and ends with an alphanumeric character, and may contain dots,
+			// underscores and hyphens in between
+			"instance.name", "(?=.{1,253}\\.?$)[A-Za-z0-9](?:[A-Za-z0-9.\\-_]*[A-Za-z0-9])?\\.?"
 	);
 
 	public static void validate() {
