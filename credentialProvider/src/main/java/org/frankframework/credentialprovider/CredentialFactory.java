@@ -116,8 +116,10 @@ public class CredentialFactory {
 		System.exit(12);
 	}
 
-	// Clear the existing static instance, for testing purposes only
-	static void clearInstance() {
+	/**
+	 * Clear the existing static instance, for testing purposes only
+	 */
+	public static void clearInstance() {
 		self = null;
 	}
 
