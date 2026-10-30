@@ -772,7 +772,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
 	@SuppressWarnings("java:S1181")
-	public @NonNull PipeLineResult processMessageDirect(@NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
+	public @NonNull PipeLineResult processMessage(@NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
 		// Should never be null
 		String messageId = Objects.requireNonNull(pipeLineSession.getMessageId());
 
@@ -834,7 +834,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	/**
 	 * This method does the real processing of messages by the adapter. This method is to
-	 * be called either from the {@link Receiver} via {@link #processMessageWithReceiver(Receiver, Message, PipeLineSession)}, or from {@link #processMessageDirect(Message, PipeLineSession)}.
+	 * be called either from the {@link Receiver} via {@link #processMessageWithReceiver(Receiver, Message, PipeLineSession)}, or from {@link #processMessage(Message, PipeLineSession)}.
 	 * <br/>
 	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information (HideRegexContext)
 	 * is among things that should be set up by the caller.</em>

@@ -132,7 +132,7 @@ public class TestPipeline extends BusEndpointBase {
 
 			try {
 
-				PipeLineResult plr = adapter.processMessageDirect(getMessage(payload), pls);
+				PipeLineResult plr = adapter.processMessage(getMessage(payload), pls);
 
 				// Only send a reply if we expect one, else it's wasted traffic...
 				return expectsReply ? convertPipelineResult(plr) : null;

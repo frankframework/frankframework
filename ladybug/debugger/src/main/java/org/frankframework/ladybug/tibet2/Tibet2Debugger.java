@@ -76,7 +76,7 @@ public class Tibet2Debugger extends LadybugDebugger {
 			String messageId = MessageUtils.generateMessageId("tibet2-resend");
 			PipeLineSession.updateListenerParameters(pipeLineSession, messageId, correlationId);
 
-			PipeLineResult processResult = adapter.processMessageDirect(new Message(inputMessage), pipeLineSession);
+			PipeLineResult processResult = adapter.processMessage(new Message(inputMessage), pipeLineSession);
 			String stringResult = processResult.getResult().asString();
 			if (!(processResult.isSuccessful() && "<ok/>".equalsIgnoreCase(stringResult))) {
 				return "Rerun failed. Result of adapter " + RESEND_ADAPTER_NAME + ": " + stringResult;

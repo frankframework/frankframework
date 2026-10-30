@@ -195,7 +195,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -215,7 +215,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -234,7 +234,7 @@ public class AdapterHideRegexTest {
 		// Start capturing logs
 		try (TestAppender appender = getAppender()) {
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession);
 
 			// Assert
 			assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
