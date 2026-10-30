@@ -17,6 +17,7 @@ package org.frankframework.components;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
@@ -28,7 +29,15 @@ import org.frankframework.components.plugins.PluginLoader;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.core.PipeLine;
+import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.Resource;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.receivers.Receiver;
+import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.SpringUtils;
 
@@ -94,6 +103,43 @@ public class FrankPlugin extends PipeLine {
 			// Always revert to the original contextClassLoader, regardless if successful or not.
 			thread.setContextClassLoader(originalClassLoader);
 		}
+	}
+
+	@Override
+	public final PipeLineResult process(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+		return process(message, pipeLineSession);
+	}
+
+	public final PipeLineResult process(@NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+		String messageId = pipeLineSession.getMessageId();
+		if (StringUtils.isBlank(messageId)) {
+			throw new PipeRunException(null, "unable to process message without messageId");
+		}
+
+		return super.process(null, messageId, message, pipeLineSession);
+	}
+
+	/**
+	 * Allow uses to inject session variables through {@link Parameter parameters}, and set the CID when present.
+	 */
+	public static PipeLineSession createChildSession(ParameterValueList pvl, PipeLineSession parentSession) {
+		PipeLineSession childSession = new PipeLineSession();
+		String correlationId = parentSession.getCorrelationId();
+		if (correlationId != null) {
+			childSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+		}
+		if (pvl != null) {
+			childSession.putAll(pvl.getValueMap());
+		}
+
+		// Optionally set the messageId if the ParameterValueList has none.
+		// This is useful for plugins that need to maintain the same messageId, but only when explicitly set.
+		if (StringUtils.isBlank(childSession.getMessageId())) {
+			String messageId = MessageUtils.generateDefaultMessageId();
+			childSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+		}
+
+		return childSession;
 	}
 
 	public void setPluginName(String pluginName) {
