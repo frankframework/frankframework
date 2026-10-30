@@ -31,6 +31,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -500,7 +501,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 							pipelineSession.put(fieldName, entry.getValue());
 						}
 						pipelineSession.put(MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY, parts.multipartXml());
-					} catch(IOException e) {
+					} catch(IOException | MessagingException e) {
 						LOG.warn(() -> "%s Could not read mime multipart request: %s".formatted(createAbortMessage(remoteUser, 400), e.getMessage()), e);
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not read mime multipart request");
 						return;
