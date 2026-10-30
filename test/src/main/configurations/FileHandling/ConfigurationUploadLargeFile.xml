@@ -1,0 +1,55 @@
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+	<Adapter name="HelloBeautifulWorld">
+		<Receiver name="soap-endpoint">
+			<ApiListener name="soap" method="POST" uriPattern="soap" />
+		</Receiver>
+		<Receiver name="json-endpoint">
+			<ApiListener name="json" method="POST" uriPattern="json" />
+		</Receiver>
+		<Pipeline transactionAttribute="Never">
+			<Json2XmlInputValidator schemaLocation="urn:items /xsd/Items.xsd" root="request">
+				<Param name="status" sessionKey="status" />
+
+				<Forward name="failure" path="FAILURE" />
+				<Forward name="outputFailure" path="FAILURE" />
+			</Json2XmlInputValidator>
+
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" code="200" />
+				<Exit name="FAILURE" state="REJECTED" code="400" empty="true" />
+			</Exits>
+
+<!-- 			<ReplacerPipe name="replace-type-to-barleduc" find="type" replace="barleduc" />-->
+
+			<EchoPipe name="print-result" />
+
+			<ZipWriterPipe name="create-zip" action="OPEN" preserveInput="true"/>
+
+<!-- 			<ReplacerPipe name="replace-barleduc-to-type" find="barleduc" replace="type" />-->
+
+			<ForEachChildElementPipe name="my-foreachchildelementpipe" targetElement="item" parallel="true" maxChildThreads="20">
+				<SenderSeriesSender storeInputInSessionKey="originalSenderInput">
+					<FrankSender target="child" />
+					<ZipWriterSender>
+						<Param name="id" xpathExpression="item/id" sessionKey="originalSenderInput" />
+						<Param name="filename" pattern="lorum_{id}.txt" />
+						<Param name="contents" />
+					</ZipWriterSender>
+				</SenderSeriesSender>
+			</ForEachChildElementPipe>
+
+			<ZipWriterPipe name="save-zip" action="CLOSE" />
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="child">
+		<Receiver>
+			<FrankListener name="child"/>
+		</Receiver>
+		<Pipeline>
+			<EchoPipe name="move-element" elementToMove="detail"/>
+			<Base64Pipe name="decode" getInputFromSessionKey="ref_detail" direction="DECODE" />
+			<EchoPipe name="print-result"/>
+		</Pipeline>
+	</Adapter>
+</Module>
