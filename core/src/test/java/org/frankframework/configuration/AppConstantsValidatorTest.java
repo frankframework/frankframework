@@ -26,6 +26,8 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -107,15 +109,29 @@ public class AppConstantsValidatorTest {
 		assertThat(warnings.getFirst(), containsString("configurations.autoDatabaseClassLoader"));
 	}
 
-	@Test
-	public void testInstanceNameNotMatchingRegex() {
+	@ParameterizedTest
+	@ValueSource(strings = {"", "invalid instance_name", "-invalid", "invalid-"})
+	public void testInstanceNameNotMatchingRegex(String instanceName) {
 		// Arrange
-		appConstants.setProperty("instance.name", "invalid instance name");
+		appConstants.setProperty("instance.name", instanceName);
 
 		// Act
 		// Assert
 		assertThrows(IllegalStateException.class, AppConstantsValidator::validate);
 	}
+
+	@Test
+	public void testInstanceNameMatchingRegex() {
+		// Arrange
+		appConstants.setProperty("instance.name", "valid-Instance_1234.value");
+
+		// Act
+		AppConstantsValidator.validate();
+
+		// Assert
+		assertEquals(0, ApplicationWarnings.getWarningsList().size());
+	}
+
 
 	@Test
 	public void testLegacyCredentialFactoryPackageNameTriggersWarning() {
