@@ -483,7 +483,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private ServiceClient getAdapterServiceClient(String target) throws SenderException {
 		Adapter adapter = findAdapter(target);
 		return (message, session) -> {
-			PipeLineResult plr = adapter.processMessageDirect(session.getMessageId(), message, session);
+			PipeLineResult plr = adapter.processMessageDirect(message, session);
 			session.setExitState(plr);
 			// TODO: The code here seems rather dubious actually. Check if we really want to keep this special behaviour on having the text "ListenerException" in our error message.
 			if (plr.getState() == PipeLine.ExitState.ERROR) {

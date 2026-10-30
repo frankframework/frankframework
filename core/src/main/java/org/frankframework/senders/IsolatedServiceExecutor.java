@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
 
 import org.frankframework.core.AbstractRequestReplyExecutor;
 import org.frankframework.core.PipeLineSession;
@@ -49,17 +48,17 @@ public class IsolatedServiceExecutor extends AbstractRequestReplyExecutor {
 		this.threadConnector = new ThreadConnector<>(this, "IsolatedServiceExecutor", threadLifeCycleEventListener, null, session);
 	}
 
+	@SuppressWarnings("java:S1181") // Catch Throwable to ensure that the thread is cleaned up properly
 	@Override
 	public void run() {
-		try (ThreadConnector<?> threadConnector = this.threadConnector) {
-			threadConnector.startThread(request);
+		try (ThreadConnector<?> localThreadConnector = this.threadConnector) {
+			localThreadConnector.startThread(request);
 			Message result = service.processRequest(request, session);
-			reply = new SenderResult(threadConnector.endThread(result));
+			reply = new SenderResult(localThreadConnector.endThread(result));
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);
 			throwable = threadConnector.abortThread(t);
 		} finally {
-			ThreadContext.clearAll();
 			if (guard != null) {
 				guard.countDown();
 			}

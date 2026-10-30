@@ -66,6 +66,7 @@ public class AdapterHideRegexTest {
 	public void setUp() {
 		configuration = TransactionManagerType.DATASOURCE.create(false);
 		pipeLineSession = new PipeLineSession();
+		pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateDefaultMessageId());
 	}
 
 	@AfterEach
@@ -194,7 +195,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateDefaultMessageId(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -214,7 +215,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateDefaultMessageId(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -233,7 +234,7 @@ public class AdapterHideRegexTest {
 		// Start capturing logs
 		try (TestAppender appender = getAppender()) {
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateDefaultMessageId(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
 
 			// Assert
 			assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
