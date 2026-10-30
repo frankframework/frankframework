@@ -34,7 +34,6 @@ import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
@@ -486,7 +485,6 @@ public class PipeLineTest {
 	public void testAdapterExpectedSessionKeysAllPresent() throws ConfigurationException {
 		// Arrange
 		Adapter adapter = buildTestAdapter();
-		Receiver<?> receiver = SpringUtils.createBean(adapter);
 
 		PipeLineSession session = new PipeLineSession();
 		session.put(PipeLineSession.MESSAGE_ID_KEY, "dummy");
@@ -495,21 +493,20 @@ public class PipeLineTest {
 		session.put("k3", "v3");
 
 		// Act // Assert
-		assertDoesNotThrow(() -> adapter.processMessageWithReceiver(receiver, Message.nullMessage(), session));
+		assertDoesNotThrow(() -> adapter.processMessage(Message.nullMessage(), session, true));
 	}
 
 	@Test
 	public void testAdapterExpectedSessionKeysMissingKey() throws ConfigurationException {
 		// Arrange
 		Adapter adapter = buildTestAdapter();
-		Receiver<?> receiver = SpringUtils.createBean(adapter);
 
 		PipeLineSession session = new PipeLineSession();
 		session.put(PipeLineSession.MESSAGE_ID_KEY, "dummy");
 		session.put("k1", "v1");
 
 		// Act // Assert
-		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithReceiver(receiver, Message.nullMessage(), session));
+		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessage(Message.nullMessage(), session, true));
 
 		// Assert
 		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());

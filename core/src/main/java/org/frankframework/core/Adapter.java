@@ -767,12 +767,14 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * This method does not throw any exceptions, and will always return a {@link PipeLineResult}. If an
 	 * error occurred, the error information is in the {@code PipeLineResult}.
 	 *
-	 * @param message         {@link Message} to be processed
-	 * @param pipeLineSession {@link PipeLineSession} session in which message is to be processed
+	 * @param message                   {@link Message} to be processed
+	 * @param pipeLineSession           {@link PipeLineSession} session in which message is to be processed
+	 * @param rethrowPipelineExceptions If {@code true} then exceptions thrown by the pipeline will be rethrown, if {@code false} they will
+	 *                                  be caught and formatted into an error-message result.
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
 	@SuppressWarnings("java:S1181")
-	public @NonNull PipeLineResult processMessage(@NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
+	public @NonNull PipeLineResult processMessage(@NonNull Message message, @NonNull PipeLineSession pipeLineSession, boolean rethrowPipelineExceptions) throws ListenerException {
 		// Should never be null
 		String messageId = Objects.requireNonNull(pipeLineSession.getMessageId());
 
@@ -786,6 +788,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				success = true;
 			} catch (Throwable t) {
 				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
+				if (rethrowPipelineExceptions) {
+					if (t instanceof ListenerException l) {
+						throw l;
+					}
+					throw new ListenerException(t.getMessage(), t);
+				}
 				result.setState(ExitState.ERROR);
 				result.setExitCode(pipeLineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 500)); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
 				String msg = "Illegal exception ["+t.getClass().getName()+"]";
@@ -834,7 +842,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	/**
 	 * This method does the real processing of messages by the adapter. This method is to
-	 * be called either from the {@link Receiver} via {@link #processMessageWithReceiver(Receiver, Message, PipeLineSession)}, or from {@link #processMessage(Message, PipeLineSession)}.
+	 * be called either from the {@link Receiver} via {@link #processMessageWithReceiver(Receiver, Message, PipeLineSession)}, or from {@link #processMessage(Message, PipeLineSession, boolean)}.
 	 * <br/>
 	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information (HideRegexContext)
 	 * is among things that should be set up by the caller.</em>

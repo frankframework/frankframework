@@ -20,6 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -53,7 +54,7 @@ public class TestPipelineTest extends BusTestBase {
 
 	public static class TestPipelineSessionAdapter extends Adapter {
 		@Override
-		public @NonNull PipeLineResult processMessage(org.frankframework.stream.@NonNull Message message, @NonNull PipeLineSession session) {
+		public @NonNull PipeLineResult processMessage(org.frankframework.stream.@NonNull Message message, @NonNull PipeLineSession session, boolean rethrowPipelineExceptions) throws ListenerException {
 			try {
 				String action = message.asString();
 				if (StringUtils.isEmpty(action)) {

@@ -179,7 +179,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 							// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 							String messageId = MessageUtils.generateMessageId("ladybug");
 							PipeLineSession.updateListenerParameters(pipeLineSession, messageId, correlationId);
-							adapter.processMessage(inputMessage, pipeLineSession);
+							adapter.processMessage(inputMessage, pipeLineSession, true);
 						}
 						return null;
 					} finally {
