@@ -815,7 +815,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * This method does the real processing of messages by the adapter. This method is to
 	 * be called either from the {@link Receiver}, or from {@link #processMessageDirect(Message, PipeLineSession)}.
 	 * <br/>
-	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information
+	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information (HideRegexContext)
 	 * is among things that should be set up by the caller.</em>
 	 * <br/>
 	 * This method will return a {@link PipeLineResult} with results of the processing. This

@@ -27,6 +27,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.Lifecycle;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
@@ -40,6 +42,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 
+@Log4j2
 public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContextAware {
 	private IPushingListener<M> listener;
 	private Receiver<M> receiver;
@@ -111,6 +114,7 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 
 	private @NonNull Message doProcess(@NonNull RawMessageWrapper<M> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
+		ThreadContext.push(listener.getName());
 
 		Instant tsReceived = PipeLineSession.getTsReceived(session);
 		Instant tsSent = PipeLineSession.getTsSent(session);
@@ -119,6 +123,13 @@ public class MessageHandler<M> implements IMessageHandler<M>, ApplicationContext
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(session)) {
 			return receiver.processRawMessage(message, session, duplicatesAlreadyChecked);
 		} finally {
+			String oldStackValue = ThreadContext.pop();
+			if (!listener.getName().equals(oldStackValue)) {
+				log.warn("popped [{}] from ThreadContext stack, but expected [{}]", () -> oldStackValue, listener::getName);
+			} else {
+				log.debug("finished processing [{}] from ThreadContext stack", listener::getName);
+			}
+
 			// If this is the outermost call to process a request, then clear the ThreadContext. Otherwise, leave it for the caller to clear.
 			if (ThreadContext.getDepth() == 0) {
 				ThreadContext.clearAll();
