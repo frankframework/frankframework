@@ -92,7 +92,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) {
 		if (wait <= 0) {
 			return selectQuery + " FOR UPDATE SKIP LOCKED";
 		} else {

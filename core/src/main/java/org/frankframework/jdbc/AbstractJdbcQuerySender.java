@@ -493,7 +493,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 
-	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException {
+	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException {
 		log.debug("executing an update BLOB command");
 		ResultSet rs = statement.executeQuery();
 		XmlBuilder result = new XmlBuilder("result");
@@ -523,7 +523,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			} finally {
 				CloseUtils.closeSilently(blobOutputStream);
 			}
-		} catch (SQLException|JdbcException|IOException e) {
+		} catch (SQLException | IOException e) {
 			throw new SenderException("got exception executing an update BLOB command", e);
 		}
 		return blobOutputStream.getWarnings().asMessage();
