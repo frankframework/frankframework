@@ -52,7 +52,7 @@ import org.frankframework.util.Environment;
  * </ul>
  */
 @Log
-public abstract class AbstractKubernetesCredentialProvider implements ISecretProvider {
+public abstract class AbstractKubernetesCredentialProvider implements ISecretProvider, AutoCloseable {
 	static final String K8_USERNAME = "credentialFactory.kubernetes.username";
 	static final String K8_PASSWORD = "credentialFactory.kubernetes.password";
 	static final String K8_MASTER_URL = "credentialFactory.kubernetes.masterUrl";
@@ -152,8 +152,11 @@ public abstract class AbstractKubernetesCredentialProvider implements ISecretPro
 		}
 	}
 
+	@Override
 	public void close() {
-		client.close();
+		if (client != null) {
+			client.close();
+		}
 	}
 
 	// For testing purposes
