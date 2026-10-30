@@ -122,10 +122,9 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
-	 * Provides advice for {@link #processPipeLine(Receiver, PipeLine, Message, PipeLineSession, String)}
-	 */
+	 * Provides advice for {@link org.frankframework.processors.PipeLineProcessor#processPipeLine(Receiver, PipeLine, Message, PipeLineSession, String)}	 */
 	@SuppressWarnings({ "java:S1172", "unused" }) // The unused parameters are needed to make the AOP work
-	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Receiver<?> receiver, PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession) throws Throwable {
+	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Receiver<?> receiver, PipeLine pipeLine, Message message, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return (PipeLineResult)proceedingJoinPoint.proceed();
 		}
@@ -138,8 +137,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		try {
 			PipeLineSession pipeLineSessionDebugger = PipeLineSessionDebugger.newInstance(pipeLineSession, reportGenerator);
 			Object[] args = proceedingJoinPoint.getArgs();
-			args[3] = pipelineInput;
-			args[4] = pipeLineSessionDebugger;
+			args[2] = pipelineInput;
+			args[3] = pipeLineSessionDebugger;
 			pipeLineResult = (PipeLineResult)proceedingJoinPoint.proceed(args);
 		} catch (Throwable throwable) {
 			throw reportGenerator.pipelineAbort(pipeLine, correlationId, throwable);

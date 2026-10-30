@@ -36,10 +36,10 @@
 						)
 					)
 					and
-					args(receiver, pipeLine, messageId, message, pipeLineSession, ..)
+					args(receiver, pipeLine, message, pipeLineSession, ..)
 					"
 				method="debugPipeLineInputOutputAbort"
-				arg-names="proceedingJoinPoint, receiver, pipeLine, messageId, message, pipeLineSession"
+				arg-names="proceedingJoinPoint, receiver, pipeLine, message, pipeLineSession"
 			/>
 			<aop:around
 				pointcut=
