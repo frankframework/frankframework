@@ -856,7 +856,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
 				message = new Message("");
 			}
-			result = pipeline.process(receiver, messageId, message, pipeLineSession);
+			result = pipeline.process(receiver, message, pipeLineSession);
 			return result;
 		} catch (Throwable t) {
 			ListenerException e = new ListenerException(t);
