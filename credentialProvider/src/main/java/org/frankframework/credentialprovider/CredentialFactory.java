@@ -52,7 +52,8 @@ public class CredentialFactory {
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
 	private static CredentialConstants properties = new CredentialConstants();
 
-	protected static boolean ALLOW_DEFAULT_PASSWORD = properties.getBoolean("credentialFactory.allowDefaultPassword", true);
+	@SuppressWarnings("java:S3008") // Should be final but only for tests it's modifiable and thus strictly speaking breaks the naming rule... but should still be named ALL_CAPS
+	protected static boolean ALLOW_DEFAULT_PASSWORD = properties.getBoolean("credentialFactory.allowDefaultPassword", true); // Not final only for tests
 	private static final boolean ALLOW_FALLBACK = properties.getBoolean("credentialFactory.allowFallbackProvider", true);
 
 	private static @Nullable CredentialFactory self;
