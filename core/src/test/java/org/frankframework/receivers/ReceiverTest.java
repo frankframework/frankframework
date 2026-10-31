@@ -34,7 +34,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.doAnswer;
@@ -203,9 +202,9 @@ public class ReceiverTest {
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(exitState);
-			plr.setResult(p.getArgument(2));
+			plr.setResult(p.getArgument(1));
 			return plr;
-		}).when(pl).process(any(), anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(pl).process(any(), any(Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();
@@ -705,7 +704,7 @@ public class ReceiverTest {
 		PipeLineResult pipeLineResult = new PipeLineResult();
 		pipeLineResult.setState(ExitState.SUCCESS);
 		pipeLineResult.setResult(testMessage);
-		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any(), any());
+		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
