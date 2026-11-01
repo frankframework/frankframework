@@ -62,7 +62,7 @@ public class PipeProcessorTestBase {
 
 		PipeLineProcessor cpp = configuration.getBean("pipeLineProcessor", PipeLineProcessor.class);
 		String firstPipe = pipeLine.getPipe(0).getName();
-		PipeLineResult plr = cpp.processPipeLine(null, pipeLine, session.getMessageId(), inputMessage, session, firstPipe);
+		PipeLineResult plr = cpp.processPipeLine(null, pipeLine, inputMessage, session, firstPipe);
 		return plr.getResult();
 	}
 

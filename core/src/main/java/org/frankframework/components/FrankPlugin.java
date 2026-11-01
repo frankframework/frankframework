@@ -106,7 +106,7 @@ public class FrankPlugin extends PipeLine {
 	}
 
 	@Override
-	public final PipeLineResult process(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+	public final PipeLineResult process(@Nullable Receiver<?> receiver, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		return process(message, pipeLineSession);
 	}
 
@@ -116,7 +116,7 @@ public class FrankPlugin extends PipeLine {
 			throw new PipeRunException(null, "unable to process message without messageId");
 		}
 
-		return super.process(null, messageId, message, pipeLineSession);
+		return super.process(null, message, pipeLineSession);
 	}
 
 	/**

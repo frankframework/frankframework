@@ -48,7 +48,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 	private @Setter PipeProcessor pipeProcessor;
 
 	@Override
-	public PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, PipeLine pipeLine, String messageId, Message input, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, PipeLine pipeLine, Message input, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 
 		// Validate / wrap message and get the first pipe to run
 		ProcessingResult<IForwardTarget> preProcessingResult = preProcessInput(receiver, pipeLine, input, pipeLineSession, firstPipe);
@@ -65,10 +65,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		ProcessingResult<PipeLineExit> result = runToExit(pipeLine, preProcessingResult.forwardTarget, preProcessingResult.message, pipeLineSession, false);
 
 		ProcessingResult<PipeLineExit> postProcessingResult = postProcessOutput(receiver, pipeLine, result, pipeLineSession);
-		return createPipeLineResult(pipeLine, messageId, pipeLineSession, postProcessingResult);
+		return createPipeLineResult(pipeLine, pipeLineSession, postProcessingResult);
 	}
 
-	private static PipeLineResult createPipeLineResult(PipeLine pipeLine, String messageId, PipeLineSession pipeLineSession, ProcessingResult<PipeLineExit> result) {
+	private static PipeLineResult createPipeLineResult(PipeLine pipeLine, PipeLineSession pipeLineSession, ProcessingResult<PipeLineExit> result) {
 		PipeLineResult pipeLineResult = PipeLineResult.create(result.forwardTarget, result.message);
 		if (log.isDebugEnabled()) {  // for performance reasons
 			StringBuilder skString = new StringBuilder();
@@ -79,7 +79,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 			String adapterName = pipeLine.getAdapter().getName();
 			log.debug("Available session keys at finishing pipeline of adapter [{}]:{}", adapterName, skString);
-			log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: ({}) [{}] with exit-state [{}]", adapterName, messageId, result.message.getClass().getSimpleName(), result.message, result.forwardTarget.getState());
+			log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: ({}) [{}] with exit-state [{}]", adapterName, pipeLineSession.getMessageId(), result.message.getClass().getSimpleName(), result.message, result.forwardTarget.getState());
 		}
 		return pipeLineResult;
 	}
