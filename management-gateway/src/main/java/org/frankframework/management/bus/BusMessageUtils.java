@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
+import org.springframework.lang.Contract;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.security.core.Authentication;
@@ -138,7 +139,8 @@ public class BusMessageUtils {
 		return getHeader(message, headerName, String.class);
 	}
 
-	public static String getHeader(Message<?> message, String headerName, @Nullable String defaultValue) {
+	@Contract(value = "_, _, !null -> !null")
+	public static @Nullable String getHeader(Message<?> message, String headerName, @Nullable String defaultValue) {
 		String headerValue = getHeader(message, headerName, String.class);
 		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
 	}

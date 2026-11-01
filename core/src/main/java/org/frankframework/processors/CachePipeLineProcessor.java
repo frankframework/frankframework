@@ -39,10 +39,10 @@ import org.frankframework.util.EnumUtils;
 public class CachePipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
-	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		ICache<String,String> cache=pipeLine.getCache();
 		if (cache==null) {
-			return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+			return pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 		}
 
 		String input;
@@ -55,7 +55,7 @@ public class CachePipeLineProcessor extends AbstractPipeLineProcessor {
 
 		if (key == null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
-			return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+			return pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 		}
 
 		if (log.isDebugEnabled()) log.debug("cache key [{}]", key);
@@ -75,7 +75,7 @@ public class CachePipeLineProcessor extends AbstractPipeLineProcessor {
 		}
 
 		if (log.isDebugEnabled()) log.debug("no cached results found using key [{}]", key);
-		PipeLineResult plr=pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+		PipeLineResult plr=pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 		if (log.isDebugEnabled()) log.debug("caching result using key [{}]", key);
 		String cacheValue=cache.transformValue(plr.getResult(), pipeLineSession);
 		synchronized (cache) {

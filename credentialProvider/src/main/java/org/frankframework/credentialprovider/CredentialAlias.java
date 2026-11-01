@@ -26,7 +26,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.java.Log;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.StringUtil;
 
 @Log
@@ -53,8 +52,7 @@ public class CredentialAlias {
 	private final String passwordField;
 
 	static {
-		CredentialConstants constants = CredentialConstants.getInstance();
-		String aliasPrefix = constants.getProperty(CredentialFactory.CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY);
+		String aliasPrefix = CredentialFactory.getProperty(CredentialFactory.CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY);
 		if (StringUtils.isNotBlank(aliasPrefix)) {
 			log.info("setting optional prefix to [" + aliasPrefix + "]");
 			ALIAS_PREFIX = aliasPrefix.toLowerCase(Locale.ROOT);
@@ -62,8 +60,8 @@ public class CredentialAlias {
 			ALIAS_PREFIX = null;
 		}
 
-		String mapNameSuffix = constants.getProperty(PROPERTY_BASE1.formatted(USERNAME_SUFFIX));
-		String vaultNameSuffix = constants.getProperty(PROPERTY_BASE2.formatted(USERNAME_SUFFIX));
+		String mapNameSuffix = CredentialFactory.getProperty(PROPERTY_BASE1.formatted(USERNAME_SUFFIX));
+		String vaultNameSuffix = CredentialFactory.getProperty(PROPERTY_BASE2.formatted(USERNAME_SUFFIX));
 		if (StringUtils.isNotBlank(mapNameSuffix)) {
 			DEFAULT_USERNAME_FIELD = mapNameSuffix;
 		} else if (StringUtils.isNotBlank(vaultNameSuffix)) {
@@ -72,8 +70,8 @@ public class CredentialAlias {
 			DEFAULT_USERNAME_FIELD = CredentialFactory.DEFAULT_USERNAME_FIELD;
 		}
 
-		String mapPasswordSuffix = constants.getProperty(PROPERTY_BASE1.formatted(PASSWORD_SUFFIX));
-		String vaultPasswordSuffix = constants.getProperty(PROPERTY_BASE2.formatted(PASSWORD_SUFFIX));
+		String mapPasswordSuffix = CredentialFactory.getProperty(PROPERTY_BASE1.formatted(PASSWORD_SUFFIX));
+		String vaultPasswordSuffix = CredentialFactory.getProperty(PROPERTY_BASE2.formatted(PASSWORD_SUFFIX));
 		if (StringUtils.isNotBlank(mapPasswordSuffix)) {
 			DEFAULT_PASSWORD_FIELD = mapPasswordSuffix;
 		} else if (StringUtils.isNotBlank(vaultPasswordSuffix)) {

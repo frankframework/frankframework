@@ -42,7 +42,7 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 
 	@Override
 	@SuppressWarnings({ "java:S1141", "java:S1181", "java:S2629", "java:S1143", "java:S1163" }) // java:S2629: log arguments not evaluated lazily, b/c non-final variable; java:S1141: Ignore nested try-catch blocks; java:S1143, java:S1163: We want to throw from finally, sorry. java:S1181: Catching Throwable. Because we want to add the Throwable to suppressedExceptions.
-	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		try {
 			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
 			try {
@@ -50,13 +50,13 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 				Throwable tThrown = null;
 				try {
 					tg.activateGuard(pipeLine.getTransactionTimeout());
-					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 
 					boolean mustRollback=false;
 
 					if (!pipeLineResult.isSuccessful()) {
 						mustRollback = true;
-						log.warn("Pipeline result state [{}] for messageId [{}] is not equal to [{}], transaction (when present and active) will be rolled back", pipeLineResult.getState(), messageId, ExitState.SUCCESS);
+						log.warn("Pipeline result state [{}] for messageId [{}] is not equal to [{}], transaction (when present and active) will be rolled back", pipeLineResult.getState(), pipeLineSession.getMessageId(), ExitState.SUCCESS);
 					}
 					if (mustRollback) {
 						try {

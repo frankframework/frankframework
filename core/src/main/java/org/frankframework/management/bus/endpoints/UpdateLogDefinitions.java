@@ -61,13 +61,13 @@ public class UpdateLogDefinitions {
 	private static final String FF_PACKAGE_PREFIX = "org.frankframework";
 
 	@ActionSelector(BusAction.GET)
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> getLoggersAndDefinitions(Message<?> message) {
 		String filter = BusMessageUtils.getHeader(message, "filter", null);
 		LoggerContext logContext = LoggerContext.getContext(false);
 		Map<String, Object> result = new HashMap<>();
 
-		if(StringUtils.isEmpty(filter)) {
+		if (StringUtils.isEmpty(filter)) {
 			result.put("definitions", getLogDefinitions(logContext));
 			filter = FF_PACKAGE_PREFIX;
 		}
@@ -76,16 +76,16 @@ public class UpdateLogDefinitions {
 		for (Logger logger : logContext.getLoggers()) {
 			String logName = logger.getName();
 			String packageName;
-			if(logName.contains(".")) {
+			if (logName.contains(".")) {
 				packageName = logName.substring(0, logName.lastIndexOf("."));
 			} else {
 				packageName = logName;
 			}
 
-			if(filter == null || packageName.startsWith(filter)) {
+			if (packageName.startsWith(filter)) {
 				StandardLevel newLevel = logger.getLevel().getStandardLevel();
 				StandardLevel oldLevel = registeredLoggers.get(packageName);
-				if(oldLevel != null && oldLevel.compareTo(newLevel) < 1) {
+				if (oldLevel != null && oldLevel.compareTo(newLevel) <= 0) {
 					continue;
 				}
 				registeredLoggers.put(packageName, newLevel);
@@ -99,12 +99,12 @@ public class UpdateLogDefinitions {
 	public List<LogDefinitionDAO> getLogDefinitions(LoggerContext logContext) {
 		List<LogDefinitionDAO> defaultLoggers = new ArrayList<>();
 		Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
-		for(LoggerConfig config : loggerConfigs) {
+		for (LoggerConfig config : loggerConfigs) {
 			String name = config.getName();
-			if(StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith(LogUtil.MESSAGE_LOGGER+".")) {
+			if (StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith(LogUtil.MESSAGE_LOGGER + ".")) {
 				LogDefinitionDAO def = new LogDefinitionDAO(name, config.getLevel());
 				Set<String> appenders = config.getAppenders().keySet();
-				if(!appenders.isEmpty()) {
+				if (!appenders.isEmpty()) {
 					def.setAppenders(config.getAppenders().keySet());
 				}
 				defaultLoggers.add(def);
@@ -115,28 +115,17 @@ public class UpdateLogDefinitions {
 		return defaultLoggers;
 	}
 
-	public static class LogDefinitionDAO {
-		private final @Getter String name;
-		private final @Getter String level;
-		private @Getter @Setter @JsonInclude(Include.NON_NULL) Set<String> appenders;
-
-		public LogDefinitionDAO(String name, Level level) {
-			this.name = name;
-			this.level = level.getStandardLevel().name();
-		}
-	}
-
 	@SuppressWarnings("java:S4792") // Changing the logger level is not a security-sensitive operation, because roles are checked
 	@ActionSelector(BusAction.MANAGE)
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<String> updateLogConfiguration(Message<?> message) {
 		String logLevelStr = BusMessageUtils.getHeader(message, "level", null);
 		Level level = Level.toLevel(logLevelStr, null);
 		String logPackage = BusMessageUtils.getHeader(message, "logPackage", null);
 		Boolean reconfigure = BusMessageUtils.getBooleanHeader(message, "reconfigure", null);
 
-		if(reconfigure != null) {
-			if(reconfigure) {
+		if (reconfigure != null) {
+			if (reconfigure) {
 				LoggerContext logContext = LoggerContext.getContext(false);
 				logContext.reconfigure();
 				log2SecurityLog("reconfigured logdefinitions");
@@ -146,22 +135,22 @@ public class UpdateLogDefinitions {
 			return EmptyMessage.noContent();
 		}
 
-		if(StringUtils.isNotEmpty(logPackage) && level != null) {
+		if (StringUtils.isNotEmpty(logPackage) && level != null) {
 			Configurator.setLevel(logPackage, level);
-			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
+			log2SecurityLog("changed logdefinition [" + logPackage + "] to level [" + level.getStandardLevel().name() + "]");
 			return EmptyMessage.accepted();
 		}
 		throw new BusException("neither [reconfigure], [logPackage] or [level] provided");
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
-	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed({ "IbisDataAdmin", "IbisAdmin", "IbisTester" })
 	public Message<?> createLogConfiguration(Message<?> message) {
 		String logLevelStr = BusMessageUtils.getHeader(message, "level", null);
 		Level level = Level.toLevel(logLevelStr, null);
 		String logPackage = BusMessageUtils.getHeader(message, "logPackage", null);
 
-		if(StringUtils.isNotEmpty(logPackage) && level != null) {
+		if (StringUtils.isNotEmpty(logPackage) && level != null) {
 			LoggerContext logContext = LoggerContext.getContext(false);
 			Configuration logConfiguration = logContext.getConfiguration();
 
@@ -174,5 +163,16 @@ public class UpdateLogDefinitions {
 	private void log2SecurityLog(String logMessage) {
 		log.warn(logMessage);
 		LogUtil.getLogger("SEC").info(logMessage);
+	}
+
+	public static class LogDefinitionDAO {
+		private final @Getter String name;
+		private final @Getter String level;
+		private @Getter @Setter @JsonInclude(Include.NON_NULL) Set<String> appenders;
+
+		public LogDefinitionDAO(String name, Level level) {
+			this.name = name;
+			this.level = level.getStandardLevel().name();
+		}
 	}
 }
