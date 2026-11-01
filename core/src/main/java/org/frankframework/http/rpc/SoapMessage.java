@@ -18,6 +18,7 @@ package org.frankframework.http.rpc;
 import java.io.IOException;
 import java.util.Map;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.SOAPException;
 
@@ -59,7 +60,7 @@ public class SoapMessage {
 			}
 
 			return new SoapMessage(MultipartUtils.parseMultipart(request.getInputStream(), request.getContentType(), null));
-		} catch (IOException e) {
+		} catch (IOException | MessagingException e) {
 			throw new SOAPException("failed to parse request", e);
 		}
 	}
