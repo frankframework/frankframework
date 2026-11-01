@@ -27,6 +27,7 @@ import org.wearefrank.ladybug.run.ReportRunner;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.ladybug.LadybugDebugger;
@@ -76,13 +77,13 @@ public class Tibet2Debugger extends LadybugDebugger {
 			String messageId = MessageUtils.generateMessageId("tibet2-resend");
 			PipeLineSession.updateListenerParameters(pipeLineSession, messageId, correlationId);
 
-			PipeLineResult processResult = adapter.processMessageDirect(new Message(inputMessage), pipeLineSession);
+			PipeLineResult processResult = adapter.processMessage(new Message(inputMessage), pipeLineSession, true);
 			String stringResult = processResult.getResult().asString();
 			if (!(processResult.isSuccessful() && "<ok/>".equalsIgnoreCase(stringResult))) {
 				return "Rerun failed. Result of adapter " + RESEND_ADAPTER_NAME + ": " + stringResult;
 			}
 			return null;
-		} catch (IOException e) {
+		} catch (IOException | ListenerException e) {
 			return "Rerun failed. Exception in adapter " + RESEND_ADAPTER_NAME + ": (" + e.getClass().getName()+") " + e.getMessage();
 		} finally {
 			synchronized(inRerun) {
