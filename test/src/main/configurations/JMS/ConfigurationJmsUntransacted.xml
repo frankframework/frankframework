@@ -19,7 +19,7 @@
 			<LogContextPipe name="Log Iter Count">
 				<NumberParam name="iteration" sessionKey="loop-count"/>
 			</LogContextPipe>
-			<SenderPipe name="Send Test Message" getInputFromSessionKey="loop-count">
+			<SenderPipe name="Send Test Message" getInputFromSessionKey="loop-count" transactionAttribute="RequiresNew">
 				<JmsSender jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_ff}">
 					<Param name="SOURCE" value="${hostname}-TestJmsUntransacted"/>
 					<Param name="TYPE" sessionKey="listener.type"/>
