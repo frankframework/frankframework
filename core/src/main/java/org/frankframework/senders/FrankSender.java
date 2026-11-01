@@ -39,10 +39,12 @@ import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
@@ -304,7 +306,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private @Getter Scope scope = Scope.ADAPTER;
 	private @Getter String target;
 	private @Getter String returnedSessionKeys=""; // do not initialize with null, returned session keys must be set explicitly
-	private @Getter boolean rethrowPipelineExceptions = false;
+	private @Getter RequestReplyListener.ExceptionHandlingMethod onException = RequestReplyListener.ExceptionHandlingMethod.RETHROW;
 
 	private @Getter boolean synchronous=true;
 
@@ -484,7 +486,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private ServiceClient getAdapterServiceClient(String target) throws SenderException {
 		Adapter adapter = findAdapter(target);
 		return (message, session) -> {
-			PipeLineResult plr = adapter.processMessage(message, session, rethrowPipelineExceptions);
+			PipeLineResult plr = adapter.processMessage(message, session, onException == RequestReplyListener.ExceptionHandlingMethod.RETHROW);
 			session.setExitState(plr);
 			// TODO: The code here seems rather dubious actually. Check if we really want to keep this special behaviour on having the text "ListenerException" in our error message.
 			if (plr.getState() == PipeLine.ExitState.ERROR) {
@@ -614,13 +616,25 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		returnedSessionKeys = string;
 	}
 
+
 	/**
-	 * If set to {@code true} <em>and</em> {@code targt="adapter"} then any exceptions thrown by the target {@link Adapter} will be
-	 * rethrown, triggering the {@link SenderPipe}'s {@code exceptionForward} if set or the pipeline exception handler otherwise.
+	 * When the {@link #target} is {@link #scope} {@link FrankSender.Scope#ADAPTER} and exception happens in the execution of the pipeline, with {@code RETHROW} the
+	 * exception is thrown to the caller. With {@code FORMAT_AND_RETURN} the exception is processed
+	 * by the {@link Adapter#setErrorMessageFormatter(IErrorMessageFormatter)} of the target adapter and returned as result-message
+	 * of the target {@link Adapter}.
+	 * <br/>
+	 * For {@link #scope} {@link Scope#LISTENER}, set this property on the target {@link FrankListener}.
+	 * <br/>
+	 * For other scopes this option is not relevant.
+	 * <br/>
+	 * For backwards compatibility with older versions of the Frank!Framework, the default version is {@link org.frankframework.core.RequestReplyListener.ExceptionHandlingMethod#FORMAT_AND_RETURN}.
 	 *
-	 * @ff.default false
+	 * @ff.default FORMAT_AND_RETURN
+	 * @since 10.4
+	 *
+	 * @param onException {@code RETHROW} or {@code FORMAT_AND_RETURN}
 	 */
-	public void setRethrowPipelineExceptions(boolean rethrowPipelineExceptions) {
-		this.rethrowPipelineExceptions = rethrowPipelineExceptions;
+	public void setOnException(RequestReplyListener.ExceptionHandlingMethod onException) {
+		this.onException = onException;
 	}
 }
