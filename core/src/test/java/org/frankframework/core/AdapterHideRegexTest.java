@@ -210,7 +210,7 @@ public class AdapterHideRegexTest {
 	}
 
 	@Test
-	public void testHideRegexesProcessDirectWithError() throws ConfigurationException, IOException {
+	public void testHideRegexesProcessDirectWithError() throws Exception {
 		// Arrange
 		Adapter adapter = setupBasicAdapter(PipeLine.ExitState.ERROR, false);
 		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
@@ -226,8 +226,6 @@ public class AdapterHideRegexTest {
 
 			// Stop capturing logs
 			verifyLoglinesBasicScenario(appender);
-		} catch (ListenerException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
