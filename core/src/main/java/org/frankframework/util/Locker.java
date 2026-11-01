@@ -46,30 +46,39 @@ import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
- * Locker of scheduler jobs and pipes.
+ * Provides locking for scheduler jobs and pipeline processing.
  * <p>
- * Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
- * successfully the job is executed.
+ * A locker can be configured inside a pipeline to coordinate processing
+ * between executions that use the same lock. It can also be configured
+ * for scheduler jobs to coordinate jobs that use the same lock.
+ * <p>
+ * The locker attempts to acquire a lock by inserting a record into the
+ * database table IBISLOCK. Processing proceeds only when the lock is
+ * acquired successfully. The objectId property identifies the lock and
+ * must be specified.
+ * <p>
+ * The IBISLOCK table must exist in the database unless
+ * ignoreTableNotExist is enabled.
  * <p>
  * For an Oracle database the following objects are used:
  *  <pre>{@code
- *	CREATE TABLE &lt;schema_owner&gt;.IBISLOCK
- *	(
- *	OBJECTID VARCHAR2(100 CHAR),
- *	TYPE CHAR(1 CHAR),
- *	HOST VARCHAR2(100 CHAR),
- *	CREATIONDATE TIMESTAMP(6),
- *	EXPIRYDATE TIMESTAMP(6)
- *	CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)
- *	);
+ *     CREATE TABLE &lt;schema_owner&gt;.IBISLOCK
+ *     (
+ *     OBJECTID VARCHAR2(100 CHAR),
+ *     TYPE CHAR(1 CHAR),
+ *     HOST VARCHAR2(100 CHAR),
+ *     CREATIONDATE TIMESTAMP(6),
+ *     EXPIRYDATE TIMESTAMP(6)
+ *     CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)
+ *     );
  *
- *	CREATE INDEX &lt;schema_owner&gt;.IX_IBISLOCK ON &lt;schema_owner&gt;.IBISLOCK
- *	(EXPIRYDATE);
+ *     CREATE INDEX &lt;schema_owner&gt;.IX_IBISLOCK ON &lt;schema_owner&gt;.IBISLOCK
+ *     (EXPIRYDATE);
  *
- *	GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISLOCK TO &lt;rolename&gt;;
- *	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;
+ *     GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISLOCK TO &lt;rolename&gt;;
+ *     GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;
  *
- *	COMMIT;
+ *     COMMIT;
  *  }</pre>
  *
  * @author  Peter Leeuwenburgh
