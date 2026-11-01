@@ -771,6 +771,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @param pipeLineSession           {@link PipeLineSession} session in which message is to be processed
 	 * @param rethrowPipelineExceptions If {@code true} then exceptions thrown by the pipeline will be rethrown, if {@code false} they will
 	 *                                  be caught and formatted into an error-message result.
+	 *                                  TODO: All callers now pass `true` always but lets see how that works out for TestAPipeline, Ladybug, Tibet2 before removing this param
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
 	@SuppressWarnings("java:S1181")
