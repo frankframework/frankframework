@@ -31,11 +31,11 @@ import org.frankframework.stream.Message;
 public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
-	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		// Store the original message in the PipeLineSession, so that it can be used by the pipes in the pipeline.
 		pipeLineSession.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 
-		return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+		return pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 	}
 
 }

@@ -25,8 +25,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
-
 /**
  * <p>CredentialFactory implementation that reads secrets from the file system.</p>
  *
@@ -50,8 +48,7 @@ public class FileSystemCredentialFactory implements ISecretProvider {
 
 	@Override
 	public void initialize() {
-		CredentialConstants appConstants = CredentialConstants.getInstance();
-		String fsroot = appConstants.getProperty(FILESYSTEM_ROOT_PROPERTY);
+		String fsroot = CredentialFactory.getProperty(FILESYSTEM_ROOT_PROPERTY);
 		if (StringUtils.isEmpty(fsroot)) {
 			throw new IllegalStateException("Property ["+FILESYSTEM_ROOT_PROPERTY+"] not found");
 		}

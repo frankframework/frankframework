@@ -439,18 +439,17 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 	 * the call results in a PipRunResult, containing the next pipe to activate.
 	 * While processing the process method keeps statistics.
 	 * @param message The message as received from the Listener
-	 * @param messageId A unique id for this message, used for logging purposes.
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeLineResult process(@Nullable Receiver<?> receiver, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
 		}
 		if (!expectsSessionKeysSet.isEmpty()) {
 			verifyExpectedSessionKeysPresent(pipeLineSession);
 		}
-		return pipeLineProcessor.processPipeLine(receiver, this, messageId, message, pipeLineSession, firstPipe);
+		return pipeLineProcessor.processPipeLine(receiver, this, message, pipeLineSession, firstPipe);
 	}
 
 	private void verifyExpectedSessionKeysPresent(PipeLineSession session) throws PipeRunException {

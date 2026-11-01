@@ -181,12 +181,12 @@ public class FrankApplication {
 		}
 
 		@Override
-		public boolean hasSecret(CredentialAlias alias) {
+		public boolean hasSecret(@NonNull CredentialAlias alias) {
 			return false;
 		}
 
 		@Override
-		public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+		public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 			throw new NoSuchElementException();
 		}
 

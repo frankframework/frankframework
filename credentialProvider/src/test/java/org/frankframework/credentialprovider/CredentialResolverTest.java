@@ -13,7 +13,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.StringResolver;
 
 public class CredentialResolverTest {
@@ -22,7 +21,7 @@ public class CredentialResolverTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		CredentialFactory.clearInstance();
+		CredentialFactory.reset();
 		MockCredentialFactory.getInstance().clear();
 		CredentialResolver.resetAllowedExpansions();
 
@@ -34,7 +33,7 @@ public class CredentialResolverTest {
 		properties.load(propsStream);
 		assertFalse(properties.isEmpty(), "did not find any properties!");
 
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 		System.setProperty("authAliases.expansion.allowed", "${allowedAliases}");
 	}
 

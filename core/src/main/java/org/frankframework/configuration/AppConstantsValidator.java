@@ -24,7 +24,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.credentialprovider.CredentialFactory;
-import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.AppConstants;
 
 /**
@@ -83,7 +82,7 @@ public class AppConstantsValidator {
 			}
 		});
 
-		String credentialFactoryClassNames = CredentialConstants.getInstance().getProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY);
+		String credentialFactoryClassNames = CredentialFactory.getProperty(CredentialFactory.CREDENTIAL_FACTORY_KEY);
 		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
 		if (StringUtils.isNotEmpty(credentialFactoryClassNames) && credentialFactoryClassNames.contains(CredentialFactory.LEGACY_PACKAGE_NAME)) {
 			ApplicationWarnings.add(log, "DEPRECATED: legacy classnames from package [" +

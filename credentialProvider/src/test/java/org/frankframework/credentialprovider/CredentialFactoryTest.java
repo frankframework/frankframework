@@ -20,24 +20,22 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
-
 class CredentialFactoryTest {
 
 	@BeforeEach
 	void setup() {
 		MockCredentialFactory.getInstance().clear();
-		CredentialFactory.clearInstance();
+		CredentialFactory.reset();
 		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
 
 		// Make sure the defaults are always the same
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 	}
 
 	@AfterEach
 	void tearDown() {
 		// Since credential constants is a singleton, make sure to clean up what we set up in the beforeEach
-		CredentialConstants.getInstance().remove("credentialFactory.class");
+		CredentialFactory.reset();
 		MockCredentialFactory.getInstance().clear();
 	}
 
@@ -64,7 +62,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testUnknownAliasWithNoUsernameAndDefaultPassword() {
-		CredentialFactory.clearInstance();
+		CredentialFactory.reset();
 		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
 
 		// Act
@@ -77,7 +75,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testUnknownAliasWithNoUsernameAndNoDefaultPassword() {
-		CredentialFactory.clearInstance();
+		CredentialFactory.reset();
 		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
 
 		// Act
@@ -86,7 +84,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testUnknownAliasShouldThrowException() {
-		CredentialFactory.clearInstance();
+		CredentialFactory.reset();
 		CredentialFactory.ALLOW_DEFAULT_PASSWORD = false;
 
 		assertThrows(NoSuchElementException.class, () -> CredentialFactory.getCredentials("unknown", null, null));
@@ -114,7 +112,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testNoFactory() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "");
+		CredentialFactory.setProperty("credentialFactory.class", "");
 
 		// Act
 		assertNull(CredentialFactory.getCredentials("account")); // This should return null
@@ -129,7 +127,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testNoFactoryNoFallback() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "");
+		CredentialFactory.setProperty("credentialFactory.class", "");
 		assertThrows(IllegalStateException.class, () -> new CredentialFactory(false) {
 			@Override
 			protected void exit() {
@@ -141,7 +139,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testNoFactoryWithFallback() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "");
+		CredentialFactory.setProperty("credentialFactory.class", "");
 		CredentialFactory instance = new CredentialFactory(true) {
 			@Override
 			protected void exit() {
@@ -154,7 +152,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testAliasWithCustomFields() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("aliasWith{username+domain,secret}");
@@ -168,7 +166,7 @@ class CredentialFactoryTest {
 	@Test
 	void testAliasWithCustomFieldsAndUnknownField() {
 		// Init setting on purpose with extra whitespaces, commas etc.
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("aliasWith{username:unknown,secret+domain}");
@@ -182,7 +180,7 @@ class CredentialFactoryTest {
 	@Test
 	void testMultipleFactories() {
 		// Init setting on purpose with extra whitespaces, commas etc.
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", " java.util.doesNotExist , org.frankframework.credentialprovider.PropertyFileCredentialFactory,,  , org.frankframework.credentialprovider.MockCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", " java.util.doesNotExist , org.frankframework.credentialprovider.PropertyFileCredentialFactory,,  , org.frankframework.credentialprovider.MockCredentialFactory");
 		MockCredentialFactory.add("account", "mockUsername", "mockPassword");
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("account");
@@ -200,7 +198,7 @@ class CredentialFactoryTest {
 	@Test
 	void testMultipleFactoriesWithNotExistingItem() {
 		// Init setting on purpose with extra whitespaces, commas etc.
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "nl.nn.credentialprovider.PropertyFileCredentialFactory,nl.nn.credentialprovider.MockCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "nl.nn.credentialprovider.PropertyFileCredentialFactory,nl.nn.credentialprovider.MockCredentialFactory");
 		MockCredentialFactory.add("account2", "mockUsername", "mockPassword");
 
 		// Act
@@ -214,7 +212,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testRightOrderMockFirst() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.MockCredentialFactory, org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.MockCredentialFactory, org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 		MockCredentialFactory.add("account", "fakeUsername", "mockGoesFirst");
 		MockCredentialFactory.add("alias1", "alias1Username", "alias1Password");
 		MockCredentialFactory.add("alias2", null, "alias2Password");
@@ -239,7 +237,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testRightOrderMockLast() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory, org.frankframework.credentialprovider.MockCredentialFactory, ");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory, org.frankframework.credentialprovider.MockCredentialFactory, ");
 		MockCredentialFactory.add("account", "mockUsername", "mockGoesSecond");
 		MockCredentialFactory.add("alias1", "alias1Username", "alias1Password");
 		MockCredentialFactory.add("alias2", null, "should-be-ignored");
@@ -267,13 +265,13 @@ class CredentialFactoryTest {
 
 	@Test
 	void testFilesystem() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.FileSystemCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.FileSystemCredentialFactory");
 
 		String url = this.getClass().getResource("/secrets").toExternalForm();
 		Path root =  Paths.get(url.substring(url.indexOf(":/")+2));
 		assumeTrue(Files.exists(root));
 
-		CredentialConstants.getInstance().setProperty("credentialFactory.filesystem.root", root.toString());
+		CredentialFactory.setProperty("credentialFactory.filesystem.root", root.toString());
 
 		ICredentials credentials = CredentialFactory.getCredentials("singleValue");
 		assertNotNull(credentials);
@@ -283,15 +281,15 @@ class CredentialFactoryTest {
 
 	@Test
 	public void testCredentialFactoryUnknownAliasNoDefaults() {
-		CredentialFactory.clearInstance();
+		CredentialFactory.reset();
 		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
 
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.FileSystemCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.FileSystemCredentialFactory");
 		String url = this.getClass().getResource("/secrets").toExternalForm();
 		Path root =  Paths.get(url.substring(url.indexOf(":/")+2));
 		assumeTrue(Files.exists(root));
 
-		CredentialConstants.getInstance().setProperty("credentialFactory.filesystem.root", root.toString());
+		CredentialFactory.setProperty("credentialFactory.filesystem.root", root.toString());
 
 		assertNull(CredentialFactory.getCredentials("unknown"));
 		NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> CredentialFactory.getCredentials("unknown", null, null));
@@ -300,7 +298,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testPropertyFileWithNoUsername() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("noUsername");
@@ -312,7 +310,7 @@ class CredentialFactoryTest {
 
 	@Test
 	void testAliasWithSlahesInPassword() {
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("withSlashes");

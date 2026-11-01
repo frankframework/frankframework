@@ -57,7 +57,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.processors.CacheSenderWrapperProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.processors.LimitingParallelExecutionPipeProcessor;
-import org.frankframework.processors.PipeLineProcessor;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.job.SendMessageJob.SendMessageJobSender;
 import org.frankframework.senders.AbstractSenderWrapper;
@@ -123,10 +122,9 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
-	 * Provides advice for {@link PipeLineProcessor#processPipeLine(org.frankframework.receivers.Receiver, PipeLine, String, Message, PipeLineSession, String)}
-	 */
+	 * Provides advice for {@link org.frankframework.processors.PipeLineProcessor#processPipeLine(Receiver, PipeLine, Message, PipeLineSession, String)}	 */
 	@SuppressWarnings({ "java:S1172", "unused" }) // The unused parameters are needed to make the AOP work
-	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Receiver<?> receiver, PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession) throws Throwable {
+	public PipeLineResult debugPipeLineInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Receiver<?> receiver, PipeLine pipeLine, Message message, PipeLineSession pipeLineSession) throws Throwable {
 		if (!isEnabled()) {
 			return (PipeLineResult)proceedingJoinPoint.proceed();
 		}
@@ -139,8 +137,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		try {
 			PipeLineSession pipeLineSessionDebugger = PipeLineSessionDebugger.newInstance(pipeLineSession, reportGenerator);
 			Object[] args = proceedingJoinPoint.getArgs();
-			args[3] = pipelineInput;
-			args[4] = pipeLineSessionDebugger;
+			args[2] = pipelineInput;
+			args[3] = pipeLineSessionDebugger;
 			pipeLineResult = (PipeLineResult)proceedingJoinPoint.proceed(args);
 		} catch (Throwable throwable) {
 			throw reportGenerator.pipelineAbort(pipeLine, correlationId, throwable);

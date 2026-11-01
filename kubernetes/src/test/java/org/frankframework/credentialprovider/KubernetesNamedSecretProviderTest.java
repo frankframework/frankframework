@@ -2,6 +2,7 @@ package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,7 +33,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Environment;
 
 class KubernetesNamedSecretProviderTest {
@@ -78,8 +79,9 @@ class KubernetesNamedSecretProviderTest {
 
 		when(client.getConfiguration()).thenReturn(mock(Config.class));
 
-		CredentialConstants.getInstance().setProperty(AbstractKubernetesCredentialProvider.K8_MASTER_URL, "http://localhost:8080");
-		CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
+		CredentialFactory.reset();
+		CredentialFactory.setProperty(AbstractKubernetesCredentialProvider.K8_MASTER_URL, "http://localhost:8080");
+		CredentialFactory.setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
 
 		provider.setClient(client);
 		provider.initialize();
@@ -87,10 +89,8 @@ class KubernetesNamedSecretProviderTest {
 
 	@AfterAll
 	static void tearDown() {
-		if (environmentMock != null) {
-			environmentMock.close();
-		}
-		provider.close();
+		CredentialFactory.reset();
+		CloseUtils.closeSilently(environmentMock, provider);
 	}
 
 	@Test
@@ -105,6 +105,7 @@ class KubernetesNamedSecretProviderTest {
 	@Test
 	void testGetCredentialFromFirstSecret() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("authdatabase");
+		assertNotNull(alias);
 		ISecret credential = provider.getSecret(alias);
 		assertEquals("dbUser", credential.getField("username"));
 		assertEquals("dbPass", credential.getField("password"));
@@ -113,6 +114,7 @@ class KubernetesNamedSecretProviderTest {
 	@Test
 	void testGetCredentialFromSecondSecret() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("authservice");
+		assertNotNull(alias);
 		ISecret credential = provider.getSecret(alias);
 		assertEquals("svcUser", credential.getField("username"));
 		assertEquals("svcPass", credential.getField("password"));
@@ -121,6 +123,7 @@ class KubernetesNamedSecretProviderTest {
 	@Test
 	void testGetFieldReturnsNullForMissingField() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("authqueue");
+		assertNotNull(alias);
 		ISecret credential = provider.getSecret(alias);
 		assertEquals("queueToken", credential.getField("token"));
 		assertNull(credential.getField("username"), "field not present for this prefix should be null");
@@ -129,6 +132,7 @@ class KubernetesNamedSecretProviderTest {
 	@Test
 	void testGetFieldReturnsNullForEmptyFieldname() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("authdatabase");
+		assertNotNull(alias);
 		ISecret credential = provider.getSecret(alias);
 		assertNull(credential.getField(null));
 		assertNull(credential.getField(""));
@@ -136,14 +140,21 @@ class KubernetesNamedSecretProviderTest {
 
 	@Test
 	void testHasSecret() {
-		assertTrue(provider.hasSecret(CredentialAlias.parse("authdatabase")));
-		assertTrue(provider.hasSecret(CredentialAlias.parse("authservice")));
-		assertFalse(provider.hasSecret(CredentialAlias.parse("nonExistentAlias")));
+		CredentialAlias alias1 = CredentialAlias.parse("authdatabase");
+		assertNotNull(alias1);
+		assertTrue(provider.hasSecret(alias1));
+		CredentialAlias alias2 = CredentialAlias.parse("authservice");
+		assertNotNull(alias2);
+		assertTrue(provider.hasSecret(alias2));
+		CredentialAlias alias3 = CredentialAlias.parse("nonExistentAlias");
+		assertNotNull(alias3);
+		assertFalse(provider.hasSecret(alias3));
 	}
 
 	@Test
 	void testUnknownAliasThrows() {
 		CredentialAlias alias = CredentialAlias.parse("fakeAlias");
+		assertNotNull(alias);
 		NoSuchElementException ex = assertThrows(NoSuchElementException.class, () -> provider.getSecret(alias));
 		assertTrue(ex.getMessage().contains("fakeAlias"));
 	}
@@ -151,6 +162,7 @@ class KubernetesNamedSecretProviderTest {
 	@Test
 	void testCachingReturnsConsistentResults() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("authdatabase");
+		assertNotNull(alias);
 		ISecret first = provider.getSecret(alias);
 		ISecret second = provider.getSecret(alias);
 		assertEquals(first.getField("username"), second.getField("username"));
@@ -166,6 +178,7 @@ class KubernetesNamedSecretProviderTest {
 		rootLogger.addHandler(handler);
 
 		CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
+		assertNotNull(illegalChars);
 		assertThrows(NoSuchElementException.class, () -> provider.getSecret(illegalChars));
 		assertTrue(handler.contains("must start and end with an alphanumeric"));
 
@@ -174,13 +187,12 @@ class KubernetesNamedSecretProviderTest {
 
 	@Test
 	void testMissingSecretNamesPropertyThrows() {
-		CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, "");
-		try {
-			KubernetesNamedSecretProvider freshProvider = new KubernetesNamedSecretProvider();
+		CredentialFactory.setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, "");
+		try (KubernetesNamedSecretProvider freshProvider = new KubernetesNamedSecretProvider()) {
 			freshProvider.setClient(client);
 			assertThrows(KubernetesClientException.class, freshProvider::initialize);
 		} finally {
-			CredentialConstants.getInstance().setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
+			CredentialFactory.setProperty(KubernetesNamedSecretProvider.K8_SECRET_NAMES_PROPERTY, SECRET_A + "," + SECRET_B);
 		}
 	}
 

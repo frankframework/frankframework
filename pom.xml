@@ -97,7 +97,7 @@
 		<spring-integration.version>7.1.2</spring-integration.version>
 		<spring.boot.version>4.1.2</spring.boot.version>
 		<tomcat.version>11.0.27</tomcat.version>
-		<tika.version>4.1.0</tika.version>
+		<tika.version>4.2.0</tika.version>
 		<mcp-sdk.version>2.1.0</mcp-sdk.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
@@ -118,7 +118,7 @@
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>13.6.1.jre11</mssql.driver.version>
 		<mysql.driver.version>26.10.0</mysql.driver.version>
-		<mariadb.driver.version>3.5.11</mariadb.driver.version>
+		<mariadb.driver.version>4.0.0</mariadb.driver.version>
 		<postgresql.driver.version>42.7.14</postgresql.driver.version>
 		<mongodb.driver.version>5.13.0</mongodb.driver.version>
 
@@ -777,7 +777,7 @@
 			<dependency>
 				<groupId>com.icegreen</groupId>
 				<artifactId>greenmail-junit5</artifactId>
-				<version>2.1.14</version>
+				<version>2.1.15</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -851,7 +851,7 @@
 								<groupId>com.google.errorprone</groupId>
 								<artifactId>error_prone_core</artifactId>
 								<!-- NB: When an ErrorProne update breaks the build, check if NullAway should perhaps be updated at the same time -->
-								<version>2.50.0</version>
+								<version>2.51.0</version>
 							</path>
 							<path>
 								<groupId>com.uber.nullaway</groupId>

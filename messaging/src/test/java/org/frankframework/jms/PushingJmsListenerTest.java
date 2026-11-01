@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -90,6 +89,7 @@ public class PushingJmsListenerTest {
 		messagingSourceField.set(listener, messagingSource);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	protected SlowListenerWithPollGuard createSlowListenerWithPollGuard(int startupDelay, int shutdownDelay) {
 		SlowListenerWithPollGuard listener = configuration.createBean();
 		listener.setStartupDelay(startupDelay);
@@ -125,7 +125,7 @@ public class PushingJmsListenerTest {
 			plr.setState(exitState);
 			plr.setResult(p.getArgument(1));
 			return plr;
-		}).when(pl).process(any(), anyString(), any(org.frankframework.stream.Message.class), any(PipeLineSession.class));
+		}).when(pl).process(any(), any(org.frankframework.stream.Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();
