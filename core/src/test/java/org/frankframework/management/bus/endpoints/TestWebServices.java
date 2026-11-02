@@ -73,7 +73,6 @@ public class TestWebServices extends BusTestBase {
 		listener.setUriPattern(API_LISTENER_ENDPOINT);
 		Receiver receiver = SpringUtils.createBean(adapter);
 		receiver.setName("ReceiverName2");
-		listener.setReceiver(receiver);
 		adapter.addReceiver(receiver);
 		PipeLine pipeline = SpringUtils.createBean(adapter);
 		EchoPipe pipe = SpringUtils.createBean(adapter);

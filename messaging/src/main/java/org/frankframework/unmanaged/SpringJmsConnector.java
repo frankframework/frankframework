@@ -53,6 +53,7 @@ import org.frankframework.jms.IbisMessageListenerContainer;
 import org.frankframework.jms.PushingJmsListener;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.receivers.Receiver;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JtaUtil;
@@ -119,8 +120,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	// When running via Larva there is no receiver
 	private void configureEndpointConnection() throws ConfigurationException {
-		if (getReceiver() != null) {
-			configureEndpointConnection(getReceiver().isTransacted(), getReceiver().getTransactionTimeout(), getReceiver().getNumThreads());
+		Receiver<Message> receiver = getListener().getReceiver();
+		if (receiver != null) {
+			configureEndpointConnection(receiver.isTransacted(), receiver.getTransactionTimeout(), receiver.getNumThreads());
 		} else {
 			configureEndpointConnection(false, 0, 1);
 		}
@@ -195,7 +197,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		if (getListener().getName() != null) {
 			jmsContainer.setBeanName(getListener().getName());
 		} else {
-			jmsContainer.setBeanName(getReceiver().getName());
+			jmsContainer.setBeanName(getListener().getReceiver().getName());
 		}
 	}
 
@@ -257,7 +259,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 		final long onMessageStart= System.currentTimeMillis();
 		final long jmsTimestamp= message.getJMSTimestamp();
-		Thread.currentThread().setName(getReceiver().getName() + "[" + threadsProcessing.incrementAndGet() + "]");
+		Thread.currentThread().setName(getListener().getName() + "[" + threadsProcessing.incrementAndGet() + "]");
 
 		final String logPrefix = getLogPrefix();
 		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
@@ -271,7 +273,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				pipeLineSession.put(THREAD_CONTEXT_SESSION_KEY, session);
 				if (log.isTraceEnabled()) log.trace("transaction status before processRawMessage: {}", JtaUtil.displayTransactionStatus(txStatus));
 				RawMessageWrapper<Message> rawMessage = listener.wrapRawMessage(message, pipeLineSession);
-				getReceiver().processRawMessage(listener, rawMessage, pipeLineSession, false);
+				getListener().getHandler().processRawMessage(listener, rawMessage, pipeLineSession, false);
 				if (log.isTraceEnabled()) log.trace("transaction status after processRawMessage: {}", JtaUtil.displayTransactionStatus(txStatus));
 			} catch (ListenerException e) {
 				if (txStatus != null) {

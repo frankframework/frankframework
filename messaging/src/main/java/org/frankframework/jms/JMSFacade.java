@@ -62,12 +62,12 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.IbisException;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.TransactionAware;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jms.factory.IConnectionFactoryFactory;
@@ -82,7 +82,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlException;
 
 /**
  * Provides functions for jms connections, queues and topics and acts as a facade
@@ -94,7 +93,7 @@ import org.frankframework.util.XmlException;
  * @author 	Gerrit van Brakel
  */
 @DestinationType(DestinationType.Type.JMS)
-public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankElement, NameAware, HasPhysicalDestination, IXAEnabled {
+public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankElement, NameAware, HasPhysicalDestination, TransactionAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -724,7 +723,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	 * Supports only
 	 * {@link jakarta.jms.TextMessage}s and {@link jakarta.jms.BytesMessage}.<br/><br/>
 	 */
-	public Message extractMessage(jakarta.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException, XmlException {
+	public Message extractMessage(jakarta.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		Message message = switch (jmsMessage) {
 			case TextMessage textMessage -> new Message(textMessage.getText(), getContext(jmsMessage));
 			case BytesMessage bytesMsg -> {

@@ -41,10 +41,10 @@ public class LimitingParallelExecutionPipeLineProcessor extends AbstractPipeLine
 	private final Map<PipeLine, ResourceLimiter> pipeLineThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
-	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		ResourceLimiter threadCountLimiter = getThreadLimiter(pipeLine);
 		if (threadCountLimiter == null) { // no restrictions on the maximum number of threads
-			return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+			return pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 		}
 		IPipe pipe = pipeLine.getPipe(firstPipe);
 		try {
@@ -55,7 +55,7 @@ public class LimitingParallelExecutionPipeLineProcessor extends AbstractPipeLine
 			DistributionSummary summary = pipeLine.getPipelineWaitStatistics();
 			summary.record(waitingDuration);
 
-			return pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+			return pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 		} catch(InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw new PipeRunException(pipe, "Interrupted acquiring PipeLine thread count limiter", e);

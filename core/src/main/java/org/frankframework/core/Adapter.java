@@ -15,6 +15,7 @@
 */
 package org.frankframework.core;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -39,6 +40,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
@@ -75,6 +77,8 @@ import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.lifecycle.events.MessageKeepingEventListener;
 import org.frankframework.logging.IbisMaskingLayout;
+import org.frankframework.receivers.MessageHandler;
+import org.frankframework.receivers.PullingListenerContainer;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
@@ -383,8 +387,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		refresh();
 
 		// Once the BeanFactory has initialized, create and register a FlowGenerator
-		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this);
-		getBeanFactory().registerSingleton("FlowGenerator", bean);
+		registerBean("FlowGenerator", SpringContextFlowDiagramProvider.class);
+
+		registerBean("listenerContainer", PullingListenerContainer.class, bd -> bd.setScope(BeanDefinition.SCOPE_PROTOTYPE));
+		registerBean("messageHandler", MessageHandler.class, bd -> bd.setScope(BeanDefinition.SCOPE_PROTOTYPE));
 	}
 
 	/**
@@ -736,10 +742,18 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		return new Date(statsUpSince);
 	}
 
+	/**
+	 * Log to the request/response message to the message-log, only logs the contents of the message if the message log is not 'hidden'.
+	 */
 	public void logToMessageLogWithMessageContentsOrSize(Level level, String logMessage, String dataPrefix, Message data) {
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(dataPrefix+".size", getFileSizeAsBytes(data))) {
 			if (!isMsgLogHidden()) {
-				ctc.put(dataPrefix, data.toString());
+				try {
+					ctc.put(dataPrefix, data.asString());
+				} catch (IOException e) {
+					// We don't care about the exception. Opposed to silently ignoring it, log 'unknown' to the message log.
+					ctc.put(dataPrefix, "unknown");
+				}
 			}
 			msgLog.log(level, logMessage);
 		}
@@ -752,20 +766,22 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * This method does not throw any exceptions, and will always return a {@link PipeLineResult}. If an
 	 * error occurred, the error information is in the {@code PipeLineResult}.
 	 *
-	 * @param messageId ID of the message
-	 * @param message {@link Message} to be processed
+	 * @param message         {@link Message} to be processed
 	 * @param pipeLineSession {@link PipeLineSession} session in which message is to be processed
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
 	@SuppressWarnings("java:S1181")
-	public @NonNull PipeLineResult processMessageDirect(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
+	public @NonNull PipeLineResult processMessageDirect(@NonNull Message message, @NonNull PipeLineSession pipeLineSession) {
+		// Should never be null
+		String messageId = Objects.requireNonNull(pipeLineSession.getMessageId());
+
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
 			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
 		) {
 			PipeLineResult result = new PipeLineResult();
 			boolean success = false;
 			try {
-				result = processMessageWithExceptions(null, messageId, message, pipeLineSession);
+				result = processMessageWithExceptions(null, message, pipeLineSession);
 				success = true;
 			} catch (Throwable t) {
 				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
@@ -797,26 +813,29 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	/**
 	 * This method does the real processing of messages by the adapter. This method is to
-	 * be called either from the {@link Receiver}, or from {@link #processMessageDirect(String, Message, PipeLineSession)}.
+	 * be called either from the {@link Receiver}, or from {@link #processMessageDirect(Message, PipeLineSession)}.
 	 * <br/>
-	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information
+	 * <em>NB: This method expects most setup to already have been done by the caller! LoggingContext and masking of sensitive information (HideRegexContext)
 	 * is among things that should be set up by the caller.</em>
 	 * <br/>
 	 * This method will return a {@link PipeLineResult} with results of the processing. This
 	 * might indicate an error if the message could not be processed successfully. If there
 	 * was an exception from the {@link PipeLine}, a {@link ListenerException} might be thrown.
 	 *
-	 * @param messageId ID of the message
 	 * @param message {@link Message} to be processed
 	 * @param pipeLineSession {@link PipeLineSession} in which the message is to be processed
 	 * @return {@link PipeLineResult} with result from processing the message in the {@link PipeLine}.
 	 * @throws ListenerException If there was an exception, throws a {@link ListenerException}.
 	 */
-	public @NonNull PipeLineResult processMessageWithExceptions(@Nullable Receiver<?> receiver, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
+	public @NonNull PipeLineResult processMessageWithExceptions(@Nullable Receiver<?> receiver, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws ListenerException {
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
 		// the receivers should implement this, but you never know....
 		RunState currentRunState = getRunState();
+
+		// Should never be null
+		String messageId = Objects.requireNonNull(pipeLineSession.getMessageId());
+
 		if (currentRunState!=RunState.STARTED && currentRunState!=RunState.STOPPING) {
 			String msgAdapterNotOpen = "Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
 			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
@@ -837,7 +856,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
 				message = new Message("");
 			}
-			result = pipeline.process(receiver, messageId, message, pipeLineSession);
+			result = pipeline.process(receiver, message, pipeLineSession);
 			return result;
 		} catch (Throwable t) {
 			ListenerException e = new ListenerException(t);
@@ -873,18 +892,18 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
+	// Only for the EsbJmsListener.
+	@Deprecated
+	@NonNull
 	private static String getAdditionalLogging(final PipeLineSession pipeLineSession) {
-		// xPathLogKeys is an EsbJmsListener thing
-		String additionalLogging;
 		String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
 		if(StringUtils.isNotEmpty(xPathLogKeys)) {
-			additionalLogging = StringUtil.splitToStream(xPathLogKeys)
+			return StringUtil.splitToStream(xPathLogKeys)
 					.map(logName -> logName + " [" + pipeLineSession.get(logName) + "]")
 					.collect(Collectors.joining(" and "));
-		} else {
-			additionalLogging = "";
 		}
-		return additionalLogging;
+
+		return "";
 	}
 
 	/**
@@ -1280,7 +1299,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	/**
 	 * If set to <code>true</code>, the length of the message is shown in the msg log instead of the content of the message
-	 * @ff.default <code>false</code>
+	 * @ff.default <code>true</code>
 	 */
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;

@@ -34,7 +34,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.doAnswer;
@@ -203,9 +202,9 @@ public class ReceiverTest {
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(exitState);
-			plr.setResult(p.getArgument(2));
+			plr.setResult(p.getArgument(1));
 			return plr;
-		}).when(pl).process(any(), anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(pl).process(any(), any(Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();
@@ -228,7 +227,7 @@ public class ReceiverTest {
 		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
 		receiver.setListener(listener);
 		receiver.setName("receiver");
-		DummySender sender = configuration.createBean(DummySender.class);
+		DummySender sender = SpringUtils.createBean(adapter);
 		receiver.setSender(sender);
 		receiver.setErrorStorage(errorStorage);
 		receiver.setNumThreads(2);
@@ -241,7 +240,6 @@ public class ReceiverTest {
 	public MessageStoreListener setupMessageStoreListener() throws Exception {
 		MessageStoreListener listener = spy(new MessageStoreListener());
 		listener.setDataSourceFactory(new DataSourceFactoryMock());
-		listener.setConnectionsArePooled(true);
 		listener.setName("messageStoreListener");
 		listener.setSessionKeys("ANY-KEY");
 		listener.extractSessionKeyList();
@@ -358,7 +356,7 @@ public class ReceiverTest {
 									return String.valueOf(count);
 								});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, messageWrapper, session, false);
+							receiver.processRawMessage(messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							log.warn("Caught exception in Receiver:", e);
@@ -474,7 +472,7 @@ public class ReceiverTest {
 									return String.valueOf(count);
 								});
 						try (PipeLineSession session = new PipeLineSession()) {
-							receiver.processRawMessage(listener, messageWrapper, session, false);
+							receiver.processRawMessage(messageWrapper, session, false);
 							processedNoException.incrementAndGet();
 						} catch (Exception e) {
 							log.warn("Caught exception in Receiver:", e);
@@ -673,7 +671,7 @@ public class ReceiverTest {
 		// Act
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
-			receiver.processRawMessage(listener, rawMessageWrapper, session, false);
+			receiver.processRawMessage(rawMessageWrapper, session, false);
 		} catch (Exception e) {
 			// Exception might occur here...
 		}
@@ -706,7 +704,7 @@ public class ReceiverTest {
 		PipeLineResult pipeLineResult = new PipeLineResult();
 		pipeLineResult.setState(ExitState.SUCCESS);
 		pipeLineResult.setResult(testMessage);
-		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any(), any());
+		doReturn(pipeLineResult).when(pipeLine).process(any(), any(), any());
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiver.setTxManager(transactionManager);
@@ -720,7 +718,7 @@ public class ReceiverTest {
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			// Act
-			Message result = receiver.processRequest(listener, rawTestMessageWrapper, session);
+			Message result = listener.getHandler().processRequest(listener, rawTestMessageWrapper, session);
 
 			// Assert
 			assertTrue(result.requiresStream(), "Result message should be a stream");
@@ -755,7 +753,7 @@ public class ReceiverTest {
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message(testMessage));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), messageCaptor.capture(), sessionCaptor.capture());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act
 		receiver.retryMessage("1");
@@ -794,7 +792,7 @@ public class ReceiverTest {
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message(testMessage));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), messageCaptor.capture(), sessionCaptor.capture());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act
 		receiver.retryMessage("1");
@@ -822,11 +820,11 @@ public class ReceiverTest {
 		Receiver<?> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
 		MessageWrapper<Serializable> messageWrapper = new MessageWrapper<>(Message.asMessage(testMessage), "1", "1");
-		doReturn(messageWrapper).when(errorStorage).consumeMessage("1", new PipeLineSession());
+		doReturn(messageWrapper).when(errorStorage).consumeMessage(eq("1"), any(PipeLineSession.class));
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setResult(Message.asMessage("dummy"));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
 
 		// start adapter
 		configuration.configure();
@@ -848,7 +846,7 @@ public class ReceiverTest {
 		MessageStoreListener listener = setupMessageStoreListener();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
-		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
+		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> {
 			PipeLineSession session = invocation.getArgument(1);
 			session.put(PipeLineSession.MESSAGE_ID_KEY, "1");
@@ -884,7 +882,7 @@ public class ReceiverTest {
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, null);
 		IMessageBrowser<String> messageBrowser = mock();
 
-		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
+		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
 
 		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(messageBrowser)
@@ -1208,10 +1206,7 @@ public class ReceiverTest {
 		plr.setResult(result);
 		plr.setState(ExitState.SUCCESS);
 
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any(), any());
-
-		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
-		receiver.setTxManager(transactionManager);
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
 
 		configuration.configure();
 		configuration.start();
@@ -1221,7 +1216,7 @@ public class ReceiverTest {
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Message message = receiver.processRequest(listener, new MessageWrapper<>(new Message("raw"), null, null), session);
+		Message message = listener.getHandler().processRequest(listener, new MessageWrapper<>(new Message("raw"), null, null), session);
 
 		// Assert
 		assertEquals(result, message);
@@ -1273,10 +1268,15 @@ public class ReceiverTest {
 		// Don't actually delay, but should be possible to verify
 		doNothing().when(receiver).suspendReceiverThread(anyLong());
 
-		doThrow(new ListenerException("forced error")).when(adapter).processMessageWithExceptions(any(), startsWith("error-"), any(), any());
-		PipeLineResult successResult = new PipeLineResult();
-		successResult.setState(ExitState.SUCCESS);
-		doReturn(successResult).when(adapter).processMessageWithExceptions(any(), startsWith("success-"), any(), any());
+		doAnswer(i -> {
+			String messageId = i.getArgument(2, PipeLineSession.class).getMessageId();
+			if (messageId.startsWith("error-")) {
+				throw new ListenerException("forced error");
+			}
+			PipeLineResult successResult = new PipeLineResult();
+			successResult.setState(ExitState.SUCCESS);
+			return successResult;
+		}).when(adapter).processMessageWithExceptions(any(), any(), any());
 
 		configuration.configure();
 		configuration.start();
@@ -1284,7 +1284,7 @@ public class ReceiverTest {
 
 		// Act
 		for (int i = 0; i < 20; ++i) {
-			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("error-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession()));
+			assertThrows(ListenerException.class, () -> listener.getHandler().processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("error-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession()));
 		}
 
 		// Assert
@@ -1302,7 +1302,7 @@ public class ReceiverTest {
 		reset(receiver);
 
 		// Act
-		receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("success-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession());
+		listener.getHandler().processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("success-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession());
 
 		// Assert
 		// Verify that the backoff-delay has been reset after a successful request
@@ -1312,7 +1312,7 @@ public class ReceiverTest {
 		// Repeat the errors and verify error behaviour occurs again after errors
 		// Act
 		for (int i = 0; i < 20; ++i) {
-			assertThrows(ListenerException.class, () -> receiver.processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("error-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession()));
+			assertThrows(ListenerException.class, () -> listener.getHandler().processRequest(listener, new MessageWrapper<>(Message.nullMessage(), MessageUtils.generatePrefixedMessageId("error-"), MessageUtils.generateDefaultMessageId()), new PipeLineSession()));
 		}
 
 		// Assert
@@ -1370,7 +1370,7 @@ public class ReceiverTest {
 
 		// Act
 		try (PipeLineSession session = new PipeLineSession()) {
-			receiver.processRawMessage(listener, messageWrapper, session, false);
+			receiver.processRawMessage(messageWrapper, session, false);
 		} catch (Exception e) {
 			fail("Caught exception in Receiver:", e);
 		}

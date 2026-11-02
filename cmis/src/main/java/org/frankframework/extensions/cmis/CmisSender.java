@@ -21,7 +21,6 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +75,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DomBuilderException;
@@ -503,24 +501,22 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 				} else if ("boolean".equalsIgnoreCase(typeAttr)) {
 					props.put(nameAttr, Boolean.parseBoolean(property.trim()));
 				} else if ("datetime".equalsIgnoreCase(typeAttr)) {
+					final Instant parsedInstant;
 					String formatStringAttr = propertyElement.getAttribute("formatString");
 					if (StringUtils.isEmpty(formatStringAttr)) {
-						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
+						parsedInstant = DateFormatUtils.parseGenericDate(property);
+					} else {
+						DateTimeFormatter formatParser = DateFormatUtils.buildParser(formatStringAttr);
+						parsedInstant = DateFormatUtils.parseToInstant(property, formatParser);
 					}
-					// TODO to be removed in a few versions
-					if (AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
-						formatStringAttr = "yyyy-MM-dd HH:mm:ss";
-					}
-					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
-					GregorianCalendar calendar = new GregorianCalendar();
 
 					try {
-						TemporalAccessor parse = formatter.parse(property);
-						calendar.setTimeInMillis(Instant.from(parse).toEpochMilli());
+						GregorianCalendar calendar = new GregorianCalendar();
+						calendar.setTimeInMillis(parsedInstant.toEpochMilli());
+						props.put(nameAttr, calendar);
 					} catch (DateTimeParseException e) {
 						throw new SenderException("exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
 					}
-					props.put(nameAttr, calendar);
 				} else {
 					log.warn("unknown type [{}], assuming 'string'", typeAttr);
 					props.put(nameAttr, property);

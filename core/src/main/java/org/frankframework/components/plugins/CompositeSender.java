@@ -36,12 +36,10 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Default;
-import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -132,8 +130,8 @@ public class CompositeSender extends AbstractSenderWithParameters implements Ini
 			throw new SenderException("cannot determine parameter values", e);
 		}
 
-		try (PipeLineSession childSession = createChildSession(pvl, parentSession)) {
-			PipeLineResult pipelineResult = frankPlugin.process(null, MessageUtils.generateDefaultMessageId(), message, childSession);
+		try (PipeLineSession childSession = FrankPlugin.createChildSession(pvl, parentSession)) {
+			PipeLineResult pipelineResult = frankPlugin.process(message, childSession);
 
 			Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 			String forwardName = Objects.toString(exitCode, null); // ToString the value
@@ -141,22 +139,6 @@ public class CompositeSender extends AbstractSenderWithParameters implements Ini
 		} catch (PipeRunException e) {
 			throw new SenderException("error while processing request in plugin", e);
 		}
-	}
-
-	/**
-	 * Allow uses to inject session variables through {@link Parameter parameters}, and set the CID when present.
-	 */
-	private static PipeLineSession createChildSession(ParameterValueList pvl, PipeLineSession parentSession) {
-		PipeLineSession childSession = new PipeLineSession();
-		String correlationId = parentSession.getCorrelationId();
-		if (correlationId != null) {
-			childSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-		}
-		if (pvl != null) {
-			childSession.putAll(pvl.getValueMap());
-		}
-
-		return childSession;
 	}
 
 	/**

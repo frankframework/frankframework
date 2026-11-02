@@ -66,6 +66,7 @@ public class AdapterHideRegexTest {
 	public void setUp() {
 		configuration = TransactionManagerType.DATASOURCE.create(false);
 		pipeLineSession = new PipeLineSession();
+		pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateDefaultMessageId());
 	}
 
 	@AfterEach
@@ -73,20 +74,20 @@ public class AdapterHideRegexTest {
 		CloseUtils.closeSilently(pipeLineSession, configuration);
 	}
 
-	public JavaListener<String> setupJavaListener(String name) {
-		JavaListener<String> listener = configuration.createBean();
+	public JavaListener<String> setupJavaListener(Adapter adapter, String name) {
+		JavaListener<String> listener = SpringUtils.createBean(adapter);
 		listener.setName(name);
 		return listener;
 	}
 
 	private <M> Receiver<M> setupReceiver(Adapter adapter, IListener<M> listener, String hideRegex) {
-		Receiver<M> receiver =  SpringUtils.createBean(adapter);
+		Receiver<M> receiver = SpringUtils.createBean(adapter);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
 		receiver.setHideRegex(hideRegex);
-		DummySender sender = configuration.createBean();
+		DummySender sender = SpringUtils.createBean(adapter);
 		receiver.setSender(sender);
 		adapter.addReceiver(receiver);
 		return receiver;
@@ -149,7 +150,7 @@ public class AdapterHideRegexTest {
 		IPipe pipe3 = createLoggingPipe("echo2", null, false);
 
 		Adapter adapter = setupAdapter(PipeLine.ExitState.SUCCESS, name, pipe1, pipe2, pipe3);
-		JavaListener<String> listener = setupJavaListener(name);
+		JavaListener<String> listener = setupJavaListener(adapter, name);
 		setupReceiver(adapter, listener, MAIN_RECEIVER_SECRET);
 
 		return listener;
@@ -157,8 +158,8 @@ public class AdapterHideRegexTest {
 
 	private JavaListener<String> createSubAdapter(String name, PipeLine.ExitState exitState, boolean doThrowException) throws ConfigurationException {
 		IPipe pipe = createLoggingPipe("echo", SUB_ADAPTER_SECRET, doThrowException);
-		JavaListener<String> listener = setupJavaListener(name);
 		Adapter adapter = setupAdapter(exitState, name, pipe);
+		JavaListener<String> listener = setupJavaListener(adapter, name);
 		setupReceiver(adapter, listener, SUB_RECEIVER_SECRET);
 
 		return listener;
@@ -194,7 +195,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateDefaultMessageId(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -214,7 +215,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateDefaultMessageId(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -233,7 +234,7 @@ public class AdapterHideRegexTest {
 		// Start capturing logs
 		try (TestAppender appender = getAppender()) {
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateDefaultMessageId(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
 
 			// Assert
 			assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
@@ -278,7 +279,6 @@ public class AdapterHideRegexTest {
 		// Verify that things are actually hidden
 		assertThat(logLines, hasItem(allOf(containsString("[main-adapter]"), containsString("Main Adapter - [**]-[**]; Sub Adapter - [%s]-[%s]".formatted(SUB_ADAPTER_SECRET, SUB_RECEIVER_SECRET)))));
 		assertThat(logLines, hasItem(allOf(containsString("[sub-adapter]"), containsString("Main Adapter - [**]-[**]; Sub Adapter - [**]-[**]"))));
-
 	}
 
 	@Test

@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
@@ -166,9 +167,10 @@ public class GraphvizEngineTest {
 
 	@Test
 	@SuppressWarnings("java:S5786") // Make public for Javadoc reference
+	@Tag("slow")
 	public void testJavascriptEngineIsClosedProperly() throws Exception {
 		// Arrange: use FakeEngine, which works on every hardware architecture and is faster
-		AppConstants.getInstance().setProperty("flow.javascript.engines", "org.frankframework.javascript.FakeEngine");
+		Object originalEngine = AppConstants.getInstance().setProperty("flow.javascript.engines", "org.frankframework.javascript.FakeEngine");
 
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			// Act
@@ -181,6 +183,12 @@ public class GraphvizEngineTest {
 			await().pollInterval(50, TimeUnit.MILLISECONDS)
 					.atMost(2, TimeUnit.SECONDS)
 					.until(() -> appender.contains("Closing Javascript Engine"));
+		} finally {
+			if (originalEngine != null) {
+				AppConstants.getInstance().setProperty("flow.javascript.engines", originalEngine.toString());
+			} else {
+				AppConstants.getInstance().remove("flow.javascript.engines");
+			}
 		}
 	}
 

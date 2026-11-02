@@ -22,7 +22,7 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 	}
 
 
-	protected class TestableStatusRecordingTransactionManager extends AbstractStatusRecordingTransactionManager {
+	protected static class TestableStatusRecordingTransactionManager extends AbstractStatusRecordingTransactionManager {
 
 		private @Setter boolean pendingTransactionsAfterShutdown = true;
 

@@ -1,6 +1,7 @@
 package org.frankframework.larva.actions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.spy;
 
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +14,7 @@ public class TestLarvaPushingListenerAction {
 
 	@Test
 	public void testListenerMessageHandler() throws Exception {
-		PushingListenerAdapter listener = new PushingListenerAdapter();
+		PushingListenerAdapter listener = spy(PushingListenerAdapter.class);
 		LarvaPushingListenerAction action = new LarvaPushingListenerAction(listener);
 		action.setTimeoutMillis(60L);
 

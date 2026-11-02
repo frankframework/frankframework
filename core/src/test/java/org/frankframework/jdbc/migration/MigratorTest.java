@@ -55,7 +55,7 @@ public class MigratorTest {
 	public void setup(DatabaseTestEnvironment env) throws Exception {
 		this.env = env;
 
-		migrator = env.createBean(LiquibaseMigrator.class);
+		migrator = env.createBean();
 		migrator.setDatasourceName(env.getDataSourceName());
 
 		env.getConfiguration().getConfigurationWarnings().destroy();

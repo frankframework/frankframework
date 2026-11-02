@@ -255,7 +255,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		/**
 		 * @return {@code true} when looping should continue, {@code false} when stop is required.
 		 */
-		public boolean endBlock() throws SenderException {
+		public boolean endBlock() {
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 				blockOpen=false;

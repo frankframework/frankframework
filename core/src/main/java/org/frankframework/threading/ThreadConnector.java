@@ -44,6 +44,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	private final Thread parentThread;
 	private Thread childThread;
 	private Map<String,String> savedThreadContext;
+	private ThreadContext.ContextStack savedThreadStack;
 	private final T threadInfo;
 	private final Collection<Pattern> hideRegex;
 
@@ -75,7 +76,9 @@ public class ThreadConnector<T> implements AutoCloseable {
 
 	protected void saveThreadContext() {
 		savedThreadContext = ThreadContext.getContext();
+		savedThreadStack = ThreadContext.cloneStack();
 		log.trace("saved ThreadContext [{}]", savedThreadContext);
+		log.trace("saved ThreadStack [{}]", savedThreadStack);
 	}
 
 	protected void restoreThreadContext() {
@@ -83,6 +86,11 @@ public class ThreadConnector<T> implements AutoCloseable {
 			log.trace("restoring ThreadContext [{}]", savedThreadContext);
 			ThreadContext.putAll(savedThreadContext);
 			savedThreadContext = null;
+		}
+		if (savedThreadStack != null) {
+			log.trace("restoring ThreadStack [{}]", savedThreadStack);
+			ThreadContext.setStack(savedThreadStack);
+			savedThreadStack = null;
 		}
 	}
 

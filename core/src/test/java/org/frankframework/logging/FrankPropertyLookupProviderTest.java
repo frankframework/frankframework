@@ -19,7 +19,7 @@ import org.frankframework.logging.FrankPropertyLookupProvider.UrlLocationCompara
 public class FrankPropertyLookupProviderTest {
 
 	@Test
-	public void simpleLookup() throws IOException {
+	public void simpleLookup() {
 		FrankPropertyLookupProvider provider = new FrankPropertyLookupProvider();
 		assertNull(provider.lookup("i-do-not-exist"));
 		assertNull(provider.lookup(null, "i-do-not-exist"));
@@ -28,7 +28,7 @@ public class FrankPropertyLookupProviderTest {
 	}
 
 	@Test
-	public void hasLogLevelAndDirectory() throws IOException {
+	public void hasLogLevelAndDirectory() {
 		FrankPropertyLookupProvider provider = new FrankPropertyLookupProvider();
 		assertNotNull(provider.lookup("log.level"));
 		assertNotNull(provider.lookup(null, "log.level"));

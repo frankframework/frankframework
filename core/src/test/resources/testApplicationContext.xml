@@ -23,8 +23,9 @@
 
 	<bean name="meterRegistry" class="org.frankframework.metrics.MetricsRegistryFactoryBean" autowire="byName"/>
 
+	<bean id="txManager" class="org.frankframework.testutil.mock.TransactionManagerMock" />
+
 	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings" />
-	<bean name="listenerContainer" class="org.frankframework.receivers.PullingListenerContainer" scope="prototype" />
 
 	<bean name="isolatedServiceCaller" class="org.frankframework.senders.IsolatedServiceCaller" autowire="byName" />
 	<bean name="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" scope="singleton">

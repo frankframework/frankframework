@@ -82,7 +82,7 @@ node/
 node\
 fonts/
 fonts\
-.lift.toml
+.toml
 setup.sh
 .mvn/
 mvnw

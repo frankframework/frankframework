@@ -19,8 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.quartz.JobBuilder.newJob;
 
-import java.text.ParseException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quartz.JobDataMap;
@@ -63,7 +61,7 @@ public abstract class SchedulerTestBase {
 	}
 
 	@Test
-	public void testConfiguredJobDetail() throws SchedulerException, ParseException {
+	public void testConfiguredJobDetail() {
 		JobDetail job = createConfiguredJob("test2");
 		assertNotNull(job);
 

@@ -207,7 +207,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public @NonNull SmbFileRef toFile(@Nullable String filename) throws FileSystemException {
+	public @NonNull SmbFileRef toFile(@Nullable String filename) {
 		return toFile(null, filename);
 	}
 

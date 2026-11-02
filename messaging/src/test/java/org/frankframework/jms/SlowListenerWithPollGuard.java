@@ -52,7 +52,6 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
 		mockConnector = mock(SpringJmsConnector.class);
 		when(mockConnector.getLastPollFinishedTime()).thenAnswer(invocationOnMock -> System.currentTimeMillis() - mockLastPollDelayMs);
 		when(mockConnector.getThreadsProcessing()).thenReturn(new AtomicInteger());
-		when(mockConnector.getReceiver()).thenReturn(receiver);
 		when(mockConnector.getListener()).thenReturn(this);
 		when(mockConnector.getJmsContainer()).thenReturn(mockContainer);
 		when(mockConnector.getLogPrefix()).thenReturn("MockJmsConnector ");

@@ -33,8 +33,6 @@
 		<bean name="configurationWarnings" class="org.frankframework.configuration.ConfigurationWarnings" />
 		<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
 
-<!-- 	<bean name="applicationEventMulticaster" class="org.frankframework.lifecycle.FrankEventMulticaster" /> -->
-
 		<bean
 			name="pipeLineProcessor"
 			class="org.frankframework.processors.InputOutputPipeLineProcessor"

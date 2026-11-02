@@ -23,9 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.credentialprovider.CredentialAlias;
+import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.credentialprovider.ISecret;
 import org.frankframework.credentialprovider.TestLogHandler;
-import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class DelineaCredentialFactoryTest {
 
@@ -47,9 +47,9 @@ class DelineaCredentialFactoryTest {
 		when(client.getSecret(eq("4"), any())).thenReturn(secret4);
 
 		// setup constants
-		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.API_ROOT_URL_KEY, "http://localhost:8080");
-		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY, "http://localhost:8080");
-		CredentialConstants.getInstance().setProperty(DelineaCredentialFactory.TENANT_KEY, "testTenant");
+		CredentialFactory.setProperty(DelineaCredentialFactory.API_ROOT_URL_KEY, "http://localhost:8080");
+		CredentialFactory.setProperty(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY, "http://localhost:8080");
+		CredentialFactory.setProperty(DelineaCredentialFactory.TENANT_KEY, "testTenant");
 
 		credentialFactory = new DelineaCredentialFactory();
 		credentialFactory.setDelineaClient(client);
@@ -59,9 +59,7 @@ class DelineaCredentialFactoryTest {
 	@AfterAll
 	static void tearDown() {
 		// Since credential constants is a singleton, make sure to clean up what we set up in the beforeEach
-		CredentialConstants.getInstance().remove(DelineaCredentialFactory.API_ROOT_URL_KEY);
-		CredentialConstants.getInstance().remove(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY);
-		CredentialConstants.getInstance().remove(DelineaCredentialFactory.TENANT_KEY);
+		CredentialFactory.reset();
 	}
 
 	@Test

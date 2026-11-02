@@ -33,7 +33,7 @@ import org.frankframework.util.Locker;
 public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 
 	@Override
-	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
+	public @NonNull PipeLineResult processPipeLine(@Nullable Receiver<?> receiver, @NonNull PipeLine pipeLine, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull String firstPipe) throws PipeRunException {
 		PipeLineResult pipeLineResult;
 		Locker locker = pipeLine.getLocker();
 		String objectId;
@@ -52,7 +52,7 @@ public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 				pipeLineResult.setState(ExitState.SUCCESS);
 			} else {
 				try {
-					pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+					pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 				} finally {
 					try {
 						locker.release(objectId);
@@ -64,7 +64,7 @@ public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 				}
 			}
 		} else {
-			pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, messageId, message, pipeLineSession, firstPipe);
+			pipeLineResult = pipeLineProcessor.processPipeLine(receiver, pipeLine, message, pipeLineSession, firstPipe);
 		}
 		return pipeLineResult;
 	}

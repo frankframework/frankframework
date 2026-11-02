@@ -105,7 +105,7 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 
 
 	@Override
-	public List<liquibase.resource.Resource> getAll(String path) throws IOException {
+	public List<liquibase.resource.Resource> getAll(String path) {
 		return search(path, false);
 	}
 

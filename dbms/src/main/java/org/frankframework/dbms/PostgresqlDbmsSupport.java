@@ -57,12 +57,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isParameterTypeMatchRequired() {
-		return true;
-	}
-
-	@Override
-	public boolean hasSkipLockedFunctionality() {
+	public boolean isParameterTypeMatchSupported() {
 		return true;
 	}
 

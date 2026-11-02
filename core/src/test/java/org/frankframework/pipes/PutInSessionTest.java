@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.parameters.Parameter;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 
 /**
@@ -48,7 +49,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSessionPipe> {
 		pipe.addParameter(new Parameter("param", "test"));
 
 		pipe.configure();
-		pipe.doPipe(null, session);
+		pipe.doPipe(Message.nullMessage(), session);
 
 		assertEquals("value", session.getString("sessionKey"));
 		assertEquals("test", session.getString("param"));
@@ -61,7 +62,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSessionPipe> {
 		pipe.addParameter(ParameterBuilder.create().withName("param").withSessionKey("sessionKey"));
 
 		pipe.configure();
-		pipe.doPipe(null, session);
+		pipe.doPipe(Message.nullMessage(), session);
 
 		assertEquals("value", session.getString("sessionKey"));
 		assertEquals("value", session.getString("param"));
@@ -72,7 +73,7 @@ public class PutInSessionTest extends PipeTestBase<PutInSessionPipe> {
 		pipe.addParameter(new Parameter("param", "test"));
 
 		pipe.configure();
-		pipe.doPipe(null, session);
+		pipe.doPipe(Message.nullMessage(), session);
 
 		assertEquals("test", session.getString("param"));
 	}

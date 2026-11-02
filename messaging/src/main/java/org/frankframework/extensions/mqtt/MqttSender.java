@@ -64,7 +64,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	@Override
 	public void start() {
 		try {
-			client = getClientFactory().createMqttClient();
+			client = getClientFactory().createMqttClient(true);
 		} catch (Exception e) {
 			throw new LifecycleException("Could not subscribe to topic", e);
 		}

@@ -261,6 +261,15 @@ public class Json2XmlValidator extends XmlValidator {
 		}
 	}
 
+	/**
+	 * Finds the first character in the message, skipping any leading whitespace. Returns a space character if the first KiB of the message only contains
+	 * whitespace or the message is empty.
+	 *
+	 * @param input Message to check
+	 * @return First non-whitespace character found in the first 1014 characters of the Message, or a single ' ' if the message is empty or only contains whitespace
+	 * in its first 1024 characters.
+	 * @throws PipeRunException If an I/O exception occurs when reading the message, that is wrapped in a {@link PipeRunException} and thrown.
+	 */
 	private char findFirstCharacter(Message input) throws PipeRunException {
 		String prefix;
 		try {

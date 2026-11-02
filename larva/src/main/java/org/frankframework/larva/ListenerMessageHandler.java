@@ -24,7 +24,6 @@ import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
@@ -54,7 +53,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	@Override
-	public void processRawMessage(@NonNull IListener<M> origin, @NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(@NonNull IPushingListener<M> origin, @NonNull RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
 		session.putAll(rawMessage.getContext());
 		Message message = origin.extractMessage(rawMessage, session);
 		processRequest(message, session);

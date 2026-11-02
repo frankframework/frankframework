@@ -53,7 +53,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.documentbuilder.ArrayBuilder;
@@ -192,6 +191,7 @@ public class JdbcUtil {
 		return getValueAsMessage(dbmsSupport, rs, colNum, rsmeta, blobCharset, decompressBlobs, false, false, false);
 	}
 
+	@SuppressWarnings("java:S107")
 	public static @NonNull Message getValueAsMessage(final IDbmsSupport dbmsSupport, final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, boolean trimSpaces, boolean blobSmartGet, boolean blobEncodeBase64) throws SQLException, IOException {
 		try {
 			if (dbmsSupport.isBlobType(rsmeta, colNum)) {
@@ -204,56 +204,55 @@ public class JdbcUtil {
 			return Message.nullMessage();
 		}
 		int columnType = rsmeta.getColumnType(colNum);
-		switch (columnType) {
-			case Types.BOOLEAN:
-			case Types.BIT: {
+		return switch (columnType) {
+			case Types.BOOLEAN, Types.BIT -> {
 				boolean value = rs.getBoolean(colNum);
-				return Message.asMessage(value);
+				yield Message.asMessage(value);
 			}
 			// return as specified date format
-			case Types.TIMESTAMP: {
+			case Types.TIMESTAMP -> {
 				Timestamp timestamp = rs.getTimestamp(colNum);
 				if (timestamp == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(timestamp.toLocalDateTime());
+				yield Message.asMessage(timestamp.toLocalDateTime());
 			}
-			case Types.DATE: {
+			case Types.DATE -> {
 				java.sql.Date sqlDate = rs.getDate(colNum);
 				if (sqlDate == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(sqlDate.toLocalDate());
+				yield Message.asMessage(sqlDate.toLocalDate());
 			}
-			case Types.TIME: {
+			case Types.TIME -> {
 				Time time = rs.getTime(colNum);
 				if (time == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(time.toLocalTime());
+				yield Message.asMessage(time.toLocalTime());
 			}
-			case Types.TIMESTAMP_WITH_TIMEZONE: {
+			case Types.TIMESTAMP_WITH_TIMEZONE -> {
 				Timestamp timestamp = rs.getTimestamp(colNum);
 				if (timestamp == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(timestamp.toInstant());
+				yield Message.asMessage(timestamp.toInstant());
 			}
-			case Types.VARCHAR, Types.NVARCHAR: {
+			case Types.VARCHAR, Types.NVARCHAR -> {
 				String str = rs.getString(colNum);
 				if (rs.wasNull()) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(trimSpaces ? str.trim() : str);
+				yield Message.asMessage(trimSpaces ? str.trim() : str);
 			}
-			default: {
+			default -> {
 				Object value = rs.getObject(colNum);
 				if (value == null) {
-					return Message.nullMessage();
+					yield Message.nullMessage();
 				}
-				return Message.asMessage(value);
+				yield Message.asMessage(value);
 			}
-		}
+		};
 	}
 
 	private static @NonNull Message getBlobValueAsMessage(@NonNull IDbmsSupport dbmsSupport, @NonNull ResultSet rs, int colNum, @NonNull ResultSetMetaData rsmeta, @Nullable String blobCharset, boolean decompressBlobs, boolean blobSmartGet, boolean blobEncodeBase64) throws SQLException, JdbcException, IOException {
@@ -295,39 +294,18 @@ public class JdbcUtil {
 			log.debug("message in column [{}] is probably not a serialized object: {}", colNum, e.getMessage());
 			return intermediateMessage;
 		}
-		if (result instanceof Message message) {
-			return message;
-		} else if (result instanceof MessageWrapper<?> mw) {
-			return mw.getMessage();
-		} else {
-			return Message.asMessage(result);
-		}
+		return switch (result) {
+			case Message message -> message;
+			case MessageWrapper<?> mw -> mw.getMessage();
+			case null, default -> Message.asMessage(result);
+		};
 	}
 
-	/**
-	 * Get value of column-nr from record-set current record and return it as String.
-	 *
-	 * @deprecated Where possible prefer to use the new method {@link #getValueAsMessage(IDbmsSupport, ResultSet, int, ResultSetMetaData, String, boolean)} because
-	 * it is more flexible, and the result can always still be turned into a String value with {@link Message#asString()}. If flags missing from the old method
-	 * are needed on the new method, they can be added as needed.
-	 */
-	@Deprecated(since = "10.3")
-	public static @Nullable String getValue(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int colNum, @NonNull final ResultSetMetaData rsmeta, @Nullable String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws IOException, SQLException {
-		Message result = getValueAsMessage(dbmsSupport, rs, colNum, rsmeta, blobCharset, decompressBlobs, trimSpaces, getBlobSmart, encodeBlobBase64);
-		if (result.isNull()) {
-			return nullValue;
-		}
-		if (trimSpaces) {
-			return result.asString().trim();
-		}
-		return result.asString();
-	}
-
-	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int column, final boolean blobIsCompressed) throws SQLException, JdbcException {
+	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final int column, final boolean blobIsCompressed) throws SQLException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
-	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final String column, final boolean blobIsCompressed) throws SQLException, JdbcException {
+	public static @Nullable InputStream getBlobInputStream(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, final String column, final boolean blobIsCompressed) throws SQLException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
 
@@ -341,7 +319,7 @@ public class JdbcUtil {
 		return blobInputStream;
 	}
 
-	public static Reader getBlobReader(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int column, @Nullable String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+	public static Reader getBlobReader(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int column, @Nullable String charset, boolean blobIsCompressed) throws IOException, SQLException {
 		return getBlobReader(getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed), charset);
 	}
 
@@ -355,32 +333,30 @@ public class JdbcUtil {
 		return StreamUtil.getCharsetDetectingInputStreamReader(blobInputStream, charset);
 	}
 
-	public static void streamBlob(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int columnIndex, @Nullable String charset, boolean blobIsCompressed, Direction blobBase64Direction, MessageBuilder msgBuilder) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int columnIndex, @Nullable String charset, boolean blobIsCompressed, @Nullable Direction blobBase64Direction, MessageBuilder msgBuilder) throws SQLException, IOException {
 		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
 			streamBlob(blobInputStream, charset, blobBase64Direction, msgBuilder);
 		}
 	}
 
 	// This should not have a charset nor base64 argument...
-	private static void streamBlob(@Nullable final InputStream blobInputStream, @Nullable String charset, Direction blobBase64Direction, @NonNull MessageBuilder msgBuilder) throws IOException {
+	private static void streamBlob(@Nullable final InputStream blobInputStream, @Nullable String charset, @Nullable Direction blobBase64Direction, @NonNull MessageBuilder msgBuilder) throws IOException {
 		if (blobInputStream == null) {
 			msgBuilder.asOutputStream().close();
 		} else if (charset == null) {
 			try (OutputStream outputStream = msgBuilder.asOutputStream()) {
-				if (blobBase64Direction == Direction.DECODE) {
-					Base64InputStream base64DecodedStream = new Base64InputStream(blobInputStream);
-					StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
-				} else if (blobBase64Direction == Direction.ENCODE) {
-					// Though technically not required, we're setting the line length to 76.
-					InputStream base64EncodedStream = Base64InputStream.builder()
-							.setInputStream(blobInputStream)
-							.setEncode(true)
-							.setBaseNCodec(Base64.builder().setLineLength(76).get())
-							.get();
-					StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
-				} else {
-					StreamUtil.copyStream(blobInputStream, outputStream, 50000);
-				}
+				InputStream streamToCopy = switch (blobBase64Direction) {
+					case DECODE -> new Base64InputStream(blobInputStream);
+					case ENCODE -> // Though technically not required, we're setting the line length to 76.
+							Base64InputStream.builder()
+									.setInputStream(blobInputStream)
+									.setEncode(true)
+									.setBaseNCodec(Base64.builder().setLineLength(76).get())
+									.get();
+					case null -> blobInputStream;
+				};
+				StreamUtil.copyStream(streamToCopy, outputStream, 50000);
+
 			}
 		} else {
 			try (Writer writer = msgBuilder.asWriter()) {
@@ -390,13 +366,13 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void streamClob(@NonNull final IDbmsSupport dbmsSupport, @NonNull ResultSet rs, int column, @NonNull MessageBuilder target) throws DbmsException, SQLException, IOException {
+	public static void streamClob(@NonNull final IDbmsSupport dbmsSupport, @NonNull ResultSet rs, int column, @NonNull MessageBuilder target) throws SQLException, IOException {
 		try (Writer writer = target.asWriter(); Reader reader = dbmsSupport.getClobReader(rs, column)) {
 			StreamUtil.copyReaderToWriter(reader, writer, 50000);
 		}
 	}
 
-	public static @Nullable String getBlobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static @Nullable String getBlobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
 			return getBlobAsString(blobStream, Integer.toString(column), charset, blobSmartGet, encodeBlobBase64);
 		} catch (ZipException | EOFException e) {    // if any decompression exception occurs in getBlobInputStream
@@ -409,7 +385,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static String getBlobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, String column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+	public static String getBlobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, String column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, SQLException {
 		try (InputStream blobStream = getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed)) {
 			return getBlobAsString(blobStream, column, charset, blobSmartGet, encodeBlobBase64);
 		} catch (ZipException | EOFException e) {    // if any decompression exception occurs in getBlobInputStream
@@ -458,7 +434,7 @@ public class JdbcUtil {
 		return StreamUtil.readerToString(getBlobReader(blobInputStream, charset), null, false);
 	}
 
-	public static OutputStream getBlobOutputStream(@NonNull IDbmsSupport dbmsSupport, @NonNull Object blobUpdateHandle, @NonNull final ResultSet rs, int columnIndex, boolean compressBlob) throws SQLException, DbmsException {
+	public static OutputStream getBlobOutputStream(@NonNull IDbmsSupport dbmsSupport, @NonNull Object blobUpdateHandle, @NonNull final ResultSet rs, int columnIndex, boolean compressBlob) throws SQLException {
 		OutputStream result;
 		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
 		if (compressBlob) {
@@ -469,7 +445,7 @@ public class JdbcUtil {
 		return result;
 	}
 
-	public static @Nullable String getClobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
+	public static @Nullable String getClobAsString(@NonNull final IDbmsSupport dbmsSupport, @NonNull final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, SQLException {
 		Reader reader = dbmsSupport.getClobReader(rs, columnIndex);
 		if (reader == null) {
 			return null;
@@ -547,14 +523,14 @@ public class JdbcUtil {
 	}
 
 	public static void applyParameters(@NonNull IDbmsSupport dbmsSupport, @NonNull PreparedStatement statement, @NonNull ParameterValueList parameters) throws JdbcException {
-		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
+		boolean parameterTypeMatchSupported = dbmsSupport.isParameterTypeMatchSupported();
 		for (int i = 0; i < parameters.size(); i++) {
 			ParameterValue parameterValue = parameters.getValue(i);
 			if (parameterValue.getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
 				continue;
 			}
 			try {
-				applyParameter(statement, parameterValue, i + 1, parameterTypeMatchRequired);
+				applyParameter(statement, parameterValue, i + 1, parameterTypeMatchSupported);
 			} catch (SQLException | IOException e) {
 				throw new JdbcException(
 						"Could not set parameter [" + parameterValue.getName() +
@@ -583,7 +559,7 @@ public class JdbcUtil {
 		};
 	}
 
-	private static void applyParameter(@NonNull PreparedStatement statement, @NonNull ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired) throws SQLException, IOException {
+	private static void applyParameter(@NonNull PreparedStatement statement, @NonNull ParameterValue pv, int parameterIndex, boolean parameterTypeMatchSupported) throws SQLException, IOException {
 		String paramName = pv.getDefinition().getName();
 		ParameterType paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
@@ -654,20 +630,24 @@ public class JdbcUtil {
 			}
 			default:
 				Message message = Message.asMessage(value);
-				setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchRequired);
+				setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchSupported);
 		}
 	}
 
 	/** Set a parameter in a prepared statement. Optimized for single-parameter statements */
-	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired) throws SQLException {
-		setParameter(statement, parameterIndex, value, parameterTypeMatchRequired, parameterTypeMatchRequired ? statement.getParameterMetaData() : null);
+	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchSupported) throws SQLException {
+		setParameter(statement, parameterIndex, value, parameterTypeMatchSupported, parameterTypeMatchSupported ? statement.getParameterMetaData() : null);
 	}
 
-	/** Set a parameter in a prepared statement. If {@code parameterTypeMatchRequired = true} then you should also pass {@code ParameterMetaData}. Intended
+	/**
+	 * Set a parameter in a prepared statement. If {@code parameterTypeMatchSupported = true} then you should also pass {@code ParameterMetaData}. Intended
 	 * for use when multiple parameters need to be set in the prepared statement, so that ParameterMetaData is fetched only once. (For some databases
-	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those). */
-	public static void setParameter(@NonNull PreparedStatement statement, int parameterIndex, @Nullable String value, boolean parameterTypeMatchRequired, @Nullable ParameterMetaData parameterMetaData) throws SQLException {
-		if (!parameterTypeMatchRequired || parameterMetaData == null) {
+	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those).
+	 * <br/>
+	 * For Oracle DB, this method may give an error when trying to set values for a {@link JDBCType#BLOB}, {@link JDBCType#BINARY}, {@link JDBCType#LONGVARBINARY} or {@link JDBCType#VARBINARY} column.
+	 */
+	public static void setParameter(@NonNull PreparedStatement statement, int parameterIndex, @Nullable String value, boolean parameterTypeMatchSupported, @Nullable ParameterMetaData parameterMetaData) throws SQLException {
+		if (!parameterTypeMatchSupported || parameterMetaData == null) {
 			if (value != null) {
 				statement.setString(parameterIndex, value);
 			} else {
@@ -687,10 +667,10 @@ public class JdbcUtil {
 				case Types.INTEGER -> statement.setInt(parameterIndex, Integer.parseInt(value.trim()));
 				case Types.NUMERIC, Types.DOUBLE -> statement.setDouble(parameterIndex, Double.parseDouble(value.trim()));
 				case Types.BIGINT -> statement.setLong(parameterIndex, Long.parseLong(value.trim()));
-				case Types.BLOB -> statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
+				case Types.BLOB, Types.VARBINARY, Types.LONGVARBINARY, Types.BINARY -> statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
 				case Types.DATE -> statement.setDate(parameterIndex, new java.sql.Date(DateFormatUtils.parseAnyDate(value).getTime()));
 				case Types.TIMESTAMP -> statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
-				case Types.CHAR, Types.VARCHAR -> statement.setString(parameterIndex, value);
+				case Types.CHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.CLOB, Types.NCLOB -> statement.setString(parameterIndex, value);
 				default -> {
 					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlType).getName());
 					statement.setString(parameterIndex, value);

@@ -5,6 +5,7 @@ target
 node_modules
 lib
 bin
+.sonar
 
 # Eclipse
 .classpath

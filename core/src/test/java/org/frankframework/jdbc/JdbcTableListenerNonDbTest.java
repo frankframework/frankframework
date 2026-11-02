@@ -17,12 +17,12 @@ import org.frankframework.configuration.ConfigurationWarnings;
 
 class JdbcTableListenerNonDbTest {
 
-	private JdbcTableListener<String> jdbcTableListener;
+	private JdbcTableListener jdbcTableListener;
 	private ConfigurationWarnings warnings;
 
 	@BeforeEach
 	void setUp() {
-		jdbcTableListener = new JdbcTableListener<>();
+		jdbcTableListener = new JdbcTableListener();
 
 		warnings = new ConfigurationWarnings();
 		ApplicationContext mockContext = mock();

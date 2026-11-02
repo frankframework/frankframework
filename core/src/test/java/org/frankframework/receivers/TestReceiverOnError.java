@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
@@ -71,7 +70,7 @@ public class TestReceiverOnError {
 	}
 
 	@AfterEach
-	void tearDown() throws Exception {
+	void tearDown() {
 		log.info("!> tearing down test");
 		configuration.removeAdapters();
 		configuration.getBean("configurationMetrics", MetricsInitializer.class).destroy(); // Meters are cached...
@@ -103,20 +102,20 @@ public class TestReceiverOnError {
 		adapter.setName(adapterName);
 
 		doAnswer(invocation -> {
-			Message m = invocation.getArgument(2);
+			Message m = invocation.getArgument(1);
 			if("processMessageException".equals(m.asString())) {
 				throw new ListenerException(m.asString());
 			}
 			return invocation.callRealMethod();
-		}).when(adapter).processMessageWithExceptions(any(), anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(adapter).processMessageWithExceptions(any(), any(Message.class), any(PipeLineSession.class));
 
 		PipeLine pl = spy(SpringUtils.createBean(adapter, PipeLine.class));
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(ExitState.SUCCESS);
-			plr.setResult(p.getArgument(2));
+			plr.setResult(p.getArgument(1));
 			return plr;
-		}).when(pl).process(any(), anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(pl).process(any(), any(Message.class), any(PipeLineSession.class));
 		pl.setFirstPipe("dummy");
 
 		EchoPipe pipe = new EchoPipe();

@@ -86,7 +86,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isParameterTypeMatchRequired() {
+	public boolean isParameterTypeMatchSupported() {
 		return true;
 	}
 
@@ -133,6 +133,14 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		} else {
 			return selectQuery + " FOR UPDATE WAIT " + wait;
 		}
+	}
+
+	@Override
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) {
+		if (hasSkipLockedFunctionality()) {
+			return selectQuery + " FOR UPDATE SKIP LOCKED";
+		}
+		return selectQuery;
 	}
 
 	@Override

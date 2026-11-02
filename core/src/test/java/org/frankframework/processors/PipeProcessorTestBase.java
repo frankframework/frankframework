@@ -15,7 +15,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.mock.TransactionManagerMock;
 import org.frankframework.util.SpringUtils;
 
 public class PipeProcessorTestBase {
@@ -28,11 +27,10 @@ public class PipeProcessorTestBase {
 	@BeforeEach
 	public void setUp() {
 		configuration = new TestConfiguration();
-		TransactionManagerMock txManager = configuration.createBean(TransactionManagerMock.class);
-		SpringUtils.registerSingleton(configuration, "txManager", txManager);
 
 		createAdapterAndPipeLine();
 		session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "fake-mid");
 	}
 
 	@SuppressWarnings("deprecation")
@@ -64,7 +62,7 @@ public class PipeProcessorTestBase {
 
 		PipeLineProcessor cpp = configuration.getBean("pipeLineProcessor", PipeLineProcessor.class);
 		String firstPipe = pipeLine.getPipe(0).getName();
-		PipeLineResult plr = cpp.processPipeLine(null, pipeLine, "fake-mid", inputMessage, session, firstPipe);
+		PipeLineResult plr = cpp.processPipeLine(null, pipeLine, inputMessage, session, firstPipe);
 		return plr.getResult();
 	}
 

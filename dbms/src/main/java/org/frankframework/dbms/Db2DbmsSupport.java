@@ -38,11 +38,6 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean hasSkipLockedFunctionality() {
-		return true;
-	}
-
-	@Override
 	public String getFromForTablelessSelect() {
 		return "FROM SYSIBM.SYSDUMMY1";
 	}
@@ -81,7 +76,7 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
+	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) {
 		return hasIndexOnColumns(conn, schemaName, tableName, Collections.singletonList(columnName));
 	}
 

@@ -51,7 +51,7 @@ public class ServletManagerTest {
 	private MockEnvironment properties;
 
 	@BeforeAll
-	public static void prepare() throws Exception {
+	public static void prepare() {
 		ServletContext context = new MockServletContext() {
 			private final Map<String, Dynamic> dynamic = new HashMap<>();
 			@NonNull

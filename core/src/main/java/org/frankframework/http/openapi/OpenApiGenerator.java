@@ -75,8 +75,8 @@ public class OpenApiGenerator {
 			for (ApiListener.HttpMethod method : config.getMethods()) {
 				JsonObjectBuilder methodBuilder = Json.createObjectBuilder();
 				listener = config.getApiListener(method);
-				if (listener != null && listener.getReceiver() != null) {
-					Adapter adapter = listener.getReceiver().getAdapter();
+				if (listener != null) {
+					Adapter adapter = listener.getAdapter();
 					if (StringUtils.isNotEmpty(adapter.getDescription())) {
 						methodBuilder.add("summary", adapter.getDescription());
 					}

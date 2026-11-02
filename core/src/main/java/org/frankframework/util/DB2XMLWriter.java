@@ -35,6 +35,7 @@ import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.jdbc.StoredProcedureResultWrapper;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterType;
+import org.frankframework.stream.Message;
 import org.frankframework.xml.SaxDocumentBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
@@ -203,8 +204,12 @@ public class DB2XMLWriter {
 					ResultSet resultSet = callableStatement.getObject(position, ResultSet.class);
 					processResultSet(dbmsSupport, resultSet, maxRows, includeFieldDefinition, resultElement);
 				} else {
-					String value = JdbcUtil.getValue(dbmsSupport, resultWrapper, index, metaData, getBlobCharset(), isDecompressBlobs(), getNullValue(), isTrimSpaces(), isGetBlobSmart(), false);
-					resultElement.addValue(value);
+					Message value = JdbcUtil.getValueAsMessage(dbmsSupport, resultWrapper, index, metaData, getBlobCharset(), isDecompressBlobs(), isTrimSpaces(), isGetBlobSmart(), false);
+					if (value.isNull()) {
+						resultElement.addValue(getNullValue());
+					} else {
+						resultElement.addValue(value.asString());
+					}
 				}
 			} catch (SQLException | IOException e) {
 				log.warn("Error retrieving result value", e);
@@ -314,6 +319,7 @@ public class DB2XMLWriter {
 	}
 
 
+	@SuppressWarnings("java:S107")
 	public static String getRowXml(IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		XmlWriter writer = new XmlWriter();
 		try (SaxElementBuilder parent = new SaxElementBuilder(writer)) {
@@ -322,6 +328,7 @@ public class DB2XMLWriter {
 		return writer.toString();
 	}
 
+	@SuppressWarnings("java:S107")
 	public static void getRowXml(SaxElementBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		try (SaxElementBuilder row = rows.startElement("row")) {
 			row.addAttribute("number", "" + rowNumber);
@@ -334,11 +341,13 @@ public class DB2XMLWriter {
 					resultField.addAttribute("name", columnName);
 
 					try {
-						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
-						if (rs.wasNull()) {
+						Message value = JdbcUtil.getValueAsMessage(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, trimSpaces, getBlobSmart, false);
+						if (value.isNull()) {
 							resultField.addAttribute("null","true");
+							resultField.addValue(nullValue);
+						} else {
+							resultField.addValue(value.asString());
 						}
-						resultField.addValue(value);
 					} catch (Exception e) {
 						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
 					}

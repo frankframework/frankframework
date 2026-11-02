@@ -19,7 +19,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.junit.DatabaseTest;
@@ -53,7 +52,7 @@ public class MessageStoreSenderTest {
 	}
 
 	@DatabaseTest
-	public void testSendMessageBasic() throws ConfigurationException, SenderException, TimeoutException, IOException, SQLException {
+	public void testSendMessageBasic() throws ConfigurationException, SenderException, IOException, SQLException {
 		// Arrange
 		sender.setSlotId("testSendMessageBasic");
 		sender.configure();
@@ -79,7 +78,7 @@ public class MessageStoreSenderTest {
 	}
 
 	@DatabaseTest
-	public void testSendMessageCorrelationIdFromParameter() throws ConfigurationException, SenderException, TimeoutException, IOException, SQLException {
+	public void testSendMessageCorrelationIdFromParameter() throws ConfigurationException, SenderException, IOException, SQLException {
 		// Arrange
 		String messageId = UUID.randomUUID().toString();
 		String paramCorrelationId = "param-cid-" + UUID.randomUUID();
@@ -108,7 +107,7 @@ public class MessageStoreSenderTest {
 	}
 
 	@DatabaseTest
-	public void testSendMessageMessageIdFromParameter() throws ConfigurationException, SenderException, TimeoutException, IOException, SQLException {
+	public void testSendMessageMessageIdFromParameter() throws ConfigurationException, SenderException, IOException, SQLException {
 		// Arrange
 		String messageId = UUID.randomUUID().toString();
 		sender.setSlotId("testSendMessageBasic");
@@ -134,7 +133,7 @@ public class MessageStoreSenderTest {
 	}
 
 	@DatabaseTest
-	public void testSendMessageStore2ndTimeNoInsert() throws ConfigurationException, SenderException, TimeoutException, IOException, SQLException {
+	public void testSendMessageStore2ndTimeNoInsert() throws ConfigurationException, SenderException, IOException, SQLException {
 		// Arrange
 		sender.setSlotId("testSendMessageStore2ndTimeNoInsert");
 		sender.configure();
@@ -171,7 +170,7 @@ public class MessageStoreSenderTest {
 	}
 
 	@DatabaseTest
-	public void testSendMessageStore2ndTimeNoInsertMessageIsDifferent() throws ConfigurationException, SenderException, TimeoutException, IOException, SQLException {
+	public void testSendMessageStore2ndTimeNoInsertMessageIsDifferent() throws ConfigurationException, SenderException, IOException, SQLException {
 		// Arrange
 		sender.setSlotId("testSendMessageStore2ndTimeNoInsert");
 		sender.configure();

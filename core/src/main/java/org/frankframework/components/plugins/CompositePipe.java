@@ -37,12 +37,10 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Default;
-import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -132,28 +130,12 @@ public class CompositePipe extends FixedForwardPipe implements InitializingBean,
 			throw new PipeRunException(this, "cannot determine parameter values", e);
 		}
 
-		try (PipeLineSession childSession = createChildSession(pvl, parentSession)) {
-			PipeLineResult pipelineResult = frankPlugin.process(null, MessageUtils.generateDefaultMessageId(), message, childSession);
+		try (PipeLineSession childSession = FrankPlugin.createChildSession(pvl, parentSession)) {
+			PipeLineResult pipelineResult = frankPlugin.process(message, childSession);
 
 			PipeForward forward = getExitCodeForward(childSession);
 			return new PipeRunResult(forward, pipelineResult.getResult());
 		}
-	}
-
-	/**
-	 * Allow uses to inject session variables through {@link Parameter parameters}, and set the CID when present.
-	 */
-	private static PipeLineSession createChildSession(ParameterValueList pvl, PipeLineSession parentSession) {
-		PipeLineSession childSession = new PipeLineSession();
-		String correlationId = parentSession.getCorrelationId();
-		if (correlationId != null) {
-			childSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-		}
-		if (pvl != null) {
-			childSession.putAll(pvl.getValueMap());
-		}
-
-		return childSession;
 	}
 
 	/**

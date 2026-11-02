@@ -1,8 +1,10 @@
 package org.frankframework.util;
 
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
@@ -10,16 +12,19 @@ import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.function.ThrowingSupplier;
 import org.xml.sax.SAXException;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
-import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.parameters.ParameterList;
@@ -28,7 +33,6 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
 import org.frankframework.testutil.JdbcTestUtil;
-import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
@@ -43,29 +47,26 @@ import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
 
+@SuppressWarnings({ "SqlResolve", "SameParameterValue" })
 @WithLiquibase(tableName = "TEMP", file = "JdbcUtil/JdbcUtilTest.xml")
 public class JdbcUtilTest {
 	private Connection connection;
 	private IDbmsSupport dbmsSupport;
+	private Dbms databaseUnderTest;
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		// Before changing this to a WithLquibaseTest, this ran only on H2, so we keep that assumption
-		Dbms databaseUnderTest = databaseTestEnvironment.getDbmsSupport().getDbms();
-		assumeTrue(Dbms.H2 == databaseUnderTest);
-
+	public void setup(DatabaseTestEnvironment databaseTestEnvironment) {
+		databaseUnderTest = databaseTestEnvironment.getDbmsSupport().getDbms();
+		dbmsSupport = databaseTestEnvironment.getDbmsSupport();
 		connection = databaseTestEnvironment.getConnection();
-		dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
 	}
 
 	@AfterEach
-	public void teardown() throws Exception {
-		if (connection != null && !connection.isClosed()) {
-			connection.close();
-		}
+	public void teardown() {
+		CloseUtils.closeSilently(connection);
 	}
 
-	@SuppressWarnings({"DataFlowIssue", "unchecked"})
+	@SuppressWarnings({ "DataFlowIssue", "unchecked", "deprecation" })
 	@DatabaseTest
 	public void testExecuteStatementAndQuery() throws Exception {
 		// Arrange
@@ -81,7 +82,8 @@ public class JdbcUtilTest {
 		JdbcTestUtil.executeStatement(connection, query);
 
 		// Arrange
-		query = "INSERT INTO TEMP (TKEY, TVARCHAR2, TDATETIME) VALUES (3, 'just a third text', PARSEDATETIME('2018-04-12 03:05:06', 'yyyy-MM-dd HH:mm:ss'))";
+		Date date = DateFormatUtils.parseAnyDate("2018-04-12 03:05:06");
+		query = "INSERT INTO TEMP (TKEY, TVARCHAR2, TDATETIME) VALUES (3, 'just a third text', " + dbmsSupport.getDatetimeLiteral(date) + ")";
 
 		// Act
 		JdbcTestUtil.executeStatement(connection, query);
@@ -128,8 +130,11 @@ public class JdbcUtilTest {
 		String stringResult = JdbcTestUtil.executeStringQuery(connection, query);
 
 		// Assert
-		assertEquals("2018-04-12 03:05:06", stringResult);
-
+		if (databaseUnderTest == Dbms.MYSQL) {
+			assertEquals("2018-04-12T03:05:06", stringResult);
+		} else {
+			assertEquals("2018-04-12 03:05:06.0", stringResult);
+		}
 		// Arrange
 		query = "SELECT TVARCHAR FROM TEMP WHERE TKEY = 4";
 
@@ -142,8 +147,9 @@ public class JdbcUtilTest {
 		// Assert
 		stringResult = JdbcTestUtil.selectAllFromTable(dbmsSupport, connection, "TEMP", "TKEY");
 		System.out.println(stringResult);
-		MatchUtils.assertXmlEquals(TestFileUtils.getTestFile("/JdbcUtil/expected.xml"), stringResult);
+		String expected = TestFileUtils.getTestFile("/JdbcUtil/expected.xml");
 		// compareXML("JdbcUtil/expected.xml", stringResult);
+		assertXmlEquals(ignoreFieldDefinitions(expected), ignoreFieldDefinitions(stringResult));
 
 		// Arrange
 		query = "SELECT TVARCHAR2, TDATETIME FROM TEMP WHERE TKEY = ?";
@@ -155,16 +161,24 @@ public class JdbcUtilTest {
 
 		// Assert
 		assertEquals("just a third text", listResult.getFirst());
-		assertEquals("2018-04-12 03:05:06.0", listResult.get(1).toString());
+		if (databaseUnderTest == Dbms.MYSQL) {
+			assertEquals("2018-04-12T03:05:06", listResult.get(1).toString());
+		} else {
+			assertEquals("2018-04-12 03:05:06.0", listResult.get(1).toString());
+		}
 
 		// Arrange
 		query = "SELECT COUNT(*) FROM TEMP";
 
 		// Act
-		long result = (Long) JdbcTestUtil.executeQuery(dbmsSupport, connection, query, null);
+		Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, query, null);
 
 		// Assert
-		assertEquals(5, result);
+		assertNumericValue(result, 5);
+	}
+
+	private String ignoreFieldDefinitions(String xml) {
+		return xml.replaceAll("(?s)(?<=<fielddefinition>)(.*?)(?=</fielddefinition>)", "IGNORED");
 	}
 
 	@DatabaseTest
@@ -193,9 +207,7 @@ public class JdbcUtilTest {
 				ParameterBuilder.getPVL(resultParams));
 
 		assertNotNull(result);
-
-		Blob blob = (Blob) result;
-		assertEquals(20_000, blob.length());
+		assertBlobSize(result, 20_000);
 	}
 
 	@DatabaseTest
@@ -225,18 +237,17 @@ public class JdbcUtilTest {
 
 		List<Object> result = (List<Object>) JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT TCLOB, TBLOB FROM TEMP WHERE TKEY = ?", ParameterBuilder.getPVL(resultParams));
 
-		Clob clob = (Clob) result.getFirst();
-		Blob blob = (Blob) result.get(1);
-
-		assertEquals(20_000, clob.length());
-		assertEquals(20_000, blob.length());
+		assertNotNull(result);
+		assertClobSize(result.getFirst(), 20_000);
+		assertBlobSize(result.get(1), 20_000);
 	}
 
+	@SuppressWarnings("deprecation")
 	@DatabaseTest
 	public void testWarningsToString() {
 		String expected = getExpectedWarningXml();
 		String actual = JdbcUtil.warningsToString(getWarnings());
-		MatchUtils.assertXmlEquals(expected,actual);
+		assertXmlEquals(expected,actual);
 	}
 
 	@DatabaseTest
@@ -246,7 +257,51 @@ public class JdbcUtilTest {
 		PrettyPrintFilter ppf = new PrettyPrintFilter(writer);
 		try (SaxElementBuilder seb = new SaxElementBuilder(ppf)) {
 			JdbcUtil.warningsToXml(getWarnings(), seb);
-			MatchUtils.assertXmlEquals(expected,writer.toString());
+			assertXmlEquals(expected,writer.toString());
+		}
+	}
+
+	@DatabaseTest
+	public void testSetParameterVarchar() throws Exception {
+		// Arrange
+		try (PreparedStatement statement = connection.prepareStatement("INSERT INTO TEMP (TKEY, TVARCHAR) VALUES (1002, ?)")) {
+
+			// Act // Assert
+			assertDoesNotThrow(() -> JdbcUtil.setParameter(statement, 1, "1", dbmsSupport.isParameterTypeMatchSupported()));
+			assertDoesNotThrow((ThrowingSupplier<Boolean>) statement::execute);
+		}
+	}
+
+	@DatabaseTest
+	public void testSetParameterInt() throws Exception {
+		// Arrange
+		try (PreparedStatement statement = connection.prepareStatement("INSERT INTO TEMP (TKEY, TINT) VALUES (1001, ?)")) {
+
+			// Act // Assert
+			assertDoesNotThrow(() -> JdbcUtil.setParameter(statement, 1, "1", dbmsSupport.isParameterTypeMatchSupported()));
+			assertDoesNotThrow((ThrowingSupplier<Boolean>) statement::execute);
+		}
+	}
+
+	@DatabaseTest
+	public void testSetParameterBlob() throws Exception {
+		// Arrange
+		try (PreparedStatement statement = connection.prepareStatement("INSERT INTO TEMP (TKEY, TBLOB) VALUES (1003, ?)")) {
+
+			// Act // Assert
+			assertDoesNotThrow(() -> JdbcUtil.setParameter(statement, 1, "1", dbmsSupport.isParameterTypeMatchSupported()));
+			assertDoesNotThrow((ThrowingSupplier<Boolean>) statement::execute);
+		}
+	}
+
+	@DatabaseTest
+	public void testSetParameterClob() throws Exception {
+		// Arrange
+		try (PreparedStatement statement = connection.prepareStatement("INSERT INTO TEMP (TKEY, TCLOB) VALUES (1004, ?)")) {
+
+			// Act // Assert
+			assertDoesNotThrow(() -> JdbcUtil.setParameter(statement, 1, "1", dbmsSupport.isParameterTypeMatchSupported()));
+			assertDoesNotThrow((ThrowingSupplier<Boolean>) statement::execute);
 		}
 	}
 
@@ -264,5 +319,29 @@ public class JdbcUtilTest {
 		SQLWarning warning2 = new SQLWarning("warningReason2", "SQLState 2", 222, new NullPointerException("och"));
 		warning1.setNextWarning(warning2);
 		return warning1;
+	}
+
+	private static void assertBlobSize(Object result, int expectedLength) throws SQLException {
+		switch (result) {
+			case Blob blob -> assertEquals(expectedLength, blob.length());
+			case byte[] bytes -> assertEquals(expectedLength, bytes.length);
+			case null, default -> fail("result is not instance of Blob or byte[]: " + result);
+		}
+	}
+
+	private static void assertClobSize(Object result, int expectedLength) throws SQLException {
+		switch (result) {
+			case Clob clob -> assertEquals(expectedLength, clob.length());
+			case char[] chars -> assertEquals(expectedLength, chars.length);
+			case String string -> assertEquals(expectedLength, string.length());
+			case null, default -> fail("result is not instance of Clob, char[] or String: " + result);
+		}
+	}
+
+	private void assertNumericValue(Object result, long expectedValue) {
+		switch (result) {
+			case Number number -> assertEquals(expectedValue, number.longValue());
+			case null, default -> fail("result is not instance of Number: " + result);
+		}
 	}
 }

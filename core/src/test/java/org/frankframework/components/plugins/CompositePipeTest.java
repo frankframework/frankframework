@@ -3,12 +3,9 @@ package org.frankframework.components.plugins;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -117,13 +114,12 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 		// Stub actual processing.
 		doAnswer(i -> {
 			PipeLineResult plr = new PipeLineResult();
-			plr.setResult(i.getArgument(2));
-			PipeLineSession session = i.getArgument(3);
-			assertNull(session.getMessageId());
+			plr.setResult(i.getArgument(0));
+			PipeLineSession session = i.getArgument(1);
 			assertEquals(testCorrelationId, session.getCorrelationId());
 			plr.setState(ExitState.SUCCESS);
 			return plr;
-		}).when(frankPlugin).process(isNull(), anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(frankPlugin).process(any(Message.class), any(PipeLineSession.class));
 
 		// Process dummy message
 		Message ignored = Message.nullMessage();
@@ -166,14 +162,13 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 		// Stub actual processing.
 		doAnswer(i -> {
 			PipeLineResult plr = new PipeLineResult();
-			plr.setResult(i.getArgument(2));
-			PipeLineSession session = i.getArgument(3);
-			assertNull(session.getMessageId());
+			plr.setResult(i.getArgument(0));
+			PipeLineSession session = i.getArgument(1);
 			assertEquals(testCorrelationId, session.getCorrelationId());
 			assertEquals("value", session.getString("test"));
 			plr.setState(ExitState.SUCCESS);
 			return plr;
-		}).when(frankPlugin).process(isNull(), anyString(), any(Message.class), any(PipeLineSession.class));
+		}).when(frankPlugin).process(any(Message.class), any(PipeLineSession.class));
 
 		// Process dummy message
 		Message ignored = Message.nullMessage();

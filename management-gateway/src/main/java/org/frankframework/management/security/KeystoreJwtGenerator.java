@@ -41,7 +41,7 @@ public class KeystoreJwtGenerator extends AbstractJwtGenerator<RSAKey> {
 	}
 
 	@Override
-	protected RSAKey getJwk() throws GeneralSecurityException, JOSEException {
+	protected RSAKey getJwk() throws GeneralSecurityException {
 		Enumeration<String> aliases = keyStore.aliases();
 		if (!aliases.hasMoreElements()) {
 			throw new IllegalStateException("Keystore contains no aliases");

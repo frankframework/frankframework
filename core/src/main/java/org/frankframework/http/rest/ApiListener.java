@@ -33,9 +33,11 @@ import com.nimbusds.jose.proc.SecurityContext;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.configuration.AdapterAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
@@ -50,8 +52,6 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.receivers.Receiver;
-import org.frankframework.receivers.ReceiverAware;
-import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 
@@ -97,7 +97,7 @@ import org.frankframework.util.StringUtil;
  * @author Niels Meijer
  */
 @DestinationType(DestinationType.Type.HTTP)
-public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
+public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, AdapterAware {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
 	private static final Pattern URI_PATTERN_VARIABLES_RE = Pattern.compile("/\\{(.+?)}(?=/|$)");
@@ -125,7 +125,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter MimeType contentType;
 	private String multipartBodyName = null;
 
-	private @Getter @Setter Receiver<Message> receiver;
+	// Required for OpenApiSpec generator
+	private @Getter @Setter Adapter adapter;
 
 	private @Getter String messageIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.messageIdHeader", AbstractHttpSender.MESSAGE_ID_HEADER);
 	private @Getter String correlationIdHeader = AppConstants.getInstance(getConfigurationClassLoader()).getString("apiListener.correlationIdHeader", AbstractHttpSender.CORRELATION_ID_HEADER);

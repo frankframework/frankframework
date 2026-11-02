@@ -282,6 +282,7 @@ export class AppService {
 
   private _appConstants: WritableSignal<AppConstants> = signal({
     'console.pollerInterval': '10000',
+    'larva.enabled': 'true', // true to support reloading without redirecting
   });
 
   private lastUpdated = 0;

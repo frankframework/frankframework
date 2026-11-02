@@ -90,7 +90,7 @@ public class TestInlineStorage extends BusTestBase {
 		MatchUtils.assertJsonEquals(expectedJson, jsonResponse);
 	}
 
-	public class DummyListenerWithMessageBrowsers extends JavaListener implements IProvidesMessageBrowsers<String> {
+	public static class DummyListenerWithMessageBrowsers extends JavaListener implements IProvidesMessageBrowsers<String> {
 
 		private Set<ProcessState> knownProcessStates = ProcessState.getMandatoryKnownStates();
 		private Map<ProcessState,Set<ProcessState>> targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);

@@ -28,8 +28,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.AdapterAware;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationAware;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
@@ -55,12 +57,13 @@ import org.frankframework.stream.Message;
 @DestinationType(DestinationType.Type.ADAPTER)
 @Category(Category.Type.BASIC)
 @Log4j2
-public class FrankListener implements RequestReplyListener, IPushingListener<Message>, HasPhysicalDestination, ServiceClient, ConfigurationAware {
+public class FrankListener implements RequestReplyListener, IPushingListener<Message>, HasPhysicalDestination, ServiceClient, ConfigurationAware, AdapterAware {
 
 	private static final ConcurrentMap<String, FrankListener> listeners = new ConcurrentHashMap<>();
 
 	private @Setter @Getter ApplicationContext applicationContext;
-	private @Setter Configuration configuration;
+	private @Setter Configuration configuration; // Automatically set via Spring, but not when using Larva.
+	private @Setter Adapter adapter; // Automatically set via Spring, but not when using Larva.
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ExceptionHandlingMethod onException = ExceptionHandlingMethod.RETHROW;
 
@@ -76,7 +79,7 @@ public class FrankListener implements RequestReplyListener, IPushingListener<Mes
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return fullName;
+		return StringUtils.defaultIfBlank(fullName, "unknown");
 	}
 
 	@Override
@@ -90,9 +93,11 @@ public class FrankListener implements RequestReplyListener, IPushingListener<Mes
 	}
 
 	@Override
-	public void configure() {
+	public void configure() throws ConfigurationException {
 		if (StringUtils.isBlank(getName())) {
-			Adapter adapter = getAdapter();
+			if (adapter == null) {
+				throw new ConfigurationException("Adapter is not set, listener need a name");
+			}
 			setName(adapter.getName());
 			log.debug("name was not configured, defaulting to adapter name [{}]", this::getName);
 		}
@@ -108,23 +113,20 @@ public class FrankListener implements RequestReplyListener, IPushingListener<Mes
 		return "";
 	}
 
-	// TODO this should be the ApplicationContext...?
-	private Adapter getAdapter() {
-		return ((Receiver<?>) getHandler()).getAdapter();
-	}
-
 	@Override
 	public void start() {
 		FrankListener putResult = listeners.putIfAbsent(fullName, this);
 		if (putResult != null && putResult != this) {
-			throw new LifecycleException("Duplicate registration [" + fullName + "] for adapter [" + getAdapter().getName() + "], FrankListener [" + getName() + "]");
+			throw new LifecycleException("Duplicate registration [" + fullName + "] for FrankListener [" + getName() + "]");
 		}
 		open = true;
 	}
 
 	@Override
 	public void stop() {
-		listeners.remove(fullName);
+		if (fullName != null) {
+			listeners.remove(fullName);
+		}
 		open = false;
 	}
 

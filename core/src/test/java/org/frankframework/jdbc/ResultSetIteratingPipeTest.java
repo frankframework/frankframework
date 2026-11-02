@@ -136,7 +136,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
 
-		FixedQuerySender sender = env.createBean(FixedQuerySender.class);
+		FixedQuerySender sender = env.createBean();
 		sender.setQuery("UPDATE "+TEST_TABLE+" SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
 		Parameter param = new Parameter();
 		param.setName("ID");
@@ -165,7 +165,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		pipe.setIgnoreExceptions(true);
 		pipe.setDatasourceName(getDataSourceName());
 
-		FixedQuerySender sender = env.createBean(FixedQuerySender.class);
+		FixedQuerySender sender = env.createBean();
 		sender.setQuery("UPDATE "+TEST_TABLE+" SET TINT = '4', TDATE = CURRENT_TIMESTAMP WHERE TKEY = ?");
 		Parameter param = new Parameter();
 		param.setName("ID");
@@ -186,6 +186,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		} catch (PipeRunException e) {
 			txManager.rollback(txStatus);
 		}
+		assertNotNull(result);
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		try(Connection connection = env.getConnection()) {
 			String jdbcResult = JdbcTestUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
@@ -231,9 +232,10 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		MatchUtils.assertXmlEquals(expected, result.getResult().asString());
 	}
 
+	@SuppressWarnings({ "java:S2925", "BusyWait" })
 	private static class ResultCollectingSender extends EchoSender {
-		private List<Message> data = Collections.synchronizedList(new ArrayList<>());
-		private int delay;
+		private final List<Message> data = Collections.synchronizedList(new ArrayList<>());
+		private final int delay;
 		public ResultCollectingSender() {
 			this(0);
 		}

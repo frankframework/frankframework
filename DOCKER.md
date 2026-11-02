@@ -172,7 +172,7 @@ You must provide your own database drivers for production use.
 ### Non-root
 
 This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=2000` and `GID=2000` instead of `root`.
-Keep this in mind when copying or mounting files to the container, as the files need to be owned by `tomcat:tomcat` instead of `root`.
+Keep this in mind when copying or mounting files to the container, as the files either need to be owned by `tomcat:tomcat` instead of `root:root`, or need to be world-readable (and directories need to be world-executable).
 
 ### Readonly
 

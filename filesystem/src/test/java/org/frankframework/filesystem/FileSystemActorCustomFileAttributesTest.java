@@ -50,6 +50,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		result = actor.doAction(input, pvl, session);
 
 		// Assert
+		assertNotNull(result);
 		assertThat(result.asString(), containsString("prop1=\"value1\""));
 		assertThat(result.asString(), containsString("prop2=\"välue2-non-ascii\""));
 		assertThat(result.asString(), not(containsString("prop3=\"value3\"")));
@@ -79,6 +80,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		result = actor.doAction(input, pvl, session);
 
 		// Assert
+		assertNotNull(result);
 		assertThat(result.asString(), containsString("prop1=\"value1\""));
 		assertThat(result.asString(), containsString("prop2=\"välue2-non-ascii\""));
 		assertThat(result.asString(), not(containsString("prop3=\"value3\"")));
@@ -120,6 +122,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		result = actor.doAction(input, pvl, session);
 
 		// Assert
+		assertNotNull(result);
 		assertThat(result.asString(), containsString("prop1=\"value1 with space\""));
 		assertThat(result.asString(), containsString("prop2=\"välüé2-€-nön-äscïï\""));
 		assertThat(result.asString(), containsString("prop3=\"välue3-non-ascii\""));

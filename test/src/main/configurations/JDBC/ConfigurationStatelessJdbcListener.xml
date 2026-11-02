@@ -1,0 +1,56 @@
+<Module
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+	<Adapter name="JdbcStatelessListener">
+		<!-- Run without transaction, otherwise we cannot update the row in new TX if there's an error and we need to remove it from messages-to-be-processed -->
+		<Receiver transactionAttribute="NotSupported" maxRetries="1" numThreads="5" numThreadsPolling="2">
+			<StatelessJdbcListener
+				selectQuery="SELECT TKEY, TVARCHAR, TBLOB
+										FROM IBISTEMP
+										WHERE TCHAR = '1'
+										AND TNUMBER=${jdbc.statelesslistener.key}"
+				afterSelectQuery="UPDATE IBISTEMP SET TCHAR='2' WHERE TKEY=?"
+				afterProcessQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
+				messageField="TBLOB"
+				blobSmartGet="true"
+				blobsCompressed="false"
+				correlationIdField="TVARCHAR"
+				keyField="TKEY"
+			/>
+		</Receiver>
+
+		<!-- Pipeline runs in TX so DB actions done in the pipeline-TX should be rolled back on error -->
+		<Pipeline transactionAttribute="Required">
+			<Exits>
+				<Exit name="DONE" state="SUCCESS" />
+				<Exit name="FAIL" state="ERROR" />
+			</Exits>
+
+			<!-- This pipe is to record each message-id received so we can verify each message is processed only once -->
+			<SenderPipe name="Insert record in DB">
+				<FixedQuerySender query="INSERT INTO IBISTEMP(TKEY, TCHAR, TNUMBER, TVARCHAR, TBLOB)
+				 							VALUES (SEQ_IBISTEMP.NEXTVAL, 'R', ${jdbc.statelesslistener.key}, ?, ?)">
+					<Param name="id" pattern="cid-{cid}"/>
+					<Param name="msg" sessionKey="originalMessage" type="BINARY"/>
+				</FixedQuerySender>
+			</SenderPipe>
+
+			<SwitchPipe name="pass-or-fail" forwardNameSessionKey="originalMessage">
+				<Forward name="good-path" path="DONE"/>
+				<Forward name="error" path="Remove current Message"/>
+			</SwitchPipe>
+
+			<!-- This pipe is to update row so it will not be processed again after error -->
+			<!-- Runs in new TX; if the Receiver is transactional this will block b/c the row is locked in TX -->
+			<!-- But if the Receiver is transactional and runs in same TX the update would be rolled back so Receiver made not transactional -->
+			<!-- So instead the Pipeline runs in TX and this pipe in new TX -->
+			<SenderPipe name="Remove current Message" transactionAttribute="RequiresNew">
+				<FixedQuerySender query="UPDATE IBISTEMP SET TCHAR = 'E' WHERE TKEY = ? AND TNUMBER = ${jdbc.statelesslistener.key}">
+					<Param name="key" sessionKey="key"/>
+				</FixedQuerySender>
+			</SenderPipe>
+
+			<ExceptionPipe name="Force ExceptionPipe" />
+		</Pipeline>
+	</Adapter>
+</Module>

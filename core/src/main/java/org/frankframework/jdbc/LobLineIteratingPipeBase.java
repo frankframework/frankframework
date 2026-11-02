@@ -35,7 +35,7 @@ public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 
 	protected abstract Reader getReader(ResultSet rs) throws SenderException;
 
-	protected class ResultStreamIterator extends ReaderLineIterator {
+	protected static class ResultStreamIterator extends ReaderLineIterator {
 		Connection conn;
 		ResultSet rs;
 

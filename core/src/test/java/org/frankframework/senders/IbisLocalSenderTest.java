@@ -505,7 +505,7 @@ class IbisLocalSenderTest {
 		configuration.configure();
 		configuration.start();
 
-		waitForState((Receiver<?>) listener.getHandler(), RunState.STARTED);
+		waitForState((Adapter) listener.getApplicationContext(), RunState.STARTED);
 	}
 
 	private static Adapter createAdapter(TestConfiguration configuration) {
@@ -529,8 +529,6 @@ class IbisLocalSenderTest {
 		adapter.addReceiver(receiver);
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
-
-		listener.setHandler(receiver);
 
 		adapter.setPipeLine(pipeline);
 

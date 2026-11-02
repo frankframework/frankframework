@@ -54,11 +54,6 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	}
 
 	@Override
-	public boolean isTransacted() {
-		return false;
-	}
-
-	@Override
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {
 			return new FileSystemMessageBrowsingIterator<F, FS>(fileSystem, folder, messageIdPropertyKey);

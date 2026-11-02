@@ -121,7 +121,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		nonWhitespaceCharactersSeen=true;
 	}
 
-	private class Element {
+	private static class Element {
 		public String uri;
 		public String localName;
 		public String qName;

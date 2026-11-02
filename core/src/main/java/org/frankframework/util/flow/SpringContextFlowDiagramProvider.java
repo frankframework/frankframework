@@ -28,6 +28,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
@@ -35,14 +36,17 @@ import org.frankframework.util.AppConstants;
 
 /**
  * Generate a flow over the digested {@link Adapter} or {@link Configuration}.
- * Uses {@link Configuration#getLoadedConfiguration()} (and in case of an Adapter, an xPath on the LoadedConfiguration).
+ * Uses {@link ConfigurationDigester#getLoadedConfiguration()} (and in case of an Adapter, an xPath on the LoadedConfiguration).
  */
 @Log4j2
 public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, ApplicationContextAware, NamedBean {
 	private final boolean suppressWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.FLOW_GENERATION_ERROR.getKey(), false);
 
-	@Setter
-	private FlowDiagramManager flowDiagramManager;
+	private final FlowDiagramManager flowDiagramManager;
+
+	public SpringContextFlowDiagramProvider(FlowDiagramManager flowDiagramManager) {
+		this.flowDiagramManager = flowDiagramManager;
+	}
 
 	@Setter
 	private ApplicationContext applicationContext;
@@ -70,14 +74,16 @@ public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, 
 	@Override
 	public void configure() {
 		try {
-			if (applicationContext instanceof Configuration configuration) {
-				log.debug("creating flow for configuration: {}", configuration);
-				flowDiagramManager.generate(configuration);
-			} else if (applicationContext instanceof Adapter adapter) {
-				log.debug("creating flow for adapter: {}", adapter);
-				flowDiagramManager.generate(adapter);
-			} else {
-				throw new IllegalStateException("no suitable Configuration found");
+			switch (applicationContext) {
+				case Configuration configuration -> {
+					log.debug("creating flow for configuration: {}", configuration);
+					flowDiagramManager.generate(configuration);
+				}
+				case Adapter adapter -> {
+					log.debug("creating flow for adapter: {}", adapter);
+					flowDiagramManager.generate(adapter);
+				}
+				default -> throw new IllegalStateException("no suitable Configuration found");
 			}
 
 			// Don't throw an exception when generating the flow fails

@@ -8,12 +8,10 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IKnowsDeliveryCount;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
@@ -43,7 +41,7 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 	}
 
 	@Override
-	public RawMessageWrapper<CustomMessageClass> wrapRawMessage(CustomMessageClass rawMessage, PipeLineSession session) throws ListenerException {
+	public RawMessageWrapper<CustomMessageClass> wrapRawMessage(CustomMessageClass rawMessage, PipeLineSession session) {
 		return new RawMessageWrapper<>(rawMessage);
 	}
 
@@ -58,12 +56,12 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 	}
 
 	@Override
-	public Message extractMessage(@NonNull RawMessageWrapper<CustomMessageClass> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<CustomMessageClass> rawMessage, @NonNull Map<String, Object> context) {
 		return Message.asMessage(rawMessage.rawMessage.getMessage());
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<CustomMessageClass> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<CustomMessageClass> rawMessage, PipeLineSession pipeLineSession) {
 		// No-op
 	}
 
@@ -78,7 +76,7 @@ public class MockPushingListenerWithCustomMessageType implements IPushingListene
 	}
 
 	@Override
-	public void configure() throws ConfigurationException {
+	public void configure() {
 		// No-op
 	}
 

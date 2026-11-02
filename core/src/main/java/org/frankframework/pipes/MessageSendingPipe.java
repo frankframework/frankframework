@@ -283,7 +283,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
-	private void configureSpecialPipes() throws ConfigurationException {
+	private void configureSpecialPipes() {
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
 		if (outputValidator == null && inputValidator instanceof IDualModeValidator validator && validator.isConfiguredForMixedValidation()) {

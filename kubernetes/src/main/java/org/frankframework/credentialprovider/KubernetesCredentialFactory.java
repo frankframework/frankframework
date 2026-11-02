@@ -18,6 +18,7 @@ package org.frankframework.credentialprovider;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 
 import org.jspecify.annotations.NonNull;
 
@@ -25,7 +26,6 @@ import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
-import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
  * {@inheritClassDoc}
@@ -72,14 +72,14 @@ public class KubernetesCredentialFactory extends AbstractKubernetesCredentialPro
 	private final Cache<String, Secret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
 	@Override
-	protected void postInitialize(CredentialConstants appConstants) {
+	protected void postInitialize(Properties properties) {
 		log.info("fetching secrets from Kubernetes namespace " + namespace);
 		List<Secret> secrets = getSecretsFromKubernetes();
 		log.info("found " + secrets.size() + " secrets in namespace " + namespace);
 	}
 
 	@Override
-	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
+	public @NonNull ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		warnIfAliasNameInvalid(alias);
 
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::findSecretByName);
@@ -90,7 +90,7 @@ public class KubernetesCredentialFactory extends AbstractKubernetesCredentialPro
 	}
 
 	@Override
-	public Collection<String> getConfiguredAliases() {
+	public @NonNull Collection<String> getConfiguredAliases() {
 		return configuredAliases.keySet();
 	}
 

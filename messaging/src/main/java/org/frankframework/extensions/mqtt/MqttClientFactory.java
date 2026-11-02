@@ -55,6 +55,10 @@ public class MqttClientFactory {
 	}
 
 	public MqttClient createMqttClient() throws MqttException {
+		return createMqttClient(false);
+	}
+
+	public MqttClient createMqttClient(boolean allowReconnect) throws MqttException {
 		Properties props = resource.getProperties();
 
 		MqttConnectOptions connectOptions = new MqttConnectOptions();
@@ -67,7 +71,9 @@ public class MqttClientFactory {
 			connectOptions.setUserName(cf.getUsername());
 			connectOptions.setPassword(cf.getPassword().toCharArray());
 		}
-
+		if (!allowReconnect) {
+			connectOptions.setAutomaticReconnect(false);
+		}
 
 		MqttClient client = new MqttClient(resource.getUrl(), clientId, getMqttDataStore(props.getProperty("persistenceDirectory")));
 		try {

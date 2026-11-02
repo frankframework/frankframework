@@ -36,8 +36,6 @@ import org.wildfly.security.credential.store.CredentialStoreException;
 import org.wildfly.security.credential.store.CredentialStoreSpi;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
-import org.frankframework.credentialprovider.util.CredentialConstants;
-
 public class WildFlyCredentialFactoryTest {
 
 	private WildFlyCredentialFactory credentialFactory;
@@ -45,9 +43,9 @@ public class WildFlyCredentialFactoryTest {
 
 	@BeforeAll
 	static void cleanupBeforeAll() {
-		CredentialFactory.clearInstance();
+		CredentialFactory.reset();
 
-		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.WildFlyCredentialFactory");
+		CredentialFactory.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.WildFlyCredentialFactory");
 	}
 
 	@SuppressWarnings("unchecked")

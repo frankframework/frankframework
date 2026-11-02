@@ -47,7 +47,7 @@ public class LockerTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
-		locker = env.createBean(Locker.class);
+		locker = env.createBean();
 		locker.setFirstDelay(0);
 
 		try(Connection conn = env.getConnection()) {
@@ -333,7 +333,7 @@ public class LockerTest {
 
 			IbisTransaction mainItx;
 			PlatformTransactionManager txManager = env.getConfiguration().getBean("txManager", PlatformTransactionManager.class);
-			TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
+			TransactionDefinition txdef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 20);
 			mainItx = new IbisTransaction(txManager, txdef, "locker ");
 
 			try (Connection conn = env.getConnection()) {

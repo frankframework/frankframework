@@ -98,7 +98,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
@@ -2305,7 +2304,7 @@ public class ApiListenerServletTest {
 	private class ApiListenerBuilder {
 
 		private final ApiListener listener;
-		private final MessageHandler handler;
+		private final MockMessageHandler handler;
 
 		public ApiListenerBuilder(String uri, List<HttpMethod> method) {
 			this(uri, method, null, null);
@@ -2325,7 +2324,7 @@ public class ApiListenerServletTest {
 
 			listener.setMethods(method.toArray(new HttpMethod[0]));
 
-			handler = new MessageHandler();
+			handler = new MockMessageHandler();
 			listener.setHandler(handler);
 
 			if(consumes != null)
@@ -2457,7 +2456,7 @@ public class ApiListenerServletTest {
 	}
 
 
-	private class MessageHandler implements IMessageHandler<Message> {
+	private class MockMessageHandler implements IMessageHandler<Message> {
 		private @Setter int exitCode = 0;
 		private @Setter boolean shouldThrow = false;
 		private @Setter Object responseContent = null;
@@ -2469,7 +2468,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void processRawMessage(@NonNull IListener<Message> origin, @NonNull RawMessageWrapper<Message> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) {
+		public void processRawMessage(@NonNull IPushingListener<Message> origin, @NonNull RawMessageWrapper<Message> message, @NonNull PipeLineSession session, boolean duplicatesAlreadyChecked) {
 			fail("method should not be called");
 		}
 

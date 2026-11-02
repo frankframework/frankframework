@@ -56,7 +56,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
-import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.factory.JdbcPoolUtil;
@@ -111,7 +110,7 @@ import org.frankframework.util.TimeProvider;
  * @author Jaco de Groot
  * @since 4.1
  */
-public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializable> implements ITransactionalStorage {
+public class JdbcTransactionalStorage extends JdbcTableMessageBrowser implements ITransactionalStorage {
 
 	private @Getter boolean checkTable; 		// default set from appConstant jdbc.storage.checkTable
 	private @Getter boolean checkIndices;		// default set from appConstant jdbc.storage.checkIndices
@@ -436,7 +435,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 	}
 
 	@NonNull
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, SenderException {
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		if (isOnlyStoreWhenMessageIdUnique()) {
 			String resultString = checkIfMessageIdAlreadyStored(conn, messageId, message);
@@ -607,13 +606,13 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 			final String storedLabel = StringUtils.truncate(label, MAXLABELLEN);
 
 			return storeMessageInDatabase(conn, storedMessageId, storedCorrelationId, receivedDateTime, storedComments, storedLabel, message);
-		} catch (IOException | JdbcException | SQLException e) {
+		} catch (IOException | SQLException e) {
 			throw new SenderException("cannot serialize message", e);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private @Nullable RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+	private @Nullable RawMessageWrapper<Serializable> retrieveObject(String storageKey, ResultSet rs, int columnIndex, boolean compressed) throws IOException, SQLException, JdbcException {
 		try (InputStream blobInputStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, columnIndex, compressed)) {
 			if (blobInputStream == null) {
 				return null;
@@ -631,6 +630,8 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 					rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 					return rawMessageWrapper;
 				}
+			} catch (ClassNotFoundException e) {
+				throw new JdbcException("Cannot read object from database", e);
 			}
 		}
 	}
@@ -680,7 +681,7 @@ public class JdbcTransactionalStorage extends JdbcTableMessageBrowser<Serializab
 		}
 	}
 
-	private static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws DbmsException, SQLException {
+	private static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws SQLException {
 		OutputStream result;
 		OutputStream out = dbmsSupport.getBlobOutputStream(stmt, columnIndex, blobUpdateHandle);
 		if (compressBlob) {

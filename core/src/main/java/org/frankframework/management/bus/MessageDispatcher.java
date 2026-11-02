@@ -27,7 +27,6 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.Nullable;
-import org.springframework.aop.config.AopConfigUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -51,6 +50,7 @@ import org.springframework.security.authorization.method.AuthorizationManagerBef
 
 import lombok.Setter;
 
+import org.frankframework.configuration.AopProxyBeanFactoryPostProcessor;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
@@ -76,9 +76,8 @@ public class MessageDispatcher extends GenericApplicationContext implements Init
 	public void afterPropertiesSet() throws Exception {
 		setParent(applicationContext);
 
-		// Equivalent of proxy-target-class="true": auto-proxying using CGLIB.
-		AopConfigUtils.registerAutoProxyCreatorIfNecessary(this);
-		AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(this);
+		// Enable CGLIB proxying for @BusAware beans, so that we can use @RolesAllowed annotations on service activator methods.
+		addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 
 		// Register the JSR-250 AuthorizationMethodInterceptor to enable @RolesAllowed annotations on service activator methods.
 		registerBean("jsr250AuthorizationMethodInterceptor",

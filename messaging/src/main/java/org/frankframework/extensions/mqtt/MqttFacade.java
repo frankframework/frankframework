@@ -41,7 +41,7 @@ import org.frankframework.doc.Mandatory;
  *     password: ""
  *     authalias: "${property.name.here}"
  *     properties:
- *       automaticReconnect: "true"
+ *       automaticReconnect: "false"
  *       cleanSession: "false"
  * }</pre>
  * <br>
@@ -77,7 +77,7 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "TOPIC(" + getTopic() + ") on (" + client.getServerURI() + ")";
+		return "TOPIC(" + getTopic() + ") on (%s)".contains(client.getServerURI() != null ? client.getServerURI() : "unknown");
 	}
 
 	@Override

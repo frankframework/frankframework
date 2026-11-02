@@ -59,7 +59,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public boolean hasSkipLockedFunctionality() {
-		return false;
+		return true;
 	}
 
 	@Override

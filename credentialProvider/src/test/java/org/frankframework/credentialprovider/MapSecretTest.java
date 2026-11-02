@@ -3,7 +3,6 @@ package org.frankframework.credentialprovider;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -34,7 +33,7 @@ public class MapSecretTest {
 	}
 
 	@Test
-	public void testPasswordWithSlashes() throws IOException {
+	public void testPasswordWithSlashes() {
 		CredentialAlias alias = CredentialAlias.parse("slash");
 
 		MapSecret mc = new MapSecret(alias, aliases);
@@ -43,7 +42,7 @@ public class MapSecretTest {
 	}
 
 	@Test
-	public void testPlainAlias() throws IOException {
+	public void testPlainAlias() {
 		CredentialAlias alias = CredentialAlias.parse("straight");
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
@@ -55,7 +54,7 @@ public class MapSecretTest {
 	}
 
 	@Test
-	public void testAliasWithoutUsername() throws IOException {
+	public void testAliasWithoutUsername() {
 		CredentialAlias alias = CredentialAlias.parse("noUsername");
 		String expectedPassword = "password from alias";
 
@@ -66,7 +65,7 @@ public class MapSecretTest {
 	}
 
 	@Test
-	public void testPlainCredential() throws IOException {
+	public void testPlainCredential() {
 		CredentialAlias alias = CredentialAlias.parse("singleValue");
 
 		MapSecret mc = new MapSecret(alias, aliases);

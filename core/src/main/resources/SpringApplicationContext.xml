@@ -57,13 +57,6 @@
 	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings" />
 
 	<bean
-		name="listenerContainer"
-		class="org.frankframework.receivers.PullingListenerContainer"
-		autowire="byName"
-		scope="prototype"
-	/>
-
-	<bean
 		id="schedulerHelper"
 		class="org.frankframework.scheduler.SchedulerHelper"
 		autowire="byName"

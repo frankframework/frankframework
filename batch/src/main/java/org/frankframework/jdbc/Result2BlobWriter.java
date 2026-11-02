@@ -26,7 +26,6 @@ import java.util.zip.DeflaterOutputStream;
 
 import org.frankframework.batch.IResultHandler;
 import org.frankframework.core.SenderException;
-import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.util.StreamUtil;
@@ -66,7 +65,7 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		}
 	}
 
-	private static Writer getBlobWriter(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, DbmsException, SQLException {
+	private static Writer getBlobWriter(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, SQLException {
 		Writer result;
 		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
 		if (charset == null) {

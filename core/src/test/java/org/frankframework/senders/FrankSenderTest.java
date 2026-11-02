@@ -43,7 +43,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.AbstractPipe;
@@ -200,11 +199,11 @@ class FrankSenderTest {
 	void testFindAdapterSuccessInConfigure(String target) throws SenderException, ConfigurationException {
 		// Arrange
 		configuration = new TestConfiguration(false);
-		FrankSender sender = configuration.createBean();
+		Adapter adapter = configuration.createBean();
+		FrankSender sender = SpringUtils.createBean(adapter);
 		sender.setTarget(target);
 		IPipe pipe = new EchoPipe();
 		pipe.setName("test-pipe");
-		Adapter adapter = configuration.createBean();
 		adapter.setName("adapterName");
 		configuration.addAdapter(adapter);
 		PipeLine pipeline = SpringUtils.createBean(adapter);
@@ -603,9 +602,9 @@ class FrankSenderTest {
 
 		Adapter targetAdapter = createAdapter(configuration, pipe);
 		if (scope == FrankSender.Scope.JVM) {
-			createJavaListener(configuration, targetAdapter);
+			createJavaListener(targetAdapter);
 		} else if (scope == FrankSender.Scope.LISTENER) {
-			createFrankListener(configuration, targetAdapter);
+			createFrankListener(targetAdapter);
 		}
 
 		configuration.configure();
@@ -616,37 +615,26 @@ class FrankSenderTest {
 		return sender;
 	}
 
-	private void createFrankListener(TestConfiguration configuration, Adapter adapter) {
+	private void createFrankListener(Adapter adapter) {
 		Receiver<Message> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TargetAdapter-receiver");
 
-		FrankListener listener = configuration.createBean();
-		listener.setHandler(receiver);
-
+		FrankListener listener = SpringUtils.createBean(adapter);
+		listener.setName(TARGET_SERVICE_NAME);
 		receiver.setListener(listener);
-		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
-
 		adapter.addReceiver(receiver);
-
-		listener.configure();
-		listener.start();
 	}
 
-	private void createJavaListener(TestConfiguration configuration, Adapter adapter) {
+	private void createJavaListener(Adapter adapter) {
 		Receiver<String> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TargetAdapter-receiver");
 
-		JavaListener<String> listener = configuration.createBean();
+		JavaListener<String> listener = SpringUtils.createBean(adapter);
 		listener.setName(receiver.getName());
 		listener.setServiceName(TARGET_SERVICE_NAME);
-		listener.setHandler(receiver);
 
 		receiver.setListener(listener);
-		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
-
 		adapter.addReceiver(receiver);
-
-		listener.start();
 	}
 
 	private Adapter createAdapter(TestConfiguration configuration, IPipe pipe) throws ConfigurationException {

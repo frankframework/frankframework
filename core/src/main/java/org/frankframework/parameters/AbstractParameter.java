@@ -274,7 +274,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	@Override // should be package private imo
 	@SuppressWarnings("deprecation")
 	@Nullable
-	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public Object getValue(@Nullable ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter [{}]", this::getName);
 		if (!configured) {
@@ -627,7 +627,11 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	/** Converts raw data to configured parameter type */
 	protected abstract T getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException;
 
-	private String formatPattern(ParameterValueList alreadyResolvedParameters, PipeLineSession session) throws ParameterException {
+	private @Nullable String formatPattern(@Nullable ParameterValueList alreadyResolvedParameters, PipeLineSession session) throws ParameterException {
+		if (pattern == null) {
+			return null;
+		}
+
 		int findNextFrom = 0;
 		int startNdx;
 		int endNdx;
@@ -635,7 +639,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		// replace the named parameter with numbered parameters
 		StringBuilder formatPattern = new StringBuilder();
 		List<Object> params = new ArrayList<>();
-		while(findNextFrom < pattern.length()) {
+		while (findNextFrom < pattern.length()) {
 			// get name of parameter in pattern to be substituted
 			startNdx = pattern.indexOf("{", findNextFrom);
 			if (startNdx == -1) {
@@ -726,7 +730,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		return "," + substitution.formatType + "," + substitution.formatString;
 	}
 
-	private @NonNull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
+	private @NonNull Object getValueForFormatting(@Nullable ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
 
 		if (alreadyResolvedParameters != null) {
 			ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);
