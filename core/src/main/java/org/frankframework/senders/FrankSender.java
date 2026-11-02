@@ -483,8 +483,22 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	private ServiceClient getAdapterServiceClient(String target) throws SenderException {
 		Adapter adapter = findAdapter(target);
 		return (message, session) -> {
-			PipeLineResult plr = adapter.processMessage(message, session, true);
+			PipeLineResult plr = adapter.processMessage(message, session, false);
 			session.setExitState(plr);
+			// TODO: The code here is rather dubious actually. We should catch Adapter exception instead of figuring out the suppressing it, then looking at text of error message
+			if (plr.getState() == PipeLine.ExitState.ERROR) {
+				// Adapter.processMessageDirect() catches ListenerException and makes an error message from it, but
+				// we want to actually throw it.
+				String errorResult;
+				try {
+					errorResult = plr.getResult().asString();
+				} catch (IOException e) {
+					throw new ListenerException("Call resulted in error, but cannot get error message:", e);
+				}
+				if (errorResult.contains("ListenerException")) {
+					throw new ListenerException(errorResult);
+				}
+			}
 			return plr.getResult();
 		};
 	}
