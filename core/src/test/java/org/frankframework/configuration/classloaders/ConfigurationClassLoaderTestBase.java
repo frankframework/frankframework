@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import org.hamcrest.Matchers;
@@ -125,6 +127,17 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFileXml() {
 		resourceExists("ClassLoaderTestFile.xml");
+	}
+
+	@Test
+	public void testFolder() throws IOException {
+		URL folder = getResource("ClassLoader/");
+		assertNotNull(folder);
+
+		try (InputStream is = folder.openStream()) {
+			assertNotNull(is.readAllBytes());
+			assertEquals(0, is.available());
+		}
 	}
 
 	@Test

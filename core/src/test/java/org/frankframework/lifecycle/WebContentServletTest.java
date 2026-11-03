@@ -3,10 +3,16 @@ package org.frankframework.lifecycle;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLStreamHandler;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import jakarta.servlet.ServletException;
 
@@ -18,6 +24,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
+import org.frankframework.configuration.classloaders.BytesURLStreamHandler;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.NullClassLoader;
@@ -39,11 +46,7 @@ public class WebContentServletTest {
 	 */
 	@Test
 	void testListDirectory() throws IOException, ClassLoaderException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
-
-		DirectoryClassLoader classLoader = new DirectoryClassLoader(new NullClassLoader());
-		classLoader.setDirectory(JunitTestClassLoaderWrapper.getTestClassesLocation() + "WebContentTestRoot");
-		config.setClassLoader(classLoader);
+		TestConfiguration config = createWebContentConfiguration();
 
 		// Act
 		MockHttpServletResponse response = getWebContentForConfiguration(config);
@@ -73,10 +76,14 @@ public class WebContentServletTest {
 	}
 
 	private MockHttpServletResponse doGet(Configuration config, String path, String queryString) throws IOException, ServletException {
-		WebContentServlet webContentServlet = spy(WebContentServlet.class);
-		IbisManager ibisManager = new IbisManager();
-		ibisManager.addConfiguration(config);
-		doReturn(ibisManager).when(webContentServlet).getIbisManager();
+		WebContentServlet webContentServlet = new WebContentServlet() {
+			@Override
+			IbisManager getIbisManager() {
+				IbisManager ibisManager = new IbisManager();
+				ibisManager.addConfiguration(config);
+				return ibisManager;
+			}
+		};
 
 		webContentServlet.init();
 
@@ -122,7 +129,32 @@ public class WebContentServletTest {
 	private TestConfiguration createWebContentConfiguration() throws ClassLoaderException {
 		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
 
-		DirectoryClassLoader classLoader = new DirectoryClassLoader(new NullClassLoader());
+		DirectoryClassLoader classLoader = new DirectoryClassLoader(new NullClassLoader()) {
+			@Override
+			public URL getLocalResource(String name) {
+				URL url = super.getLocalResource(name);
+				if (url == null) {
+					return null;
+				}
+
+				try {
+					// If the resource is a directory, and the name does not end with a slash, return null to indicate that it should not be served.
+					if (Files.isDirectory(Path.of(url.toURI())) && !name.endsWith("/")) {
+						return null;
+					}
+
+					// Wrap the URL so it never uses the file system directly.
+					// This ensures that serving files will work with all ClassLoaders, including the BytesClassLoader, which does not have a file system representation.
+					try (InputStream is = url.openStream()) {
+						URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(is.readAllBytes());
+						return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
+					}
+				} catch (Exception e) {
+					return fail("Could not read url for resource [" + name + "]", e);
+				}
+			}
+		};
+
 		classLoader.setDirectory(JunitTestClassLoaderWrapper.getTestClassesLocation() + "WebContentTestRoot");
 		config.setClassLoader(classLoader);
 		return config;
@@ -130,11 +162,7 @@ public class WebContentServletTest {
 
 	@Test
 	void testConfigurationWelcomeFile() throws IOException, ServletException, ClassLoaderException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
-
-		DirectoryClassLoader classLoader = new DirectoryClassLoader(new NullClassLoader());
-		classLoader.setDirectory(JunitTestClassLoaderWrapper.getTestClassesLocation() + "WebContentTestRoot");
-		config.setClassLoader(classLoader);
+		TestConfiguration config = createWebContentConfiguration();
 
 		// Act
 		MockHttpServletResponse response = doGet(config, "/" + TestConfiguration.TEST_CONFIGURATION_NAME);
@@ -148,11 +176,7 @@ public class WebContentServletTest {
 
 	@Test
 	void testConfigurationTestFile() throws IOException, ServletException, ClassLoaderException {
-		TestConfiguration config = new TestConfiguration(TestConfiguration.TEST_SPRING_CONFIGURATION_FILE);
-
-		DirectoryClassLoader classLoader = new DirectoryClassLoader(new NullClassLoader());
-		classLoader.setDirectory(JunitTestClassLoaderWrapper.getTestClassesLocation() + "WebContentTestRoot");
-		config.setClassLoader(classLoader);
+		TestConfiguration config = createWebContentConfiguration();
 
 		// Act
 		MockHttpServletResponse response = doGet(config, "/" + TestConfiguration.TEST_CONFIGURATION_NAME + "/test.txt");

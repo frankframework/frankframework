@@ -72,6 +72,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	@Test
 	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void classloaderOnlyFolder() {
+		resourceExists("ClassLoader/");
 		resourceExists("ClassLoader/fileOnlyOnZipClassPath.xml");
 	}
 

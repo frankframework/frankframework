@@ -39,7 +39,7 @@ public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public URL getLocalResource(String name) {
+	public final URL getLocalResource(String name) {
 		byte[] resource = resources.get(name);
 		if (resource != null) {
 			try {

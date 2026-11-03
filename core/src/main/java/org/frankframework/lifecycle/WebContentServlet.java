@@ -18,12 +18,7 @@ package org.frankframework.lifecycle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serial;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -68,7 +63,7 @@ public class WebContentServlet extends AbstractHttpServlet {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
-	public static final String WEBCONTENT = "webcontent";
+	private static final String WEBCONTENT = "webcontent/";
 	private final transient Logger log = LogUtil.getLogger(this);
 	private static final String SERVLET_PATH = "/webcontent/";
 	private static final String WELCOME_FILE = "index.html";
@@ -113,7 +108,6 @@ public class WebContentServlet extends AbstractHttpServlet {
 		} else if("/".equals(path)) {
 			if(isDtapStageLoc) {
 				listDirectory(resp);
-				resp.flushBuffer();
 			} else {
 				resp.sendError(HttpStatus.NOT_FOUND.value(), "resource not found");
 			}
@@ -123,11 +117,13 @@ public class WebContentServlet extends AbstractHttpServlet {
 		URL resource = findResource(req);
 
 		if (resource == null) {
+			// If the path does not end with a slash, but is a folder, redirect to the same path with a slash appended.
 			if (!path.endsWith("/") && findResource(req, path + "/") != null) {
-				// Folder with a welcome file, redirect so relative links in the welcome file resolve against the folder.
 				resp.sendRedirect(getFolderRedirectUrl(req));
 				return;
 			}
+
+			// If no resource is found, return a 404 error. Aka, the default behaviour.
 			resp.sendError(HttpStatus.NOT_FOUND.value(), "resource not found");
 			return;
 		}
@@ -160,33 +156,35 @@ public class WebContentServlet extends AbstractHttpServlet {
 		return -1;
 	}
 
-	private MimeType determineMimeType(URL resource) {
+	/**
+	 * Tries to determine the MimeType by looking up the extension in the default mapping.
+	 * If none found, computes it by reading the file's magic (first 16k bytes).
+	 * <p/>
+	 * The result is cached for future lookups, so the computation is only done once per resource.
+	 *
+	 * @return the determined MimeType or APPLICATION/OCTET_STREAM
+	 */
+	private MimeType determineMimeType(final URL resource) {
 		String extension = FilenameUtils.getExtension(resource.getPath());
 		log.debug("trying to lookup MimeType for extension [{}]", extension);
 		MimeType type = supportedMediaTypes.get(extension);
 		if (type == null) {
 			log.info("no default MimeType mapping found for extension [{}]", extension);
-			return computedMediaTypes.computeIfAbsent(resource.toExternalForm(), this::computeMimeType);
+			return computedMediaTypes.computeIfAbsent(resource.toExternalForm(), cacheKey -> computeMimeType(resource));
 		}
 		return type;
 	}
 
 	/**
-	 * Tries to determine the MimeType by reading the file's magic (first 16k bytes)
+	 * Tries to determine the MimeType by reading the file's magic (first 16k bytes).
+	 *
 	 * @return the computed MimeType or APPLICATION/OCTET_STREAM
 	 */
-	private MimeType computeMimeType(String resourcePath) {
-		URL resource;
-		try {
-			resource = URI.create(resourcePath).toURL();
-		} catch (MalformedURLException e) {
-			log.warn("Could not create URL from path [{}]", resourcePath);
-			return MediaType.APPLICATION_OCTET_STREAM;
-		}
+	private MimeType computeMimeType(URL resource) {
 		log.debug("computing MimeType for resource [{}]", resource);
-		String name = FilenameUtils.getExtension(resource.toString());
+		String filename = FilenameUtils.getName(resource.getPath());
 		try (InputStream in = resource.openStream(); TikaInputStream tis = TikaInputStream.get(in)) {
-			MimeType type = MimeType.valueOf(MessageUtils.TIKA.detect(tis, name));
+			MimeType type = MimeType.valueOf(MessageUtils.TIKA.detect(tis, filename));
 			if (!type.getSubtype().contains("x-tika")) {
 				return type;
 			}
@@ -213,14 +211,18 @@ public class WebContentServlet extends AbstractHttpServlet {
 
 	/**
 	 * Should fail fast, always return null / HTTP 404.
+	 * <br/>
+	 * Finds the resource for the given path, which starts with the configuration name.
 	 */
 	private @Nullable URL findResource(HttpServletRequest req) {
 		return findResource(req, req.getPathInfo());
 	}
 
 	/**
+	 * Should fail fast, always return null / HTTP 404.
+	 * <br/>
 	 * Finds the resource for the given path, which starts with the configuration name.
-	 * A folder resolves to its welcome file. A folder itself is never returned, its contents must not be listed.
+	 * A folder itself is never returned, its contents must not be listed.
 	 */
 	private @Nullable URL findResource(HttpServletRequest req, String path) {
 		String normalizedPath = FilenameUtils.normalize(path, true);
@@ -239,42 +241,45 @@ public class WebContentServlet extends AbstractHttpServlet {
 		}
 		req.setAttribute(CONFIGURATION_KEY, configurationName);
 
-		String resource = normalizedPath.substring(configurationName.length());
-		if(StringUtils.isEmpty(resource) || "/".equals(resource)) {
-			log.debug("unable to determine resource from path [{}] returning welcome file [{}]", normalizedPath, WELCOME_FILE);
-			resource = WELCOME_FILE;
-		} else if (resource.endsWith("/")) {
-			log.debug("resource [{}] is a folder, returning welcome file [{}]", resource, WELCOME_FILE);
-			resource = resource + WELCOME_FILE;
-		}
-
-		AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
-		if(classLoader == null) {
-			log.warn("configuration [{}] has no ClassLoader", configuration);
-			return null;
-		}
-		URL url = classLoader.getResource(WEBCONTENT + "/" + resource, false);
-		if (url != null && isDirectory(url)) {
-			log.debug("resource [{}] is a directory, not serving it", url);
-			return null;
-		}
-		return url;
+		String resource = normalizedPath.substring(configurationName.length()); // Remove the 'configuration prefix'.
+		log.debug("looking for resource [{}] deduced from path [{}] in configuration [{}]", resource, normalizedPath, configurationName);
+		return findUrlInClassLoader(resource, configuration.getClassLoader());
 	}
 
-	private boolean isDirectory(URL url) {
-		if (url.getPath().endsWith("/")) {
-			return true;
+	/**
+	 * Tries to find the resource in the given classloader, and returns null if not found.
+	 * Empty or null resources are not allowed, but if it's the root folder, the welcome file is returned.
+	 * <p/>
+	 * If the resource is a folder, but the name does not end with a slash, null is returned unless
+	 * the welcome file is found.
+	 */
+	private @Nullable URL findUrlInClassLoader(String resource, ClassLoader classLoader) {
+		if(StringUtils.isEmpty(resource) || "/".equals(resource)) {
+			log.debug("no or empty resource, returning welcome file [{}] from root", WELCOME_FILE);
+			// If the path is empty or just a slash, assume we are in the root directory. Return the welcome file.
+			resource = WELCOME_FILE;
+		} else if (resource.endsWith("/")) {
+			log.debug("resource [{}] is a folder", resource);
+			URL welcomeFileInDirectory = getResource(classLoader, resource + WELCOME_FILE);
+			if (welcomeFileInDirectory != null) {
+				log.debug("found welcome file [{}] from folder", welcomeFileInDirectory);
+				return welcomeFileInDirectory;
+			}
+
+			log.debug("resource [{}] is a folder, but no welcome file found", resource);
+			return null;
 		}
 
-		try {
-			if ("file".equals(url.getProtocol())) {
-				return Files.isDirectory(Path.of(url.toURI()));
-			}
-		} catch (URISyntaxException | IllegalArgumentException e) {
-			log.warn("unable to determine if resource [{}] is a directory, not serving it", url, e);
-			return true;
+		return getResource(classLoader, resource);
+	}
+
+	private URL getResource(ClassLoader classLoader, String resource) {
+		if (!(classLoader instanceof AbstractClassLoader cl)) {
+			log.warn("invalid ClassLoader [{}] unable to lookup resource [{}]", classLoader, resource);
+			return null;
 		}
-		return false;
+
+		return cl.getResource(WEBCONTENT + resource, false);
 	}
 
 	private Configuration findConfiguration(String configurationName) {
@@ -294,11 +299,11 @@ public class WebContentServlet extends AbstractHttpServlet {
 
 		// And close the tags again.
 		response.getWriter().append("</body></html>");
+		response.flushBuffer();
 	}
 
 	void getWebContentForConfiguration(HttpServletResponse response, Configuration configuration) throws IOException {
-		AbstractClassLoader classLoader = (AbstractClassLoader) configuration.getClassLoader();
-		boolean isWebContentFolderPresent = classLoader != null && classLoader.getResource(WEBCONTENT, false) != null;
+		boolean isWebContentFolderPresent = getResource(configuration.getClassLoader(), "") != null;
 		if(isWebContentFolderPresent) {
 			log.info("found configuration [{}] with [{}}] folder", configuration, WEBCONTENT);
 			response.getWriter().append("<a href=\""+ configuration.getName()+"\">"+ configuration.getName()+"</a>");
