@@ -285,10 +285,12 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected updateColumnDisplay(column: string): void {
     const displayedColumn = this.displayedColumns.find((displayedColumn) => displayedColumn.name === column);
     const searchColumn = this.messageFields.find((messageField) => messageField.fieldName === column);
-    if (displayedColumn && searchColumn) {
-      displayedColumn.hidden = !searchColumn.display;
-      this.updateSessionStorage();
+    if (!(displayedColumn && searchColumn)) {
+      return;
     }
+
+    displayedColumn.hidden = !searchColumn.display;
+    this.updateSessionStorage();
   }
 
   protected selectAll(): void {
@@ -305,45 +307,45 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   protected resendMessages(): void {
     const fd = this.getFormData();
-    if (this.isSelectedMessages(fd)) {
-      this.messagesProcessing = true;
-      this.storageService.postResendMessages(fd).subscribe({
-        next: () => {
-          this.messagesProcessing = false;
-          this.storageService.addNote('success', 'Selected messages will be reprocessed');
-          this.storageService.updateTable();
-        },
-        error: () => {
-          this.messagesProcessing = false;
-          this.storageService.addNote('danger', 'Something went wrong, unable to resend all messages!');
-          this.storageService.updateTable();
-        },
-      });
-    }
+    if (!this.hasSelectedMessages(fd)) return;
+
+    this.messagesProcessing = true;
+    this.storageService.postResendMessages(fd).subscribe({
+      next: () => {
+        this.messagesProcessing = false;
+        this.storageService.addNote('success', 'Selected messages will be reprocessed');
+        this.storageService.updateTable();
+      },
+      error: () => {
+        this.messagesProcessing = false;
+        this.storageService.addNote('danger', 'Something went wrong, unable to resend all messages!');
+        this.storageService.updateTable();
+      },
+    });
   }
 
   protected deleteMessages(): void {
     const fd = this.getFormData();
-    if (this.isSelectedMessages(fd)) {
-      this.messagesProcessing = true;
-      this.storageService.deleteMessages(fd).subscribe({
-        next: () => {
-          this.messagesProcessing = false;
-          this.storageService.addNote('success', 'Successfully deleted messages');
-          this.storageService.updateTable();
-        },
-        error: () => {
-          this.messagesProcessing = false;
-          this.storageService.addNote('danger', 'Something went wrong, unable to delete all messages!');
-          this.storageService.updateTable();
-        },
-      });
-    }
+    if (!this.hasSelectedMessages(fd)) return;
+
+    this.messagesProcessing = true;
+    this.storageService.deleteMessages(fd).subscribe({
+      next: () => {
+        this.messagesProcessing = false;
+        this.storageService.addNote('success', 'Successfully deleted messages');
+        this.storageService.updateTable();
+      },
+      error: () => {
+        this.messagesProcessing = false;
+        this.storageService.addNote('danger', 'Something went wrong, unable to delete all messages!');
+        this.storageService.updateTable();
+      },
+    });
   }
 
   protected moveMessages(): void {
     const fd = this.getFormData();
-    if (!this.isSelectedMessages(fd)) return;
+    if (!this.hasSelectedMessages(fd)) return;
 
     this.SweetAlert.warning({
       title: 'Move state of messages',
@@ -372,54 +374,54 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   protected downloadMessages(): void {
     const fd = this.getFormData();
-    if (this.isSelectedMessages(fd)) {
-      this.messagesDownloading = true;
-      this.storageService.postDownloadMessages(fd).subscribe({
-        next: (response) => {
-          const blob = new Blob([response], {
-            type: 'application/octet-stream',
-          });
-          const downloadLink = document.createElement('a');
-          downloadLink.href = globalThis.URL.createObjectURL(blob);
-          downloadLink.setAttribute('download', 'messages.zip');
-          document.body.append(downloadLink);
-          downloadLink.click();
-          downloadLink.remove();
-          this.storageService.addNote('success', 'Successfully downloaded messages');
-          this.messagesDownloading = false;
-        },
-        error: () => {
-          this.messagesDownloading = false;
-          this.storageService.addNote('danger', 'Something went wrong, unable to download selected messages!');
-        },
-      }); // TODO no intercept
-    }
+    if (!this.hasSelectedMessages(fd)) return;
+
+    this.messagesDownloading = true;
+    this.storageService.postDownloadMessages(fd).subscribe({
+      next: (response) => {
+        const blob = new Blob([response], {
+          type: 'application/octet-stream',
+        });
+        const downloadLink = document.createElement('a');
+        downloadLink.href = globalThis.URL.createObjectURL(blob);
+        downloadLink.setAttribute('download', 'messages.zip');
+        document.body.append(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+        this.storageService.addNote('success', 'Successfully downloaded messages');
+        this.messagesDownloading = false;
+      },
+      error: () => {
+        this.messagesDownloading = false;
+        this.storageService.addNote('danger', 'Something went wrong, unable to download selected messages!');
+      },
+    }); // TODO no intercept
   }
 
   protected changeProcessState(targetState: string): void {
     const fd = this.getFormData();
-    if (this.isSelectedMessages(fd)) {
-      this.changingProcessState = true;
-      this.storageService.postChangeProcessState(fd, targetState).subscribe({
-        next: () => {
-          this.changingProcessState = false;
-          this.storageService.addNote('success', `Successfully changed the state of messages to ${targetState}`);
-          this.storageService.updateTable();
-        },
-        error: () => {
-          this.changingProcessState = false;
-          this.storageService.addNote('danger', 'Something went wrong, unable to move selected messages!');
-          this.storageService.updateTable();
-        },
-      });
-    }
+    if (!this.hasSelectedMessages(fd)) return;
+
+    this.changingProcessState = true;
+    this.storageService.postChangeProcessState(fd, targetState).subscribe({
+      next: () => {
+        this.changingProcessState = false;
+        this.storageService.addNote('success', `Successfully changed the state of messages to ${targetState}`);
+        this.storageService.updateTable();
+      },
+      error: () => {
+        this.changingProcessState = false;
+        this.storageService.addNote('danger', 'Something went wrong, unable to move selected messages!');
+        this.storageService.updateTable();
+      },
+    });
   }
 
   private getFormData(): FormData {
     const messageIds: string[] = [];
     for (const index in this.storageService.selectedMessages) {
       if (this.storageService.selectedMessages[index]) {
-        messageIds.push(index);
+        messageIds.push(btoa(index));
         this.storageService.selectedMessages[index] = false; // unset the messageId
       }
     }
@@ -436,11 +438,11 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       const displayedColumn = this.displayedColumns.find(
         (displayedColumn) => displayedColumn.name === column.fieldName,
       );
-      if (searchColumn && displayedColumn) {
-        searchColumn.filter = column.filter;
-        searchColumn.display = column.display;
-        displayedColumn.hidden = !column.display;
-      }
+      if (!searchColumn || !displayedColumn) continue;
+
+      searchColumn.filter = column.filter;
+      searchColumn.display = column.display;
+      displayedColumn.hidden = !column.display;
     }
   }
 
@@ -460,7 +462,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.Session.set('storageFiltering', searchSession);
   }
 
-  private isSelectedMessages(data: FormData): boolean {
+  private hasSelectedMessages(data: FormData): boolean {
     const selectedMessages = data.get('messageIds') as unknown as string[];
     if (!selectedMessages || selectedMessages.length === 0) {
       this.SweetAlert.warning('No message selected!');
