@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -173,15 +172,13 @@ public class SecurityItems extends BusEndpointBase {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: {}", t.getMessage());
 		}
 
-		if (sapSystems!=null) {
-			Iterator<String> iter = sapSystems.iterator();
-			while (iter.hasNext()) {
+		if (sapSystems != null && factoryGetSapSystemInfo != null) {
+			for (String sapSystem : sapSystems) {
 				Map<String, Object> ss = new HashMap<>();
-				String name = iter.next();
-				ss.put("name", name);
+				ss.put("name", sapSystem);
 				try {
-					ss.put("info", factoryGetSapSystemInfo.invoke(sapSystemFactory, name));
-				} catch (Exception e) {
+					ss.put("info", factoryGetSapSystemInfo.invoke(sapSystemFactory, sapSystem));
+				} catch (Throwable t) {
 					ss.put("info", "*** ERROR ***");
 				}
 				sapSystemList.add(ss);
@@ -204,7 +201,7 @@ public class SecurityItems extends BusEndpointBase {
 		for (Configuration configuration : getIbisManager().getActiveConfigurations()) {
 			ConfigurationDigester digester = configuration.getBean(ConfigurationDigester.class);
 			String configString = digester.getLoadedConfiguration();
-			if(StringUtils.isEmpty(configString)) continue; // If a configuration can't be found, continue...
+			if (StringUtils.isEmpty(configString)) continue; // If a configuration can't be found, continue...
 
 			try {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
@@ -222,10 +219,11 @@ public class SecurityItems extends BusEndpointBase {
 		return entries;
 	}
 
+	@SuppressWarnings("java:S2068") // No actual hardcoded password here, ignore Sonar warning
 	private List<Object> addAuthEntries() {
 		List<Object> authEntries = new ArrayList<>();
 
-		for(String authAlias : getAuthEntries()) {
+		for (String authAlias : getAuthEntries()) {
 			Map<String, Object> ae = new HashMap<>();
 
 			ae.put("alias", authAlias);
@@ -296,19 +294,24 @@ public class SecurityItems extends BusEndpointBase {
 		return expiringCertificates;
 	}
 
-	public static record KeyStoreDTO(String name, List<String> certificates) {}
+	public record KeyStoreDTO(String name, List<String> certificates) {}
 
 	private boolean hasKeyOrTrustStore(Object bean) {
-		if (bean instanceof HasSender hasSender) {
-			return hasKeyOrTrustStore(hasSender.getSender());
-		}
-
 		if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 			return true;
 		}
 
-		// If the bean does not have a Keystore it must be a Truststore.
-		return (bean instanceof HasTruststore truststoreOwner && StringUtils.isNotEmpty(truststoreOwner.getTruststore()));
+		// If the bean does not have a Keystore it may have a Truststore.
+		if ((bean instanceof HasTruststore truststoreOwner && StringUtils.isNotEmpty(truststoreOwner.getTruststore()))) {
+			return true;
+		}
+
+		// Lastly, bean may have a Sender that may have a KeyStore or TrustStore
+		if (bean instanceof HasSender hasSender) {
+			return hasKeyOrTrustStore(hasSender.getSender());
+		}
+
+		return false;
 	}
 
 	private FrankElement extractSender(FrankElement bean) {

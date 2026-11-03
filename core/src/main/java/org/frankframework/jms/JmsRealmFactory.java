@@ -102,12 +102,7 @@ public class JmsRealmFactory {
 	 * Get the names as a list
 	 */
 	public List<String> getRegisteredRealmNamesAsList() {
-		Iterator<String> it = getRegisteredRealmNames();
-		List<String> result = new ArrayList<>();
-		while (it.hasNext()) {
-			result.add(it.next());
-		}
-		return result;
+		return new ArrayList<>(jmsRealms.keySet());
 	}
 
 	/**
@@ -119,7 +114,7 @@ public class JmsRealmFactory {
 			log.warn("overwriting JmsRealm [{}]. Realm with name [{}] already exists", jmsRealm, realmName);
 		}
 		jmsRealms.put(realmName, jmsRealm);
-		log.debug("JmsRealmFactory registered realm [{}]", () -> jmsRealm.toString());
+		log.debug("JmsRealmFactory registered realm [{}]", jmsRealm::toString);
 	}
 
 	@Override

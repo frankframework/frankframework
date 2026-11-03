@@ -137,8 +137,9 @@ public class JmsRealm {
 			builder.setExcludeNullValues(true);
 			builder.setExcludeFieldNames("log");
 			return builder.toString();
-		} catch (Exception e) {
-			return super.toString();
+		} catch (Exception | LinkageError e) {
+			log.debug("unable to build ReflectionToString", e);
+			return e.getMessage() + "; " + super.toString();
 		}
 	}
 
