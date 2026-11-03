@@ -131,6 +131,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 	@Test
 	public void testFolder() throws IOException {
+		assertNull(getResource("ClassLoader"));
 		URL folder = getResource("ClassLoader/");
 		assertNotNull(folder);
 
