@@ -753,7 +753,7 @@ public class ReceiverTest {
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message(testMessage));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+		doReturn(plr).when(adapter).processMessageWithReceiver(any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act
 		receiver.retryMessage("1");
@@ -792,7 +792,7 @@ public class ReceiverTest {
 		PipeLineResult plr = new PipeLineResult();
 		plr.setState(ExitState.SUCCESS);
 		plr.setResult(new Message(testMessage));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), messageCaptor.capture(), sessionCaptor.capture());
+		doReturn(plr).when(adapter).processMessageWithReceiver(any(), messageCaptor.capture(), sessionCaptor.capture());
 
 		// Act
 		receiver.retryMessage("1");
@@ -824,7 +824,7 @@ public class ReceiverTest {
 
 		PipeLineResult plr = new PipeLineResult();
 		plr.setResult(Message.asMessage("dummy"));
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doReturn(plr).when(adapter).processMessageWithReceiver(any(), any(), any());
 
 		// start adapter
 		configuration.configure();
@@ -846,7 +846,7 @@ public class ReceiverTest {
 		MessageStoreListener listener = setupMessageStoreListener();
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
-		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doThrow(new RuntimeException()).when(adapter).processMessageWithReceiver(any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> {
 			PipeLineSession session = invocation.getArgument(1);
 			session.put(PipeLineSession.MESSAGE_ID_KEY, "1");
@@ -882,7 +882,7 @@ public class ReceiverTest {
 		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, null);
 		IMessageBrowser<String> messageBrowser = mock();
 
-		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doThrow(new RuntimeException()).when(adapter).processMessageWithReceiver(any(), any(), any());
 
 		doAnswer(invocation -> invocation.getArgument(0)).when(listener).changeProcessState(any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(messageBrowser)
@@ -1206,7 +1206,7 @@ public class ReceiverTest {
 		plr.setResult(result);
 		plr.setState(ExitState.SUCCESS);
 
-		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
+		doReturn(plr).when(adapter).processMessageWithReceiver(any(), any(), any());
 
 		configuration.configure();
 		configuration.start();
@@ -1276,7 +1276,7 @@ public class ReceiverTest {
 			PipeLineResult successResult = new PipeLineResult();
 			successResult.setState(ExitState.SUCCESS);
 			return successResult;
-		}).when(adapter).processMessageWithExceptions(any(), any(), any());
+		}).when(adapter).processMessageWithReceiver(any(), any(), any());
 
 		configuration.configure();
 		configuration.start();
