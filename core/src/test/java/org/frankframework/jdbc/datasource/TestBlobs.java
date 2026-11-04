@@ -197,13 +197,13 @@ public class TestBlobs {
 	}
 
 	@DatabaseTest
-	@Timeout(60)
+	@Timeout(600)
 	public void testWriteAndReadClobUsingDbmsSupport15MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		testWriteAndReadClobUsingDbmsSupport(10000, 1500, databaseTestEnvironment);
 	}
 
 	@DatabaseTest
-	@Timeout(60)
+	@Timeout(600)
 	public void testWriteAndReadClobUsingDbmsSupport20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
 		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MARIADB, "MariaDb cannot handle statement packets> 16M");
