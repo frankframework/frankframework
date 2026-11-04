@@ -86,6 +86,7 @@ public class SecurityItems extends BusEndpointBase {
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getSecurityItems(Message<?> message) {
+		// This method should not fail, otherwise the front-end does not know the user's security-roles
 		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("securityRoles", getSecurityRoles());
 		returnMap.put("jmsRealms", addJmsRealms());
