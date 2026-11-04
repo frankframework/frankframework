@@ -133,7 +133,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	/**
-	 * The configurationFile should only ever be found in the current classloader and never in it's parent
+	 * The configurationFile should only ever be found in the current classloader and never in its parent
 	 */
 	public String getConfigurationFile() {
 		return configurationFile;

@@ -87,8 +87,8 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 		String decoded = name.replace("%20", " ");
 		File file = new File(directory, decoded);
 		if (file.exists()) {
-			// Only return a URL for a directory.
-			// Else directories may be treated as a file.
+			// Only return a URL for a directory, else directories may be treated as a file.
+			// This keeps all ClassLoader behave uniformly.
 			if (file.isDirectory() && !name.endsWith("/")) {
 				return null;
 			}

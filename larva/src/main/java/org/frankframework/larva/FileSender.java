@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.Enumeration;
-import java.util.Objects;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.io.IoBuilder;
@@ -72,15 +71,21 @@ public class FileSender implements IConfigurable, FrankElement {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		String scenarioDirectory;
-		try {
-			URL scenarioDirectoryURL = Objects.requireNonNull(ClassLoaderUtils.getResourceURL(this, "."), "It should not be possible for Scenario Directory URL '.' to be NULL");
-			scenarioDirectory = new File(scenarioDirectoryURL.toURI()).getAbsolutePath();
-		} catch (URISyntaxException e) {
-			throw new ConfigurationException("Could not find scenario root directory", e);
+		URL fileUrl = ClassLoaderUtils.getResourceURL(this, filename);
+		if (fileUrl != null) {
+			// Hey we found the file in the test classpath!
+			try {
+				file = new File(fileUrl.toURI());
+			} catch (URISyntaxException e) {
+				throw new ConfigurationException("Could not find scenario root directory", e);
+			}
+		} else {
+			// It's most likely an absolute path, not on the larva classpath.
+			file = new File(filename);
+			if (!file.isAbsolute()) {
+				throw new ConfigurationException("relative path provided");
+			}
 		}
-		String absPath = LarvaUtil.getAbsolutePath(scenarioDirectory, filename);
-		file = new File(absPath);
 	}
 
 	/**
