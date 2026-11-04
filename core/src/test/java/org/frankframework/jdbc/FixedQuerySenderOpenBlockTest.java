@@ -36,10 +36,9 @@ public class FixedQuerySenderOpenBlockTest {
 	@Test
 	public void testOpenBlockClosesConnectionWhenQueryExecutionContextCreationFails() throws Exception {
 		sender = new FixedQuerySender() {
-
 			@Override
 			protected @NonNull Connection getConnectionForSendMessage() {
-				return connection;
+				return FixedQuerySenderOpenBlockTest.this.connection;
 			}
 
 			@Override
@@ -58,7 +57,7 @@ public class FixedQuerySenderOpenBlockTest {
 
 			@Override
 			protected @NonNull Connection getConnectionForSendMessage() {
-				return connection;
+				return FixedQuerySenderOpenBlockTest.this.connection;
 			}
 
 			@Override

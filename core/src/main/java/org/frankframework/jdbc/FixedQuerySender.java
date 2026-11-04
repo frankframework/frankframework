@@ -71,7 +71,7 @@ import org.frankframework.util.DB2XMLWriter;
  */
 public class FixedQuerySender extends AbstractJdbcQuerySender<QueryExecutionContext> {
 
-	private @Getter String query=null;
+	private @Getter String query = null;
 	private @Getter int batchSize;
 
 	@Override
