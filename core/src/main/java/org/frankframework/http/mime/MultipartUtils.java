@@ -214,7 +214,7 @@ public class MultipartUtils {
 		}
 	}
 
-	public static MultipartMessages parseMultipart(InputStream inputStream, String contentType, String bodyName) throws IOException {
+	public static MultipartMessages parseMultipart(InputStream inputStream, String contentType, String bodyName) throws IOException, MessagingException {
 		try (InputStream ignored = inputStream) {
 			final InputStreamDataSource dataSource = new InputStreamDataSource(contentType, inputStream); // The entire InputStream will be read here!
 			final MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
@@ -264,8 +264,6 @@ public class MultipartUtils {
 			}
 
 			return new MultipartMessages(attachments.asMessage(), body, parts);
-		} catch(MessagingException e) {
-			throw new IOException("could not read mime multipart request", e);
 		}
 	}
 
