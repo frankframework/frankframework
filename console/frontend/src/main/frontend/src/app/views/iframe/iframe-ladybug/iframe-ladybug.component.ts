@@ -18,8 +18,10 @@ export class IframeLadybugComponent extends BaseIframeComponent implements OnIni
   }
 
   private setLadybugSource(instanceName: string): void {
+    /* See https://github.com/wearefrank/ladybug/issues/1076 for future changes in exact match expression */
+    const encodedExactFilterMatch = encodeURIComponent(`[[[${instanceName}]]]`);
     const ladybugIframeSource =
-      instanceName === '-' ? 'ladybug' : `ladybug?filter-application=${encodeURIComponent(instanceName)}`;
+      instanceName === '-' ? 'ladybug' : `ladybug?filter-application=${encodedExactFilterMatch}`;
     this.setFFIframeSource(ladybugIframeSource);
   }
 }
