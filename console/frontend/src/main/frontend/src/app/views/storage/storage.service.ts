@@ -108,7 +108,7 @@ export class StorageService {
     const messageId = message.id;
     this.http.delete(`${this.baseUrl}/messages/${this.base64Service.encode(messageId)}`).subscribe({
       next: () => {
-        if (callback != undefined && typeof callback == 'function') callback();
+        if (typeof callback == 'function') callback();
         this.addNote('success', `Successfully deleted message with ID: ${messageId}`);
         this.updateTable();
       },

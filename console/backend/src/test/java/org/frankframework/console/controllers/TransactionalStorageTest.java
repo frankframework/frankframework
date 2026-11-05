@@ -6,8 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -79,7 +82,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		});
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/pipes/storageSourceName/stores/error/messages/download")
-						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
+						.part(new MockPart("messageIds", encodeBase64("1,2,3"))))
 				.andExpect(request().asyncStarted())
 				.andDo(MvcResult::getAsyncResult)
 				.andExpect(MockMvcResultMatchers.status().isOk())
@@ -115,7 +118,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
-						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
+						.part(new MockPart("messageIds", encodeBase64("1,2,3"))))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
@@ -133,7 +136,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 				.sendAsyncMessage(Mockito.any(Message.class));
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
-						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
+						.part(new MockPart("messageIds", encodeBase64("1,2,3"))))
 				.andExpect(MockMvcResultMatchers.status().isAccepted())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.content().string(EXPECTED_EXCEPTION_CONTENT));
@@ -145,7 +148,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart("/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error/move/Done")
-						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
+						.part(new MockPart("messageIds", encodeBase64("1,2,3"))))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
@@ -173,12 +176,13 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 		doCallRealMethod().when(outputGateway).sendAsyncMessage(requestCapture.capture());
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.DELETE, "/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
-						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
+						.part(new MockPart("messageIds", encodeBase64("1,2,3"))))
 				.andExpect(MockMvcResultMatchers.status().isOk());
 
 		Message<Object> capturedRequest = Awaitility.await().atMost(1500, TimeUnit.MILLISECONDS).until(requestCapture::getValue, Objects::nonNull);
+		Object messageIdHeader = capturedRequest.getHeaders().get("meta-messageId");
 		assertEquals("DELETE", capturedRequest.getHeaders().get("action"));
-		assertEquals("3", capturedRequest.getHeaders().get("meta-messageId"));
+		assertEquals("3", messageIdHeader);
 	}
 
 	@Test
@@ -187,9 +191,16 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 				.when(outputGateway).sendAsyncMessage(Mockito.any(Message.class));
 
 		mockMvc.perform(MockMvcRequestBuilders.multipart(HttpMethod.DELETE, "/configurations/configuration/adapters/adapterName/receivers/storageSourceName/stores/Error")
-						.part(new MockPart("messageIds", "1,2,3".getBytes(UTF_8))))
+						.part(new MockPart("messageIds", encodeBase64("1,2,3"))))
 				.andExpect(MockMvcResultMatchers.status().isAccepted())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.content().string(EXPECTED_EXCEPTION_CONTENT));
+	}
+
+	private byte[] encodeBase64(String input) {
+		String encoded = Arrays.stream(input.split(","))
+				.map(id -> Base64.getEncoder().encodeToString(id.getBytes(UTF_8)))
+				.collect(Collectors.joining(","));
+		return encoded.getBytes(UTF_8);
 	}
 }
