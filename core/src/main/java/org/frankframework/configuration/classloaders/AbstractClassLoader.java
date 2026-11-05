@@ -133,7 +133,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	/**
-	 * The configurationFile should only ever be found in the current classloader and never in it's parent
+	 * The configurationFile should only ever be found in the current classloader and never in its parent
 	 */
 	public String getConfigurationFile() {
 		return configurationFile;
@@ -198,7 +198,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * @param name of the file to search for in the current local classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>null</code> when the file cannot be found
 	 */
-	protected abstract @Nullable URL getLocalResource(@Nullable String name);
+	protected abstract @Nullable URL getLocalResource(@NonNull String name);
 
 	/**
 	 * In case of the {@link #getResources(String)} we only want the local paths and not the parent path

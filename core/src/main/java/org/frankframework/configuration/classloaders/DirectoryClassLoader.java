@@ -21,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.util.ConfigurationUtils;
@@ -81,10 +83,16 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public URL getLocalResource(String name) {
+	public URL getLocalResource(@NonNull String name) {
 		String decoded = name.replace("%20", " ");
 		File file = new File(directory, decoded);
 		if (file.exists()) {
+			// Only return a URL for a directory, else directories may be treated as a file.
+			// This keeps all ClassLoader behave uniformly.
+			if (file.isDirectory() && !name.endsWith("/")) {
+				return null;
+			}
+
 			try {
 				return file.toURI().toURL();
 			} catch (MalformedURLException e) {

@@ -49,9 +49,11 @@ public abstract class AbstractJarBytesClassLoader extends AbstractBytesClassLoad
 					// If the name ends with a slash, assume it's a folder.
 					boolean isFolder = fileName.endsWith("/");
 
-					if(isFolder || fileName.startsWith("META-INF/")) { // Ignore all folders and files in META-INF
+					if(fileName.startsWith("META-INF/")) { // Ignore all folders and files in META-INF
 						log.debug("ignoring {} [{}]", ( isFolder ? "folder" : "file" ), fileName);
 						continue;
+					} else if (isFolder) {
+						resources.put(fileName, new byte[0]);
 					}
 
 					// By default, the basePath is the configuration name.

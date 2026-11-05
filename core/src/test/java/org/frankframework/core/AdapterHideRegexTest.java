@@ -23,6 +23,8 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -186,7 +188,7 @@ public class AdapterHideRegexTest {
 	}
 
 	@Test
-	public void testHideRegexesProcessDirectSuccess() throws ConfigurationException, IOException {
+	public void testHideRegexesProcessDirectSuccess() throws Exception {
 		// Arrange
 		Adapter adapter = setupBasicAdapter(PipeLine.ExitState.SUCCESS, false);
 		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
@@ -195,7 +197,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession, true);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -206,7 +208,7 @@ public class AdapterHideRegexTest {
 	}
 
 	@Test
-	public void testHideRegexesProcessDirectWithError() throws ConfigurationException, IOException {
+	public void testHideRegexesProcessDirectWithError() throws Exception {
 		// Arrange
 		Adapter adapter = setupBasicAdapter(PipeLine.ExitState.ERROR, false);
 		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
@@ -215,7 +217,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession, true);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -225,21 +227,27 @@ public class AdapterHideRegexTest {
 		}
 	}
 
-	@Test
-	public void testHideRegexesProcessDirectWithException() throws ConfigurationException, IOException {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testHideRegexesProcessDirectWithException(boolean adapterRethrowExceptions) throws ConfigurationException, IOException {
 		// Arrange
 		Adapter adapter = setupBasicAdapter(PipeLine.ExitState.ERROR, true);
 		Message inputMessage = new Message("Message to hide: [" + MAIN_ADAPTER_SECRET + "]");
 
 		// Start capturing logs
 		try (TestAppender appender = getAppender()) {
-			// Act
-			PipeLineResult result = adapter.processMessageDirect(inputMessage, pipeLineSession);
+			try {
+				// Act
+				PipeLineResult result = adapter.processMessage(inputMessage, pipeLineSession, adapterRethrowExceptions);
 
-			// Assert
-			assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
+				// Assert
+				assertThat(result.getResult().asString(), containsString("error during pipeline processing"));
 
-			// Stop capturing logs
+				// Stop capturing logs
+			} catch (ListenerException e) {
+				// Assert
+				assertThat(e.getMessage(), containsString("Pipe [echo] [main-adapter] Gotta Throw what we Gotta Throw"));
+			}
 			verifyLoglinesBasicScenario(appender);
 		}
 	}

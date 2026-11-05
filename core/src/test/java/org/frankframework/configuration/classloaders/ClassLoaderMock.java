@@ -56,6 +56,7 @@ public class ClassLoaderMock extends ClassLoader {
 		addFile(URLs, BASEPATH+"folder/basepath_only.xml");
 
 		// Files to test the WebAppClassLoader
+		addFile(URLs, "WebAppClassLoader/");
 		addFile(URLs, "WebAppClassLoader/ClassLoaderTestFile.xml");
 	}
 

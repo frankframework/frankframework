@@ -17,6 +17,8 @@ package org.frankframework.configuration.classloaders;
 
 import java.net.URL;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Default IBIS Configuration ClassLoader.
  *
@@ -34,7 +36,7 @@ public class WebAppClassLoader extends AbstractClassLoader {
 	 * search for the resource with BasePath in it's parent (the ClassPath or another ClassLoader).
 	 */
 	@Override
-	public URL getLocalResource(String name) {
+	public URL getLocalResource(@NonNull String name) {
 		int bangslash = name.indexOf("!/");
 		if (name.startsWith("jar:") && bangslash > -1) { // when referencing a resource in a jar
 			String localname = name.substring(bangslash+2); // remove the jar protocol + path prefix

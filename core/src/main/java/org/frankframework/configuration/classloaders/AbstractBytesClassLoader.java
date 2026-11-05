@@ -21,6 +21,8 @@ import java.net.URLStreamHandler;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
 
@@ -39,7 +41,7 @@ public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public URL getLocalResource(String name) {
+	public final URL getLocalResource(@NonNull String name) {
 		byte[] resource = resources.get(name);
 		if (resource != null) {
 			try {
