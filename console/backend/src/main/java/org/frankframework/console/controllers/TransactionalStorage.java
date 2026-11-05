@@ -61,7 +61,7 @@ public class TransactionalStorage {
 	}
 
 	public static String decodeBase64(String input) {
-		byte[] decoded = Base64.getDecoder().decode(input);
+		byte[] decoded = Base64.getDecoder().decode(input.trim());
 		return new String(decoded, StandardCharsets.UTF_8);
 	}
 
