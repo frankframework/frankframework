@@ -31,10 +31,10 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StreamUtil;
 
-public class ClassLoaderManagerTest extends Mockito {
+public class ClassLoaderFactoryTest extends Mockito {
 
 	private static final IbisContext ibisContext = spy(new IbisContext());
-	private ClassLoaderManager manager;
+	private ClassLoaderFactory manager;
 
 	private static final String BASE_DIR = "/ClassLoader";
 	private static final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
@@ -115,7 +115,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		}
 		setLocalProperty("configurations.names", configurationsNames.toString());
 
-		manager = new ClassLoaderManager(ibisContext);
+		manager = new ClassLoaderFactory(ibisContext);
 	}
 
 	private static void mockDatabase() throws Exception {
@@ -134,7 +134,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		ResultSet rs = mock(ResultSet.class);
 		doReturn(true).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
-		URL file = ClassLoaderManager.class.getResource(JAR_FILE);
+		URL file = ClassLoaderFactory.class.getResource(JAR_FILE);
 		doReturn(StreamUtil.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 
@@ -153,7 +153,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	private ClassLoader getClassLoader(String testConfiguration) throws Exception {
-		ClassLoader config = manager.get(testConfiguration);
+		ClassLoader config = manager.createDefaultClassLoader(testConfiguration);
 		if(config instanceof AbstractClassLoader base) {
 			base.setBasePath(".");
 		}
@@ -248,34 +248,6 @@ public class ClassLoaderManagerTest extends Mockito {
 
 		assertNotNull(resource);
 		appConstants.remove("configurations."+configurationName+".parentConfig");
-	}
-
-	@ParameterizedTest
-	@MethodSource("data")
-	public void reloadString(String classLoader, String configurationName) throws Exception {
-		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoader config1 = manager.get(configurationName);
-
-		manager.reload(configurationName);
-
-		// Make sure the manager returns the same classloader after reloading it
-		ClassLoader config2 = manager.get(configurationName);
-		assertEquals(config1.toString(), config2.toString());
-	}
-
-	@ParameterizedTest
-	@MethodSource("data")
-	public void reloadClassLoader(String classLoader, String configurationName) throws Exception {
-		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoader config1 = manager.get(configurationName);
-
-		manager.reload(config1);
-
-		// Make sure the manager returns the same classloader after reloading it
-		ClassLoader config2 = manager.get(configurationName);
-		assertEquals(config1.toString(), config2.toString());
 	}
 
 	/**This method makes sure the property is only set in the local AppConstants instance.

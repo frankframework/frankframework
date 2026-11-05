@@ -41,7 +41,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ClassLoaderManager;
+import org.frankframework.configuration.ClassLoaderFactory;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
@@ -134,7 +134,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 
 		Map<String, Class<? extends ClassLoader>> directoryConfigurations = new LinkedHashMap<>();
 		Class<DirectoryClassLoader> defaultDirectoryClassLoaderType = getDefaultDirectoryClassLoaderType();
-		for(String name : retrieveDirectoryConfigNames(configDir)) {
+		for (String name : retrieveDirectoryConfigNames(configDir)) {
 			if (directoryConfigurations.get(name) == null) {
 				directoryConfigurations.put(name, defaultDirectoryClassLoaderType);
 			} else {
@@ -143,7 +143,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 			}
 		}
 
-		for(String name : retrieveJarFileConfigNames(configDir)) {
+		for (String name : retrieveJarFileConfigNames(configDir)) {
 			if (directoryConfigurations.get(name) == null) {
 				directoryConfigurations.put(name, JarFileClassLoader.class);
 			} else {
@@ -182,7 +182,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	@SuppressWarnings("unchecked")
 	protected static @NonNull Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(@NonNull String classLoaderType) {
 		try {
-			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
+			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderFactory.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 
 			Class<?> clazz = Class.forName(className);
 			if (DirectoryClassLoader.class.isAssignableFrom(clazz)) {

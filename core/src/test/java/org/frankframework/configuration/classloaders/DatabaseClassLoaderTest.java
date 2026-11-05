@@ -38,7 +38,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.ClassLoaderManager;
+import org.frankframework.configuration.ClassLoaderFactory;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
@@ -146,11 +146,11 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 		String key = "configurations."+getConfigurationName()+".reportLevel";
 		appConstants.setProperty(key, "ERROR");
-		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
+		ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
 		ClassLoader config = null;
 		boolean makeSureAnExceptionIsThrown = false;
 		try {
-			config = manager.get(getConfigurationName());
+			config = manager.createDefaultClassLoader(getConfigurationName());
 		}
 		catch (ClassLoaderException e) {
 			String msg = e.getMessage();
@@ -176,8 +176,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "DEBUG");
-			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
+			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
+			ClassLoader config = manager.createDefaultClassLoader(getConfigurationName()); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
@@ -186,7 +186,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			List<LogEvent> log = appender.getLogEvents();
 			LogEvent firstLogEntry = log.getLast();
-			assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
+			assertEquals(ClassLoaderFactory.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.DEBUG, firstLogEntry.getLevel());
 			String msg = firstLogEntry.getMessage().getFormattedMessage();
 			assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
@@ -206,8 +206,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "INFO");
-			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
+			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
+			ClassLoader config = manager.createDefaultClassLoader(getConfigurationName()); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
@@ -237,15 +237,15 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "WARN");
-			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
+			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
+			ClassLoader config = manager.createDefaultClassLoader(getConfigurationName()); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
 
 			List<LogEvent> log = appender.getLogEvents();
 			LogEvent firstLogEntry = log.getLast();
-			assertEquals(ClassLoaderManager.class.getCanonicalName(), firstLogEntry.getLoggerName());
+			assertEquals(ClassLoaderFactory.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.WARN, firstLogEntry.getLevel());
 			String msg = firstLogEntry.getMessage().getFormattedMessage();
 			assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
