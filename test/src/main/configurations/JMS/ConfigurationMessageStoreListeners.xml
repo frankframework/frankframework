@@ -35,6 +35,7 @@
 					scalar="true"
 				/>
 			</SenderPipe>
+			<Base64Pipe name="Encode messageIds" direction="ENCODE" lineSeparator=""/>
 			<SenderPipe name="Trigger Manual Retry">
 				<HttpSender
 					methodType="POST"
