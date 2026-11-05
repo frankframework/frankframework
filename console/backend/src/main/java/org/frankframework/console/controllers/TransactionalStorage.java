@@ -68,7 +68,7 @@ public class TransactionalStorage {
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> browseMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(path, decodeBase64(path.messageId), RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET));
+		return getMessageResponseEntity(path, path.messageId, RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET));
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -83,7 +83,7 @@ public class TransactionalStorage {
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(path, decodeBase64(path.messageId), RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD));
+		return getMessageResponseEntity(path, path.messageId, RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD));
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -266,7 +266,7 @@ public class TransactionalStorage {
 		List<String> errorMessages = new ArrayList<>();
 		for (String messageId : messageIds) {
 			try {
-				builder.addHeader("messageId", messageId);
+				builder.addHeader("messageId", decodeBase64(messageId));
 				frankApiService.callAsyncGateway(builder);
 			} catch (ApiException e) { // The message of an ApiException is wrapped in HTML, try to get the original message instead!
 				errorMessages.add(e.getCause().getMessage());
@@ -289,7 +289,7 @@ public class TransactionalStorage {
 
 	private ResponseEntity<?> getMessageResponseEntity(TransactionStoragePathVariables model, String messageId, RequestMessageBuilder builder) {
 		addHeaders(model, builder);
-		builder.addHeader("messageId", messageId);
+		builder.addHeader("messageId", decodeBase64(messageId));
 
 		return frankApiService.callSyncGateway(builder);
 	}
