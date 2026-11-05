@@ -299,6 +299,7 @@ public class SecurityItems extends BusEndpointBase {
 						.filter(Objects::nonNull)
 						.map(this::getExpiringCertificates)
 						.flatMap(List::stream)
+						.distinct()
 						.toList();
 
 				if (!listWithExpiredCertificates.isEmpty()) {
