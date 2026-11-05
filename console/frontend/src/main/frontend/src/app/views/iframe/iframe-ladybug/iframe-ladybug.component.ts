@@ -19,7 +19,7 @@ export class IframeLadybugComponent extends BaseIframeComponent implements OnIni
 
   private setLadybugSource(instanceName: string): void {
     const ladybugIframeSource =
-      instanceName === '-' ? 'ladybug' : `ladybug?filter-application=${encodeURIComponent(instanceName)}`;
+      instanceName === '-' ? 'ladybug' : `ladybug?filter-application=%5B%5B%5B${encodeURIComponent(instanceName)}%5D%5D%5D`;
     this.setFFIframeSource(ladybugIframeSource);
   }
 }
