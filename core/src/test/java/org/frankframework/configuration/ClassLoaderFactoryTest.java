@@ -53,7 +53,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 	private AppConstants appConstants;
 
 	public static List<Arguments> data() {
-		return Arrays.asList(new Arguments[] {
+		return Arrays.asList(
 				Arguments.of("", CONFIG_0_NAME),
 				Arguments.of("WebAppClassLoader", CONFIG_1_NAME),
 				Arguments.of("DirectoryClassLoader", CONFIG_2_NAME),
@@ -66,7 +66,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 				Arguments.of("org.frankframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME),
 				Arguments.of("org.frankframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME),
 				Arguments.of("org.frankframework.configuration.classloaders.DefaultClassLoader", "tralla")
-		});
+		);
 	}
 
 	@BeforeAll
@@ -254,7 +254,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 		URL parentResource = parentClassloader.getResource(testFile);
 		assertNotNull(parentResource);
 
-		ClassLoader config = getClassLoader(this.configurationName, parentClassloader);
+		ClassLoader config = getClassLoader(configurationName, parentClassloader);
 		URL resource = config.getResource(testFile);
 
 		assertNotNull(resource);

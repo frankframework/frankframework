@@ -56,9 +56,10 @@ import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class ConfigurationAutoDiscovery implements ApplicationContextAware {
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final String CONFIGURATIONS_NAMES = APP_CONSTANTS.getProperty("configurations.names.application");
 	private static final String DUPLICATE_CONFIG_WARNING = "config [%s] already exists, cannot add same config twice";
+
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private final String CONFIGURATIONS_NAMES = APP_CONSTANTS.getProperty("configurations.names.application");
 
 	private final Map<String, Class<? extends ClassLoader>> configurations = new LinkedHashMap<>();
 
