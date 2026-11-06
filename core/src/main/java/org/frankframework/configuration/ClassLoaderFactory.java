@@ -144,10 +144,6 @@ public class ClassLoaderFactory {
 		};
 	}
 
-	public @Nullable ClassLoader createDefaultClassLoader(String configurationName) throws ClassLoaderException {
-		return createClassLoader(configurationName, null, (Configuration)null);
-	}
-
 	public @Nullable ClassLoader createClassLoader(@NonNull String configurationName, @Nullable Class<? extends  ClassLoader> defaultClassLoaderType, @Nullable Configuration parentConfiguration) throws ClassLoaderException {
 
 		Class<? extends ClassLoader> actualClassLoaderType = getClassLoaderType(configurationName, defaultClassLoaderType);

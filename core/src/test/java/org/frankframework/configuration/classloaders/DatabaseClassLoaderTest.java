@@ -150,7 +150,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		ClassLoader config = null;
 		boolean makeSureAnExceptionIsThrown = false;
 		try {
-			config = manager.createDefaultClassLoader(getConfigurationName());
+			config = manager.createClassLoader(getConfigurationName(), null, null);
 		}
 		catch (ClassLoaderException e) {
 			String msg = e.getMessage();
@@ -177,7 +177,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "DEBUG");
 			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
-			ClassLoader config = manager.createDefaultClassLoader(getConfigurationName()); // Does not throw an exception
+			ClassLoader config = manager.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
@@ -207,7 +207,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "INFO");
 			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
-			ClassLoader config = manager.createDefaultClassLoader(getConfigurationName()); // Does not throw an exception
+			ClassLoader config = manager.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
@@ -238,7 +238,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "WARN");
 			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
-			ClassLoader config = manager.createDefaultClassLoader(getConfigurationName()); // Does not throw an exception
+			ClassLoader config = manager.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
