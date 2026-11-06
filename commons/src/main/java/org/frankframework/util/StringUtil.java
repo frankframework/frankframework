@@ -369,7 +369,7 @@ public class StringUtil {
 
 		try {
 			return new ReflectionToStringBuilder(object, OMIT_PASSWORD_FIELDS_STYLE).toString();
-		} catch (Exception e) { // amongst others, IllegalAccess-, ConcurrentModification- and Security-Exceptions
+		} catch (Exception | LinkageError e) { // amongst others, IllegalAccess-, ConcurrentModification- and Security-Exceptions and NoClassDefFoundError
 			LogManager.getLogger(object).warn("exception getting string representation of object", e);
 
 			// In case this method is called from the objects toString method, we cannot call toString here!
