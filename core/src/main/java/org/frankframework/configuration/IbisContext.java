@@ -310,7 +310,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * Load all configurations; if a configuration has a parent-configuration load that first.
 	 */
 	private void loadAllConfigurations() {
-		// We have an ordered map with all configurations, lets loop through!
+		// We have an ordered map with all configurations, parents first, lets loop through!
 		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
 		for (Entry<String, Class<? extends ClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
@@ -320,22 +320,10 @@ public class IbisContext extends IbisApplicationContext {
 				LOG.info("Configuration [{}] already loaded, skipping", currentConfigurationName);
 				continue;
 			}
-			// Check if configuration has a parent that needs to be loaded first, only when loading all configurations
-			// We need to do this, because otherwise we may not have the parent ClassLoader for our own ClassLoader. ClassLoaderManager
-			// no longer pre-loads the parent ClassLoader even if the parent configuration has not yet been loaded.
-			loadParentRecursively(currentConfigurationName, allConfigNamesItems);
 			loadSingleConfiguration(currentConfigurationName, null, configurationDefaultClassLoaderClass);
 		}
 
 		generateFlow();
-	}
-
-	private void loadParentRecursively(@NonNull String currentConfigurationName, @NonNull Map<String, Class<? extends ClassLoader>> allConfigNamesItems) {
-		String parentConfigName = getParentConfigName(currentConfigurationName);
-		if (parentConfigName != null && ibisManager.getConfiguration(parentConfigName) == null) {
-			loadParentRecursively(parentConfigName, allConfigNamesItems);
-			loadSingleConfiguration(parentConfigName, null, allConfigNamesItems.get(parentConfigName));
-		}
 	}
 
 	private void loadSingleConfiguration(@NonNull String configurationName, @Nullable ClassLoader existingClassLoader, @Nullable Class<? extends ClassLoader> configurationDefaultClassLoaderClass) {
