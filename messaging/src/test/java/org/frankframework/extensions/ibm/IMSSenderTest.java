@@ -73,7 +73,7 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 			}
 
 			@Override
-			protected Session createSession() throws JmsException {
+			protected @NonNull Session createSession() throws JmsException {
 				Session s = mock();
 				try {
 					doAnswer(message).when(s).createBytesMessage();

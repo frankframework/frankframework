@@ -114,7 +114,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	@Override
 	protected void commitIfNecessary(@NonNull Session session, @Nullable Message message) throws JMSException {
 		if (message!=null && !session.getTransacted() && getMessageListener() instanceof SpringJmsConnector springJmsConnector) {
-			JmsListener listener = (JmsListener)springJmsConnector.getListener();
+			PushingJmsListener listener = (PushingJmsListener) springJmsConnector.getListener();
 			if (listener.getAcknowledgeMode() == JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
 				// Avoid message.acknowledge() in super.commitIfNecessary if AcknowledgeMode=CLIENT_ACKNOWLEDGE
 				// Acknowledgement for CLIENT_ACKNOWLEDGE is done in afterMessageProcessed
