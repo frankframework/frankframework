@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,6 +36,7 @@ import javax.net.ssl.SSLParameters;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.messaging.Message;
@@ -69,6 +69,7 @@ import org.frankframework.util.XmlUtils;
 
 @Log4j2
 @BusAware("frank-management-bus")
+@SuppressWarnings("java:S1181") // We do want to catch Throwable in a number of places because SecurityItems call should always return something, not an error
 public class SecurityItems extends BusEndpointBase {
 
 	private final Duration expiringCertificatesDuration;
@@ -87,6 +88,7 @@ public class SecurityItems extends BusEndpointBase {
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public Message<String> getSecurityItems(Message<?> message) {
+		// This method should not fail, otherwise the front-end does not know the user's security-roles
 		Map<String, Object> returnMap = new HashMap<>();
 		returnMap.put("securityRoles", getSecurityRoles());
 		returnMap.put("jmsRealms", addJmsRealms());
@@ -127,10 +129,15 @@ public class SecurityItems extends BusEndpointBase {
 	}
 
 	private Map<String, String> addJmsRealms() {
-		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
-		return jmsRealms.stream()
-				.map(e -> JmsRealmFactory.getInstance().getJmsRealm(e))
-				.collect(Collectors.toMap(JmsRealm::getRealmName, JmsRealm::toString));
+		try {
+			List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+			return jmsRealms.stream()
+					.map(e -> JmsRealmFactory.getInstance().getJmsRealm(e))
+					.collect(Collectors.toMap(JmsRealm::getRealmName, JmsRealm::toString));
+		} catch (Throwable e) {
+			log.warn("Could not get JMS realms", e);
+			return Map.of();
+		}
 	}
 
 	/**
@@ -138,29 +145,32 @@ public class SecurityItems extends BusEndpointBase {
 	 */
 	@SuppressWarnings("rawtypes")
 	private List<ObjectFactoryDTO> addResourceFactories() {
-		Map<String, ObjectFactory> objectFactories = BeanFactoryUtils.beansOfTypeIncludingAncestors(getApplicationContext(), ObjectFactory.class);
 		List<ObjectFactoryDTO> mappedFactories = new ArrayList<>();
+		try {
+			Map<String, ObjectFactory> objectFactories = BeanFactoryUtils.beansOfTypeIncludingAncestors(getApplicationContext(), ObjectFactory.class);
 
-		for (Entry<String, ObjectFactory> entry : objectFactories.entrySet()) {
-			final ObjectFactory<?, ?> factory = entry.getValue();
-			final List<ObjectInfo> objects = factory.getObjectInfo();
+			for (Entry<String, ObjectFactory> entry : objectFactories.entrySet()) {
+				final ObjectFactory<?, ?> factory = entry.getValue();
+				final List<ObjectInfo> objects = factory.getObjectInfo();
 
-			if (!objects.isEmpty()) {
-				mappedFactories.add(new ObjectFactoryDTO(factory.getDisplayName(), objects));
+				if (!objects.isEmpty()) {
+					mappedFactories.add(new ObjectFactoryDTO(factory.getDisplayName(), objects));
+				}
 			}
+		} catch (Throwable e) {
+			log.warn("Cannot get resource factories", e);
 		}
 
 		return mappedFactories;
 	}
 
-	public static record ObjectFactoryDTO(String name, List<ObjectInfo> resources) {}
+	public record ObjectFactoryDTO(String name, List<ObjectInfo> resources) {}
 
-	@SuppressWarnings({ "unchecked", "rawtypes", "java:S1181" })
-	private ArrayList<Object> addSapSystems() {
-		ArrayList<Object> sapSystemList = new ArrayList<>();
-		List<String> sapSystems = null;
-		Object sapSystemFactory = null;
-		Method factoryGetSapSystemInfo = null;
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private @NonNull List<Object> addSapSystems() {
+		List<String> sapSystems;
+		Object sapSystemFactory;
+		Method factoryGetSapSystemInfo;
 		try {
 			Class<?> c = Class.forName("org.frankframework.extensions.sap.SapSystemFactory");
 			Method factoryGetInstance = c.getMethod("getInstance");
@@ -171,17 +181,17 @@ public class SecurityItems extends BusEndpointBase {
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
 		} catch (Throwable t) {
 			log.debug("Caught NoClassDefFoundError, just no sapSystem available: {}", t.getMessage());
+			return List.of();
 		}
 
-		if (sapSystems!=null) {
-			Iterator<String> iter = sapSystems.iterator();
-			while (iter.hasNext()) {
+		List<Object> sapSystemList = new ArrayList<>();
+		if (sapSystems != null) {
+			for (String sapSystem : sapSystems) {
 				Map<String, Object> ss = new HashMap<>();
-				String name = iter.next();
-				ss.put("name", name);
+				ss.put("name", sapSystem);
 				try {
-					ss.put("info", factoryGetSapSystemInfo.invoke(sapSystemFactory, name));
-				} catch (Exception e) {
+					ss.put("info", factoryGetSapSystemInfo.invoke(sapSystemFactory, sapSystem));
+				} catch (Throwable t) {
 					ss.put("info", "*** ERROR ***");
 				}
 				sapSystemList.add(ss);
@@ -196,15 +206,15 @@ public class SecurityItems extends BusEndpointBase {
 			Collection<String> knownAliases = CredentialFactory.getConfiguredAliases();
 			entries.addAll(knownAliases); // start with all aliases in the CredentialProvider
 			entries.sort(Comparator.naturalOrder());
-		} catch (Exception e) {
-			log.warn("could not retrieve aliases from CredentialFactory", e);
+		} catch (Throwable t) {
+			log.warn("could not retrieve aliases from CredentialFactory", t);
 		}
 
 		// And add all aliases that are used in the configuration
 		for (Configuration configuration : getIbisManager().getActiveConfigurations()) {
 			ConfigurationDigester digester = configuration.getBean(ConfigurationDigester.class);
 			String configString = digester.getLoadedConfiguration();
-			if(StringUtils.isEmpty(configString)) continue; // If a configuration can't be found, continue...
+			if (StringUtils.isEmpty(configString)) continue; // If a configuration can't be found, continue...
 
 			try {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(configString, "//@*[starts-with(name(),'authAlias') or ends-with(name(),'AuthAlias')]");
@@ -215,17 +225,18 @@ public class SecurityItems extends BusEndpointBase {
 						}
 					}
 				}
-			} catch (Exception e) {
-				log.warn("an error occurred while evaluating 'authAlias' xPathExpression", e);
+			} catch (Throwable t) {
+				log.warn("an error occurred while evaluating 'authAlias' xPathExpression", t);
 			}
 		}
 		return entries;
 	}
 
+	@SuppressWarnings("java:S2068") // No actual hardcoded password here, ignore Sonar warning
 	private List<Object> addAuthEntries() {
 		List<Object> authEntries = new ArrayList<>();
 
-		for(String authAlias : getAuthEntries()) {
+		for (String authAlias : getAuthEntries()) {
 			Map<String, Object> ae = new HashMap<>();
 
 			ae.put("alias", authAlias);
@@ -238,8 +249,8 @@ public class SecurityItems extends BusEndpointBase {
 				userName = cf.getUsername();
 				passWord = cf.getPassword();
 				passWord = passWord==null ? "no password found" : StringUtils.repeat("*", cf.getPassword().length());
-			} catch (Exception e) {
-				log.warn(e.getMessage());
+			} catch (Throwable t) {
+				log.warn(t.getMessage());
 				userName = "*** ERROR ***";
 				passWord = "*** ERROR ***";
 			}
@@ -259,6 +270,10 @@ public class SecurityItems extends BusEndpointBase {
 			supportedOptions.put("protocols", supportedSSLParameters.getProtocols());
 			supportedOptions.put("cyphers", supportedSSLParameters.getCipherSuites());
 		} catch (NoSuchAlgorithmException e) {
+			supportedOptions.put("protocols", new String[0]);
+			supportedOptions.put("cyphers", new String[0]);
+		} catch (Throwable t) {
+			log.warn("could not get supported SSL parameters", t);
 			supportedOptions.put("protocols", new String[0]);
 			supportedOptions.put("cyphers", new String[0]);
 		}
@@ -284,6 +299,7 @@ public class SecurityItems extends BusEndpointBase {
 						.filter(Objects::nonNull)
 						.map(this::getExpiringCertificates)
 						.flatMap(List::stream)
+						.distinct()
 						.toList();
 
 				if (!listWithExpiredCertificates.isEmpty()) {
@@ -296,19 +312,24 @@ public class SecurityItems extends BusEndpointBase {
 		return expiringCertificates;
 	}
 
-	public static record KeyStoreDTO(String name, List<String> certificates) {}
+	public record KeyStoreDTO(String name, List<String> certificates) {}
 
 	private boolean hasKeyOrTrustStore(Object bean) {
-		if (bean instanceof HasSender hasSender) {
-			return hasKeyOrTrustStore(hasSender.getSender());
-		}
-
 		if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 			return true;
 		}
 
-		// If the bean does not have a Keystore it must be a Truststore.
-		return (bean instanceof HasTruststore truststoreOwner && StringUtils.isNotEmpty(truststoreOwner.getTruststore()));
+		// If the bean does not have a Keystore it may have a Truststore.
+		if ((bean instanceof HasTruststore truststoreOwner && StringUtils.isNotEmpty(truststoreOwner.getTruststore()))) {
+			return true;
+		}
+
+		// Lastly, bean may have a Sender that may have a KeyStore or TrustStore
+		if (bean instanceof HasSender hasSender) {
+			return hasKeyOrTrustStore(hasSender.getSender());
+		}
+
+		return false;
 	}
 
 	private FrankElement extractSender(FrankElement bean) {
@@ -325,6 +346,8 @@ public class SecurityItems extends BusEndpointBase {
 			}
 		} catch (EncryptionException e) {
 			log.info("unable to open keystore of FrankElement [{}]", bean, e);
+		} catch (Throwable t) {
+			log.warn("Something bad happened while opening keystore of FrankElement [{}]; invalid keystore?", bean, t);
 		}
 		return null;
 	}
@@ -335,6 +358,9 @@ public class SecurityItems extends BusEndpointBase {
 		} catch (EncryptionException e) {
 			log.debug("unable to find out of any certificates are due to expire", e);
 			return List.of("");
+		} catch (Throwable t) {
+			log.warn("Something bad happened while checking certificates", t);
+			return List.of();
 		}
 	}
 }
