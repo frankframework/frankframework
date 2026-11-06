@@ -4,9 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
@@ -39,10 +37,7 @@ public class IbisContextTest {
 
 		@Override
 		protected String @NonNull [] getSpringConfigurationFiles(@NonNull ClassLoader classLoader) {
-			List<String> springConfigurationFiles = new ArrayList<>();
-			springConfigurationFiles.add("testApplicationContext.xml");
-
-			return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+			return new String[] { "testApplicationContext.xml" };
 		}
 
 		// Make this getter public
