@@ -131,7 +131,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	}
 
 	@Override
-	protected Session createSession() throws JmsException {
+	protected @NonNull Session createSession() throws JmsException {
 		long start = System.currentTimeMillis();
 
 		Session session = super.createSession();
