@@ -206,19 +206,15 @@ public class IbisContext extends IbisApplicationContext {
 			return null;
 		}
 		ClassLoader classLoader = configuration.getClassLoader();
-		ibisManager.unload(configurationName);
+		ibisManager.removeConfiguration(configuration, destroyClassLoader);
 		if (!configuration.getRegisteredAdapters().isEmpty()) {
 			log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageEventLevel.ERROR);
 		}
 		getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
-		if (destroyClassLoader) {
-			if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
-				configurationClassLoader.destroy();
-			}
-			// We cannot destroy a regular classloader, but we shouldn't reuse it either so do not return it and let GC do the job
-			return null;
+		if (!destroyClassLoader) {
+			return classLoader;
 		}
-		return classLoader;
+		return null;
 	}
 
 	/**
