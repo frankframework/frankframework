@@ -93,7 +93,11 @@ public class TransactionalMetadataAwareConnectionFactoryProxy extends Transactio
 	 */
 	@NonNull
 	private String reflectionToString() {
-		return JmsPoolUtil.reflectionToString(getTargetConnectionFactory());
+		try {
+			return JmsPoolUtil.reflectionToString(getTargetConnectionFactory());
+		} catch (Exception | LinkageError e) { // LinkageError covers NoClassDefFoundError and some other related errors
+			return "Cannot get target connection factory: [" + e.getClass().getSimpleName() + ": " + e.getMessage() + "]";
+		}
 	}
 
 	@NonNull
@@ -117,6 +121,10 @@ public class TransactionalMetadataAwareConnectionFactoryProxy extends Transactio
 	}
 
 	public String getPoolInfo() {
-		return JmsPoolUtil.getConnectionPoolInfo(getTargetConnectionFactory());
+		try {
+			return JmsPoolUtil.getConnectionPoolInfo(getTargetConnectionFactory());
+		} catch (Exception | LinkageError e) { // LinkageError covers NoClassDefFoundError and some other related errors
+			return "Cannot get JDBC connection pool info: [" + e.getClass().getSimpleName() + ": " + e.getMessage() + "]";
+		}
 	}
 }
