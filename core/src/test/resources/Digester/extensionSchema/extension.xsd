@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A module-contributed extension schema (issue #10490). CustomPipe carries elementRole and
+     className as injectable defaults (compatibility-schema style), so after validation the
+     element arrives at the digester as a standard pipe-role element with its className. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		   targetNamespace="urn:test:vf-ext"
+		   elementFormDefault="qualified">
+	<!-- An attribute the module adds to built-in elements. The generated types accept it through their
+	     ##other wildcard with processContents="skip", so this declaration documents it for editors and
+	     readers; it is not enforced during configuration validation. -->
+	<xs:attribute name="auditLevel" type="xs:string"/>
+
+	<xs:element name="CustomPipe">
+		<xs:complexType>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+			<xs:attribute name="elementRole" type="xs:string" default="pipe"/>
+			<xs:attribute name="className" type="xs:string"
+						  default="org.frankframework.configuration.digester.ExtensionSchemaDigesterTest$CustomExtensionPipe"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

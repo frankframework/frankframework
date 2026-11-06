@@ -15,11 +15,14 @@
 */
 package org.frankframework.xml;
 
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 
 /**
- * AttributesWrapper that removes all attributes that have a namespace, or are of a specific namespace
+ * AttributesWrapper that removes all attributes that have a namespace, except those in an
+ * allowlisted namespace (issue #10490).
  *
  * @author Gerrit van Brakel
  *
@@ -27,7 +30,14 @@ import org.xml.sax.Attributes;
 public class NamespacedContentsRemovingAttributesWrapper extends AttributesWrapper {
 
 	public NamespacedContentsRemovingAttributesWrapper(Attributes source) {
-		super(source,i->StringUtils.isEmpty(source.getURI(i)),false,null);
+		this(source, Set.of());
+	}
+
+	public NamespacedContentsRemovingAttributesWrapper(Attributes source, Set<String> retainedNamespaces) {
+		super(source, i -> {
+			String uri = source.getURI(i);
+			return StringUtils.isEmpty(uri) || retainedNamespaces.contains(uri);
+		}, false, null);
 	}
 
 }

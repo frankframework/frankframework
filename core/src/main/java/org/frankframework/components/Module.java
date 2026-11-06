@@ -55,4 +55,13 @@ public interface Module {
 	default List<String> getSpringConfigurationFiles() {
 		return Collections.emptyList();
 	}
+
+	/**
+	 * Modules may contribute XSD(s) for their own configuration elements. These are composed into
+	 * the configuration validation schema, so the module's elements are validated against them
+	 * rather than stripped as unknown namespaced content. See issue #10490.
+	 */
+	default List<ExtensionSchema> getExtensionSchemas() {
+		return Collections.emptyList();
+	}
 }
