@@ -268,8 +268,10 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * Loads, digests and starts the specified configuration, or all configurations
 	 * Does not check if the configuration already exists. Does not unload old configurations!
+	 * Does not load parent-configuration if the configuration has a parent which is not loaded, because such side-effects
+	 * would be undesirable here.
 	 *
-	 * @param configurationName name of the configuration to load or null when you want to load all configurations
+	 * @param configurationName name of the configuration to load
 	 * @see ClassLoaderFactory#createClassLoader(String, Class, Configuration)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
@@ -279,10 +281,13 @@ public class IbisContext extends IbisApplicationContext {
 	}
 
 	/**
-	 * Loads, digests and starts the specified configuration, or all configurations
+	 * Loads, digests and starts the specified configuration.
 	 * Does not check if the configuration already exists. Does not unload old configurations!
+	 * Does not load parent-configuration if the configuration has a parent which is not loaded, because such side-effects
+	 * would be undesirable here.
 	 *
-	 * @param configurationName name of the configuration to load or null when you want to load all configurations
+	 * @param configurationName name of the configuration to load
+	 * @param existingClassLoader If the configuration had been loaded previously and its classloader can be reused, pass it in this parameter.
 	 *
 	 * @see ClassLoaderFactory#createClassLoader(String, Class, Configuration)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
@@ -301,16 +306,36 @@ public class IbisContext extends IbisApplicationContext {
 		generateFlow();
 	}
 
+	/**
+	 * Load all configurations; if a configuration has a parent-configuration load that first.
+	 */
 	private void loadAllConfigurations() {
 		// We have an ordered map with all configurations, lets loop through!
-		for (Entry<String, Class<? extends ClassLoader>> currentConfigNameItem : retrieveAllConfigNames().entrySet()) {
+		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
+		for (Entry<String, Class<? extends ClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
 			String currentConfigurationName = currentConfigNameItem.getKey();
 			Class<? extends ClassLoader> configurationDefaultClassLoaderClass = currentConfigNameItem.getValue();
 
+			if (ibisManager.getConfiguration(currentConfigurationName) != null) {
+				LOG.info("Configuration [{}] already loaded, skipping", currentConfigurationName);
+				continue;
+			}
+			// Check if configuration has a parent that needs to be loaded first, only when loading all configurations
+			// We need to do this, because otherwise we may not have the parent ClassLoader for our own ClassLoader. ClassLoaderManager
+			// no longer pre-loads the parent ClassLoader even if the parent configuration has not yet been loaded.
+			loadParentRecursively(currentConfigurationName, allConfigNamesItems);
 			loadSingleConfiguration(currentConfigurationName, null, configurationDefaultClassLoaderClass);
 		}
 
 		generateFlow();
+	}
+
+	private void loadParentRecursively(@NonNull String currentConfigurationName, @NonNull Map<String, Class<? extends ClassLoader>> allConfigNamesItems) {
+		String parentConfigName = getParentConfigName(currentConfigurationName);
+		if (parentConfigName != null && ibisManager.getConfiguration(parentConfigName) == null) {
+			loadParentRecursively(parentConfigName, allConfigNamesItems);
+			loadSingleConfiguration(parentConfigName, null, allConfigNamesItems.get(parentConfigName));
+		}
 	}
 
 	private void loadSingleConfiguration(@NonNull String configurationName, @Nullable ClassLoader existingClassLoader, @Nullable Class<? extends ClassLoader> configurationDefaultClassLoaderClass) {
@@ -371,10 +396,20 @@ public class IbisContext extends IbisApplicationContext {
 		return configuration;
 	}
 
+	/**
+	 * Get the name of the parent configuration
+	 * @param configurationName Name of configuration for which to find parent configuration name
+	 * @return Name of parent configuration, or null
+	 */
 	public static @Nullable String getParentConfigName(@NonNull String configurationName) {
 		return AppConstants.getInstance().getString("configurations." + configurationName + ".parentConfig", null);
 	}
 
+	/**
+	 * Get parent configuration for given configuration-name, but do not load it if it is named but not loaded
+	 * @param configurationName Name of configuration for which to find parent configuration
+	 * @return Parent configuration, or null if no parent-configuration name found or if parent configuration not loaded
+	 */
 	private @Nullable Configuration getParentConfiguration(@NonNull String configurationName) {
 		String parentConfigName = getParentConfigName(configurationName);
 		if (parentConfigName == null) {
