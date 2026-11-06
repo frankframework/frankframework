@@ -71,7 +71,7 @@ import org.frankframework.util.DB2XMLWriter;
  */
 public class FixedQuerySender extends AbstractJdbcQuerySender<QueryExecutionContext> {
 
-	private @Getter String query=null;
+	private @Getter String query = null;
 	private @Getter int batchSize;
 
 	@Override
@@ -101,8 +101,9 @@ public class FixedQuerySender extends AbstractJdbcQuerySender<QueryExecutionCont
 					result1.getStatement().clearBatch();
 				}
 				result = result1;
-			} catch (JdbcException | SQLException e) {
-				throw new SenderException("cannot getQueryExecutionContext",e);
+			} catch (JdbcException | SQLException | RuntimeException e) {
+				closeConnectionForSendMessage(connection, session);
+				throw new SenderException("cannot getQueryExecutionContext", e);
 			}
 			return result;
 		} catch (JdbcException e) {
