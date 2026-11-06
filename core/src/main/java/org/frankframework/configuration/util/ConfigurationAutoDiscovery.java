@@ -41,7 +41,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ClassLoaderManager;
+import org.frankframework.configuration.ClassLoaderFactory;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
@@ -56,9 +56,10 @@ import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class ConfigurationAutoDiscovery implements ApplicationContextAware {
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final String CONFIGURATIONS_NAMES = APP_CONSTANTS.getProperty("configurations.names.application");
 	private static final String DUPLICATE_CONFIG_WARNING = "config [%s] already exists, cannot add same config twice";
+
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private final String CONFIGURATIONS_NAMES = APP_CONSTANTS.getProperty("configurations.names.application");
 
 	private final Map<String, Class<? extends ClassLoader>> configurations = new LinkedHashMap<>();
 
@@ -99,7 +100,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	/**
-	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
+	 * @return A {@link LinkedHashMap} with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType), sorted to
+	 * iterate parent-configurations before their child-configurations.
 	 */
 	@NonNull
 	public Map<String, Class<? extends ClassLoader>> scan(boolean includeExplicitlyDefinedConfigurations) {
@@ -134,7 +136,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 
 		Map<String, Class<? extends ClassLoader>> directoryConfigurations = new LinkedHashMap<>();
 		Class<DirectoryClassLoader> defaultDirectoryClassLoaderType = getDefaultDirectoryClassLoaderType();
-		for(String name : retrieveDirectoryConfigNames(configDir)) {
+		for (String name : retrieveDirectoryConfigNames(configDir)) {
 			if (directoryConfigurations.get(name) == null) {
 				directoryConfigurations.put(name, defaultDirectoryClassLoaderType);
 			} else {
@@ -143,7 +145,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 			}
 		}
 
-		for(String name : retrieveJarFileConfigNames(configDir)) {
+		for (String name : retrieveJarFileConfigNames(configDir)) {
 			if (directoryConfigurations.get(name) == null) {
 				directoryConfigurations.put(name, JarFileClassLoader.class);
 			} else {
@@ -182,7 +184,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	@SuppressWarnings("unchecked")
 	protected static @NonNull Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(@NonNull String classLoaderType) {
 		try {
-			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
+			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderFactory.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 
 			Class<?> clazz = Class.forName(className);
 			if (DirectoryClassLoader.class.isAssignableFrom(clazz)) {
@@ -195,6 +197,11 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return DirectoryClassLoader.class;
 	}
 
+	/**
+	 * Sort configuration-names so that parent configurations are first.
+	 * @param allConfigNameItems Map with all configuration-names and their classloader-types
+	 * @return A {@link LinkedHashMap} where parent-configurations are first in the iteration, before their child-configurations.
+	 */
 	static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
 		List<String> sortedConfigurationNames = new ArrayList<>(allConfigNameItems.keySet());
 		sortedConfigurationNames.sort(new ParentConfigComparator());

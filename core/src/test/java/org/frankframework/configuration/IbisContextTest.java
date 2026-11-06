@@ -4,25 +4,42 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.ArrayList;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.DummyClassLoader;
 import org.frankframework.lifecycle.events.MessageEventListener;
+import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.NullClassLoader;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeperMessage;
 
 public class IbisContextTest {
 
+	private static final String BASE_DIR = "/ClassLoader";
+	private static final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
+
+	private AppConstants appConstants;
+
 	private static final class IbisTestContext extends IbisContext {
 		private final Map<String, Class<? extends ClassLoader>> configurations = new HashMap<>();
+
+		public IbisTestContext() {
+			configurations.clear();
+		}
 
 		public IbisTestContext(String configurationToLoad) {
 			this(configurationToLoad, null);
@@ -34,15 +51,15 @@ public class IbisContextTest {
 
 		@Override
 		protected Map<String, Class<? extends ClassLoader>> retrieveAllConfigNames() {
+			if (configurations.isEmpty()) {
+				return super.retrieveAllConfigNames();
+			}
 			return configurations;
 		}
 
 		@Override
 		protected String @NonNull [] getSpringConfigurationFiles(@NonNull ClassLoader classLoader) {
-			List<String> springConfigurationFiles = new ArrayList<>();
-			springConfigurationFiles.add("testApplicationContext.xml");
-
-			return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
+			return new String[] { "testApplicationContext.xml" };
 		}
 
 		// Make this getter public
@@ -50,6 +67,17 @@ public class IbisContextTest {
 		public AbstractApplicationContext getApplicationContext() {
 			return super.getApplicationContext();
 		}
+	}
+
+	@BeforeEach
+	public void setup() {
+		AppConstants.removeInstance();
+		appConstants = AppConstants.getInstance();
+	}
+
+	@AfterEach
+	public void tearDown() {
+		AppConstants.removeInstance();
 	}
 
 	@Test
@@ -130,5 +158,77 @@ public class IbisContextTest {
 			Throwable[] suppressed = ex.getCause().getSuppressed();
 			assertEquals(0, suppressed.length, "no further information");
 		}
+	}
+
+	public static List<Arguments> data() {
+		return Arrays.asList(new Arguments[] {
+				Arguments.of("WebAppClassLoader", "config1"),
+				Arguments.of("DirectoryClassLoader", "config2"),
+				Arguments.of("JarFileClassLoader", "config3"),
+		});
+	}
+
+	public void configureClassloader(String type, String configurationName) {
+
+		if (type.endsWith("DirectoryClassLoader")) {
+			String directory = JunitTestClassLoaderWrapper.getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
+			setLocalProperty("configurations."+configurationName+".directory", directory);
+			setLocalProperty("configurations."+configurationName+".basePath", ".");
+		}
+
+		if (type.endsWith("JarFileClassLoader")) {
+			URL file = this.getClass().getResource(JAR_FILE);
+			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
+		}
+	}
+
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testConfigurationsWithParentConfiguration(String classLoaderType, String configurationName) {
+		configureClassloader(classLoaderType, configurationName);
+
+		String testConfiguration = "myNewClassLoader";
+		setLocalProperty("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
+		setLocalProperty("configurations."+testConfiguration+".basePath", ".");
+		setLocalProperty("configurations."+configurationName+".parentConfig", testConfiguration);
+		String directory = JunitTestClassLoaderWrapper.getTestClassesLocation()+"ClassLoader/";
+		setLocalProperty("configurations."+testConfiguration+".directory", directory + "DirectoryClassLoaderRoot/ClassLoader");
+		setLocalProperty("configurations."+configurationName+".directory", directory + "DirectoryClassLoaderRoot/Config");
+		setLocalProperty("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration + "," + configurationName);
+
+		String testFile = "fileOnlyOnDirectoryClassPath.txt";
+
+		try (IbisContext context = new IbisTestContext()) {
+			context.init();
+			IbisManager ibisManager = context.getIbisManager();
+
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+			Configuration parentConfiguration = ibisManager.getConfiguration(testConfiguration);
+
+			assertNotNull(configuration);
+			assertNotNull(parentConfiguration);
+
+			ClassLoader parentClassLoader = parentConfiguration.getClassLoader();
+			ClassLoader classLoader = configuration.getClassLoader();
+
+			assertNotNull(classLoader);
+			assertNotNull(parentClassLoader);
+			assertEquals(parentClassLoader, classLoader.getParent());
+
+			URL parentResource = parentClassLoader.getResource(testFile);
+			URL resource = classLoader.getResource(testFile);
+
+			assertNotNull(parentResource);
+			assertNotNull(resource);
+		}
+	}
+
+	/**This method makes sure the property is only set in the local AppConstants instance.
+	 * When you use the default put/setProperty it stores the property in the additionalProperties and
+	 * upon creation of a new AppConstants instance it will set all the previously set properties
+	 */
+	@SuppressWarnings("deprecation")
+	private void setLocalProperty(String key, String value) {
+		appConstants.put(key, value);
 	}
 }

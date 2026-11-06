@@ -32,6 +32,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.cache.IbisCacheManager;
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.Adapter;
 import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -83,20 +84,24 @@ public class IbisManager implements ApplicationContextAware {
 	/**
 	 * Stop and remove the Configuration
 	 */
-	public void unload(@Nullable String configurationName) {
-		if (configurationName == null) {
-			while (!configurations.isEmpty()) {
-				removeConfiguration(configurations.getFirst());
-			}
-		} else {
-			removeConfiguration(getConfiguration(configurationName));
+	public void unloadAll() {
+		while (!configurations.isEmpty()) {
+			removeConfiguration(configurations.getFirst(), true);
 		}
 	}
 
-	private void removeConfiguration(Configuration configuration) {
+	/**
+	 * Stop and remove the Configuration
+	 */
+	public void removeConfiguration(@NonNull Configuration configuration, boolean destroyClassLoader) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("removing configuration [{}]", configuration);
+		ClassLoader classLoader = configuration.getClassLoader();
 		configuration.close();
+		if (destroyClassLoader && classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
+			configurationClassLoader.destroy();
+			configuration.setClassLoader(null);
+		}
 
 		configurations.remove(configuration);
 	}
@@ -105,7 +110,7 @@ public class IbisManager implements ApplicationContextAware {
 	 * Shut down the IBIS instance and clean up.
 	 */
 	public void shutdown() {
-		unload(null);
+		unloadAll();
 		IbisCacheManager.shutdown();
 	}
 

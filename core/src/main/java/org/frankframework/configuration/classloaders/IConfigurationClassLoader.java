@@ -50,7 +50,7 @@ public interface IConfigurationClassLoader {
 
 	/**
 	 * Defines the log level for errors caused by the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method
-	 * @param level ReportLevel in string format to be parsed by the ClassLoaderManager digester
+	 * @param level ReportLevel in string format to be parsed by the ClassLoaderFactory digester
 	 */
 	public void setReportLevel(String level);
 
