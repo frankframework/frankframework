@@ -375,7 +375,11 @@ public class IbisContext extends IbisApplicationContext {
 		LOG.info("configuration [{}] loaded successfully", configurationName);
 	}
 
-	/** Helper method to create stubbed configurations used in JunitTests */
+	/**
+	 * Helper method get the names of all configurations, overridden in JUnit tests to create stubbed configurations. Configuration names are sorted parent-first.
+	 *
+	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
+	 */
 	protected Map<String, Class<? extends ClassLoader>> retrieveAllConfigNames() {
 		return ConfigurationUtils.retrieveAllConfigNames(getApplicationContext());
 	}

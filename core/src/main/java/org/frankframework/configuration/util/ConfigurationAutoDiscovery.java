@@ -99,7 +99,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	/**
-	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
+	 * @return A {@link LinkedHashMap} with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType), sorted to
+	 * iterate parent-configurations before their child-configurations.
 	 */
 	@NonNull
 	public Map<String, Class<? extends ClassLoader>> scan(boolean includeExplicitlyDefinedConfigurations) {
@@ -195,6 +196,11 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return DirectoryClassLoader.class;
 	}
 
+	/**
+	 * Sort configuration-names so that parent configurations are first.
+	 * @param allConfigNameItems Map with all configuration-names and their classloader-types
+	 * @return A {@link LinkedHashMap} where parent-configurations are first in the iteration, before their child-configurations.
+	 */
 	static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
 		List<String> sortedConfigurationNames = new ArrayList<>(allConfigNameItems.keySet());
 		sortedConfigurationNames.sort(new ParentConfigComparator());
