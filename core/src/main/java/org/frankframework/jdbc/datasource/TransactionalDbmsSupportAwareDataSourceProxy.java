@@ -124,12 +124,24 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			info.append("driver version [").append(metadata.get("driver-version")).append(CLOSE);
 			info.append("XA-capable [").append(metadata.get("XA")).append(CLOSE);
 		}
-		info.append("targetDataSource [").append(obtainTargetDataSource().getClass().getName()).append("]");
+		try {
+			info.append("targetDataSource [").append(obtainTargetDataSource().getClass().getName()).append("]");
+		} catch (Exception e) {
+			info.append("targetDataSource cannot be obtained: [")
+					.append(e.getClass().getSimpleName())
+					.append(": ")
+					.append(e.getMessage())
+					.append("]");
+		}
 
 		return info.toString();
 	}
 
 	public String getPoolInfo() {
-		return JdbcPoolUtil.getConnectionPoolInfo(getTargetDataSource());
+		try {
+			return JdbcPoolUtil.getConnectionPoolInfo(getTargetDataSource());
+		} catch (Exception | LinkageError e) { // LinkageError covers NoClassDefFoundError and some other related errors
+			return "Cannot get JDBC connection pool info: [" + e.getClass().getSimpleName() + ": " + e.getMessage() + "]";
+		}
 	}
 }

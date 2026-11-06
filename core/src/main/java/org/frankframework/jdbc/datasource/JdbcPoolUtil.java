@@ -39,36 +39,28 @@ public class JdbcPoolUtil {
 
 	/** Returns pool info or NULL when it's not able to do so. */
 	public static @Nullable String getConnectionPoolInfo(@Nullable DataSource datasource) {
-		StringBuilder info = new StringBuilder();
-
-		if (datasource instanceof OpenManagedDataSource<?> targetDataSource) {
-			addPoolMetadata(targetDataSource.getPool(), info);
-		} else if (datasource instanceof org.apache.tomcat.dbcp.dbcp2.PoolingDataSource) {
-			OpenPoolingDataSource<?> dataSource = (OpenPoolingDataSource<?>) datasource;
-			addPoolMetadata(dataSource.getPool(), info);
-		} else if (datasource instanceof DelegatingDataSource source) { // Perhaps it's wrapped?
-			return getConnectionPoolInfo(source.getTargetDataSource());
-		} else {
-			return null;
-		}
-
-		return info.toString();
+		return switch (datasource) {
+			case OpenManagedDataSource<?> targetDataSource -> getPoolMetadata(targetDataSource.getPool());
+			case OpenPoolingDataSource<?> poolingDataSource -> getPoolMetadata(poolingDataSource.getPool());
+			case DelegatingDataSource source -> getConnectionPoolInfo(source.getTargetDataSource());  // Perhaps it's wrapped?
+			case null, default -> null;
+		};
 	}
 
-	static void addPoolMetadata(@NonNull GenericObjectPool<?> pool, @NonNull StringBuilder info) {
-		info.append("DBCP2 Pool Info: ");
-		info.append("maxIdle [").append(pool.getMaxIdle()).append(CLOSE);
-		info.append("minIdle [").append(pool.getMinIdle()).append(CLOSE);
-		info.append("maxTotal [").append(pool.getMaxTotal()).append(CLOSE);
-		info.append("numActive [").append(pool.getNumActive()).append(CLOSE);
-		info.append("numIdle [").append(pool.getNumIdle()).append(CLOSE);
-		info.append("testOnBorrow [").append(pool.getTestOnBorrow()).append(CLOSE);
-		info.append("testOnCreate [").append(pool.getTestOnCreate()).append(CLOSE);
-		info.append("testOnReturn [").append(pool.getTestOnReturn()).append(CLOSE);
-		info.append("testWhileIdle [").append(pool.getTestWhileIdle()).append(CLOSE);
-		info.append("removeAbandonedOnBorrow [").append(pool.getRemoveAbandonedOnBorrow()).append(CLOSE);
-		info.append("removeAbandonedOnMaintenance [").append(pool.getRemoveAbandonedOnMaintenance()).append(CLOSE);
-		info.append("removeAbandonedTimeoutDuration [").append(pool.getRemoveAbandonedTimeoutDuration()).append("]"); // TODO decide if we should make this human readable
+	static @NonNull String getPoolMetadata(@NonNull GenericObjectPool<?> pool) {
+		return "DBCP2 Pool Info: " +
+				"maxIdle [" + pool.getMaxIdle() + CLOSE +
+				"minIdle [" + pool.getMinIdle() + CLOSE +
+				"maxTotal [" + pool.getMaxTotal() + CLOSE +
+				"numActive [" + pool.getNumActive() + CLOSE +
+				"numIdle [" + pool.getNumIdle() + CLOSE +
+				"testOnBorrow [" + pool.getTestOnBorrow() + CLOSE +
+				"testOnCreate [" + pool.getTestOnCreate() + CLOSE +
+				"testOnReturn [" + pool.getTestOnReturn() + CLOSE +
+				"testWhileIdle [" + pool.getTestWhileIdle() + CLOSE +
+				"removeAbandonedOnBorrow [" + pool.getRemoveAbandonedOnBorrow() + CLOSE +
+				"removeAbandonedOnMaintenance [" + pool.getRemoveAbandonedOnMaintenance() + CLOSE +
+				"removeAbandonedTimeoutDuration [" + pool.getRemoveAbandonedTimeoutDuration() + "]"; // TODO decide if we should make this human readable
 	}
 
 	// Try and find the inner DataSource if it's wrapped

@@ -121,7 +121,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 			}
 			methods = clazz.getMethods();
 			modifier = deduceModifier(clazz);
-		} catch (ExceptionInInitializerError | NoClassDefFoundError | ClassNotFoundException e) {
+		} catch (LinkageError | ReflectiveOperationException e) {
 			log.debug("Skipping class [{}] which cannot be loaded due to: {}[{}]", className, e.getClass().getSimpleName(), e.getMessage());
 			return;
 		}
