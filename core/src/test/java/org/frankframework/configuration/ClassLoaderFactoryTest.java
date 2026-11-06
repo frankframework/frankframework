@@ -80,7 +80,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 	}
 
 	public void configureClassloader(String type, String configurationName) {
-		if(type == null || "DummyClassLoader".equals(type))
+		if (type == null || "DummyClassLoader".equals(type))
 			skip = true;
 		else if(type.isEmpty()) // If empty string, it's a WebAppClassLoader
 			type = "WebAppClassLoader";
@@ -88,13 +88,13 @@ public class ClassLoaderFactoryTest extends Mockito {
 		this.type = type;
 		this.configurationName = configurationName;
 
-		if(type.endsWith("DirectoryClassLoader")) {
+		if (type.endsWith("DirectoryClassLoader")) {
 			String directory = JunitTestClassLoaderWrapper.getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
 			setLocalProperty("configurations."+configurationName+".directory", directory);
 			setLocalProperty("configurations."+configurationName+".basePath", ".");
 		}
 
-		if(type.endsWith("JarFileClassLoader")) {
+		if (type.endsWith("JarFileClassLoader")) {
 			URL file = this.getClass().getResource(JAR_FILE);
 			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
 		}
@@ -153,8 +153,19 @@ public class ClassLoaderFactoryTest extends Mockito {
 	}
 
 	private ClassLoader getClassLoader(String testConfiguration) throws Exception {
-		ClassLoader config = manager.createDefaultClassLoader(testConfiguration);
-		if(config instanceof AbstractClassLoader base) {
+		return getClassLoader(testConfiguration, null);
+	}
+
+	private ClassLoader getClassLoader(String testConfiguration, ClassLoader parent) throws Exception {
+		Configuration mockConfiguration;
+		if (parent != null) {
+			mockConfiguration = mock(Configuration.class);
+			when(mockConfiguration.getClassLoader()).thenReturn(parent);
+		} else {
+			mockConfiguration = null;
+		}
+		ClassLoader config = manager.createClassLoader(testConfiguration, null, mockConfiguration);
+		if (config instanceof AbstractClassLoader base) {
 			base.setBasePath(".");
 		}
 		return config;
@@ -243,7 +254,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 		URL parentResource = parentClassloader.getResource(testFile);
 		assertNotNull(parentResource);
 
-		ClassLoader config = getClassLoader();
+		ClassLoader config = getClassLoader(this.configurationName, parentClassloader);
 		URL resource = config.getResource(testFile);
 
 		assertNotNull(resource);
