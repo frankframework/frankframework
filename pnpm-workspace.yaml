@@ -14,8 +14,8 @@ overrides:
   diff@<9.0.0: '>=9.0.0'
   dompurify@<3.4.16: '>=3.4.17'
   serialize-javascript@<7.0.5: '~7.1.4'
-  uuid@<14.0.0: '>=14.0.2'
-  ws@<8.20.1: '~8.22.0'
+  uuid@<14.0.0: '>=14.0.3'
+  ws@<8.20.1: '~8.22.1'
 minimumReleaseAgeExclude:
   # Renovate security update: markdown-it@15.0.3
   - markdown-it@15.0.3
