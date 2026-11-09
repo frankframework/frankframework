@@ -47,7 +47,7 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 	@Getter @Setter protected int maxPoolSize = 20;
 	@Getter @Setter protected int maxIdle = 2;
 	@Getter @Setter protected int maxLifeTime = 0;
-	@Getter @Setter protected int maxWait = 0;
+	@Getter @Setter protected int maxWait = 30;
 	@Getter @Setter protected int connectionCheckInterval = 300;
 	@Getter @Setter protected String testQuery = null;
 
