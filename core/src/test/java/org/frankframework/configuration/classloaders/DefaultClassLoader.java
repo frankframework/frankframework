@@ -2,6 +2,7 @@ package org.frankframework.configuration.classloaders;
 
 import java.net.URL;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -21,7 +22,7 @@ public class DefaultClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	protected @Nullable URL getLocalResource(@Nullable String name) {
+	protected @Nullable URL getLocalResource(@NonNull String name) {
 		return null;
 	}
 }

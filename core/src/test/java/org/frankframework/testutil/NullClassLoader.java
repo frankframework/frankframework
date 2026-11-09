@@ -2,6 +2,8 @@ package org.frankframework.testutil;
 
 import java.net.URL;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
@@ -27,7 +29,7 @@ public class NullClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public URL getLocalResource(String name) {
+	public URL getLocalResource(@NonNull String name) {
 		if("SpringConfigurationContext.xml".equals(name)) {
 			throw new IllegalStateException("unable to instantiate this Spring context!");
 		}

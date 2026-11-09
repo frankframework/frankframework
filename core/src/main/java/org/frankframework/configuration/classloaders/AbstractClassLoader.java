@@ -33,6 +33,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.SmartClassLoader;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
@@ -65,6 +67,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 	private final Set<String> loadedCustomClasses = new HashSet<>();
+	private @Getter boolean destroyed = false;
 
 	protected AbstractClassLoader() {
 		this(Thread.currentThread().getContextClassLoader());
@@ -351,6 +354,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		log.debug("removing classloader [{}]", this);
 
 		AppConstants.removeInstance(this);
+		destroyed = true;
 		ClassLoadingLeakDetector.destroyed(this);
 	}
 

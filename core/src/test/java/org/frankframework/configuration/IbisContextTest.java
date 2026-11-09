@@ -2,8 +2,13 @@ package org.frankframework.configuration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.net.URL;
@@ -24,6 +29,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.context.support.AbstractApplicationContext;
 
+import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.DummyClassLoader;
 import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
@@ -240,6 +246,130 @@ public class IbisContextTest {
 			}
 		}
 	}
+
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testReloadConfiguration(String classLoaderType, String configurationName) {
+		String parentConfigurationName = "myParentConfig";
+		configureClassloader("DirectoryClassLoader", parentConfigurationName, null);
+		configureClassloader(classLoaderType, configurationName, parentConfigurationName);
+
+		String testFile = "fileOnlyOnDirectoryClassPath.txt";
+
+		try (IbisContext context = new IbisTestContext()) {
+			// Arrange
+			context.init();
+			IbisManager ibisManager = context.getIbisManager();
+
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+
+			assertNotNull(configuration);
+			assertFalse(configuration.isClosed());
+			ClassLoader classLoader = configuration.getClassLoader();
+
+			assertNotNull(classLoader);
+
+			URL resource = classLoader.getResource(testFile);
+			assertNotNull(resource);
+
+			// Act
+			context.reload(configurationName);
+
+			// Assert
+			Configuration configurationAfterReload = ibisManager.getConfiguration(configurationName);
+
+			assertNotNull(configurationAfterReload);
+			assertNotSame(configuration, configurationAfterReload);
+			assertSame(classLoader, configurationAfterReload.getClassLoader());
+
+			assertTrue(configuration.isClosed());
+			assertFalse(configurationAfterReload.isClosed());
+
+			AbstractClassLoader configurationClassLoader = assertInstanceOf(AbstractClassLoader.class, configurationAfterReload.getClassLoader());
+			assertFalse(configurationClassLoader.isDestroyed());
+		}
+	}
+
+	@Test
+	public void testReloadNonExistingConfiguration() {
+		String configurationName = "no-such-configuration";
+
+		try (IbisContext context = new IbisTestContext()) {
+			// Arrange
+			context.init();
+			IbisManager ibisManager = context.getIbisManager();
+
+			assertNull(ibisManager.getConfiguration(configurationName));
+
+			// Act
+			context.reload(configurationName);
+
+			// Assert
+			assertNull(ibisManager.getConfiguration(configurationName));
+		}
+	}
+
+	@Test
+	public void testFullConfigurationReload() {
+		String classLoaderType = "DirectoryClassLoader";
+		String configurationName = "config4";
+		String parentConfigurationName = "myParentConfig";
+		configureClassloader("DirectoryClassLoader", parentConfigurationName, null);
+		configureClassloader(classLoaderType, configurationName, parentConfigurationName);
+
+		String testFile = "fileOnlyOnDirectoryClassPath.txt";
+
+		try (IbisContext context = new IbisTestContext()) {
+			// Arrange
+			context.init();
+			IbisManager ibisManager = context.getIbisManager();
+
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+
+			assertNotNull(configuration);
+			assertFalse(configuration.isClosed());
+			ClassLoader classLoader = configuration.getClassLoader();
+
+			assertNotNull(classLoader);
+			ClassLoader parentClassLoader = configuration.getClassLoader().getParent();
+			assertNotNull(parentClassLoader);
+
+			// Act
+			context.fullReload();
+
+			// Assert
+
+			// Configuration no longer present in old IbisManager
+			assertNull(ibisManager.getConfiguration(configurationName));
+
+			IbisManager newIbisManager = context.getIbisManager();
+
+			assertNotNull(newIbisManager);
+			assertNotSame(ibisManager, newIbisManager);
+
+			Configuration configurationAfterReload = newIbisManager.getConfiguration(configurationName);
+			assertNotNull(configurationAfterReload);
+
+			ClassLoader classLoaderAfterReload = configurationAfterReload.getClassLoader();
+			assertNotNull(classLoaderAfterReload);
+
+			assertNotSame(configuration, configurationAfterReload);
+			assertNotSame(classLoader, classLoaderAfterReload);
+
+			assertTrue(configuration.isClosed());
+			assertFalse(configurationAfterReload.isClosed());
+
+			URL resource = classLoaderAfterReload.getResource(testFile);
+			assertNotNull(resource);
+
+			AbstractClassLoader originalConfigurationClassLoader = assertInstanceOf(AbstractClassLoader.class, classLoader);
+			AbstractClassLoader originalParentConfigurationClassLoader = assertInstanceOf(AbstractClassLoader.class, parentClassLoader);
+
+			assertTrue(originalConfigurationClassLoader.isDestroyed());
+			assertTrue(originalParentConfigurationClassLoader.isDestroyed());
+		}
+	}
+
 
 	/**This method makes sure the property is only set in the local AppConstants instance.
 	 * When you use the default put/setProperty it stores the property in the additionalProperties and

@@ -20,6 +20,8 @@ import java.net.URL;
 import java.net.URLStreamHandler;
 import java.nio.charset.Charset;
 
+import org.jspecify.annotations.NonNull;
+
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.util.XmlEncodingUtils;
@@ -48,7 +50,7 @@ public class DummyClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public URL getLocalResource(String name) {
+	public URL getLocalResource(@NonNull String name) {
 		if (name.equals(getConfigurationFile())) {
 			String config = "<configuration name=\"" + XmlEncodingUtils.encodeChars(getConfigurationName()) + "\" />";
 			byte[] bytes = config.getBytes(Charset.defaultCharset());

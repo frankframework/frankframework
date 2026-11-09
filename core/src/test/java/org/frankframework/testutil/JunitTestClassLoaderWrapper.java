@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -35,7 +36,7 @@ public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 	}
 
 	@Override
-	public URL getLocalResource(String name) {
+	public URL getLocalResource(@NonNull String name) {
 		if (name == null) {
 			return null;
 		}
