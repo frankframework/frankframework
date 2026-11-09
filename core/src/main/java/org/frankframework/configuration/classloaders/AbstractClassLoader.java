@@ -78,7 +78,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 
@@ -131,7 +131,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public String getConfigurationName() {
+	public @NonNull String getConfigurationName() {
 		return configurationName;
 	}
 
@@ -154,7 +154,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public void setReportLevel(String level) {
+	public void setReportLevel(@NonNull String level) {
 		try {
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
 		}
@@ -181,7 +181,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * Implementations of this class should use {@link AbstractClassLoader#getLocalResource(String)}
 	 */
 	@Override
-	public final @Nullable URL getResource(String name) {
+	public final @Nullable URL getResource(@Nullable String name) {
 		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
 			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]")); // Use an exception so we can 'trace the stack'
 			return null;

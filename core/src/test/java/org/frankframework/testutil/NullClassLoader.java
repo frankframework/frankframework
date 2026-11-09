@@ -3,6 +3,7 @@ package org.frankframework.testutil;
 import java.net.URL;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
@@ -19,7 +20,7 @@ public class NullClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
 		if("ConfigWithNullClassLoader".equals(configurationName)) {
 			setReportLevel("INFO");
 			throw new ClassLoaderException("test-exception");

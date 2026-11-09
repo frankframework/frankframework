@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2019 Nationale-Nederlanden
+   Copyright 2017, 2019 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import java.nio.charset.Charset;
 
 import org.jspecify.annotations.NonNull;
 
-import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
@@ -42,11 +40,6 @@ public class DummyClassLoader extends AbstractClassLoader {
 
 	public DummyClassLoader(ClassLoader parent) {
 		super(parent);
-	}
-
-	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
-		super.configure(ibisContext, configurationName);
 	}
 
 	@Override

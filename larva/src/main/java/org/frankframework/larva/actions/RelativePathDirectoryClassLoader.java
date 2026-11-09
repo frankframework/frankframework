@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 package org.frankframework.larva.actions;
 
 import java.net.URL;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
@@ -34,7 +37,7 @@ public class RelativePathDirectoryClassLoader extends DirectoryClassLoader {
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
 		super.configure(ibisContext, configurationName);
 		// This classloader is not created via the ClassLoadManager, so register this instance manually with the leak-detection
 		ClassLoadingLeakDetector.registerClassLoader(configurationName, this);
