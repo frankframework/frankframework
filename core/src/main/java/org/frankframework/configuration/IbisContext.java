@@ -291,7 +291,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
-	public void load(@NonNull String configurationName, @Nullable ClassLoader existingClassLoader) {
+	private void load(@NonNull String configurationName, @Nullable ClassLoader existingClassLoader) {
 		// We have a map with all configurations, see if we have the one requested!
 		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
 		if (!allConfigNamesItems.containsKey(configurationName)) {
@@ -306,6 +306,10 @@ public class IbisContext extends IbisApplicationContext {
 
 	/**
 	 * Load all configurations; if a configuration has a parent-configuration load that first.
+	 *
+	 * @see ClassLoaderFactory#createClassLoader(String, Class, Configuration)
+	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
+	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
 	private void loadAllConfigurations() {
 		// We have an ordered map with all configurations, parents first, lets loop through!
