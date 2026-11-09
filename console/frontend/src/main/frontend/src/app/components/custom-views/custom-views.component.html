@@ -1,9 +1,17 @@
 <ul class="nav">
   @for (view of customViews; track view.view) {
-    <li>
-      <a [routerLink]="['/customView', view.name]" [state]="{ view }"
-        ><fa-icon [icon]="faDesktop" /> <span class="nav-label">{{ view.name }}</span></a
-      >
-    </li>
+    @if (view.target || view.url.startsWith('http')) {
+      <li>
+        <a [href]="view.url" [target]="view.target ?? '_blank'"
+          ><fa-icon [icon]="faDesktop" /> <span class="nav-label">{{ view.name }}</span></a
+        >
+      </li>
+    } @else {
+      <li>
+        <a [routerLink]="['/customView', view.name]" [state]="{ view }"
+          ><fa-icon [icon]="faDesktop" /> <span class="nav-label">{{ view.name }}</span></a
+        >
+      </li>
+    }
   }
 </ul>
