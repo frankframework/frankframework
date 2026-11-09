@@ -3,6 +3,8 @@ package org.frankframework.configuration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -10,8 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -161,40 +165,45 @@ public class IbisContextTest {
 	}
 
 	public static List<Arguments> data() {
-		return Arrays.asList(new Arguments[] {
-				Arguments.of("WebAppClassLoader", "config1"),
-				Arguments.of("DirectoryClassLoader", "config2"),
-				Arguments.of("JarFileClassLoader", "config3"),
-		});
+		return Arrays.asList(
+				arguments("WebAppClassLoader", "config1"),
+				arguments("DirectoryClassLoader", "config2"),
+				arguments("JarFileClassLoader", "config3")
+		);
 	}
 
-	public void configureClassloader(String type, String configurationName) {
+	public void configureClassloader(@NonNull String type, @NonNull String configurationName, @Nullable String parentConfigurationName) {
 
+		if (StringUtils.isNotEmpty(parentConfigurationName)) {
+			setLocalProperty("configurations."+configurationName+".parentConfig", parentConfigurationName);
+		}
+		setLocalProperty("configurations."+configurationName+".classLoaderType", type);
 		if (type.endsWith("DirectoryClassLoader")) {
 			String directory = JunitTestClassLoaderWrapper.getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
-			setLocalProperty("configurations."+configurationName+".directory", directory);
+			if (StringUtils.isNotEmpty(parentConfigurationName)) {
+				// Directory for child-config
+				setLocalProperty("configurations."+configurationName+".directory", directory + "Config");
+			} else {
+				// Directory for parent-config
+				setLocalProperty("configurations."+configurationName+".directory", directory + "ClassLoader");
+			}
 			setLocalProperty("configurations."+configurationName+".basePath", ".");
 		}
 
 		if (type.endsWith("JarFileClassLoader")) {
 			URL file = this.getClass().getResource(JAR_FILE);
+			assertNotNull(file, "Resource [" + JAR_FILE + "] not found");
 			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
 		}
+		setLocalProperty("configurations.names", appConstants.get("configurations.names") + "," + configurationName);
 	}
 
 	@ParameterizedTest
 	@MethodSource("data")
 	public void testConfigurationsWithParentConfiguration(String classLoaderType, String configurationName) {
-		configureClassloader(classLoaderType, configurationName);
-
-		String testConfiguration = "myNewClassLoader";
-		setLocalProperty("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
-		setLocalProperty("configurations."+testConfiguration+".basePath", ".");
-		setLocalProperty("configurations."+configurationName+".parentConfig", testConfiguration);
-		String directory = JunitTestClassLoaderWrapper.getTestClassesLocation()+"ClassLoader/";
-		setLocalProperty("configurations."+testConfiguration+".directory", directory + "DirectoryClassLoaderRoot/ClassLoader");
-		setLocalProperty("configurations."+configurationName+".directory", directory + "DirectoryClassLoaderRoot/Config");
-		setLocalProperty("configurations.names", appConstants.get("configurations.names") + ","+testConfiguration + "," + configurationName);
+		String parentConfigurationName = "myParentConfig";
+		configureClassloader("DirectoryClassLoader", parentConfigurationName, null);
+		configureClassloader(classLoaderType, configurationName, parentConfigurationName);
 
 		String testFile = "fileOnlyOnDirectoryClassPath.txt";
 
@@ -203,7 +212,7 @@ public class IbisContextTest {
 			IbisManager ibisManager = context.getIbisManager();
 
 			Configuration configuration = ibisManager.getConfiguration(configurationName);
-			Configuration parentConfiguration = ibisManager.getConfiguration(testConfiguration);
+			Configuration parentConfiguration = ibisManager.getConfiguration(parentConfigurationName);
 
 			assertNotNull(configuration);
 			assertNotNull(parentConfiguration);
@@ -220,6 +229,15 @@ public class IbisContextTest {
 
 			assertNotNull(parentResource);
 			assertNotNull(resource);
+
+			if (classLoaderType.endsWith("DirectoryClassLoader")) {
+    			String childOnlyTestFile = "fileOnlyOnChildDirectoryClasPath.txt";
+				URL childOnlyResourceViaParent = parentClassLoader.getResource(childOnlyTestFile);
+				URL childOnlyResource = classLoader.getResource(childOnlyTestFile);
+
+				assertNull(childOnlyResourceViaParent);
+				assertNotNull(childOnlyResource);
+			}
 		}
 	}
 

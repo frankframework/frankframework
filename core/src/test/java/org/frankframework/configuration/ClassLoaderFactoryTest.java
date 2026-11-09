@@ -3,6 +3,7 @@ package org.frankframework.configuration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -54,18 +55,18 @@ public class ClassLoaderFactoryTest extends Mockito {
 
 	public static List<Arguments> data() {
 		return Arrays.asList(
-				Arguments.of("", CONFIG_0_NAME),
-				Arguments.of("WebAppClassLoader", CONFIG_1_NAME),
-				Arguments.of("DirectoryClassLoader", CONFIG_2_NAME),
-				Arguments.of("JarFileClassLoader", CONFIG_3_NAME),
-				Arguments.of("DatabaseClassLoader", CONFIG_5_NAME),
-				Arguments.of("DummyClassLoader", CONFIG_6_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.DefaultClassLoader", "tralla")
+				arguments("", CONFIG_0_NAME),
+				arguments("WebAppClassLoader", CONFIG_1_NAME),
+				arguments("DirectoryClassLoader", CONFIG_2_NAME),
+				arguments("JarFileClassLoader", CONFIG_3_NAME),
+				arguments("DatabaseClassLoader", CONFIG_5_NAME),
+				arguments("DummyClassLoader", CONFIG_6_NAME),
+				arguments("org.frankframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME),
+				arguments("org.frankframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME),
+				arguments("org.frankframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME),
+				arguments("org.frankframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME),
+				arguments("org.frankframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME),
+				arguments("org.frankframework.configuration.classloaders.DefaultClassLoader", "tralla")
 		);
 	}
 
