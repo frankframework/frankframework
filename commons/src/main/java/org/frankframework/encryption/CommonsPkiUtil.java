@@ -15,6 +15,7 @@
 */
 package org.frankframework.encryption;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.security.Key;
@@ -28,8 +29,11 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -38,11 +42,16 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.AppConstants;
+
 @Log4j2
 public class CommonsPkiUtil {
+	private enum KeystoreCacheKey { CA, KS, TS }
+	private static final Map<KeystoreCacheKey, KeyStore> KEYSTORE_CACHE = new EnumMap<>(KeystoreCacheKey.class);
 
 	private CommonsPkiUtil() {
 		throw new IllegalStateException("Utility class");
@@ -101,6 +110,63 @@ public class CommonsPkiUtil {
 			}
 		}
 		return keystore;
+	}
+
+	/**
+	 * Returns the default keystore.
+	 */
+	public static @NonNull KeyStore getDefaultKeyStore() {
+		String defaultKeystoreLocation = AppConstants.getInstance().getProperty("application.keystore.location");
+		String defaultKeystoreType = AppConstants.getInstance().getProperty("application.keystore.type");
+		String defaultKeystorePassword = AppConstants.getInstance().getProperty("application.keystore.password");
+
+		if (StringUtils.isBlank(defaultKeystoreLocation)) {
+			throw new IllegalStateException("no default keystore provided");
+		}
+
+		return KEYSTORE_CACHE.computeIfAbsent(KeystoreCacheKey.KS, name -> createKeyStore(defaultKeystoreLocation, defaultKeystorePassword, defaultKeystoreType));
+	}
+
+	/**
+	 * Returns the default truststore, or the CACERTS file in the JRE 'lib/security' folder.
+	 */
+	public static @NonNull KeyStore getDefaultTrustStore() {
+		String defaultTruststoreLocation = AppConstants.getInstance().getProperty("application.truststore.location");
+		String defaultTruststoreType = AppConstants.getInstance().getProperty("application.truststore.type");
+		String defaultTruststorePassword = AppConstants.getInstance().getProperty("application.truststore.password");
+
+		if (StringUtils.isBlank(defaultTruststoreLocation)) {
+			return getCaCerts();
+		}
+
+		return KEYSTORE_CACHE.computeIfAbsent(KeystoreCacheKey.TS, name -> createKeyStore(defaultTruststoreLocation, defaultTruststorePassword, defaultTruststoreType));
+	}
+
+	private static @NonNull KeyStore getCaCerts() {
+		String caPassword = AppConstants.getInstance().getProperty("cacerts.password");
+		String caLocation = AppConstants.getInstance().getProperty("cacerts.location");
+
+		if (StringUtils.isBlank(caLocation) || StringUtils.isBlank(caPassword)) {
+			throw new IllegalStateException("CA Certificate file or password not provided");
+		}
+
+		return KEYSTORE_CACHE.computeIfAbsent(KeystoreCacheKey.CA, name -> createKeyStore(caLocation, caPassword, null));
+	}
+
+	private static @NonNull KeyStore createKeyStore(@NonNull String path, @Nullable String password, @Nullable String type) throws IllegalStateException {
+		try {
+			String storeType = StringUtils.defaultIfBlank(type, KeyStore.getDefaultType());
+			char[] truststorePassword = StringUtils.isNotBlank(password) ? password.toCharArray() : null;
+			KeyStore trustStore = KeyStore.getInstance(Objects.requireNonNull(storeType));
+			try (FileInputStream in = new FileInputStream(path)) {
+				trustStore.load(in, truststorePassword);
+			}
+			return trustStore;
+		} catch (IOException e) {
+			throw new IllegalStateException("keystore "+path+" could not be found or read", e);
+		} catch (CertificateException | KeyStoreException | NoSuchAlgorithmException e) {
+			throw new IllegalStateException("keystore "+path+" could not be loaded", e);
+		}
 	}
 
 	private static String resolveAlias(KeyStore ks) throws KeyStoreException {
