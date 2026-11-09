@@ -43,15 +43,11 @@ import org.frankframework.util.StringUtil;
  */
 @Log4j2
 public class ClassLoaderFactory {
-
-	// Suppress 'fieldname should not be uppercase unless final static'
-	// Cannot make this static final because of tests
-	@SuppressWarnings("java:S116")
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final ClassLoader classPathClassLoader;
-
 	public static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
 
+	// Cannot make this static final because of tests
+	private final AppConstants appConstants = AppConstants.getInstance();
+	private final ClassLoader classPathClassLoader;
 	private IbisContext ibisContext;
 
 	public ClassLoaderFactory(IbisContext ibisContext) {
@@ -117,7 +113,7 @@ public class ClassLoaderFactory {
 				continue;
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = APP_CONSTANTS.getProperty(parentProperty+setter);
+			String value = appConstants.getProperty(parentProperty+setter);
 			if (value == null)
 				continue;
 
@@ -156,7 +152,7 @@ public class ClassLoaderFactory {
 		if (classLoaderType != null) {
 			return classLoaderType;
 		}
-		String classLoaderClassName = APP_CONSTANTS.getString("configurations." + configurationName + ".classLoaderType", "");
+		String classLoaderClassName = appConstants.getString("configurations." + configurationName + ".classLoaderType", "");
 		if (StringUtils.isEmpty(classLoaderClassName)) {
 			return WebAppClassLoader.class;
 		}

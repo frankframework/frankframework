@@ -58,8 +58,9 @@ import org.frankframework.util.StringUtil;
 public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	private static final String DUPLICATE_CONFIG_WARNING = "config [%s] already exists, cannot add same config twice";
 
-	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final String CONFIGURATIONS_NAMES = APP_CONSTANTS.getProperty("configurations.names.application");
+	// Cannot make this static final because of tests
+	private final AppConstants appConstants = AppConstants.getInstance();
+	private final String configurationsNames = appConstants.getProperty("configurations.names.application");
 
 	private final Map<String, Class<? extends ClassLoader>> configurations = new LinkedHashMap<>();
 
@@ -107,8 +108,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	public Map<String, Class<? extends ClassLoader>> scan(boolean includeExplicitlyDefinedConfigurations) {
 		configurations.clear();
 
-		if (includeExplicitlyDefinedConfigurations && CONFIGURATIONS_NAMES != null) {
-			for (String configFileName : StringUtil.split(CONFIGURATIONS_NAMES)) {
+		if (includeExplicitlyDefinedConfigurations && configurationsNames != null) {
+			for (String configFileName : StringUtil.split(configurationsNames)) {
 				configurations.put(configFileName, null);
 			}
 		}
@@ -177,7 +178,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	@SuppressWarnings("java:S2637") // Sonar gives false positive here, Contract annotation should tell it that classLoaderType cannot be NULL when canonicalName is not NULL.
 	private @NonNull Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType() {
 		String canonicalName = Objects.requireNonNull(DirectoryClassLoader.class.getCanonicalName());
-		String classLoaderType = APP_CONSTANTS.getString("configurations.directory.classLoaderType", canonicalName);
+		String classLoaderType = appConstants.getString("configurations.directory.classLoaderType", canonicalName);
 		return getDefaultDirectoryClassLoaderType(classLoaderType);
 	}
 
