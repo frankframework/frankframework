@@ -16,10 +16,11 @@
 package org.frankframework.configuration.classloaders;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +34,7 @@ public class ClassLoadingLeakDetector {
 	private static final Logger LEAK_LOG = LogManager.getLogger("LEAK_LOG");
 
 	private static final AtomicInteger COUNTER = new AtomicInteger();
-	private static final ConcurrentMap<Integer, ClassLoaderMeta> CLASS_LOADERS = new ConcurrentHashMap<>();
+	private static final Map<Integer, ClassLoaderMeta> CLASS_LOADERS = Collections.synchronizedMap(new LinkedHashMap<>());
 
 	private ClassLoadingLeakDetector() {
 		// Private constructor to prevent creation of instances

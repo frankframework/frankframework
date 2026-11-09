@@ -46,6 +46,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 	private static final String CONFIG_3_NAME = "config3";
 	private static final String CONFIG_5_NAME = "config5";
 	private static final String CONFIG_6_NAME = "config6";
+	private static final String CONFIG_7_NAME = "config7";
 
 	// declarations for parameterized tests
 	private String type = null;
@@ -61,6 +62,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 				arguments("JarFileClassLoader", CONFIG_3_NAME),
 				arguments("DatabaseClassLoader", CONFIG_5_NAME),
 				arguments("DummyClassLoader", CONFIG_6_NAME),
+				arguments("ScanningDirectoryClassLoader", CONFIG_7_NAME),
 				arguments("org.frankframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME),
 				arguments("org.frankframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME),
 				arguments("org.frankframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME),

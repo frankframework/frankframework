@@ -61,11 +61,6 @@ public interface IConfigurationClassLoader {
 	@NonNull ReportLevel getReportLevel();
 
 	/**
-	 * Unload the current IConfigurationClassLoader and load again upon successful unload.
-	 */
-	void reload() throws ClassLoaderException;
-
-	/**
 	 * Called upon destroying (and thus removing) the IConfigurationClassLoader
 	 */
 	void destroy();

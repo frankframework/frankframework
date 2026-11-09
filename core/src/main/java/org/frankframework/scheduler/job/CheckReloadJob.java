@@ -134,7 +134,7 @@ public class CheckReloadJob extends AbstractJobDef {
 				// unload old (deactivated) configurations
 				for (String currentConfigurationName : configNames) {
 					if (!dbConfigNames.contains(currentConfigurationName) && DATABASE_CLASSLOADER.equals(ibisManager.getConfiguration(currentConfigurationName).getClassLoaderType())) {
-						ibisManager.getIbisContext().unload(currentConfigurationName, true);
+						ibisManager.getIbisContext().unload(currentConfigurationName);
 					}
 				}
 			}

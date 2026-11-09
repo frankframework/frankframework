@@ -34,7 +34,6 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.http.RestServiceDispatcher;
@@ -178,14 +177,11 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	public synchronized void reload(String configurationName) {
 		try {
-			ClassLoader classLoader = unload(configurationName, false);
-			if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
-				configurationClassLoader.reload();
-			}
+			unload(configurationName);
 			if (Thread.interrupted()) { // clear the Thread-Interrupted status because it will, ahem, interrupt the loading process
 				APPLICATION_LOG.info("Thread interrupted while unloading configuration [{}], status cleared before reloading", configurationName);
 			}
-			load(configurationName, classLoader);
+			load(configurationName);
 		} catch (Exception e) {
 			log("failed to reload", MessageEventLevel.ERROR, e);
 		}
@@ -197,22 +193,17 @@ public class IbisContext extends IbisApplicationContext {
 	 * Removing the ClassLoader will cause a ClassLoader-leak, leaving a small footprint behind in memory!
 	 * Use {@link IbisContext#reload(String)} where possible.
 	 */
-	public @Nullable ClassLoader unload(String configurationName, boolean destroyClassLoader) {
+	public void unload(String configurationName) {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
 		if (configuration == null) {
 			log("Configuration [" + configurationName + "] to unload not found", MessageEventLevel.WARN);
-			return null;
+			return;
 		}
-		ClassLoader classLoader = configuration.getClassLoader();
-		ibisManager.removeConfiguration(configuration, destroyClassLoader);
+		ibisManager.removeConfiguration(configuration);
 		if (!configuration.getRegisteredAdapters().isEmpty()) {
 			log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageEventLevel.ERROR);
 		}
 		getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
-		if (!destroyClassLoader) {
-			return classLoader;
-		}
-		return null;
 	}
 
 	/**
@@ -275,23 +266,6 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
 	public void load(@NonNull String configurationName) {
-		load(configurationName, null);
-	}
-
-	/**
-	 * Loads, digests and starts the specified configuration.
-	 * Does not check if the configuration already exists. Does not unload old configurations!
-	 * Does not load parent-configuration if the configuration has a parent which is not loaded, because such side-effects
-	 * would be undesirable here.
-	 *
-	 * @param configurationName name of the configuration to load
-	 * @param existingClassLoader If the configuration had been loaded previously and its classloader can be reused, pass it in this parameter.
-	 *
-	 * @see ClassLoaderFactory#createClassLoader(String, Class, Configuration)
-	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
-	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
-	 */
-	private void load(@NonNull String configurationName, @Nullable ClassLoader existingClassLoader) {
 		// We have a map with all configurations, see if we have the one requested!
 		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
 		if (!allConfigNamesItems.containsKey(configurationName)) {
@@ -299,7 +273,7 @@ public class IbisContext extends IbisApplicationContext {
 			return;
 		}
 		Class<? extends ClassLoader> configurationDefaultClassLoaderClass = allConfigNamesItems.get(configurationName);
-		loadSingleConfiguration(configurationName, existingClassLoader, configurationDefaultClassLoaderClass);
+		loadSingleConfiguration(configurationName, configurationDefaultClassLoaderClass);
 
 		generateFlow();
 	}
@@ -322,34 +296,30 @@ public class IbisContext extends IbisApplicationContext {
 				LOG.info("Configuration [{}] already loaded, skipping", currentConfigurationName);
 				continue;
 			}
-			loadSingleConfiguration(currentConfigurationName, null, configurationDefaultClassLoaderClass);
+			loadSingleConfiguration(currentConfigurationName, configurationDefaultClassLoaderClass);
 		}
 
 		generateFlow();
 	}
 
-	private void loadSingleConfiguration(@NonNull String configurationName, @Nullable ClassLoader existingClassLoader, @Nullable Class<? extends ClassLoader> configurationDefaultClassLoaderClass) {
+	private void loadSingleConfiguration(@NonNull String configurationName, @Nullable Class<? extends ClassLoader> configurationDefaultClassLoaderClass) {
 		LOG.info("loading configuration [{}]", configurationName);
 
 		String classLoaderType = configurationDefaultClassLoaderClass == null ? null : configurationDefaultClassLoaderClass.getCanonicalName();
 		ClassLoaderException classLoaderException = null;
 		ClassLoader classLoader = null;
-		if (existingClassLoader == null) {
-			try {
-				classLoader = classLoaderFactory.createClassLoader(configurationName, configurationDefaultClassLoaderClass, getParentConfiguration(configurationName));
+		try {
+			classLoader = classLoaderFactory.createClassLoader(configurationName, configurationDefaultClassLoaderClass, getParentConfiguration(configurationName));
 
-				// An error occurred, but we don't want to throw any exceptions.
-				// Skip configuration digesting so it can be done at a later time.
-				if (classLoader == null)
-					return;
+			// An error occurred, but we don't want to throw any exceptions.
+			// Skip configuration digesting so it can be done at a later time.
+			if (classLoader == null)
+				return;
 
-			} catch (ClassLoaderException e) {
-				classLoaderException = e;
-				if (LOG.isDebugEnabled()) LOG.debug("configuration [{}] got exception creating/retrieving classloader type [{}] errorMessage [{}]", configurationName, classLoaderType, e.getMessage());
-			}
-
-		} else {
-			classLoader = existingClassLoader;
+		} catch (ClassLoaderException e) {
+			classLoaderException = e;
+			if (LOG.isDebugEnabled())
+				LOG.debug("configuration [{}] got exception creating/retrieving classloader type [{}] errorMessage [{}]", configurationName, classLoaderType, e.getMessage());
 		}
 
 		if (LOG.isDebugEnabled()) LOG.debug("configuration [{}] found classloader [{}]", configurationName, ClassUtils.nameOf(classLoader));

@@ -86,19 +86,19 @@ public class IbisManager implements ApplicationContextAware {
 	 */
 	public void unloadAll() {
 		while (!configurations.isEmpty()) {
-			removeConfiguration(configurations.getFirst(), true);
+			removeConfiguration(configurations.getFirst());
 		}
 	}
 
 	/**
 	 * Stop and remove the Configuration
 	 */
-	public void removeConfiguration(@NonNull Configuration configuration, boolean destroyClassLoader) {
+	public void removeConfiguration(@NonNull Configuration configuration) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("removing configuration [{}]", configuration);
 		ClassLoader classLoader = configuration.getClassLoader();
 		configuration.close();
-		if (destroyClassLoader && classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
+		if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
 			configurationClassLoader.destroy();
 			configuration.setClassLoader(null);
 		}

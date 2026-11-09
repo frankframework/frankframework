@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -174,7 +173,8 @@ public class IbisContextTest {
 		return Arrays.asList(
 				arguments("WebAppClassLoader", "config1"),
 				arguments("DirectoryClassLoader", "config2"),
-				arguments("JarFileClassLoader", "config3")
+				arguments("ScanningDirectoryClassLoader", "config3"),
+				arguments("JarFileClassLoader", "config4")
 		);
 	}
 
@@ -280,13 +280,16 @@ public class IbisContextTest {
 
 			assertNotNull(configurationAfterReload);
 			assertNotSame(configuration, configurationAfterReload);
-			assertSame(classLoader, configurationAfterReload.getClassLoader());
+			assertNotSame(classLoader, configurationAfterReload.getClassLoader());
 
 			assertTrue(configuration.isClosed());
 			assertFalse(configurationAfterReload.isClosed());
 
 			AbstractClassLoader configurationClassLoader = assertInstanceOf(AbstractClassLoader.class, configurationAfterReload.getClassLoader());
 			assertFalse(configurationClassLoader.isDestroyed());
+
+			AbstractClassLoader originalConfigurationClassLoader = assertInstanceOf(AbstractClassLoader.class, classLoader);
+			assertTrue(originalConfigurationClassLoader.isDestroyed());
 		}
 	}
 
@@ -312,7 +315,7 @@ public class IbisContextTest {
 	@Test
 	public void testFullConfigurationReload() {
 		String classLoaderType = "DirectoryClassLoader";
-		String configurationName = "config4";
+		String configurationName = "config5";
 		String parentConfigurationName = "myParentConfig";
 		configureClassloader("DirectoryClassLoader", parentConfigurationName, null);
 		configureClassloader(classLoaderType, configurationName, parentConfigurationName);
