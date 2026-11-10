@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
+import org.springframework.core.SmartClassLoader;
 
 import lombok.Getter;
 
@@ -52,7 +53,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Niels Meijer
  */
-public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader {
+public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader, SmartClassLoader {
 
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
@@ -287,6 +288,22 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	/**
+	 * <p>
+	 * Fixes <code>--add-opens=java.base/java.lang=ALL-UNNAMED</code> problem when loading classes dynamically when CGLIB is enabled.
+	 * See <a href="https://github.com/spring-projects/spring-framework/issues/26403">spring github</a> for more background information.
+	 * </p>
+	 *
+	 * {@inheritDoc}
+	 */
+	@NonNull
+	@Override
+	public Class<?> publicDefineClass(@NonNull String name, byte @NonNull [] b, @Nullable ProtectionDomain protectionDomain) {
+		Class<?> definedClass = super.defineClass(name, b, 0, b.length, protectionDomain);
+		ClassLoadingLeakDetector.registerResource(this, definedClass);
+		return definedClass;
+	}
+
+	/**
 	 * This method will only be called for classes that have not been previously loaded yet.
 	 * Custom code will not update if you change the configuration.
 	 *
@@ -306,8 +323,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 					try {
 						byte[] bytes = StreamUtil.streamToBytes(url.openStream());
 						ProtectionDomain protectionDomain = ReflectUtils.getProtectionDomain(this.getClass());
-						Class<?> definedClass = super.defineClass(name, bytes, 0, bytes.length, protectionDomain);
-						ClassLoadingLeakDetector.registerResource(this, definedClass);
+						Class<?> definedClass = publicDefineClass(name, bytes, protectionDomain);
 
 						if (resolve) {
 							resolveClass(definedClass);
