@@ -289,13 +289,10 @@ public class IbisContext extends IbisApplicationContext {
 		// We have an ordered map with all configurations, parents first, lets loop through!
 		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
 		for (Entry<String, Class<? extends ClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
+
 			String currentConfigurationName = currentConfigNameItem.getKey();
 			Class<? extends ClassLoader> configurationDefaultClassLoaderClass = currentConfigNameItem.getValue();
 
-			if (ibisManager.getConfiguration(currentConfigurationName) != null) {
-				LOG.info("Configuration [{}] already loaded, skipping", currentConfigurationName);
-				continue;
-			}
 			loadSingleConfiguration(currentConfigurationName, configurationDefaultClassLoaderClass);
 		}
 
