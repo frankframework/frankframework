@@ -19,6 +19,7 @@ import java.net.URL;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.core.SmartClassLoader;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
@@ -28,7 +29,7 @@ import org.frankframework.configuration.IbisContext;
  *
  * @author Niels Meijer
  */
-public interface IConfigurationClassLoader {
+public interface IConfigurationClassLoader extends SmartClassLoader {
 
 	String CLASSPATH_RESOURCE_SCHEME="classpath:";
 

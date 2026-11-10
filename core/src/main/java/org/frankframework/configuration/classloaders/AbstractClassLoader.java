@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
-import org.springframework.core.SmartClassLoader;
 
 import lombok.Getter;
 
@@ -53,7 +52,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Niels Meijer
  */
-public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader, SmartClassLoader {
+public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader {
 
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
