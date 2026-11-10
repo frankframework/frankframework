@@ -288,7 +288,8 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 
 	/**
 	 * <p>
-	 * Fixes <code>--add-opens=java.base/java.lang=ALL-UNNAMED</code> problem when loading classes dynamically when CGLIB is enabled.
+	 * Partially fixes <code>--add-opens=java.base/java.lang=ALL-UNNAMED</code> problem when loading classes dynamically when CGLIB is enabled.
+	 * Full solution will require the base classloaders to also implement this interface, which they currently don't.
 	 * See <a href="https://github.com/spring-projects/spring-framework/issues/26403">spring github</a> for more background information.
 	 * </p>
 	 *
