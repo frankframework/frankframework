@@ -93,7 +93,11 @@ public class LarvaScenarioContext extends ConfigurableApplicationContext {
 	public void close() {
 		super.close();
 		if (getClassLoader() instanceof IConfigurationClassLoader classLoader) {
-			classLoader.destroy();
+			try {
+				classLoader.destroy();
+			} catch (Exception e) {
+				log.warn("Error while destroying configuration classloader", e);
+			}
 		}
 		setClassLoader(null);
 	}

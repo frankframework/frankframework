@@ -180,7 +180,7 @@ public class SecurityItems extends BusEndpointBase {
 			sapSystems = (List) factoryGetRegisteredSapSystemsNamesAsList.invoke(sapSystemFactory, (Object[])null);
 			factoryGetSapSystemInfo = c.getMethod("getSapSystemInfo", String.class);
 		} catch (Throwable t) {
-			log.debug("Caught NoClassDefFoundError, just no sapSystem available: {}", t.getMessage());
+			log.debug("Caught {}, just no sapSystem available: {}", t.getClass().getSimpleName(), t.getMessage());
 			return List.of();
 		}
 

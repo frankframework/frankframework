@@ -274,13 +274,13 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		Throwable throwable;
 		try {
 			return super.loadClass(name, resolve); // First try to load the class natively
-		} catch (ClassNotFoundException | NoClassDefFoundError t) { // Catch NoClassDefFoundError and ClassNotFoundExceptions
+		} catch (ReflectiveOperationException | LinkageError t) { // Covers NoClassDefFoundError and ClassNotFoundExceptions and broader related exceptions
 			throwable = t;
 		}
 
 		try {
 			return defineClass(name, resolve);
-		} catch (ClassNotFoundException e) {
+		} catch (ReflectiveOperationException | LinkageError e) {
 			e.addSuppressed(throwable);
 			throw e;
 		}

@@ -23,6 +23,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
@@ -32,7 +33,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.cache.IbisCacheManager;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.Adapter;
 import org.frankframework.management.Action;
 import org.frankframework.management.bus.BusMessageUtils;
@@ -98,9 +98,13 @@ public class IbisManager implements ApplicationContextAware {
 		log.info("removing configuration [{}]", configuration);
 		ClassLoader classLoader = configuration.getClassLoader();
 		configuration.close();
-		if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
-			configurationClassLoader.destroy();
+		if (classLoader instanceof DisposableBean configurationClassLoader) {
 			configuration.setClassLoader(null);
+			try {
+				configurationClassLoader.destroy();
+			} catch (Exception e) {
+				log.warn("Error while destroying configuration classloader", e);
+			}
 		}
 
 		configurations.remove(configuration);

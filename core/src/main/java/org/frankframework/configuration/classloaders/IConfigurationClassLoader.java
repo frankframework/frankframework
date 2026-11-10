@@ -19,6 +19,7 @@ import java.net.URL;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.SmartClassLoader;
 
 import org.frankframework.configuration.ClassLoaderException;
@@ -29,7 +30,7 @@ import org.frankframework.configuration.IbisContext;
  *
  * @author Niels Meijer
  */
-public interface IConfigurationClassLoader extends SmartClassLoader {
+public interface IConfigurationClassLoader extends SmartClassLoader, DisposableBean {
 
 	String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
@@ -60,9 +61,4 @@ public interface IConfigurationClassLoader extends SmartClassLoader {
 	 * @return the {@link ReportLevel} set for this {@link IConfigurationClassLoader}
 	 */
 	@NonNull ReportLevel getReportLevel();
-
-	/**
-	 * Called upon destroying (and thus removing) the IConfigurationClassLoader
-	 */
-	void destroy();
 }
