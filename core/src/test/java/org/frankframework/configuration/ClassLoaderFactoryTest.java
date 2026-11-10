@@ -35,7 +35,7 @@ import org.frankframework.util.StreamUtil;
 public class ClassLoaderFactoryTest extends Mockito {
 
 	private static final IbisContext ibisContext = spy(new IbisContext());
-	private ClassLoaderFactory manager;
+	private ClassLoaderFactory factory;
 
 	private static final String BASE_DIR = "/ClassLoader";
 	private static final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
@@ -118,7 +118,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 		}
 		setLocalProperty("configurations.names", configurationsNames.toString());
 
-		manager = new ClassLoaderFactory(ibisContext);
+		factory = new ClassLoaderFactory(ibisContext);
 	}
 
 	private static void mockDatabase() throws Exception {
@@ -167,7 +167,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 		} else {
 			mockConfiguration = null;
 		}
-		ClassLoader config = manager.createClassLoader(testConfiguration, null, mockConfiguration);
+		ClassLoader config = factory.createClassLoader(testConfiguration, null, mockConfiguration);
 		if (config instanceof AbstractClassLoader base) {
 			base.setBasePath(".");
 		}

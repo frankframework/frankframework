@@ -70,10 +70,11 @@ public class IbisContext extends IbisApplicationContext {
 		AppConstantsValidator.validate();
 	}
 
+	private static final List<String> loadingConfigs = new ArrayList<>();
+
 	private @Getter IbisManager ibisManager;
 	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderFactory classLoaderFactory = null;
-	private static final List<String> loadingConfigs = new ArrayList<>();
 
 	private Thread ibisContextReconnectThread = null;
 
