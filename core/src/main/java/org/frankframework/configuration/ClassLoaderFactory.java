@@ -93,7 +93,7 @@ public class ClassLoaderFactory {
 					case INFO -> ibisContext.log(msg, MessageEventLevel.INFO, ce);
 					case WARN -> ApplicationWarnings.add(log, msg, ce);
 					case ERROR -> throw ce;
-					case null -> throw ce; // NULL cannot really happen but this makes-happy Codacy, maybe
+					case null -> throw ce; // NULL cannot really happen but this makes Codacy happy
 				}
 
 				// Break here, we cannot continue when there are ConfigurationExceptions!
