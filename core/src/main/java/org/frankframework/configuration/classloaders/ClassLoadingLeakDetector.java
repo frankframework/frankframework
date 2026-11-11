@@ -16,10 +16,11 @@
 package org.frankframework.configuration.classloaders;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +34,7 @@ public class ClassLoadingLeakDetector {
 	private static final Logger LEAK_LOG = LogManager.getLogger("LEAK_LOG");
 
 	private static final AtomicInteger COUNTER = new AtomicInteger();
-	private static final ConcurrentMap<Integer, ClassLoaderMeta> CLASS_LOADERS = new ConcurrentHashMap<>();
+	private static final Map<Integer, ClassLoaderMeta> CLASS_LOADERS = Collections.synchronizedMap(new LinkedHashMap<>());
 
 	private ClassLoadingLeakDetector() {
 		// Private constructor to prevent creation of instances
@@ -66,7 +67,7 @@ public class ClassLoadingLeakDetector {
 
 		@Override
 		public String toString() {
-			return "[%d] %s for configuration [%s], destroyed: [%b], potentially leaked: [%b], loaded classes: %s"
+			return "[#%d] %s for configuration [%s], destroyed: [%b], potentially leaked: [%b], loaded classes: %s"
 					.formatted(sequenceNr, className, configurationName, destroyed, isPotentiallyLeaked(), resourceLeakTracker);
 		}
 
@@ -86,6 +87,7 @@ public class ClassLoadingLeakDetector {
 		 * </p>
 		 */
 		private boolean isPotentiallyLeaked() {
+			//noinspection DataFlowIssue // False positive; method refersTo() may have a null argument
 			return destroyed && !classLoaderRef.refersTo(null);
 		}
 	}
@@ -122,7 +124,7 @@ public class ClassLoadingLeakDetector {
 				LEAK_LOG.info("No remaining classloaders registered with the leak-detector; total that have been registered: [{}]", COUNTER::get);
 				return 0;
 			}
-			LEAK_LOG.warn("Currently registered classloaders out of total [{}] registered:", COUNTER::get);
+			LEAK_LOG.warn("Currently [{}] classloaders not garbage-collected out of total [{}] registered:", CLASS_LOADERS::size, COUNTER::get);
 			for (ClassLoaderMeta classLoaderMeta : CLASS_LOADERS.values()) {
 				LEAK_LOG.warn(" {}", classLoaderMeta);
 			}

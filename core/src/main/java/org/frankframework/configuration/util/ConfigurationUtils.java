@@ -481,7 +481,8 @@ public class ConfigurationUtils {
 	}
 
 	/**
-	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
+	 * @return A {@link LinkedHashMap} with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType), sorted to
+	 * iterate parent-configurations before their child-configurations.
 	 */
 	public static Map<String, Class<? extends ClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
 		ConfigurationAutoDiscovery discovery = SpringUtils.createBean(applicationContext);

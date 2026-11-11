@@ -116,9 +116,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on generating wsdl", e);
 		} finally {
-			if (originalClassLoader != null) {
-				Thread.currentThread().setContextClassLoader(originalClassLoader);
-			}
+			Thread.currentThread().setContextClassLoader(originalClassLoader);
 		}
 
 		Object result;
@@ -127,7 +125,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			adapter.refresh();
 			String fileBaseName = FileUtils.getBaseName(fileName).replace(" ", "_");
 			adapter.setName(fileBaseName);
-			Receiver receiver = new Receiver();
+			Receiver<jakarta.jms.Message> receiver = new Receiver<>();
 			EsbJmsListener esbJmsListener = new EsbJmsListener();
 			esbJmsListener.setQueueConnectionFactoryName("jms/qcf_" + fileBaseName);
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);

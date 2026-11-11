@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package org.frankframework.configuration.classloaders;
 import java.net.URL;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.core.SmartClassLoader;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
@@ -27,45 +30,35 @@ import org.frankframework.configuration.IbisContext;
  *
  * @author Niels Meijer
  */
-public interface IConfigurationClassLoader {
+public interface IConfigurationClassLoader extends SmartClassLoader, DisposableBean {
 
 	String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
-	public enum ReportLevel {
+	enum ReportLevel {
 		DEBUG, INFO, WARN, ERROR;
 	}
 
-	public URL getResource(String name);
+	@Nullable URL getResource(@Nullable String name);
 
 	/**
 	 * Configure the {@link IConfigurationClassLoader}'s implementation
 	 * @throws ClassLoaderException when the {@link IConfigurationClassLoader}'s implementation cannot retrieve or load the configuration files
 	 */
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException;
+	void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException;
 
 	/**
 	 * Retrieve the name of the configuration that uses this {@link IConfigurationClassLoader}
 	 */
-	public String getConfigurationName();
+	@NonNull String getConfigurationName();
 
 	/**
 	 * Defines the log level for errors caused by the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method
-	 * @param level ReportLevel in string format to be parsed by the ClassLoaderManager digester
+	 * @param level ReportLevel in string format to be parsed by the ClassLoaderFactory digester
 	 */
-	public void setReportLevel(String level);
+	void setReportLevel(@NonNull String level);
 
 	/**
 	 * @return the {@link ReportLevel} set for this {@link IConfigurationClassLoader}
 	 */
-	public @NonNull ReportLevel getReportLevel();
-
-	/**
-	 * Unload the current IConfigurationClassLoader and load again upon successful unload.
-	 */
-	public void reload() throws ClassLoaderException;
-
-	/**
-	 * Called upon destroying (and thus removing) the IConfigurationClassLoader
-	 */
-	public void destroy();
+	@NonNull ReportLevel getReportLevel();
 }

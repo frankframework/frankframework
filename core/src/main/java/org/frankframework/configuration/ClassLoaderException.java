@@ -19,7 +19,7 @@ import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.IbisException;
 
 /**
- * Exception thrown by {@link ClassLoaderManager} when it fails to create an {@link IConfigurationClassLoader}.
+ * Exception thrown by {@link ClassLoaderFactory} when it fails to create an {@link IConfigurationClassLoader}.
  *
  * @author Niels Meijer
  */
