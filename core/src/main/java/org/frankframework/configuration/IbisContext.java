@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -288,14 +288,7 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	private void loadAllConfigurations() {
 		// We have an ordered map with all configurations, parents first, lets loop through!
-		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
-		for (Entry<String, Class<? extends ClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
-
-			String currentConfigurationName = currentConfigNameItem.getKey();
-			Class<? extends ClassLoader> configurationDefaultClassLoaderClass = currentConfigNameItem.getValue();
-
-			loadSingleConfiguration(currentConfigurationName, configurationDefaultClassLoaderClass);
-		}
+		retrieveAllConfigNames().forEach(this::loadSingleConfiguration);
 
 		generateFlow();
 	}
@@ -307,7 +300,7 @@ public class IbisContext extends IbisApplicationContext {
 		ClassLoaderException classLoaderException = null;
 		ClassLoader classLoader = null;
 		try {
-			classLoader = classLoaderFactory.createClassLoader(configurationName, configurationDefaultClassLoaderClass, getParentConfiguration(configurationName));
+			classLoader = classLoaderFactory.createClassLoader(configurationName, configurationDefaultClassLoaderClass, getParentConfiguration(configurationName).orElse(null));
 
 			// An error occurred, but we don't want to throw any exceptions.
 			// Skip configuration digesting so it can be done at a later time.
@@ -363,8 +356,8 @@ public class IbisContext extends IbisApplicationContext {
 	 * @param configurationName Name of configuration for which to find parent configuration name
 	 * @return Name of parent configuration, or null
 	 */
-	public static @Nullable String getParentConfigName(@NonNull String configurationName) {
-		return AppConstants.getInstance().getString("configurations." + configurationName + ".parentConfig", null);
+	public static Optional<@NonNull String> getParentConfigName(@NonNull String configurationName) {
+		return Optional.ofNullable(AppConstants.getInstance().getString("configurations." + configurationName + ".parentConfig", null));
 	}
 
 	/**
@@ -372,12 +365,8 @@ public class IbisContext extends IbisApplicationContext {
 	 * @param configurationName Name of configuration for which to find parent configuration
 	 * @return Parent configuration, or null if no parent-configuration name found or if parent configuration not loaded
 	 */
-	private @Nullable Configuration getParentConfiguration(@NonNull String configurationName) {
-		String parentConfigName = getParentConfigName(configurationName);
-		if (parentConfigName == null) {
-			return null;
-		}
-		return ibisManager.getConfiguration(parentConfigName);
+	private Optional<@NonNull Configuration> getParentConfiguration(@NonNull String configurationName) {
+		return getParentConfigName(configurationName).map(ibisManager::getConfiguration);
 	}
 
 	/**

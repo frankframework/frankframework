@@ -437,7 +437,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	@Nullable
 	public String getClassLoaderType() {
 		ClassLoader classLoader = getClassLoader();
-		if(classLoader == null) { // Configuration has not been loaded yet
+		if (classLoader == null) { // Configuration has not been loaded yet
 			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { // We may not return an empty String
 				return type;

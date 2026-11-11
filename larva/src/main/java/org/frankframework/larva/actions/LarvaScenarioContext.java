@@ -17,6 +17,7 @@ package org.frankframework.larva.actions;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -27,7 +28,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.NameAware;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.lifecycle.ConfigurableApplicationContext;
@@ -92,7 +92,7 @@ public class LarvaScenarioContext extends ConfigurableApplicationContext {
 	@Override
 	public void close() {
 		super.close();
-		if (getClassLoader() instanceof IConfigurationClassLoader classLoader) {
+		if (getClassLoader() instanceof DisposableBean classLoader) {
 			try {
 				classLoader.destroy();
 			} catch (Exception e) {
