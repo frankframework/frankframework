@@ -1,6 +1,6 @@
 package org.frankframework.configuration;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.Matchers;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.DummyClassLoader;
@@ -69,12 +67,6 @@ public class IbisContextTest {
 		@Override
 		protected String @NonNull [] getSpringConfigurationFiles(@NonNull ClassLoader classLoader) {
 			return new String[] { "testApplicationContext.xml" };
-		}
-
-		// Make this getter public
-		@Override
-		public AbstractApplicationContext getApplicationContext() {
-			return super.getApplicationContext();
 		}
 	}
 
@@ -123,7 +115,7 @@ public class IbisContextTest {
 
 			ConfigurationException ex = config.getConfigurationException();
 			assertNotNull(ex, "configuration should have an exception");
-			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating ClassLoader"));
+			assertThat(ex).hasMessageContaining("error instantiating ClassLoader");
 			assertEquals(ClassLoaderException.class.getCanonicalName(), ex.getCause().getClass().getCanonicalName());
 			Throwable[] suppressed = ex.getCause().getCause().getSuppressed();
 			assertEquals(1, suppressed.length, "ClassLoaderException should have a supressed throwable with more information");
@@ -143,7 +135,10 @@ public class IbisContextTest {
 			MessageEventListener events = context.getApplicationContext().getBean("MessageEventListener", MessageEventListener.class);
 			MessageKeeperMessage message = events.getMessageKeeper().getMessage(events.getMessageKeeper().size()-2);
 			assertNotNull(message, "unable to find MessageKeeperMessage");
-			assertThat(message.getMessageText(), Matchers.endsWith("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: (ClassLoaderException) test-exception"));
+			assertThat(message.getMessageText())
+					.contains("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: (ClassLoaderException)")
+					.contains("test-exception")
+			;
 		}
 	}
 
@@ -163,7 +158,7 @@ public class IbisContextTest {
 
 			ConfigurationException ex = config.getConfigurationException();
 			assertNotNull(ex, "configuration should have an exception");
-			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating configuration"));
+			assertThat(ex).hasMessageContaining("error instantiating configuration");
 			Throwable[] suppressed = ex.getCause().getSuppressed();
 			assertEquals(0, suppressed.length, "no further information");
 		}

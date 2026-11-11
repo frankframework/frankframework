@@ -20,9 +20,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
@@ -145,10 +147,21 @@ public class ClassLoaderFactoryTest extends Mockito {
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		IbisManager ibisManager = mock(IbisManager.class);
 		doReturn(ibisManager).when(ibisContext).getIbisManager();
-		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		AbstractApplicationContext applicationContext = mock();
 		doReturn(applicationContext).when(ibisManager).getApplicationContext();
+		doReturn(applicationContext).when(ibisContext).getApplicationContext();
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
 		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		doAnswer(invocation -> {
+			org.frankframework.configuration.classloaders.IConfigurationClassLoader classLoader = invocation.getArgument(0);
+			classLoader.setIbisContext(ibisContext);
+			classLoader.setConfigurationName("");
+			if (classLoader instanceof ApplicationContextAware applicationContextAware) {
+				applicationContextAware.setApplicationContext(applicationContext);
+			}
+			classLoader.afterPropertiesSet();
+			return classLoader;
+		}).when(beanFactory).initializeBean(isA(IConfigurationClassLoader.class), anyString());
 	}
 
 	private ClassLoader getClassLoader() throws Exception {

@@ -62,7 +62,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 		ClassLoader parent = new ClassLoaderMock();
 		classLoader = createClassLoader(parent);
 
-		if(basePath != null) {
+		if (basePath != null) {
 			classLoader.setBasePath(basePath);
 		}
 
@@ -86,7 +86,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	 * @return name of the configuration
 	 */
 	protected String getConfigurationName() {
-		if(configurationName == null)
+		if (configurationName == null)
 			configurationName = "dummyConfigurationName"+ UUIDUtil.createRandomUUID();
 
 		return configurationName;

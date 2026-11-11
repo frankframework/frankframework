@@ -18,21 +18,21 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 
 	@Override
 	@Test
-	@Disabled
+	@Disabled("Disable this method as the WebAppClassloader always asks its parent for resources, which it does not have")
 	public void configurationFileDefaultLocation() {
 		// Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}
 
 	@Override
 	@Test
-	@Disabled
+	@Disabled("Disable this method as the WebAppClassloader always asks its parent for resources, which it does not have")
 	public void configurationFileCustomLocation() {
 		// Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}
 
 	@Override
 	@Test
-	@Disabled
+	@Disabled("Disable this method as the WebAppClassloader always asks its parent for resources, which it does not have")
 	public void configurationFileCustomLocationAndBasePath() {
 		// Stub this method as the WebAppClassloader always asks its parent for resources, which it does not have.
 	}

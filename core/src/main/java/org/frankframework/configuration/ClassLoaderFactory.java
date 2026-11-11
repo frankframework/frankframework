@@ -21,7 +21,6 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.BeansException;
 import org.springframework.lang.Contract;
 
 import lombok.extern.log4j.Log4j2;
@@ -54,7 +53,6 @@ public class ClassLoaderFactory {
 
 	public ClassLoaderFactory(IbisContext ibisContext) {
 		this.ibisContext = ibisContext;
-
 		classPathClassLoader = Thread.currentThread().getContextClassLoader();
 	}
 
@@ -118,7 +116,7 @@ public class ClassLoaderFactory {
 		ClassUtils.invokeSetters(loader, subProperties);
 		try {
 			SpringUtils.autowireByType(ibisContext.getApplicationContext(), loader);
-		} catch (BeansException | IllegalStateException e) {
+		} catch (Exception e) {
 			log.error("error configuring ClassLoader for configuration [{}]", configurationName, e);
 			throw new ClassLoaderException(e);
 		}
