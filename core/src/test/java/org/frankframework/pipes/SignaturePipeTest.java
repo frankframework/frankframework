@@ -119,7 +119,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		EncryptionException ee = assertInstanceOf(EncryptionException.class, e.getCause().getCause());
-		assertThat(ee.getMessage(), Matchers.containsString("cannot obtain Private Key in alias [1] of keystore [/Signature/ks_multipassword.jks]"));
+		assertThat(ee.getMessage(), Matchers.containsString("cannot obtain Private Key with name [1] in keystore [/Signature/ks_multipassword.jks]"));
 	}
 
 	@Test

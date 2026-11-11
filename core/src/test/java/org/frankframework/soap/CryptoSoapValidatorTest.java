@@ -70,7 +70,7 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertNotNull(ex.getMessage());
-		assertTrue(ex.getMessage().contains("element [Keystore] must be specified"));
+		assertTrue(ex.getMessage().contains("attribute [keystoreAlias] (the name of the certificate) must be specified"));
 	}
 
 	@Test

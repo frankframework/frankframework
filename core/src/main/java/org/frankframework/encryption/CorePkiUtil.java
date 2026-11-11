@@ -144,6 +144,9 @@ public class CorePkiUtil {
 		}
 	}
 
+	/**
+	 * Returns the default TrustStore or, if none provided, the CA_CERT file.
+	 */
 	public static KeyStore createKeyStore(HasTruststore truststoreOwner) throws EncryptionException {
 		if (StringUtils.isBlank(truststoreOwner.getTruststore())) {
 			// If no truststore is specified, the JVMs default truststore will be used.

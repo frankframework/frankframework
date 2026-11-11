@@ -82,7 +82,7 @@ public class AuthSSLContextFactory {
 		return sslContextFactory.getSSLSocketFactory();
 	}
 
-	public static SSLContext createSSLContext(HasKeystore keystoreOwner, HasTruststore truststoreOwner, String protocol) throws GeneralSecurityException, IOException {
+	public static SSLContext createSSLContext(HasKeystore keystoreOwner, HasTruststore truststoreOwner, String protocol) throws GeneralSecurityException {
 		AuthSSLContextFactory sslContextFactory = new AuthSSLContextFactory(keystoreOwner, truststoreOwner, protocol);
 		return sslContextFactory.getSSLContext();
 	}
@@ -97,54 +97,46 @@ public class AuthSSLContextFactory {
 		}
 	}
 
-
-	private SSLContext createSSLContext() throws GeneralSecurityException, IOException {
-		URL keystoreUrl = null;
-		URL truststoreUrl = null;
+	private SSLContext createSSLContext() throws GeneralSecurityException, EncryptionException {
+		KeyStore keystore = null;
+		KeyStore truststore = null;
 		SSLContext sslcontext;
 
+		// Has to be explicitly defined.
 		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
-			keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+			keystore = CorePkiUtil.createKeyStore(keystoreOwner);
 		}
-		if (truststoreOwner != null && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
-			truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
+		// Has to be explicitly defined.
+		if (truststoreOwner != null) {
+			// Should never be null...
+			truststore = CorePkiUtil.createKeyStore(truststoreOwner);
 		}
 		boolean allowSelfSignedCertificates = truststoreOwner != null && truststoreOwner.isAllowSelfSignedCertificates();
 
-		if (keystoreUrl == null && truststoreUrl == null && !allowSelfSignedCertificates) {
+		if (keystore == null && truststore == null && !allowSelfSignedCertificates) {
 			sslcontext = SSLContext.getDefault();
 		} else {
 			KeyManager[] keymanagers = null;
-			if (keystoreUrl != null) {
-				CredentialFactory keystoreCf = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
-				KeyStore keystore;
-				try {
-					keystore = CommonsPkiUtil.createKeyStore(keystoreUrl, keystoreCf.getPassword(), keystoreOwner.getKeystoreType());
-				} catch (GeneralSecurityException e) {
-					throw new GeneralSecurityException("unable to create keystore for certificate chain", e);
-				}
-
-				CredentialFactory keystoreAliasCf = keystoreCf;
+			if (keystore != null) {
+				final String password;
 				if (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasAuthAlias()) || StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasPassword())) {
-					keystoreAliasCf = new CredentialFactory(keystoreOwner.getKeystoreAliasAuthAlias(), null, keystoreOwner.getKeystoreAliasPassword());
+					CredentialFactory keystoreAliasCf = new CredentialFactory(keystoreOwner.getKeystoreAliasAuthAlias(), null, keystoreOwner.getKeystoreAliasPassword());
+					password = keystoreAliasCf.getPassword();
+				} else {
+					log.warn("no password provided for the certificate (alias) [{}] in keystore [{}]", keystoreOwner.getKeystoreAlias(), keystoreOwner.getKeystore());
+					password = null;
+					// Do we want the old behavior of using the keystore password for the key? It is not recommended to use the same password for both the keystore and the key.
+					// keystoreAliasCf = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
 				}
 				if (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAlias())) {
-					keymanagers = new KeyManager[] {KeyManagerUtils.createClientKeyManager(keystore, keystoreOwner.getKeystoreAlias(), keystoreAliasCf.getPassword())};
+					keymanagers = new KeyManager[] {KeyManagerUtils.createClientKeyManager(keystore, keystoreOwner.getKeystoreAlias(), password)};
 				} else {
-					keymanagers = CommonsPkiUtil.createKeyManagers(keystore, keystoreAliasCf.getPassword(), keystoreOwner.getKeyManagerAlgorithm());
+					keymanagers = CommonsPkiUtil.createKeyManagers(keystore, password, keystoreOwner.getKeyManagerAlgorithm());
 				}
 			}
 
-			KeyStore truststore = null;
 			TrustManager[] trustmanagers = null;
-			if (truststoreUrl != null) {
-				CredentialFactory truststoreCf  = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(),  null, truststoreOwner.getTruststorePassword());
-				try {
-					truststore = CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), truststoreOwner.getTruststoreType());
-				} catch (GeneralSecurityException e) {
-					throw new GeneralSecurityException("unable to create truststore", e);
-				}
-
+			if (truststore != null) {
 				String algorithm = truststoreOwner.getTrustManagerAlgorithm();
 				trustmanagers = CommonsPkiUtil.createTrustManagers(truststore, algorithm);
 			}
@@ -161,14 +153,18 @@ public class AuthSSLContextFactory {
 		return sslcontext;
 	}
 
-	public SSLContext getSSLContext() throws GeneralSecurityException, IOException {
+	private SSLContext getSSLContext() throws GeneralSecurityException {
 		if (sslContext == null) {
-			sslContext = createSSLContext();
+			try {
+				sslContext = createSSLContext();
+			} catch (EncryptionException e) {
+				throw new GeneralSecurityException("unable to create keystore", e);
+			}
 		}
 		return sslContext;
 	}
 
-	public SSLSocketFactory getSSLSocketFactory() throws GeneralSecurityException, IOException {
+	public SSLSocketFactory getSSLSocketFactory() throws GeneralSecurityException {
 		URL keystoreUrl = null;
 		URL truststoreUrl = null;
 		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
