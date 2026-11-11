@@ -3,7 +3,7 @@ package org.frankframework.encryption;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 
@@ -63,7 +63,7 @@ public class AuthenticationContextFactoryTest {
 		keystoreOwner.setKeystorePassword("wrong");
 		keystoreOwner.setKeystoreAlias("alias2");
 		keystoreOwner.setKeystoreAliasPassword("AliasPW2");
-		assertThrows(IOException.class, ()-> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null), "password was incorrect");
+		assertThrows(GeneralSecurityException.class, ()-> AuthSSLContextFactory.createSSLContext(keystoreOwner, null, null), "password was incorrect");
 	}
 
 	@Test
