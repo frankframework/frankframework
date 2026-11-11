@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,15 +19,18 @@ import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
 import org.frankframework.encryption.KeystoreType;
+import org.frankframework.http.HttpSender;
 import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.pipes.SenderPipe;
 import org.frankframework.pipes.SignaturePipe;
 import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 import org.frankframework.testutil.MatchUtils;
@@ -63,17 +68,37 @@ public class TestSecurityItems extends BusTestBase {
 		// Strange hack because the endpoint uses the SecurityItems backend context.
 		SpringUtils.registerSingleton(getConfiguration().getParent(), "mockDataSourceFactory", dataSourceFactory);
 
+		Adapter adapter1 = createAdapter("myAdapter", "Encryption/common_name.p12", KeystoreType.PKCS12);
+		getConfiguration().addAdapter(adapter1);
+		Adapter adapter2 = createAdapter("brokenAdapter", null, KeystoreType.PKCS12);
+		getConfiguration().addAdapter(adapter2);
+		Adapter adapter3 = createAdapter("brokenAdapter2", "Encryption/not-there.p12", KeystoreType.JKS);
+		getConfiguration().addAdapter(adapter3);
+	}
+
+	private @NonNull Adapter createAdapter(@NonNull String adapterName, @Nullable String keystoreName, KeystoreType keystoreType) throws ConfigurationException {
 		Adapter adapter = SpringUtils.createBean(getConfiguration());
-		adapter.setName("myAdapter");
+		adapter.setName(adapterName);
 		PipeLine pipeline = SpringUtils.createBean(adapter);
 		SignaturePipe pipe = SpringUtils.createBean(adapter);
-		pipe.setKeystore("Encryption/common_name.p12");
-		pipe.setKeystoreType(KeystoreType.PKCS12);
+		pipe.setKeystore(keystoreName);
+		pipe.setKeystoreType(keystoreType);
 		pipe.setKeystorePassword("changeit");
 		pipe.setName("signaturePipe");
+
+		SenderPipe senderPipe = SpringUtils.createBean(adapter);
+		senderPipe.setName("senderPipe");
+		HttpSender httpSender = SpringUtils.createBean(adapter);
+		httpSender.setName("httpSender");
+		httpSender.setTruststore(keystoreName);
+		httpSender.setTruststoreType(keystoreType);
+		httpSender.setTruststorePassword("changeit");
+		senderPipe.setSender(httpSender);
+
 		pipeline.addPipe(pipe);
+		pipeline.addPipe(senderPipe);
 		adapter.setPipeLine(pipeline);
-		getConfiguration().addAdapter(adapter);
+		return adapter;
 	}
 
 	@Override

@@ -189,14 +189,18 @@ public class BusMessageUtils {
 	 * See AuthorityAuthorizationManager#ROLE_PREFIX
 	 */
 	public static boolean hasRole(String role) {
-		boolean granted = false;
-		for(GrantedAuthority grantedAuthority : getAuthorities()) {
-			String authorityName = grantedAuthority.getAuthority().substring(5); // Chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
-			granted = authorityName.equals(role);
-			if(granted) {
-				return true;
+		try {
+			for (GrantedAuthority grantedAuthority : getAuthorities()) {
+				String authority = grantedAuthority.getAuthority();
+				if (authority == null) continue;
+				String authorityName = authority.substring(5); // Chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
+				if (authorityName.equals(role)) {
+					return true;
+				}
 			}
+		} catch (Exception e) {
+			LOG.warn("Could not check user roles", e);
 		}
-		return granted;
+		return false;
 	}
 }

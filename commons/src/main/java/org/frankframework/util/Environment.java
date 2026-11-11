@@ -124,7 +124,8 @@ public class Environment {
 			log.debug("found {} in {}", JarFile.MANIFEST_NAME, jarFileLocation);
 			return manifest;
 		} catch (IOException e) {
-			log.info("unable to read " + JarFile.MANIFEST_NAME, e);
+			log.info("unable to read {}: {}", JarFile.MANIFEST_NAME, e.getMessage());
+			log.trace(e.getMessage(), e);
 			throw e;
 		}
 	}
