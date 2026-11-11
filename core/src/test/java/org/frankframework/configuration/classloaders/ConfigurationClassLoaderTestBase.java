@@ -68,7 +68,9 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 		String key = "configurations."+getConfigurationName()+".classLoaderType";
 		appConstants.setProperty(key, classLoader.getClass().getSimpleName());
-		classLoader.configure(ibisContext, getConfigurationName());
+		classLoader.setIbisContext(ibisContext);
+		classLoader.setConfigurationName(getConfigurationName());
+		classLoader.afterPropertiesSet();
 	}
 
 	/**
@@ -246,7 +248,9 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 		String key = "configurations."+getConfigurationName()+".classLoaderType";
 		appConstants.setProperty(key, classLoader.getClass().getSimpleName());
-		classLoader.configure(ibisContext, getConfigurationName());
+		classLoader.setIbisContext(ibisContext);
+		classLoader.setConfigurationName(getConfigurationName());
+		classLoader.afterPropertiesSet();
 
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 		assertEquals(file, configFile, "configurationFile path does not match");

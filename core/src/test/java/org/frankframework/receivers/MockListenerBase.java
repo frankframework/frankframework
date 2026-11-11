@@ -29,7 +29,7 @@ public abstract class MockListenerBase implements IListener<String> {
 
 	@Override
 	public void configure() {
-		// Nothing to configure
+		// Nothing to afterPropertiesSet
 	}
 
 	/**

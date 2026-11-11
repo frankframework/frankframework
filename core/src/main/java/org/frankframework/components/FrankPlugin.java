@@ -83,7 +83,7 @@ public class FrankPlugin extends PipeLine {
 		digestPluginInClassloader(resource);
 		log.info("successfully loaded plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
 
-		// After loading all beans, configure them.
+		// After loading all beans, afterPropertiesSet them.
 		super.configure();
 		log.info("successfully configured plugin [{}] with entrypoint [{}]", plugin::getDescriptor, resource::getName);
 	}

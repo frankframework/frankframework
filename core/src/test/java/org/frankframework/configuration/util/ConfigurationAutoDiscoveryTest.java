@@ -156,7 +156,9 @@ public class ConfigurationAutoDiscoveryTest {
 		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); // Add ability to retrieve classes from src/test/resources
 		JarFileClassLoader cl = new JarFileClassLoader(classLoader);
 		IbisContext ibisContext = mock(IbisContext.class);
-		cl.configure(ibisContext, "JarConfig1");
+		cl.setIbisContext(ibisContext);
+		cl.setConfigurationName("JarConfig1");
+		cl.afterPropertiesSet();
 		assertNotNull(cl.getResource("Configuration.xml"));
 	}
 

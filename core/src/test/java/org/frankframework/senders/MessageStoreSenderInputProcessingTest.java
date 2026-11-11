@@ -28,7 +28,7 @@ public class MessageStoreSenderInputProcessingTest extends SenderTestBase<Messag
 	@Override
 	public MessageStoreSender createSender() {
 		return new MessageStoreSender() {
-			@Override public void configure() { } // Suppress configure as it's will do a JNDI lookup
+			@Override public void configure() { } // Suppress afterPropertiesSet as it's will do a JNDI lookup
 			@Override public void start() { } // Suppress start as it's will do a JNDI lookup
 
 			@Override

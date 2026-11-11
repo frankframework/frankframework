@@ -121,7 +121,7 @@ public class IbisJobDetailTest {
 		Locker locker = new Locker() {
 			@Override
 			public void configure() {
-				// override configure, to avoid having to fully configure the Locker. We just use it's existence here.
+				// override afterPropertiesSet, to avoid having to fully afterPropertiesSet the Locker. We just use it's existence here.
 			}
 		};
 		jobDef1.setLocker(locker);
@@ -136,7 +136,7 @@ public class IbisJobDetailTest {
 		Locker locker = new Locker() {
 			@Override
 			public void configure() {
-				// override configure, to avoid having to fully configure the Locker. We just use it's existence here.
+				// override afterPropertiesSet, to avoid having to fully afterPropertiesSet the Locker. We just use it's existence here.
 			}
 		};
 		jobDef2.setLocker(locker);
@@ -151,7 +151,7 @@ public class IbisJobDetailTest {
 		Locker locker1 = new Locker() {
 			@Override
 			public void configure() {
-				// override configure, to avoid having to fully configure the Locker. We just use it's objectId here.
+				// override afterPropertiesSet, to avoid having to fully afterPropertiesSet the Locker. We just use it's objectId here.
 			}
 
 			@Override
@@ -163,7 +163,7 @@ public class IbisJobDetailTest {
 		Locker locker2 = new Locker() {
 			@Override
 			public void configure() {
-				// override configure, to avoid having to fully configure the Locker. We just use it's objectId here.
+				// override afterPropertiesSet, to avoid having to fully afterPropertiesSet the Locker. We just use it's objectId here.
 			}
 
 			@Override
@@ -183,7 +183,7 @@ public class IbisJobDetailTest {
 		Locker locker1 = new Locker() {
 			@Override
 			public void configure() {
-				// override configure, to avoid having to fully configure the Locker. We just use it's objectId here.
+				// override afterPropertiesSet, to avoid having to fully afterPropertiesSet the Locker. We just use it's objectId here.
 			}
 
 			@Override
@@ -195,7 +195,7 @@ public class IbisJobDetailTest {
 		Locker locker2 = new Locker() {
 			@Override
 			public void configure() {
-				// override configure, to avoid having to fully configure the Locker. We just use it's objectId here.
+				// override afterPropertiesSet, to avoid having to fully afterPropertiesSet the Locker. We just use it's objectId here.
 			}
 
 			@Override

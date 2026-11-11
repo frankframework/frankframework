@@ -100,7 +100,7 @@ class CryptoSoapValidatorTest extends PipeTestBase<CryptoSoapValidator> {
 
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertNotNull(ex.getMessage());
-		assertTrue(ex.getMessage().contains("this validator does not support input/output processing in '1' element, configure an OutputValidator explicitly"));
+		assertTrue(ex.getMessage().contains("this validator does not support input/output processing in '1' element, afterPropertiesSet an OutputValidator explicitly"));
 	}
 
 	@Test

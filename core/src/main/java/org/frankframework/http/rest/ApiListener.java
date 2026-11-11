@@ -69,7 +69,7 @@ import org.frankframework.util.StringUtil;
  * setting the property <code>api.etag.enabled</code> or by setting the attribute <code>updateEtag="true"</code>.
  * When enabled the listener will respond to the <code>If-Match</code>, <code>If-None-Match</code> headers and may return status code 304.
  * <p>
- * In order to enable eTags for multiple nodes you must configure Memcached to store the eTags.
+ * In order to enable eTags for multiple nodes you must afterPropertiesSet Memcached to store the eTags.
  * The following properties will need to be set:
  * <ul>
  * <li><code>etag.cache.server=ip or hostname:port</code></li>

@@ -111,7 +111,7 @@ public class CryptoSoapValidator extends SoapValidator implements HasKeystore {
 			throw new ConfigurationException("no operations specified");
 		}
 		if (isConfiguredForMixedValidation() || getResponseRootValidations() != null) {
-			throw new ConfigurationException("this validator does not support input/output processing in '1' element, configure an OutputValidator explicitly");
+			throw new ConfigurationException("this validator does not support input/output processing in '1' element, afterPropertiesSet an OutputValidator explicitly");
 		}
 		if (keystoreConfiguration.getResource() == null) {
 			throw new ConfigurationException("element [Keystore] must be specified");

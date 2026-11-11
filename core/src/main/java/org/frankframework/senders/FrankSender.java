@@ -129,7 +129,7 @@ import org.frankframework.util.MessageUtils;
  *
  * <h4>Using FrankSender to call an adapter from Larva tests</h4>
  * <p>
- * You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
+ * You can afterPropertiesSet a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
  * <ul>
  *     <li>If you leave the default scope as {@code ADAPTER}, then the {@code target} property needs to have both configuration name and adapter name, separated by a {@code /} character</li>
  *     <li>When scope is left as default, the receiver and JavaListener are skipped and no transaction is started unless it is set on the adapter's {@code PipeLine}</li>

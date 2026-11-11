@@ -268,7 +268,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		// We use double-checked locking here
 		// We're aware of the risks involved, but consider them
 		// to be acceptable since this method is invoked first time
-		// from 'configure', at which time only 1 single thread will
+		// from 'afterPropertiesSet', at which time only 1 single thread will
 		// access the JMS Facade instance.
 		if (messagingSource == null) {
 			synchronized (this) {

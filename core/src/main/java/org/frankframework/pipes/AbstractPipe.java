@@ -132,13 +132,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private IParameter ifParameter = null;
 
 	/**
-	 * <code>configure()</code> is called after the {@link PipeLine Pipeline} is registered
+	 * <code>afterPropertiesSet()</code> is called after the {@link PipeLine Pipeline} is registered
 	 * at the {@link Adapter Adapter}. The purpose of this method is to reduce
 	 * creating connections to databases, etc. in the {@link #doPipe(Message, PipeLineSession) doPipe()} method.
 	 * As much as possible, class instantiation should take place in the
-	 * {@code configure()} method to improve performance.
+	 * {@code afterPropertiesSet()} method to improve performance.
 	 */
-	// For testing purposes the configure method should not require the PipeLine to be present.
+	// For testing purposes the afterPropertiesSet method should not require the PipeLine to be present.
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();

@@ -113,7 +113,7 @@ public class EntityResolvingTest {
 //      instance.setSchemasProvider(new SchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
 //      instance.setIgnoreUnknownNamespaces(false);
 //      instance.setAddNamespaceToSchema(false);
-//      instance.configure("Setup");
+//      instance.afterPropertiesSet("Setup");
 //      String result=instance.validate(xmlIn, new PipeLineSessionBase(), "test");
 //      System.out.println("Validation Result:"+result);
 //      return instance.get

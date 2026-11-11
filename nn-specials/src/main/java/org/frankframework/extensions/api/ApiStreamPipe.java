@@ -94,7 +94,7 @@ public class ApiStreamPipe extends StreamPipe {
 			if (StringUtils.isEmpty(messageId)) {
 				throw new PipeRunException(this, "Could not find messageId in request [" + firstStringPart + "]");
 			}
-			// TODO: create dummyQuerySender should be put in configure(), but gives an error
+			// TODO: create dummyQuerySender should be put in afterPropertiesSet(), but gives an error
 			dummyQuerySender = createBean(FixedQuerySender.class);
 			dummyQuerySender.setDatasourceName(datasourceName);
 			dummyQuerySender.setQuery("SELECT count(*) FROM ALL_TABLES");

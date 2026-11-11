@@ -66,7 +66,7 @@ public abstract class AbstractMetricsRegistryConfigurator<C extends MeterRegistr
 				compositeRegistry.add(createRegistry(config));
 			}
 		} catch (Exception e) {
-			log.warn("Could not configure MeterRegistry [{}]", config.prefix(), e);
+			log.warn("Could not afterPropertiesSet MeterRegistry [{}]", config.prefix(), e);
 		}
 	}
 

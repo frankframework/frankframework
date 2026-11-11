@@ -67,7 +67,7 @@ public class TestConfiguration extends Configuration {
 			try {
 				configure();
 			} catch (ConfigurationException e) {
-				throw new IllegalStateException("unable to configure configuration", e);
+				throw new IllegalStateException("unable to afterPropertiesSet configuration", e);
 			}
 		}
 

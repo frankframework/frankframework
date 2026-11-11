@@ -34,7 +34,7 @@
 
 		<Pipeline firstPipe="forEachElement">
 			<ForEachChildElementPipe name="forEachElement" elementXPathExpression="/requests/request">
-				<ParallelSendersSender name="testje" maxConcurrentThreads="1"><!-- not the best solution but saves from having to configure a sub-adapter -->
+				<ParallelSendersSender name="testje" maxConcurrentThreads="1"><!-- not the best solution but saves from having to afterPropertiesSet a sub-adapter -->
 					<HttpSender name="myFirstHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param">
 						<param name="url_param" xpathExpression="concat($uri, '?nr=1')"> <!-- nr=1 using session=1 -->
 							<param name="uri" xpathExpression="*/@uri" />

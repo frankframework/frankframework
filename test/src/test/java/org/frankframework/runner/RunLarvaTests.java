@@ -111,7 +111,7 @@ public class RunLarvaTests {
 	private TestExecutionObserver testExecutionObserver;
 
 	/**
-	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
+	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually afterPropertiesSet the application
 	 */
 	@BeforeAll
 	static void setupBeforeAll() throws Exception {

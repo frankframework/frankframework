@@ -3,10 +3,8 @@ package org.frankframework.testutil;
 import java.net.URL;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 
 public class NullClassLoader extends AbstractClassLoader {
@@ -20,13 +18,13 @@ public class NullClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		if("ConfigWithNullClassLoader".equals(configurationName)) {
+	public void afterPropertiesSet() throws ClassLoaderException {
+		if("ConfigWithNullClassLoader".equals(getConfigurationName())) {
 			setReportLevel("INFO");
 			throw new ClassLoaderException("test-exception");
 		}
 
-		super.configure(ibisContext, configurationName);
+		super.afterPropertiesSet();
 	}
 
 	@Override

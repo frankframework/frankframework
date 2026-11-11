@@ -63,7 +63,7 @@ import org.frankframework.util.XmlEncodingUtils;
  *     {@link org.frankframework.pipes.ExceptionPipe}.
  * </p>
  * <p>
- *     If you need more control over the layout of the error message, then configure your {@link org.frankframework.core.Adapter} or
+ *     If you need more control over the layout of the error message, then afterPropertiesSet your {@link org.frankframework.core.Adapter} or
  *     {@link org.frankframework.configuration.Configuration} with an {@code ErrorMessageFormatter} implementation
  *     that can reformat the error message to the desired layout: the {@link XslErrorMessageFormatter} for XML error formats or the
  *     {@link DataSonnetErrorMessageFormatter} for JSON error messages.

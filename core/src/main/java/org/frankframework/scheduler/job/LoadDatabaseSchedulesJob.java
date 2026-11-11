@@ -133,7 +133,7 @@ public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 							try {
 								jobdef.configure();
 							} catch (ConfigurationException e) {
-								getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
+								getMessageKeeper().add("unable to afterPropertiesSet DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
 							}
 
 							// If the job is found, find out if it is different from the existing one and update if necessarily

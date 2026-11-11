@@ -55,7 +55,7 @@ public class FrankPluginManager extends DefaultPluginManager {
 
 	@Override
 	protected void initialize() {
-		// NO OP, this is called by the (constructor's) SUPER call, before we get the change to configure the PluginManager.
+		// NO OP, this is called by the (constructor's) SUPER call, before we get the change to afterPropertiesSet the PluginManager.
 	}
 
 	/**

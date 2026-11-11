@@ -49,7 +49,9 @@ public class ClassLoaderEntityResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.configure(null, "");
+		cl.setIbisContext(null);
+		cl.setConfigurationName("");
+		cl.afterPropertiesSet();
 
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(TestScopeProvider.wrap(cl));
 
@@ -70,7 +72,9 @@ public class ClassLoaderEntityResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.configure(null, "");
+		cl.setIbisContext(null);
+		cl.setConfigurationName("");
+		cl.afterPropertiesSet();
 
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(TestScopeProvider.wrap(cl));
 

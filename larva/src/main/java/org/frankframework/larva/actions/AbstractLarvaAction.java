@@ -108,7 +108,7 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Co
 		if (configurable instanceof ConfigurableLifecycle lifecycle) {
 			return lifecycle.isConfigured();
 		}
-		return false; // Assume false so configure it always called.
+		return false; // Assume false so afterPropertiesSet it always called.
 	}
 
 	public void invokeSetters(Properties properties) {

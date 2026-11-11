@@ -74,7 +74,7 @@ public class ApiListenerTest {
 	public void testContentTypes() throws ConfigurationException {
 		for(MediaTypes type : MediaTypes.values()) {
 			listener.setProduces(type);
-			listener.configure(); // Check if the media-type passes the 'configure' checks
+			listener.configure(); // Check if the media-type passes the 'afterPropertiesSet' checks
 
 			assertTrue(listener.getContentType().includes(type.getMimeType()));
 		}

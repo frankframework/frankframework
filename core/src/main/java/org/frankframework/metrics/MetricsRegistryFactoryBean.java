@@ -86,11 +86,11 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 			return null;
 		}
 
-		log.debug("using class [{}] to configure MeterRegistry [{}]", configuratorClassName, product);
+		log.debug("using class [{}] to afterPropertiesSet MeterRegistry [{}]", configuratorClassName, product);
 		try {
 			return ClassUtils.newInstance(configuratorClassName, AbstractMetricsRegistryConfigurator.class);
 		} catch (Exception e) {
-			log.warn("cannot configure MeterRegistry [{}]", product, e);
+			log.warn("cannot afterPropertiesSet MeterRegistry [{}]", product, e);
 		}
 		return null;
 	}

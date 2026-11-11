@@ -242,7 +242,7 @@ public class PipeLine extends ConfigurableApplicationContext implements ICacheEn
 
 			log.debug("configuring Pipe [{}]", pipe::getName);
 			if (pipe instanceof FixedForwardPipe ffPipe) {
-				// getSuccessForward will return null if it has not been set. See below configure(pipe)
+				// getSuccessForward will return null if it has not been set. See below afterPropertiesSet(pipe)
 				if (!ffPipe.hasRegisteredForward(PipeForward.SUCCESS_FORWARD_NAME)) {
 					int i2 = i + 1;
 					if (i2 < pipes.size()) {

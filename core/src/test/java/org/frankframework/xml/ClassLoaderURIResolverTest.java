@@ -176,7 +176,9 @@ public class ClassLoaderURIResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.configure(null, "");
+		cl.setIbisContext(null);
+		cl.setConfigurationName("");
+		cl.afterPropertiesSet();
 
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(TestScopeProvider.wrap(cl));
 
@@ -195,7 +197,9 @@ public class ClassLoaderURIResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.configure(null, "");
+		cl.setIbisContext(null);
+		cl.setConfigurationName("");
+		cl.afterPropertiesSet();
 
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(TestScopeProvider.wrap(cl));
 
@@ -239,7 +243,7 @@ public class ClassLoaderURIResolverTest {
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
 		cl.setBasePath(".");
-		cl.configure(null, "");
+		cl.afterPropertiesSet();
 		return TestScopeProvider.wrap(cl);
 	}
 }

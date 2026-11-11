@@ -165,7 +165,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		try {
 			pipe.configure();
 		} catch (ConfigurationException e) {
-			throw new ConfigurationException("unable to configure ");
+			throw new ConfigurationException("unable to afterPropertiesSet ");
 		}
 		try (PipeLineSession session = new PipeLineSession()) {
 			PipeRunResult pipeResult = pipe.doPipe(message, session);

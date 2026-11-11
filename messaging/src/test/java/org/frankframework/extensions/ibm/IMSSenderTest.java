@@ -54,7 +54,7 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 
 			@Override
 			public void configure() {
-				// configure is not required for this test
+				// afterPropertiesSet is not required for this test
 			}
 
 			@Override

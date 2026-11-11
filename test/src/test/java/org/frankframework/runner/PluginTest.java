@@ -36,7 +36,7 @@ class PluginTest {
 	private static FrankApplication frankApplication = null;
 
 	/**
-	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
+	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually afterPropertiesSet the application
 	 */
 	@BeforeAll
 	static void setup() throws IOException {

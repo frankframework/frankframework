@@ -20,6 +20,7 @@ import java.net.URL;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.SmartClassLoader;
 
 import org.frankframework.configuration.ClassLoaderException;
@@ -30,7 +31,7 @@ import org.frankframework.configuration.IbisContext;
  *
  * @author Niels Meijer
  */
-public interface IConfigurationClassLoader extends SmartClassLoader, DisposableBean {
+public interface IConfigurationClassLoader extends SmartClassLoader, DisposableBean, InitializingBean {
 
 	String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
@@ -40,11 +41,15 @@ public interface IConfigurationClassLoader extends SmartClassLoader, DisposableB
 
 	@Nullable URL getResource(@Nullable String name);
 
+	void setConfigurationName(@NonNull String configurationName);
+	void setIbisContext(@Nullable IbisContext ibisContext);
+
 	/**
 	 * Configure the {@link IConfigurationClassLoader}'s implementation
 	 * @throws ClassLoaderException when the {@link IConfigurationClassLoader}'s implementation cannot retrieve or load the configuration files
 	 */
-	void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException;
+	@Override
+	void afterPropertiesSet() throws ClassLoaderException;
 
 	/**
 	 * Retrieve the name of the configuration that uses this {@link IConfigurationClassLoader}
@@ -52,7 +57,7 @@ public interface IConfigurationClassLoader extends SmartClassLoader, DisposableB
 	@NonNull String getConfigurationName();
 
 	/**
-	 * Defines the log level for errors caused by the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method
+	 * Defines the log level for errors caused by the {@link #afterPropertiesSet() afterPropertiesSet} method
 	 * @param level ReportLevel in string format to be parsed by the ClassLoaderFactory digester
 	 */
 	void setReportLevel(@NonNull String level);

@@ -95,7 +95,7 @@ import org.frankframework.util.TimeProvider;
  * Storage structure is defined in the liquibase migration `/IAF_util/IAF_DatabaseChangelog.xml`. On startup, liquibase will try to create this structure
  * if not present already.
  * <br/><br/>
- * {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
+ * {@ff.warning When using an XA transaction manager like Narayana, make sure to afterPropertiesSet an XA-capable datasource
  * for the JdbcErrorStorage or JdbcMessageLog. Otherwise messages may get lost.}
  * {@ff.info N.B. Note on using XA transactions:
  * If transactions are used on Oracle, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.

@@ -240,7 +240,7 @@ public class ApiServiceDispatcher {
 	public void registerServiceClient(ApiListener listener) {
 		String uriPattern = listener.getCleanPattern();
 
-		// This is already checked in ApiListener#configure()
+		// This is already checked in ApiListener#afterPropertiesSet()
 		Objects.requireNonNull(uriPattern);
 
 		synchronized(patternClients) {

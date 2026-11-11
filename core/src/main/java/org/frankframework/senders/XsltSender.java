@@ -90,7 +90,7 @@ public class XsltSender extends AbstractSenderWithParameters {
 	private int transformerPoolMapSize = 100;
 
 	/**
-	 * The <code>configure()</code> method instantiates a transformer for the specified
+	 * The <code>afterPropertiesSet()</code> method instantiates a transformer for the specified
 	 * XSL. If the stylesheetName cannot be accessed, a ConfigurationException is thrown.
 	 */
 	@SuppressWarnings("removal")

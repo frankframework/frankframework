@@ -51,17 +51,17 @@ public class RecoverAdaptersJob extends AbstractJobDef {
 					if (adapterRunState==RunState.ERROR) { // If not previously configured, there is no point in trying to do this again.
 						log.debug("trying to recover adapter [{}]", adapter::getName);
 
-						if (!adapter.isConfigured()) { // This should only happen once, so only try to (re-)configure if it failed in the first place!
+						if (!adapter.isConfigured()) { // This should only happen once, so only try to (re-)afterPropertiesSet if it failed in the first place!
 							try {
 								adapter.configure();
 							} catch (ConfigurationException e) {
-								// log the warning and do nothing, it couldn't configure before, it still can't...
+								// log the warning and do nothing, it couldn't afterPropertiesSet before, it still can't...
 								log.warn("error configuring adapter [{}] while trying to recover", adapter.getName(), e);
 							}
 						}
 
 						if (adapter.isConfigured()) {
-							startAdapter = adapter.isAutoStartup(); // if configure has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
+							startAdapter = adapter.isAutoStartup(); // if afterPropertiesSet has succeeded and adapter was in state ERROR try to auto (re-)start the adapter
 						}
 
 						log.debug("finished recovering adapter[{}]", adapter::getName);
@@ -81,7 +81,7 @@ public class RecoverAdaptersJob extends AbstractJobDef {
 						countReceiver++;
 
 						RunState receiverRunState = receiver.getRunState();
-						// Only try to (re-)start receivers in a running adapter. Receiver configure is done in Adapter.configure
+						// Only try to (re-)start receivers in a running adapter. Receiver afterPropertiesSet is done in Adapter.afterPropertiesSet
 						if (adapterRunState==RunState.STARTED && (receiverRunState==RunState.ERROR || receiverRunState==RunState.EXCEPTION_STARTING) && receiver.isConfigured()) {
 							log.debug("trying to recover receiver [{}] of adapter [{}]", receiver::getName, adapter::getName);
 

@@ -62,7 +62,9 @@ public class ResolveConfigurationFileTest {
 
 		appConstants.setProperty("configurations."+getConfigurationName()+".classLoaderType", classLoader.getClass().getSimpleName());
 		IbisContext ibisContext = mock(IbisContext.class);
-		classLoader.configure(ibisContext, getConfigurationName());
+		classLoader.setIbisContext(ibisContext);
+		classLoader.setConfigurationName(getConfigurationName());
+		classLoader.afterPropertiesSet();
 	}
 	private String getConfigurationName() {
 		return configurationName;

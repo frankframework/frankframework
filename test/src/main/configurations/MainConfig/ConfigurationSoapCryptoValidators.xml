@@ -43,7 +43,7 @@
 				<Forward name="failure" path="InputValidationFailure" />
 			</CryptoSoapOutputValidator>
 
-			<!-- since we don't use the auto-wrap, explicitly configure the wrappers -->
+			<!-- since we don't use the auto-wrap, explicitly afterPropertiesSet the wrappers -->
 			<SoapInputWrapper direction="unwrap" />
 			<SoapOutputWrapper />
 

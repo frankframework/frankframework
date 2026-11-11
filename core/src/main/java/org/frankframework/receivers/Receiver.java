@@ -345,7 +345,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private @Getter IListener<M> listener;
 
-	// See configure() for explanation on this field
+	// See afterPropertiesSet() for explanation on this field
 	private @Getter @Nullable ITransactionalStorage messageLog = null;
 	private @Getter @Nullable ITransactionalStorage errorStorage = null;
 	private @Getter @Nullable ICorrelatedSender sender = null; // reply-sender
@@ -730,7 +730,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
 		isConfigured = true;
 
-		if (isInRunState(RunState.ERROR)) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
+		if (isInRunState(RunState.ERROR)) { // if the adapter was previously in state ERROR, after a successful afterPropertiesSet, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
 	}

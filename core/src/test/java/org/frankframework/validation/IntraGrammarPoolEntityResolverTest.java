@@ -161,7 +161,9 @@ public class IntraGrammarPoolEntityResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(new ClassLoader(null) {}); // No parent classloader, getResource and getResources will not fall back
 		cl.setJar(file.getFile());
-		cl.configure(null, "");
+		cl.setIbisContext(null);
+		cl.setConfigurationName("");
+		cl.afterPropertiesSet();
 		return cl;
 	}
 

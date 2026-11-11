@@ -18,7 +18,7 @@ package org.frankframework.cache;
 /**
  * Interface to be implemented by classes that could use a cache.
  * Implementers will be notified of a cache that is configured via setCache().
- * They must call cache.configure() once in their own configure() method
+ * They must call cache.afterPropertiesSet() once in their own afterPropertiesSet() method
  * They must call cache.open() and cache.close() from their own open() resp. close().
  *
  * @author  Gerrit van Brakel

@@ -22,7 +22,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.util.CredentialFactory;
 
 /**
- * Interface specifying method to configure a JMS receiver of some sort.
+ * Interface specifying method to afterPropertiesSet a JMS receiver of some sort.
  *
  * @author  Tim van der Leeuw
  * @since   4.8

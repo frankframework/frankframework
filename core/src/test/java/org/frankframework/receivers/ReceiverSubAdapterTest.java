@@ -60,7 +60,7 @@ public class ReceiverSubAdapterTest {
 
 	@BeforeEach
 	void setup() {
-		// Create a TestConfiguration and stop it so that we can configure new adapters in it
+		// Create a TestConfiguration and stop it so that we can afterPropertiesSet new adapters in it
 		configuration = new TestConfiguration(false);
 	}
 

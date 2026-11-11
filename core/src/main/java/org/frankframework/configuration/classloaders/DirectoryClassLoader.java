@@ -22,10 +22,8 @@ import java.net.URL;
 import java.nio.file.Path;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.util.ConfigurationUtils;
 
 public class DirectoryClassLoader extends AbstractClassLoader {
@@ -36,8 +34,8 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		super.configure(ibisContext, configurationName);
+	public void afterPropertiesSet() throws ClassLoaderException {
+		super.afterPropertiesSet();
 
 		if (directory == null) {
 			try {

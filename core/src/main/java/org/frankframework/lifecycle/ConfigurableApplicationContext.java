@@ -123,10 +123,10 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 
 		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
 		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
-			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
+			throw new ConfigurationException("wrong lifecycle processor found, unable to afterPropertiesSet beans");
 		}
 
-		// Trigger a configure on all (Configurable) Lifecycle beans
+		// Trigger a afterPropertiesSet on all (Configurable) Lifecycle beans
 		configurableLifecycle.configure();
 		isConfigured = true;
 	}

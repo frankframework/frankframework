@@ -55,7 +55,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	@Test
 	public void testReturnFixedDateFromSessionKey() throws Exception {
 		configureAndStartPipe();
-		// TODO : this field must be set before configure
+		// TODO : this field must be set before afterPropertiesSet
 		// but setting stub mod from AppConstants does not work
 		// because of not being singleton
 		pipe.setReturnFixedDate(true);
@@ -89,7 +89,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		pipe.setSessionKey("first");
 		pipe.setDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
 		configureAndStartPipe();
-		// TODO : this field must be set before configure
+		// TODO : this field must be set before afterPropertiesSet
 		// but setting stub mod from AppConstants does not work
 		// because of not being singleton
 		pipe.setReturnFixedDate(true);

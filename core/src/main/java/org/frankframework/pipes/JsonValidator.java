@@ -68,7 +68,7 @@ public class JsonValidator extends AbstractValidator {
 		try {
 			jsonSchema = getJsonSchema();
 		} catch (SchemaException | IOException |StreamReadException e) {
-			throw new ConfigurationException("unable to configure JsonValidator", e);
+			throw new ConfigurationException("unable to afterPropertiesSet JsonValidator", e);
 		}
 	}
 

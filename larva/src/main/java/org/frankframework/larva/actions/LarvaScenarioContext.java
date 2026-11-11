@@ -44,7 +44,8 @@ public class LarvaScenarioContext extends ConfigurableApplicationContext {
 		DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
 		directoryClassLoader.setDirectory(scenarioDirectory);
 		directoryClassLoader.setBasePath(".");
-		directoryClassLoader.configure(null, "LarvaTool");
+		directoryClassLoader.setConfigurationName("LarvaTool");
+		directoryClassLoader.afterPropertiesSet();
 		setClassLoader(directoryClassLoader);
 
 		setId("LarvaScenario");

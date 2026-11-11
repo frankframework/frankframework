@@ -46,7 +46,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 
 	@Override
 	public void configure() {
-		// Do not configure, also do not (re)configure owner
+		// Do not afterPropertiesSet, also do not (re)afterPropertiesSet owner
 	}
 
 	@NonNull

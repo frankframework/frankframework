@@ -78,7 +78,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		try {
 			p.configure();
 		} catch (ConfigurationException e) {
-			throw new BusException("Failed to configure message property ["+p.getName()+"]", e);
+			throw new BusException("Failed to afterPropertiesSet message property ["+p.getName()+"]", e);
 		}
 		return p;
 	}

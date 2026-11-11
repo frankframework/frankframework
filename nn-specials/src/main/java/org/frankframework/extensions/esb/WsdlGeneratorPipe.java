@@ -104,7 +104,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
 			directoryClassLoader.setDirectory(tempDirectoryBase.getPath());
 			directoryClassLoader.setBasePath(".");
-			directoryClassLoader.configure(null, "dummy");
+			directoryClassLoader.afterPropertiesSet();
 			Thread.currentThread().setContextClassLoader(directoryClassLoader);
 
 			if (propertiesFile.exists()) {

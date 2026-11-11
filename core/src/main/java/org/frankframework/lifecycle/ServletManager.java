@@ -209,7 +209,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		if(StringUtils.isNotEmpty(authenticatorName)) {
 			IAuthenticator authenticator = authenticators.get(authenticatorName);
 			if(authenticator == null) {
-				throw new IllegalStateException("unable to configure servlet security, authenticator ["+authenticatorName+"] does not exist");
+				throw new IllegalStateException("unable to afterPropertiesSet servlet security, authenticator ["+authenticatorName+"] does not exist");
 			}
 			authenticator.registerServlet(config);
 		}

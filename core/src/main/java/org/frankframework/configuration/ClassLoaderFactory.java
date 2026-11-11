@@ -85,7 +85,7 @@ public class ClassLoaderFactory {
 		if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
 			applyConfigurationProperties(configurationName, configurationClassLoader);
 			try {
-				configurationClassLoader.configure(ibisContext, configurationName);
+				configurationClassLoader.afterPropertiesSet();
 			} catch (ClassLoaderException ce) {
 				String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
 				switch (configurationClassLoader.getReportLevel()) {
@@ -107,6 +107,8 @@ public class ClassLoaderFactory {
 
 	@SuppressWarnings("java:S135") // Suppress warning for multiple continue statements in for loop
 	private void applyConfigurationProperties(@NonNull String configurationName, @NonNull IConfigurationClassLoader loader) throws ClassLoaderException {
+		loader.setConfigurationName(configurationName);
+		loader.setIbisContext(ibisContext);
 		String parentProperty = "configurations." + configurationName + ".";
 
 		for (Method method: loader.getClass().getMethods()) {

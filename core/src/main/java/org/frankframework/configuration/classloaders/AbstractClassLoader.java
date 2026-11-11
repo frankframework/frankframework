@@ -33,6 +33,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ClassLoaderException;
@@ -54,8 +55,8 @@ import org.frankframework.util.StreamUtil;
  */
 public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader {
 
-	private IbisContext ibisContext = null;
-	private String configurationName = null;
+	private @Getter @Setter IbisContext ibisContext = null;
+	private @Setter String configurationName = null;
 	private String configurationFile = ConfigurationUtils.DEFAULT_CONFIGURATION_FILE;
 
 	protected Logger log = LogUtil.getLogger(this);
@@ -77,9 +78,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		this.ibisContext = ibisContext;
-		this.configurationName = configurationName;
+	public void afterPropertiesSet() throws ClassLoaderException {
 
 		if (StringUtils.isEmpty(configurationFile)) {
 			throw new ClassLoaderException("unable to determine configurationFile");
@@ -146,7 +145,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 
 	/**
 	 * Only for internal use within ClassLoaders
-	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method is called
+	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link #afterPropertiesSet() afterPropertiesSet} method is called
 	 */
 	protected IbisManager getIbisManager() {
 		return ibisContext.getIbisManager();

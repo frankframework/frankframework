@@ -329,7 +329,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 	@Override
 	public void configure() throws ConfigurationException {
-		// Only create a new HttpContext when configure is called (which doesn't happen when using a SharedResource)
+		// Only create a new HttpContext when afterPropertiesSet is called (which doesn't happen when using a SharedResource)
 		defaultHttpClientContext = HttpClientContext.create();
 
 		if (getMaxConnections() <= 0) {
@@ -359,7 +359,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
 		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getCredentials().getUsername()) && StringUtils.isEmpty(getCredentials().getPassword())) {
-			// Should be unreachable since an exception would have been thrown at: authenticator.configure()
+			// Should be unreachable since an exception would have been thrown at: authenticator.afterPropertiesSet()
 			throw new ConfigurationException("To obtain an accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
 
@@ -572,7 +572,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	}
 
 	private void setupAuthentication(CredentialFactory proxyCredentials, HttpHost proxy, RequestConfig.Builder requestConfigBuilder) {
-		Assert.notNull(defaultHttpClientContext, "no HttpClientContext created during configure"); // This should be set in #configure()
+		Assert.notNull(defaultHttpClientContext, "no HttpClientContext created during afterPropertiesSet"); // This should be set in #afterPropertiesSet()
 
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		if (StringUtils.isNotEmpty(getCredentials().getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {

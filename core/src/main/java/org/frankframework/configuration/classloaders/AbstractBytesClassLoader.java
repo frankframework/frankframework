@@ -23,10 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 
 public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 
@@ -37,8 +35,8 @@ public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public final void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		super.configure(ibisContext, configurationName);
+	public final void afterPropertiesSet() throws ClassLoaderException {
+		super.afterPropertiesSet();
 		resources = loadResources();
 	}
 

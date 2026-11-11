@@ -60,7 +60,7 @@ public class OpenApiValidatorTest extends PipeTestBase<OpenApiValidator> {
 			pipe.setMethod("post");
 		}
 
-		// assert that a ConfigurationException is thrown when trying to configure the pipe without all mandatory values set
+		// assert that a ConfigurationException is thrown when trying to afterPropertiesSet the pipe without all mandatory values set
 		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 	}
 

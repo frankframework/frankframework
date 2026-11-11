@@ -64,7 +64,7 @@ public class LogUtil {
 	}
 
 	/**
-	 * Must be called during configure after setName has been set!
+	 * Must be called during afterPropertiesSet after setName has been set!
 	 */
 	public static Logger getMsgLogger(Adapter adapter) {
 		if(StringUtils.isEmpty(adapter.getName())) {
@@ -75,7 +75,7 @@ public class LogUtil {
 	}
 
 	/**
-	 * Must be called during configure after setName has been set!
+	 * Must be called during afterPropertiesSet after setName has been set!
 	 */
 	public static Logger getMsgLogger(Adapter adapter, HasName object) {
 		if(adapter == null || StringUtils.isEmpty(adapter.getName()) || StringUtils.isEmpty(object.getName())) {

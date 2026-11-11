@@ -23,7 +23,7 @@ import org.frankframework.doc.Forward;
 
 /**
  * Provides a base class for a Pipe that always has the same forward.
- * Subclasses should call <code>super.configure()</code> in their <code>configure()</code> methods.
+ * Subclasses should call <code>super.afterPropertiesSet()</code> in their <code>afterPropertiesSet()</code> methods.
  *
  * @author Gerrit van Brakel
  */

@@ -441,7 +441,7 @@ public class SoapWrapperPipeTest extends PipeTestBase<SoapWrapperPipe> {
 
 	@Test
 	void testWrapEmptyBodyWithSoapHeaderDoesNotApplyStylesheets() throws Exception {
-		// Arrange: configure pipe to wrap with a body stylesheet and a SOAP header from session
+		// Arrange: afterPropertiesSet pipe to wrap with a body stylesheet and a SOAP header from session
 		pipe.setSoapVersion(SoapVersion.SOAP11);
 		pipe.setDirection(Direction.WRAP);
 		pipe.setSoapHeaderStyleSheet("/Xslt/AnyXml/HeaderStylesheet.xsl");
