@@ -99,6 +99,27 @@ public class PropertyLoader extends Properties {
 		}
 	}
 
+	/**
+	 * Get a new {@link Properties} instance that contains a subset of the properties in the original instance, filtered
+	 * by the keyBase prefix, and with that prefix removed.
+	 *
+	 * @param properties Original {@link Properties} to filter
+	 * @param keyBase Base property name on which to filter. Should end with a {@code .} and if it doesn't, a {@code .} is appended.
+	 * @return New {@link Properties} instance with only the filtered properties, the {@code keyBase} prefix removed.
+	 */
+	public static Properties getSubProperties(Properties properties, String keyBase) {
+		final String propertyPrefix = keyBase + (!keyBase.endsWith(".") ? "." : "");
+
+		Properties filteredProperties = new Properties();
+		for (String key: properties.stringPropertyNames()) {
+			if (key.startsWith(propertyPrefix)) {
+				filteredProperties.put(key.substring(propertyPrefix.length()), properties.get(key));
+			}
+		}
+
+		return filteredProperties;
+	}
+
 	@Override
 	@Nullable
 	public synchronized String get(Object key) {

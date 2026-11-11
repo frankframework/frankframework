@@ -129,14 +129,14 @@ public final class AppConstants extends PropertyLoader {
 	/**
 	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
 	 */
-	public Properties getAppConstants(String keyBase) {
+	public static Properties getAppConstants(String keyBase) {
 		return getAppConstants(keyBase, true, true);
 	}
 
 	/**
 	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
 	 */
-	public Properties getAppConstants(String keyBase, boolean useSystemProperties, boolean useEnvironmentVariables) {
+	public static Properties getAppConstants(String keyBase, boolean useSystemProperties, boolean useEnvironmentVariables) {
 		final String propertyPrefix = keyBase + (!keyBase.endsWith(".") ? "." : "");
 
 		AppConstants constants = getInstance();

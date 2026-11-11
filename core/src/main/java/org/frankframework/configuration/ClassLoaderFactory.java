@@ -16,11 +16,12 @@
 package org.frankframework.configuration;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.BeansException;
 import org.springframework.lang.Contract;
 
 import lombok.extern.log4j.Log4j2;
@@ -31,7 +32,8 @@ import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.StringUtil;
+import org.frankframework.util.PropertyLoader;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Loads a ClassLoader on a per Configuration basis. It is possible to specify the ClassLoader type and to make
@@ -78,75 +80,53 @@ public class ClassLoaderFactory {
 			throw new ClassLoaderException("invalid classLoaderType ["+clas.getCanonicalName()+"]", e);
 		}
 		log.debug("successfully instantiated classloader [{}] with parent classloader [{}]", () -> ClassUtils.nameOf(classLoader), () -> ClassUtils.nameOf(parentClassLoader));
-		// Register any classloader regardless if it's a ConfigurationClassLoader or not
+		// Register classloader with LeakDetector
 		ClassLoadingLeakDetector.registerClassLoader(configurationName, classLoader);
 
-
-		if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
-			applyConfigurationProperties(configurationName, configurationClassLoader);
-			try {
-				configurationClassLoader.afterPropertiesSet();
-			} catch (ClassLoaderException ce) {
-				String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
-				switch (configurationClassLoader.getReportLevel()) {
-					case DEBUG -> log.debug(msg, ce);
-					case INFO -> ibisContext.log(msg, MessageEventLevel.INFO, ce);
-					case WARN -> ApplicationWarnings.add(log, msg, ce);
-					case ERROR -> throw ce;
-					case null -> throw ce; // NULL cannot really happen but this makes Codacy happy
-				}
-
-				// Break here, we cannot continue when there are ConfigurationExceptions!
-				return null;
+		try {
+			applyConfigurationProperties(configurationName, classLoader);
+		} catch (ClassLoaderException | RuntimeException ce) {
+			String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
+			switch (getReportLevel(classLoader)) {
+				case DEBUG -> log.debug(msg, ce);
+				case INFO -> ibisContext.log(msg, MessageEventLevel.INFO, ce);
+				case WARN -> ApplicationWarnings.add(log, msg, ce);
+				case ERROR -> throw ce;
+				case null -> throw ce;
 			}
-			log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
+
+			// Break here, we cannot continue when there are ConfigurationExceptions!
+			return null;
 		}
+		log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
+
 
 		return classLoader;
 	}
 
-	@SuppressWarnings("java:S135") // Suppress warning for multiple continue statements in for loop
-	private void applyConfigurationProperties(@NonNull String configurationName, @NonNull IConfigurationClassLoader loader) throws ClassLoaderException {
-		loader.setConfigurationName(configurationName);
-		loader.setIbisContext(ibisContext);
-		String parentProperty = "configurations." + configurationName + ".";
-
-		for (Method method: loader.getClass().getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
-				continue;
-
-			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = appConstants.getProperty(parentProperty+setter);
-			if (value == null)
-				continue;
-
-			// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
-			Object castValue = getCastValue(method.getParameterTypes()[0], value);
-			log.debug("trying to set property [{}{}] with value [{}] of type [{}] on [{}]", parentProperty, setter, value, castValue.getClass()
-					.getCanonicalName(), ClassUtils.nameOf(loader));
-
-			try {
-				method.invoke(loader, castValue);
-			} catch (Exception e) {
-				throw new ClassLoaderException("error while calling method ["+setter+"] on classloader ["+ClassUtils.nameOf(loader)+"]", e);
-			}
+	private static IConfigurationClassLoader. @Nullable ReportLevel getReportLevel(ClassLoader classLoader) {
+		if (classLoader instanceof IConfigurationClassLoader configurationClassLoader) {
+			return configurationClassLoader.getReportLevel();
 		}
+		return null;
 	}
 
-	private @NonNull Object getCastValue(@NonNull Class<?> class1, @NonNull String value) {
-		String className = class1.getName().toLowerCase();
-		return switch (className) {
-			case "boolean" -> Boolean.parseBoolean(value.trim());
-			case "int", "integer" -> Integer.parseInt(value.trim());
-			case "long" -> Long.parseLong(value.trim());
-			default -> value;
-		};
+	private void applyConfigurationProperties(@NonNull String configurationName, @NonNull ClassLoader loader) throws ClassLoaderException {
+		String parentProperty = "configurations." + configurationName + ".";
+		Properties subProperties = PropertyLoader.getSubProperties(appConstants, parentProperty);
+		subProperties.setProperty("configurationName", configurationName);
+		ClassUtils.invokeSetters(loader, subProperties);
+		try {
+			SpringUtils.autowireByType(ibisContext.getApplicationContext(), loader);
+		} catch (BeansException | IllegalStateException e) {
+			log.error("error configuring ClassLoader for configuration [{}]", configurationName, e);
+			throw new ClassLoaderException(e);
+		}
+
 	}
 
 	public @Nullable ClassLoader createClassLoader(@NonNull String configurationName, @Nullable Class<? extends  ClassLoader> defaultClassLoaderType, @Nullable Configuration parentConfiguration) throws ClassLoaderException {
-
 		Class<? extends ClassLoader> actualClassLoaderType = getClassLoaderType(configurationName, defaultClassLoaderType);
-
 		return createClassLoader(configurationName, actualClassLoaderType, parentConfiguration != null ? parentConfiguration.getClassLoader() : classPathClassLoader);
 	}
 
