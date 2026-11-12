@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +23,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
@@ -155,7 +153,6 @@ public class ConfigurationAutoDiscoveryTest {
 	public void findConfiguration() throws ClassLoaderException {
 		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); // Add ability to retrieve classes from src/test/resources
 		JarFileClassLoader cl = new JarFileClassLoader(classLoader);
-		IbisContext ibisContext = mock(IbisContext.class);
 		cl.setConfigurationName("JarConfig1");
 		cl.afterPropertiesSet();
 		assertNotNull(cl.getResource("Configuration.xml"));
