@@ -26,7 +26,7 @@ import org.springframework.core.SmartClassLoader;
 import org.frankframework.configuration.ClassLoaderException;
 
 /**
- * Interface for FrankFramework Configuration ClassLoaders.
+ * Interface for Frank!Framework Configuration ClassLoaders.
  *
  * @author Niels Meijer
  */

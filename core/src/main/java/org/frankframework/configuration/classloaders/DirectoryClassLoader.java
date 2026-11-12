@@ -23,11 +23,13 @@ import java.nio.file.Path;
 
 import org.jspecify.annotations.NonNull;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.util.ConfigurationUtils;
 
 public class DirectoryClassLoader extends AbstractClassLoader {
-	private File directory = null;
+	private @Getter File directory = null;
 
 	public DirectoryClassLoader(ClassLoader parent) {
 		super(parent);
@@ -61,7 +63,7 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 	 * Classes should be placed on the classpath (eg. src/main/resources).
 	 */
 	@Override
-	protected boolean getAllowCustomClasses() {
+	public boolean isAllowCustomClasses() {
 		return false;
 	}
 
@@ -75,10 +77,6 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 			throw new ClassLoaderException("directory ["+directory+"] not found");
 
 		this.directory = dir;
-	}
-
-	public File getDirectory() {
-		return this.directory;
 	}
 
 	@Override
