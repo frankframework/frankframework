@@ -15,7 +15,6 @@
 */
 package org.frankframework.encryption;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -77,7 +76,7 @@ public class AuthSSLContextFactory {
 		}
 	}
 
-	public static SSLSocketFactory createSSLSocketFactory(HasKeystore keystoreOwner, HasTruststore truststoreOwner, String protocol) throws GeneralSecurityException, IOException {
+	public static SSLSocketFactory createSSLSocketFactory(HasKeystore keystoreOwner, HasTruststore truststoreOwner, String protocol) throws GeneralSecurityException {
 		AuthSSLContextFactory sslContextFactory = new AuthSSLContextFactory(keystoreOwner, truststoreOwner, protocol);
 		return sslContextFactory.getSSLSocketFactory();
 	}

@@ -29,7 +29,7 @@ public class FixedQuerySenderOpenBlockTest {
 	}
 
 	@AfterEach
-	public void tearDown() throws SQLException {
+	public void tearDown() {
 		session.close();
 	}
 
