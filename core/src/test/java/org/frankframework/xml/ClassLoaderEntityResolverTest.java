@@ -49,7 +49,6 @@ public class ClassLoaderEntityResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.setIbisContext(null);
 		cl.setConfigurationName("");
 		cl.afterPropertiesSet();
 
@@ -72,7 +71,6 @@ public class ClassLoaderEntityResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.setIbisContext(null);
 		cl.setConfigurationName("");
 		cl.afterPropertiesSet();
 

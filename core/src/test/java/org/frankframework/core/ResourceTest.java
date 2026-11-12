@@ -188,7 +188,6 @@ public class ResourceTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.setIbisContext(null);
 		cl.setConfigurationName("");
 		cl.afterPropertiesSet();
 		return TestScopeProvider.wrap(cl);

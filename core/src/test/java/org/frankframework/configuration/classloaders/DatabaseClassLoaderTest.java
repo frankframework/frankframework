@@ -63,7 +63,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		DatabaseClassLoader cl = new DatabaseClassLoader(parent);
 		cl.setApplicationContext(applicationContext);
 		cl.setConfigurationName(getConfigurationName());
-		cl.setIbisContext(ibisContext);
 		cl.afterPropertiesSet();
 		return cl;
 	}
@@ -113,7 +112,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 		doAnswer(invocation -> {
 			org.frankframework.configuration.classloaders.IConfigurationClassLoader classLoader = invocation.getArgument(0);
-			classLoader.setIbisContext(ibisContext);
 			classLoader.setConfigurationName("");
 			if (classLoader instanceof DatabaseClassLoader databaseClassLoader) {
 				databaseClassLoader.setApplicationContext(applicationContext);

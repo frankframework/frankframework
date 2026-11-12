@@ -23,8 +23,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.jspecify.annotations.Nullable;
 
+import lombok.Setter;
+
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.IbisManager;
 import org.frankframework.management.Action;
 
 /**
@@ -36,6 +39,7 @@ import org.frankframework.management.Action;
  */
 public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
+	private @Setter IbisManager ibisManager;
 	private ScheduledThreadPoolExecutor executor;
 	private ScheduledFuture<?> future;
 
@@ -49,7 +53,9 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	@Override
 	public void afterPropertiesSet() throws ClassLoaderException {
 		super.afterPropertiesSet();
-
+		if (ibisManager == null) {
+			throw new IllegalStateException("IbisManager is null");
+		}
 		createTaskExecutor();
 
 		lastScanTime = System.currentTimeMillis();
@@ -126,7 +132,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 		File[] files = getDirectory().listFiles();
 		if (hasBeenModified(files)) {
 			log.debug("detected file change, reloading configuration");
-			getIbisManager().handleAction(Action.RELOAD, getConfigurationName(), null, null, toString(), false);
+			ibisManager.handleAction(Action.RELOAD, getConfigurationName(), null, null, toString(), false);
 		}
 		lastScanTime = scanTime;
 	}

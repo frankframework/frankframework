@@ -24,7 +24,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.SmartClassLoader;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 
 /**
  * Interface for IBIS Configuration ClassLoaders.
@@ -42,7 +41,6 @@ public interface IConfigurationClassLoader extends SmartClassLoader, DisposableB
 	@Nullable URL getResource(@Nullable String name);
 
 	void setConfigurationName(@NonNull String configurationName);
-	void setIbisContext(@Nullable IbisContext ibisContext);
 
 	/**
 	 * Configure the {@link IConfigurationClassLoader}'s implementation

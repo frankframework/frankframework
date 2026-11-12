@@ -170,7 +170,6 @@ public class WebContentServletTest {
 				return "TestBytesClassLoader";
 			}
 		};
-		classLoader.setIbisContext(null);
 		classLoader.setConfigurationName("");
 		classLoader.afterPropertiesSet();
 		return classLoader;

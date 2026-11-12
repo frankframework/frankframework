@@ -25,6 +25,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
@@ -76,7 +77,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 
 	@BeforeAll
 	public static void before() throws Exception {
-		mockDatabase();
+		mockApplicationContext();
 	}
 
 	@AfterAll
@@ -123,7 +124,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 		factory = new ClassLoaderFactory(ibisContext);
 	}
 
-	private static void mockDatabase() throws Exception {
+	private static void mockApplicationContext() throws Exception {
 		// Mock a FixedQuerySender
 		JmsRealm jmsRealm = spy(new JmsRealm());
 		jmsRealm.setDatasourceName("fake");
@@ -154,10 +155,12 @@ public class ClassLoaderFactoryTest extends Mockito {
 		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		doAnswer(invocation -> {
 			org.frankframework.configuration.classloaders.IConfigurationClassLoader classLoader = invocation.getArgument(0);
-			classLoader.setIbisContext(ibisContext);
 			classLoader.setConfigurationName("");
 			if (classLoader instanceof ApplicationContextAware applicationContextAware) {
 				applicationContextAware.setApplicationContext(applicationContext);
+			}
+			if (classLoader instanceof ScanningDirectoryClassLoader sdcl) {
+				sdcl.setIbisManager(ibisManager);
 			}
 			classLoader.afterPropertiesSet();
 			return classLoader;

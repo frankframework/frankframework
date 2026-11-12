@@ -100,7 +100,6 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");
 
 			appConstants.setProperty("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
-			classLoader.setIbisContext(ibisContext);
 			classLoader.setConfigurationName("myConfig");
 			classLoader.afterPropertiesSet();
 

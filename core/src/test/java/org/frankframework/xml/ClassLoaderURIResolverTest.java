@@ -176,7 +176,6 @@ public class ClassLoaderURIResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.setIbisContext(null);
 		cl.setConfigurationName("");
 		cl.afterPropertiesSet();
 
@@ -197,7 +196,6 @@ public class ClassLoaderURIResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(localClassLoader);
 		cl.setJar(file.getFile());
-		cl.setIbisContext(null);
 		cl.setConfigurationName("");
 		cl.afterPropertiesSet();
 

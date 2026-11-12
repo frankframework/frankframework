@@ -68,7 +68,6 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 		String key = "configurations."+getConfigurationName()+".classLoaderType";
 		appConstants.setProperty(key, classLoader.getClass().getSimpleName());
-		classLoader.setIbisContext(ibisContext);
 		classLoader.setConfigurationName(getConfigurationName());
 		classLoader.afterPropertiesSet();
 	}
@@ -248,7 +247,6 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 		String key = "configurations."+getConfigurationName()+".classLoaderType";
 		appConstants.setProperty(key, classLoader.getClass().getSimpleName());
-		classLoader.setIbisContext(ibisContext);
 		classLoader.setConfigurationName(getConfigurationName());
 		classLoader.afterPropertiesSet();
 

@@ -37,8 +37,6 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.configuration.IbisManager;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -55,7 +53,6 @@ import org.frankframework.util.StreamUtil;
  */
 public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader {
 
-	private @Getter @Setter IbisContext ibisContext = null;
 	private @Setter String configurationName = null;
 	private String configurationFile = ConfigurationUtils.DEFAULT_CONFIGURATION_FILE;
 
@@ -141,14 +138,6 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 	public void setConfigurationFile(String configurationFile) {
 		this.configurationFile = configurationFile;
-	}
-
-	/**
-	 * Only for internal use within ClassLoaders
-	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link #afterPropertiesSet() afterPropertiesSet} method is called
-	 */
-	protected IbisManager getIbisManager() {
-		return ibisContext.getIbisManager();
 	}
 
 	@Override
