@@ -63,6 +63,7 @@ import org.frankframework.util.SpringUtils;
  * @author  Peter Leeuwenburgh
  * @author  Jaco de Groot
  */
+@SuppressWarnings({ "SqlSourceToSinkFlow", "java:S2077" }) // No actual real SQL injection issues here
 @Log4j2
 public class ConfigurationUtils {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
