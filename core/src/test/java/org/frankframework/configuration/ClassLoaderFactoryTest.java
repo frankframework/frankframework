@@ -155,7 +155,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
 		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		doAnswer(invocation -> {
-			org.frankframework.configuration.classloaders.IConfigurationClassLoader classLoader = invocation.getArgument(0);
+			IConfigurationClassLoader classLoader = invocation.getArgument(0);
 			classLoader.setConfigurationName("");
 			if (classLoader instanceof ApplicationContextAware applicationContextAware) {
 				applicationContextAware.setApplicationContext(applicationContext);

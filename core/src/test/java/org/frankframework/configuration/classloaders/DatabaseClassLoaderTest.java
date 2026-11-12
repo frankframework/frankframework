@@ -111,7 +111,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
 		doAnswer(invocation -> {
-			org.frankframework.configuration.classloaders.IConfigurationClassLoader classLoader = invocation.getArgument(0);
+			IConfigurationClassLoader classLoader = invocation.getArgument(0);
 			classLoader.setConfigurationName("");
 			if (classLoader instanceof DatabaseClassLoader databaseClassLoader) {
 				databaseClassLoader.setApplicationContext(applicationContext);
