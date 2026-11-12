@@ -25,6 +25,7 @@ import java.util.Map;
 import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.util.ClassLoaderUtils;
 
 public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 
@@ -46,7 +47,7 @@ public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 		if (resource != null) {
 			try {
 				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(resource);
-				URI uri = URI.create(CLASSPATH_RESOURCE_SCHEME + name);
+				URI uri = URI.create(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME + name);
 				return URL.of(uri, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);

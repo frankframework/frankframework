@@ -69,7 +69,7 @@ public class ClassLoaderFactory {
 		}
 	}
 
-	private @Nullable ClassLoader createClassLoader(@NonNull String configurationName, @NonNull Class<? extends ClassLoader> clas, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
+	public @Nullable ClassLoader createClassLoader(@NonNull String configurationName, @NonNull Class<? extends ClassLoader> clas, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
 		final ClassLoader classLoader;
 		try {
 			Constructor<?> con = ClassUtils.getConstructorOnType(clas, new Class[] {ClassLoader.class});

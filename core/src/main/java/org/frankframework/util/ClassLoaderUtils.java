@@ -30,10 +30,11 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.IScopeProvider;
 
 public class ClassLoaderUtils {
+
+	public static final String CLASSPATH_RESOURCE_SCHEME="classpath:";
 
 	private ClassLoaderUtils() {
 		throw new IllegalStateException("Don't construct utility class");
@@ -82,8 +83,8 @@ public class ClassLoaderUtils {
 		}
 
 		String resourceToUse = resource; // Don't change the original resource name for logging purposes
-		if (resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME)) {
-			resourceToUse = resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length());
+		if (resource.startsWith(CLASSPATH_RESOURCE_SCHEME)) {
+			resourceToUse = resource.substring(CLASSPATH_RESOURCE_SCHEME.length());
 		}
 
 		// Remove slash like Class.getResource(String name) is doing before delegation to ClassLoader.

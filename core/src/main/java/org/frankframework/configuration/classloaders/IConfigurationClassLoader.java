@@ -32,8 +32,6 @@ import org.frankframework.configuration.ClassLoaderException;
  */
 public interface IConfigurationClassLoader extends SmartClassLoader, DisposableBean, InitializingBean {
 
-	String CLASSPATH_RESOURCE_SCHEME="classpath:";
-
 	enum ReportLevel {
 		DEBUG, INFO, WARN, ERROR;
 	}
