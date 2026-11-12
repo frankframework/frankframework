@@ -26,7 +26,7 @@ import org.springframework.core.SmartClassLoader;
 import org.frankframework.configuration.ClassLoaderException;
 
 /**
- * Interface for IBIS Configuration ClassLoaders.
+ * Interface for FrankFramework Configuration ClassLoaders.
  *
  * @author Niels Meijer
  */
@@ -38,9 +38,22 @@ public interface IConfigurationClassLoader extends SmartClassLoader, DisposableB
 		DEBUG, INFO, WARN, ERROR;
 	}
 
+	/**
+	 * Get URL of a resource within this Configuration ClassLoader
+	 * @param name path to resource, may not be an absolute path
+	 * @return Classpath resource URL, or null
+	 */
 	@Nullable URL getResource(@Nullable String name);
 
+	/**
+	 * Set the name of the configuration for which this is the ClassLoader
+	 */
 	void setConfigurationName(@NonNull String configurationName);
+
+	/**
+	 * Retrieve the name of the configuration that uses this {@link IConfigurationClassLoader}
+	 */
+	@NonNull String getConfigurationName();
 
 	/**
 	 * Configure the {@link IConfigurationClassLoader}'s implementation
@@ -48,11 +61,6 @@ public interface IConfigurationClassLoader extends SmartClassLoader, DisposableB
 	 */
 	@Override
 	void afterPropertiesSet() throws ClassLoaderException;
-
-	/**
-	 * Retrieve the name of the configuration that uses this {@link IConfigurationClassLoader}
-	 */
-	@NonNull String getConfigurationName();
 
 	/**
 	 * Defines the log level for errors caused by the {@link #afterPropertiesSet() afterPropertiesSet} method
