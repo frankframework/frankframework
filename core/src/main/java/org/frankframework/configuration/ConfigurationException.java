@@ -18,7 +18,7 @@ package org.frankframework.configuration;
 import org.frankframework.core.IbisException;
 
 /**
- * Exception thrown by ConfigurationDigester and afterPropertiesSet()-methods, signaling the configuration
+ * Exception thrown by ConfigurationDigester and configure()-methods, signaling the configuration
  * did not succeed.
  *
  * @author Johan Verrips

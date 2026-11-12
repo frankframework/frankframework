@@ -400,8 +400,8 @@ public class IbisContext extends IbisApplicationContext {
 
 			LOG.info("configured configuration [{}] successfully", currentConfigurationName);
 		} catch (ConfigurationException e) {
-			// Unable to afterPropertiesSet, but able to create configuration.
-			LOG.error("unable to afterPropertiesSet configuration [{}]", currentConfigurationName, e);
+			// Unable to configure, but able to create configuration.
+			LOG.error("unable to configure configuration [{}]", currentConfigurationName, e);
 		} catch (Exception e) {
 			// Something is wrong, unable to create configuration.
 			assert configuration != null; // Different code analysis tools have different results for wether `configuration` can be null here or not; overall it cannot be but we make the assert to satisfy all tools.

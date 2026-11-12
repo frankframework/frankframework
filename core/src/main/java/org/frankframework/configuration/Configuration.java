@@ -114,7 +114,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	}
 
 	/**
-	 * Spring's afterPropertiesSet method.
+	 * Spring's configure method.
 	 * Only called when the Configuration has been added through a parent context!
 	 */
 	@Override
@@ -209,10 +209,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			ConfigurationDigester configurationDigester = getBean(ConfigurationDigester.class);
 			configurationDigester.digest();
 
-			// Trigger a afterPropertiesSet on all (Configurable) Lifecycle beans
+			// Trigger a configure on all (Configurable) Lifecycle beans
 			LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
 			if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
-				throw new ConfigurationException("wrong lifecycle processor found, unable to afterPropertiesSet beans");
+				throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 			}
 
 			configurableLifecycle.configure();
