@@ -47,7 +47,7 @@ import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
- * Locker element for scheduler jobs, the Pipeline and pipes.
+ * Locker element for {@link org.frankframework.scheduler.ScheduleManager scheduler jobs}, the {@link org.frankframework.core.PipeLine Pipeline} and Pipes.
  * <p>
  * Tries to set a lock (by inserting a record in the database table IBISLOCK) and only if this is done
  * successfully the job is executed.
@@ -59,11 +59,11 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  * This allows for permanent locks to be executed once per day, week, month or year.
  *
  * @ff.info The IBISLOCK table should always exist. If it does not exist, and {@literal isIgnoreTableNotExist} has been set, the process will continue as if the lock was obtained.
- * @ff.info The IBISLOCK table is automatically cleaned up by purging expired locks. The cleanup process is executed by the {@literal CleanupDatabaseJob} job.
+ * @ff.info The IBISLOCK table is automatically cleaned up by purging expired locks. The cleanup process is executed by the {@link org.frankframework.scheduler.job.CleanupDatabaseJob CleanupDatabaseJob}.
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Locker extends JdbcFacade implements HasTransactionAttribute {
-	private static final String LOCK_IGNORED="%null%";
+	private static final String LOCK_IGNORED = "%null%";
 	private static final String LOCK_OBJECT_QUERY = "INSERT INTO IBISLOCK (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
 	private static final String UNLOCK_OBJECT_QUERY = "DELETE FROM IBISLOCK WHERE objectId=?";
 	private static final String CHECK_OBJECT_LOCK_QUERY = "SELECT type, host, creationDate, expiryDate FROM IBISLOCK WHERE objectId=?";
