@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
 import lombok.Getter;
 
 import org.frankframework.stream.Message;
-import org.frankframework.util.PropertyLoader;
+import org.frankframework.util.PropertyUtil;
 import org.frankframework.util.StringResolver;
 
 /**
@@ -111,7 +111,7 @@ public class Step implements Comparable<Step> {
 	}
 
 	public Properties getStepParameters() {
-		return PropertyLoader.getSubProperties(scenario.getProperties(), baseKey);
+		return PropertyUtil.getSubProperties(scenario.getProperties(), baseKey);
 	}
 
 	@Override

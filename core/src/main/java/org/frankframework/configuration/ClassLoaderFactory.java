@@ -33,7 +33,7 @@ import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.PropertyLoader;
+import org.frankframework.util.PropertyUtil;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -186,7 +186,7 @@ public class ClassLoaderFactory {
 
 	private @NonNull Properties getConfigurationProperties(@NonNull String configurationName) {
 		String parentProperty = "configurations." + configurationName + ".";
-		Properties subProperties = PropertyLoader.getSubProperties(appConstants, parentProperty);
+		Properties subProperties = PropertyUtil.getSubProperties(appConstants, parentProperty);
 		subProperties.setProperty("configurationName", configurationName);
 		return subProperties;
 	}
