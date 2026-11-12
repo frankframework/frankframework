@@ -155,7 +155,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 	/**
 	 * This test makes sure that when the config can't be found, it throws an ConfigurationException
-	 * @throws Exception
 	 */
 	@Test
 	public void testExceptionHandlingERROR() throws Exception {
@@ -163,11 +162,12 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 		String key = "configurations."+getConfigurationName()+".reportLevel";
 		appConstants.setProperty(key, "ERROR");
-		ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
+		ClassLoaderFactory factory = new ClassLoaderFactory();
+		factory.setIbisContext(ibisContext);
 		ClassLoader config = null;
 		boolean makeSureAnExceptionIsThrown = false;
 		try {
-			config = manager.createClassLoader(getConfigurationName(), null, null);
+			config = factory.createClassLoader(getConfigurationName(), null, null);
 		} catch (ClassLoaderException e) {
 			String msg = e.getMessage();
 			assertTrue(msg.startsWith("Could not get config"));
@@ -191,8 +191,9 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "DEBUG");
-			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
-			ClassLoader config = manager.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
+			ClassLoaderFactory factory = new ClassLoaderFactory();
+			factory.setIbisContext(ibisContext);
+			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
@@ -221,8 +222,9 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "INFO");
-			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
-			ClassLoader config = manager.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
+			ClassLoaderFactory factory = new ClassLoaderFactory();
+			factory.setIbisContext(ibisContext);
+			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
@@ -252,8 +254,9 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "WARN");
-			ClassLoaderFactory manager = new ClassLoaderFactory(ibisContext);
-			ClassLoader config = manager.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
+			ClassLoaderFactory factory = new ClassLoaderFactory();
+			factory.setIbisContext(ibisContext);
+			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);

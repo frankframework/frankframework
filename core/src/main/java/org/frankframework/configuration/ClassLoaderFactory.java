@@ -23,6 +23,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.lang.Contract;
 
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.classloaders.ClassLoadingLeakDetector;
@@ -49,10 +50,9 @@ public class ClassLoaderFactory {
 	// Cannot make this static final because of tests
 	private final AppConstants appConstants = AppConstants.getInstance();
 	private final ClassLoader classPathClassLoader;
-	private IbisContext ibisContext;
+	private @Setter IbisContext ibisContext;
 
-	public ClassLoaderFactory(IbisContext ibisContext) {
-		this.ibisContext = ibisContext;
+	public ClassLoaderFactory() {
 		classPathClassLoader = Thread.currentThread().getContextClassLoader();
 	}
 

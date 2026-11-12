@@ -47,6 +47,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.flow.FlowDiagramManager;
 
 /**
@@ -112,10 +113,9 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.debug("Created Ibis Application Context");
 
 			ibisManager = getBean("ibisManager");
-			ibisManager.setIbisContext(this);
 			LOG.debug("Loaded IbisManager Bean");
 
-			classLoaderFactory = new ClassLoaderFactory(this);
+			classLoaderFactory = SpringUtils.createBean(getApplicationContext());
 
 			try {
 				flowDiagramManager = getBean("flowDiagramManager"); // The FlowDiagramManager should always initialize.
