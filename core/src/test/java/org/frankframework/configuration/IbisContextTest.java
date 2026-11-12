@@ -41,7 +41,7 @@ public class IbisContextTest {
 
 	private AppConstants appConstants;
 
-	private static final class IbisTestContext extends IbisContext {
+	public static final class IbisTestContext extends IbisContext {
 		private final Map<String, Class<? extends ClassLoader>> configurations = new HashMap<>();
 
 		public IbisTestContext() {

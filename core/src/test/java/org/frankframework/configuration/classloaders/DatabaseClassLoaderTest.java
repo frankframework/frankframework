@@ -31,7 +31,6 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -62,8 +61,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 		DatabaseClassLoader cl = new DatabaseClassLoader(parent);
 		cl.setApplicationContext(applicationContext);
-		cl.setConfigurationName(getConfigurationName());
-		cl.afterPropertiesSet();
 		return cl;
 	}
 
@@ -86,7 +83,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 	private ApplicationContext mockDatabase(boolean throwException) throws Exception {
 		// Mock a FixedQuerySender
-		FixedQuerySender fq = mock(FixedQuerySender.class);
+		FixedQuerySender fq = mock();
 		doReturn(new GenericDbmsSupport()).when(fq).getDbmsSupport();
 
 		Connection conn = mock(Connection.class);
@@ -154,7 +151,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	}
 
 	/**
-	 * This test makes sure that when the config can't be found, it throws an ConfigurationException
+	 * This test makes sure that when the classloader can't be created for any reason, a ClassLoaderException is thrown
 	 */
 	@Test
 	public void testExceptionHandlingERROR() throws Exception {
@@ -268,16 +265,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String msg = firstLogEntry.getMessage().getFormattedMessage();
 			assertThat(msg, Matchers.startsWith(ERROR_PREFIX));
 			assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
-		}
-		finally {
+		} finally {
 			assertTrue(makeSureNoExceptionIsThrown);
 		}
-	}
-
-	@Override
-	@Test
-	@Disabled("TODO: Disable this test temporarily")
-	public void configurationFileCustomLocationAndBasePath() {
-		// TODO: Temporarily disabled, breaks for now in test-setup, probably due to insufficient mocks
 	}
 }

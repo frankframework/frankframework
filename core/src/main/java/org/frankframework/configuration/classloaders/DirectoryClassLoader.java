@@ -46,7 +46,7 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 			}
 		}
 
-		if(getBasePath() != null) { // Append BasePath, because legacy
+		if (getBasePath() != null) { // Append BasePath, because legacy
 			log.debug("appending basepath [{}] to directory [{}]", getBasePath(), directory);
 			directory = new File(directory, getBasePath()); // Append BasePath, because legacy
 		}
@@ -71,7 +71,7 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 	 */
 	public void setDirectory(String directory) throws ClassLoaderException {
 		File dir = new File(directory);
-		if(!dir.isDirectory())
+		if (!dir.isDirectory())
 			throw new ClassLoaderException("directory ["+directory+"] not found");
 
 		this.directory = dir;

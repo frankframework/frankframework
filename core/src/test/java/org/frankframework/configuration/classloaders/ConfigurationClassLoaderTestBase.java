@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.configuration.IbisContextTest;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
@@ -43,7 +44,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	protected static final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
 	private AbstractClassLoader classLoader = null;
-	protected IbisContext ibisContext = spy(new IbisContext());
+	protected IbisContext ibisContext = spy(new IbisContextTest.IbisTestContext());
 	protected String scheme = "file";
 	protected AppConstants appConstants;
 	private String configurationName = null;

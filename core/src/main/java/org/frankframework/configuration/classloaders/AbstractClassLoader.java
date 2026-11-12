@@ -208,14 +208,12 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		}
 
 		url = getLocalResource(normalizedFilename);
-		if (log.isTraceEnabled())
-			log.trace("[{}] {} local resource [{}]", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
+		if (log.isTraceEnabled()) log.trace("[{}] {} local resource [{}]", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
 
 		// URL without basepath cannot be found, follow parent hierarchy
 		if (url == null && useParent) {
 			url = getParent().getResource(name);
-			if(log.isTraceEnabled())
-				log.trace("[{}] {} resource [{}] from parent", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", name);
+			if (log.isTraceEnabled()) log.trace("[{}] {} resource [{}] from parent", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", name);
 		}
 
 		return url;
