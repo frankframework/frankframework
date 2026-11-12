@@ -21,6 +21,8 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.Contract;
 
 import lombok.Setter;
@@ -45,13 +47,14 @@ import org.frankframework.util.SpringUtils;
  *
  */
 @Log4j2
-public class ClassLoaderFactory {
+public class ClassLoaderFactory implements ApplicationContextAware {
 	public static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
 
 	// Cannot make this static final because of tests
 	private final AppConstants appConstants = AppConstants.getInstance();
 	private final ClassLoader classPathClassLoader;
 	private @Setter IbisContext ibisContext;
+	private @Setter ApplicationContext applicationContext;
 
 	public ClassLoaderFactory() {
 		classPathClassLoader = Thread.currentThread().getContextClassLoader();
@@ -177,7 +180,7 @@ public class ClassLoaderFactory {
 	private void applyConfigurationProperties(@NonNull String name, @NonNull ClassLoader loader, Properties configurationProperties) throws ClassLoaderException {
 		ClassUtils.invokeSetters(loader, configurationProperties);
 		try {
-			SpringUtils.autowireByType(ibisContext.getApplicationContext(), loader);
+			SpringUtils.autowireByType(applicationContext, loader);
 		} catch (Exception e) {
 			log.error("error configuring ClassLoader for [{}]", name, e);
 			throw new ClassLoaderException(e);

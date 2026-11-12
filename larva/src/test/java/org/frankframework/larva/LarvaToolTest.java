@@ -25,12 +25,14 @@ import org.springframework.mock.web.MockServletContext;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ClassLoaderFactory;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.PropertyLoader;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 class LarvaToolTest {
@@ -40,6 +42,7 @@ class LarvaToolTest {
 
 	private static AppConstants appConstants;
 	private static File scenarioRoot;
+	private static IbisContext mockIbisContext;
 
 	private Properties properties;
 
@@ -47,6 +50,12 @@ class LarvaToolTest {
 	public static void beforeAll() {
 		configuration = new TestConfiguration();
 		applicationContext = configuration.getApplicationContext();
+		mockIbisContext = mock();
+		when(mockIbisContext.getApplicationContext()).thenReturn((AbstractApplicationContext) applicationContext);
+		SpringUtils.registerSingleton(applicationContext,"ibisContext", mockIbisContext);
+
+		ClassLoaderFactory classLoaderFactory = SpringUtils.createBean(applicationContext);
+		SpringUtils.registerSingleton(applicationContext,"classLoaderFactory", classLoaderFactory);
 		appConstants = AppConstants.getInstance();
 		scenarioRoot = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios");
 	}
@@ -139,8 +148,6 @@ class LarvaToolTest {
 	@Test
 	void testRunScenariosFromServletRequest () {
 		// Arrange
-		IbisContext mockIbisContext = mock();
-		when(mockIbisContext.getApplicationContext()).thenReturn((AbstractApplicationContext) applicationContext);
 		ServletContext servletContext = new MockServletContext();
 		servletContext.setAttribute(FrankApplicationInitializer.CONTEXT_KEY, mockIbisContext);
 		MockHttpServletRequest mockRequest = new MockHttpServletRequest(servletContext);

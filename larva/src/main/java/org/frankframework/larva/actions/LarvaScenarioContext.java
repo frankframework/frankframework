@@ -43,7 +43,7 @@ public class LarvaScenarioContext extends ConfigurableApplicationContext {
 	public LarvaScenarioContext(@NonNull ApplicationContext applicationContext, String scenarioDirectory) throws ClassLoaderException {
 		log.debug("Creating LarvaApplicationContext for scenarioDirectory [{}]", scenarioDirectory);
 		setParent(applicationContext);
-		ClassLoaderFactory classLoaderFactory = applicationContext.getBean("classLoaderFactory", ClassLoaderFactory.class);
+		ClassLoaderFactory classLoaderFactory = applicationContext.getBean(ClassLoaderFactory.class);
 		// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
 		DirectoryClassLoader directoryClassLoader = classLoaderFactory.createClassLoader("LarvaTool", RelativePathDirectoryClassLoader.class, Thread.currentThread().getContextClassLoader(), PropertyUtil.propertiesOf("basePath", ".", "directory", scenarioDirectory));
 		setClassLoader(directoryClassLoader);

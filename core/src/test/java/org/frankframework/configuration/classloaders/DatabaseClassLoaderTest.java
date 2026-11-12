@@ -161,6 +161,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		appConstants.setProperty(key, "ERROR");
 		ClassLoaderFactory factory = new ClassLoaderFactory();
 		factory.setIbisContext(ibisContext);
+		factory.setApplicationContext(ibisContext.getApplicationContext());
 		ClassLoader config = null;
 		boolean makeSureAnExceptionIsThrown = false;
 		try {
@@ -190,6 +191,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			appConstants.setProperty(key, "DEBUG");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
 			factory.setIbisContext(ibisContext);
+			factory.setApplicationContext(ibisContext.getApplicationContext());
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
@@ -221,6 +223,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			appConstants.setProperty(key, "INFO");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
 			factory.setIbisContext(ibisContext);
+			factory.setApplicationContext(ibisContext.getApplicationContext());
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
@@ -253,6 +256,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			appConstants.setProperty(key, "WARN");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
 			factory.setIbisContext(ibisContext);
+			factory.setApplicationContext(ibisContext.getApplicationContext());
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;

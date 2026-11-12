@@ -123,6 +123,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 
 		factory = new ClassLoaderFactory();
 		factory.setIbisContext(ibisContext);
+		factory.setApplicationContext(ibisContext.getApplicationContext());
 	}
 
 	private static void mockApplicationContext() throws Exception {
