@@ -284,7 +284,7 @@ public abstract class AbstractJobDef extends TransactionAttributes implements IJ
 	private @Getter int numThreads = 1;
 	private int countThreads = 0;
 
-	private MessageKeeper messageKeeper; // instantiated in afterPropertiesSet()
+	private MessageKeeper messageKeeper; // instantiated in configure()
 	private int messageKeeperSize = 10; // default length
 
 	private DistributionSummary summary;
@@ -299,7 +299,7 @@ public abstract class AbstractJobDef extends TransactionAttributes implements IJ
 			log.info("configuring job");
 			super.configure();
 
-			if(StringUtils.isEmpty(getJobGroup())) { // If not explicitly set, afterPropertiesSet this JobDef under the config it's specified in
+			if(StringUtils.isEmpty(getJobGroup())) { // If not explicitly set, configure this JobDef under the config it's specified in
 				setJobGroup(applicationContext.getId());
 			}
 

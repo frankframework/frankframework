@@ -106,7 +106,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	}
 
 	/**
-	 * Find the object-definition in any of the configured locators and create, afterPropertiesSet and {@link #augment(Object, String)} an instance.
+	 * Find the object-definition in any of the configured locators and create, configure and {@link #augment(Object, String)} an instance.
 	 *
 	 * @param name Name of the object to be found
 	 * @param environment Optional additional properties for looking up the object, in for instance a JNDI environment.

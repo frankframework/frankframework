@@ -81,7 +81,7 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 	@NonNull
 	protected DataSource createPool(@NonNull DataSource dataSource, @NonNull String dataSourceName) {
 		if (isPooledDataSource(dataSource)) {
-			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, afterPropertiesSet pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
+			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
 			return dataSource;
 		}
 		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);

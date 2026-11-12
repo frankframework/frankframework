@@ -79,7 +79,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 
 		// Assert
 		assertInstanceOf(BusException.class, e.getCause());
-		assertEquals("message with a cause: cannot stream: cannot afterPropertiesSet: (IllegalStateException) something is wrong", e.getCause().getMessage());
+		assertEquals("message with a cause: cannot stream: cannot configure: (IllegalStateException) something is wrong", e.getCause().getMessage());
 	}
 
 	@Test
@@ -95,7 +95,7 @@ public class TestSpringBusExceptionHandling extends BusTestBase {
 		// Assert
 		assertInstanceOf(SenderException.class, e.getCause());
 		assertThat(e.getMessage(), Matchers.startsWith("error occurred during processing message in 'MethodInvokingMessageProcessor'"));
-		assertThat(e.getCause().getMessage(), Matchers.endsWith("cannot stream: cannot afterPropertiesSet: (IllegalStateException) something is wrong"));
+		assertThat(e.getCause().getMessage(), Matchers.endsWith("cannot stream: cannot configure: (IllegalStateException) something is wrong"));
 	}
 
 	@Test

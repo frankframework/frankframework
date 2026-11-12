@@ -40,7 +40,7 @@ public abstract class SlowListenerBase implements IListener<String> {
 
 	@Override
 	public void configure() {
-		// Nothing to afterPropertiesSet
+		// Nothing to configure
 	}
 
 	@Override

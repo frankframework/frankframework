@@ -121,7 +121,7 @@ public class SftpSession implements IConfigurable {
 				jsch.setKnownHosts(knownHostsPath);
 			}
 		} catch (JSchException e) {
-			throw new ConfigurationException("unable to afterPropertiesSet Java Secure Channel", e);
+			throw new ConfigurationException("unable to configure Java Secure Channel", e);
 		}
 	}
 

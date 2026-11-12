@@ -202,7 +202,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 				throw new ConfigurationException("no sender defined ");
 			}
 			propagateName();
-			// copying of pipe parameters to sender must be done at afterPropertiesSet(), not by overriding addParam()
+			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
 			// because sender might not have been set when addPipe() is called.
 			if (getSender() instanceof ISenderWithParameters senderWithParams) {
 				for (IParameter p : getParameterList()) {
@@ -318,10 +318,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, A
 		configure(pipe);
 	}
 
-	// afterPropertiesSet wrappers/validators
+	// configure wrappers/validators
 	private void configure(IPipe pipe) throws ConfigurationException {
 		if(getPipeLine() == null) {
-			throw new ConfigurationException("No pipeline, unable to afterPropertiesSet "+ ClassUtils.nameOf(pipe));
+			throw new ConfigurationException("No pipeline, unable to configure "+ ClassUtils.nameOf(pipe));
 		}
 
 		getPipeLine().configure(pipe);

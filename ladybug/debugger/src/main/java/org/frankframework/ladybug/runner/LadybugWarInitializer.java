@@ -88,7 +88,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 
 	/**
 	 * Disable the Spring-Boot LoggingSystem.
-	 * Spring programmatically adds Console appenders and configures it's format regardless of what we afterPropertiesSet.
+	 * Spring programmatically adds Console appenders and configures it's format regardless of what we configure.
 	 *
 	 * See {@link Log4J2LoggingSystem#initialize(org.springframework.boot.logging.LoggingInitializationContext, String, org.springframework.boot.logging.LogFile)}.
 	 */

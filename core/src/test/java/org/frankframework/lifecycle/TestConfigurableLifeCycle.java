@@ -134,7 +134,7 @@ public class TestConfigurableLifeCycle {
 
 			@Override
 			public void configure() {
-				// Nothing to afterPropertiesSet, dummy class
+				// Nothing to configure, dummy class
 			}
 
 			@Override
@@ -167,7 +167,7 @@ public class TestConfigurableLifeCycle {
 	}
 
 	/**
-	 * Test if calling afterPropertiesSet on {@link Configuration} propagates to {@link Monitor monitors}, Schedules and {@link Adapter adapters}.
+	 * Test if calling configure on {@link Configuration} propagates to {@link Monitor monitors}, Schedules and {@link Adapter adapters}.
 	 * Verify the order in which they are started, configured and stopped.
 	 */
 	@Test

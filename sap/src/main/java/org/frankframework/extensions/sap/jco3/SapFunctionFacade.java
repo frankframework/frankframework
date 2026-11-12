@@ -166,7 +166,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 	}
 
 	/**
-	 * This method must be called from afterPropertiesSet().
+	 * This method must be called from configure().
 	 * @param ft
 	 */
 	protected void calculateStaticFieldIndices(JCoFunctionTemplate ft) {

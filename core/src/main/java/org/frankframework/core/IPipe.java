@@ -104,7 +104,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 
 	/**
 	 * Allowing pipe to register things at Configuration time.
-	 * Must be set before calling afterPropertiesSet()
+	 * Must be set before calling configure()
 	 */
 	void setPipeLine(PipeLine pipeline);
 

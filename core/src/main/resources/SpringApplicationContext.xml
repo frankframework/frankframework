@@ -112,7 +112,7 @@
 		>
 		<property name="dbmsSupportMap">
 			<props>
-				<!-- afterPropertiesSet additional DbmsSupport mappings here -->
+				<!-- configure additional DbmsSupport mappings here -->
 				<prop key="DB2/NT">org.frankframework.dbms.Db2DbmsSupport</prop>
 				<prop key="DB2/LINUXX8664">org.frankframework.dbms.Db2DbmsSupport</prop>
 			</props>

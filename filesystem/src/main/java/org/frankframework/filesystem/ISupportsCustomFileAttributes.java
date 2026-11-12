@@ -48,7 +48,7 @@ public interface ISupportsCustomFileAttributes<F> {
 	String FILE_ATTRIBUTE_PARAM_PREFIX = "FileAttribute.";
 
 	/**
-	 * Method to be used in afterPropertiesSet.
+	 * Method to be used in configure.
 	 * @param pvl the ParameterValueList, may be {@code null}.
 	 * @return true when at least one {@link IParameter Parameter} name starts with {@value #FILE_ATTRIBUTE_PARAM_PREFIX}.
 	 */

@@ -108,7 +108,7 @@ public class SharedResourceFactoryTest {
 
 		@Override
 		public void configure() {
-			// Nothing to afterPropertiesSet
+			// Nothing to configure
 		}
 
 		@Override
@@ -146,7 +146,7 @@ public class SharedResourceFactoryTest {
 
 		@Override
 		public void configure() {
-			// Nothing to afterPropertiesSet
+			// Nothing to configure
 		}
 
 		@Override

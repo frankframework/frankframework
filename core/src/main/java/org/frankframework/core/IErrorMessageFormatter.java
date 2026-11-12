@@ -50,7 +50,7 @@ import org.frankframework.stream.Message;
  * <p>
  *     When no specific ErrorMessageFormatter is configured on the Adapter or its Configuration, the default implementation
  *     {@link org.frankframework.errormessageformatters.ErrorMessageFormatter} is used with a default XML format. For more control
- *     over the layout of the message, afterPropertiesSet a {@link org.frankframework.errormessageformatters.XslErrorMessageFormatter} or
+ *     over the layout of the message, configure a {@link org.frankframework.errormessageformatters.XslErrorMessageFormatter} or
  *     {@link org.frankframework.errormessageformatters.DataSonnetErrorMessageFormatter}.
  * </p>
  * <p>

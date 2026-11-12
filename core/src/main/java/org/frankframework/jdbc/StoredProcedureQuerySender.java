@@ -171,7 +171,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 		super.configure();
 
-		// Have to check this after "super.afterPropertiesSet()" b/c otherwise the datasource-name is not set
+		// Have to check this after "super.configure()" b/c otherwise the datasource-name is not set
 		// and cannot check DBMS support features.
 		if (getQueryType() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
 			throw new ConfigurationException("QueryType SELECT for Stored Procedures is not supported for database " + getDbmsSupport().getDbmsName());

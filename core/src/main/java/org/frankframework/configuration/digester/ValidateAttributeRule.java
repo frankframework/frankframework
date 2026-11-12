@@ -121,7 +121,7 @@ public class ValidateAttributeRule extends AbstractDigesterRule {
 		try {
 			Object bean = getBean();
 			return readMethod.invoke(bean);
-			// If the default value is null, then it can mean that the real default value is determined in afterPropertiesSet(),
+			// If the default value is null, then it can mean that the real default value is determined in configure(),
 			// so we cannot assume setting it to "" has no effect
 		} catch (Exception e) {
 			addLocalWarning("is unable to parse attribute ["+name+"] value ["+value+"] to method ["+readMethod.getName()+"] with type ["+readMethod.getReturnType()+"]");

@@ -122,7 +122,7 @@ public class IbisApplicationContext implements Closeable {
 			springConfigurationFiles.add(SpringContextScope.STANDALONE.getContextFile());
 		}
 		springConfigurationFiles.add(SpringContextScope.APPLICATION.getContextFile());
-		String configLocations = Objects.requireNonNull(AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS"), "Property 'SPRING.CONFIG.LOCATIONS' not found, cannot afterPropertiesSet");
+		String configLocations = Objects.requireNonNull(AppConstants.getInstance().getProperty("SPRING.CONFIG.LOCATIONS"), "Property 'SPRING.CONFIG.LOCATIONS' not found, cannot configure");
 		springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, configLocations));
 
 		List<String> additionalSpringConfigurationFiles = ComponentLoader.findAllModules().stream()

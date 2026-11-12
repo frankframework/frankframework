@@ -19,7 +19,7 @@ public class DummySender implements ICorrelatedSender {
 
 	@Override
 	public void configure() {
-		// Nothing to afterPropertiesSet
+		// Nothing to configure
 	}
 
 	@Override

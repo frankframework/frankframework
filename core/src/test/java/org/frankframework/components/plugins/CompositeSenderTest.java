@@ -109,7 +109,7 @@ public class CompositeSenderTest extends SenderTestBase<CompositeSender> {
 		assertEquals(0, listener.getEvents().size());
 
 		configureAdapter();
-		// Verify above method 'pipeline.afterPropertiesSet()' has configured everything.
+		// Verify above method 'pipeline.configure()' has configured everything.
 		assertEquals(1, listener.getEvents().size());
 		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
 		verify(frankPlugin, times(1)).configure();
@@ -141,7 +141,7 @@ public class CompositeSenderTest extends SenderTestBase<CompositeSender> {
 		assertEquals(0, listener.getEvents().size());
 
 		configureAdapter();
-		// Verify above method 'pipeline.afterPropertiesSet()' has configured everything.
+		// Verify above method 'pipeline.configure()' has configured everything.
 		assertEquals(1, listener.getEvents().size());
 		assertEquals("ContextRefreshedEvent", listener.getEvents().pop());
 		verify(frankPlugin, times(1)).configure();

@@ -58,7 +58,7 @@ public class CmisEventDispatcher {
 	public void registerEventListener(CmisEventListener listener)  {
 		CmisEvent event = listener.getEvent();
 
-		// This is already checked in CmisEventListener#afterPropertiesSet()
+		// This is already checked in CmisEventListener#configure()
 		Objects.requireNonNull(event);
 
 		log.info("registering CmisEvent [{}] on dispatcher", event::name);

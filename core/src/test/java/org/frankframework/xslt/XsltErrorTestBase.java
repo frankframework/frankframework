@@ -66,7 +66,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		if (expectedString != null) assertThat(appender.toString(), containsString(expectedString));
 	}
 
-	// detect duplicate imports in afterPropertiesSet()
+	// detect duplicate imports in configure()
 	@Test
 	void duplicateImportErrorAlertsXslt1() throws Exception {
 		try (TestAppender appender = getTestAppender()) {
@@ -78,7 +78,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		}
 	}
 
-	// detect duplicate imports in afterPropertiesSet()
+	// detect duplicate imports in configure()
 	@Test
 	void duplicateImportErrorAlertsXslt2() throws Exception {
 		try (TestAppender appender = getTestAppender()) {
@@ -146,7 +146,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	@Test
 	void documentIncludedInSourceNotFoundXslt2() throws Exception {
 		try (TestAppender appender = getTestAppender()) {
-			// error not during afterPropertiesSet(), but during doPipe()
+			// error not during configure(), but during doPipe()
 			setStyleSheetName("/Xslt/importDocument/importNotFound2.xsl");
 			setXsltVersion(2);
 			pipe.configure();
@@ -228,7 +228,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	@Test
 	void illegalXPathExpressionXslt2() {
 		try (TestAppender appender = getTestAppender()) {
-			// error not during afterPropertiesSet(), but during doPipe()
+			// error not during configure(), but during doPipe()
 			setXpathExpression("position()='1'");
 			setXsltVersion(2);
 			String errorMessage = null;
@@ -252,7 +252,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	@Test
 	void illegalXPathExpression2Xslt1() {
 		try (TestAppender appender = getTestAppender()) {
-			// error not during afterPropertiesSet(), but during doPipe()
+			// error not during configure(), but during doPipe()
 			setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
 			setXsltVersion(1);
 			String errorMessage = null;
@@ -277,7 +277,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	@Test
 	void illegalXPathExpression2Xslt2() {
 		try (TestAppender appender = getTestAppender()) {
-			// error not during afterPropertiesSet(), but during doPipe()
+			// error not during configure(), but during doPipe()
 			setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
 			setXsltVersion(2);
 			String errorMessage = null;

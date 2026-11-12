@@ -51,7 +51,7 @@ public interface ISender extends IConfigurable, FrankElement, NameAware {
 	}
 
 	/**
-	 * Send a message to some destination (as configured in the Sender object). This method may only be called after the <code>afterPropertiesSet() </code>
+	 * Send a message to some destination (as configured in the Sender object). This method may only be called after the <code>configure() </code>
 	 * method is called.
 	 * <p>
 	 * The following table shows the difference between synchronous and a-synchronous senders:

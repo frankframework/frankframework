@@ -54,7 +54,7 @@ public class JdbcPropertySourceFactory implements ApplicationContextAware {
 		try {
 			ibisProp.configure();
 		} catch (ConfigurationException e) {
-			log.error("could not afterPropertiesSet JdbcFacade", e);
+			log.error("could not configure JdbcFacade", e);
 		}
 
 		try (Connection conn = ibisProp.getConnection()) {

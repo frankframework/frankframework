@@ -57,7 +57,7 @@ import org.frankframework.util.SpringUtils;
 
 /**
  * Scans the classpath for beans annotated with {@link BusAware} and registers their methods annotated with {@link TopicSelector} as service activators on the specified bus channel.
- * We cannot use AnnotationConfigApplicationContext because we cannot afterPropertiesSet the scanner to only scan for beans annotated with {@link BusAware}.
+ * We cannot use AnnotationConfigApplicationContext because we cannot configure the scanner to only scan for beans annotated with {@link BusAware}.
  */
 public class MessageDispatcher extends GenericApplicationContext implements InitializingBean, ApplicationContextAware {
 

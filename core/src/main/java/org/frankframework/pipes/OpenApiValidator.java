@@ -74,7 +74,7 @@ public class OpenApiValidator extends AbstractValidator {
 			openApiValidationHelper = new OpenApiValidationHelper(operation, useAsOutputValidator);
 
 		} catch (IOException e) {
-			throw new ConfigurationException("unable to afterPropertiesSet OpenApiValidator", e);
+			throw new ConfigurationException("unable to configure OpenApiValidator", e);
 		}
 	}
 

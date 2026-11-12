@@ -72,19 +72,19 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
 			if (StringUtils.isNotEmpty(getXpathExpression())) {
-				throw new ConfigurationException("Cannot afterPropertiesSet both stylesheet and xpathExpression in XslErrorMessageFormatter");
+				throw new ConfigurationException("Cannot configure both stylesheet and xpathExpression in XslErrorMessageFormatter");
 			}
 			try {
 				Resource xsltSource = Resource.getResource(this, getStyleSheetName());
 				transformerPool = TransformerPool.getInstance(xsltSource, 0);
 			} catch (Exception e) {
-				throw new ConfigurationException("Cannot afterPropertiesSet stylesheet transformer for [" + styleSheetName + "]", e);
+				throw new ConfigurationException("Cannot configure stylesheet transformer for [" + styleSheetName + "]", e);
 			}
 		} else if (StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
 				transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
 			} catch (Exception e) {
-				throw new ConfigurationException("Cannot afterPropertiesSet XPath transformer for [" + xpathExpression + "]", e);
+				throw new ConfigurationException("Cannot configure XPath transformer for [" + xpathExpression + "]", e);
 			}
 		} else {
 			throw new ConfigurationException("No stylesheet or xpathExpression defined for XslErrorMessageFormatter");

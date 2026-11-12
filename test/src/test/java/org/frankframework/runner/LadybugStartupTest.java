@@ -19,7 +19,7 @@ class LadybugStartupTest {
 	private static FrankApplication frankApplication;
 
 	/**
-	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually afterPropertiesSet the application
+	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
 	@BeforeAll
 //	Enable this once JUNIT 6.1.0 has been released

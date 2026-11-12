@@ -45,7 +45,7 @@ public abstract class SapSystemListItem implements NameAware, HasName {
 	private String aliasFor;
 
 	/**
-	 * afterPropertiesSet() will be called once for each item registered, except for the aliasses.
+	 * configure() will be called once for each item registered, except for the aliasses.
 	 */
 	public void configure() {
 	}

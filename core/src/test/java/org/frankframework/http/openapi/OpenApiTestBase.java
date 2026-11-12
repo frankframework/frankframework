@@ -85,7 +85,7 @@ public class OpenApiTestBase extends Mockito {
 	}
 
 	/**
-	 * TaskExecutor used to start and afterPropertiesSet adapters
+	 * TaskExecutor used to start and configure adapters
 	 */
 	private static TaskExecutor getTaskExecutor() {
 		if (taskExecutor == null) {
@@ -303,8 +303,8 @@ public class OpenApiTestBase extends Mockito {
 			adapter.addReceiver(receiver);
 			adapter.configure();
 
-			assertTrue(adapter.isConfigured(), "adapter failed to afterPropertiesSet!?");
-			assertTrue(receiver.isConfigured(), "receiver failed to afterPropertiesSet!?");
+			assertTrue(adapter.isConfigured(), "adapter failed to configure!?");
+			assertTrue(receiver.isConfigured(), "receiver failed to configure!?");
 
 			if (start) {
 				start(adapter);

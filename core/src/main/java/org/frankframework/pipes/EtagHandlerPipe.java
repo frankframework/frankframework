@@ -46,7 +46,7 @@ import org.frankframework.util.MessageUtils;
  *
  */
 @Deprecated
-@ConfigurationWarning("Please afterPropertiesSet eTag caching on the ApiListener")
+@ConfigurationWarning("Please configure eTag caching on the ApiListener")
 public class EtagHandlerPipe extends FixedForwardPipe {
 	private @Getter EtagAction action = null;
 	private @Getter String restPath = "/rest";

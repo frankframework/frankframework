@@ -59,10 +59,10 @@ import org.frankframework.util.LogUtil;
 		SSLDebugTrace="false"
 	/&gt;
    </pre>
- * All attributes starting with the prefix 'delegate_' are used to afterPropertiesSet the TomcatJndiProxy by
+ * All attributes starting with the prefix 'delegate_' are used to configure the TomcatJndiProxy by
  * calling setters with corresponding names (without the prefix).
  * <br/>
- * The remaining attributes (except 'name' and 'factory') are used to afterPropertiesSet the resulting object by
+ * The remaining attributes (except 'name' and 'factory') are used to configure the resulting object by
  * calling corresponding setters.
  * <br/>
  * In the exampe the username and password are set, to be used when the application uses the resulting

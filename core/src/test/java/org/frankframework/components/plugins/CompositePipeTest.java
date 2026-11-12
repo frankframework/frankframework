@@ -102,7 +102,7 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 			.atMost(Duration.ofSeconds(10))
 			.until(() -> listener.getEvents().size() == 3);
 
-		// Verify above method 'pipeline.afterPropertiesSet()' has configured everything.
+		// Verify above method 'pipeline.configure()' has configured everything.
 		assertEquals(3, listener.getEvents().size());
 		assertTrue(listener.getEvents().remove("ContextRefreshedEvent"));
 		assertTrue(listener.getEvents().remove("ContextStartedEvent"));
@@ -150,7 +150,7 @@ public class CompositePipeTest extends PipeTestBase<CompositePipe> {
 			.atMost(Duration.ofSeconds(10))
 			.until(() -> listener.getEvents().size() == 3);
 
-		// Verify above method 'pipeline.afterPropertiesSet()' has configured everything.
+		// Verify above method 'pipeline.configure()' has configured everything.
 		assertEquals(3, listener.getEvents().size());
 		assertTrue(listener.getEvents().remove("ContextRefreshedEvent"));
 		assertTrue(listener.getEvents().remove("ContextStartedEvent"));

@@ -44,7 +44,7 @@ public class BusTestEndpoints {
 	public Message<String> throwException(Message<?> message) {
 		ExceptionTestTypes type = BusMessageUtils.getEnumHeader(message, "type", ExceptionTestTypes.class);
 		Exception cause = new SenderException("cannot stream",
-			new ConfigurationException("cannot afterPropertiesSet",
+			new ConfigurationException("cannot configure",
 				new IllegalStateException("something is wrong")));
 		switch (type) {
 			case NOT_FOUND:

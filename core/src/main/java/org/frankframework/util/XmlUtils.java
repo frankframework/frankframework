@@ -224,7 +224,7 @@ public class XmlUtils {
 			XMLReader reader = getXMLReader(resource, handler);
 			reader.parse(resource.asInputSource());
 		} catch (ParserConfigurationException e) {
-			throw new SaxException("Cannot afterPropertiesSet parser",e);
+			throw new SaxException("Cannot configure parser",e);
 		}
 	}
 
@@ -257,7 +257,7 @@ public class XmlUtils {
 				xmlReader.setErrorHandler(errorHandler);
 			}
 		} catch (ParserConfigurationException e) {
-			throw new SaxException("Cannot afterPropertiesSet parser",e);
+			throw new SaxException("Cannot configure parser",e);
 		}
 		xmlReader.parse(inputSource);
 	}

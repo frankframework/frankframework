@@ -66,12 +66,12 @@ import org.frankframework.xml.XmlWriter;
  * The information specified by {@code messageType} is then passed to the pipeline.
  *
  * @ff.info To avoid problems with duplicate filenames in folders like the {@code errorFolder} or {@code processedFolder},
- * you should afterPropertiesSet either {@code overwrite="true"}, afterPropertiesSet {@code numberOfBackups} to a value larger than 0, or
- * afterPropertiesSet an {@code inProcessFolder} and {@code fileTimeSensitive="true"}.
+ * you should configure either {@code overwrite="true"}, configure {@code numberOfBackups} to a value larger than 0, or
+ * configure an {@code inProcessFolder} and {@code fileTimeSensitive="true"}.
  * These options can be used together as well.
  *
- * @ff.warning In addition to the above, prior to release 9.0 it was not sufficient to afterPropertiesSet {@code inProcessFolder} and {@code fileTimeSensitive}
- * to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to afterPropertiesSet {@code numberOfBackups} to avoid these issues.
+ * @ff.warning In addition to the above, prior to release 9.0 it was not sufficient to configure {@code inProcessFolder} and {@code fileTimeSensitive}
+ * to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure {@code numberOfBackups} to avoid these issues.
  *
  */
 @Log4j2
@@ -160,7 +160,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		}
 		targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates);
 		if (!(knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) && !(isOverwrite() || getNumberOfBackups() > 0)) {
-			ConfigurationWarnings.add(this, log, "It is recommended to either afterPropertiesSet an in-process folder with 'fileTimeSensitive=true', or afterPropertiesSet 'overwrite' or 'numberOfBackups', to avoid problems when files with the same name are processed.");
+			ConfigurationWarnings.add(this, log, "It is recommended to either configure an in-process folder with 'fileTimeSensitive=true', or configure 'overwrite' or 'numberOfBackups', to avoid problems when files with the same name are processed.");
 		}
 		if (!knownProcessStates.contains(ProcessState.INPROCESS) && isFileTimeSensitive()) {
 			ConfigurationWarnings.add(this, log, "Configuring 'fileTimeSensitive' has no effect when no 'In Process' folder is configured.");

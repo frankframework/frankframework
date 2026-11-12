@@ -20,8 +20,8 @@ class BusExceptionTest {
 	private static Stream<Arguments> data() {
 		return Stream.of(
 				Arguments.of("", Level.WARN, null),
-				Arguments.of(": cannot afterPropertiesSet", Level.ERROR, new ConfigurationException("cannot afterPropertiesSet")),
-				Arguments.of(": cannot afterPropertiesSet: (IllegalStateException) something is wrong", Level.ERROR, new ConfigurationException("cannot afterPropertiesSet", new IllegalStateException("something is wrong")))
+				Arguments.of(": cannot configure", Level.ERROR, new ConfigurationException("cannot configure")),
+				Arguments.of(": cannot configure: (IllegalStateException) something is wrong", Level.ERROR, new ConfigurationException("cannot configure", new IllegalStateException("something is wrong")))
 		);
 	}
 

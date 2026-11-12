@@ -168,7 +168,7 @@ public class JdbcListener extends AbstractJdbcListener implements IPeekableListe
 	 * @deprecated No longer needed, automatically determined
 	 */
 	@Deprecated(forRemoval = true, since = "10.4")
-	@ConfigurationWarning("It is no longer necessary to afterPropertiesSet this")
+	@ConfigurationWarning("It is no longer necessary to configure this")
 	public void setMessageFieldType(@NonNull String ignored) {
 		// No-op
 	}

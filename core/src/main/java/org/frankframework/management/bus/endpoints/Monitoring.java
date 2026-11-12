@@ -240,7 +240,7 @@ public class Monitoring extends BusEndpointBase {
 				trigger.configure();
 			} catch (ConfigurationException ee) {
 				// Reconfigure back to original value should have succeeded. Internal Server Error.
-				throw new BusException("unable to (re)afterPropertiesSet Trigger: " + ee.getMessage(), ee);
+				throw new BusException("unable to (re)configure Trigger: " + ee.getMessage(), ee);
 			}
 
 			// return Bad Request
@@ -248,7 +248,7 @@ public class Monitoring extends BusEndpointBase {
 		}
 
 		// Since the changes were apparently valid, we can now update the actual trigger
-		// and re-afterPropertiesSet it.
+		// and re-configure it.
 		updateTrigger(trigger, message);
 	}
 

@@ -84,7 +84,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 		Connection conn = null;
 		try {
-			conn = qs.getConnection(); // TODO this should not be done in afterPropertiesSet, qs is not yet open.
+			conn = qs.getConnection(); // TODO this should not be done in configure, qs is not yet open.
 			if (!qs.getDbmsSupport().isTablePresent(conn, tableName)) {
 				throw new ConfigurationException("The table [" + tableName + "] doesn't exist");
 			}

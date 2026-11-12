@@ -43,7 +43,7 @@ package org.frankframework.configuration.digester;
  * <p>
  * NB: The Apache Digester cannot read a factory-create-rule from XML and supply
  * parameters to the factory created from the XML digester-rules, so there is
- * no way to afterPropertiesSet a factory instance with a bean-name from the digester-rules.
+ * no way to configure a factory instance with a bean-name from the digester-rules.
  * </p>
  *
  * @author  Tim van der Leeuw

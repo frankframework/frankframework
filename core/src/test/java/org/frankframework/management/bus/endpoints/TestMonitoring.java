@@ -89,7 +89,7 @@ public class TestMonitoring extends BusTestBase {
 
 			@Override
 			public void configure() {
-				// Nothing to afterPropertiesSet, dummy class
+				// Nothing to configure, dummy class
 			}
 
 			@Override

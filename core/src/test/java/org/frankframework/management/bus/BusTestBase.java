@@ -65,8 +65,8 @@ public class BusTestBase {
 			try {
 				configuration.configure();
 			} catch (ConfigurationException e) {
-				LogUtil.getLogger(this).error("unable to afterPropertiesSet "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
-				fail("unable to afterPropertiesSet "+TestConfiguration.TEST_CONFIGURATION_NAME);
+				LogUtil.getLogger(this).error("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
+				fail("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME);
 			}
 		}
 		return configuration;

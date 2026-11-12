@@ -122,7 +122,7 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
  *</p>
  * <h2>Error Handling in Adapters</h2>
  * <p>
- *     When an exception occurs in the execution of the Adapter pipeline, you can afterPropertiesSet the listener to return
+ *     When an exception occurs in the execution of the Adapter pipeline, you can configure the listener to return
  *     a formatter error message using an {@link ErrorMessageFormatter} or to throw an exception (see {@link org.frankframework.receivers.JavaListener#setOnException(RequestReplyListener.ExceptionHandlingMethod)},
  *     {@link org.frankframework.receivers.FrankListener#setOnException(RequestReplyListener.ExceptionHandlingMethod)}, {@link org.frankframework.http.PushingListenerAdapter#setOnException(RequestReplyListener.ExceptionHandlingMethod)}).
  *
@@ -414,8 +414,8 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	/**
-	 * Instruct the adapter to afterPropertiesSet itself. The adapter will call the pipeline
-	 * to afterPropertiesSet itself, the pipeline will call the individual pipes to afterPropertiesSet
+	 * Instruct the adapter to configure itself. The adapter will call the pipeline
+	 * to configure itself, the pipeline will call the individual pipes to configure
 	 * themselves.
 	 *
 	 * @see org.frankframework.pipes.AbstractPipe#configure()
@@ -425,7 +425,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * This function is called by Configuration.addAdapter,
 	 * to make configuration information available to the Adapter. <br/><br/>
 	 * This method also performs
-	 * a <code>Pipeline.configurePipes()</code>, as to afterPropertiesSet the individual pipes.
+	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
 	 * @see org.frankframework.core.Pipeline#configurePipes
 	 */
 	@Override
@@ -446,7 +446,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		LifecycleProcessor lifecycle = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor.class);
 		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
-			throw new ConfigurationException("wrong lifecycle processor found, unable to afterPropertiesSet beans");
+			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
@@ -456,7 +456,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			msgLog = LogUtil.getMsgLogger(this);
 			Configurator.setLevel(msgLog.getName(), msgLogLevel);
 
-			// Trigger a afterPropertiesSet on all (Configurable) Lifecycle beans
+			// Trigger a configure on all (Configurable) Lifecycle beans
 			configurableLifecycle.configure();
 
 			numOfMessagesProcessed = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_PROCESSED);
@@ -480,7 +480,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		if (StringUtils.isNotEmpty(composedHideRegex)) {
 			composedHideRegexPattern = Pattern.compile(composedHideRegex);
 		}
-		if(runState.getRunState() == RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful afterPropertiesSet, reset it's state
+		if(runState.getRunState() == RunState.ERROR) { // if the adapter was previously in state ERROR, after a successful configure, reset it's state
 			runState.setRunState(RunState.STOPPED);
 		}
 
@@ -506,7 +506,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	public void configureReceiver(Receiver<?> receiver) throws ConfigurationException {
-		if(receiver.isConfigured()) { // It's possible when an adapter has multiple receivers that the last one fails. The others have already been configured the 2nd time the adapter tries to afterPropertiesSet it self
+		if(receiver.isConfigured()) { // It's possible when an adapter has multiple receivers that the last one fails. The others have already been configured the 2nd time the adapter tries to configure it self
 			log.debug("already configured receiver, skipping");
 		}
 

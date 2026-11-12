@@ -65,7 +65,7 @@ public class IafTestInitializer {
 	 */
 	static FrankApplication configureApplication() throws IOException {
 		FrankApplication frankApp = new FrankApplication();
-		// Find and afterPropertiesSet the configurations
+		// Find and configure the configurations
 		setConfigurationsDirectory(frankApp.getProjectDir());
 		System.setProperty("server.contextPath", "/iaf-test");
 
