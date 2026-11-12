@@ -59,7 +59,7 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  * This allows for permanent locks to be executed once per day, week, month or year.
  *
  * @ff.info The IBISLOCK table should always exist. If it does not exist, and {@literal isIgnoreTableNotExist} has been set, the process will continue as if the lock was obtained.
- * @ff.info The IBISLOCK table is automatically cleaned up by puring expired locks. The cleanup process is executed by the {@literal CleanupDatabaseJob} job.
+ * @ff.info The IBISLOCK table is automatically cleaned up by purging expired locks. The cleanup process is executed by the {@literal CleanupDatabaseJob} job.
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Locker extends JdbcFacade implements HasTransactionAttribute {
