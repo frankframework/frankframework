@@ -177,14 +177,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 	}
 
 	private ClassLoader getClassLoader(String testConfiguration, ClassLoader parent) throws Exception {
-		Configuration mockConfiguration;
-		if (parent != null) {
-			mockConfiguration = mock(Configuration.class);
-			when(mockConfiguration.getClassLoader()).thenReturn(parent);
-		} else {
-			mockConfiguration = null;
-		}
-		ClassLoader config = factory.createClassLoader(testConfiguration, null, mockConfiguration);
+		ClassLoader config = factory.createClassLoader(testConfiguration, null, parent);
 		if (config instanceof AbstractClassLoader base) {
 			base.setBasePath(".");
 		}

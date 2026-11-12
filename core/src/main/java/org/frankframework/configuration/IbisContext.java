@@ -116,7 +116,8 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.debug("Loaded IbisManager Bean");
 
 			classLoaderFactory = SpringUtils.createBean(getApplicationContext());
-
+			SpringUtils.registerSingleton(getApplicationContext(), "classLoaderFactory", classLoaderFactory);
+			
 			try {
 				flowDiagramManager = getBean("flowDiagramManager"); // The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
@@ -262,7 +263,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * would be undesirable here.
 	 *
 	 * @param configurationName name of the configuration to load
-	 * @see ClassLoaderFactory#createClassLoader(String, Class, Configuration)
+	 * @see ClassLoaderFactory#createClassLoader(String, Class, ClassLoader)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
@@ -282,7 +283,7 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * Load all configurations; if a configuration has a parent-configuration load that first.
 	 *
-	 * @see ClassLoaderFactory#createClassLoader(String, Class, Configuration)
+	 * @see ClassLoaderFactory#createClassLoader(String, Class, ClassLoader)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
@@ -300,7 +301,7 @@ public class IbisContext extends IbisApplicationContext {
 		ClassLoaderException classLoaderException = null;
 		ClassLoader classLoader = null;
 		try {
-			classLoader = classLoaderFactory.createClassLoader(configurationName, configurationDefaultClassLoaderClass, getParentConfiguration(configurationName).orElse(null));
+			classLoader = classLoaderFactory.createClassLoader(configurationName, configurationDefaultClassLoaderClass, getParentConfiguration(configurationName).map(Configuration::getClassLoader).orElse(null));
 
 			// An error occurred, but we don't want to throw any exceptions.
 			// Skip configuration digesting so it can be done at a later time.
