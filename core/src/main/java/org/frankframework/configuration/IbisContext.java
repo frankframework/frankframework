@@ -117,7 +117,7 @@ public class IbisContext extends IbisApplicationContext {
 
 			classLoaderFactory = SpringUtils.createBean(getApplicationContext());
 			SpringUtils.registerSingleton(getApplicationContext(), "classLoaderFactory", classLoaderFactory);
-			
+
 			try {
 				flowDiagramManager = getBean("flowDiagramManager"); // The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {

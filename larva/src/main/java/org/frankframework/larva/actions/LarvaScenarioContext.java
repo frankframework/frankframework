@@ -15,6 +15,8 @@
  */
 package org.frankframework.larva.actions;
 
+import java.util.Properties;
+
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
@@ -27,6 +29,7 @@ import org.springframework.context.ApplicationContext;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.ClassLoaderFactory;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.NameAware;
 import org.frankframework.encryption.HasTruststore;
@@ -38,21 +41,19 @@ import org.frankframework.lifecycle.ConfigurableApplicationContext;
 @Log4j2
 public class LarvaScenarioContext extends ConfigurableApplicationContext {
 
-	public LarvaScenarioContext(ApplicationContext applicationContext, String scenarioDirectory) throws ClassLoaderException {
+	public LarvaScenarioContext(@NonNull ApplicationContext applicationContext, String scenarioDirectory) throws ClassLoaderException {
 		log.debug("Creating LarvaApplicationContext for scenarioDirectory [{}]", scenarioDirectory);
+		setParent(applicationContext);
+		ClassLoaderFactory classLoaderFactory = applicationContext.getBean("classLoaderFactory", ClassLoaderFactory.class);
 		// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
-		DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
-		directoryClassLoader.setDirectory(scenarioDirectory);
-		directoryClassLoader.setBasePath(".");
-		directoryClassLoader.setConfigurationName("LarvaTool");
-		directoryClassLoader.afterPropertiesSet();
+		Properties properties = new Properties();
+		properties.setProperty("directory", scenarioDirectory);
+		properties.setProperty("basePath", ".");
+		DirectoryClassLoader directoryClassLoader = classLoaderFactory.createClassLoader("LarvaTool", RelativePathDirectoryClassLoader.class, Thread.currentThread().getContextClassLoader(), properties);
 		setClassLoader(directoryClassLoader);
 
 		setId("LarvaScenario");
 
-		if (applicationContext != null) {
-			setParent(applicationContext);
-		}
 
 		log.debug("Refreshing LarvaApplicationContext for scenarioDirectory [{}]", scenarioDirectory);
 		refresh();

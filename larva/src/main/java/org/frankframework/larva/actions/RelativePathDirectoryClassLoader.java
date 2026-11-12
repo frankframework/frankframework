@@ -28,8 +28,8 @@ import org.frankframework.configuration.classloaders.DirectoryClassLoader;
  */
 public class RelativePathDirectoryClassLoader extends DirectoryClassLoader {
 
-	public RelativePathDirectoryClassLoader() {
-		super(Thread.currentThread().getContextClassLoader());
+	public RelativePathDirectoryClassLoader(ClassLoader parent) {
+		super(parent);
 	}
 
 	@Override

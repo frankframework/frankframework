@@ -105,8 +105,10 @@ public class ClassLoaderFactory {
 	 * @return ClassLoader instance
 	 * @throws ClassLoaderException Thrown if any error happens while creating or configuring the ClassLoader
 	 */
-	public @NonNull ClassLoader createClassLoader(@NonNull String name, @NonNull Class<? extends ClassLoader> classLoaderType, @Nullable ClassLoader parentClassLoader, @NonNull Properties classLoaderConfigProperties) throws ClassLoaderException {
-		final ClassLoader classLoader = createInstance(name, classLoaderType, parentClassLoader);
+	public <T extends ClassLoader> @NonNull T createClassLoader(@NonNull String name, @NonNull Class<T> classLoaderType, @Nullable ClassLoader parentClassLoader, @NonNull Properties classLoaderConfigProperties) throws ClassLoaderException {
+		classLoaderConfigProperties.putIfAbsent("configurationName", name);
+		classLoaderConfigProperties.putIfAbsent("name", name);
+		final T classLoader = createInstance(name, classLoaderType, parentClassLoader);
 		configureClassLoader(name, classLoader, classLoaderConfigProperties);
 		return classLoader;
 	}
@@ -120,7 +122,7 @@ public class ClassLoaderFactory {
 		log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
 	}
 
-	private @NonNull ClassLoader createInstance(@NonNull String name, @NonNull Class<? extends ClassLoader> classLoaderType, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
+	private <T extends ClassLoader> @NonNull T createInstance(@NonNull String name, @NonNull Class<T> classLoaderType, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
 		final ClassLoader classLoader;
 		try {
 			Constructor<?> con = ClassUtils.getConstructorOnType(classLoaderType, new Class[] {ClassLoader.class});
@@ -131,7 +133,8 @@ public class ClassLoaderFactory {
 		log.debug("successfully instantiated classloader [{}] with parent classloader [{}]", () -> ClassUtils.nameOf(classLoader), () -> ClassUtils.nameOf(parentClassLoader));
 		// Register classloader with LeakDetector
 		ClassLoadingLeakDetector.registerClassLoader(name, classLoader);
-		return classLoader;
+		//noinspection unchecked
+		return (T)classLoader;
 	}
 
 	@Contract("_, !null -> param2")
