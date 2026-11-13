@@ -171,7 +171,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			if (StringUtils.isNotBlank(super.getClientSecret())) overriddenProperties.add("clientSecret");
 			if (StringUtils.isNotBlank(super.getTokenEndpoint())) overriddenProperties.add("tokenEndpoint");
 			if (super.getOauthAuthenticationMethod() != null) overriddenProperties.add("oauthMethod");
-
+    		if (super.getTimeout() != UNCONFIGURED_TIMEOUT)  overriddenProperties.add("timeout");
 			if (!overriddenProperties.isEmpty()) {
 				String message = "sharedResourceRef is defined. The following properties will be ignored: " + String.join(", ", overriddenProperties);
 				ConfigurationWarnings.add(this, log, message);
@@ -500,7 +500,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		return StringUtils.isNotBlank(sharedResourceRef) ? getSharedResource(sharedResourceRef) : null;
 	}
 
-	// When a shared session is defined, these three methods will override the local values.
+	// When a shared session is defined, these methods will override the local values.
 	// This allows the HttpSender to use the properties defined in the shared session without copying them.
 	@Override
 	public CredentialFactory getCredentials() {
@@ -518,6 +518,12 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	public OauthAuthenticationMethod getOauthAuthenticationMethod() {
 		HttpSession sharedSession = getSharedSession();
 		return sharedSession != null ? sharedSession.getOauthAuthenticationMethod() : super.getOauthAuthenticationMethod();
+	}
+
+	@Override
+	public int getTimeout() {
+		HttpSession sharedSession = getSharedSession();
+		return sharedSession != null ? sharedSession.getTimeout() : super.getTimeout();
 	}
 
 	/** URL or base of URL to be used. Expects all parts of the URL to already be encoded. */

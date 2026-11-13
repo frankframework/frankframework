@@ -1,6 +1,6 @@
 package org.frankframework.http;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -19,8 +19,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -59,6 +57,7 @@ public class SharedHttpSenderTest {
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 		when(applicationContext.containsBean("shared$$dummy")).thenReturn(true);
 		HttpSession sharedResource = spy(HttpSession.class);
+		when (sharedResource.getTimeout()).thenReturn(50_000);
 		HttpClientContext httpClientContext = HttpClientContext.create();
 		doReturn(httpClientContext).when(sharedResource).getDefaultHttpClientContext();
 		when(applicationContext.getBean("shared$$dummy", SharedResource.class)).thenReturn(sharedResource);
@@ -70,7 +69,7 @@ public class SharedHttpSenderTest {
 		sender.setVerifyHostname(false);
 		sender.setAllowSelfSignedCertificates(true);
 		sender.setMethodType(HttpMethod.GET);
-
+		sender.setTimeout(5_000);
 		session = new PipeLineSession();
 	}
 
@@ -84,7 +83,7 @@ public class SharedHttpSenderTest {
 
 		// Fail-Fast Assert
 		assertNotNull(result1);
-		assertThat(result1.asString(), Matchers.containsString("GET /test"));
+		assertThat(result1.asString()).contains("GET /test");
 
 		int contextId1 = context.getValue().hashCode(); // Store value for later
 
@@ -93,7 +92,7 @@ public class SharedHttpSenderTest {
 
 		// Fail-Fast Assert
 		assertNotNull(result2);
-		assertThat(result2.asString(), Matchers.containsString("GET /test"));
+		assertThat(result2.asString()).contains("GET /test");
 
 		// Test Assertion
 		int contextId2 = context.getValue().hashCode();
@@ -126,14 +125,18 @@ public class SharedHttpSenderTest {
 
 			// Assert that all property names appear in the message
 			String actualMessage = messageCaptor.getValue();
-			Assertions.assertTrue(actualMessage.contains("username"));
-			Assertions.assertTrue(actualMessage.contains("password"));
-			Assertions.assertTrue(actualMessage.contains("clientAuthAlias"));
-			Assertions.assertTrue(actualMessage.contains("alias"));
-			Assertions.assertTrue(actualMessage.contains("clientId"));
-			Assertions.assertTrue(actualMessage.contains("clientSecret"));
-			Assertions.assertTrue(actualMessage.contains("tokenEndpoint"));
-			Assertions.assertTrue(actualMessage.contains("oauthMethod"));
+			assertThat(actualMessage)
+					.contains("username")
+					.contains("password")
+					.contains("clientAuthAlias")
+					.contains("alias")
+					.contains("clientId")
+					.contains("clientSecret")
+					.contains("tokenEndpoint")
+					.contains("oauthMethod")
+					.contains("timeout");
+
+			assertEquals(50_000, sender.getTimeout());
 		}
 	}
 
@@ -147,7 +150,7 @@ public class SharedHttpSenderTest {
 
 		// Fail-Fast Assert
 		assertNotNull(result1);
-		assertThat(result1.asString(), Matchers.containsString("GET /test"));
+		assertThat(result1.asString()).contains("GET /test");
 
 		int contextId1 = context.getValue().hashCode(); // Store value for later
 
@@ -156,7 +159,7 @@ public class SharedHttpSenderTest {
 
 		// Fail-Fast Assert
 		assertNotNull(result2);
-		assertThat(result2.asString(), Matchers.containsString("GET /test"));
+		assertThat(result2.asString()).contains("GET /test");
 
 		// Test Assertion
 		int contextId2 = context.getValue().hashCode();
