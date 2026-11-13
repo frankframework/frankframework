@@ -21,10 +21,10 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -46,7 +46,6 @@ import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.KeystoreConfiguration;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
@@ -69,7 +68,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	private @Getter KeystoreConfiguration keystoreConfiguration = createKeystoreConfiguration();
 
 	private PrivateKey privateKey;
-	private PublicKey publicKey;
+	private Certificate certificate;
 	private PipeForward failureForward; // forward used when verification fails
 
 	@Override
@@ -90,9 +89,6 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		if (StringUtils.isEmpty(getAlgorithm())) {
 			setAlgorithm(ALGORITHM_DEFAULT);
 		}
-		if (StringUtils.isEmpty(this.getKeystore())) {
-			throw new ConfigurationException("keystore must be specified");
-		}
 		String signingAlgorithm = getAlgorithm();
 		// Adding BouncyCastle may add the missing algorithm, check again after loading BC.
 		if (isSigningAlgorithmMissing(signingAlgorithm)) {
@@ -105,39 +101,34 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 				throw new ConfigurationException("Parameter [" + PARAMETER_SIGNATURE + "] must be specified for action [" + action + "]");
 			}
 			failureForward = findForward("failure");
-			if (failureForward == null)  {
+			if (failureForward == null) {
 				throw new ConfigurationException("Forward [failure] must be specified for action [" + action + "]");
 			}
 		}
+
+		try {
+			initKeys();
+		} catch (EncryptionException e) {
+			throw new ConfigurationException("unable to find or read certificate", e);
+		}
 	}
 
-	private static boolean isSigningAlgorithmMissing(String signingAlgorithm) {
-		return !Strings.CI.equalsAny(signingAlgorithm, Security.getAlgorithms("Signature").toArray(String[]::new));
-	}
-
-	@Override
-	public void start() {
-		super.start();
+	private void initKeys() throws EncryptionException {
 		switch (getAction()) {
 			case SIGN:
-				try {
-					privateKey = CorePkiUtil.getPrivateKey(this);
-				} catch (EncryptionException e) {
-					throw new LifecycleException("unable to get private key for action [" + getAction() + "]", e);
-				}
+				privateKey = CorePkiUtil.getPrivateKey(this);
 				break;
 			case VERIFY:
-				try {
-					publicKey = CorePkiUtil.getPublicKey(CorePkiUtil.keyStoreAsTrustStore(this));
-				} catch (EncryptionException e) {
-					throw new LifecycleException("unable to get public key for action [" + getAction() + "]", e);
-				}
+				certificate = CorePkiUtil.getCertificate(this);
 				break;
 			default:
 				throw new IllegalStateException("Unknown action [" + getAction() + "]");
 		}
 	}
 
+	private static boolean isSigningAlgorithmMissing(String signingAlgorithm) {
+		return !Strings.CI.equalsAny(signingAlgorithm, Security.getAlgorithms("Signature").toArray(String[]::new));
+	}
 
 	@NonNull
 	@Override
@@ -149,25 +140,30 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 					dsa.initSign(privateKey);
 					break;
 				case VERIFY:
-					dsa.initVerify(publicKey);
+					dsa.initVerify(certificate);
 					break;
 				default:
 					throw new IllegalStateException("Unknown action ["+getAction()+"]");
 			}
-			try (BufferedInputStream bufin = new BufferedInputStream(message.asInputStream())) {
+
+			try (BufferedInputStream inputStream = new BufferedInputStream(message.asInputStream())) {
 				byte[] buffer = new byte[1024];
 				int len;
-				while ((len = bufin.read(buffer)) >= 0) {
+				while ((len = inputStream.read(buffer)) >= 0) {
 					dsa.update(buffer, 0, len);
 				}
 			}
+
 			switch (getAction()) {
 				case SIGN:
-					return new PipeRunResult(getSuccessForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()):dsa.sign());
+					return new PipeRunResult(getSuccessForward(), isSignatureBase64() ? Base64.encodeBase64String(dsa.sign()) : dsa.sign());
 				case VERIFY:
 					ParameterValueList pvl = getParameterList().getValues(message, session);
-					Message signatureMsg = pvl.get(PARAMETER_SIGNATURE).asMessage();
-					byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()):signatureMsg.asByteArray();
+					Message signatureMsg = pvl.getValue(PARAMETER_SIGNATURE, Message.nullMessage());
+					if (Message.isEmpty(signatureMsg)) {
+						throw new PipeRunException(this, "no signature provided");
+					}
+					byte[] signature = isSignatureBase64() ? Base64.decodeBase64(signatureMsg.asString()) : signatureMsg.asByteArray();
 
 					boolean verified = dsa.verify(signature);
 					PipeForward forward = verified ? getSuccessForward() : failureForward;

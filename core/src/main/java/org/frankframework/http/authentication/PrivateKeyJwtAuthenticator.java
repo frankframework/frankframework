@@ -94,10 +94,6 @@ public class PrivateKeyJwtAuthenticator extends AbstractOauthAuthenticator {
 			throw new ConfigurationException("clientId is required for PrivateKeyJwtAuthenticator");
 		}
 
-		if (StringUtils.isBlank(session.getKeystore())) {
-			throw new ConfigurationException("A keystore with a private key must be configured for PrivateKeyJwtAuthenticator");
-		}
-
 		try {
 			privateKey = CorePkiUtil.getPrivateKey(session);
 		} catch (EncryptionException e) {

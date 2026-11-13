@@ -19,12 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -48,10 +48,16 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.TimeProvider;
 
+@Log4j2
 public class CorePkiUtil {
 
 	private static final Pattern PEM_PATTERN = Pattern.compile(
@@ -62,6 +68,27 @@ public class CorePkiUtil {
 
 	private CorePkiUtil() {
 		throw new IllegalStateException("Utility class");
+	}
+
+	public static void verifyKeystoreConfiguration(HasKeystore keystoreOwner, HasTruststore truststoreOwner) throws ConfigurationException {
+		if (keystoreOwner != null && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
+			URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+			if (keystoreUrl == null) {
+				throw new ConfigurationException("cannot find URL for keystore resource [" + keystoreOwner.getKeystore() + "]");
+			}
+			log.debug("resolved keystore-URL to [{}]", keystoreUrl);
+
+			if (keystoreOwner.getKeystoreType() == KeystoreType.PKCS12 && (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasPassword()) || StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasAuthAlias()))) {
+				ConfigurationWarnings.add(keystoreOwner, log, "KeystoreType [" + KeystoreType.PKCS12 + "] does not guarantee to support using different passwords for the keys and the keystore.", SuppressKeys.MULTIPASSWORD_KEYSTORE_SUPPRESS_KEY);
+			}
+		}
+		if (truststoreOwner != null && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
+			URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
+			if (truststoreUrl == null) {
+				throw new ConfigurationException("cannot find URL for truststore resource [" + truststoreOwner.getTruststore() + "]");
+			}
+			log.debug("resolved truststore-URL to [{}]", truststoreUrl);
+		}
 	}
 
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
@@ -98,16 +125,39 @@ public class CorePkiUtil {
 	}
 
 	public static KeyStore createKeyStore(KeystoreConfiguration keystoreOwner) throws EncryptionException {
-		URL truststoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getResource());
-		CredentialFactory truststoreCredentialFactory = new CredentialFactory(keystoreOwner.getAuthAlias(), null, keystoreOwner.getPassword());
+		if (StringUtils.isBlank(keystoreOwner.getResource())) {
+			// If no keystore is specified, the JVMs default keystore will be used.
+			try {
+				log.info("no Keystore resource specified, using default keystore");
+				return CommonsPkiUtil.getDefaultKeyStore();
+			} catch (IllegalStateException e) {
+				throw new EncryptionException("unable to open default keystore", e);
+			}
+		}
+
+		URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getResource());
+		CredentialFactory credentialFactory = new CredentialFactory(keystoreOwner.getAuthAlias(), null, keystoreOwner.getPassword());
 		try {
-			return CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), keystoreOwner.getType());
+			return CommonsPkiUtil.createKeyStore(keystoreUrl, credentialFactory.getPassword(), keystoreOwner.getType());
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			throw new EncryptionException("unable to open keystore [" + truststoreUrl + "]", e);
+			throw new EncryptionException("unable to open keystore [" + keystoreUrl + "]", e);
 		}
 	}
 
+	/**
+	 * Returns the default TrustStore or, if none provided, the CA_CERT file.
+	 */
 	public static KeyStore createKeyStore(HasTruststore truststoreOwner) throws EncryptionException {
+		if (StringUtils.isBlank(truststoreOwner.getTruststore())) {
+			// If no truststore is specified, the JVMs default truststore will be used.
+			try {
+				log.info("no TrustStore resource specified, using default truststore");
+				return CommonsPkiUtil.getDefaultTrustStore();
+			} catch (IllegalStateException e) {
+				throw new EncryptionException("unable to open default truststore", e);
+			}
+		}
+
 		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		CredentialFactory truststoreCredentialFactory = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(), null, truststoreOwner.getTruststorePassword());
 		try {
@@ -118,12 +168,14 @@ public class CorePkiUtil {
 	}
 
 	public static PrivateKey getPrivateKey(HasKeystore keystoreOwner) throws EncryptionException {
-		PrivateKey privateKey;
-		URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		try {
 			if (keystoreOwner.getKeystoreType() == KeystoreType.PEM) {
-				privateKey = CorePkiUtil.getPrivateKeyFromPem(keystoreUrl);
+				// PEM is a single certificate.
+				URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+				return CorePkiUtil.getPrivateKeyFromPem(keystoreUrl);
 			} else {
+				KeyStore keystore = createKeyStore(keystoreOwner);
+
 				CredentialFactory keystoreCredentialFactory;
 				CredentialFactory keystoreAliasCredentialFactory;
 				keystoreCredentialFactory = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
@@ -132,47 +184,66 @@ public class CorePkiUtil {
 				} else {
 					keystoreAliasCredentialFactory = keystoreCredentialFactory;
 				}
-				KeyStore keystore = CommonsPkiUtil.createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
 				String password = keystoreAliasCredentialFactory.getPassword() != null ? keystoreAliasCredentialFactory.getPassword() : "";
-				privateKey = (PrivateKey) keystore.getKey(keystoreOwner.getKeystoreAlias(), password.toCharArray());
+
+				PrivateKey privateKey = (PrivateKey) keystore.getKey(keystoreOwner.getKeystoreAlias(), password.toCharArray());
+				if (privateKey == null) {
+					throw new EncryptionException("no Private Key found with name [" + keystoreOwner.getKeystoreAlias() + "] in keystore [" + keystoreOwner.getKeystore() + "]");
+				}
+				return privateKey;
 			}
-		} catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException | KeyStoreException | CertificateException | UnrecoverableKeyException e) {
-			throw new EncryptionException("cannot obtain Private Key in alias [" + keystoreOwner.getKeystoreAlias() + "] of keystore [" + keystoreOwner.getKeystore() + "]", e);
+		} catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException | KeyStoreException | UnrecoverableKeyException e) {
+			throw new EncryptionException("cannot obtain Private Key with name [" + keystoreOwner.getKeystoreAlias() + "] in keystore [" + keystoreOwner.getKeystore() + "]", e);
 		}
-		if (privateKey == null) {
-			throw new EncryptionException("no Signing Key found in alias [" + keystoreOwner.getKeystoreAlias() + "] of keystore [" + keystoreOwner.getKeystore() + "]");
-		}
-		return privateKey;
 	}
 
-	public static PublicKey getPublicKey(HasTruststore truststoreOwner) throws EncryptionException {
-		return getCertificate(truststoreOwner).getPublicKey();
+	public static Certificate getCertificate(HasKeystore keystoreOwner) throws EncryptionException {
+		try {
+			if (keystoreOwner.getKeystoreType() == KeystoreType.PEM) {
+				// PEM is a single certificate.
+				URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+				return CorePkiUtil.getCertificateFromPem(keystoreUrl);
+			} else {
+				KeyStore keystore = createKeyStore(keystoreOwner);
+
+				Certificate certificate = keystore.getCertificate(keystoreOwner.getKeystoreAlias());
+				if (certificate == null) {
+					throw new EncryptionException("no Certificate found with name [" + keystoreOwner.getKeystoreAlias() + "] in keystore [" + keystoreOwner.getKeystore() + "]");
+				}
+				return certificate;
+			}
+		} catch (GeneralSecurityException | IOException e) {
+			throw new EncryptionException("cannot obtain Private Key with name [" + keystoreOwner.getKeystoreAlias() + "] in keystore [" + keystoreOwner.getKeystore() + "]", e);
+		}
 	}
 
-	public static Certificate getCertificate(HasTruststore truststoreOwner) throws EncryptionException {
-		Certificate certificate;
-		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
+	public static Certificate getFirstCertificateFromTrustStore(HasTruststore truststoreOwner) throws EncryptionException {
+		String truststoreName = truststoreOwner.getTruststore();
 		try {
 			if (truststoreOwner.getTruststoreType() == KeystoreType.PEM) {
-				certificate = CorePkiUtil.getCertificateFromPem(truststoreUrl);
-			} else {
-				CredentialFactory truststoreCredentialFactory = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(), null, truststoreOwner.getTruststorePassword());
-				KeyStore keystore = CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
-				TrustManager[] trustmanagers = CommonsPkiUtil.createTrustManagers(keystore, truststoreOwner.getTrustManagerAlgorithm());
-				if (trustmanagers == null || trustmanagers.length == 0) {
-					throw new EncryptionException("no trustmanager for keystore [" + truststoreUrl + "]");
+				// PEM is a single certificate.
+				URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
+				if (truststoreUrl == null) {
+					throw new EncryptionException("cannot find URL for truststore resource [" + truststoreName + "]");
 				}
-				X509TrustManager trustManager = (X509TrustManager) trustmanagers[0];
+				return CorePkiUtil.getCertificateFromPem(truststoreUrl);
+			} else {
+				KeyStore keystore = createKeyStore(truststoreOwner);
+
+				TrustManager[] trustManagers = CommonsPkiUtil.createTrustManagers(keystore, truststoreOwner.getTrustManagerAlgorithm());
+				if (trustManagers == null || trustManagers.length == 0) {
+					throw new EncryptionException("no TrustManager for keystore [" + truststoreName + "]");
+				}
+				X509TrustManager trustManager = (X509TrustManager) trustManagers[0];
 				X509Certificate[] certificates = trustManager.getAcceptedIssuers();
 				if (certificates == null || certificates.length == 0) {
-					throw new EncryptionException("no Verfication Key found in keystore [" + truststoreUrl + "]");
+					throw new EncryptionException("no Verification Key found in keystore [" + truststoreName + "]");
 				}
-				certificate = certificates[0];
+				return certificates[0];
 			}
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			throw new EncryptionException("cannot get Public Key for verification in keystore [" + truststoreUrl + "]", e);
+			throw new EncryptionException("cannot get Public Key for verification in keystore [" + truststoreName + "]", e);
 		}
-		return certificate;
 	}
 
 	/**
@@ -210,7 +281,7 @@ public class CorePkiUtil {
 
 	private static byte[] loadPEM(URL resource) throws IOException {
 		try (InputStream in = resource.openStream()) {
-			String pem = new String(in.readAllBytes(), StandardCharsets.ISO_8859_1);
+			String pem = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 			Matcher m = PEM_PATTERN.matcher(pem);
 			if (!m.find()) throw new IOException("Invalid PEM format");
 			return Base64.getMimeDecoder().decode(m.group(2));
@@ -225,6 +296,8 @@ public class CorePkiUtil {
 
 	private static Certificate getCertificateFromPem(URL resource) throws CertificateException, IOException {
 		CertificateFactory fact = CertificateFactory.getInstance("X.509");
-		return fact.generateCertificate(resource.openStream());
+		try (InputStream in = resource.openStream()) {
+			return fact.generateCertificate(in);
+		}
 	}
 }
