@@ -126,18 +126,20 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 	}
 
 	private <T extends ClassLoader> @NonNull T createInstance(@NonNull String name, @NonNull Class<T> classLoaderType, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
-		final ClassLoader classLoader;
 		try {
 			Constructor<?> con = ClassUtils.getConstructorOnType(classLoaderType, new Class[] {ClassLoader.class});
-			classLoader = (ClassLoader) con.newInstance(parentClassLoader != null ? parentClassLoader : classPathClassLoader);
+			final ClassLoader classLoader = (ClassLoader) con.newInstance(parentClassLoader != null ? parentClassLoader : classPathClassLoader);
+
+			log.debug("successfully instantiated classloader [{}] with parent classloader [{}]", () -> ClassUtils.nameOf(classLoader), () -> ClassUtils.nameOf(parentClassLoader));
+
+			// Register classloader with LeakDetector
+			ClassLoadingLeakDetector.registerClassLoader(name, classLoader);
+
+			// noinspection unchecked
+			return (T)classLoader;
 		} catch (Exception | LinkageError e) {
 			throw new ClassLoaderException("invalid classLoaderType ["+ classLoaderType.getCanonicalName()+"]", e);
 		}
-		log.debug("successfully instantiated classloader [{}] with parent classloader [{}]", () -> ClassUtils.nameOf(classLoader), () -> ClassUtils.nameOf(parentClassLoader));
-		// Register classloader with LeakDetector
-		ClassLoadingLeakDetector.registerClassLoader(name, classLoader);
-		//noinspection unchecked
-		return (T)classLoader;
 	}
 
 	@Contract("_, !null -> param2")
@@ -158,7 +160,7 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 
 		try {
 			Class<?> clas = ClassUtils.loadClass(className);
-			//noinspection unchecked
+			// noinspection unchecked
 			return (Class<? extends ClassLoader>) clas;
 		} catch (Exception | LinkageError e) {
 			throw new ClassLoaderException("invalid classLoaderType ["+className+"]", e);
@@ -171,7 +173,7 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 			try {
 				return EnumUtils.parse(IConfigurationClassLoader.ReportLevel.class, reportLevel);
 			} catch (IllegalArgumentException e) {
-				log.warn("invalid reportLevel ["+reportLevel+"]", e);
+				log.warn("invalid reportLevel [{}]", reportLevel, e);
 			}
 		}
 		return IConfigurationClassLoader.ReportLevel.INFO;

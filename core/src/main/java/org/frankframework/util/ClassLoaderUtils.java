@@ -34,7 +34,7 @@ import org.frankframework.core.IScopeProvider;
 
 public class ClassLoaderUtils {
 
-	public static final String CLASSPATH_RESOURCE_SCHEME="classpath:";
+	public static final String CLASSPATH_RESOURCE_SCHEME = "classpath:";
 
 	private ClassLoaderUtils() {
 		throw new IllegalStateException("Don't construct utility class");

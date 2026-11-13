@@ -72,7 +72,7 @@ public abstract class Resource implements IScopeProvider {
 
 		String systemId;
 		if (ref.indexOf(':')<0) {
-			systemId= ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME+ref;
+			systemId = ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME + ref;
 		} else {
 			systemId=url.toExternalForm();
 		}

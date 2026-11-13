@@ -49,11 +49,9 @@ public class PropertyUtil {
 		final String propertyPrefix = keyBase + (!keyBase.endsWith(".") ? "." : "");
 
 		Properties filteredProperties = new Properties();
-		for (String key: properties.stringPropertyNames()) {
-			if (key.startsWith(propertyPrefix)) {
-				filteredProperties.put(key.substring(propertyPrefix.length()), properties.get(key));
-			}
-		}
+		properties.stringPropertyNames().stream()
+			.filter(key -> key.startsWith(propertyPrefix))
+			.forEach(key -> filteredProperties.put(key.substring(propertyPrefix.length()), properties.get(key)));
 
 		return filteredProperties;
 	}
