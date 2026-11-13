@@ -1,4 +1,5 @@
 <Configuration>
 	<Include ref="./Configuration_MFH.xml"/>
 	<Include ref="./ConfigurationUploadFile.xml"/>
+	<Include ref="./ConfigurationUploadLargeFile.xml"/>
 </Configuration>
