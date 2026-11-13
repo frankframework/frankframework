@@ -15,16 +15,17 @@
 */
 package org.frankframework.util;
 
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NullMarked;
 
-@NullMarked
-public class PropertyUtil {
+import lombok.experimental.UtilityClass;
 
-	private PropertyUtil() {
-		// no-op constructor to hide the implicit public constructor
-	}
+@NullMarked
+@UtilityClass
+public class PropertiesUtil {
 
 	public static Properties propertiesOf(String... keyValuePairs) {
 		if (keyValuePairs.length % 2 != 0) {
@@ -49,10 +50,10 @@ public class PropertyUtil {
 		final String propertyPrefix = keyBase + (!keyBase.endsWith(".") ? "." : "");
 
 		Properties filteredProperties = new Properties();
-		properties.stringPropertyNames().stream()
-			.filter(key -> key.startsWith(propertyPrefix))
-			.forEach(key -> filteredProperties.put(key.substring(propertyPrefix.length()), properties.get(key)));
-
+		Map<String, String> tempMap = properties.stringPropertyNames().stream()
+				.filter(key -> key.startsWith(propertyPrefix))
+				.collect(Collectors.toMap(key -> key.substring(propertyPrefix.length()), properties::getProperty));
+		filteredProperties.putAll(tempMap);
 		return filteredProperties;
 	}
 }

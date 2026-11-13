@@ -39,7 +39,7 @@ import org.frankframework.larva.Scenario;
 import org.frankframework.larva.SenderThread;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
-import org.frankframework.util.PropertyUtil;
+import org.frankframework.util.PropertiesUtil;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -73,7 +73,7 @@ public class LarvaActionFactory {
 				IConfigurable configurable = (IConfigurable) SpringUtils.createBean(applicationContext, className);
 				log.debug("created FrankElement [{}]", configurable);
 
-				Properties actionProperties = handleDeprecations(scenario, PropertyUtil.getSubProperties(properties, actionName), actionName);
+				Properties actionProperties = handleDeprecations(scenario, PropertiesUtil.getSubProperties(properties, actionName), actionName);
 				LarvaScenarioAction larvaScenarioAction = create(scenario, configurable, actionProperties, correlationId);
 				SpringUtils.registerSingleton(applicationContext, actionName, larvaScenarioAction);
 				larvaActions.put(actionName, larvaScenarioAction);

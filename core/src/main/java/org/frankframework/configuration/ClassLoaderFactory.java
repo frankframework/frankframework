@@ -35,7 +35,7 @@ import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.PropertyUtil;
+import org.frankframework.util.PropertiesUtil;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -118,8 +118,10 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 
 	private void configureClassLoader(@NonNull String name, @NonNull ClassLoader classLoader, @NonNull Properties classLoaderConfigProperties) throws ClassLoaderException {
 		try {
-			applyConfigurationProperties(name, classLoader, classLoaderConfigProperties);
-		} catch (RuntimeException e) {
+			ClassUtils.invokeSetters(classLoader, classLoaderConfigProperties);
+			SpringUtils.autowireByType(applicationContext, classLoader);
+		} catch (Exception e) {
+			log.error("error configuring ClassLoader for [{}]", name, e);
 			throw new ClassLoaderException(e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 		}
 		log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
@@ -179,19 +181,9 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 		return IConfigurationClassLoader.ReportLevel.INFO;
 	}
 
-	private void applyConfigurationProperties(@NonNull String name, @NonNull ClassLoader loader, Properties configurationProperties) throws ClassLoaderException {
-		ClassUtils.invokeSetters(loader, configurationProperties);
-		try {
-			SpringUtils.autowireByType(applicationContext, loader);
-		} catch (Exception e) {
-			log.error("error configuring ClassLoader for [{}]", name, e);
-			throw new ClassLoaderException(e);
-		}
-	}
-
 	private @NonNull Properties getConfigurationProperties(@NonNull String configurationName) {
 		String parentProperty = "configurations." + configurationName + ".";
-		Properties subProperties = PropertyUtil.getSubProperties(appConstants, parentProperty);
+		Properties subProperties = PropertiesUtil.getSubProperties(appConstants, parentProperty);
 		subProperties.setProperty("configurationName", configurationName);
 		return subProperties;
 	}

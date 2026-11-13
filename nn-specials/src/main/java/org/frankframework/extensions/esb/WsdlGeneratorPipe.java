@@ -54,7 +54,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Dir2Xml;
 import org.frankframework.util.FileUtils;
-import org.frankframework.util.PropertyUtil;
+import org.frankframework.util.PropertiesUtil;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
@@ -104,7 +104,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			// This method reads a properties file and xsd's (when present) to programmatically 'create' a pipeline.
 			// The pipeline will then be used to generate a new WSDL file.
 			String classLoaderName = getName() + "-ClassLoader";
-			DirectoryClassLoader directoryClassLoader = classLoaderFactory.createClassLoader(classLoaderName, DirectoryClassLoader.class, originalClassLoader, PropertyUtil.propertiesOf("basePath", ".", "directory", tempDirectoryBase.getPath()));
+			DirectoryClassLoader directoryClassLoader = classLoaderFactory.createClassLoader(classLoaderName, DirectoryClassLoader.class, originalClassLoader, PropertiesUtil.propertiesOf("basePath", ".", "directory", tempDirectoryBase.getPath()));
 			Thread.currentThread().setContextClassLoader(directoryClassLoader);
 
 			if (propertiesFile.exists()) {

@@ -32,7 +32,7 @@ import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.NameAware;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.lifecycle.ConfigurableApplicationContext;
-import org.frankframework.util.PropertyUtil;
+import org.frankframework.util.PropertiesUtil;
 
 /**
  * Custom Larva SpringContext, used to load the Larva scenario actions.
@@ -45,7 +45,7 @@ public class LarvaScenarioContext extends ConfigurableApplicationContext {
 		setParent(applicationContext);
 		ClassLoaderFactory classLoaderFactory = applicationContext.getBean(ClassLoaderFactory.class);
 		// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
-		DirectoryClassLoader directoryClassLoader = classLoaderFactory.createClassLoader("LarvaTool", RelativePathDirectoryClassLoader.class, Thread.currentThread().getContextClassLoader(), PropertyUtil.propertiesOf("basePath", ".", "directory", scenarioDirectory));
+		DirectoryClassLoader directoryClassLoader = classLoaderFactory.createClassLoader("LarvaTool", RelativePathDirectoryClassLoader.class, Thread.currentThread().getContextClassLoader(), PropertiesUtil.propertiesOf("basePath", ".", "directory", scenarioDirectory));
 		setClassLoader(directoryClassLoader);
 
 		setId("LarvaScenario");

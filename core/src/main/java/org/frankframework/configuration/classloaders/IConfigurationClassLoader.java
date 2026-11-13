@@ -23,8 +23,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.SmartClassLoader;
 
-import org.frankframework.configuration.ClassLoaderException;
-
 /**
  * Interface for Frank!Framework Configuration ClassLoaders.
  *
@@ -52,13 +50,6 @@ public interface IConfigurationClassLoader extends SmartClassLoader, DisposableB
 	 * Retrieve the name of the configuration that uses this {@link IConfigurationClassLoader}
 	 */
 	@NonNull String getConfigurationName();
-
-	/**
-	 * Configure the {@link IConfigurationClassLoader}'s implementation
-	 * @throws ClassLoaderException when the {@link IConfigurationClassLoader}'s implementation cannot retrieve or load the configuration files
-	 */
-	@Override
-	void afterPropertiesSet() throws ClassLoaderException;
 
 	/**
 	 * Defines the log level for errors caused by the {@link #afterPropertiesSet() afterPropertiesSet} method
