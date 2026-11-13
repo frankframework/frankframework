@@ -1,0 +1,7 @@
+<Configuration name="ExtTest">
+	<Adapter name="ExtAdapter">
+		<Pipeline>
+			<CustomPipe xmlns="urn:test:vf-ext" name="myCustomPipe"/>
+		</Pipeline>
+	</Adapter>
+</Configuration>

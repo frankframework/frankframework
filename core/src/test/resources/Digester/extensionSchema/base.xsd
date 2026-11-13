@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Stand-in for FrankConfig.xsd in the extension-schema POC test (#10490): a Configuration
+     with an extension point that allows elements from other namespaces, validated strictly
+     (so they MUST be described by a composed module schema). -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="Configuration">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
