@@ -6,12 +6,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.Properties;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.senders.DelaySender;
+import org.frankframework.senders.IbisJavaSender;
 
 class StepTest {
 
@@ -107,5 +113,144 @@ class StepTest {
 
 		// Act
 		assertEquals(shouldIgnoreFile, step.isIgnore(), "Step file should be ignored: [" + shouldIgnoreFile + "] but instead was [" + step.isIgnore() + "]");
+	}
+
+	@Test
+	void testWaitForPropertiesAbsentByDefault() {
+		// Arrange
+		String rawLine = "step1.reader.read";
+		Properties scenarioProperties = new Properties();
+		scenarioProperties.setProperty(rawLine, "out.txt");
+		scenarioProperties.setProperty("reader" + Scenario.CLASS_NAME_PROPERTY_SUFFIX, FixedQuerySender.class.getName());
+
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
+		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
+
+		// Act
+		Step step = Step.of(scenario, rawLine);
+
+		// Assert
+		assertAll(
+				() -> assertEquals(0L, step.getWaitForTimeoutMillis()),
+				() -> assertEquals(100L, step.getWaitForIntervalMillis()),
+				() -> assertNull(step.getWaitForXPath())
+		);
+	}
+
+	@Test
+	void testWaitForPropertiesParsedForSupportedActionClass() {
+		// Arrange
+		String rawLine = "step1.reader.read";
+		Properties scenarioProperties = new Properties();
+		scenarioProperties.setProperty(rawLine, "out.txt");
+		scenarioProperties.setProperty("reader" + Scenario.CLASS_NAME_PROPERTY_SUFFIX, FixedQuerySender.class.getName());
+		scenarioProperties.setProperty(rawLine + ".waitfor.timeout", "5000");
+		scenarioProperties.setProperty(rawLine + ".waitfor.interval", "250");
+		scenarioProperties.setProperty(rawLine + ".waitfor.xPath", "//record[@type='E']");
+
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
+		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
+
+		// Act
+		Step step = Step.of(scenario, rawLine);
+
+		// Assert
+		assertAll(
+				() -> assertEquals(5000L, step.getWaitForTimeoutMillis()),
+				() -> assertEquals(250L, step.getWaitForIntervalMillis()),
+				() -> assertEquals("//record[@type='E']", step.getWaitForXPath())
+		);
+	}
+
+	@Test
+	void testWaitForIntervalDefaultsWhenOnlyTimeoutSet() {
+		// Arrange
+		String rawLine = "step1.reader.read";
+		Properties scenarioProperties = new Properties();
+		scenarioProperties.setProperty(rawLine, "out.txt");
+		scenarioProperties.setProperty("reader" + Scenario.CLASS_NAME_PROPERTY_SUFFIX, FixedQuerySender.class.getName());
+		scenarioProperties.setProperty(rawLine + ".waitfor.timeout", "5000");
+
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
+		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
+
+		// Act
+		Step step = Step.of(scenario, rawLine);
+
+		// Assert
+		assertEquals(100L, step.getWaitForIntervalMillis());
+	}
+
+	@Test
+	void testWaitForTimeoutAcceptedForDelaySenderAction() {
+		// Arrange
+		String rawLine = "step1.reader.read";
+		Properties scenarioProperties = new Properties();
+		scenarioProperties.setProperty(rawLine, "out.txt");
+		scenarioProperties.setProperty("reader" + Scenario.CLASS_NAME_PROPERTY_SUFFIX, DelaySender.class.getName());
+		scenarioProperties.setProperty(rawLine + ".waitfor.timeout", "5000");
+
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
+		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
+
+		// Act
+		Step step = Step.of(scenario, rawLine);
+
+		// Assert
+		assertEquals(5000L, step.getWaitForTimeoutMillis());
+	}
+
+	@Test
+	void testWaitForTimeoutRejectedForUnsupportedActionClass() {
+		// Arrange
+		String rawLine = "step1.reader.read";
+		Properties scenarioProperties = new Properties();
+		scenarioProperties.setProperty(rawLine, "out.txt");
+		scenarioProperties.setProperty("reader" + Scenario.CLASS_NAME_PROPERTY_SUFFIX, IbisJavaSender.class.getName());
+		scenarioProperties.setProperty(rawLine + ".waitfor.timeout", "5000");
+
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
+		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
+
+		// Act
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> Step.of(scenario, rawLine));
+
+		// Assert
+		assertAll(
+				() -> assertTrue(e.getMessage().contains("waitfor.timeout")),
+				() -> assertTrue(e.getMessage().contains("reader")),
+				() -> assertTrue(e.getMessage().contains(IbisJavaSender.class.getName()))
+		);
+	}
+
+	@Test
+	void testWaitForTimeoutRejectedWhenActionClassNameMissing() {
+		// Arrange
+		String rawLine = "step1.reader.read";
+		Properties scenarioProperties = new Properties();
+		scenarioProperties.setProperty(rawLine, "out.txt");
+		scenarioProperties.setProperty(rawLine + ".waitfor.timeout", "5000");
+
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
+		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
+
+		// Act & Assert
+		assertThrows(IllegalArgumentException.class, () -> Step.of(scenario, rawLine));
+	}
+
+	@Test
+	void testWaitForTimeoutRejectsNonNumericValue() {
+		// Arrange
+		String rawLine = "step1.reader.read";
+		Properties scenarioProperties = new Properties();
+		scenarioProperties.setProperty(rawLine, "out.txt");
+		scenarioProperties.setProperty("reader" + Scenario.CLASS_NAME_PROPERTY_SUFFIX, FixedQuerySender.class.getName());
+		scenarioProperties.setProperty(rawLine + ".waitfor.timeout", "not-a-number");
+
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
+		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
+
+		// Act & Assert
+		assertThrows(IllegalArgumentException.class, () -> Step.of(scenario, rawLine));
 	}
 }
