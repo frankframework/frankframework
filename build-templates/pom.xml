@@ -88,7 +88,7 @@
 			<dependency>
 				<groupId>org.pf4j</groupId>
 				<artifactId>pf4j</artifactId>
-				<version>3.16.0</version>
+				<version>3.16.1</version>
 				<scope>provided</scope>
 			</dependency>
 		</dependencies>
@@ -323,7 +323,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.8.0</version>
+					<version>1.9.0</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>
