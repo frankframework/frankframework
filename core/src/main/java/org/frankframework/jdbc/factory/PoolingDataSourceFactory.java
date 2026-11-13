@@ -47,6 +47,7 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 	@Getter @Setter protected int maxPoolSize = 20;
 	@Getter @Setter protected int maxIdle = 2;
 	@Getter @Setter protected int maxLifeTime = 0;
+	@Getter @Setter protected int maxWait = 30;
 	@Getter @Setter protected int connectionCheckInterval = 300;
 	@Getter @Setter protected String testQuery = null;
 
@@ -57,6 +58,7 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 		maxPoolSize = appConstants.getInt("transactionmanager.jdbc.connection.maxPoolSize", maxPoolSize);
 		maxIdle = appConstants.getInt("transactionmanager.jdbc.connection.maxIdle", maxIdle);
 		maxLifeTime = appConstants.getInt("transactionmanager.jdbc.connection.maxLifeTime", maxLifeTime);
+		maxWait = appConstants.getInt("transactionmanager.jdbc.connection.maxWait", maxWait);
 		connectionCheckInterval = appConstants.getInt("transactionmanager.jdbc.connection.checkInterval", connectionCheckInterval);
 		testQuery = appConstants.getString("transactionmanager.jdbc.connection.testQuery", testQuery);
 	}
@@ -116,6 +118,7 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 			connectionPool.setDurationBetweenEvictionRuns(Duration.ofSeconds(connectionCheckInterval));
 		}
 		connectionPool.setBlockWhenExhausted(true);
+		connectionPool.setMaxWait(Duration.ofSeconds(maxWait));
 		poolableConnectionFactory.setPool(connectionPool);
 		return connectionPool;
 	}
