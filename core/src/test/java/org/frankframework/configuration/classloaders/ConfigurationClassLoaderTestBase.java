@@ -86,8 +86,9 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	 * @return name of the configuration
 	 */
 	protected String getConfigurationName() {
-		if (configurationName == null)
-			configurationName = "dummyConfigurationName"+ UUIDUtil.createRandomUUID();
+		if (configurationName == null) {
+configurationName = "dummyConfigurationName" + UUIDUtil.createRandomUUID();
+		}
 
 		return configurationName;
 	}
