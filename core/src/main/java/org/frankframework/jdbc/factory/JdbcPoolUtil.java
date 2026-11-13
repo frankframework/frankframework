@@ -30,6 +30,7 @@ import lombok.experimental.UtilityClass;
 
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.jta.narayana.NarayanaDataSource;
+import org.frankframework.util.Misc;
 
 @UtilityClass
 public class JdbcPoolUtil {
@@ -51,7 +52,7 @@ public class JdbcPoolUtil {
 				"maxIdle [" + pool.getMaxIdle() + CLOSE +
 				"minIdle [" + pool.getMinIdle() + CLOSE +
 				"maxTotal [" + pool.getMaxTotal() + CLOSE +
-				"maxWaitDuration [" + pool.getMaxWaitDuration() + CLOSE +
+				"maxWaitDuration [" + Misc.getAge(pool.getMaxWaitDuration()) + CLOSE +
 				"numActive [" + pool.getNumActive() + CLOSE +
 				"numIdle [" + pool.getNumIdle() + CLOSE +
 				"testOnBorrow [" + pool.getTestOnBorrow() + CLOSE +
