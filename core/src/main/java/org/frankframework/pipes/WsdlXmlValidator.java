@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.apache.logging.log4j.Logger;
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -310,90 +309,121 @@ public class WsdlXmlValidator extends SoapValidator {
 		return wsdl;
 	}
 
+	/**
+	 * Simple record class to maintain the schema, the reference and the namespace together.
+	 */
+	record SchemaWithReferences(Schema schema, String reference, String namespace) { }
+
 	@Override
 	public Set<IXSD> getXsds() throws ConfigurationException {
-		Set<IXSD> xsds = new LinkedHashSet<>();
-		SoapVersion soapVersion = getSoapVersion();
-		if (soapVersion == null || soapVersion==SoapVersion.SOAP11 || soapVersion==SoapVersion.AUTO) {
-			ResourceXsd xsd = new ResourceXsd();
-			xsd.initNamespace(SoapVersion.SOAP11.namespace, this, SoapVersion.SOAP11.location);
-			xsds.add(xsd);
-		}
-		if (soapVersion==SoapVersion.SOAP12 || soapVersion==SoapVersion.AUTO) {
-			ResourceXsd xsd = new ResourceXsd();
-			xsd.initNamespace(SoapVersion.SOAP12.namespace, this, SoapVersion.SOAP12.location);
-			xsds.add(xsd);
-		}
-		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
-			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
-			while (st.hasMoreTokens()) {
-				ResourceXsd xsd = new ResourceXsd();
-				xsd.initNamespace(st.nextToken(), this, st.hasMoreTokens() ? st.nextToken():null);
-				xsds.add(xsd);
-			}
-		}
-		List<Schema> schemas = new ArrayList<>();
-		List<ExtensibilityElement> types = definition.getTypes().getExtensibilityElements();
-		for (ExtensibilityElement type : types) {
-			QName qn = type.getElementType();
-			if (SchemaUtils.WSDL_SCHEMA.equals(qn)) {
-				final Schema schema = (Schema) type;
-				addNamespaces(schema, definition.getNamespaces());
-				schemas.add(schema);
-			}
-		}
-		List<Schema> filteredSchemas;
-		Map<Schema, String> filteredReferences = null;
-		Map<Schema, String> filteredNamespaces = null;
-		if (StringUtils.isEmpty(getSchemaLocation())) {
-			filteredSchemas = schemas;
-		} else {
-			filteredSchemas = new ArrayList<>();
-			filteredReferences = new HashMap<>();
-			filteredNamespaces = new HashMap<>();
-			String[] split =  getSchemaLocation().trim().split("\\s+");
-			if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is [" + getSchemaLocation() +"]");
-			for (int i = 0; i < split.length; i += 2) {
-				if (!split[i + 1].startsWith(RESOURCE_INTERNAL_REFERENCE_PREFIX)) {
-					throw new ConfigurationException("Schema reference " + split[i + 1] + " should start with '" + RESOURCE_INTERNAL_REFERENCE_PREFIX + "'");
-				}
-				try {
-					int j = Integer.parseInt(split[i + 1].substring(RESOURCE_INTERNAL_REFERENCE_PREFIX.length())) - 1;
-					filteredSchemas.add(schemas.get(j));
-					filteredReferences.put(schemas.get(j), RESOURCE_INTERNAL_REFERENCE_PREFIX + (j + 1));
-					filteredNamespaces.put(schemas.get(j), split[i]);
-				} catch(Exception e) {
-					throw new ConfigurationException("Schema reference " + split[i + 1] + " not valid or not found");
-				}
-			}
-		}
-		for (Schema schema : filteredSchemas) {
+		Set<IXSD> xsdSet = createXsdSet();
+
+		for (SchemaWithReferences schemaWithReference : getListOfSchemaWithReferences(getBaseSchemas())) {
 			WsdlXsd xsd = new WsdlXsd();
-			xsd.setWsdlSchema(definition, schema);
-			if (StringUtils.isNotEmpty(getSchemaLocation())) {
-				xsd.setResourceInternalReference(filteredReferences.get(schema));
-//				xsd.setNamespace(filteredNamespaces.get(schema));
-			} else {
-				xsd.setResourceInternalReference(RESOURCE_INTERNAL_REFERENCE_PREFIX + (filteredSchemas.indexOf(schema) + 1));
-			}
+			xsd.setWsdlSchema(definition, schemaWithReference.schema());
+			xsd.setResourceInternalReference(schemaWithReference.reference);
 			xsd.setAddNamespaceToSchema(isAddNamespaceToSchema());
 			xsd.setImportedSchemaLocationsToIgnore(getImportedSchemaLocationsToIgnore());
 			xsd.setUseBaseImportedSchemaLocationsToIgnore(isUseBaseImportedSchemaLocationsToIgnore());
 			xsd.setImportedNamespacesToIgnore(getImportedNamespacesToIgnore());
 
-			String namespaceToInit = getNamespaceToInit(filteredNamespaces, schema);
+			String namespaceToInit = getNamespaceToInit(schemaWithReference);
 			xsd.initNamespace(namespaceToInit,this, getWsdl());
-			xsds.add(xsd);
+			xsdSet.add(xsd);
 		}
-		return xsds;
+
+		return xsdSet;
+	}
+
+	private List<SchemaWithReferences> getListOfSchemaWithReferences(List<Schema> schemas) throws ConfigurationException {
+		if (StringUtils.isEmpty(getSchemaLocation())) {
+			// Fill the list with the schemas in the order they are found in the WSDL, and with no namespace or reference and use a simple int counter to
+			// create a unique reference for each schema.
+			return IntStream.range(0, schemas.size())
+					.mapToObj(i -> new SchemaWithReferences(schemas.get(i), RESOURCE_INTERNAL_REFERENCE_PREFIX + (i + 1), null))
+					.toList();
+		}
+
+		// split the schemaLocation into pairs of namespace and reference, and check that the reference is valid
+		String[] schemaLocationTokens = getSchemaLocation().trim().split("\\s+");
+		if (schemaLocationTokens.length % 2 != 0) {
+			throw new ConfigurationException("The schema must exist from an even number of strings, but it is [" + getSchemaLocation() +"]");
+		}
+
+		return createSchemaWithReferences(schemas, schemaLocationTokens);
+	}
+
+	private @NonNull List<SchemaWithReferences> createSchemaWithReferences(List<Schema> schemas, String[] schemaLocationTokens) throws ConfigurationException {
+		List<SchemaWithReferences> schemaWithReferences = new ArrayList<>();
+
+		for (int i = 0; i < schemaLocationTokens.length; i += 2) {
+			String schemaReferenceToken = schemaLocationTokens[i + 1];
+
+			if (!schemaReferenceToken.startsWith(RESOURCE_INTERNAL_REFERENCE_PREFIX)) {
+				throw new ConfigurationException("Schema reference " + schemaReferenceToken + " should start with '" + RESOURCE_INTERNAL_REFERENCE_PREFIX + "'");
+			}
+
+			try {
+				int schemaIndex = Integer.parseInt(schemaReferenceToken.substring(RESOURCE_INTERNAL_REFERENCE_PREFIX.length())) - 1;
+
+				schemaWithReferences.add(new SchemaWithReferences(schemas.get(schemaIndex), RESOURCE_INTERNAL_REFERENCE_PREFIX + (schemaIndex + 1), schemaLocationTokens[i]));
+			} catch(Exception e) {
+				throw new ConfigurationException("Schema reference " + schemaReferenceToken + " not valid or not found");
+			}
+		}
+		return schemaWithReferences;
+	}
+
+	private @NonNull Set<IXSD> createXsdSet() throws ConfigurationException {
+		Set<IXSD> xsdSet = new LinkedHashSet<>();
+
+		SoapVersion soapVersion = getSoapVersion();
+
+		if (soapVersion == null || soapVersion == SoapVersion.SOAP11 || soapVersion == SoapVersion.AUTO) {
+			ResourceXsd xsd = new ResourceXsd();
+			xsd.initNamespace(SoapVersion.SOAP11.namespace, this, SoapVersion.SOAP11.location);
+			xsdSet.add(xsd);
+		}
+
+		if (soapVersion == SoapVersion.SOAP12 || soapVersion == SoapVersion.AUTO) {
+			ResourceXsd xsd = new ResourceXsd();
+			xsd.initNamespace(SoapVersion.SOAP12.namespace, this, SoapVersion.SOAP12.location);
+			xsdSet.add(xsd);
+		}
+
+		if (StringUtils.isNotEmpty(getSchemaLocationToAdd())) {
+			StringTokenizer st = new StringTokenizer(getSchemaLocationToAdd(), ", \t\r\n\f");
+			while (st.hasMoreTokens()) {
+				ResourceXsd xsd = new ResourceXsd();
+				xsd.initNamespace(st.nextToken(), this, st.hasMoreTokens() ? st.nextToken() : null);
+				xsdSet.add(xsd);
+			}
+		}
+
+		return xsdSet;
+	}
+
+	private @NonNull List<Schema> getBaseSchemas() {
+		List<ExtensibilityElement> types = definition.getTypes().getExtensibilityElements();
+
+		return types.stream()
+				.filter(type -> SchemaUtils.WSDL_SCHEMA.equals(type.getElementType()))
+				.map(this::castAndAddToNamespaces)
+				.toList();
+	}
+
+	private Schema castAndAddToNamespaces(ExtensibilityElement type) {
+		Schema schema = (Schema) type;
+		addNamespaces(schema, definition.getNamespaces());
+		return schema;
 	}
 
 	/**
 	 * Make sure to get the right namespace to init, or use the configurable fallback namespace for complex wsdl/with schema constructions
 	 */
-	private @Nullable String getNamespaceToInit(Map<Schema, String> filteredNamespaces, Schema schema) {
+	private String getNamespaceToInit(SchemaWithReferences schemaWithReference) {
 		if (StringUtils.isNotEmpty(getSchemaLocation())) {
-			return filteredNamespaces.get(schema);
+			return schemaWithReference.namespace();
 		}
 
 		if (StringUtils.isNotEmpty(getTargetNamespace())) {
