@@ -41,6 +41,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.lang.Contract;
 
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
@@ -52,11 +53,9 @@ import org.frankframework.core.HasName;
  */
 @NullMarked
 @Log4j2
+@UtilityClass
 public class ClassUtils {
 
-	private ClassUtils() {
-		throw new IllegalStateException("Don't construct utility class");
-	}
 	/**
 	 * Return the context ClassLoader.
 	 */

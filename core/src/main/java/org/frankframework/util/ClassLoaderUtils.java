@@ -29,16 +29,15 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import lombok.experimental.UtilityClass;
+
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.IScopeProvider;
 
+@UtilityClass
 public class ClassLoaderUtils {
 
 	public static final String CLASSPATH_RESOURCE_SCHEME = "classpath:";
-
-	private ClassLoaderUtils() {
-		throw new IllegalStateException("Don't construct utility class");
-	}
 
 	private static final Logger log = LogUtil.getLogger(ClassLoaderUtils.class);
 	private static final String DEFAULT_ALLOWED_PROTOCOLS = AppConstants.getInstance().getString("classloader.allowed.protocols", null);
