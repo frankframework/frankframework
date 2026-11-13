@@ -28,7 +28,6 @@ import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlUtils;
 
@@ -64,7 +63,7 @@ public abstract class Resource implements IScopeProvider {
 			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
 		}
 
-		String ref = resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME) ? resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length()) : resource;
+		String ref = resource.startsWith(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME) ? resource.substring(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME.length()) : resource;
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
 
 		if (url == null) {
@@ -73,7 +72,7 @@ public abstract class Resource implements IScopeProvider {
 
 		String systemId;
 		if (ref.indexOf(':')<0) {
-			systemId= IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+ref;
+			systemId = ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME + ref;
 		} else {
 			systemId=url.toExternalForm();
 		}

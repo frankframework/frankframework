@@ -33,11 +33,10 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.configuration.IbisManager;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -45,7 +44,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
- * Abstract base class for IBIS Configuration ClassLoaders.
+ * Abstract base class for Frank!Framework Configuration ClassLoaders.
  *
  * Appends a BasePath to every resource when set. This allows the use of sub config's in src/main/resources
  * When a file with prepended BasePath cannot be found it will traverse through it's classpath to find it.
@@ -54,17 +53,16 @@ import org.frankframework.util.StreamUtil;
  */
 public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader {
 
-	private IbisContext ibisContext = null;
-	private String configurationName = null;
+	private @Setter @Getter String configurationName = null;
 	private String configurationFile = ConfigurationUtils.DEFAULT_CONFIGURATION_FILE;
 
 	protected Logger log = LogUtil.getLogger(this);
-	private ReportLevel reportLevel = ReportLevel.ERROR;
+	private @Getter @NonNull ReportLevel reportLevel = ReportLevel.ERROR;
 
 	private final String instanceName = AppConstants.getInstance().getProperty("instance.name");
 	private String basePath = null;
 
-	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
+	private @Setter @Getter boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 	private final Set<String> loadedCustomClasses = new HashSet<>();
 	private @Getter boolean destroyed = false;
 
@@ -77,9 +75,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		this.ibisContext = ibisContext;
-		this.configurationName = configurationName;
+	public void afterPropertiesSet() throws ClassLoaderException {
 
 		if (StringUtils.isEmpty(configurationFile)) {
 			throw new ClassLoaderException("unable to determine configurationFile");
@@ -129,11 +125,6 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		return basePath;
 	}
 
-	@Override
-	public @NonNull String getConfigurationName() {
-		return configurationName;
-	}
-
 	/**
 	 * The configurationFile should only ever be found in the current classloader and never in its parent
 	 */
@@ -144,14 +135,6 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		this.configurationFile = configurationFile;
 	}
 
-	/**
-	 * Only for internal use within ClassLoaders
-	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method is called
-	 */
-	protected IbisManager getIbisManager() {
-		return ibisContext.getIbisManager();
-	}
-
 	@Override
 	public void setReportLevel(@NonNull String level) {
 		try {
@@ -160,19 +143,6 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		catch (IllegalArgumentException ignored) {
 			ApplicationWarnings.add(log, "invalid reportLevel ["+level+"], using default [ERROR]");
 		}
-	}
-
-	@Override
-	public @NonNull ReportLevel getReportLevel() {
-		return reportLevel;
-	}
-
-	public void setAllowCustomClasses(boolean allow) {
-		allowCustomClasses = allow;
-	}
-
-	protected boolean getAllowCustomClasses() {
-		return allowCustomClasses;
 	}
 
 	/**
@@ -220,14 +190,12 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		}
 
 		url = getLocalResource(normalizedFilename);
-		if (log.isTraceEnabled())
-			log.trace("[{}] {} local resource [{}]", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
+		if (log.isTraceEnabled()) log.trace("[{}] {} local resource [{}]", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", normalizedFilename);
 
 		// URL without basepath cannot be found, follow parent hierarchy
 		if (url == null && useParent) {
 			url = getParent().getResource(name);
-			if(log.isTraceEnabled())
-				log.trace("[{}] {} resource [{}] from parent", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", name);
+			if (log.isTraceEnabled()) log.trace("[{}] {} resource [{}] from parent", getConfigurationName(), url == null ? "failed to retrieve" : "retrieved", name);
 		}
 
 		return url;
@@ -311,7 +279,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * Introspector#findCustomizerClass attempts to lookup classes with the 'Customizer' postfix.
 	 */
 	private @NonNull Class<?> defineClass(String name, boolean resolve) throws ClassNotFoundException {
-		if (getAllowCustomClasses()) {
+		if (isAllowCustomClasses()) {
 			synchronized (getClassLoadingLock(name)) {
 				String path = name.replace(".", "/").concat(".class");
 				log.trace("attempting to load custom class [{}] path [{}]", name, path);

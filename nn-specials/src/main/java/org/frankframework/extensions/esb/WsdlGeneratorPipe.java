@@ -35,6 +35,7 @@ import org.jspecify.annotations.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.configuration.ClassLoaderFactory;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.Adapter;
@@ -53,6 +54,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Dir2Xml;
 import org.frankframework.util.FileUtils;
+import org.frankframework.util.PropertiesUtil;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
@@ -65,6 +67,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private @Getter @Setter String sessionKey = "file";
 	private @Getter @Setter String filenameSessionKey = "fileName";
 	private @Getter @Setter String propertiesFileName = "wsdl.properties";
+	private @Setter ClassLoaderFactory classLoaderFactory;
 
 	@NonNull
 	@Override
@@ -89,7 +92,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				}
 				Files.delete(file.toPath());
 			}
-		} catch (IOException e) {
+		} catch (IOException | NullPointerException e) {
 			throw new PipeRunException(this, "Exception on uploading and unzipping/writing file", e);
 		}
 
@@ -100,11 +103,8 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			// A DirectoryClassloader is used to create a new 'dummy' pipeline, see createPipeLineFromPropertiesFile(String)
 			// This method reads a properties file and xsd's (when present) to programmatically 'create' a pipeline.
 			// The pipeline will then be used to generate a new WSDL file.
-
-			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
-			directoryClassLoader.setDirectory(tempDirectoryBase.getPath());
-			directoryClassLoader.setBasePath(".");
-			directoryClassLoader.configure(null, "dummy");
+			String classLoaderName = getName() + "-ClassLoader";
+			DirectoryClassLoader directoryClassLoader = classLoaderFactory.createClassLoader(classLoaderName, DirectoryClassLoader.class, originalClassLoader, PropertiesUtil.propertiesOf("basePath", ".", "directory", tempDirectoryBase.getPath()));
 			Thread.currentThread().setContextClassLoader(directoryClassLoader);
 
 			if (propertiesFile.exists()) {

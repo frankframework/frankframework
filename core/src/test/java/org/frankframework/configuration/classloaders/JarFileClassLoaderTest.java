@@ -100,7 +100,8 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");
 
 			appConstants.setProperty("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
-			classLoader.configure(ibisContext, "myConfig");
+			classLoader.setConfigurationName("myConfig");
+			classLoader.afterPropertiesSet();
 
 			List<String> logEvents = appender.getLogLines();
 			URL configurationURL = classLoader.getResource("Configuration.xml");
@@ -117,7 +118,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	public void loadCustomClassUsingForName() throws Exception {
 		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
-		classLoader.configure(ibisContext, "myClassLoadingTestConfig");
+		classLoader.afterPropertiesSet();
 		// Not registered witih the leak detector so that the code-path for unregistered classloaders gets tested too.
 
 		classLoader.setAllowCustomClasses(true);
@@ -140,7 +141,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	public void loadCustomClassUsingLoadClass() throws Exception {
 		AbstractClassLoader classLoader = createClassLoader(new JunitTestClassLoaderWrapper(), "/ClassLoader/config-jar-with-java-code.jar");
 		classLoader.setBasePath(".");
-		classLoader.configure(ibisContext, "myClassLoadingTestConfig");
+		classLoader.afterPropertiesSet();
 		// Register this instance so the leak-detection can be tested
 		ClassLoadingLeakDetector.registerClassLoader("myLeakTestConfig", classLoader);
 

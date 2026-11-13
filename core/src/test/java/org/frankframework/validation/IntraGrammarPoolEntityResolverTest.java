@@ -25,13 +25,13 @@ import org.junitpioneer.jupiter.Issue;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
+import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
 
 public class IntraGrammarPoolEntityResolverTest {
@@ -50,17 +50,17 @@ public class IntraGrammarPoolEntityResolverTest {
 			resourceIdentifier.setNamespace(namespace);
 		}
 
-		resourceIdentifier.setBaseSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"Xslt/importDocument/importLookupRelative1.xsl");
-		resourceIdentifier.setExpandedSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+href);
+		resourceIdentifier.setBaseSystemId(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME+"Xslt/importDocument/importLookupRelative1.xsl");
+		resourceIdentifier.setExpandedSystemId(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME+href);
 		if(href.startsWith("../")) {
-			resourceIdentifier.setExpandedSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"Xslt/"+href.substring(3));
+			resourceIdentifier.setExpandedSystemId(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME+"Xslt/"+href.substring(3));
 		}
-		resourceIdentifier.setLiteralSystemId(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+href); // this file is known to be in the root of the classpath
+		resourceIdentifier.setLiteralSystemId(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME+href); // this file is known to be in the root of the classpath
 		return resourceIdentifier;
 	}
 
 	@ParameterizedTest
-	@CsvSource({"./", "non/existing/folder/", "/non/existing/folder/", "./non/../folder/", IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+"./non/../folder/"})
+	@CsvSource({"./", "non/existing/folder/", "/non/existing/folder/", "./non/../folder/", ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME+"./non/../folder/"})
 	public void noClassPathSchemaResource(String base) throws Exception {
 		List<Schema> schemas = new ArrayList<>();
 		schemas.add(new ResourceSchema("namespace1", "AppConstants.properties"));
@@ -161,7 +161,8 @@ public class IntraGrammarPoolEntityResolverTest {
 
 		JarFileClassLoader cl = new JarFileClassLoader(new ClassLoader(null) {}); // No parent classloader, getResource and getResources will not fall back
 		cl.setJar(file.getFile());
-		cl.configure(null, "");
+		cl.setConfigurationName("");
+		cl.afterPropertiesSet();
 		return cl;
 	}
 

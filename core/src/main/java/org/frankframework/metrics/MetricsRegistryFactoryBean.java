@@ -59,7 +59,7 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 
 	private void createRegistry() {
 		CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
-		Properties metricProperties = AppConstants.getInstance().getAppConstants(AbstractMetricsRegistryConfigurator.METRICS_EXPORT_PROPERTY_PREFIX);
+		Properties metricProperties = AppConstants.getAppConstants(AbstractMetricsRegistryConfigurator.METRICS_EXPORT_PROPERTY_PREFIX);
 
 		for(Object keyObj:metricProperties.keySet()) {
 			String key = (String)keyObj;

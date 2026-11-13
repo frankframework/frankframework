@@ -42,6 +42,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
@@ -63,7 +64,9 @@ import org.frankframework.util.SpringUtils;
  * @author  Peter Leeuwenburgh
  * @author  Jaco de Groot
  */
+@SuppressWarnings({ "SqlSourceToSinkFlow", "java:S2077" }) // No actual real SQL injection issues here
 @Log4j2
+@UtilityClass
 public class ConfigurationUtils {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
@@ -79,10 +82,6 @@ public class ConfigurationUtils {
 
 	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
-
-	private ConfigurationUtils() {
-		// Private constructor so that the utility-class cannot be instantiated.
-	}
 
 	/**
 	 * Checks if a configuration is stubbed or not
@@ -170,11 +169,11 @@ public class ConfigurationUtils {
 		}
 	}
 
-	public static Map<String, Object> getActiveConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
+	public static @Nullable Map<String, Object> getActiveConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName) throws ConfigurationException {
 		return getConfigFromDatabase(applicationContext, name, dataSourceName, null);
 	}
 
-	public static Map<String, Object> getConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName, String version) throws ConfigurationException {
+	public static @Nullable Map<String, Object> getConfigFromDatabase(ApplicationContext applicationContext, String name, String dataSourceName, String version) throws ConfigurationException {
 		String workdataSourceName = dataSourceName;
 		if (StringUtils.isEmpty(workdataSourceName)) {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;

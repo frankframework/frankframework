@@ -20,9 +20,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
@@ -74,7 +77,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 
 	@BeforeAll
 	public static void before() throws Exception {
-		mockDatabase();
+		mockApplicationContext();
 	}
 
 	@AfterAll
@@ -118,10 +121,12 @@ public class ClassLoaderFactoryTest extends Mockito {
 		}
 		setLocalProperty("configurations.names", configurationsNames.toString());
 
-		factory = new ClassLoaderFactory(ibisContext);
+		factory = new ClassLoaderFactory();
+		factory.setIbisContext(ibisContext);
+		factory.setApplicationContext(ibisContext.getApplicationContext());
 	}
 
-	private static void mockDatabase() throws Exception {
+	private static void mockApplicationContext() throws Exception {
 		// Mock a FixedQuerySender
 		JmsRealm jmsRealm = spy(new JmsRealm());
 		jmsRealm.setDatasourceName("fake");
@@ -145,10 +150,23 @@ public class ClassLoaderFactoryTest extends Mockito {
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		IbisManager ibisManager = mock(IbisManager.class);
 		doReturn(ibisManager).when(ibisContext).getIbisManager();
-		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		AbstractApplicationContext applicationContext = mock();
 		doReturn(applicationContext).when(ibisManager).getApplicationContext();
+		doReturn(applicationContext).when(ibisContext).getApplicationContext();
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
 		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		doAnswer(invocation -> {
+			IConfigurationClassLoader classLoader = invocation.getArgument(0);
+			classLoader.setConfigurationName("");
+			if (classLoader instanceof ApplicationContextAware applicationContextAware) {
+				applicationContextAware.setApplicationContext(applicationContext);
+			}
+			if (classLoader instanceof ScanningDirectoryClassLoader sdcl) {
+				sdcl.setIbisManager(ibisManager);
+			}
+			classLoader.afterPropertiesSet();
+			return classLoader;
+		}).when(beanFactory).initializeBean(isA(IConfigurationClassLoader.class), anyString());
 	}
 
 	private ClassLoader getClassLoader() throws Exception {
@@ -160,14 +178,7 @@ public class ClassLoaderFactoryTest extends Mockito {
 	}
 
 	private ClassLoader getClassLoader(String testConfiguration, ClassLoader parent) throws Exception {
-		Configuration mockConfiguration;
-		if (parent != null) {
-			mockConfiguration = mock(Configuration.class);
-			when(mockConfiguration.getClassLoader()).thenReturn(parent);
-		} else {
-			mockConfiguration = null;
-		}
-		ClassLoader config = factory.createClassLoader(testConfiguration, null, mockConfiguration);
+		ClassLoader config = factory.createClassLoader(testConfiguration, null, parent);
 		if (config instanceof AbstractClassLoader base) {
 			base.setBasePath(".");
 		}
