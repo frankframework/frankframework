@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -70,10 +70,11 @@ public class IbisContext extends IbisApplicationContext {
 		AppConstantsValidator.validate();
 	}
 
+	private static final List<String> loadingConfigs = new ArrayList<>();
+
 	private @Getter IbisManager ibisManager;
 	private FlowDiagramManager flowDiagramManager;
-	private ClassLoaderManager classLoaderManager = null;
-	private static final List<String> loadingConfigs = new ArrayList<>();
+	private ClassLoaderFactory classLoaderFactory = null;
 
 	private Thread ibisContextReconnectThread = null;
 
@@ -114,7 +115,7 @@ public class IbisContext extends IbisApplicationContext {
 			ibisManager.setIbisContext(this);
 			LOG.debug("Loaded IbisManager Bean");
 
-			classLoaderManager = new ClassLoaderManager(this);
+			classLoaderFactory = new ClassLoaderFactory(this);
 
 			try {
 				flowDiagramManager = getBean("flowDiagramManager"); // The FlowDiagramManager should always initialize.
@@ -127,18 +128,16 @@ public class IbisContext extends IbisApplicationContext {
 			long startupTime = System.currentTimeMillis() - start;
 			log("startup in " + startupTime + " ms");
 			APPLICATION_LOG.info("Application [{}] startup in {} ms", this::getApplicationName, ()-> startupTime);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			LOG.fatal("Failed to initialize FrankApplication", e);
 			// Catch all exceptions, the IBIS failed to startup...
-			if(reconnect) {
+			if (reconnect) {
 				APPLICATION_LOG.error("Failed to initialize FrankApplication, retrying in 1 minute!");
 
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
 				ibisContextReconnectThread.setName("FrankApplication-ReconnectThread"); // Give the thread a somewhat descriptive name
 				ibisContextReconnectThread.start();
-			}
-			else {
+			} else {
 				throw e;
 			}
 		}
@@ -154,14 +153,14 @@ public class IbisContext extends IbisApplicationContext {
 		LOG.debug("Shutting down application [{}]", this::getApplicationName);
 		long start = System.currentTimeMillis();
 
-		if(ibisManager != null) {
+		if (ibisManager != null) {
 			ibisManager.shutdown();
 		}
-		if(ibisContextReconnectThread != null) { // If the ibis failed to initialize, and is trying to shutdown
+		if (ibisContextReconnectThread != null) { // If the ibis failed to initialize, and is trying to shutdown
 			ibisContextReconnectThread.interrupt();
 		}
-		if(classLoaderManager != null) {
-			classLoaderManager.shutdown();
+		if (classLoaderFactory != null) {
+			classLoaderFactory.shutdown();
 		}
 
 		long shutdownTime = System.currentTimeMillis() - start;
@@ -197,16 +196,15 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	public void unload(String configurationName) {
 		Configuration configuration = ibisManager.getConfiguration(configurationName);
-		if (configuration != null) {
-			ibisManager.unload(configurationName);
-			if (!configuration.getRegisteredAdapters().isEmpty()) {
-				log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageEventLevel.ERROR);
-			}
-			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
-			classLoaderManager.remove(configurationName);
-		} else {
+		if (configuration == null) {
 			log("Configuration [" + configurationName + "] to unload not found", MessageEventLevel.WARN);
+			return;
 		}
+		ibisManager.removeConfiguration(configuration);
+		if (!configuration.getRegisteredAdapters().isEmpty()) {
+			log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageEventLevel.ERROR);
+		}
+		getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
 	}
 
 	/**
@@ -241,17 +239,17 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see #load(String)
 	 */
 	private void load() {
-		if(AppConstants.getInstance().getBoolean(JdbcPropertySourceFactory.JDBC_PROPERTIES_KEY, false)) {
+		if (AppConstants.getInstance().getBoolean(JdbcPropertySourceFactory.JDBC_PROPERTIES_KEY, false)) {
 			JdbcPropertySourceFactory propertySourceFactory = getBean("jdbcPropertySourceFactory");
 			Properties properties = propertySourceFactory.createPropertySource(getApplicationName()+"-DatabaseProperties");
-			if(properties != null) {
+			if (properties != null) {
 				AppConstants.getInstance().putAll(properties);
 			}
 		}
 
 		try {
 			loadingConfigs.add(BusMessageUtils.ALL_CONFIGS_KEY);
-			load(null);
+			loadAllConfigurations();
 		} finally {
 			loadingConfigs.remove(BusMessageUtils.ALL_CONFIGS_KEY);
 		}
@@ -260,64 +258,79 @@ public class IbisContext extends IbisApplicationContext {
 	/**
 	 * Loads, digests and starts the specified configuration, or all configurations
 	 * Does not check if the configuration already exists. Does not unload old configurations!
+	 * Does not load parent-configuration if the configuration has a parent which is not loaded, because such side-effects
+	 * would be undesirable here.
 	 *
-	 * @param configurationName name of the configuration to load or null when you want to load all configurations
-	 *
-	 * @see ClassLoaderManager#get(String)
+	 * @param configurationName name of the configuration to load
+	 * @see ClassLoaderFactory#createClassLoader(String, Class, Configuration)
 	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
 	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
 	 */
-	public void load(@Nullable String configurationName) {
-		boolean configFound = false;
-
-		// We have an ordered list with all configurations, lets loop through!
+	public void load(@NonNull String configurationName) {
+		// We have a map with all configurations, see if we have the one requested!
 		Map<String, Class<? extends ClassLoader>> allConfigNamesItems = retrieveAllConfigNames();
-		for (Entry<String, Class<? extends ClassLoader>> currentConfigNameItem : allConfigNamesItems.entrySet()) {
-			String currentConfigurationName = currentConfigNameItem.getKey();
-			String classLoaderType = currentConfigNameItem.getValue() == null ? null : currentConfigNameItem.getValue().getCanonicalName();
-
-			if (configurationName == null || configurationName.equals(currentConfigurationName)) {
-				LOG.info("loading configuration [{}]", currentConfigurationName);
-				configFound = true;
-
-				ClassLoaderException classLoaderException = null;
-				ClassLoader classLoader = null;
-				try {
-					classLoader = classLoaderManager.get(currentConfigurationName, classLoaderType);
-
-					// An error occurred, but we don't want to throw any exceptions.
-					// Skip configuration digesting so it can be done at a later time.
-					if (classLoader == null)
-						continue;
-
-				} catch (ClassLoaderException e) {
-					classLoaderException = e;
-					if(LOG.isDebugEnabled())
-						LOG.debug("configuration [{}] got exception creating/retrieving classloader type [{}] errorMessage [{}]", currentConfigurationName, classLoaderType, e.getMessage());
-				}
-
-				if(LOG.isDebugEnabled()) LOG.debug("configuration [{}] found classloader [{}]", currentConfigurationName, ClassUtils.nameOf(classLoader));
-				try {
-					loadingConfigs.add(currentConfigurationName);
-					createAndConfigureConfigurationWithClassLoader(classLoader, currentConfigurationName, classLoaderException);
-				} catch (Exception e) {
-					log("an exception occurred while loading configuration ["+currentConfigurationName+"]", MessageEventLevel.ERROR, e);
-				} finally {
-					loadingConfigs.remove(currentConfigurationName);
-				}
-
-				LOG.info("configuration [{}] loaded successfully", currentConfigurationName);
-			}
+		if (!allConfigNamesItems.containsKey(configurationName)) {
+			log(configurationName + " not found in ["+ allConfigNamesItems.keySet() +"]", MessageEventLevel.ERROR);
+			return;
 		}
+		Class<? extends ClassLoader> configurationDefaultClassLoaderClass = allConfigNamesItems.get(configurationName);
+		loadSingleConfiguration(configurationName, configurationDefaultClassLoaderClass);
 
 		generateFlow();
-		// Check if the configuration we try to reload actually exists
-		if (!configFound && configurationName != null) {
-			log(configurationName + " not found in ["+ allConfigNamesItems.keySet() +"]", MessageEventLevel.ERROR);
-		}
 	}
 
-	/** Helper method to create stubbed configurations used in JunitTests */
+	/**
+	 * Load all configurations; if a configuration has a parent-configuration load that first.
+	 *
+	 * @see ClassLoaderFactory#createClassLoader(String, Class, Configuration)
+	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
+	 * @see #createAndConfigureConfigurationWithClassLoader(ClassLoader, String, ClassLoaderException)
+	 */
+	private void loadAllConfigurations() {
+		// We have an ordered map with all configurations, parents first, lets loop through!
+		retrieveAllConfigNames().forEach(this::loadSingleConfiguration);
+
+		generateFlow();
+	}
+
+	private void loadSingleConfiguration(@NonNull String configurationName, @Nullable Class<? extends ClassLoader> configurationDefaultClassLoaderClass) {
+		LOG.info("loading configuration [{}]", configurationName);
+
+		String classLoaderType = configurationDefaultClassLoaderClass == null ? null : configurationDefaultClassLoaderClass.getCanonicalName();
+		ClassLoaderException classLoaderException = null;
+		ClassLoader classLoader = null;
+		try {
+			classLoader = classLoaderFactory.createClassLoader(configurationName, configurationDefaultClassLoaderClass, getParentConfiguration(configurationName).orElse(null));
+
+			// An error occurred, but we don't want to throw any exceptions.
+			// Skip configuration digesting so it can be done at a later time.
+			if (classLoader == null)
+				return;
+
+		} catch (ClassLoaderException e) {
+			classLoaderException = e;
+			if (LOG.isDebugEnabled())
+				LOG.debug("configuration [{}] got exception creating/retrieving classloader type [{}] errorMessage [{}]", configurationName, classLoaderType, e.getMessage());
+		}
+
+		if (LOG.isDebugEnabled()) LOG.debug("configuration [{}] found classloader [{}]", configurationName, ClassUtils.nameOf(classLoader));
+		try {
+			loadingConfigs.add(configurationName);
+			createAndConfigureConfigurationWithClassLoader(classLoader, configurationName, classLoaderException);
+		} catch (Exception e) {
+			log("an exception occurred while loading configuration ["+ configurationName +"]", MessageEventLevel.ERROR, e);
+		} finally {
+			loadingConfigs.remove(configurationName);
+		}
+
+		LOG.info("configuration [{}] loaded successfully", configurationName);
+	}
+
+	/**
+	 * Helper method get the names of all configurations, overridden in JUnit tests to create stubbed configurations. Configuration names are sorted parent-first.
+	 *
+	 * @see ConfigurationUtils#retrieveAllConfigNames(ApplicationContext)
+	 */
 	protected Map<String, Class<? extends ClassLoader>> retrieveAllConfigNames() {
 		return ConfigurationUtils.retrieveAllConfigNames(getApplicationContext());
 	}
@@ -336,6 +349,24 @@ public class IbisContext extends IbisApplicationContext {
 			throw new IllegalStateException("configuration name mismatch");
 		}
 		return configuration;
+	}
+
+	/**
+	 * Get the name of the parent configuration
+	 * @param configurationName Name of configuration for which to find parent configuration name
+	 * @return Name of parent configuration, or null
+	 */
+	public static Optional<@NonNull String> getParentConfigName(@NonNull String configurationName) {
+		return Optional.ofNullable(AppConstants.getInstance().getString("configurations." + configurationName + ".parentConfig", null));
+	}
+
+	/**
+	 * Get parent configuration for given configuration-name, but do not load it if it is named but not loaded
+	 * @param configurationName Name of configuration for which to find parent configuration
+	 * @return Parent configuration, or null if no parent-configuration name found or if parent configuration not loaded
+	 */
+	private Optional<@NonNull Configuration> getParentConfiguration(@NonNull String configurationName) {
+		return getParentConfigName(configurationName).map(ibisManager::getConfiguration);
 	}
 
 	/**

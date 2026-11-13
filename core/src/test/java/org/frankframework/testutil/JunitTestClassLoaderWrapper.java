@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -28,14 +30,14 @@ public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
 		super.configure(ibisContext, configurationName);
 		// Register this instance so the leak-detection can be tested
 		ClassLoadingLeakDetector.registerClassLoader(configurationName, this);
 	}
 
 	@Override
-	public URL getLocalResource(String name) {
+	public URL getLocalResource(@NonNull String name) {
 		if (name == null) {
 			return null;
 		}

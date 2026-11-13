@@ -23,6 +23,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
@@ -83,20 +84,28 @@ public class IbisManager implements ApplicationContextAware {
 	/**
 	 * Stop and remove the Configuration
 	 */
-	public void unload(@Nullable String configurationName) {
-		if (configurationName == null) {
-			while (!configurations.isEmpty()) {
-				removeConfiguration(configurations.getFirst());
-			}
-		} else {
-			removeConfiguration(getConfiguration(configurationName));
+	public void unloadAll() {
+		while (!configurations.isEmpty()) {
+			removeConfiguration(configurations.getFirst());
 		}
 	}
 
-	private void removeConfiguration(Configuration configuration) {
+	/**
+	 * Stop and remove the Configuration
+	 */
+	public void removeConfiguration(@NonNull Configuration configuration) {
 		Assert.notNull(configuration, "no configuration provided");
 		log.info("removing configuration [{}]", configuration);
+		ClassLoader classLoader = configuration.getClassLoader();
 		configuration.close();
+		if (classLoader instanceof DisposableBean configurationClassLoader) {
+			configuration.setClassLoader(null);
+			try {
+				configurationClassLoader.destroy();
+			} catch (Exception e) {
+				log.warn("Error while destroying configuration classloader", e);
+			}
+		}
 
 		configurations.remove(configuration);
 	}
@@ -105,7 +114,7 @@ public class IbisManager implements ApplicationContextAware {
 	 * Shut down the IBIS instance and clean up.
 	 */
 	public void shutdown() {
-		unload(null);
+		unloadAll();
 		IbisCacheManager.shutdown();
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2017, 2019-2020 Nationale-Nederlanden
+   Copyright 2016-2017, 2019-2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 package org.frankframework.configuration.classloaders;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
@@ -35,7 +37,7 @@ public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public final void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+	public final void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
 		super.configure(ibisContext, configurationName);
 		resources = loadResources();
 	}
@@ -46,26 +48,14 @@ public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 		if (resource != null) {
 			try {
 				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(resource);
-				return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
+				URI uri = URI.create(CLASSPATH_RESOURCE_SCHEME + name);
+				return URL.of(uri, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);
 			}
 		}
 
 		return null;
-	}
-
-	/**
-	 * Tries to load new resources, upon success, clears all resources, calls it's super.reload() and sets the new resources
-	 */
-	@Override
-	public final void reload() throws ClassLoaderException {
-		Map<String, byte[]> newResources = loadResources();
-		if (newResources != null) {
-			clearResources();
-			super.reload();
-			resources = newResources;
-		}
 	}
 
 	@Override

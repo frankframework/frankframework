@@ -40,7 +40,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import lombok.Getter;
 
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.configuration.extensions.SapSystems;
 import org.frankframework.configuration.util.ConfigurationUtils;
@@ -120,9 +119,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		if (!(getClassLoader() instanceof IConfigurationClassLoader)) {
-			throw new IllegalStateException("No IConfigurationClassLoader set");
-		}
 		if (ibisManager == null) {
 			throw new IllegalStateException("No IbisManager set");
 		}
@@ -306,11 +302,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	}
 
 	public boolean isStubbed() {
-		if (getClassLoader() instanceof IConfigurationClassLoader) {
-			return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
-		}
-
-		return false;
+		return ConfigurationUtils.isConfigurationStubbed(getClassLoader());
 	}
 
 	/**
@@ -444,7 +436,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 */
 	@Nullable
 	public String getClassLoaderType() {
-		if(!(getClassLoader() instanceof IConfigurationClassLoader)) { // Configuration has not been loaded yet
+		ClassLoader classLoader = getClassLoader();
+		if (classLoader == null) { // Configuration has not been loaded yet
 			String type = AppConstants.getInstance().getProperty("configurations."+getName()+".classLoaderType");
 			if(StringUtils.isNotEmpty(type)) { // We may not return an empty String
 				return type;
@@ -452,11 +445,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			return null;
 		}
 
-		if (getClassLoader() == null) {
-			return null;
-		}
-
-		return getClassLoader().getClass().getSimpleName();
+		return classLoader.getClass().getSimpleName();
 	}
 
 	public void setIbisManager(IbisManager ibisManager) {

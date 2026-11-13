@@ -33,6 +33,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasTransactionAttribute;
 import org.frankframework.core.IbisTransaction;
 import org.frankframework.core.TransactionAttribute;
@@ -46,37 +47,23 @@ import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
- * Locker of scheduler jobs and pipes.
+ * Locker element for {@link org.frankframework.scheduler.ScheduleManager scheduler jobs}, the {@link org.frankframework.core.PipeLine Pipeline} and Pipes.
  * <p>
- * Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
+ * Tries to set a lock (by inserting a record in the database table IBISLOCK) and only if this is done
  * successfully the job is executed.
  * <p>
- * For an Oracle database the following objects are used:
- *  <pre>{@code
- *	CREATE TABLE &lt;schema_owner&gt;.IBISLOCK
- *	(
- *	OBJECTID VARCHAR2(100 CHAR),
- *	TYPE CHAR(1 CHAR),
- *	HOST VARCHAR2(100 CHAR),
- *	CREATIONDATE TIMESTAMP(6),
- *	EXPIRYDATE TIMESTAMP(6)
- *	CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)
- *	);
+ * This ensures that only one instance of a job is executed at the same time, even if the job is present on multiple nodes in a cluster.
+ * A lock requires an {@literal objectId}, which is used to identify the lock.
+ * There are two types of locks: temporary and permanent. A temporary lock is automatically released after the job has completed,
+ * a permanent lock is not released. If a dateFormatSuffix is specified, it is added to the objectId.
+ * This allows for permanent locks to be executed once per day, week, month or year.
  *
- *	CREATE INDEX &lt;schema_owner&gt;.IX_IBISLOCK ON &lt;schema_owner&gt;.IBISLOCK
- *	(EXPIRYDATE);
- *
- *	GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISLOCK TO &lt;rolename&gt;;
- *	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;
- *
- *	COMMIT;
- *  }</pre>
- *
- * @author  Peter Leeuwenburgh
+ * @ff.info The IBISLOCK table should always exist. If it does not exist, and {@literal isIgnoreTableNotExist} has been set, the process will continue as if the lock was obtained.
+ * @ff.info The IBISLOCK table is automatically cleaned up by purging expired locks. The cleanup process is executed by the {@link org.frankframework.scheduler.job.CleanupDatabaseJob CleanupDatabaseJob}.
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Locker extends JdbcFacade implements HasTransactionAttribute {
-	private static final String LOCK_IGNORED="%null%";
+	private static final String LOCK_IGNORED = "%null%";
 	private static final String LOCK_OBJECT_QUERY = "INSERT INTO IBISLOCK (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
 	private static final String UNLOCK_OBJECT_QUERY = "DELETE FROM IBISLOCK WHERE objectId=?";
 	private static final String CHECK_OBJECT_LOCK_QUERY = "SELECT type, host, creationDate, expiryDate FROM IBISLOCK WHERE objectId=?";
@@ -379,6 +366,8 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	}
 
 	/** If set <code>true</code> and the IBISLOCK table does not exist in the database, the process continues as if the lock was obtained */
+	@Deprecated
+	@ConfigurationWarning("The IBISLOCK table should always exist.")
 	public void setIgnoreTableNotExist(boolean b) {
 		ignoreTableNotExist = b;
 	}

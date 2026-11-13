@@ -3,6 +3,7 @@ package org.frankframework.configuration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -31,10 +32,10 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StreamUtil;
 
-public class ClassLoaderManagerTest extends Mockito {
+public class ClassLoaderFactoryTest extends Mockito {
 
 	private static final IbisContext ibisContext = spy(new IbisContext());
-	private ClassLoaderManager manager;
+	private ClassLoaderFactory factory;
 
 	private static final String BASE_DIR = "/ClassLoader";
 	private static final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
@@ -45,6 +46,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	private static final String CONFIG_3_NAME = "config3";
 	private static final String CONFIG_5_NAME = "config5";
 	private static final String CONFIG_6_NAME = "config6";
+	private static final String CONFIG_7_NAME = "config7";
 
 	// declarations for parameterized tests
 	private String type = null;
@@ -53,20 +55,21 @@ public class ClassLoaderManagerTest extends Mockito {
 	private AppConstants appConstants;
 
 	public static List<Arguments> data() {
-		return Arrays.asList(new Arguments[] {
-				Arguments.of("", CONFIG_0_NAME),
-				Arguments.of("WebAppClassLoader", CONFIG_1_NAME),
-				Arguments.of("DirectoryClassLoader", CONFIG_2_NAME),
-				Arguments.of("JarFileClassLoader", CONFIG_3_NAME),
-				Arguments.of("DatabaseClassLoader", CONFIG_5_NAME),
-				Arguments.of("DummyClassLoader", CONFIG_6_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME),
-				Arguments.of("org.frankframework.configuration.classloaders.DefaultClassLoader", "tralla")
-		});
+		return Arrays.asList(
+				arguments("", CONFIG_0_NAME),
+				arguments("WebAppClassLoader", CONFIG_1_NAME),
+				arguments("DirectoryClassLoader", CONFIG_2_NAME),
+				arguments("JarFileClassLoader", CONFIG_3_NAME),
+				arguments("DatabaseClassLoader", CONFIG_5_NAME),
+				arguments("DummyClassLoader", CONFIG_6_NAME),
+				arguments("ScanningDirectoryClassLoader", CONFIG_7_NAME),
+				arguments("org.frankframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME),
+				arguments("org.frankframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME),
+				arguments("org.frankframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME),
+				arguments("org.frankframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME),
+				arguments("org.frankframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME),
+				arguments("org.frankframework.configuration.classloaders.DefaultClassLoader", "tralla")
+		);
 	}
 
 	@BeforeAll
@@ -80,7 +83,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	public void configureClassloader(String type, String configurationName) {
-		if(type == null || "DummyClassLoader".equals(type))
+		if (type == null || "DummyClassLoader".equals(type))
 			skip = true;
 		else if(type.isEmpty()) // If empty string, it's a WebAppClassLoader
 			type = "WebAppClassLoader";
@@ -88,13 +91,13 @@ public class ClassLoaderManagerTest extends Mockito {
 		this.type = type;
 		this.configurationName = configurationName;
 
-		if(type.endsWith("DirectoryClassLoader")) {
+		if (type.endsWith("DirectoryClassLoader")) {
 			String directory = JunitTestClassLoaderWrapper.getTestClassesLocation()+"ClassLoader/DirectoryClassLoaderRoot/";
 			setLocalProperty("configurations."+configurationName+".directory", directory);
 			setLocalProperty("configurations."+configurationName+".basePath", ".");
 		}
 
-		if(type.endsWith("JarFileClassLoader")) {
+		if (type.endsWith("JarFileClassLoader")) {
 			URL file = this.getClass().getResource(JAR_FILE);
 			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
 		}
@@ -115,7 +118,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		}
 		setLocalProperty("configurations.names", configurationsNames.toString());
 
-		manager = new ClassLoaderManager(ibisContext);
+		factory = new ClassLoaderFactory(ibisContext);
 	}
 
 	private static void mockDatabase() throws Exception {
@@ -134,7 +137,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		ResultSet rs = mock(ResultSet.class);
 		doReturn(true).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
-		URL file = ClassLoaderManager.class.getResource(JAR_FILE);
+		URL file = ClassLoaderFactory.class.getResource(JAR_FILE);
 		doReturn(StreamUtil.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 
@@ -153,8 +156,19 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	private ClassLoader getClassLoader(String testConfiguration) throws Exception {
-		ClassLoader config = manager.get(testConfiguration);
-		if(config instanceof AbstractClassLoader base) {
+		return getClassLoader(testConfiguration, null);
+	}
+
+	private ClassLoader getClassLoader(String testConfiguration, ClassLoader parent) throws Exception {
+		Configuration mockConfiguration;
+		if (parent != null) {
+			mockConfiguration = mock(Configuration.class);
+			when(mockConfiguration.getClassLoader()).thenReturn(parent);
+		} else {
+			mockConfiguration = null;
+		}
+		ClassLoader config = factory.createClassLoader(testConfiguration, null, mockConfiguration);
+		if (config instanceof AbstractClassLoader base) {
 			base.setBasePath(".");
 		}
 		return config;
@@ -243,39 +257,11 @@ public class ClassLoaderManagerTest extends Mockito {
 		URL parentResource = parentClassloader.getResource(testFile);
 		assertNotNull(parentResource);
 
-		ClassLoader config = getClassLoader();
+		ClassLoader config = getClassLoader(configurationName, parentClassloader);
 		URL resource = config.getResource(testFile);
 
 		assertNotNull(resource);
 		appConstants.remove("configurations."+configurationName+".parentConfig");
-	}
-
-	@ParameterizedTest
-	@MethodSource("data")
-	public void reloadString(String classLoader, String configurationName) throws Exception {
-		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoader config1 = manager.get(configurationName);
-
-		manager.reload(configurationName);
-
-		// Make sure the manager returns the same classloader after reloading it
-		ClassLoader config2 = manager.get(configurationName);
-		assertEquals(config1.toString(), config2.toString());
-	}
-
-	@ParameterizedTest
-	@MethodSource("data")
-	public void reloadClassLoader(String classLoader, String configurationName) throws Exception {
-		configureClassloader(classLoader, configurationName);
-		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
-		ClassLoader config1 = manager.get(configurationName);
-
-		manager.reload(config1);
-
-		// Make sure the manager returns the same classloader after reloading it
-		ClassLoader config2 = manager.get(configurationName);
-		assertEquals(config1.toString(), config2.toString());
 	}
 
 	/**This method makes sure the property is only set in the local AppConstants instance.

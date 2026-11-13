@@ -29,7 +29,7 @@ public class MockIbisManager extends IbisManager {
 
 	@Override
 	public void shutdown() {
-		unload(null);
+		unloadAll();
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 */
 package org.frankframework.core;
 
-import org.frankframework.configuration.ClassLoaderManager;
+import org.frankframework.configuration.ClassLoaderFactory;
 
 public interface IScopeProvider {
 
 	/**
 	 * This ClassLoader is set upon creation of the object, used to retrieve resources configured by the Ibis application.
-	 * @return returns the ClassLoader created by the {@link ClassLoaderManager ClassLoaderManager}.
+	 * @return returns the ClassLoader created by the {@link ClassLoaderFactory ClassLoaderFactory}.
 	 */
 	ClassLoader getConfigurationClassLoader();
 }

@@ -31,7 +31,8 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
-import org.springframework.core.SmartClassLoader;
+
+import lombok.Getter;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ClassLoaderException;
@@ -51,7 +52,7 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Niels Meijer
  */
-public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader, SmartClassLoader {
+public abstract class AbstractClassLoader extends ClassLoader implements IConfigurationClassLoader {
 
 	private IbisContext ibisContext = null;
 	private String configurationName = null;
@@ -65,6 +66,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
 	private final Set<String> loadedCustomClasses = new HashSet<>();
+	private @Getter boolean destroyed = false;
 
 	protected AbstractClassLoader() {
 		this(Thread.currentThread().getContextClassLoader());
@@ -75,7 +77,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public void configure(IbisContext ibisContext, String configurationName) throws ClassLoaderException {
+	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
 		this.ibisContext = ibisContext;
 		this.configurationName = configurationName;
 
@@ -128,7 +130,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public String getConfigurationName() {
+	public @NonNull String getConfigurationName() {
 		return configurationName;
 	}
 
@@ -151,7 +153,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public void setReportLevel(String level) {
+	public void setReportLevel(@NonNull String level) {
 		try {
 			this.reportLevel = ReportLevel.valueOf(level.toUpperCase());
 		}
@@ -178,7 +180,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * Implementations of this class should use {@link AbstractClassLoader#getLocalResource(String)}
 	 */
 	@Override
-	public final @Nullable URL getResource(String name) {
+	public final @Nullable URL getResource(@Nullable String name) {
 		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
 			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]")); // Use an exception so we can 'trace the stack'
 			return null;
@@ -272,13 +274,13 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 		Throwable throwable;
 		try {
 			return super.loadClass(name, resolve); // First try to load the class natively
-		} catch (ClassNotFoundException | NoClassDefFoundError t) { // Catch NoClassDefFoundError and ClassNotFoundExceptions
+		} catch (ReflectiveOperationException | LinkageError t) { // Covers NoClassDefFoundError and ClassNotFoundExceptions and broader related exceptions
 			throwable = t;
 		}
 
 		try {
 			return defineClass(name, resolve);
-		} catch (ClassNotFoundException e) {
+		} catch (ReflectiveOperationException | LinkageError e) {
 			e.addSuppressed(throwable);
 			throw e;
 		}
@@ -286,7 +288,8 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 
 	/**
 	 * <p>
-	 * Fixes <code>--add-opens=java.base/java.lang=ALL-UNNAMED</code> problem when loading classes dynamically when CGLIB is enabled.
+	 * Partially fixes <code>--add-opens=java.base/java.lang=ALL-UNNAMED</code> problem when loading classes dynamically when CGLIB is enabled.
+	 * Full solution will require the base classloaders to also implement this interface, which they currently don't.
 	 * See <a href="https://github.com/spring-projects/spring-framework/issues/26403">spring github</a> for more background information.
 	 * </p>
 	 *
@@ -320,15 +323,15 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 					try {
 						byte[] bytes = StreamUtil.streamToBytes(url.openStream());
 						ProtectionDomain protectionDomain = ReflectUtils.getProtectionDomain(this.getClass());
-						Class<?> clazz = publicDefineClass(name, bytes, protectionDomain);
+						Class<?> definedClass = publicDefineClass(name, bytes, protectionDomain);
 
 						if (resolve) {
-							resolveClass(clazz);
+							resolveClass(definedClass);
 						}
 
 						loadedCustomClasses.add(name);
 
-						return clazz;
+						return definedClass;
 					} catch (Exception e) {
 						throw new ClassNotFoundException("failed to load class ["+path+"] in classloader ["+this+"]", e);
 					}
@@ -340,17 +343,11 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	}
 
 	@Override
-	public void reload() throws ClassLoaderException {
-		log.debug("reloading classloader [{}]", getConfigurationName());
-
-		AppConstants.removeInstance(this);
-	}
-
-	@Override
 	public void destroy() {
 		log.debug("removing classloader [{}]", this);
 
 		AppConstants.removeInstance(this);
+		destroyed = true;
 		ClassLoadingLeakDetector.destroyed(this);
 	}
 
