@@ -122,7 +122,7 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 			SpringUtils.autowireByType(applicationContext, classLoader);
 		} catch (Exception e) {
 			log.error("error configuring ClassLoader for [{}]", name, e);
-			throw new ClassLoaderException(e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+			throw ClassUtils.<ClassLoaderException>wrapException(e);
 		}
 		log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
 	}
