@@ -15,9 +15,7 @@
 */
 package org.frankframework.util;
 
-import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -48,12 +46,9 @@ public class PropertiesUtil {
 	 */
 	public static Properties getSubProperties(Properties properties, String keyBase) {
 		final String propertyPrefix = keyBase + (!keyBase.endsWith(".") ? "." : "");
-
-		Properties filteredProperties = new Properties();
-		Map<String, String> tempMap = properties.stringPropertyNames().stream()
+		int prefixLength = propertyPrefix.length();
+		return properties.stringPropertyNames().stream()
 				.filter(key -> key.startsWith(propertyPrefix))
-				.collect(Collectors.toMap(key -> key.substring(propertyPrefix.length()), properties::getProperty));
-		filteredProperties.putAll(tempMap);
-		return filteredProperties;
+				.collect(Properties::new, (props, key) -> props.setProperty(key.substring(prefixLength), properties.getProperty(key)), Properties::putAll);
 	}
 }
