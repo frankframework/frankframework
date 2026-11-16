@@ -21,13 +21,12 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import javax.xml.transform.TransformerConfigurationException;
 
@@ -160,23 +159,23 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			log.debug("configuring local HttpSession");
 			super.configure();
 		} else {
-			List<String> overriddenProperties = new ArrayList<>();
-
-			// Check if any properties are set, that will be overridden by the sharedResource
-			if (StringUtils.isNotBlank(super.getUsername())) overriddenProperties.add("username");
-			if (StringUtils.isNotBlank(super.getPassword())) overriddenProperties.add("password");
-			if (StringUtils.isNotBlank(super.getClientAuthAlias())) overriddenProperties.add("clientAuthAlias");
-			if (StringUtils.isNotBlank(super.getAuthAlias())) overriddenProperties.add("alias");
-			if (StringUtils.isNotBlank(super.getClientId())) overriddenProperties.add("clientId");
-			if (StringUtils.isNotBlank(super.getClientSecret())) overriddenProperties.add("clientSecret");
-			if (StringUtils.isNotBlank(super.getTokenEndpoint())) overriddenProperties.add("tokenEndpoint");
-			if (super.getOauthAuthenticationMethod() != null) overriddenProperties.add("oauthMethod");
-    		if (super.getTimeout() != UNCONFIGURED_TIMEOUT) overriddenProperties.add("timeout");
-
-			if (!overriddenProperties.isEmpty()) {
-				String message = "sharedResourceRef is defined. The following properties will be ignored: " + String.join(", ", overriddenProperties);
-				ConfigurationWarnings.add(this, log, message);
-			}
+			Map.<String, BooleanSupplier>of(
+							"username", () -> StringUtils.isNotBlank(super.getUsername()),
+							"password", () -> StringUtils.isNotBlank(super.getPassword()),
+							"clientAuthAlias", () -> StringUtils.isNotBlank(super.getClientAuthAlias()),
+							"alias", () -> StringUtils.isNotBlank(super.getAuthAlias()),
+							"clientId", () -> StringUtils.isNotBlank(super.getClientId()),
+							"clientSecret", () -> StringUtils.isNotBlank(super.getClientSecret()),
+							"tokenEndpoint", () -> StringUtils.isNotBlank(super.getTokenEndpoint()),
+							"oauthMethod", () -> super.getOauthAuthenticationMethod() != null,
+							"timeout", () -> super.getTimeout() != UNCONFIGURED_TIMEOUT
+					).entrySet()
+					.stream()
+					.filter(e -> e.getValue().getAsBoolean())
+					.map(Map.Entry::getKey)
+					.reduce((s1, s2) -> s1 + ", " + s2)
+					.map(s -> "sharedResourceRef is defined. The following properties will be ignored: " + s)
+					.ifPresent(message -> ConfigurationWarnings.add(AbstractHttpSender.this, log, message));
 		}
 
 		paramList.configure();

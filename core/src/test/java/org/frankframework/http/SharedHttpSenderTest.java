@@ -12,6 +12,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import org.apache.http.HttpHost;
@@ -69,7 +70,6 @@ public class SharedHttpSenderTest {
 		sender.setVerifyHostname(false);
 		sender.setAllowSelfSignedCertificates(true);
 		sender.setMethodType(HttpMethod.GET);
-		sender.setTimeout(5_000);
 		session = new PipeLineSession();
 	}
 
@@ -113,6 +113,7 @@ public class SharedHttpSenderTest {
 		sender.setClientSecret("test-client-secret");
 		sender.setTokenEndpoint("test-endpoint");
 		sender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS);
+		sender.setTimeout(5_000);
 
 		try (MockedStatic<ConfigurationWarnings> mockedWarnings = mockStatic(ConfigurationWarnings.class)) {
 
@@ -137,6 +138,22 @@ public class SharedHttpSenderTest {
 					.contains("timeout");
 
 			assertEquals(50_000, sender.getTimeout());
+		}
+	}
+
+	@Test
+	public void sharedSenderWithNoOverriddenPropertiesShouldNotLogWarning() throws Exception {
+		sender.setSharedResourceRef("dummy");
+
+		try (MockedStatic<ConfigurationWarnings> mockedWarnings = mockStatic(ConfigurationWarnings.class)) {
+
+			// Configure sender
+			sender.configure();
+
+			// Capture the actual call
+			ArgumentCaptor<String> messageCaptor = forClass(String.class);
+			mockedWarnings.verify(() -> ConfigurationWarnings.add(eq(sender), any(), messageCaptor.capture()), times(0));
+
 		}
 	}
 
