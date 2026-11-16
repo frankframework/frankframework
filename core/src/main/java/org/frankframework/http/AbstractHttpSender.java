@@ -205,9 +205,9 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			}
 		}
 
-		if(StringUtils.isNotEmpty(getContentType()) && headerParamsSet.stream().noneMatch(e -> e.equalsIgnoreCase("content-type"))) {
+		if (StringUtils.isNotEmpty(getContentType()) && headerParamsSet.stream().noneMatch(e -> e.equalsIgnoreCase("content-type"))) {
 			defaultContentType = ContentType.parse(getContentType());
-			if(defaultContentType.getCharset() == null && !"application/json".equals(defaultContentType.getMimeType())) {
+			if (defaultContentType.getCharset() == null && !"application/json".equals(defaultContentType.getMimeType())) {
 				defaultContentType = defaultContentType.withCharset(getCharSet());
 			}
 		}
@@ -271,7 +271,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 
 	@Override
 	public void stop() {
-		if(StringUtils.isBlank(sharedResourceRef)) {
+		if (StringUtils.isBlank(sharedResourceRef)) {
 			super.stop();
 		}
 
@@ -283,7 +283,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	protected boolean appendParameters(boolean parametersAppended, StringBuilder path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			log.debug("appending [{}] parameters", parameters::size);
-			for(ParameterValue pv : parameters) {
+			for (ParameterValue pv : parameters) {
 				if (requestOrBodyParamsSet.contains(pv.getName())) {
 					String value = pv.asStringValue("");
 					if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(pv.getName())) {
@@ -382,7 +382,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 				log.debug("appending header parameters {}", headersParams);
 				for (String paramName:headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);
-					if(paramValue != null) {
+					if (paramValue != null) {
 						String value = paramValue.asStringValue(null);
 						if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(paramName)) {
 							headersParamsMap.put(paramName, value);
@@ -392,8 +392,9 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			}
 
 			httpRequestBase = getMethod(targetUri, message, pvl, session);
-			if(httpRequestBase == null)
+			if (httpRequestBase == null) {
 				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
+			}
 
 			// Set all headers
 			if (appendMessageidHeader && StringUtils.isNotEmpty(session.getMessageId())) {
