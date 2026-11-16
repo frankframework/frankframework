@@ -313,7 +313,7 @@ public class WsdlXmlValidator extends SoapValidator {
 	/**
 	 * Simple record class to maintain the schema, the reference and the namespace together.
 	 */
-	record SchemaWithReferences(Schema schema, String reference, String namespace) { }
+	record SchemaWithReferences(@NonNull Schema schema, @NonNull String reference, @Nullable String namespace) { }
 
 	@Override
 	public Set<IXSD> getXsds() throws ConfigurationException {
