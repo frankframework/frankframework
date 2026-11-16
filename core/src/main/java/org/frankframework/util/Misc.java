@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
@@ -162,6 +163,10 @@ public class Misc {
 		return messageSizeWarnByDefault;
 	}
 
+	public static String getAge(Duration duration) {
+		return getAge(duration.toMillis());
+	}
+
 	public static String getAge(long value) {
 		long currentTime = System.currentTimeMillis();
 		long age = currentTime - value;
@@ -179,6 +184,10 @@ public class Misc {
 			}
 		}
 		return ageString;
+	}
+
+	public static String getDurationInMs(Duration duration) {
+		return getDurationInMs(duration.toMillis());
 	}
 
 	public static String getDurationInMs(long value) {

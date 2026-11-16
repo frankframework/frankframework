@@ -343,10 +343,12 @@ public class WsdlXmlValidator extends SoapValidator {
 			}
 		}
 		List<Schema> filteredSchemas;
-		Map<Schema, String> filteredReferences = null;
-		Map<Schema, String> filteredNamespaces = null;
+		Map<Schema, String> filteredReferences;
+		Map<Schema, String> filteredNamespaces;
 		if (StringUtils.isEmpty(getSchemaLocation())) {
 			filteredSchemas = schemas;
+			filteredReferences = Map.of();
+			filteredNamespaces = Map.of();
 		} else {
 			filteredSchemas = new ArrayList<>();
 			filteredReferences = new HashMap<>();
