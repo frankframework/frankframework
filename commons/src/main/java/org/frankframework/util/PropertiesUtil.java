@@ -19,12 +19,11 @@ import java.util.Properties;
 
 import org.jspecify.annotations.NullMarked;
 
-@NullMarked
-public class PropertyUtil {
+import lombok.experimental.UtilityClass;
 
-	private PropertyUtil() {
-		// no-op constructor to hide the implicit public constructor
-	}
+@NullMarked
+@UtilityClass
+public class PropertiesUtil {
 
 	public static Properties propertiesOf(String... keyValuePairs) {
 		if (keyValuePairs.length % 2 != 0) {
@@ -47,14 +46,9 @@ public class PropertyUtil {
 	 */
 	public static Properties getSubProperties(Properties properties, String keyBase) {
 		final String propertyPrefix = keyBase + (!keyBase.endsWith(".") ? "." : "");
-
-		Properties filteredProperties = new Properties();
-		for (String key: properties.stringPropertyNames()) {
-			if (key.startsWith(propertyPrefix)) {
-				filteredProperties.put(key.substring(propertyPrefix.length()), properties.get(key));
-			}
-		}
-
-		return filteredProperties;
+		int prefixLength = propertyPrefix.length();
+		return properties.stringPropertyNames().stream()
+				.filter(key -> key.startsWith(propertyPrefix))
+				.collect(Properties::new, (props, key) -> props.setProperty(key.substring(prefixLength), properties.getProperty(key)), Properties::putAll);
 	}
 }

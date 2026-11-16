@@ -35,7 +35,7 @@ import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.PropertyUtil;
+import org.frankframework.util.PropertiesUtil;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -118,26 +118,30 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 
 	private void configureClassLoader(@NonNull String name, @NonNull ClassLoader classLoader, @NonNull Properties classLoaderConfigProperties) throws ClassLoaderException {
 		try {
-			applyConfigurationProperties(name, classLoader, classLoaderConfigProperties);
-		} catch (RuntimeException e) {
-			throw new ClassLoaderException(e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+			ClassUtils.invokeSetters(classLoader, classLoaderConfigProperties);
+			SpringUtils.autowireByType(applicationContext, classLoader);
+		} catch (Exception e) {
+			log.error("error configuring ClassLoader for [{}]", name, e);
+			throw ClassUtils.<ClassLoaderException>wrapException(e);
 		}
 		log.info("configured classloader [{}]", () -> ClassUtils.nameOf(classLoader));
 	}
 
 	private <T extends ClassLoader> @NonNull T createInstance(@NonNull String name, @NonNull Class<T> classLoaderType, @Nullable ClassLoader parentClassLoader) throws ClassLoaderException {
-		final ClassLoader classLoader;
 		try {
 			Constructor<?> con = ClassUtils.getConstructorOnType(classLoaderType, new Class[] {ClassLoader.class});
-			classLoader = (ClassLoader) con.newInstance(parentClassLoader != null ? parentClassLoader : classPathClassLoader);
+			final ClassLoader classLoader = (ClassLoader) con.newInstance(parentClassLoader != null ? parentClassLoader : classPathClassLoader);
+
+			log.debug("successfully instantiated classloader [{}] with parent classloader [{}]", () -> ClassUtils.nameOf(classLoader), () -> ClassUtils.nameOf(parentClassLoader));
+
+			// Register classloader with LeakDetector
+			ClassLoadingLeakDetector.registerClassLoader(name, classLoader);
+
+			// noinspection unchecked
+			return (T)classLoader;
 		} catch (Exception | LinkageError e) {
 			throw new ClassLoaderException("invalid classLoaderType ["+ classLoaderType.getCanonicalName()+"]", e);
 		}
-		log.debug("successfully instantiated classloader [{}] with parent classloader [{}]", () -> ClassUtils.nameOf(classLoader), () -> ClassUtils.nameOf(parentClassLoader));
-		// Register classloader with LeakDetector
-		ClassLoadingLeakDetector.registerClassLoader(name, classLoader);
-		//noinspection unchecked
-		return (T)classLoader;
 	}
 
 	@Contract("_, !null -> param2")
@@ -158,7 +162,7 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 
 		try {
 			Class<?> clas = ClassUtils.loadClass(className);
-			//noinspection unchecked
+			// noinspection unchecked
 			return (Class<? extends ClassLoader>) clas;
 		} catch (Exception | LinkageError e) {
 			throw new ClassLoaderException("invalid classLoaderType ["+className+"]", e);
@@ -171,25 +175,15 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 			try {
 				return EnumUtils.parse(IConfigurationClassLoader.ReportLevel.class, reportLevel);
 			} catch (IllegalArgumentException e) {
-				log.warn("invalid reportLevel ["+reportLevel+"]", e);
+				log.warn("invalid reportLevel [{}]", reportLevel, e);
 			}
 		}
 		return IConfigurationClassLoader.ReportLevel.INFO;
 	}
 
-	private void applyConfigurationProperties(@NonNull String name, @NonNull ClassLoader loader, Properties configurationProperties) throws ClassLoaderException {
-		ClassUtils.invokeSetters(loader, configurationProperties);
-		try {
-			SpringUtils.autowireByType(applicationContext, loader);
-		} catch (Exception e) {
-			log.error("error configuring ClassLoader for [{}]", name, e);
-			throw new ClassLoaderException(e);
-		}
-	}
-
 	private @NonNull Properties getConfigurationProperties(@NonNull String configurationName) {
 		String parentProperty = "configurations." + configurationName + ".";
-		Properties subProperties = PropertyUtil.getSubProperties(appConstants, parentProperty);
+		Properties subProperties = PropertiesUtil.getSubProperties(appConstants, parentProperty);
 		subProperties.setProperty("configurationName", configurationName);
 		return subProperties;
 	}
