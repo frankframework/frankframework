@@ -136,10 +136,10 @@ jobs:
     - name: Build with Maven
       if: needs.check-changes.outputs.relevant == 'true'
       env:
-        #mailAddress: ${{ secrets.EXCHANGE_MAIL_ADDRESS }}
-        #clientId: ${{ secrets.EXCHANGE_MAIL_CLIENTID }}
-        #clientSecret: ${{ secrets.EXCHANGE_MAIL_CLIENTSECRET }}
-        #tenantId: ${{ secrets.EXCHANGE_MAIL_TENANTID }}
+        mailAddress: ${{ secrets.EXCHANGE_MAIL_ADDRESS }}
+        clientId: ${{ secrets.EXCHANGE_MAIL_CLIENTID }}
+        clientSecret: ${{ secrets.EXCHANGE_MAIL_CLIENTSECRET }}
+        tenantId: ${{ secrets.EXCHANGE_MAIL_TENANTID }}
         baseFolder: "Inbox/${{env.PR_NUMBER}}-${{ env.JDK_VERSION }}"
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
