@@ -171,7 +171,8 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			if (StringUtils.isNotBlank(super.getClientSecret())) overriddenProperties.add("clientSecret");
 			if (StringUtils.isNotBlank(super.getTokenEndpoint())) overriddenProperties.add("tokenEndpoint");
 			if (super.getOauthAuthenticationMethod() != null) overriddenProperties.add("oauthMethod");
-    		if (super.getTimeout() != UNCONFIGURED_TIMEOUT)  overriddenProperties.add("timeout");
+    		if (super.getTimeout() != UNCONFIGURED_TIMEOUT) overriddenProperties.add("timeout");
+
 			if (!overriddenProperties.isEmpty()) {
 				String message = "sharedResourceRef is defined. The following properties will be ignored: " + String.join(", ", overriddenProperties);
 				ConfigurationWarnings.add(this, log, message);
