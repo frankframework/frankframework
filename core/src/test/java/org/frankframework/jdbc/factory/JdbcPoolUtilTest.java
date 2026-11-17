@@ -1,8 +1,11 @@
 package org.frankframework.jdbc.factory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+
+import java.time.Duration;
 
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
@@ -53,5 +56,27 @@ public class JdbcPoolUtilTest {
 		DataSource pooled = new OpenManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
 
 		assertTrue(JdbcPoolUtil.isXaCapable(pooled));
+	}
+
+	@Test
+	public void testConnectionPoolMaxWait() {
+		XADataSource xaDataSource = mock(XADataSource.class);
+
+		XAConnectionFactory cf = new DataSourceXAConnectionFactory(mock(TransactionManager.class), xaDataSource);
+		PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
+
+		PoolingDataSourceFactory factory = new PoolingDataSourceFactory();
+		factory.setMaxWait(10);
+
+		GenericObjectPool<PoolableConnection> connectionPool = factory.createConnectionPool(poolableConnectionFactory);
+
+		assertEquals(Duration.ofSeconds(10), connectionPool.getMaxWaitDuration());
+	}
+
+	@Test
+	public void testDefaultConnectionPoolMaxWait() {
+		PoolingDataSourceFactory factory = new PoolingDataSourceFactory();
+
+		assertEquals(30, factory.getMaxWait());
 	}
 }
