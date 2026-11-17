@@ -55,6 +55,7 @@ import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.AppConstants;
 
 /**
@@ -132,6 +133,7 @@ public class RunLarvaTests {
 		// For WSDL Generator tests, this property needs to be unset from the value it gets from core/src/test/resources/DeploymentSpecifics.properties
 		// However, as it's set via DeploymentSpecifics we cannot just clear or remove it, so we have to set it to blanks in the System properties which take preference over DeploymentSpecifics
 		System.setProperty("wsdl.soapAction", "");
+		System.setProperty("active.javascript-j2v8", Boolean.toString(!TestAssertions.isTestRunningOnGitHub()));
 
 		assertTrue(frankApplication.isRunning());
 		await().pollInterval(5, TimeUnit.SECONDS)
