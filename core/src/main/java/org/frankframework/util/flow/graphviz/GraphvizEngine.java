@@ -47,7 +47,7 @@ public class GraphvizEngine {
 	private static final String FILE_FORMAT = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG").toUpperCase();
 
 	// Available JS Engines. Lower index has priority.
-	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "org.frankframework.javascript.J2V8").split(",");
+	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "org.frankframework.javascript.GraalJS").split(",");
 
 	private final Cleaner.Cleanable cleanable;
 	private Engine engine;
