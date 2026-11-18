@@ -70,7 +70,6 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 		try {
 			Engine engine = Engine.newBuilder()
-					.exceptionHandler(e -> log.error("Error in GraalJS context", e))
 					.logHandler(LOG_HANDLER)
 					.option("engine.WarnInterpreterOnly", "false")
 					.build();
