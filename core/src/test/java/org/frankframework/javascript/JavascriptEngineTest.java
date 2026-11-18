@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import org.graalvm.polyglot.Value;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -20,15 +19,12 @@ import org.frankframework.testutil.TestAssertions;
 
 class JavascriptEngineTest {
 
-	@BeforeAll
-	public static void setup() {
-		// Since it's not possible to conditionally check the EnumSource here, just disable all for now...
-		assumeFalse(TestAssertions.isTestRunningOnARM(), "uses J2V8 which does not work on ARM");
-	}
-
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)
 	void testBasicExecution(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
+		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
+
 		JavascriptEngine engine = engineWrapper.create();
 		engine.startRuntime();
 		engine.executeScript("function test() { return 'Hello World!' }");
@@ -67,6 +63,9 @@ class JavascriptEngineTest {
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)
 	void testFunctionDoesNotExist(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
+		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
+
 		JavascriptEngine engine = engineWrapper.create();
 		engine.startRuntime();
 
@@ -77,6 +76,9 @@ class JavascriptEngineTest {
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)
 	void testJavascriptExecution(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
+		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
+
 		JavascriptEngine engine = engineWrapper.create();
 		engine.startRuntime();
 		engine.executeScript("""
@@ -93,6 +95,9 @@ class JavascriptEngineTest {
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)
 	void testJavascriptExecutionCallBack(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
+		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
+
 		JavascriptEngine engine = engineWrapper.create();
 		engine.startRuntime();
 		EchoSender echoSender = new EchoSender();
