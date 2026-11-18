@@ -19,11 +19,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.eclipsesource.v8.JavaCallback;
-import com.eclipsesource.v8.JavaVoidCallback;
 import com.eclipsesource.v8.V8;
-import com.eclipsesource.v8.V8Array;
-import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.V8Value;
 
 import org.frankframework.core.ISender;
@@ -113,31 +109,25 @@ public class J2V8 implements JavascriptEngine<V8> {
 
 	@Override
 	public void registerCallback(final ISender sender, final PipeLineSession session) {
-		v8.registerJavaMethod(new JavaCallback() {
-			@Override
-			public Object invoke(V8Object receiver, V8Array parameters) {
-				try {
-					return sender.sendMessageOrThrow(Message.asMessage(parameters.get(0)), session).asString();
-				} catch (Exception e) {
-					throw new IllegalStateException(e);
-				}
-			}
-		}, sender.getName());
+		v8.registerJavaMethod(
+				(receiver, parameters) -> {
+					try {
+						return sender.sendMessageOrThrow(Message.asMessage(parameters.get(0)), session).asString();
+					} catch (Exception e) {
+						throw new IllegalStateException(e);
+					}
+				}, sender.getName());
 	}
 
 	@Override
 	public void setResultHandler(ResultHandler resultHandler) {
-		getEngine().registerJavaMethod(new JavaVoidCallback() {
-			@Override
-			public void invoke(V8Object receiver, V8Array parameters) {
-				resultHandler.setResult(parameters.getString(0));
-			}
-		}, "result");
-		getEngine().registerJavaMethod(new JavaVoidCallback() {
-			@Override
-			public void invoke(V8Object receiver, V8Array parameters) {
-				resultHandler.setError(parameters.getString(0));
-			}
-		}, "error");
+		getEngine().registerJavaMethod(
+				(receiver, parameters) -> {
+					resultHandler.setResult(parameters.getString(0));
+				}, "result");
+		getEngine().registerJavaMethod(
+				(receiver, parameters) -> {
+					resultHandler.setError(parameters.getString(0));
+				}, "error");
 	}
 }

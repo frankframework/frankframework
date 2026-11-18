@@ -36,6 +36,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.flow.ResultHandler;
 
@@ -69,6 +70,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 		try {
 			Engine engine = Engine.newBuilder()
+					.exceptionHandler(e -> log.error("Error in GraalJS context", e))
 					.logHandler(LOG_HANDLER)
 					.option("engine.WarnInterpreterOnly", "false")
 					.build();
@@ -158,7 +160,24 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	@Override
 	public void setResultHandler(ResultHandler resultHandler) {
-		// Does not work with GraalJS yet
+		context.getBindings(LANGUAGE_ID).putMember("result", (JavaCallback) s -> {
+			try {
+				String result = MessageUtils.asString(s[0]);
+				resultHandler.setResult(result);
+				return result;
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Cannot convert JS result to string", e);
+			}
+		});
+		context.getBindings(LANGUAGE_ID).putMember("error", (JavaCallback) s -> {
+			try {
+				String result = MessageUtils.asString(s[0]);
+				resultHandler.setError(result);
+				return result;
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Cannot convert JS result to string", e);
+			}
+		});
 	}
 
 	private static class GraalJsToLog4J2Handler extends Handler {
