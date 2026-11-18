@@ -55,7 +55,6 @@ import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
-import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.AppConstants;
 
 /**
@@ -133,7 +132,7 @@ public class RunLarvaTests {
 		// For WSDL Generator tests, this property needs to be unset from the value it gets from core/src/test/resources/DeploymentSpecifics.properties
 		// However, as it's set via DeploymentSpecifics we cannot just clear or remove it, so we have to set it to blanks in the System properties which take preference over DeploymentSpecifics
 		System.setProperty("wsdl.soapAction", "");
-		System.setProperty("active.javascript-j2v8", Boolean.toString(!TestAssertions.isTestRunningOnGitHub()));
+		System.setProperty("active.javascript-j2v8", Boolean.toString(!isTestRunningOnGitHub()));
 
 		assertTrue(frankApplication.isRunning());
 		await().pollInterval(5, TimeUnit.SECONDS)
@@ -207,6 +206,7 @@ public class RunLarvaTests {
 
 		// Clear system properties we've set, or caused to be set by IafTestInitializer
 		System.clearProperty("wsdl.soapAction");
+		System.clearProperty("active.javascript-j2v8");
 		System.clearProperty("active.storedProcedureTests");
 		System.clearProperty("jdbc.dbms.default");
 		System.clearProperty("active.jms");
@@ -297,4 +297,9 @@ public class RunLarvaTests {
 		// About 15 to 18 scenarios will fail because the environment is not set up entirely correct. Do not fail the build because of that, still get the extra coverage.
 //		assertEquals(0, result, () -> "Error in LarvaTool scenarios, %d scenarios failed. Duration: %dms; %n%n%s".formatted(result, end - start, larvaOutput));
 	}
+
+	public static boolean isTestRunningOnGitHub() {
+		return "GITHUB".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "GITHUB".equalsIgnoreCase(System.getenv("CI_SERVICE"));
+	}
+
 }

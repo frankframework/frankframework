@@ -206,15 +206,6 @@
 			<version>3.9.0</version>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-core</artifactId>
-			<version>${project.version}</version>
-			<classifier>tests</classifier>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
