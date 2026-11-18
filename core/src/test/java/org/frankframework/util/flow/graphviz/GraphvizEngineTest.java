@@ -30,9 +30,10 @@ public class GraphvizEngineTest {
 	private final String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
 	private final IScopeProvider scopeProvider = new TestScopeProvider();
 
-	@BeforeAll
+		@BeforeAll
 	public static void setup() {
 		assumeFalse(TestAssertions.isTestRunningOnARM(), "uses J2V8 which does not work on ARM");
+		assumeFalse(TestAssertions.isTestRunningOnGitHub(), "uses J2V8 which does not work on Github anymore");
 	}
 
 	@Test
