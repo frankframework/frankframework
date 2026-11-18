@@ -4,13 +4,11 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -30,12 +28,6 @@ public class GraphvizEngineTest {
 
 	private final String dot = "digraph { a -> b[label=\"0.2\",weight=\"0.2\"]; }";
 	private final IScopeProvider scopeProvider = new TestScopeProvider();
-
-		@BeforeAll
-	public static void setup() {
-		assumeFalse(TestAssertions.isTestRunningOnARM(), "uses J2V8 which does not work on ARM");
-		assumeFalse(TestAssertions.isTestRunningOnGitHub(), "uses J2V8 which does not work on Github anymore");
-	}
 
 	@Test
 	void canInitDefaultWithoutErrors() throws IOException {
