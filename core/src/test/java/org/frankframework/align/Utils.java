@@ -122,52 +122,6 @@ public class Utils {
 		};
 	}
 
-
-//	public static Document constructValididatedXml(String xml, final String xsd) throws ParserConfigurationException, SAXException, IOException {
-//		URL schemaUrl =  ClassLoaderUtils.getResourceURL(Utils.class, xsd);
-//
-//		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-//		dbf.setNamespaceAware(true);
-//	    try {
-//	        dbf.setAttribute(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
-//	    }
-//	    catch (IllegalArgumentException x) {
-//	        System.err.println("Error: JAXP DocumentBuilderFactory attribute " + "not recognized: " + JAXP_SCHEMA_LANGUAGE);
-//	        System.err.println("Check to see if parser conforms to JAXP spec.");
-//	        System.exit(1);
-//	    }
-////		dbf.setValidating(true);
-////		dbf.setAttribute(JAXP_SCHEMA_SOURCE, schemaUrl.getFile());
-//
-//		ErrorHandler errh = new ErrorHandler() {
-//
-//			@Override
-//			public void error(SAXParseException arg0) throws SAXException {
-//				throw arg0;
-//			}
-//
-//			@Override
-//			public void fatalError(SAXParseException arg0) throws SAXException {
-//				throw arg0;
-//			}
-//
-//			@Override
-//			public void warning(SAXParseException arg0) throws SAXException {
-//				System.out.println(arg0.getMessage());
-//			}
-//
-//		};
-//
-//		DocumentBuilder builder = dbf.newDocumentBuilder();
-//		builder.setErrorHandler(errh);
-//
-//		InputSource is = new InputSource(new StringReader(xml));
-//
-//		Document document = builder.parse(is);
-//
-//		return document;
-//	}
-
 	public static Source string2Source(String xml) {
 		LOG.debug("xml:"+xml);
 		return new StreamSource(new StringReader(xml));
