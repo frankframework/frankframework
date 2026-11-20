@@ -81,7 +81,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		try {
 			privateKey = CorePkiUtil.getPrivateKey(session);
 
-			Certificate loadedCertificate = CorePkiUtil.getCertificate(session);
+			Certificate loadedCertificate = CorePkiUtil.getFirstCertificateFromTrustStore(session);
 
 			if (loadedCertificate instanceof X509Certificate x509certificate) {
 				this.certificate = x509certificate;
