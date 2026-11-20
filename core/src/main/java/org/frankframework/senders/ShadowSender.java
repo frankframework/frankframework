@@ -31,10 +31,12 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
+import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
@@ -87,6 +89,13 @@ public class ShadowSender extends ParallelSenders {
 		if (resultSender == null)
 			throw new ConfigurationException("no resultSender found");
 
+		// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
+		// because sender might not have been set when addPipe() is called.
+		if (originalSender instanceof ISenderWithParameters senderWithParams) {
+			for (IParameter p : getParameterList()) {
+				senderWithParams.addParameter(p);
+			}
+		}
 		super.configure();
 	}
 
