@@ -33,7 +33,8 @@ import org.frankframework.stream.Message;
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
  *
- * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}
+ * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}. This includes
+ * parameters copied from the {@link org.frankframework.pipes.SenderPipe} to the SenderWrapper.
  *
  * @author  Gerrit van Brakel
  * @since   4.9

@@ -50,6 +50,10 @@ import org.frankframework.xml.SaxElementBuilder;
  *
  * <p>Multiple sub-senders can be configured within the ShadowSender, the minimum amount of senders is 2 (originalSender + resultSender)</p>
  *
+ * @ff.parameters any parameters defined on the ShadowSender will be copied only to the sender named as <em>original</em> sender or first sender in the
+ * list if not explicitly named (if this is a {@link ISenderWithParameters}). This includes
+ * parameters copied from the {@link org.frankframework.pipes.SenderPipe} to the ShadowSender.
+ *
  * @author Niels Meijer
  * @since 7.0
  */

@@ -46,6 +46,9 @@ import org.frankframework.stream.Message;
  * }</pre>
  * </p>
  *
+ * @ff.parameters any parameters defined on the ReconnectSenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}. This includes
+ * parameters copied from the {@link org.frankframework.pipes.SenderPipe} to the ReconnectSenderWrapper.
+ *
  * @author  Niels Meijer
  */
 @FrankDocGroup(FrankDocGroupValue.WRAPPER)
