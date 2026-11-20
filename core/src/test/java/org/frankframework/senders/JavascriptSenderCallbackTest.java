@@ -35,7 +35,6 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void simpleParameterizedSenderNoCallbacks(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		Message dummyInput = new Message("dummyinput");
@@ -56,7 +55,6 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void javaScriptSenderWithNestedEchoSender(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		Message dummyInput = new Message("dummyinput");
@@ -81,7 +79,6 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void promise(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		Message dummyInput = new Message("dummyinput");

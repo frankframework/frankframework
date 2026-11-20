@@ -22,7 +22,6 @@ class JavascriptEngineTest {
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)
 	void testBasicExecution(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
-		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		JavascriptEngine engine = engineWrapper.create();
@@ -63,7 +62,6 @@ class JavascriptEngineTest {
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)
 	void testFunctionDoesNotExist(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
-		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		JavascriptEngine engine = engineWrapper.create();
@@ -76,7 +74,6 @@ class JavascriptEngineTest {
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)
 	void testJavascriptExecution(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
-		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		JavascriptEngine engine = engineWrapper.create();
@@ -95,7 +92,6 @@ class JavascriptEngineTest {
 	@ParameterizedTest
 	@EnumSource(JavascriptSender.JavaScriptEngines.class)
 	void testJavascriptExecutionCallBack(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
-		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engineWrapper == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		JavascriptEngine engine = engineWrapper.create();
