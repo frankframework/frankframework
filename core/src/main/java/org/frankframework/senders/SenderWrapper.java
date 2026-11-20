@@ -27,12 +27,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.
  *
- * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}
+ * @ff.parameters any parameters defined on the SenderWrapper will be handed to the sender, if this is a {@link ISenderWithParameters}. This includes
+ * parameters copied from the {@link org.frankframework.pipes.SenderPipe} to the SenderWrapper.
  *
  * @author  Gerrit van Brakel
  * @since   4.9
@@ -50,6 +52,13 @@ public class SenderWrapper extends AbstractSenderWrapper {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
+		// because sender might not have been set when addPipe() is called.
+		if (getSender() instanceof ISenderWithParameters senderWithParams) {
+			for (IParameter p : getParameterList()) {
+				senderWithParams.addParameter(p);
+			}
+		}
 		getSender().configure();
 	}
 	@Override
