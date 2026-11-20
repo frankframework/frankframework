@@ -5,6 +5,7 @@ set -e
 export JAVA_OPTS="\
 	-XX:HeapDumpPath=/usr/local/tomcat/logs \
 	-XX:+HeapDumpOnOutOfMemoryError \
+	-XX:-UseBASE64Intrinsics \
 	--add-modules java.se \
 	--add-exports java.base/jdk.internal.ref=ALL-UNNAMED \
 	--add-opens java.base/java.lang=ALL-UNNAMED \
