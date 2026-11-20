@@ -306,7 +306,7 @@ public class ClassLoaderUtilsTest {
 		JarFileClassLoader cl = new JarFileClassLoader(new ContextClassLoader());
 		cl.setJar(file.getFile());
 		cl.setBasePath(".");
-		cl.configure(null, "");
+		cl.afterPropertiesSet();
 		return TestScopeProvider.wrap(cl);
 	}
 }

@@ -22,7 +22,7 @@ import com.amazon.sqs.javamessaging.SQSConnection;
 
 import software.amazon.awssdk.regions.Region;
 
-import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.testutil.TestPropertyUtil;
 import org.frankframework.util.LogUtil;
 
 class AmazonSqsFactoryTest {
@@ -30,8 +30,8 @@ class AmazonSqsFactoryTest {
 
 	protected String PROPERTY_FILE = "AmazonS3.properties";
 
-	protected String accessKey = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
-	protected String secretKey = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
+	protected String accessKey = TestPropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
+	protected String secretKey = TestPropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
 	private final Region clientRegion = Region.EU_WEST_1;
 
 	private AmazonSqsFactory sqsFactory;

@@ -17,7 +17,7 @@ import org.frankframework.util.ClassLoaderUtils;
 
 @Log4j2
 @NullMarked
-public class PropertyUtil {
+public class TestPropertyUtil {
 
 	public static final Map<String,Properties> propertiesMap = new HashMap<>();
 

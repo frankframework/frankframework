@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Map;
@@ -12,9 +14,12 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.ClassLoaderFactory;
+import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
@@ -30,13 +35,24 @@ class LarvaActionFactoryTest {
 
 	private LarvaActionFactory actionFactory;
 	private LarvaTool larvaTool;
-	private ApplicationContext applicationContext;
+	private LarvaScenarioContext scenarioContext;
 
 	@BeforeEach
 	void setUp() throws ClassLoaderException {
 		larvaTool = new LarvaTool(null, new LarvaConfig());
 		actionFactory = new LarvaActionFactory(larvaTool, new PlainTextScenarioOutputRenderer(new LarvaWriter(larvaTool.getLarvaConfig(), System.out)));
-		applicationContext = new LarvaScenarioContext(null, "/");
+
+		AutowireCapableBeanFactory beanFactory = mock();
+		AbstractApplicationContext applicationContext = mock();
+		when(applicationContext.getAutowireCapableBeanFactory()).thenReturn(beanFactory);
+		IbisContext ibisContext = mock();
+		when(ibisContext.getApplicationContext()).thenReturn(applicationContext);
+		ClassLoaderFactory classLoaderFactory = new ClassLoaderFactory();
+		classLoaderFactory.setIbisContext(ibisContext);
+		classLoaderFactory.setApplicationContext(ibisContext.getApplicationContext());
+		when(applicationContext.getBean(ClassLoaderFactory.class)).thenReturn(classLoaderFactory);
+
+		scenarioContext = new LarvaScenarioContext(applicationContext, "/");
 	}
 
 	@Test
@@ -46,7 +62,7 @@ class LarvaActionFactoryTest {
 		props.load(this.getClass().getResourceAsStream("/actionCreatorTest.properties"));
 		Scenario scenario = new Scenario(new File("/actionCreatorTest.properties"), "test", "test", props);
 		// Act
-		Map<String, LarvaScenarioAction> actions = actionFactory.createLarvaActions(scenario, applicationContext, "cid");
+		Map<String, LarvaScenarioAction> actions = actionFactory.createLarvaActions(scenario, scenarioContext, "cid");
 
 		// Assert
 		assertNotNull(actions);

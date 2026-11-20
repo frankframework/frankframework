@@ -40,15 +40,15 @@ import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
-import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.testutil.TestPropertyUtil;
 import org.frankframework.util.StringUtil;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
-	protected String accessKey = PropertyUtil.getProperty("AmazonS3.properties", "accessKey");
-	protected String secretKey = PropertyUtil.getProperty("AmazonS3.properties", "secretKey");
+	protected String accessKey = TestPropertyUtil.getProperty("AmazonS3.properties", "accessKey");
+	protected String secretKey = TestPropertyUtil.getProperty("AmazonS3.properties", "secretKey");
 
-	protected @Getter String defaultBucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
+	protected @Getter String defaultBucketName = TestPropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
 	private final Region clientRegion = Region.EU_WEST_1;
 	private final String serviceEndpoint;

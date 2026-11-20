@@ -13,7 +13,6 @@ import org.jspecify.annotations.Nullable;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.ClassLoadingLeakDetector;
 
@@ -30,17 +29,14 @@ public class JunitTestClassLoaderWrapper extends AbstractClassLoader {
 	}
 
 	@Override
-	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		super.configure(ibisContext, configurationName);
+	public void afterPropertiesSet() throws ClassLoaderException {
+		super.afterPropertiesSet();
 		// Register this instance so the leak-detection can be tested
-		ClassLoadingLeakDetector.registerClassLoader(configurationName, this);
+		ClassLoadingLeakDetector.registerClassLoader(getConfigurationName(), this);
 	}
 
 	@Override
-	public URL getLocalResource(@NonNull String name) {
-		if (name == null) {
-			return null;
-		}
+	public @Nullable URL getLocalResource(@NonNull String name) {
 		if (name.startsWith("/")) {
 			throw new IllegalArgumentException("file names should be relative, and not absolute (starting with a slash)");
 		}

@@ -38,6 +38,7 @@ import org.frankframework.components.ComponentLoader;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
@@ -96,6 +97,8 @@ public class IbisApplicationContext implements Closeable {
 				applicationContext.setParent(parentContext);
 			}
 			applicationContext.refresh();
+			// Register the IbisContext itself with the bean factory, so that it can be autowired into classes that need it
+			SpringUtils.registerSingleton(applicationContext, "ibisContext", this);
 		} catch (BeansException be) {
 			state = BootState.ERROR;
 			APPLICATION_LOG.fatal("Unable to initialize IbisApplicationContext");
