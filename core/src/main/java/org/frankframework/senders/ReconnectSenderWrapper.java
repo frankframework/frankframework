@@ -21,6 +21,7 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
+import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -28,6 +29,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 
 /**
@@ -59,6 +61,13 @@ public class ReconnectSenderWrapper extends AbstractSenderWrapper {
 
 	@Override
 	public void configure() throws ConfigurationException {
+		// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
+		// because sender might not have been set when addPipe() is called.
+		if (sender instanceof ISenderWithParameters senderWithParams) {
+			for (IParameter p : getParameterList()) {
+				senderWithParams.addParameter(p);
+			}
+		}
 		sender.configure();
 
 		super.configure();
