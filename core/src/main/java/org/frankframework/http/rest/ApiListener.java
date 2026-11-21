@@ -47,12 +47,15 @@ import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.http.mime.HttpEntityFactory;
 import org.frankframework.http.mime.MultipartUtils;
+import org.frankframework.http.rest.HmacSignatureVerifier.HmacAlgorithm;
+import org.frankframework.http.rest.HmacSignatureVerifier.SignatureEncoding;
 import org.frankframework.jwt.JwtValidator;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -148,6 +151,15 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String principalNameClaim = "sub";
 	private @Getter String physicalDestinationName = null;
 
+	// for hmac validation
+	private @Getter String hmacHeader = null;
+	private @Getter HmacAlgorithm hmacAlgorithm = HmacAlgorithm.HmacSHA256;
+	private @Getter SignatureEncoding hmacEncoding = SignatureEncoding.HEX;
+	private @Getter String hmacSignaturePrefix = null;
+	private @Getter String hmacSecret = null;
+	private @Getter String hmacAuthAlias = null;
+	private @Getter HmacSignatureVerifier hmacVerifier;
+
 	private @Getter JwtValidator<SecurityContext> jwtValidator;
 	private @Setter ServletManager servletManager;
 
@@ -161,7 +173,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter HttpEntityFactory responseEntityBuilder;
 
 	public enum AuthenticationMethods {
-		NONE, COOKIE, HEADER, AUTHROLE, JWT;
+		NONE, COOKIE, HEADER, AUTHROLE, JWT, HMAC;
 	}
 
 	/**
@@ -204,6 +216,18 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			// validate if these attributes are configured as valid key/value pairs, i.e: "appid=abc,appid=xyz" to prevent exceptions.
 			validateClaimAttribute(anyMatchClaims, "anyMatchClaims");
 			validateClaimAttribute(exactMatchClaims, "exactMatchClaims");
+		}
+
+		if (getAuthenticationMethod() == AuthenticationMethods.HMAC) {
+			if (StringUtils.isEmpty(getHmacHeader())) {
+				throw new ConfigurationException("hmacHeader cannot be empty when authenticationMethod is HMAC");
+			}
+			CredentialFactory credentials = new CredentialFactory(getHmacAuthAlias(), null, getHmacSecret());
+			String secret = credentials.getPassword();
+			if (StringUtils.isEmpty(secret)) {
+				throw new ConfigurationException("either hmacSecret or hmacAuthAlias must be specified when authenticationMethod is HMAC");
+			}
+			hmacVerifier = new HmacSignatureVerifier(getHmacAlgorithm(), getHmacEncoding(), getHmacSignaturePrefix(), secret);
 		}
 
 		contentType = produces.getMimeType(charset);
@@ -626,6 +650,50 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	/** Claim name which specifies the principal name (maps to <code>GetPrincipalPipe</code>) */
 	public void setPrincipalNameClaim(String principalNameClaim) {
 		this.principalNameClaim = principalNameClaim;
+	}
+
+	/**
+	 * Header that carries the HMAC signature of the request body, for example <code>X-Hub-Signature-256</code>.
+	 * Mandatory when <code>authenticationMethod</code> is <code>HMAC</code>.
+	 */
+	public void setHmacHeader(String hmacHeader) {
+		this.hmacHeader = hmacHeader;
+	}
+
+	/**
+	 * MAC algorithm the calling party signs with.
+	 *
+	 * @ff.default HmacSHA256
+	 */
+	public void setHmacAlgorithm(HmacAlgorithm hmacAlgorithm) {
+		this.hmacAlgorithm = hmacAlgorithm;
+	}
+
+	/**
+	 * Text encoding of the signature in the header.
+	 *
+	 * @ff.default HEX
+	 */
+	public void setHmacEncoding(SignatureEncoding hmacEncoding) {
+		this.hmacEncoding = hmacEncoding;
+	}
+
+	/**
+	 * Literal prefix the calling party puts before the signature, for example <code>sha256=</code>.
+	 * The prefix is required to be present and is removed before the signature is decoded.
+	 */
+	public void setHmacSignaturePrefix(String hmacSignaturePrefix) {
+		this.hmacSignaturePrefix = hmacSignaturePrefix;
+	}
+
+	/** Shared secret to verify the signature with. Prefer <code>hmacAuthAlias</code> over putting the secret in the configuration. */
+	public void setHmacSecret(String hmacSecret) {
+		this.hmacSecret = hmacSecret;
+	}
+
+	/** Alias used to obtain the shared secret to verify the signature with, from the password field. */
+	public void setHmacAuthAlias(String hmacAuthAlias) {
+		this.hmacAuthAlias = hmacAuthAlias;
 	}
 
 	/**

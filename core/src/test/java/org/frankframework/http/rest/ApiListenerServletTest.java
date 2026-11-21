@@ -44,6 +44,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +52,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
@@ -59,6 +62,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -109,6 +113,7 @@ import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
+import org.frankframework.http.rest.HmacSignatureVerifier.SignatureEncoding;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -1612,6 +1617,163 @@ public class ApiListenerServletTest {
 		assertEqualsIgnoreCRLF(getFile("simpleMockedMultipartFormdata2.txt"), getResultAsStringWithIgnores(result));
 	}
 
+	private static final String HMAC_URI = "/hmacvalidator";
+	private static final String HMAC_SECRET = "it-is-a-secret";
+	private static final String HMAC_HEADER = "X-Hub-Signature-256";
+	private static final String HMAC_BODY = "{\"event\":\"ping\"}";
+
+	private static String hmacHex(String secret, String body) throws Exception {
+		Mac mac = Mac.getInstance("HmacSHA256");
+		mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+		return Hex.encodeHexString(mac.doFinal(body.getBytes(StandardCharsets.UTF_8)));
+	}
+
+	private MockHttpServletRequest prepareHmacRequest(String signature) {
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Content-Type", "application/json");
+		if (signature != null) {
+			headers.put(HMAC_HEADER, signature);
+		}
+		return createRequest(HMAC_URI, HttpMethod.POST, HMAC_BODY, headers);
+	}
+
+	@Test
+	public void testHmacWithValidSignature() throws Exception {
+		// Arrange
+		new ApiListenerBuilder(HMAC_URI, List.of(HttpMethod.POST))
+			.setAuthenticationMethod(AuthenticationMethods.HMAC)
+			.setHmacHeader(HMAC_HEADER)
+			.setHmacSecret(HMAC_SECRET)
+			.build();
+
+		// Act
+		Response result = service(prepareHmacRequest(hmacHex(HMAC_SECRET, HMAC_BODY)));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void testHmacPassesTheUnmodifiedBodyToThePipeline() throws Exception {
+		// Arrange
+		new ApiListenerBuilder(HMAC_URI, List.of(HttpMethod.POST))
+			.setAuthenticationMethod(AuthenticationMethods.HMAC)
+			.setHmacHeader(HMAC_HEADER)
+			.setHmacSecret(HMAC_SECRET)
+			.build();
+
+		// Act
+		Response result = service(prepareHmacRequest(hmacHex(HMAC_SECRET, HMAC_BODY)));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals(HMAC_BODY, requestMessage.asString(), "reading the body for verification must not consume it");
+	}
+
+	@Test
+	public void testHmacWithSignatureFromAnotherSecret() throws Exception {
+		new ApiListenerBuilder(HMAC_URI, List.of(HttpMethod.POST))
+			.setAuthenticationMethod(AuthenticationMethods.HMAC)
+			.setHmacHeader(HMAC_HEADER)
+			.setHmacSecret(HMAC_SECRET)
+			.build();
+
+		Response result = service(prepareHmacRequest(hmacHex("another-secret", HMAC_BODY)));
+
+		assertEquals(401, result.getStatus());
+	}
+
+	@Test
+	public void testHmacWithSignatureOverATamperedBody() throws Exception {
+		new ApiListenerBuilder(HMAC_URI, List.of(HttpMethod.POST))
+			.setAuthenticationMethod(AuthenticationMethods.HMAC)
+			.setHmacHeader(HMAC_HEADER)
+			.setHmacSecret(HMAC_SECRET)
+			.build();
+
+		Response result = service(prepareHmacRequest(hmacHex(HMAC_SECRET, "{\"event\":\"tampered\"}")));
+
+		assertEquals(401, result.getStatus());
+	}
+
+	@Test
+	public void testHmacWithoutSignatureHeader() throws Exception {
+		new ApiListenerBuilder(HMAC_URI, List.of(HttpMethod.POST))
+			.setAuthenticationMethod(AuthenticationMethods.HMAC)
+			.setHmacHeader(HMAC_HEADER)
+			.setHmacSecret(HMAC_SECRET)
+			.build();
+
+		Response result = service(prepareHmacRequest(null));
+
+		assertEquals(401, result.getStatus());
+	}
+
+	@Test
+	public void testHmacWithConfiguredPrefix() throws Exception {
+		new ApiListenerBuilder(HMAC_URI, List.of(HttpMethod.POST))
+			.setAuthenticationMethod(AuthenticationMethods.HMAC)
+			.setHmacHeader(HMAC_HEADER)
+			.setHmacSecret(HMAC_SECRET)
+			.setHmacSignaturePrefix("sha256=")
+			.build();
+
+		assertEquals(200, service(prepareHmacRequest("sha256=" + hmacHex(HMAC_SECRET, HMAC_BODY))).getStatus());
+	}
+
+	@Test
+	public void testHmacRejectsSignatureMissingTheConfiguredPrefix() throws Exception {
+		new ApiListenerBuilder(HMAC_URI, List.of(HttpMethod.POST))
+			.setAuthenticationMethod(AuthenticationMethods.HMAC)
+			.setHmacHeader(HMAC_HEADER)
+			.setHmacSecret(HMAC_SECRET)
+			.setHmacSignaturePrefix("sha256=")
+			.build();
+
+		assertEquals(401, service(prepareHmacRequest(hmacHex(HMAC_SECRET, HMAC_BODY))).getStatus());
+	}
+
+	@Test
+	public void testHmacWithBase64Encoding() throws Exception {
+		new ApiListenerBuilder(HMAC_URI, List.of(HttpMethod.POST))
+			.setAuthenticationMethod(AuthenticationMethods.HMAC)
+			.setHmacHeader(HMAC_HEADER)
+			.setHmacSecret(HMAC_SECRET)
+			.setHmacEncoding(SignatureEncoding.BASE64)
+			.build();
+
+		Mac mac = Mac.getInstance("HmacSHA256");
+		mac.init(new SecretKeySpec(HMAC_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+		String signature = Base64.getEncoder().encodeToString(mac.doFinal(HMAC_BODY.getBytes(StandardCharsets.UTF_8)));
+
+		assertEquals(200, service(prepareHmacRequest(signature)).getStatus());
+	}
+
+	@Test
+	public void testHmacRequiresHeaderToBeConfigured() {
+		ApiListener listener = new ApiListener();
+		listener.setUriPattern(HMAC_URI);
+		listener.setMethod(HttpMethod.POST);
+		listener.setAuthenticationMethod(AuthenticationMethods.HMAC);
+		listener.setHmacSecret(HMAC_SECRET);
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, listener::configure);
+		assertEquals("hmacHeader cannot be empty when authenticationMethod is HMAC", e.getMessage());
+	}
+
+	@Test
+	public void testHmacRequiresASecret() {
+		ApiListener listener = new ApiListener();
+		listener.setUriPattern(HMAC_URI);
+		listener.setMethod(HttpMethod.POST);
+		listener.setAuthenticationMethod(AuthenticationMethods.HMAC);
+		listener.setHmacHeader(HMAC_HEADER);
+
+		ConfigurationException e = assertThrows(ConfigurationException.class, listener::configure);
+		assertEquals("either hmacSecret or hmacAuthAlias must be specified when authenticationMethod is HMAC", e.getMessage());
+	}
+
 	@Test
 	public void testJwtTokenParsingWithRequiredIssuer() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, List.of(HttpMethod.GET))
@@ -2397,6 +2559,26 @@ public class ApiListenerServletTest {
 		}
 		public ApiListenerBuilder setJwtHeader(String headerName) {
 			listener.setJwtHeader(headerName);
+			return this;
+		}
+
+		public ApiListenerBuilder setHmacHeader(String headerName) {
+			listener.setHmacHeader(headerName);
+			return this;
+		}
+
+		public ApiListenerBuilder setHmacSecret(String secret) {
+			listener.setHmacSecret(secret);
+			return this;
+		}
+
+		public ApiListenerBuilder setHmacSignaturePrefix(String prefix) {
+			listener.setHmacSignaturePrefix(prefix);
+			return this;
+		}
+
+		public ApiListenerBuilder setHmacEncoding(SignatureEncoding encoding) {
+			listener.setHmacEncoding(encoding);
 			return this;
 		}
 
