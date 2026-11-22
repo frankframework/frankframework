@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.console.controllers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+
+import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +61,7 @@ public class LiquibaseScript {
 		return frankApiService.callSyncGateway(builder);
 	}
 
-	@AllowAllIbisUserRoles
+	@RolesAllowed("IbisTester")
 	@Description("generate SQL from a liquibase script")
 	@PostMapping(value = "/jdbc/liquibase", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> generateSQL(GenerateSQLModel model) throws ApiException {
