@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -315,7 +316,7 @@ public class FileUtils {
 					String role = parts.get(1);
 					String type = parts.get(2);
 					log.trace("check allow read file '{}' with rule path '{}', role '{}' and type '{}'", canonicalFileName, canonicalPath, role, type);
-					if ("*".equals(canonicalPath) || canonicalFileName.startsWith(canonicalPath)) {
+					if ("*".equals(canonicalPath) || Path.of(canonicalFileName).startsWith(Path.of(canonicalPath))) { // Path, not String: /logs must not match /logs-old
 						log.trace("path match");
 						if ("*".equals(role) || authenticator.isUserInRole(role)) {
 							log.trace("role match");

@@ -149,4 +149,41 @@ public class FileUtilsTest {
 		assertNull(name);
 	}
 
+	@Test
+	public void readAllowedFileInsideRuleDirectory() throws Exception {
+		final Path logs = Files.createDirectories(testFolder.resolve("readAllowed/logs"));
+		final String rules = logs + " * allow";
+
+		assertTrue(FileUtils.readAllowed(rules, logs.resolve("app.log").toString(), role -> false));
+		assertTrue(FileUtils.readAllowed(rules, logs.toString(), role -> false), "the rule directory itself can be listed");
+	}
+
+	@Test
+	public void readAllowedDeniesSiblingDirectoryWithSamePrefix() throws Exception {
+		final Path logs = Files.createDirectories(testFolder.resolve("readAllowed/logs"));
+		final Path logsOld = Files.createDirectories(testFolder.resolve("readAllowed/logs-old"));
+		final String rules = logs + " * allow";
+
+		assertFalse(FileUtils.readAllowed(rules, logsOld.resolve("app.log").toString(), role -> false));
+		assertFalse(FileUtils.readAllowed(rules, logs + "secrets/app.log", role -> false));
+		assertFalse(FileUtils.readAllowed(rules, logs.resolve("../logs-old/app.log").toString(), role -> false));
+	}
+
+	@Test
+	public void readAllowedFirstMatchingRuleDecides() throws Exception {
+		final Path logs = Files.createDirectories(testFolder.resolve("readAllowed/logs"));
+		final String rules = logs.resolve("secret.log") + " * deny | " + logs + " * allow";
+
+		assertFalse(FileUtils.readAllowed(rules, logs.resolve("secret.log").toString(), role -> false));
+		assertTrue(FileUtils.readAllowed(rules, logs.resolve("app.log").toString(), role -> false));
+	}
+
+	@Test
+	public void readAllowedChecksRole() throws Exception {
+		final Path logs = Files.createDirectories(testFolder.resolve("readAllowed/logs"));
+		final String rules = logs + " IbisAdmin allow";
+
+		assertFalse(FileUtils.readAllowed(rules, logs.resolve("app.log").toString(), role -> false));
+		assertTrue(FileUtils.readAllowed(rules, logs.resolve("app.log").toString(), "IbisAdmin"::equals));
+	}
 }
