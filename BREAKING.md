@@ -12,6 +12,8 @@ Contains breaking changes per release.
 * The Tomcat Docker image no longer lets the console's log viewer read `/opt/frank`: `FileViewer.permission.rules` in the image now only allows `/usr/local/tomcat/logs`, matching the default described in `SECURITY.md`.
   If you browse other files under `/opt/frank` through the Logging page, set `FileViewer.permission.rules` yourself, for example as a system property.
 * `FileViewer.permission.rules` now matches whole path elements: a rule for `/opt/logs` no longer also matches `/opt/logs-old` or `/opt/logsecrets`. Add a rule per directory if you relied on the old prefix match.
+* A `LocalFileSystem` with a `root` configured now rejects filenames that resolve outside that root, through an absolute path as well as through `..`, with `path [...] is outside the root [...]`. This applies to `LocalFileSystemSender`, `LocalFileSystemListener`, `LocalFileSystemPipe` and `ForEachAttachmentPipe`.
+  If a configuration reaches files in more than one location, give each location its own element with its own `root`, or move the files below the root. Leaving `root` unset keeps the old unrestricted behaviour, but then the element can read and write every file the application user can, and a configuration warning says so. That warning can be suppressed with `warnings.suppress.filesystemRootContainment`.
 
 10.3.1
 --------------

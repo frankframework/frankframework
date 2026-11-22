@@ -41,6 +41,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -49,7 +51,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.DestinationType;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
@@ -66,8 +71,11 @@ import org.frankframework.util.XmlEncodingUtils;
  */
 @Log4j2
 @DestinationType(DestinationType.Type.FILE_SYSTEM)
-public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
+public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path>, ApplicationContextAware, HasApplicationContext {
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
+
+	@SuppressWarnings("NullAway.Init")
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter boolean createRootFolder = false;
 
@@ -82,7 +90,9 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public void configure() {
-		// No Action is required
+		if (StringUtils.isEmpty(getRoot())) {
+			ConfigurationWarnings.add(this, log, "attribute [root] has not been configured which allows the local-filesystem to access any file without restrictions", SuppressKeys.FILESYSTEM_ROOT_CONTAINMENT);
+		}
 	}
 
 	@Override
@@ -116,7 +126,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			// We need to make sure that the root is not prepended if it's already part of the filename.
 			// Use normalized Path-based comparison to avoid false positives (for example root x/y vs filename x/y2/file).
 			if (!result.normalize().startsWith(Paths.get(getRoot()).normalize())) {
-				return Paths.get(getRoot()).resolve(filename);
+				return verifyWithinRoot(filename, Paths.get(getRoot()).resolve(filename));
 			}
 
 			filename = result.toString();
@@ -126,7 +136,60 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			throw new FileSystemException("no filesystem-root, file or folder specified");
 		}
 
-		return result;
+		return verifyWithinRoot(filename, result);
+	}
+
+	/**
+	 * Checks that {@code resolved} stays within the configured root. Neither an absolute filename nor a parent
+	 * traversal is contained by {@link #setRoot(String)} on its own, so the check has to be made on the result.
+	 * Without a root there is nothing to contain, which is what the ConfigurationWarning in {@link #configure()} is about.
+	 */
+	private @NonNull Path verifyWithinRoot(String filename, @NonNull Path resolved) throws FileSystemException {
+		if (StringUtils.isEmpty(getRoot())) {
+			return resolved;
+		}
+
+		Path rootPath = Paths.get(getRoot()).toAbsolutePath().normalize();
+		if (resolved.toAbsolutePath().normalize().startsWith(rootPath)) {
+			return resolved;
+		}
+
+		// A lexical comparison reports a false positive when root and result express the same location through
+		// different symlinks, for example /var versus /private/var. Only pay for the syscalls in that case.
+		if (toRealPathIfPossible(resolved).startsWith(toRealPathIfPossible(rootPath))) {
+			return resolved;
+		}
+
+		throw new FileSystemException("path [" + filename + "] is outside the root [" + getRoot() + "] of this filesystem");
+	}
+
+	/**
+	 * Resolves symlinks as far as the path exists, so that a root and a filename reached through different symlinks
+	 * still compare equal. The part that does not exist yet, which is the normal case for a file about to be written,
+	 * is appended afterwards. Symlinks below the root are therefore not followed, by design.
+	 */
+	private static @NonNull Path toRealPathIfPossible(@NonNull Path path) {
+		Path existing = path.toAbsolutePath().normalize();
+		Path remainder = Paths.get("");
+
+		while (existing != null && !Files.exists(existing)) {
+			Path name = existing.getFileName();
+			if (name != null) {
+				remainder = name.resolve(remainder);
+			}
+			existing = existing.getParent();
+		}
+
+		if (existing == null) {
+			return path.toAbsolutePath().normalize();
+		}
+
+		try {
+			return existing.toRealPath().resolve(remainder).normalize();
+		} catch (IOException e) {
+			log.debug("cannot determine the real path of [{}]", existing, e);
+			return path.toAbsolutePath().normalize();
+		}
 	}
 
 	@NonNull

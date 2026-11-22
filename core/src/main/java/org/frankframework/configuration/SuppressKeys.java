@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!
+   Copyright 2020-2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ public enum SuppressKeys {
 	XSD_VALIDATION_WARNINGS_SUPPRESS_KEY("warnings.suppress.xsd.warning", true),
 	XSD_VALIDATION_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.error", true),
 	XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.fatalError", true),
-	UNSAFE_ATTRIBUTE_SUPPRESS_KEY("warnings.suppress.unsafeAttribute", true);
+	UNSAFE_ATTRIBUTE_SUPPRESS_KEY("warnings.suppress.unsafeAttribute", true),
+	FILESYSTEM_ROOT_CONTAINMENT("warnings.suppress.filesystemRootContainment", true);
 
 	private final @Getter String key;
 	private final @Getter boolean allowGlobalSuppression;
