@@ -40,15 +40,6 @@ public class TruststoreConfiguration {
 	 */
 	private KeystoreType type = KeystoreType.JKS;
 
-	/** Alias to obtain specific certificate in truststore */
-	private String truststoreAlias;
-
-	/** Authentication alias to authenticate access to certificate indicated by <code>truststoreAlias</code> */
-	private String truststoreAliasAuthAlias;
-
-	/** Default password to authenticate access to certificate indicated by <code>truststoreAlias</code> */
-	private String truststoreAliasPassword;
-
 	/** Trust manager algorithm. Can be left empty to use the servers default algorithm */
 	private String trustManagerAlgorithm;
 
