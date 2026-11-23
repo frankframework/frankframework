@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,16 +65,12 @@ public class EnvironmentVariables extends BusEndpointBase {
 		envVars.put("System Properties", convertPropertiesToMap(System.getProperties(), propsToHide));
 
 		try {
-			envVars.put("Environment Variables", convertPropertiesToMap(Environment.getEnvironmentVariables()));
+			envVars.put("Environment Variables", convertPropertiesToMap(Environment.getEnvironmentVariables(), propsToHide));
 		} catch (Throwable t) {
 			log.warn("caught Throwable while getting EnvironmentVariables", t);
 		}
 
 		return new JsonMessage(envVars);
-	}
-
-	private Map<String, Object> convertPropertiesToMap(Properties props) {
-		return convertPropertiesToMap(props, null);
 	}
 
 	private Map<String, Object> convertPropertiesToMap(Properties props, List<String> propsToHide) {
