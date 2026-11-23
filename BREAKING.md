@@ -5,7 +5,7 @@ Contains breaking changes per release.
 > [!NOTE]\
 > Previously, we put this information in RELEASES.md. Take a look there for older breaking changes and migration notes.
 
-9.4.6
+10.1.2
 --------------
 * Tomcat has been upgraded to 11.0.29 for CVEs that have been fixed. As a side effect of this upgrade, JNDI resources defined for the application as `<Resource ... />`
   in the Context XML file now need to have a `type` attribute defined, or a the `object_name` attribute, or Tomcat will fail to start up with a `NullPointerException`.
