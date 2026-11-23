@@ -157,6 +157,8 @@ import org.frankframework.util.StringUtil;
  * @since 7.0
  */
 public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasKeystore, HasTruststore, FrankElement {
+	public static final int DEFAULT_TIMEOUT = 10_000;
+	public static final int UNCONFIGURED_TIMEOUT = -1;
 	protected final Logger log = LogUtil.getLogger(this);
 
 	public static final String AUTHENTICATION_METHOD_KEY = "OauthAuthentication";
@@ -169,7 +171,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private @Setter MetricsInitializer configurationMetrics;
 
 	/* CONNECTION POOL */
-	private @Getter int timeout = 10_000;
+	private @Getter int timeout = UNCONFIGURED_TIMEOUT;
 	private @Getter int maxConnections = 10;
 	private @Getter int maxExecuteRetries = 1;
 	private @Getter boolean staleChecking=true;
@@ -329,6 +331,9 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 	@Override
 	public void configure() throws ConfigurationException {
+		if (timeout == UNCONFIGURED_TIMEOUT) {
+			timeout = DEFAULT_TIMEOUT;
+		}
 		// Only create a new HttpContext when configure is called (which doesn't happen when using a SharedResource)
 		defaultHttpClientContext = HttpClientContext.create();
 
