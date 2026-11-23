@@ -14,11 +14,11 @@ Contains breaking changes per release.
   long works out-of-the-box.
   Try changing to the `GraalJS` engine, or start Tomcat with the environment-variable `GCLIB_TUNABLES` set to `glibc.rtld.execstack=2`.
   Because of the security-implications we do not wish to bake in this into the Docker images we provide.
-[Commits](https://github.com/frankframework/frankframework/compare/release/10.2...HEAD)
 
 10.3
-* In ticket [11345](https://github.com/frankframework/frankframework/issues/11345) validation for the instance name was added. If you are using a name that is not valid the application will not start up.
 --------------
+[Commits](https://github.com/frankframework/frankframework/compare/release/10.2...HEAD)
+* In ticket [11345](https://github.com/frankframework/frankframework/issues/11345) validation for the instance name was added. If you are using a name that is not valid the application will not start up.
 
 10.2
 --------------
