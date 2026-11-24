@@ -76,9 +76,8 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
 	 * When the root is left unspecified, absolute paths to files and folders can be used
 	 */
-	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
-	@Getter private String root;
-	private Path rootPath;
+	@Getter private @Nullable String root;
+	private @Nullable Path rootPath;
 
 	@Override
 	public void configure() {
@@ -129,6 +128,9 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		Path result = Paths.get(filename).normalize();
 		if (result.isAbsolute()) {
 			if (rootPath != null && !result.startsWith(rootPath)) {
+				// This is legacy behaviour, but according to documentation this shouldn't happen
+				// Should we warn, optionally allow, or always throw an exception?
+				// None of our tests will break if we throw the exception
 				log.warn("Returning result path [{}] outside of root [{}] because it is absolute", result, root);
 			}
 			return result;
