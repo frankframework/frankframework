@@ -19,7 +19,6 @@ import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.ClassLoaderFactory;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
@@ -45,11 +44,8 @@ class LarvaActionFactoryTest {
 		AutowireCapableBeanFactory beanFactory = mock();
 		AbstractApplicationContext applicationContext = mock();
 		when(applicationContext.getAutowireCapableBeanFactory()).thenReturn(beanFactory);
-		IbisContext ibisContext = mock();
-		when(ibisContext.getApplicationContext()).thenReturn(applicationContext);
 		ClassLoaderFactory classLoaderFactory = new ClassLoaderFactory();
-		classLoaderFactory.setIbisContext(ibisContext);
-		classLoaderFactory.setApplicationContext(ibisContext.getApplicationContext());
+		classLoaderFactory.setApplicationContext(applicationContext);
 		when(applicationContext.getBean(ClassLoaderFactory.class)).thenReturn(classLoaderFactory);
 
 		scenarioContext = new LarvaScenarioContext(applicationContext, "/");
