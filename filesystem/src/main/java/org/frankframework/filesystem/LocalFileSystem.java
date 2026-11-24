@@ -514,6 +514,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		this.createRootFolder = createRootFolder;
 	}
 
+	/**
+	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
+	 * When the root is left unspecified, absolute paths to files and folders can be used
+	 */
 	public void setRoot(String root) {
 		if (StringUtils.isEmpty(root)) {
 			this.rootPath = null;
