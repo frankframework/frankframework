@@ -31,10 +31,12 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ISender;
+import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.parameters.IParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
@@ -47,6 +49,10 @@ import org.frankframework.xml.SaxElementBuilder;
  * while the original sender will return its result to the pipeline.
  *
  * <p>Multiple sub-senders can be configured within the ShadowSender, the minimum amount of senders is 2 (originalSender + resultSender)</p>
+ *
+ * @ff.parameters any parameters defined on the ShadowSender will be copied only to the sender named as <em>original</em> sender or first sender in the
+ * list if not explicitly named (if this is a {@link ISenderWithParameters}). This includes
+ * parameters copied from the {@link org.frankframework.pipes.SenderPipe} to the ShadowSender.
  *
  * @author Niels Meijer
  * @since 7.0
@@ -87,6 +93,13 @@ public class ShadowSender extends ParallelSenders {
 		if (resultSender == null)
 			throw new ConfigurationException("no resultSender found");
 
+		// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
+		// because sender might not have been set when addPipe() is called.
+		if (originalSender instanceof ISenderWithParameters senderWithParams) {
+			for (IParameter p : getParameterList()) {
+				senderWithParams.addParameter(p);
+			}
+		}
 		super.configure();
 	}
 

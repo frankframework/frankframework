@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -29,6 +30,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.util.XmlUtils;
@@ -39,16 +41,21 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	private static final String ORIGINAL_SENDER_NAME = "originalSender";
 	private static final String ORIGINAL_SENDER_RESULT = "original-sender-result";
 	private static final String RESULT_SENDER_NAME = "resultSender";
+	private EchoSender originalSender;
+	private ResultSender resultSender;
 
 	@Override
 	public ShadowSender createSender() {
 		ShadowSender ps = new ShadowSender();
 
 		ps.setOriginalSender(ORIGINAL_SENDER_NAME);
-		ps.addSender(createOriginalSender());
+		originalSender = createOriginalSender();
+		ps.addSender(originalSender);
 
 		ps.setResultSender(RESULT_SENDER_NAME);
-		ps.addSender(createResultSender());
+		resultSender = createResultSender();
+		ps.addSender(resultSender);
+		ps.addParameter(new Parameter("test", "v1"));
 
 		return ps;
 	}
@@ -75,7 +82,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		}
 	}
 
-	private ISender createOriginalSender() {
+	private EchoSender createOriginalSender() {
 		EchoSender originalSender = new EchoSender() {
 			@Override
 			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) {
@@ -85,6 +92,17 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		originalSender.setName(ORIGINAL_SENDER_NAME);
 		getConfiguration().autowireByName(originalSender);
 		return originalSender;
+	}
+
+	@Test
+	void testConfigureCopiesParameters() throws Exception {
+		assertFalse(originalSender.getParameterList().hasParameter("test"));
+		assertFalse(resultSender.getParameterList().hasParameter("test"));
+
+		sender.configure();
+
+		assertTrue(originalSender.getParameterList().hasParameter("test"));
+		assertFalse(resultSender.getParameterList().hasParameter("test"));
 	}
 
 	@Test
