@@ -17,6 +17,7 @@ package org.frankframework.larva;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -123,6 +124,10 @@ public class TestRunStatus {
 			}
 		}
 		log.debug("Get current scenarios root directory");
+		if (StringUtils.isNotEmpty(larvaConfig.getActiveScenariosDirectory()) && !isConfiguredScenariosRoot(larvaConfig.getActiveScenariosDirectory(), scenariosRoots.values())) {
+			larvaTool.errorMessage("Scenarios root directory [%s] is not one of the configured scenarios root directories, falling back to the default".formatted(larvaConfig.getActiveScenariosDirectory()));
+			larvaConfig.setActiveScenariosDirectory(null);
+		}
 		if (StringUtils.isEmpty(larvaConfig.getActiveScenariosDirectory())) {
 			String currentScenariosRootDirectory;
 			String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
@@ -137,6 +142,15 @@ public class TestRunStatus {
 		}
 		scenarioDirectories = scenariosRoots;
 		return larvaConfig.getActiveScenariosDirectory();
+	}
+
+	/**
+	 * The active scenarios root directory can be supplied by the user, so it has to be verified against the
+	 * directories configured in {@code scenariosrootN.directory} before it is used to find and run scenarios.
+	 */
+	private static boolean isConfiguredScenariosRoot(String directory, Collection<String> scenariosRoots) {
+		return scenariosRoots.stream()
+				.anyMatch(scenariosRoot -> LarvaUtil.isPathInsideDirectory(directory, scenariosRoot));
 	}
 
 	private String determineParentPath(String realPath, String m2eFileName) {
