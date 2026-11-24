@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jspecify.annotations.NonNull;
@@ -70,8 +71,6 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
 
 	private @Getter boolean createRootFolder = false;
-
-	private static final String FILE_DELIMITER = "/";
 
 	/**
 	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
@@ -123,8 +122,8 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			filename="";
 		}
 
-		if (StringUtils.isNotEmpty(folder) && !(filename.contains(FILE_DELIMITER) || filename.contains("\\"))) {
-			filename = folder + FILE_DELIMITER + filename;
+		if (StringUtils.isNotEmpty(folder) && !(Paths.get(filename).isAbsolute())) {
+			filename = FilenameUtils.concat(folder, filename);
 		}
 
 		Path result = Paths.get(filename).normalize();
@@ -158,7 +157,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@NonNull
 	@Override
-	public DirectoryStream<Path> list(Path folder, @NonNull TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<Path> list(@Nullable Path folder, @NonNull TypeFilter filter) throws FileSystemException {
 		if (folder == null) {
 			folder = toFile(null);
 		}
