@@ -72,7 +72,7 @@ public class TransactionalStorage {
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> browseMessage(TransactionStoragePathVariables path) {
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		return getMessageResponseEntity(path, path.messageId, RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET));
+		return getMessageResponseEntity(path, RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.GET));
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -88,7 +88,7 @@ public class TransactionalStorage {
 	@Description("Download a specific message from a MessageStore")
 	@GetMapping(value = "/configurations/{configuration}/adapters/{adapterName}/{storageSource}/{storageSourceName}/stores/{processState}/messages/{messageId}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<?> downloadMessage(TransactionStoragePathVariables path) {
-		return getMessageResponseEntity(path, path.messageId, RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD));
+		return getMessageResponseEntity(path, RequestMessageBuilder.create(BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD));
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -293,10 +293,10 @@ public class TransactionalStorage {
 		return messageIds.split(",");
 	}
 
-	private ResponseEntity<?> getMessageResponseEntity(TransactionStoragePathVariables model, String messageId, RequestMessageBuilder builder) {
+	private ResponseEntity<?> getMessageResponseEntity(TransactionStoragePathVariables model, RequestMessageBuilder builder) {
 		addHeaders(model, builder);
 		// messageId is Base64 encoded, because it can contain '/' in ExchangeMailListener
-		builder.addHeader("messageId", decodeBase64(messageId));
+		builder.addHeader("messageId", decodeBase64(model.messageId));
 
 		return frankApiService.callSyncGateway(builder);
 	}
