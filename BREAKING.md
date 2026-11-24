@@ -5,10 +5,27 @@ Contains breaking changes per release.
 > [!NOTE]\
 > Previously, we put this information in RELEASES.md. Take a look there for older breaking changes and migration notes.
 
+10.4
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/release/10.3...HEAD)
+
+* The Tomcat Docker image no longer lets the console's log viewer read `/opt/frank`: `FileViewer.permission.rules` in the image now only allows `/usr/local/tomcat/logs`, matching the default described in `SECURITY.md`.
+  If you browse other files under `/opt/frank` through the Logging page, set `FileViewer.permission.rules` yourself, for example as a system property.
+* `FileViewer.permission.rules` now matches whole path elements: a rule for `/opt/logs` no longer also matches `/opt/logs-old` or `/opt/logsecrets`. Add a rule per directory if you relied on the old prefix match.
+
+10.3.1
+--------------
+* Tomcat has been upgraded to 11.0.29 for CVEs that have been fixed. As a side effect of this upgrade, JNDI resources defined for the application as `<Resource ... />`
+  in the Context XML file now need to have a `type` attribute defined, or a the `object_name` attribute, or Tomcat will fail to start up with a `NullPointerException`.
+  (NB: This file may be named `context.xml` but it can have different names)
+* Due to tightening security restrictions in the Linux distribution on which our Tomcat Docker images are built, the default J2V8 JavaScript engine used in the `JavaScriptSender` no
+  long works out-of-the-box.
+  Try changing to the `GraalJS` engine, or start Tomcat with the environment-variable `GCLIB_TUNABLES` set to `glibc.rtld.execstack=2`.
+  Because of the security-implications we do not wish to bake in this into the Docker images we provide.
+
 10.3
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/release/10.2...HEAD)
-
 * In ticket [11345](https://github.com/frankframework/frankframework/issues/11345) validation for the instance name was added. If you are using a name that is not valid the application will not start up.
 
 10.2

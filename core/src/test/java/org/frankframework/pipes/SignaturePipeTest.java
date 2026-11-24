@@ -26,7 +26,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.encryption.CommonsPkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.LoadBouncyCastleBean;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.SignaturePipe.Action;
@@ -118,9 +117,9 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystoreType(KeystoreType.JKS);
 		pipe.setKeystoreAlias("1");
 
-		LifecycleException e = assertThrows(LifecycleException.class, this::configureAndStartPipe);
-		EncryptionException ee = assertInstanceOf(EncryptionException.class, e.getCause());
-		assertThat(ee.getMessage(), Matchers.containsString("cannot obtain Private Key in alias [1] of keystore [/Signature/ks_multipassword.jks]"));
+		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
+		EncryptionException ee = assertInstanceOf(EncryptionException.class, e.getCause().getCause());
+		assertThat(ee.getMessage(), Matchers.containsString("cannot obtain Private Key with name [1] in keystore [/Signature/ks_multipassword.jks]"));
 	}
 
 	@Test

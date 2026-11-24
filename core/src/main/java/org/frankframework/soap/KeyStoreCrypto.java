@@ -16,10 +16,7 @@
 package org.frankframework.soap;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -65,7 +62,7 @@ import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.util.AppConstants;
+import org.frankframework.encryption.CommonsPkiUtil;
 
 /**
  * A WSS4J Crypto implementation based on a Java KeyStore.
@@ -85,32 +82,12 @@ import org.frankframework.util.AppConstants;
 @Log4j2
 @SuppressWarnings("java:S1141") // Suppress 'Try-catch blocks should not be nested'.
 public class KeyStoreCrypto extends CryptoBase {
-	@SuppressWarnings("java:S2068") // Suppress 'Hard-coded credentials are security-sensitive'
-	private static final String CA_CERTS_PASSWORD = AppConstants.getInstance().getProperty("cacerts.password");
-	private static final String CA_CERTS_PATH = AppConstants.getInstance().getProperty("cacerts.location");
 
 	private final @NonNull KeyStore keystore;
 	private final @Nullable KeyStore truststore;
 
 	public KeyStoreCrypto(KeyStore keystore) {
-		this(keystore, getDefaultTruststore());
-	}
-
-	private static @Nullable KeyStore getDefaultTruststore() {
-		if (StringUtils.isBlank(CA_CERTS_PATH) || StringUtils.isBlank(CA_CERTS_PASSWORD)) {
-			throw new IllegalStateException("CA CERTS file or password not provided");
-		}
-
-		try (InputStream cacertsIs = Files.newInputStream(Paths.get(CA_CERTS_PATH))) {
-			KeyStore truststore = KeyStore.getInstance(KeyStore.getDefaultType());
-			truststore.load(cacertsIs, CA_CERTS_PASSWORD.toCharArray());
-
-			return truststore;
-		} catch (Exception e) {
-			log.warn("CA certs could not be loaded", e);
-		}
-
-		return null;
+		this(keystore, null);
 	}
 
 	public KeyStoreCrypto(@Nullable KeyStore keystore, @Nullable KeyStore truststore) {
@@ -119,7 +96,16 @@ public class KeyStoreCrypto extends CryptoBase {
 		}
 
 		this.keystore = keystore;
-		this.truststore = truststore;
+		this.truststore = truststore == null ? getDefaultTrustStore() : truststore;
+	}
+
+	private KeyStore getDefaultTrustStore() {
+		try {
+			return CommonsPkiUtil.getDefaultTrustStore();
+		} catch (Exception e) {
+			log.warn("unable to open default truststore", e);
+			return null;
+		}
 	}
 
 	/**
