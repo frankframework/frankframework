@@ -31,6 +31,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.classloaders.ClassLoadingLeakDetector;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.WebAppClassLoader;
+import org.frankframework.lifecycle.events.ApplicationMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -53,7 +54,6 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 	// Cannot make this static final because of tests
 	private final AppConstants appConstants = AppConstants.getInstance();
 	private final ClassLoader classPathClassLoader;
-	private @Setter IbisContext ibisContext;
 	private @Setter ApplicationContext applicationContext;
 
 	public ClassLoaderFactory() {
@@ -86,7 +86,7 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 			String msg = "error configuring ClassLoader for configuration ["+configurationName+"]";
 			switch (getReportLevel(classLoaderConfigProperties)) {
 				case DEBUG -> log.debug(msg, ce);
-				case INFO -> ibisContext.log(msg, MessageEventLevel.INFO, ce);
+				case INFO -> applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, msg, MessageEventLevel.INFO, ce));
 				case WARN -> ApplicationWarnings.add(log, msg, ce);
 				case ERROR -> throw ce;
 				case null -> throw ce; // This cannot really happen but it keeps Codacy happy
@@ -192,7 +192,6 @@ public class ClassLoaderFactory implements ApplicationContextAware {
 	 * Removes all created ClassLoaders
 	 */
 	public void shutdown() {
-		ibisContext = null; // Remove ibisContext reference
 		ClassLoadingLeakDetector.logLeakStatistics();
 	}
 }

@@ -122,7 +122,6 @@ public class ClassLoaderFactoryTest extends Mockito {
 		setLocalProperty("configurations.names", configurationsNames.toString());
 
 		factory = new ClassLoaderFactory();
-		factory.setIbisContext(ibisContext);
 		factory.setApplicationContext(ibisContext.getApplicationContext());
 	}
 

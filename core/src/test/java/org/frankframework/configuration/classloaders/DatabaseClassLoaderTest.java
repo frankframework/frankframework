@@ -30,10 +30,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -46,7 +43,6 @@ import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.lifecycle.events.ApplicationMessageEvent;
-import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.StreamUtil;
 
@@ -117,23 +113,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			return classLoader;
 		}).when(beanFactory).initializeBean(isA(IConfigurationClassLoader.class), anyString());
 
-		@SuppressWarnings("rawtypes") // IbisContext.log is a void method
-		Answer answer = new Answer() {
-			@Override
-			public @Nullable Object answer(InvocationOnMock invocation) {
-				String message = invocation.getArgument(0);
-				MessageEventLevel level = invocation.getArgument(1);
-				Exception exception = invocation.getArgument(2);
-				new ApplicationMessageEvent(spy(ApplicationContext.class), message, level, exception);
-				return null;
-			}
-		};
-		// Mock the IbisContext's log method which uses getApplicationContext which in turn creates a
-		// new ApplicationContext if non exists. This functionality should be removed sometime in the future.
-		// During testing, the IbisContext never initialises and thus there is no ApplicationContext. The
-		// creation of the ApplicationContext during the test phase causes IllegalStateExceptions
-		// In turn this causes the actual thing we want to test to never be 'hit', aka the log message.
-		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageEventLevel.class), any(Exception.class));
 		return applicationContext;
 	}
 
@@ -160,7 +139,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		String key = "configurations."+getConfigurationName()+".reportLevel";
 		appConstants.setProperty(key, "ERROR");
 		ClassLoaderFactory factory = new ClassLoaderFactory();
-		factory.setIbisContext(ibisContext);
 		factory.setApplicationContext(ibisContext.getApplicationContext());
 		ClassLoader config = null;
 		boolean makeSureAnExceptionIsThrown = false;
@@ -190,7 +168,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "DEBUG");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
-			factory.setIbisContext(ibisContext);
 			factory.setApplicationContext(ibisContext.getApplicationContext());
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
@@ -222,7 +199,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "INFO");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
-			factory.setIbisContext(ibisContext);
 			factory.setApplicationContext(ibisContext.getApplicationContext());
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
@@ -255,7 +231,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "WARN");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
-			factory.setIbisContext(ibisContext);
 			factory.setApplicationContext(ibisContext.getApplicationContext());
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
