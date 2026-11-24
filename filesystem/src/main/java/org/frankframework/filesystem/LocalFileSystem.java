@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -46,7 +47,6 @@ import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.DestinationType;
@@ -78,7 +78,8 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	 * When the root is left unspecified, absolute paths to files and folders can be used
 	 */
 	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
-	@Getter @Setter private String root;
+	@Getter private String root;
+	private Path rootPath;
 
 	@Override
 	public void configure() {
@@ -87,8 +88,25 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public void open() throws FileSystemException {
-		if (createRootFolder && root != null && !Files.exists(Paths.get(root))) {
-			createFolder(root);
+		if (rootPath != null) {
+			if (createRootFolder && !Files.exists(rootPath)) {
+				try {
+					Files.createDirectories(rootPath);
+				} catch (IOException e) {
+					throw new FileSystemException("Cannot create folder [" + root + "]", e);
+				}
+			}
+			if (Files.exists(rootPath)) {
+				try {
+					// Get the root realPath to resolve things like Windows SHORTE~1 filenames and case-differences on case-insensitive
+					// file systems.
+					// This helps to correctly determine if result of `toFile` is within the specified filesystem root, or not.
+					rootPath = rootPath.toRealPath(LinkOption.NOFOLLOW_LINKS);
+					root = rootPath.toString();
+				} catch (IOException e) {
+					throw new FileSystemException("Cannot get real path of folder [" + root + "]", e);
+				}
+			}
 		}
 
 		super.open();
@@ -109,14 +127,23 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			filename = folder + FILE_DELIMITER + filename;
 		}
 
-		Path result = Paths.get(filename);
-
-		if (StringUtils.isNotEmpty(getRoot()) && !result.isAbsolute()) {
+		Path result = Paths.get(filename).normalize();
+		if (result.isAbsolute()) {
+			if (rootPath != null && !result.startsWith(rootPath)) {
+				log.warn("Returning result path [{}] outside of root [{}] because it is absolute", result, root);
+			}
+			return result;
+		}
+		if (rootPath != null) {
 			// Filename will always contain the folder, if it's passed as parameter or within the filename.
 			// We need to make sure that the root is not prepended if it's already part of the filename.
 			// Use normalized Path-based comparison to avoid false positives (for example root x/y vs filename x/y2/file).
-			if (!result.normalize().startsWith(Paths.get(getRoot()).normalize())) {
-				return Paths.get(getRoot()).resolve(filename);
+			if (!result.normalize().startsWith(rootPath)) {
+				Path resolvedRelativeResult = rootPath.resolve(filename).normalize();
+				if (!resolvedRelativeResult.startsWith(rootPath)) {
+					throw new org.frankframework.filesystem.FileNotFoundException("Path traversal cannot reach target [" + filename + "]");
+				}
+				return resolvedRelativeResult;
 			}
 
 			filename = result.toString();
@@ -484,5 +511,15 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	@Default("false")
 	public void setCreateRootFolder(boolean createRootFolder) {
 		this.createRootFolder = createRootFolder;
+	}
+
+	public void setRoot(String root) {
+		if (StringUtils.isEmpty(root)) {
+			this.rootPath = null;
+			this.root = null;
+			return;
+		}
+		rootPath = Paths.get(root).normalize();
+		this.root = rootPath.toString();
 	}
 }

@@ -99,7 +99,15 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 		Path resolved = fileSystem.toFile("x/y/../outside/file.txt");
 
 		assertTrue(resolved.normalize().startsWith(Paths.get("x/y")));
-		assertEquals(Paths.get("x/y").resolve("x/y/../outside/file.txt"), resolved);
+		assertEquals(Paths.get("x/y").resolve("x/y/../outside/file.txt").normalize(), resolved);
+	}
+
+	@Test
+	void testToFileDoesNotAllowRootEscape() {
+		fileSystem.setRoot("x/y");
+
+		assertThrows(FileNotFoundException.class, () -> fileSystem.toFile("z/../../outside/file.txt"));
+		assertThrows(FileNotFoundException.class, () -> fileSystem.toFile("../../outside/file.txt"));
 	}
 
 	@Test
