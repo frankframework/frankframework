@@ -421,14 +421,15 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   private getFormData(): FormData {
     const messageIds: string[] = [];
     for (const index in this.storageService.selectedMessages) {
-      if (!Object.hasOwn(this.storageService.selectedMessages, index)) continue;
+      // eslint-disable-next-line unicorn/no-computed-property-existence-check
+      if (!this.storageService.selectedMessages[index]) continue;
 
       messageIds.push(btoa(index));
       this.storageService.selectedMessages[index] = false; // unset the messageId
     }
 
     const fd = new FormData();
-    fd.append('messageIds', messageIds as unknown as string);
+    fd.append('messageIds', messageIds.join(','));
     return fd;
   }
 
