@@ -27,14 +27,14 @@ import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.stream.Message;
-import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.testutil.TestPropertyUtil;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
 public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3FileSystem> {
 
-	private static final int WAIT_TIMEOUT_MILLIS = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
+	private static final int WAIT_TIMEOUT_MILLIS = TestPropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	@Container
 	private static final S3MockContainer s3Mock = new S3MockContainer("latest");

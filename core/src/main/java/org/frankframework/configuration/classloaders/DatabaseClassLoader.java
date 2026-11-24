@@ -18,14 +18,18 @@ package org.frankframework.configuration.classloaders;
 import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import lombok.Setter;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.util.ConfigurationUtils;
 
-public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
+public class DatabaseClassLoader extends AbstractJarBytesClassLoader implements ApplicationContextAware {
 
 	private Map<String, Object> configuration;
 	private String datasourceName = null;
+	private @Setter ApplicationContext applicationContext;
 
 	public DatabaseClassLoader(ClassLoader parent) {
 		super(parent);
@@ -41,8 +45,7 @@ public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
 		Map<String, Object> loadedConfiguration;
 		try {
 			// Make sure there's a database present
-			ApplicationContext ac = getIbisManager().getApplicationContext();
-			loadedConfiguration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
+			loadedConfiguration = ConfigurationUtils.getActiveConfigFromDatabase(applicationContext, getConfigurationName(), datasourceName);
 		} catch (Throwable t) {
 			// Make the error a little bit more IBIS-developer intuitive
 			throw new ClassLoaderException(getErrorMessage(), t);

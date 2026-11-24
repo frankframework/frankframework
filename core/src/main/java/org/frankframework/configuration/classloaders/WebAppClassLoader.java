@@ -45,7 +45,7 @@ public class WebAppClassLoader extends AbstractClassLoader {
 			if (getBasePath() == null || localname.startsWith(getBasePath())) {
 				return getParent().getResource(localname);
 			} else { // else consider the file illegal, it should not be found within this classloader.
-				log.debug("unable to retrieve file [{}] with localname [{}] from [{}]", ()->name, ()->localname, ()->toString());
+				log.debug("unable to retrieve file [{}] with localname [{}] from [{}]", ()->name, ()->localname, this::toString);
 				return null;
 			}
 		}
@@ -57,7 +57,7 @@ public class WebAppClassLoader extends AbstractClassLoader {
 	 * Always allow all classes from the deployed webapp.
 	 */
 	@Override
-	protected boolean getAllowCustomClasses() {
+	public boolean isAllowCustomClasses() {
 		return true;
 	}
 }

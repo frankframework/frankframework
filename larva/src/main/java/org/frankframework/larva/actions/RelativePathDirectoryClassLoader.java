@@ -17,11 +17,7 @@ package org.frankframework.larva.actions;
 
 import java.net.URL;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.ClassLoadingLeakDetector;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 
@@ -32,21 +28,21 @@ import org.frankframework.configuration.classloaders.DirectoryClassLoader;
  */
 public class RelativePathDirectoryClassLoader extends DirectoryClassLoader {
 
-	public RelativePathDirectoryClassLoader() {
-		super(Thread.currentThread().getContextClassLoader());
+	public RelativePathDirectoryClassLoader(ClassLoader parent) {
+		super(parent);
 	}
 
 	@Override
-	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		super.configure(ibisContext, configurationName);
+	public void afterPropertiesSet() throws ClassLoaderException {
+		super.afterPropertiesSet();
 		// This classloader is not created via the ClassLoadManager, so register this instance manually with the leak-detection
-		ClassLoadingLeakDetector.registerClassLoader(configurationName, this);
+		ClassLoadingLeakDetector.registerClassLoader(getConfigurationName(), this);
 	}
 
 	@Override
 	public URL getResource(String name, boolean useParent) {
 		URL url = super.getResource(name, false);
-		if (url == null) {
+		if (url == null && name != null) {
 			url = getLocalResource(name);
 		}
 		if (url == null && useParent) {

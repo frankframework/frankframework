@@ -30,7 +30,6 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.BytesResource;
 import org.frankframework.core.Resource;
 import org.frankframework.dbms.JdbcException;
@@ -44,6 +43,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.management.bus.message.StringMessage;
+import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.StreamUtil;
 
 @BusAware("frank-management-bus")
@@ -88,8 +88,8 @@ public class DatabaseMigrator extends BusEndpointBase {
 
 	@NonNull
 	private String normalizeName(@NonNull String name) {
-		if (name.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME)) {
-			return name.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length());
+		if (name.startsWith(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME)) {
+			return name.substring(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME.length());
 		}
 		return name;
 	}

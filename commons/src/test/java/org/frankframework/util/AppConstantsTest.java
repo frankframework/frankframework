@@ -202,12 +202,12 @@ public class AppConstantsTest {
 
 	@Test
 	public void testSubAppConstants() {
-		Properties propertiesStartingWithConfigurations = constants.getAppConstants("test.basekey");
+		Properties propertiesStartingWithConfigurations = AppConstants.getAppConstants("test.basekey");
 		assertEquals("3", propertiesStartingWithConfigurations.getProperty("test.basekey.prop3"));
 	}
 
 	private class ClassLoaderMock extends ClassLoader {
-		private boolean simulateReload;
+		private final boolean simulateReload;
 
 		public ClassLoaderMock(ClassLoader parent, boolean simulateReload) {
 			super(parent);
