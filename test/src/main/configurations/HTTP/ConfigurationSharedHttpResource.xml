@@ -35,12 +35,12 @@
 		<Pipeline firstPipe="forEachElement">
 			<ForEachChildElementPipe name="forEachElement" elementXPathExpression="/requests/request">
 				<ParallelSendersSender name="testje" maxConcurrentThreads="1"><!-- not the best solution but saves from having to configure a sub-adapter -->
-					<HttpSender name="myFirstHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param">
+					<HttpSender name="myFirstHttpSender" sharedResourceRef="SharedApiListenerHttpSession1" urlParam="url_param" timeout="1">
 						<param name="url_param" xpathExpression="concat($uri, '?nr=1')"> <!-- nr=1 using session=1 -->
 							<param name="uri" xpathExpression="*/@uri" />
 						</param>
 					</HttpSender>
-					<HttpSender name="mySecondHttpSender" sharedResourceRef="SharedApiListenerHttpSession2" urlParam="url_param">
+					<HttpSender name="mySecondHttpSender" sharedResourceRef="SharedApiListenerHttpSession2" urlParam="url_param" timeout="1">
 						<param name="url_param" xpathExpression="concat($uri, '?nr=2')"> <!-- nr=2 using session=2 -->
 							<param name="uri" xpathExpression="*/@uri" />
 						</param>

@@ -21,13 +21,12 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 import javax.xml.transform.TransformerConfigurationException;
 
@@ -160,22 +159,23 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			log.debug("configuring local HttpSession");
 			super.configure();
 		} else {
-			List<String> overriddenProperties = new ArrayList<>();
-
-			// Check if any properties are set, that will be overridden by the sharedResource
-			if (StringUtils.isNotBlank(super.getUsername())) overriddenProperties.add("username");
-			if (StringUtils.isNotBlank(super.getPassword())) overriddenProperties.add("password");
-			if (StringUtils.isNotBlank(super.getClientAuthAlias())) overriddenProperties.add("clientAuthAlias");
-			if (StringUtils.isNotBlank(super.getAuthAlias())) overriddenProperties.add("alias");
-			if (StringUtils.isNotBlank(super.getClientId())) overriddenProperties.add("clientId");
-			if (StringUtils.isNotBlank(super.getClientSecret())) overriddenProperties.add("clientSecret");
-			if (StringUtils.isNotBlank(super.getTokenEndpoint())) overriddenProperties.add("tokenEndpoint");
-			if (super.getOauthAuthenticationMethod() != null) overriddenProperties.add("oauthMethod");
-
-			if (!overriddenProperties.isEmpty()) {
-				String message = "sharedResourceRef is defined. The following properties will be ignored: " + String.join(", ", overriddenProperties);
-				ConfigurationWarnings.add(this, log, message);
-			}
+			Map.<String, BooleanSupplier>of(
+							"username", () -> StringUtils.isNotBlank(super.getUsername()),
+							"password", () -> StringUtils.isNotBlank(super.getPassword()),
+							"clientAuthAlias", () -> StringUtils.isNotBlank(super.getClientAuthAlias()),
+							"alias", () -> StringUtils.isNotBlank(super.getAuthAlias()),
+							"clientId", () -> StringUtils.isNotBlank(super.getClientId()),
+							"clientSecret", () -> StringUtils.isNotBlank(super.getClientSecret()),
+							"tokenEndpoint", () -> StringUtils.isNotBlank(super.getTokenEndpoint()),
+							"oauthMethod", () -> super.getOauthAuthenticationMethod() != null,
+							"timeout", () -> super.getTimeout() != UNCONFIGURED_TIMEOUT
+					).entrySet()
+					.stream()
+					.filter(e -> e.getValue().getAsBoolean())
+					.map(Map.Entry::getKey)
+					.reduce((s1, s2) -> s1 + ", " + s2)
+					.map(s -> "sharedResourceRef is defined. The following properties will be ignored: " + s)
+					.ifPresent(message -> ConfigurationWarnings.add(AbstractHttpSender.this, log, message));
 		}
 
 		paramList.configure();
@@ -205,9 +205,9 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			}
 		}
 
-		if(StringUtils.isNotEmpty(getContentType()) && headerParamsSet.stream().noneMatch(e -> e.equalsIgnoreCase("content-type"))) {
+		if (StringUtils.isNotEmpty(getContentType()) && headerParamsSet.stream().noneMatch(e -> e.equalsIgnoreCase("content-type"))) {
 			defaultContentType = ContentType.parse(getContentType());
-			if(defaultContentType.getCharset() == null && !"application/json".equals(defaultContentType.getMimeType())) {
+			if (defaultContentType.getCharset() == null && !"application/json".equals(defaultContentType.getMimeType())) {
 				defaultContentType = defaultContentType.withCharset(getCharSet());
 			}
 		}
@@ -271,7 +271,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 
 	@Override
 	public void stop() {
-		if(StringUtils.isBlank(sharedResourceRef)) {
+		if (StringUtils.isBlank(sharedResourceRef)) {
 			super.stop();
 		}
 
@@ -283,7 +283,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	protected boolean appendParameters(boolean parametersAppended, StringBuilder path, ParameterValueList parameters) throws SenderException {
 		if (parameters != null) {
 			log.debug("appending [{}] parameters", parameters::size);
-			for(ParameterValue pv : parameters) {
+			for (ParameterValue pv : parameters) {
 				if (requestOrBodyParamsSet.contains(pv.getName())) {
 					String value = pv.asStringValue("");
 					if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(pv.getName())) {
@@ -382,7 +382,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 				log.debug("appending header parameters {}", headersParams);
 				for (String paramName:headerParamsSet) {
 					ParameterValue paramValue = pvl.get(paramName);
-					if(paramValue != null) {
+					if (paramValue != null) {
 						String value = paramValue.asStringValue(null);
 						if (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(paramName)) {
 							headersParamsMap.put(paramName, value);
@@ -392,8 +392,9 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			}
 
 			httpRequestBase = getMethod(targetUri, message, pvl, session);
-			if(httpRequestBase == null)
+			if (httpRequestBase == null) {
 				throw new MethodNotSupportedException("could not find implementation for method ["+getHttpMethod()+"]");
+			}
 
 			// Set all headers
 			if (appendMessageidHeader && StringUtils.isNotEmpty(session.getMessageId())) {
@@ -500,7 +501,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		return StringUtils.isNotBlank(sharedResourceRef) ? getSharedResource(sharedResourceRef) : null;
 	}
 
-	// When a shared session is defined, these three methods will override the local values.
+	// When a shared session is defined, these methods will override the local values.
 	// This allows the HttpSender to use the properties defined in the shared session without copying them.
 	@Override
 	public CredentialFactory getCredentials() {
@@ -518,6 +519,12 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	public OauthAuthenticationMethod getOauthAuthenticationMethod() {
 		HttpSession sharedSession = getSharedSession();
 		return sharedSession != null ? sharedSession.getOauthAuthenticationMethod() : super.getOauthAuthenticationMethod();
+	}
+
+	@Override
+	public int getTimeout() {
+		HttpSession sharedSession = getSharedSession();
+		return sharedSession != null ? sharedSession.getTimeout() : super.getTimeout();
 	}
 
 	/** URL or base of URL to be used. Expects all parts of the URL to already be encoded. */
