@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
@@ -92,7 +91,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		Message message = new Message(id);
 		ParameterValueList pvl = parameters.getValues(new Message(""), session);
 
-		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl));
 		assertThat(e.getMessage(), containsString("unable to resolve the value of parameter"));
 	}
 
@@ -113,8 +112,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		Message message = new Message(id);
 		ParameterValueList pvl = parameters.getValues(null, session);
 
-		result = actor.doAction(message, pvl, session);
-
+		result = actor.doAction(message, pvl);
+    	assertNotNull(result);
 		assertEquals(contents, result.asString());
 	}
 
@@ -195,9 +194,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message("");
-		PipeLineSession session = new PipeLineSession();
-		ParameterValueList pvl = null;
-		result = actor.doAction(message, pvl, session);
+		ParameterValueList pvl = new ParameterValueList();
+		result = actor.doAction(message, pvl);
 
 		log.debug(result);
 
@@ -273,11 +271,11 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		PipeLineSession session = new PipeLineSession();
-		ParameterValueList pvl = null;
+		ParameterValueList pvl = new ParameterValueList();
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
+		assertNotNull(result);
 		String stringResult = result.asString();
 		assertTrue(stringResult.contains(filename2));
 		assertFalse(stringResult.contains(filename1));
@@ -300,11 +298,11 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		PipeLineSession session = new PipeLineSession();
-		ParameterValueList pvl = null;
+		ParameterValueList pvl = new ParameterValueList();
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
+		assertNotNull(result);
 		String stringResult = result.asString();
 
 		assertTrue(stringResult.contains(filename2));
@@ -330,11 +328,11 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		waitForActionToFinish();
 
 		Message message = new Message("");
-		PipeLineSession session = new PipeLineSession();
-		ParameterValueList pvl = null;
+		ParameterValueList pvl = new ParameterValueList();
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
+		assertNotNull(result);
 		String stringResult = result.asString();
 
 		assertTrue(stringResult.contains(filename2));
@@ -374,7 +372,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		Message message = new Message(id1);
 		ParameterValueList pvl = parameters.getValues(message, session);
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 		waitForActionToFinish();
 
 		assertFileCountEquals(result, 2);
@@ -394,11 +392,12 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
-		Message message = new Message(fileViaAttribute ? null : id);
-		ParameterValueList pvl = null;
+		Message message = Message.asMessage(fileViaAttribute ? null : id);
+		ParameterValueList pvl = new ParameterValueList();
 
 		// Act
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
+		assertNotNull(result);
 		String resultStr = result.asString();
 
 		assertThat(resultStr, containsString("<file name=\"%s\"".formatted(id)));
@@ -435,8 +434,9 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		Message message = new Message(id);
 		ParameterValueList pvl = parameters.getValues(message, session);
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
+		assertNotNull(result);
 		assertEquals(contents, result.asString());
 		assertTrue(_fileExists(id));
 	}
@@ -458,14 +458,15 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
-		Message message = new Message(fileViaAttribute ? null : id);
-		ParameterValueList pvl = null;
+		Message message = Message.asMessage(fileViaAttribute ? null : id);
+		ParameterValueList pvl = new ParameterValueList();
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
 		if(contents == null) {
 			assertTrue(Message.isEmpty(result));
 		} else {
+			assertNotNull(result);
 			assertEquals(contents, result.asString());
 		}
 		assertEquals(fileShouldStillExistAfterwards, _fileExists(id));
@@ -490,6 +491,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void fileSystemActorReadActionTestCompatiblity() throws Exception {
+		//noinspection deprecation
 		fileSystemActorReadActionTest(FileSystemAction.DOWNLOAD, false, true);
 	}
 
@@ -514,10 +516,11 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(folder + "/" + id);
-		ParameterValueList pvl = null;
+		ParameterValueList pvl = new ParameterValueList();
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
+		assertNotNull(result);
 		assertEquals(contents, result.asString());
 		assertFalse(_fileExists(id), "Expected file [" + filename + "] not to be present");
 		assertFalse(_fileExists(id), "Expected file [" + filename + "] not to be present");
@@ -539,9 +542,10 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(id);
-		ParameterValueList pvl = null;
+		ParameterValueList pvl = new ParameterValueList();
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
+		assertNotNull(result);
 		assertEquals(contents, result.asString());
 	}
 
@@ -561,9 +565,10 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(id);
-		ParameterValueList pvl = null;
+		ParameterValueList pvl = new ParameterValueList();
 
-		Message result = actor.doAction(message, pvl, session);
+		Message result = actor.doAction(message, pvl);
+		assertNotNull(result);
 		assertEquals(expected, result.asString());
 	}
 
@@ -600,7 +605,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		Message m = new Message("");
 		ParameterValueList pvl = parameters.getValues(m, session);
-		result = actor.doAction(m, pvl, session);
+		result = actor.doAction(m, pvl);
 
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobemoved" + i + FILE1;
@@ -642,7 +647,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		Message m = new Message("");
 		ParameterValueList pvl = parameters.getValues(m, session);
-		result = actor.doAction(m, pvl, session);
+		result = actor.doAction(m, pvl);
 
 		for (int i = 0; i < 3; i++) {
 			String filename = "tostay" + i + FILE1;
@@ -685,7 +690,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		Message message = new Message(id);
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
 		// test
 		// result should be name of the moved file
@@ -740,7 +745,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		ParameterValueList pvl = parameters.getValues(message, session);
 
 		// Expect fileSystemException, which wraps a FileAlreadyExistsException
-		FileSystemException fileSystemException = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		FileSystemException fileSystemException = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl));
 
 		// Expect a FileAlreadyExistsException, because we try to move a file onto itself
 		assertInstanceOf(FileAlreadyExistsException.class, fileSystemException.getCause());
@@ -769,7 +774,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		ParameterValueList pvl = parameters.getValues(message, session);
 
 		// Expect fileSystemException, which wraps a FileAlreadyExistsException
-		FileSystemException fileSystemException = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		FileSystemException fileSystemException = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl));
 
 		// Expect a FileAlreadyExistsException, because we try to move a file onto itself
 		assertInstanceOf(FileAlreadyExistsException.class, fileSystemException.getCause());
@@ -803,7 +808,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		Message message = new Message("innerFolder/" + id);
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
 		assertNotNull(result);
 		assertFalse(_fileExists(id), "file should not exist anymore in original folder");
@@ -847,7 +852,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		Message m = new Message("");
 		ParameterValueList pvl = parameters.getValues(m, session);
-		result = actor.doAction(m, pvl, session);
+		result = actor.doAction(m, pvl);
 
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobemoved" + i + FILE1;
@@ -891,7 +896,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		Message m = new Message("");
 		ParameterValueList pvl = parameters.getValues(m, session);
-		result = actor.doAction(m, pvl, session);
+		result = actor.doAction(m, pvl);
 
 		for (int i = 0; i < 3; i++) {
 			String filename = "tostay" + i + FILE1;
@@ -925,7 +930,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 		Message message = new Message(id);
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
 		// test
 		// result should be name of the moved file
@@ -957,8 +962,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(folder);
-		ParameterValueList pvl = null;
-		result = actor.doAction(message, pvl, session);
+		ParameterValueList pvl = new ParameterValueList();
+		result = actor.doAction(message, pvl);
 		waitForActionToFinish();
 
 		// test
@@ -982,10 +987,11 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(folder);
-		ParameterValueList pvl = null;
-		result = actor.doAction(message, pvl, session);
+		ParameterValueList pvl = new ParameterValueList();
+		result = actor.doAction(message, pvl);
 
 		// test
+		assertNotNull(result);
 		assertEquals(folder, result.asString(), "result of actor should be name of removed folder");
 		waitForActionToFinish();
 
@@ -1016,10 +1022,11 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(folder);
-		ParameterValueList pvl = null;
-		result = actor.doAction(message, pvl, session);
+		ParameterValueList pvl = new ParameterValueList();
+		result = actor.doAction(message, pvl);
 
 		// test
+		assertNotNull(result);
 		assertEquals(folder, result.asString(), "result of actor should be name of removed folder");
 		waitForActionToFinish();
 
@@ -1052,8 +1059,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(folder);
-		ParameterValueList pvl = null;
-		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		ParameterValueList pvl = new ParameterValueList();
+		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl));
 		assertThat(e.getMessage(), containsString("unable to process [RMDIR] action for File [testDirectory]: Cannot remove folder"));
 	}
 
@@ -1071,8 +1078,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(id);
-		ParameterValueList pvl = null;
-		result = actor.doAction(message, pvl, session);
+		ParameterValueList pvl = new ParameterValueList();
+		result = actor.doAction(message, pvl);
 
 		waitForActionToFinish();
 
@@ -1097,8 +1104,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(folder + "/" + id);
-		ParameterValueList pvl = null;
-		result = actor.doAction(message, pvl, session);
+		ParameterValueList pvl = new ParameterValueList();
+		result = actor.doAction(message, pvl);
 
 		waitForActionToFinish();
 
@@ -1126,8 +1133,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message message = new Message(folder + "/" + filename);
-		ParameterValueList pvl = null;
-		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		ParameterValueList pvl = new ParameterValueList();
+		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl));
 
 		waitForActionToFinish();
 
@@ -1167,7 +1174,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message m = new Message("");
-		result = actor.doAction(m, null, session);
+		result = actor.doAction(m, new ParameterValueList());
 
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobemoved" + i + FILE1;
@@ -1205,7 +1212,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.open();
 
 		Message m = new Message("");
-		result = actor.doAction(m, null, session);
+		result = actor.doAction(m, new ParameterValueList());
 
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobemoved" + i + FILE1;

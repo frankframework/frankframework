@@ -47,7 +47,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		actor.open();
 
 		// Act
-		result = actor.doAction(input, pvl, session);
+		result = actor.doAction(input, pvl);
 
 		// Assert
 		assertNotNull(result);
@@ -77,7 +77,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		actor.open();
 
 		// Act
-		result = actor.doAction(input, pvl, session);
+		result = actor.doAction(input, pvl);
 
 		// Assert
 		assertNotNull(result);
@@ -88,7 +88,7 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		// Check also message contents
 		actor.setAction(FileSystemActor.FileSystemAction.READ);
 
-		Message result2 = actor.doAction(input, pvl, session);
+		Message result2 = actor.doAction(input, pvl);
 		assertNotNull(result2);
 		assertNotNull(result2.asString());
 		assertEquals("message-data", result2.asString());
@@ -115,11 +115,11 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
-		actor.doAction(input, pvl, session);
+		actor.doAction(input, pvl);
 
 		// Act
 		actor.setAction(FileSystemActor.FileSystemAction.INFO);
-		result = actor.doAction(input, pvl, session);
+		result = actor.doAction(input, pvl);
 
 		// Assert
 		assertNotNull(result);

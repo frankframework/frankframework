@@ -78,6 +78,7 @@ import org.frankframework.xml.XmlWriter;
 @DestinationType(DestinationType.Type.FILE_SYSTEM)
 public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F>, IRedeliveringListener<F> {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	@SuppressWarnings("NullAway.Init")
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public static final String ORIGINAL_FILENAME_KEY = "originalFilename";
@@ -104,6 +105,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		INFO
 	}
 
+	@SuppressWarnings("NullAway.Init")
 	private @Getter String name;
 	private @Getter String inputFolder;
 	private @Getter String inProcessFolder;
@@ -314,12 +316,16 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 			}
 		} else {
 			F file = rawMessage.getRawMessage();
-			try {
-				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
-					fs.deleteFile(file);
+			if (file != null) {
+				try {
+					if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
+						fs.deleteFile(file);
+					}
+				} catch (FileSystemException e) {
+					throw new ListenerException("Could not copy or delete file ["+fs.getName(file)+"]",e);
 				}
-			} catch (FileSystemException e) {
-				throw new ListenerException("Could not copy or delete file ["+fs.getName(file)+"]",e);
+			} else {
+				log.info("Cannot execute afterMessageProcessed on NULL file");
 			}
 		}
 		log.debug("After Message Processed - end");

@@ -164,11 +164,11 @@ public class FileSystemUtils {
 		return context;
 	}
 
-	public static <F> MessageContext getContext(IBasicFileSystem<F> fileSystem, F file, String charset) throws FileSystemException {
+	public static <F> MessageContext getContext(@NonNull IBasicFileSystem<F> fileSystem, @NonNull F file, @Nullable String charset) throws FileSystemException {
 		return getContext(fileSystem, file).withCharset(charset);
 	}
 
-	public static <F> void rolloverByNumber(IWritableFileSystem<F> fileSystem, F file, int numberOfBackups) throws FileSystemException {
+	public static <F> void rolloverByNumber(@NonNull IWritableFileSystem<F> fileSystem, @NonNull F file, int numberOfBackups) throws FileSystemException {
 		if (!fileSystem.exists(file)) {
 			return;
 		}

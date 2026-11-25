@@ -62,7 +62,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 
 		Message message = new Message(srcFolder + "/" + filename);
 		ParameterValueList pvl = params.getValues(message, session);
-		Object result = actor.doAction(message, pvl, session);
+		Object result = actor.doAction(message, pvl);
 
 		// test
 		// result should be name of the moved file
@@ -119,7 +119,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 		Message message = new Message(fileSystem.getRoot() + "/" + fileName);
 		ParameterValueList pvl = params.getValues(message, session);
 
-		Object result = actor.doAction(message, pvl, session);
+		Object result = actor.doAction(message, pvl);
 
 		assertNotNull(result, "Could not create new file in " + fileSystem.getRoot());
 	}
@@ -143,7 +143,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 		Message message = new Message(fileName);
 		ParameterValueList pvl = params.getValues(message, session);
 
-		Object result = actor.doAction(message, pvl, session);
+		Object result = actor.doAction(message, pvl);
 
 		assertNotNull(result, "Could not create new file in " + tmpDir);
 	}
@@ -170,6 +170,6 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 		Message message = new Message(fileSystem.getRoot() + "/" + fileName);
 		ParameterValueList pvl = params.getValues(message, session);
 
-		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl));
 	}
 }

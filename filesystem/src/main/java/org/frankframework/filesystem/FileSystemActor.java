@@ -40,7 +40,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasName;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.documentbuilder.ArrayBuilder;
@@ -70,7 +69,7 @@ import org.frankframework.util.StreamUtil;
  */
 @Log4j2
 public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
-	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+	private static final String LINE_SEPARATOR = System.lineSeparator();
 
 	public static final String ACTION_CREATE="create";
 	public static final String ACTION_LIST="list";
@@ -183,9 +182,10 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			actions.addAll(Arrays.asList(ACTIONS_MAIL_FS));
 		}
 
-		if (parameterList.hasParameter(PARAMETER_CONTENTS2) && !parameterList.hasParameter(PARAMETER_CONTENTS1)) {
+		IParameter contents2Param = parameterList.findParameter(PARAMETER_CONTENTS2);
+		if (contents2Param != null && !parameterList.hasParameter(PARAMETER_CONTENTS1)) {
 			ConfigurationWarnings.add(owner, log, "parameter ["+PARAMETER_CONTENTS2+"] has been replaced with ["+PARAMETER_CONTENTS1+"]");
-			parameterList.findParameter(PARAMETER_CONTENTS2).setName(PARAMETER_CONTENTS1);
+			contents2Param.setName(PARAMETER_CONTENTS1);
 		}
 
 		if (action != null) {
@@ -261,7 +261,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 				fileSystem.createFolder(getInputFolder());
 			} else {
 				F file = fileSystem.toFile(getInputFolder());
-				if (file != null && fileSystem.exists(file)) {
+				if (fileSystem.exists(file)) {
 					throw new FileAlreadyExistsException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(file)+"], does not exist as a folder, but is a file");
 				}
 				throw new FolderNotFoundException("inputFolder ["+getInputFolder()+"], canonical name ["+fileSystem.getCanonicalNameOrErrorMessage(file)+"], does not exist");
@@ -275,7 +275,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			return getFilename();
 		}
 		if (pvl!=null && pvl.contains(PARAMETER_FILENAME)) {
-			return pvl.get(PARAMETER_FILENAME).asStringValue(null);
+			return pvl.getValue(PARAMETER_FILENAME);
 		}
 		try {
 			return input.asString();
@@ -289,7 +289,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 			return getDestination();
 		}
 		if (pvl!=null && pvl.contains(PARAMETER_DESTINATION)) {
-			String destination = pvl.get(PARAMETER_DESTINATION).asStringValue(null);
+			String destination = pvl.getValue(PARAMETER_DESTINATION);
 			if (StringUtils.isEmpty(destination)) {
 				throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] does not specify destination");
 			}
@@ -302,7 +302,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return fileSystem.toFile(determineFilename(input, pvl));
 	}
 
-	private F getFileAndCreateFolder(@NonNull Message input, ParameterValueList pvl) throws FileSystemException {
+	private F getFileAndCreateFolder(@NonNull Message input, @NonNull ParameterValueList pvl) throws FileSystemException {
 		final String filenameWithFolder = determineFilename(input, pvl);
 		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
 
@@ -317,15 +317,15 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return fileSystem.toFile(filenameWithFolder);
 	}
 
-	private @Nullable String determineInputFolderName(Message input, ParameterValueList pvl) throws FileSystemException {
+	private @Nullable String determineInputFolderName(@NonNull Message input, @NonNull ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getInputFolder())) {
 			return getInputFolder();
 		}
-		if (pvl!=null && pvl.contains(PARAMETER_INPUTFOLDER)) {
-			return pvl.get(PARAMETER_INPUTFOLDER).asStringValue(null);
+		if (pvl.contains(PARAMETER_INPUTFOLDER)) {
+			return pvl.getValue(PARAMETER_INPUTFOLDER);
 		}
 		try {
-			if (input==null || StringUtils.isEmpty(input.asString())) {
+			if (StringUtils.isEmpty(input.asString())) {
 				return null;
 			}
 			return input.asString();
@@ -338,7 +338,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private TypeFilter determineTypeFilter(final ParameterValueList pvl) throws FileSystemException {
 		if (pvl != null && pvl.contains(PARAMETER_TYPEFILTER)) {
 			try {
-				return EnumUtils.parse(TypeFilter.class, pvl.get(PARAMETER_TYPEFILTER).asStringValue(String.valueOf(getTypeFilter())));
+				return EnumUtils.parse(TypeFilter.class, pvl.getValue(PARAMETER_TYPEFILTER, String.valueOf(getTypeFilter())));
 			} catch (IllegalArgumentException e) {
 				throw new FileSystemException("unable to resolve the value of parameter [" + PARAMETER_TYPEFILTER + "]");
 			}
@@ -349,7 +349,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	private FileSystemAction getAction(ParameterValueList pvl) throws FileSystemException, ConfigurationException {
 		if (pvl != null && pvl.contains(PARAMETER_ACTION)) {
 			try {
-				action = EnumUtils.parse(FileSystemAction.class, pvl.get(PARAMETER_ACTION).asStringValue(String.valueOf(getAction())));
+				action = EnumUtils.parse(FileSystemAction.class, pvl.getValue(PARAMETER_ACTION, String.valueOf(getAction())));
 			} catch(IllegalArgumentException e) {
 				throw new FileSystemException("unable to resolve the value of parameter ["+PARAMETER_ACTION+"]");
 			}
@@ -361,28 +361,29 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public @Nullable Message doAction(@NonNull Message input, ParameterValueList pvl, @NonNull PipeLineSession session) throws FileSystemException {
+	public @Nullable Message doAction(@NonNull Message input, @NonNull ParameterValueList pvl) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
 			action = getAction(pvl);
 
-			switch(action) {
-				case CREATE:{
-					return createFile(input, pvl, null);
-				}
-				case DELETE: {
-					return processAction(input, pvl, f -> { fileSystem.deleteFile(f); return f; });
-				}
-				case INFO: {
-					F file=getFile(input, pvl);
-					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
-					return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
-				}
-				case READ: {
+			return switch (action) {
+				case CREATE -> createFile(input, pvl, null);
+				case DELETE -> processAction(
+						input, pvl, f -> {
+							fileSystem.deleteFile(f);
+							return f;
+						}
+				);
+				case INFO -> {
 					F file = getFile(input, pvl);
-					return fileSystem.readFile(file, getCharset());
+					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.INFO);
+					yield new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
-				case READDELETE: {
+				case READ -> {
+					F file = getFile(input, pvl);
+					yield fileSystem.readFile(file, getCharset());
+				}
+				case READDELETE -> {
 					final F file = getFile(input, pvl);
 					Message result = fileSystem.readFile(file, getCharset());
 					// Make a copy of a local file, otherwise the file is deleted after this method returns.
@@ -391,69 +392,64 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					}
 					fileSystem.deleteFile(file);
 					deleteEmptyFolder(file);
-					return result;
+					yield result;
 				}
-				case LIST: {
-					return processListAction(input, pvl);
-				}
-				case WRITE: {
-					return createFile(input, pvl, getContents(input, pvl, charset));
-				}
-				case APPEND: {
-					F file=getFile(input, pvl);
-					if (getRotateDays()>0 && fileSystem.exists(file)) {
-						FileSystemUtils.rolloverByDay((IWritableFileSystem<F>)fileSystem, file, getInputFolder(), getRotateDays());
-						file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
+				case LIST -> processListAction(input, pvl);
+				case WRITE -> createFile(input, pvl, getContents(input, pvl, charset));
+				case APPEND -> {
+					F file = getFile(input, pvl);
+					if (getRotateDays() > 0 && fileSystem.exists(file)) {
+						FileSystemUtils.rolloverByDay((IWritableFileSystem<F>) fileSystem, file, getInputFolder(), getRotateDays());
+						file = getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
 					}
-					if (getRotateSize()>0 && fileSystem.exists(file)) {
-						FileSystemUtils.rolloverBySize((IWritableFileSystem<F>)fileSystem, file, getRotateSize(), getNumberOfBackups());
-						file=getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
+					if (getRotateSize() > 0 && fileSystem.exists(file)) {
+						FileSystemUtils.rolloverBySize((IWritableFileSystem<F>) fileSystem, file, getRotateSize(), getNumberOfBackups());
+						file = getFile(input, pvl); // re-obtain the file, as the object itself may have changed because of the rollover
 					}
 
-					((IWritableFileSystem<F>)fileSystem).appendFile(file, getContents(input, pvl, charset));
-					return new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
+					((IWritableFileSystem<F>) fileSystem).appendFile(file, getContents(input, pvl, charset));
+					yield new Message(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
-				case MKDIR: {
+				case MKDIR -> {
 					String folder = determineInputFolderName(input, pvl);
 					fileSystem.createFolder(folder);
-					return new Message(folder);
+					yield Message.asMessage(folder);
 				}
-				case RMDIR: {
+				case RMDIR -> {
 					String folder = determineInputFolderName(input, pvl);
 					fileSystem.removeFolder(folder, isRemoveNonEmptyFolder());
-					return new Message(folder);
+					yield Message.asMessage(folder);
 				}
-				case RENAME: {
-					F source=getFile(input, pvl);
+				case RENAME -> {
+					F source = getFile(input, pvl);
 					String destinationName = determineDestination(pvl);
 					F destination;
 					if (destinationName.contains("/") || destinationName.contains("\\")) {
 						destination = fileSystem.toFile(destinationName);
 					} else {
 						String folderPath = fileSystem.getParentFolder(source);
-						destination = fileSystem.toFile(folderPath,destinationName);
+						destination = fileSystem.toFile(folderPath, destinationName);
 					}
-					F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>)fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
-					return new Message(fileSystem.getName(renamed));
+					F renamed = FileSystemUtils.renameFile((IWritableFileSystem<F>) fileSystem, source, destination, isOverwrite(), getNumberOfBackups());
+					yield new Message(fileSystem.getName(renamed));
 				}
-				case MOVE: {
+				case MOVE -> {
 					String destinationFolder = determineDestination(pvl);
-					return processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
+					yield processAction(input, pvl, f -> FileSystemUtils.moveFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
 				}
-				case COPY: {
+				case COPY -> {
 					String destinationFolder = determineDestination(pvl);
-					return processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
+					yield processAction(input, pvl, f -> FileSystemUtils.copyFile(fileSystem, f, destinationFolder, isOverwrite(), getNumberOfBackups(), isCreateFolder(), false));
 				}
-				case FORWARD: {
-					F file=getFile(input, pvl);
+				case FORWARD -> {
+					F file = getFile(input, pvl);
 					FileSystemUtils.checkSource(fileSystem, file, FileSystemAction.FORWARD);
 					String destinationAddress = determineDestination(pvl);
-					((IMailFileSystem<F,?>)fileSystem).forwardMail(file, destinationAddress);
-					return null;
+					((IMailFileSystem<F, ?>) fileSystem).forwardMail(file, destinationAddress);
+					yield null;
 				}
-				default:
-					throw new FileSystemException("action ["+action+"] is not supported!");
-			}
+				default -> throw new FileSystemException("action [" + action + "] is not supported!");
+			};
 		} catch (Exception e) {
 			throw new FileSystemException("unable to process ["+action+"] action for File [" + determineFilename(input, pvl) + "]", e);
 		}
@@ -478,7 +474,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	@SuppressWarnings("unchecked") // Casts to the required FileSystem type
-	private Message createFile(@NonNull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
+	private @NonNull Message createFile(@NonNull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
 		F file = getFileAndCreateFolder(input, pvl);
 		if (fileSystem.exists(file)) {
 			FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
@@ -544,14 +540,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return determinedFolderName;
 	}
 
-	private InputStream getContents(Message input, ParameterValueList pvl, String charset) throws IOException {
-		final Message message;
-		if (pvl != null && pvl.contains(PARAMETER_CONTENTS1)) {
-			message = pvl.get(PARAMETER_CONTENTS1).asMessage();
-		} else {
-			message = input;
-		}
-
+	private @NonNull InputStream getContents(@NonNull Message input, @NonNull ParameterValueList pvl, @Nullable String charset) throws IOException {
+		final Message message = pvl.getValue(PARAMETER_CONTENTS1, input);
 		InputStream is = message.asInputStream(charset);
 		if (isWriteLineSeparator()) {
 			return new SequenceInputStream(is, new ByteArrayInputStream(eolArray));
@@ -559,13 +549,13 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return is;
 	}
 
-	private void deleteEmptyFolder(F f) throws FileSystemException {
+	private void deleteEmptyFolder(@NonNull F f) throws FileSystemException {
 		if(isDeleteEmptyFolder()) {
 			deleteEmptyFolder(fileSystem.getParentFolder(f));
 		}
 	}
 
-	private void deleteEmptyFolder(String folder) throws FileSystemException {
+	private void deleteEmptyFolder(@NonNull String folder) throws FileSystemException {
 		if(isDeleteEmptyFolder()) {
 			boolean isEmpty = false;
 			try (DirectoryStream<F> stream = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
