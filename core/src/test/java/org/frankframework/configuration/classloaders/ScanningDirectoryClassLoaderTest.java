@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.management.Action;
+import org.frankframework.testutil.junit.WithTimeTravel;
+import org.frankframework.util.TimeProvider;
 
 public class ScanningDirectoryClassLoaderTest extends ConfigurationClassLoaderTestBase<ScanningDirectoryClassLoader> {
 
@@ -54,9 +56,12 @@ public class ScanningDirectoryClassLoaderTest extends ConfigurationClassLoaderTe
 	 * second caller of {@link IbisManager#handleAction} besides the console and the management bus.
 	 */
 	@Test
-	public void scanReloadsTheConfigurationWhenAFileHasChanged() {
-		// Arrange: every file in the directory counts as changed since the last scan
-		scanningClassLoader.lastScanTime = 0;
+	@WithTimeTravel
+	public void scanReloadsTheConfigurationWhenAFileHasChanged(TimeProvider.TimeTraveller timeTraveller) throws Exception {
+		// Arrange: start the scanner in 1970, so every file in the directory has been modified since its last scan
+		shutdownScanner();
+		timeTraveller.setTime(0L);
+		createAndConfigure(".");
 
 		// Act
 		scanningClassLoader.scan();
@@ -65,11 +70,9 @@ public class ScanningDirectoryClassLoaderTest extends ConfigurationClassLoaderTe
 		verify(ibisManager).handleAction(eq(Action.RELOAD), eq(getConfigurationName()), isNull(), isNull(), any(String.class), eq(false));
 	}
 
+	/** The scanner started just now, so none of the files can have been modified since. */
 	@Test
 	public void scanLeavesTheConfigurationAloneWhenNothingHasChanged() {
-		// Arrange: nothing has been modified after this scan time
-		scanningClassLoader.lastScanTime = System.currentTimeMillis() + 10_000;
-
 		// Act
 		scanningClassLoader.scan();
 
