@@ -130,7 +130,7 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 			throw new IllegalArgumentException("ConfigurationWarnings not initialized");
 		}
 
-		return instance.doIsSuppressed(key, adapter.getName());
+		return instance.doIsSuppressed(key, adapter != null ? adapter.getName() : null);
 	}
 
 	public void add(@Nullable Object source, @NonNull Logger log, String message, @NonNull SuppressKeys suppressionKey, @Nullable String adapterName) {

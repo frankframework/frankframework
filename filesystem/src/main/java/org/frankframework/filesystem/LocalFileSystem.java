@@ -50,7 +50,10 @@ import com.ibm.icu.text.CharsetMatch;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.DestinationType;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
@@ -70,6 +73,7 @@ import org.frankframework.util.XmlEncodingUtils;
 public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
 
+	private final @NonNull HasApplicationContext owner;
 	private @Getter boolean createRootFolder = false;
 
 	/**
@@ -78,6 +82,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	 */
 	@Getter private @Nullable String root;
 	private @Nullable Path rootPath;
+
+	public LocalFileSystem(@NonNull HasApplicationContext owner) {
+		this.owner = owner;
+	}
 
 	@Override
 	public void configure() {
@@ -105,6 +113,8 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 					throw new FileSystemException("Cannot get real path of folder [" + root + "]", e);
 				}
 			}
+		} else {
+			ConfigurationWarnings.add(owner, log, "attribute [root] has not been configured which allows the local-filesystem to access it without restrictions", SuppressKeys.FILESYSTEM_ROOT_CONTAINMENT);
 		}
 
 		super.open();
@@ -128,10 +138,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		Path result = Paths.get(filename).normalize();
 		if (result.isAbsolute()) {
 			if (rootPath != null && !result.startsWith(rootPath)) {
-				// This is legacy behaviour, but according to documentation this shouldn't happen
-				// Should we warn, optionally allow, or always throw an exception?
-				// None of our tests will break if we throw the exception
-				log.warn("Returning result path [{}] outside of root [{}] because it is absolute", result, root);
+				throw new org.frankframework.filesystem.FileNotFoundException("Cannot access file with absolute path [" + filename + "] because it is outside the specified root-path [" + root + "]");
 			}
 			return result;
 		}
