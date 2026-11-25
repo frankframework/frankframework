@@ -76,6 +76,22 @@ public class SecurityChainConfigurerTest {
 				.andExpect(status().isOk());
 	}
 
+	@WithMockUser(authorities = "ROLE_SomeOtherRole")
+	@Test
+	void testInfoEndpointWithoutIbisRole() throws Exception {
+		// authenticated, but without any of the roles in @AllowAllIbisUserRoles: refused, not an internal error
+		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/info"))
+				.andExpect(status().isForbidden());
+	}
+
+	@WithMockUser(authorities = "ROLE_IbisObserver")
+	@Test
+	void testInfoEndpointWithIbisRole() throws Exception {
+		// the same request with one of the allowed roles passes
+		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/info"))
+				.andExpect(status().isOk());
+	}
+
 	@Test
 	void testServerHealthEndpoint() throws Exception {
 		// use localhost as remote address, not authorized

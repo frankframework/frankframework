@@ -108,6 +108,17 @@ public class SpringBusExceptionHandler {
 		return ApiException.formatExceptionResponse(be.getMessage(), status);
 	}
 
+	/**
+	 * Authentication and authorization exceptions thrown by the controllers themselves, for instance by method security
+	 * ({@code @RolesAllowed} / {@code @AllowAllIbisUserRoles}) when the user holds none of the required roles.
+	 * Without this handler they end up in the {@link FallbackExceptionHandler} and are answered with a 500.
+	 */
+	@ExceptionHandler({ AuthenticationException.class, AccessDeniedException.class })
+	public ResponseEntity<?> toResponse(RuntimeException e) {
+		ManagedException mex = ManagedException.parse(e);
+		return mex != null ? mex.toResponse(e) : ApiException.formatExceptionResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
 	@ExceptionHandler(MessageHandlingException.class)
 	public ResponseEntity<?> toResponse(MessageHandlingException mhe) {
 		Throwable cause = mhe.getCause();
