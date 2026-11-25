@@ -7,9 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,7 +32,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.DummyClassLoader;
+import org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader;
 import org.frankframework.lifecycle.events.MessageEventListener;
+import org.frankframework.management.Action;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.NullClassLoader;
 import org.frankframework.util.AppConstants;
@@ -368,6 +374,101 @@ public class IbisContextTest {
 		}
 	}
 
+
+
+	/** {@link IbisManager#handleAction} reloads through this reference, so it has to be the context that was started. */
+	@Test
+	public void ibisManagerHoldsTheStartedIbisContext() {
+		try (IbisContext context = new IbisTestContext("")) {
+			context.init(false);
+
+			assertSame(context, context.getIbisManager().getIbisContext());
+		}
+	}
+
+	/**
+	 * The console and the management bus do not call {@link IbisContext#reload(String)} directly: they go
+	 * through {@link IbisManager#handleAction}, which reloads through the manager's own IbisContext reference.
+	 */
+	@Test
+	public void testReloadThroughIbisManager() {
+		String configurationName = "configReloadThroughManager";
+		configureClassloader("DirectoryClassLoader", configurationName, null);
+
+		try (IbisContext context = new IbisTestContext()) {
+			// Arrange
+			context.init();
+			IbisManager ibisManager = context.getIbisManager();
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+			assertNotNull(configuration);
+
+			// Act
+			ibisManager.handleAction(Action.RELOAD, configurationName, null, null, "IbisContextTest", true);
+
+			// Assert
+			Configuration configurationAfterReload = ibisManager.getConfiguration(configurationName);
+			assertNotNull(configurationAfterReload);
+			assertNotSame(configuration, configurationAfterReload);
+			assertTrue(configuration.isClosed());
+		}
+	}
+
+	@Test
+	public void testFullReloadThroughIbisManager() {
+		String configurationName = "configFullReloadThroughManager";
+		configureClassloader("DirectoryClassLoader", configurationName, null);
+
+		try (IbisContext context = new IbisTestContext()) {
+			// Arrange
+			context.init();
+			IbisManager ibisManager = context.getIbisManager();
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+			assertNotNull(configuration);
+
+			// Act
+			ibisManager.handleAction(Action.FULLRELOAD, null, null, null, "IbisContextTest", true);
+
+			// Assert
+			IbisManager newIbisManager = context.getIbisManager();
+			assertNotSame(ibisManager, newIbisManager);
+			assertNotNull(newIbisManager.getConfiguration(configurationName));
+			assertTrue(configuration.isClosed());
+		}
+	}
+
+	/** A ScanningDirectoryClassLoader reloads its configuration through the IbisManager when a file changes. */
+	@Test
+	public void testScanningDirectoryClassLoaderReloadsOnChange() throws Exception {
+		String configurationName = "configScanning";
+		configureClassloader("ScanningDirectoryClassLoader", configurationName, null);
+
+		try (IbisContext context = new IbisTestContext()) {
+			// Arrange
+			context.init();
+			IbisManager ibisManager = context.getIbisManager();
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+			assertNotNull(configuration);
+			ScanningDirectoryClassLoader classLoader = assertInstanceOf(ScanningDirectoryClassLoader.class, configuration.getClassLoader());
+
+			// Act: let every file count as changed, then run one scan right away instead of waiting for its scheduler.
+			// Reflection, because both the scan method and the timestamp it compares against are internal to the ClassLoader.
+			Field lastScanTime = ScanningDirectoryClassLoader.class.getDeclaredField("lastScanTime");
+			lastScanTime.setAccessible(true);
+			lastScanTime.setLong(classLoader, 0L);
+			Method scan = ScanningDirectoryClassLoader.class.getDeclaredMethod("scan");
+			scan.setAccessible(true);
+			try {
+				scan.invoke(classLoader);
+			} catch (InvocationTargetException e) {
+				throw new AssertionError("scan failed: " + e.getCause(), e.getCause());
+			}
+
+			// Assert
+			Configuration configurationAfterReload = ibisManager.getConfiguration(configurationName);
+			assertNotNull(configurationAfterReload);
+			assertNotSame(configuration, configurationAfterReload);
+		}
+	}
 
 	/**This method makes sure the property is only set in the local AppConstants instance.
 	 * When you use the default put/setProperty it stores the property in the additionalProperties and
