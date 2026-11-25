@@ -376,13 +376,22 @@ public class IbisContextTest {
 
 
 
+	/**
+	 * The bean from the ApplicationContext, because that is the instance which is injected into the bus endpoints
+	 * that handle the reload actions. Asserting on the bean instead of on the IbisContext field keeps these tests
+	 * about the IbisManager the rest of the application gets.
+	 */
+	private static IbisManager getIbisManagerBean(IbisContext context) {
+		return context.getApplicationContext().getBean("ibisManager", IbisManager.class);
+	}
+
 	/** {@link IbisManager#handleAction} reloads through this reference, so it has to be the context that was started. */
 	@Test
 	public void ibisManagerHoldsTheStartedIbisContext() {
 		try (IbisContext context = new IbisTestContext("")) {
 			context.init(false);
 
-			assertSame(context, context.getIbisManager().getIbisContext());
+			assertSame(context, getIbisManagerBean(context).getIbisContext());
 		}
 	}
 
@@ -398,7 +407,7 @@ public class IbisContextTest {
 		try (IbisContext context = new IbisTestContext()) {
 			// Arrange
 			context.init();
-			IbisManager ibisManager = context.getIbisManager();
+			IbisManager ibisManager = getIbisManagerBean(context);
 			Configuration configuration = ibisManager.getConfiguration(configurationName);
 			assertNotNull(configuration);
 
@@ -421,7 +430,7 @@ public class IbisContextTest {
 		try (IbisContext context = new IbisTestContext()) {
 			// Arrange
 			context.init();
-			IbisManager ibisManager = context.getIbisManager();
+			IbisManager ibisManager = getIbisManagerBean(context);
 			Configuration configuration = ibisManager.getConfiguration(configurationName);
 			assertNotNull(configuration);
 
@@ -429,7 +438,7 @@ public class IbisContextTest {
 			ibisManager.handleAction(Action.FULLRELOAD, null, null, null, "IbisContextTest", true);
 
 			// Assert
-			IbisManager newIbisManager = context.getIbisManager();
+			IbisManager newIbisManager = getIbisManagerBean(context);
 			assertNotSame(ibisManager, newIbisManager);
 			assertNotNull(newIbisManager.getConfiguration(configurationName));
 			assertTrue(configuration.isClosed());
@@ -445,7 +454,7 @@ public class IbisContextTest {
 		try (IbisContext context = new IbisTestContext()) {
 			// Arrange
 			context.init();
-			IbisManager ibisManager = context.getIbisManager();
+			IbisManager ibisManager = getIbisManagerBean(context);
 			Configuration configuration = ibisManager.getConfiguration(configurationName);
 			assertNotNull(configuration);
 			ScanningDirectoryClassLoader classLoader = assertInstanceOf(ScanningDirectoryClassLoader.class, configuration.getClassLoader());
