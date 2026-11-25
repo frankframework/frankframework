@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
@@ -466,11 +465,7 @@ public class IbisContextTest {
 			lastScanTime.setLong(classLoader, 0L);
 			Method scan = ScanningDirectoryClassLoader.class.getDeclaredMethod("scan");
 			scan.setAccessible(true);
-			try {
-				scan.invoke(classLoader);
-			} catch (InvocationTargetException e) {
-				throw new AssertionError("scan failed: " + e.getCause(), e.getCause());
-			}
+			scan.invoke(classLoader);
 
 			// Assert
 			Configuration configurationAfterReload = ibisManager.getConfiguration(configurationName);
