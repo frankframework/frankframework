@@ -113,6 +113,7 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.debug("Created Ibis Application Context");
 
 			ibisManager = getBean("ibisManager");
+			ibisManager.setIbisContext(this); // Have to do this manually, because the bean is created as part of the ApplicationContext and the IbisContext is not in the ApplicationContext (and cannot be registered in it in time)
 			LOG.debug("Loaded IbisManager Bean");
 
 			classLoaderFactory = SpringUtils.createBean(getApplicationContext());
