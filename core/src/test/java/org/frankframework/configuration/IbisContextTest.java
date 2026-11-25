@@ -11,8 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,7 +29,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.DummyClassLoader;
-import org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader;
 import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.management.Action;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
@@ -441,36 +438,6 @@ public class IbisContextTest {
 			assertNotSame(ibisManager, newIbisManager);
 			assertNotNull(newIbisManager.getConfiguration(configurationName));
 			assertTrue(configuration.isClosed());
-		}
-	}
-
-	/** A ScanningDirectoryClassLoader reloads its configuration through the IbisManager when a file changes. */
-	@Test
-	public void testScanningDirectoryClassLoaderReloadsOnChange() throws Exception {
-		String configurationName = "configScanning";
-		configureClassloader("ScanningDirectoryClassLoader", configurationName, null);
-
-		try (IbisContext context = new IbisTestContext()) {
-			// Arrange
-			context.init();
-			IbisManager ibisManager = getIbisManagerBean(context);
-			Configuration configuration = ibisManager.getConfiguration(configurationName);
-			assertNotNull(configuration);
-			ScanningDirectoryClassLoader classLoader = assertInstanceOf(ScanningDirectoryClassLoader.class, configuration.getClassLoader());
-
-			// Act: let every file count as changed, then run one scan right away instead of waiting for its scheduler.
-			// Reflection, because both the scan method and the timestamp it compares against are internal to the ClassLoader.
-			Field lastScanTime = ScanningDirectoryClassLoader.class.getDeclaredField("lastScanTime");
-			lastScanTime.setAccessible(true);
-			lastScanTime.setLong(classLoader, 0L);
-			Method scan = ScanningDirectoryClassLoader.class.getDeclaredMethod("scan");
-			scan.setAccessible(true);
-			scan.invoke(classLoader);
-
-			// Assert
-			Configuration configurationAfterReload = ibisManager.getConfiguration(configurationName);
-			assertNotNull(configurationAfterReload);
-			assertNotSame(configuration, configurationAfterReload);
 		}
 	}
 

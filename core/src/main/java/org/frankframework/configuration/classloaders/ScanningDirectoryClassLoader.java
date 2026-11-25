@@ -44,7 +44,9 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	private ScheduledFuture<?> future;
 
 	private int scanInterval = 10;
-	private long lastScanTime;
+
+	/** Package private so that a test can decide what counts as changed instead of waiting for the scheduler. */
+	long lastScanTime;
 
 	public ScanningDirectoryClassLoader(ClassLoader parent) {
 		super(parent);
