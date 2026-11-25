@@ -47,17 +47,9 @@ import org.frankframework.util.LogUtil;
 public class IbisManager implements ApplicationContextAware {
 	private final Logger secLog = LogUtil.getLogger("SEC");
 
-	private IbisContext ibisContext;
+	private @Getter @Setter IbisContext ibisContext;
 	private final List<Configuration> configurations = new ArrayList<>();
 	private @Getter @Setter ApplicationContext applicationContext; // Only here for the DatabaseClassLoader to create a FixedQuerySender bean.
-
-	public void setIbisContext(IbisContext ibisContext) {
-		this.ibisContext = ibisContext;
-	}
-
-	public IbisContext getIbisContext() {
-		return ibisContext;
-	}
 
 	public void addConfiguration(Configuration configuration) {
 		configurations.add(configuration);
