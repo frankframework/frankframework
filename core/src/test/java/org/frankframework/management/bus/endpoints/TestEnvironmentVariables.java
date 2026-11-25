@@ -28,7 +28,7 @@ import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
@@ -48,7 +48,7 @@ public class TestEnvironmentVariables extends BusTestBase {
 	}
 
 	@Test
-	public void environmentVariableListedInPropertiesHideIsMasked() {
+	public void environmentVariableListedInPropertiesHideIsMasked() throws Exception {
 		Map.Entry<String, String> envVar = System.getenv().entrySet().stream()
 				.filter(entry -> StringUtils.isNotEmpty(entry.getValue()))
 				.findFirst()
