@@ -270,11 +270,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	@Nullable // Perhaps this is not preferred?
-	private String determineFilename(Message input, ParameterValueList pvl) throws FileSystemException {
+	private String determineFilename(@NonNull Message input, @NonNull ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getFilename())) {
 			return getFilename();
 		}
-		if (pvl!=null && pvl.contains(PARAMETER_FILENAME)) {
+		if (pvl.contains(PARAMETER_FILENAME)) {
 			return pvl.getValue(PARAMETER_FILENAME);
 		}
 		try {
@@ -284,21 +284,21 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 	}
 
-	private String determineDestination(ParameterValueList pvl) throws FileSystemException {
+	private String determineDestination(@NonNull ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getDestination())) {
 			return getDestination();
 		}
-		if (pvl!=null && pvl.contains(PARAMETER_DESTINATION)) {
-			String destination = pvl.getValue(PARAMETER_DESTINATION);
-			if (StringUtils.isEmpty(destination)) {
+		if (pvl.contains(PARAMETER_DESTINATION)) {
+			String destinationPv = pvl.getValue(PARAMETER_DESTINATION);
+			if (StringUtils.isEmpty(destinationPv)) {
 				throw new FileSystemException("parameter ["+PARAMETER_DESTINATION+"] does not specify destination");
 			}
-			return destination;
+			return destinationPv;
 		}
 		throw new FileSystemException("no destination specified");
 	}
 
-	private F getFile(@NonNull Message input, ParameterValueList pvl) throws FileSystemException {
+	private F getFile(@NonNull Message input, @NonNull ParameterValueList pvl) throws FileSystemException {
 		return fileSystem.toFile(determineFilename(input, pvl));
 	}
 
