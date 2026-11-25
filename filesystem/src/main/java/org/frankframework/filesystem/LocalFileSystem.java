@@ -524,7 +524,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			this.root = null;
 			return;
 		}
-		rootPath = Paths.get(root).normalize().toAbsolutePath();
+		rootPath = Paths.get(root).normalize();
 		this.root = rootPath.toString();
 	}
 }
