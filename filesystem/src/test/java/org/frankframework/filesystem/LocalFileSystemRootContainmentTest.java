@@ -18,9 +18,10 @@ package org.frankframework.filesystem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.abort;
 import static org.mockito.Mockito.mock;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,8 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import org.frankframework.testutil.TestAssertions;
 
 /**
  * The containment of {@link LocalFileSystem#setRoot(String)}, for the cases where the folder or the root cannot be
@@ -61,6 +60,18 @@ class LocalFileSystemRootContainmentTest {
 		localFileSystem.configure();
 		localFileSystem.open();
 		return localFileSystem;
+	}
+
+	/**
+	 * A symlink needs SeCreateSymbolicLinkPrivilege on Windows, which not every machine grants, so let the
+	 * filesystem decide whether these tests can run instead of deciding it by operating system.
+	 */
+	private static Path createSymbolicLink(Path link, Path target) {
+		try {
+			return Files.createSymbolicLink(link, target);
+		} catch (IOException | UnsupportedOperationException e) {
+			return abort("cannot create a symlink here: " + e.getMessage());
+		}
 	}
 
 	/**
@@ -102,10 +113,7 @@ class LocalFileSystemRootContainmentTest {
 	 */
 	@Test
 	void absoluteFilenameInsideASymlinkedRootIsAllowed() throws Exception {
-		assumeFalse(TestAssertions.isTestRunningOnWindows(), "Creating a symlink on Windows needs elevated rights");
-
-		Path link = base.resolve("link-to-root");
-		Files.createSymbolicLink(link, root);
+		Path link = createSymbolicLink(base.resolve("link-to-root"), root);
 		LocalFileSystem viaLink = createFileSystem(link.toAbsolutePath().toString());
 
 		Path filename = root.resolve("file.txt").toAbsolutePath();
@@ -115,10 +123,7 @@ class LocalFileSystemRootContainmentTest {
 
 	@Test
 	void symlinkedRootStillRejectsPathsOutsideIt() throws Exception {
-		assumeFalse(TestAssertions.isTestRunningOnWindows(), "Creating a symlink on Windows needs elevated rights");
-
-		Path link = base.resolve("link-to-root");
-		Files.createSymbolicLink(link, root);
+		Path link = createSymbolicLink(base.resolve("link-to-root"), root);
 		LocalFileSystem viaLink = createFileSystem(link.toAbsolutePath().toString());
 
 		assertThrows(FileSystemException.class, () -> viaLink.toFile(outside.resolve("nope.txt").toAbsolutePath().toString()));

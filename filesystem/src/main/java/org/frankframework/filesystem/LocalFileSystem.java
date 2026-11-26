@@ -137,7 +137,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 		Path result = Paths.get(filename).normalize();
 		if (result.isAbsolute()) {
-			if (rootPath != null && !result.startsWith(rootPath) && !realPathStartsWithRoot(result)) {
+			if (rootPath != null && !result.startsWith(rootPath) && !realPathStartsWithRoot(result, rootPath)) {
 				throw new org.frankframework.filesystem.FileNotFoundException("Cannot access file with absolute path [" + filename + "] because it is outside the specified root-path [" + root + "]");
 			}
 			return result;
@@ -183,13 +183,8 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	 * same location differently: through a symlink, as a mount point or /var versus /private/var, or as a Windows
 	 * short name. Only reached once the lexical comparison has failed, so the common path costs no syscalls.
 	 */
-	private boolean realPathStartsWithRoot(@NonNull Path path) {
-		Path currentRootPath = rootPath;
-		if (currentRootPath == null) {
-			return false;
-		}
-
-		return toRealPathIfPossible(path).startsWith(toRealPathIfPossible(currentRootPath));
+	private static boolean realPathStartsWithRoot(@NonNull Path path, @NonNull Path rootPath) {
+		return toRealPathIfPossible(path).startsWith(toRealPathIfPossible(rootPath));
 	}
 
 	/**
@@ -199,26 +194,22 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	 * an existing symlink inside the root usable.
 	 */
 	private static @NonNull Path toRealPathIfPossible(@NonNull Path path) {
-		Path existing = path.toAbsolutePath().normalize();
-		Path remainder = Paths.get("");
+		Path absolute = path.toAbsolutePath().normalize();
 
+		Path existing = absolute;
 		while (existing != null && !Files.exists(existing)) {
-			Path name = existing.getFileName();
-			if (name != null) {
-				remainder = name.resolve(remainder);
-			}
 			existing = existing.getParent();
 		}
 
 		if (existing == null) {
-			return path.toAbsolutePath().normalize();
+			return absolute;
 		}
 
 		try {
-			return existing.toRealPath().resolve(remainder).normalize();
+			return existing.toRealPath().resolve(existing.relativize(absolute)).normalize();
 		} catch (IOException e) {
 			log.debug("cannot determine the real path of [{}]", existing, e);
-			return path.toAbsolutePath().normalize();
+			return absolute;
 		}
 	}
 
