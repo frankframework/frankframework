@@ -1,5 +1,7 @@
 package org.frankframework.filesystem;
 
+import static org.mockito.Mockito.mock;
+
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.io.TempDir;
@@ -11,7 +13,7 @@ public class LocalFileSystemUtilTest extends FileSystemUtilsTest <Path, LocalFil
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
-		LocalFileSystem result=new LocalFileSystem();
+		LocalFileSystem result=new LocalFileSystem(mock());
 		result.setRoot(temp.toString());
 		return result;
 	}

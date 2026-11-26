@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class DirectoryListener extends AbstractFileSystemListener<Path, LocalFil
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
-		return new LocalFileSystem();
+		return new LocalFileSystem(this);
 	}
 
 	/** Optional base folder, that serves as root for all other folders */

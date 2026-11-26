@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
@@ -33,7 +34,7 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
-		LocalFileSystem result = new LocalFileSystem();
+		LocalFileSystem result = new LocalFileSystem(mock());
 		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
 	}
@@ -99,7 +100,16 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 		Path resolved = fileSystem.toFile("x/y/../outside/file.txt");
 
 		assertTrue(resolved.normalize().startsWith(Paths.get("x/y")));
-		assertEquals(Paths.get("x/y").resolve("x/y/../outside/file.txt"), resolved);
+		assertEquals(Paths.get("x/y").resolve("x/y/../outside/file.txt").normalize(), resolved);
+	}
+
+	@Test
+	void testToFileDoesNotAllowRootEscape() {
+		fileSystem.setRoot("x/y");
+
+		assertThrows(FileNotFoundException.class, () -> fileSystem.toFile("z/../../outside/file.txt"));
+		assertThrows(FileNotFoundException.class, () -> fileSystem.toFile("../../outside/file.txt"));
+		assertThrows(FileNotFoundException.class, () -> fileSystem.toFile(folder.toAbsolutePath().toString()));
 	}
 
 	@Test
@@ -137,12 +147,12 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 		_createFolder(rootFolderLongName);
 		createFile(rootFolderLongName, filename, contents);
 
-		LocalFileSystem fsLong = new LocalFileSystem();
+		LocalFileSystem fsLong = new LocalFileSystem(mock());
 		fsLong.setRoot(folder.toAbsolutePath() + "\\" + rootFolderLongName);
 		fsLong.configure();
 		fsLong.open();
 
-		LocalFileSystem fsShort = new LocalFileSystem();
+		LocalFileSystem fsShort = new LocalFileSystem(mock());
 		fsShort.setRoot(folder.toAbsolutePath() + "\\" + rootFolderShortName);
 		fsShort.configure();
 		fsShort.open();
