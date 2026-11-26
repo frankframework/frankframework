@@ -132,12 +132,12 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 
 		if (StringUtils.isNotEmpty(folder) && !(Paths.get(filename).isAbsolute())) {
-			filename = FilenameUtils.concat(folder, filename);
+			filename = concat(folder, filename);
 		}
 
 		Path result = Paths.get(filename).normalize();
 		if (result.isAbsolute()) {
-			if (rootPath != null && !result.startsWith(rootPath)) {
+			if (rootPath != null && !result.startsWith(rootPath) && !realPathStartsWithRoot(result)) {
 				throw new org.frankframework.filesystem.FileNotFoundException("Cannot access file with absolute path [" + filename + "] because it is outside the specified root-path [" + root + "]");
 			}
 			return result;
@@ -162,6 +162,64 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 
 		return result;
+	}
+
+	/**
+	 * {@link FilenameUtils#concat(String, String)} returns null when the folder normalizes past its own start,
+	 * as [..] and [../elsewhere] do, so fall back to resolving it as a path. The result is then judged by the
+	 * root check like any other relative path, and a filesystem without a root keeps resolving it as before.
+	 */
+	private static String concat(String folder, String filename) {
+		String concatenated = FilenameUtils.concat(folder, filename);
+		if (concatenated != null) {
+			return concatenated;
+		}
+
+		return Paths.get(folder).resolve(filename).toString();
+	}
+
+	/**
+	 * Second opinion for a path that is lexically outside the root, because the root and the path can spell the
+	 * same location differently: through a symlink, as a mount point or /var versus /private/var, or as a Windows
+	 * short name. Only reached once the lexical comparison has failed, so the common path costs no syscalls.
+	 */
+	private boolean realPathStartsWithRoot(@NonNull Path path) {
+		Path currentRootPath = rootPath;
+		if (currentRootPath == null) {
+			return false;
+		}
+
+		return toRealPathIfPossible(path).startsWith(toRealPathIfPossible(currentRootPath));
+	}
+
+	/**
+	 * Resolves symlinks as far as the path exists, so that a root and a filename reached through different
+	 * spellings still compare equal. The part that does not exist yet, which is the normal case for a file about
+	 * to be written, is appended afterwards. Symlinks below the root are therefore not resolved away, which keeps
+	 * an existing symlink inside the root usable.
+	 */
+	private static @NonNull Path toRealPathIfPossible(@NonNull Path path) {
+		Path existing = path.toAbsolutePath().normalize();
+		Path remainder = Paths.get("");
+
+		while (existing != null && !Files.exists(existing)) {
+			Path name = existing.getFileName();
+			if (name != null) {
+				remainder = name.resolve(remainder);
+			}
+			existing = existing.getParent();
+		}
+
+		if (existing == null) {
+			return path.toAbsolutePath().normalize();
+		}
+
+		try {
+			return existing.toRealPath().resolve(remainder).normalize();
+		} catch (IOException e) {
+			log.debug("cannot determine the real path of [{}]", existing, e);
+			return path.toAbsolutePath().normalize();
+		}
 	}
 
 	@NonNull
