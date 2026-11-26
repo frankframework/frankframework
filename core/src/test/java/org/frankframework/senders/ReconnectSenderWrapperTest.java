@@ -1,6 +1,8 @@
 package org.frankframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,15 +18,19 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 
 class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> {
 
+	private TestOpenAndConfigureSender testSender;
+
 	@Override
 	public ReconnectSenderWrapper createSender() {
 		ReconnectSenderWrapper senderWrapper = new ReconnectSenderWrapper();
-		TestOpenAndConfigureSender testSender = new TestOpenAndConfigureSender();
+		testSender = new TestOpenAndConfigureSender();
 		senderWrapper.setSender(testSender);
+		senderWrapper.addParameter(new Parameter("test", "v1"));
 		return senderWrapper;
 	}
 
@@ -37,6 +43,15 @@ class ReconnectSenderWrapperTest extends SenderTestBase<ReconnectSenderWrapper> 
 		Message message = new Message(input);
 		String result = sender.sendMessageOrThrow(message, session).asString();
 		assertEquals(input, result);
+	}
+
+	@Test
+	void testConfigureCopiesParameters() throws Exception {
+		assertFalse(testSender.getParameterList().hasParameter("test"));
+
+		sender.configure();
+
+		assertTrue(testSender.getParameterList().hasParameter("test"));
 	}
 
 	@Test

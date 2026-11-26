@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
 */
 package org.frankframework.configuration;
 
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.core.IbisException;
 
 /**
- * Exception thrown by {@link ClassLoaderFactory} when it fails to create an {@link IConfigurationClassLoader}.
+ * Exception thrown by {@link ClassLoaderFactory} when it fails to create a {@link ClassLoader}.
  *
  * @author Niels Meijer
  */

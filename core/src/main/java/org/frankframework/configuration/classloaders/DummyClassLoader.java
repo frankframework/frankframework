@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 
 import org.jspecify.annotations.NonNull;
 
+import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
@@ -49,7 +50,7 @@ public class DummyClassLoader extends AbstractClassLoader {
 			byte[] bytes = config.getBytes(Charset.defaultCharset());
 			URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(bytes);
 			try {
-				return new URL(null, CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
+				return new URL(null, ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME + name, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);
 			}

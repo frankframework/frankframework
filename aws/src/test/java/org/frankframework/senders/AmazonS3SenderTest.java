@@ -24,7 +24,7 @@ import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.filesystem.WritableFileSystemSenderTest;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.testutil.TestPropertyUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -40,7 +40,7 @@ public class AmazonS3SenderTest extends WritableFileSystemSenderTest<AmazonS3Sen
 	@Container
 	private static final S3MockContainer s3Mock = new S3MockContainer("latest");
 
-	private final int waitMillis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
+	private final int waitMillis = TestPropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
 		setWaitMillis(waitMillis);

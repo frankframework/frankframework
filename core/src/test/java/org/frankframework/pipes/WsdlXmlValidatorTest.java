@@ -33,7 +33,6 @@ import org.frankframework.validation.xsd.WsdlXsd;
 /**
   * @author Michiel Meeuwissen
  */
-
 public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	private static final String SIMPLE = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/SimpleWsdl/simple.wsdl";
 	private static final String SIMPLE_WITH_INCLUDE = ValidatorTestBase.BASE_DIR_VALIDATION + "/Wsdl/SimpleWsdl/simple_withinclude.wsdl";

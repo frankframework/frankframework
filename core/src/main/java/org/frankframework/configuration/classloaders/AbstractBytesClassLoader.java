@@ -23,10 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.IbisContext;
+import org.frankframework.util.ClassLoaderUtils;
 
 public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 
@@ -37,8 +36,8 @@ public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 	}
 
 	@Override
-	public final void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		super.configure(ibisContext, configurationName);
+	public final void afterPropertiesSet() throws ClassLoaderException {
+		super.afterPropertiesSet();
 		resources = loadResources();
 	}
 
@@ -48,7 +47,7 @@ public abstract class AbstractBytesClassLoader extends AbstractClassLoader {
 		if (resource != null) {
 			try {
 				URLStreamHandler urlStreamHandler = new BytesURLStreamHandler(resource);
-				URI uri = URI.create(CLASSPATH_RESOURCE_SCHEME + name);
+				URI uri = URI.create(ClassLoaderUtils.CLASSPATH_RESOURCE_SCHEME + name);
 				return URL.of(uri, urlStreamHandler);
 			} catch (MalformedURLException e) {
 				log.error("Could not create url", e);

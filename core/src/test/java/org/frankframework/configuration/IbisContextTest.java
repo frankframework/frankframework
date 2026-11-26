@@ -1,12 +1,13 @@
 package org.frankframework.configuration;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.Matchers;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -26,11 +26,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
 import org.frankframework.configuration.classloaders.DummyClassLoader;
 import org.frankframework.lifecycle.events.MessageEventListener;
+import org.frankframework.management.Action;
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.NullClassLoader;
 import org.frankframework.util.AppConstants;
@@ -43,7 +43,7 @@ public class IbisContextTest {
 
 	private AppConstants appConstants;
 
-	private static final class IbisTestContext extends IbisContext {
+	public static final class IbisTestContext extends IbisContext {
 		private final Map<String, Class<? extends ClassLoader>> configurations = new HashMap<>();
 
 		public IbisTestContext() {
@@ -69,12 +69,6 @@ public class IbisContextTest {
 		@Override
 		protected String @NonNull [] getSpringConfigurationFiles(@NonNull ClassLoader classLoader) {
 			return new String[] { "testApplicationContext.xml" };
-		}
-
-		// Make this getter public
-		@Override
-		public AbstractApplicationContext getApplicationContext() {
-			return super.getApplicationContext();
 		}
 	}
 
@@ -123,7 +117,7 @@ public class IbisContextTest {
 
 			ConfigurationException ex = config.getConfigurationException();
 			assertNotNull(ex, "configuration should have an exception");
-			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating ClassLoader"));
+			assertThat(ex).hasMessageContaining("error instantiating ClassLoader");
 			assertEquals(ClassLoaderException.class.getCanonicalName(), ex.getCause().getClass().getCanonicalName());
 			Throwable[] suppressed = ex.getCause().getCause().getSuppressed();
 			assertEquals(1, suppressed.length, "ClassLoaderException should have a supressed throwable with more information");
@@ -143,7 +137,10 @@ public class IbisContextTest {
 			MessageEventListener events = context.getApplicationContext().getBean("MessageEventListener", MessageEventListener.class);
 			MessageKeeperMessage message = events.getMessageKeeper().getMessage(events.getMessageKeeper().size()-2);
 			assertNotNull(message, "unable to find MessageKeeperMessage");
-			assertThat(message.getMessageText(), Matchers.endsWith("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: (ClassLoaderException) test-exception"));
+			assertThat(message.getMessageText())
+					.contains("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: (ClassLoaderException)")
+					.contains("test-exception")
+			;
 		}
 	}
 
@@ -163,7 +160,7 @@ public class IbisContextTest {
 
 			ConfigurationException ex = config.getConfigurationException();
 			assertNotNull(ex, "configuration should have an exception");
-			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating configuration"));
+			assertThat(ex).hasMessageContaining("error instantiating configuration");
 			Throwable[] suppressed = ex.getCause().getSuppressed();
 			assertEquals(0, suppressed.length, "no further information");
 		}
@@ -373,6 +370,76 @@ public class IbisContextTest {
 		}
 	}
 
+
+
+	/**
+	 * The bean from the ApplicationContext, because that is the instance which is injected into the bus endpoints
+	 * that handle the reload actions. Asserting on the bean instead of on the IbisContext field keeps these tests
+	 * about the IbisManager the rest of the application gets.
+	 */
+	private static IbisManager getIbisManagerBean(IbisContext context) {
+		return context.getApplicationContext().getBean("ibisManager", IbisManager.class);
+	}
+
+	/** {@link IbisManager#handleAction} reloads through this reference, so it has to be the context that was started. */
+	@Test
+	public void ibisManagerHoldsTheStartedIbisContext() {
+		try (IbisContext context = new IbisTestContext("")) {
+			context.init(false);
+
+			assertSame(context, getIbisManagerBean(context).getIbisContext());
+		}
+	}
+
+	/**
+	 * The console and the management bus do not call {@link IbisContext#reload(String)} directly: they go
+	 * through {@link IbisManager#handleAction}, which reloads through the manager's own IbisContext reference.
+	 */
+	@Test
+	public void testReloadThroughIbisManager() {
+		String configurationName = "configReloadThroughManager";
+		configureClassloader("DirectoryClassLoader", configurationName, null);
+
+		try (IbisContext context = new IbisTestContext()) {
+			// Arrange
+			context.init();
+			IbisManager ibisManager = getIbisManagerBean(context);
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+			assertNotNull(configuration);
+
+			// Act
+			ibisManager.handleAction(Action.RELOAD, configurationName, null, null, "IbisContextTest", true);
+
+			// Assert
+			Configuration configurationAfterReload = ibisManager.getConfiguration(configurationName);
+			assertNotNull(configurationAfterReload);
+			assertNotSame(configuration, configurationAfterReload);
+			assertTrue(configuration.isClosed());
+		}
+	}
+
+	@Test
+	public void testFullReloadThroughIbisManager() {
+		String configurationName = "configFullReloadThroughManager";
+		configureClassloader("DirectoryClassLoader", configurationName, null);
+
+		try (IbisContext context = new IbisTestContext()) {
+			// Arrange
+			context.init();
+			IbisManager ibisManager = getIbisManagerBean(context);
+			Configuration configuration = ibisManager.getConfiguration(configurationName);
+			assertNotNull(configuration);
+
+			// Act
+			ibisManager.handleAction(Action.FULLRELOAD, null, null, null, "IbisContextTest", true);
+
+			// Assert
+			IbisManager newIbisManager = getIbisManagerBean(context);
+			assertNotSame(ibisManager, newIbisManager);
+			assertNotNull(newIbisManager.getConfiguration(configurationName));
+			assertTrue(configuration.isClosed());
+		}
+	}
 
 	/**This method makes sure the property is only set in the local AppConstants instance.
 	 * When you use the default put/setProperty it stores the property in the additionalProperties and

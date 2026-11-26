@@ -21,13 +21,15 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import lombok.Setter;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.IbisContext;
+import org.frankframework.configuration.IbisManager;
 import org.frankframework.management.Action;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Actively scans the configuration directory for file changes.
@@ -38,10 +40,12 @@ import org.frankframework.management.Action;
  */
 public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
+	private @Setter IbisManager ibisManager;
 	private ScheduledThreadPoolExecutor executor;
 	private ScheduledFuture<?> future;
 
 	private int scanInterval = 10;
+
 	private long lastScanTime;
 
 	public ScanningDirectoryClassLoader(ClassLoader parent) {
@@ -49,12 +53,14 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	}
 
 	@Override
-	public void configure(@Nullable IbisContext ibisContext, @NonNull String configurationName) throws ClassLoaderException {
-		super.configure(ibisContext, configurationName);
-
+	public void afterPropertiesSet() throws ClassLoaderException {
+		super.afterPropertiesSet();
+		if (ibisManager == null) {
+			throw new IllegalStateException("IbisManager is null");
+		}
 		createTaskExecutor();
 
-		lastScanTime = System.currentTimeMillis();
+		lastScanTime = TimeProvider.nowAsMillis();
 		if (scanInterval > 0) {
 			schedule();
 		}
@@ -124,11 +130,11 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
 	protected void scan() {
 		if (log.isTraceEnabled()) log.trace("running directory scanner on directory [{}]", getDirectory());
-		long scanTime = System.currentTimeMillis();
+		long scanTime = TimeProvider.nowAsMillis();
 		File[] files = getDirectory().listFiles();
 		if (hasBeenModified(files)) {
 			log.debug("detected file change, reloading configuration");
-			getIbisManager().handleAction(Action.RELOAD, getConfigurationName(), null, null, toString(), false);
+			ibisManager.handleAction(Action.RELOAD, getConfigurationName(), null, null, toString(), false);
 		}
 		lastScanTime = scanTime;
 	}

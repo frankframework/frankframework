@@ -170,7 +170,8 @@ public class WebContentServletTest {
 				return "TestBytesClassLoader";
 			}
 		};
-		classLoader.configure(null, "");
+		classLoader.setConfigurationName("");
+		classLoader.afterPropertiesSet();
 		return classLoader;
 	}
 

@@ -64,7 +64,7 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 		ApplicationContext parentContext;
 		try {
 			parentContext = WebApplicationContextUtils.getWebApplicationContext(servletContext); // This can throw many different types of errors!
-			if(parentContext == null) {
+			if (parentContext == null) {
 				throw new IllegalStateException("No Frank EnvironmentContext found. Aborting launch...");
 			}
 		} catch (Throwable t) {
@@ -90,12 +90,12 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 	 */
 	public static IbisContext getIbisContext(ServletContext servletContext) {
 		Throwable t = (Throwable) servletContext.getAttribute(EXCEPTION_KEY); // non-recoverable startup error
-		if(t != null) {
+		if (t != null) {
 			throw new IllegalStateException("Could not initialize IbisContext", t);
 		}
 
 		IbisContext ibisContext = (IbisContext)servletContext.getAttribute(CONTEXT_KEY);
-		if(ibisContext == null) {
+		if (ibisContext == null) {
 			throw new IllegalStateException("IbisContext not found in ServletContext");
 		}
 

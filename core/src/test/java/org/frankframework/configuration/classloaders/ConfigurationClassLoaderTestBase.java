@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.frankframework.configuration.ApplicationWarnings;
-import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
@@ -41,11 +40,9 @@ import org.frankframework.util.UUIDUtil;
 public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLoader> extends Mockito {
 
 	protected static final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-
-	private AbstractClassLoader classLoader = null;
-	protected IbisContext ibisContext = spy(new IbisContext());
 	protected String scheme = "file";
 	protected AppConstants appConstants;
+	private AbstractClassLoader classLoader = null;
 	private String configurationName = null;
 
 	abstract C createClassLoader(ClassLoader parent) throws Exception;
@@ -62,17 +59,19 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 		ClassLoader parent = new ClassLoaderMock();
 		classLoader = createClassLoader(parent);
 
-		if(basePath != null) {
+		if (basePath != null) {
 			classLoader.setBasePath(basePath);
 		}
 
-		String key = "configurations."+getConfigurationName()+".classLoaderType";
+		String key = "configurations." + getConfigurationName() + ".classLoaderType";
 		appConstants.setProperty(key, classLoader.getClass().getSimpleName());
-		classLoader.configure(ibisContext, getConfigurationName());
+		classLoader.setConfigurationName(getConfigurationName());
+		classLoader.afterPropertiesSet();
 	}
 
 	/**
 	 * Returns the scheme, defaults to <code>file</code>
+	 *
 	 * @return scheme to test against
 	 */
 	protected String getScheme() {
@@ -81,11 +80,13 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 	/**
 	 * Returns a dummy configuration name
+	 *
 	 * @return name of the configuration
 	 */
 	protected String getConfigurationName() {
-		if(configurationName == null)
-			configurationName = "dummyConfigurationName"+ UUIDUtil.createRandomUUID();
+		if (configurationName == null) {
+			configurationName = "dummyConfigurationName" + UUIDUtil.createRandomUUID();
+		}
 
 		return configurationName;
 	}
@@ -97,11 +98,12 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	public void resourceExists(String resource) {
 		resourceExists(resource, getScheme());
 	}
+
 	public void resourceExists(String resource, String scheme) {
 		URL url = getResource(resource);
 		assertNotNull(url, "cannot find resource");
 		String file = url.toString();
-		assertTrue(file.startsWith(scheme + ":"), "scheme["+scheme+"] is wrong for file["+file+"]");
+		assertTrue(file.startsWith(scheme + ":"), "scheme[" + scheme + "] is wrong for file[" + file + "]");
 		assertTrue(file.endsWith(resource), "name is wrong");
 	}
 
@@ -176,9 +178,9 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	public void testSchemeWithClassLoaderManager() {
 		URL resource = getResource("ClassLoaderTestFile.xml");
 
-		assertNotNull(resource, "resource ["+resource+"] must be found");
-		assertTrue(resource.toString().startsWith(getScheme()),"resource ["+resource+"] must start with scheme ["+getScheme()+"]");
-		assertTrue(resource.toString().endsWith("ClassLoaderTestFile.xml"), "resource ["+resource+"] must end with [ClassLoaderTestFile.xml]");
+		assertNotNull(resource, "resource [" + resource + "] must be found");
+		assertTrue(resource.toString().startsWith(getScheme()), "resource [" + resource + "] must start with scheme [" + getScheme() + "]");
+		assertTrue(resource.toString().endsWith("ClassLoaderTestFile.xml"), "resource [" + resource + "] must end with [ClassLoaderTestFile.xml]");
 	}
 
 	// make sure default level is always error
@@ -207,7 +209,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 		assertEquals("Configuration.xml", configFile);
 		URL configURL = classLoader.getResource(configFile);
-		assertNotNull(configURL, "config file ["+configFile+"] cannot be found");
+		assertNotNull(configURL, "config file [" + configFile + "] cannot be found");
 		assertTrue(configURL.toString().endsWith(configFile));
 	}
 
@@ -216,12 +218,12 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 		createAndConfigure("Config");
 		String name = "Config/NonDefaultConfiguration.xml";
 		AppConstants appConstants1 = AppConstants.getInstance(classLoader);
-		String key = "configurations."+getConfigurationName()+".configurationFile";
+		String key = "configurations." + getConfigurationName() + ".configurationFile";
 		appConstants1.setProperty(key, name);
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 		assertEquals("NonDefaultConfiguration.xml", configFile);
 		URL configURL = classLoader.getResource(configFile);
-		assertNotNull(configURL, "config file ["+configFile+"] cannot be found");
+		assertNotNull(configURL, "config file [" + configFile + "] cannot be found");
 		assertTrue(configURL.toString().endsWith(configFile));
 	}
 
@@ -239,19 +241,20 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 //		classLoader.setBasePath(basePath);
 
 		// We have to set both the name as well as the appconstants variable.
-		String configKey = "configurations."+getConfigurationName()+".configurationFile";
+		String configKey = "configurations." + getConfigurationName() + ".configurationFile";
 		AppConstants appConstants1 = AppConstants.getInstance(classLoader);
 		appConstants1.setProperty(configKey, file);
 		classLoader.setConfigurationFile(path);
 
-		String key = "configurations."+getConfigurationName()+".classLoaderType";
+		String key = "configurations." + getConfigurationName() + ".classLoaderType";
 		appConstants.setProperty(key, classLoader.getClass().getSimpleName());
-		classLoader.configure(ibisContext, getConfigurationName());
+		classLoader.setConfigurationName(getConfigurationName());
+		classLoader.afterPropertiesSet();
 
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 		assertEquals(file, configFile, "configurationFile path does not match");
 		URL configURL = classLoader.getResource(configFile);
-		assertNotNull(configURL, "config file ["+configFile+"] cannot be found");
+		assertNotNull(configURL, "config file [" + configFile + "] cannot be found");
 		assertTrue(configURL.getPath().endsWith(file));
 	}
 
@@ -260,7 +263,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 		String logPrefix = classLoader.getClass().getSimpleName() + "@" + Integer.toHexString(classLoader.hashCode());
 
 		// Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
-		assertThat(classLoader.toString(), Matchers.startsWith(logPrefix+"["+getConfigurationName()+"]"));
+		assertThat(classLoader.toString(), Matchers.startsWith(logPrefix + "[" + getConfigurationName() + "]"));
 	}
 
 	@Test

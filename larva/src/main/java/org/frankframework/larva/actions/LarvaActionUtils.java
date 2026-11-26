@@ -65,20 +65,6 @@ public class LarvaActionUtils {
 		// don't construct util class
 	}
 
-	public static Properties getSubProperties(Properties properties, String keyBase) {
-		if(!keyBase.endsWith("."))
-			keyBase +=".";
-
-		Properties filteredProperties = new Properties();
-		for(String key: properties.stringPropertyNames()) {
-			if(key.startsWith(keyBase)) {
-				filteredProperties.put(key.substring(keyBase.length()), properties.get(key));
-			}
-		}
-
-		return filteredProperties;
-	}
-
 	/**
 	 * Create a Map for a specific property based on other properties that are
 	 * the same except for a .param1.name, .param1.value or .param1.valuefile

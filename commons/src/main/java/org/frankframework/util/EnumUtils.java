@@ -29,7 +29,7 @@ import org.jspecify.annotations.Nullable;
 import org.frankframework.doc.DocumentedEnum;
 
 /**
- * Utility functinos for working with enums.
+ * Utility functions for working with enums.
  *
  * @author Niels Meijer
  */
@@ -40,24 +40,24 @@ public class EnumUtils {
 		throw new IllegalStateException("Don't constuct utility class");
 	}
 
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) {
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value) throws IllegalArgumentException {
 		return parse(enumClass, value, false);
 	}
 
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value, boolean fallbackToStandardEnumParsing) {
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, String value, boolean fallbackToStandardEnumParsing) throws IllegalArgumentException {
 		return parse(enumClass, getFieldName(enumClass), value, fallbackToStandardEnumParsing);
 	}
 
-	private static String getFieldName(Class<?> enumClass) {
+	private static String getFieldName(Class<?> enumClass) throws IllegalArgumentException {
 		String className = org.springframework.util.ClassUtils.getUserClass(enumClass).getSimpleName();
 		return StringUtil.lcFirst(className);
 	}
 
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, @Nullable String fieldName, String value) {
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, @Nullable String fieldName, String value) throws IllegalArgumentException {
 		return parse(enumClass, fieldName, value, false);
 	}
 
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, @Nullable String fieldName, String value, boolean fallbackToStandardEnumParsing) {
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, @Nullable String fieldName, String value, boolean fallbackToStandardEnumParsing) throws IllegalArgumentException {
 		if (DocumentedEnum.class.isAssignableFrom(enumClass)) {
 			try {
 				return parseDocumented(enumClass, fieldName, value);
@@ -77,7 +77,7 @@ public class EnumUtils {
 		return parseNormal(enumClass, fieldName, value);
 	}
 
-	protected static <E extends Enum<E>> E parseNormal(Class<E> enumClass, @Nullable String fieldName, String value) {
+	protected static <E extends Enum<E>> E parseNormal(Class<E> enumClass, @Nullable String fieldName, String value) throws IllegalArgumentException {
 		E result = parseIgnoreCase(enumClass, value);
 		if (result == null) {
 			throw new IllegalArgumentException((fieldName != null ? "cannot set field [" + fieldName + "] to " : "") + "unparsable value [" + value + "]. Must be one of " + getEnumList(enumClass));
