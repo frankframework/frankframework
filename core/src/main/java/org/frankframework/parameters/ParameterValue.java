@@ -18,6 +18,7 @@ package org.frankframework.parameters;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -102,8 +103,8 @@ public class ParameterValue {
 	 * @return convert the value to an int
 	 */
 	public int asIntegerValue(int defaultValue) {
-		if (value instanceof Integer i) {
-			return i;
+		if (value instanceof Number n) {
+			return n.intValue();
 		}
 
 		String valueAsString = valueAsString();
@@ -140,14 +141,22 @@ public class ParameterValue {
 	 */
 	@Contract("!null -> !null")
 	public @Nullable String asStringValue(@Nullable String defaultValue) {
-		return value != null ? valueAsString() : defaultValue;
+		String v = valueAsString();
+		return v != null ? v : defaultValue;
 	}
 
 	private @Nullable String valueAsString() {
 		if (value == null) {
 			return null;
 		}
+		if (getDefinition() instanceof DateParameter dateParameter) {
+			String dtf = formatDateAsString(dateParameter, value);
+			if (dtf != null) return dtf;
+		}
 		if (value instanceof Message message) {
+			if (message.isEmpty()) {
+				return null;
+			}
 			try {
 				return message.asString();
 			} catch (IOException e) {
@@ -155,12 +164,23 @@ public class ParameterValue {
 			}
 		}
 
-		if (getDefinition() instanceof DateParameter dateParameter && value instanceof Date date) {
+		return value.toString();
+	}
+
+	private static @Nullable String formatDateAsString(DateParameter dateParameter, Object value) {
+		if (value instanceof Message message) {
+			// noinspection deprecation
+			return formatDateAsString(dateParameter, message.asObject());
+		}
+		if (value instanceof TemporalAccessor temporalAccessor) {
+			final DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateParameter.getFormatString()).withZone(ZoneId.systemDefault());
+			return dtf.format(temporalAccessor);
+		}
+		if (value instanceof Date date) {
 			final DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateParameter.getFormatString()).withZone(ZoneId.systemDefault());
 			return dtf.format(date.toInstant());
 		}
-
-		return value.toString();
+		return null;
 	}
 
 	public @NonNull List<Node> asCollection() throws ParameterException {
