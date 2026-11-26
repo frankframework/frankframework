@@ -113,6 +113,7 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.debug("Created Ibis Application Context");
 
 			ibisManager = getBean("ibisManager");
+			ibisManager.setIbisContext(this); // IbisManager#handleAction reloads through this reference, and it cannot be autowired by the BeanFactory
 			LOG.debug("Loaded IbisManager Bean");
 
 			classLoaderFactory = SpringUtils.createBean(getApplicationContext());

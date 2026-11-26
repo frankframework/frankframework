@@ -131,6 +131,32 @@ class TestRunStatusTest {
 	}
 
 	@Test
+	void initScenarioDirectoriesActiveRootInsideConfiguredRoot() {
+		// Arrange
+		config.setActiveScenariosDirectory(Paths.get(scenarioRoot1.getAbsolutePath(), "scenariodir1").toString());
+
+		// Act
+		String scenarioInitResult = testRunStatus.initScenarioDirectories();
+
+		// Assert
+		assertEquals(config.getActiveScenariosDirectory(), scenarioInitResult);
+		assertThat(scenarioInitResult, CoreMatchers.endsWith("scenariodir1"));
+	}
+
+	@Test
+	void initScenarioDirectoriesActiveRootNotConfigured() {
+		// Arrange
+		config.setActiveScenariosDirectory(scenarioRoot1.getParent());
+
+		// Act
+		String scenarioInitResult = testRunStatus.initScenarioDirectories();
+
+		// Assert: the directory is not one of the configured scenarios roots, so the default is used instead
+		assertEquals(config.getActiveScenariosDirectory(), scenarioInitResult);
+		assertThat(scenarioInitResult, CoreMatchers.endsWith(File.separator + "alt-scenario-root" + File.separator));
+	}
+
+	@Test
 	void getScenariosToRunAllScenarios() {
 		// Arrange
 		config.setActiveScenariosDirectory(scenarioRoot1.getAbsolutePath());

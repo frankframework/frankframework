@@ -32,12 +32,10 @@ import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.ClassLoaderFactory;
-import org.frankframework.configuration.IbisManager;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
@@ -49,11 +47,12 @@ import org.frankframework.util.StreamUtil;
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
 	private static final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";
 	private static final String ERROR_SUFFIX = "]";
+	private AbstractApplicationContext applicationContext;
 
 	@Override
 	public DatabaseClassLoader createClassLoader(ClassLoader parent) throws Exception {
 		mockJMS();
-		ApplicationContext applicationContext = mockDatabase();
+		mockDatabase();
 
 		DatabaseClassLoader cl = new DatabaseClassLoader(parent);
 		cl.setApplicationContext(applicationContext);
@@ -73,11 +72,11 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		JmsRealmFactory.getInstance().addJmsRealm(jmsRealm);
 	}
 
-	private ApplicationContext mockDatabase() throws Exception {
-		return mockDatabase(false);
+	private void mockDatabase() throws Exception {
+		mockDatabase(false);
 	}
 
-	private ApplicationContext mockDatabase(boolean throwException) throws Exception {
+	private void mockDatabase(boolean throwException) throws Exception {
 		// Mock a FixedQuerySender
 		FixedQuerySender fq = mock();
 		doReturn(new GenericDbmsSupport()).when(fq).getDbmsSupport();
@@ -95,11 +94,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
-		IbisManager ibisManager = mock(IbisManager.class);
-		doReturn(ibisManager).when(ibisContext).getIbisManager();
-		AbstractApplicationContext applicationContext = mock();
-		doReturn(applicationContext).when(ibisManager).getApplicationContext();
-		doReturn(applicationContext).when(ibisContext).getApplicationContext();
+		applicationContext = mock();
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
 		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
@@ -112,8 +107,6 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			classLoader.afterPropertiesSet();
 			return classLoader;
 		}).when(beanFactory).initializeBean(isA(IConfigurationClassLoader.class), anyString());
-
-		return applicationContext;
 	}
 
 	/* test files that are only present in the JAR_FILE zip */
@@ -139,7 +132,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		String key = "configurations."+getConfigurationName()+".reportLevel";
 		appConstants.setProperty(key, "ERROR");
 		ClassLoaderFactory factory = new ClassLoaderFactory();
-		factory.setApplicationContext(ibisContext.getApplicationContext());
+		factory.setApplicationContext(applicationContext);
 		ClassLoader config = null;
 		boolean makeSureAnExceptionIsThrown = false;
 		try {
@@ -168,7 +161,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "DEBUG");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
-			factory.setApplicationContext(ibisContext.getApplicationContext());
+			factory.setApplicationContext(applicationContext);
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
@@ -199,7 +192,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "INFO");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
-			factory.setApplicationContext(ibisContext.getApplicationContext());
+			factory.setApplicationContext(applicationContext);
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
@@ -231,7 +224,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			String key = "configurations."+getConfigurationName()+".reportLevel";
 			appConstants.setProperty(key, "WARN");
 			ClassLoaderFactory factory = new ClassLoaderFactory();
-			factory.setApplicationContext(ibisContext.getApplicationContext());
+			factory.setApplicationContext(applicationContext);
 			ClassLoader config = factory.createClassLoader(getConfigurationName(), null, null); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;

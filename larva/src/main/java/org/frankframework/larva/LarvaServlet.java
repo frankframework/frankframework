@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -176,6 +176,12 @@ public class LarvaServlet extends AbstractHttpServlet {
 		} else if (request.getParameter("expectedFileName") == null) {
 			writer.append("<p>No file name received!</p>");
 			writer.append("<p>In case you use Tomcat and large messages this might be caused by maxPostSize which is set to 2097152 (2 megabytes) by default. Add maxPostSize to the Connector element in server.xml with a larger value or 0.</p>");
+		} else if (!isInsideScenariosRootDirectory(request.getParameter("expectedFileName"))) {
+			log.warn("refused to write to file [{}] outside of the configured scenarios root directories", request.getParameter("expectedFileName"));
+			writer.append("<h2 class='warning'>File [")
+					.append(encodeForHtml(request.getParameter("expectedFileName")))
+					.append("] is not inside one of the configured scenarios root directories</h2>")
+					.flush();
 		} else {
 			if ("indentWindiff".equals(request.getParameter("cmd"))) {
 				writer.append("<p>Comparing actual result with expected result...</p>");
@@ -199,6 +205,19 @@ public class LarvaServlet extends AbstractHttpServlet {
 			writer.append("<p>Done!</p>");
 			writer.append("<script>window.close();</script>");
 		}
+	}
+
+	/**
+	 * The file to overwrite is supplied by the client, so it has to be verified to be inside one of the
+	 * configured scenarios root directories before anything is written to it.
+	 */
+	private boolean isInsideScenariosRootDirectory(String fileName) {
+		LarvaTool larvaTool = LarvaTool.createInstance(getServletContext());
+		TestRunStatus testRunStatus = larvaTool.createTestRunStatus();
+		testRunStatus.initScenarioDirectories();
+
+		return testRunStatus.getScenarioDirectories().values().stream()
+				.anyMatch(scenariosRootDirectory -> LarvaUtil.isPathInsideDirectory(fileName, scenariosRootDirectory));
 	}
 
 	@Override

@@ -21,10 +21,14 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
@@ -63,6 +67,27 @@ public class LarvaUtil {
 			return absPath + File.separator;
 		} else {
 			return absPath;
+		}
+	}
+
+	/**
+	 * Checks whether the given path points to the given directory itself, or to a location inside it.
+	 * Neither path has to exist. Both are resolved against the working directory and normalised first,
+	 * so a path that traverses out of the directory with {@code ..} is not inside it.
+	 *
+	 * @param path      the path to check
+	 * @param directory the directory the path should be inside of
+	 */
+	public static boolean isPathInsideDirectory(@Nullable String path, @Nullable String directory) {
+		if (StringUtils.isBlank(path) || StringUtils.isBlank(directory)) {
+			return false;
+		}
+		try {
+			final Path normalizedPath = Paths.get(path).toAbsolutePath().normalize();
+			final Path normalizedDirectory = Paths.get(directory).toAbsolutePath().normalize();
+			return normalizedPath.startsWith(normalizedDirectory);
+		} catch (InvalidPathException e) {
+			return false;
 		}
 	}
 
