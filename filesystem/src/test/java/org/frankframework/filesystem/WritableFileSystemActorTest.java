@@ -2,6 +2,7 @@ package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -46,7 +47,8 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		Message message = new Message(filename);
 		ParameterValueList pvl = parameters.getValues(null, session);
 
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
+		assertNotNull(result);
 		assertEquals(contents, result.asString());
 	}
 
@@ -71,7 +73,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		Message message = new Message(contents);
 		ParameterValueList pvl = parameters.getValues(message, session);
 
-		actor.doAction(message, pvl, session);
+		actor.doAction(message, pvl);
 
 		String actualContents = readFile(null, filename);
 		assertEquals(contents, actualContents);
@@ -98,7 +100,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 		waitForActionToFinish();
 
 		String stringResult = result.asString();
@@ -136,7 +138,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message("fakeInputMessage");
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 		waitForActionToFinish();
 
 		String stringResult = result.asString();
@@ -172,7 +174,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message("should-not-be-used");
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 		waitForActionToFinish();
 
 		String stringResult = result.asString();
@@ -203,7 +205,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream(contents.getBytes())));
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 		waitForActionToFinish();
 
 		String stringResult = result.asString();
@@ -238,8 +240,9 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
+		assertNotNull(result);
 		String stringResult = result.asString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		waitForActionToFinish();
@@ -272,8 +275,9 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
+		assertNotNull(result);
 		String stringResult = result.asString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 
@@ -310,8 +314,9 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		for (int i = 0; i < numOfWrites; i++) {
 			session.put("fileSystemActorWriteActionWithBackupKey", contents + i);
 			ParameterValueList pvl = parameters.getValues(message, session);
-			Message result = actor.doAction(message, pvl, session);
+			Message result = actor.doAction(message, pvl);
 
+			assertNotNull(result);
 			String stringResult = result.asString();
 			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 		}
@@ -345,7 +350,8 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message(folderName + "/" + filename); // Flat file structure, should create folder
 		ParameterValueList pvl = parameters.getValues(message, session);
-		Message result = actor.doAction(message, pvl, session);
+		Message result = actor.doAction(message, pvl);
+		assertNotNull(result);
 		TestAssertions.assertXpathValueEquals(filename, result.asString(), "file/@name");
 
 		assertTrue(_fileExists(folderName, filename), "Expected the file [" + filename + "] to be present");
@@ -356,7 +362,8 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		actor.setInputFolder(folderName);
 		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
-		Message result2 = actor.doAction(new Message(folderName), null, session);
+		Message result2 = actor.doAction(new Message(folderName), new ParameterValueList());
+		assertNotNull(result2);
 		TestAssertions.assertXpathValueEquals(filename, result2.asString(), "directory/file/@name");
 	}
 
@@ -379,8 +386,9 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message(contents);
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
+		assertNotNull(result);
 		String stringResult = result.asString();
 		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
 
@@ -442,7 +450,8 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 			Message sessionMessage = new Message(new ThrowingAfterCloseInputStream(new ByteArrayInputStream((contents + i).getBytes())));
 			session.put("appendWriteLineSeparatorTest", sessionMessage);
 			ParameterValueList pvl = parameters.getValues(message, session);
-			Message result = actor.doAction(message, pvl, session);
+			Message result = actor.doAction(message, pvl);
+			assertNotNull(result);
 			String resultStr = result.asString();
 
 			TestAssertions.assertXpathValueEquals(filename, resultStr, "file/@name");
@@ -479,13 +488,14 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		for (int i = 0; i < numOfWrites; i++) {
 			session.put("appendActionwString", contents + i);
 			ParameterValueList pvl = parameters.getValues(message, session);
-			Message result = actor.doAction(message, pvl, session);
+			Message result = actor.doAction(message, pvl);
+			assertNotNull(result);
 			String resultStr = result.asString();
 
 			TestAssertions.assertXpathValueEquals(filename, resultStr, "file/@name");
 		}
 
-		int lastSavedBackup = numOfWrites < numOfBackups ? numOfWrites : numOfBackups;
+		int lastSavedBackup = Math.min(numOfWrites, numOfBackups);
 		assertTrue(fileSystem.exists(fileSystem.toFile(filename + "." + lastSavedBackup)), "last backup with no " + lastSavedBackup + " does not exist");
 		for (int i = 1; i <= numOfBackups; i++) {
 			String actualContentsi = readFile(null, filename + "." + i);
@@ -515,9 +525,10 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 		Message message = new Message(filename);
 		ParameterValueList pvl = parameters.getValues(message, session);
-		result = actor.doAction(message, pvl, session);
+		result = actor.doAction(message, pvl);
 
 		// test
+		assertNotNull(result);
 		assertEquals(dest, result.asString(), "result of actor should be name of new file");
 
 		boolean actual = _fileExists(filename);
@@ -539,7 +550,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		actor.open();
 
 		Message message = new Message(filename);
-		actor.doAction(message, null, session);
+		actor.doAction(message, new ParameterValueList());
 
 		boolean actual = _fileExists(filename);
 
@@ -563,7 +574,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		actor.open();
 
 		Message message = new Message(filename);
-		actor.doAction(message, parameters.getValues(message, session), session);
+		actor.doAction(message, parameters.getValues(message, session));
 
 		boolean actual = _fileExists(filename);
 

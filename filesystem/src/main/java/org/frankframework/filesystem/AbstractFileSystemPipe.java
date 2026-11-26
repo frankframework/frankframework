@@ -110,7 +110,7 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 
 		Message result;
 		try {
-			result = actor.doAction(message, pvl, session);
+			result = actor.doAction(message, pvl);
 		} catch (FileSystemException e) {
 			String forwardName = e.getForward().getForwardName();
 			PipeForward forward = findForward(forwardName);

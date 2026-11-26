@@ -214,7 +214,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		return Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
 	}
 
-	private static boolean hasAttribute(@NonNull UserDefinedFileAttributeView userDefinedAttributes, String attributeName) throws IOException {
+	private static boolean hasAttribute(@NonNull UserDefinedFileAttributeView userDefinedAttributes, @NonNull String attributeName) throws IOException {
 		return userDefinedAttributes.list().stream().anyMatch(attributeName::equals);
 	}
 
@@ -232,7 +232,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public Message readFile(Path f, String charset) throws FileSystemException {
+	public @NonNull Message readFile(@NonNull Path f, String charset) throws FileSystemException {
 		if (!Files.exists(f)) {
 			throw new org.frankframework.filesystem.FileNotFoundException("Cannot find file ["+f+"].");
 		}
@@ -284,9 +284,12 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		try {
 			if(removeNonEmptyFolder) {
 				try (Stream<Path> directoryStream = Files.walk(toFile(folder))) {
-					directoryStream.sorted(Comparator.reverseOrder())
-					.map(Path::toFile)
-					.forEach(File::delete);
+					boolean allDeleted = directoryStream.sorted(Comparator.reverseOrder())
+							.map(Path::toFile)
+							.allMatch(File::delete);
+					if (!allDeleted) {
+						throw new FileSystemException("Could not delete some entries from folder [" +  folder + "]");
+					}
 				}
 			} else {
 				Files.delete(toFile(folder));

@@ -1,6 +1,7 @@
 package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Date;
 
@@ -59,7 +60,8 @@ public abstract class FileSystemActorRolloverTest<F,S extends IWritableFileSyste
 			session.put("appendActionwString", contents+i);
 			ParameterValueList pvl = params.getValues(message, session);
 
-			Message result = actor.doAction(message, pvl, session);
+			Message result = actor.doAction(message, pvl);
+			assertNotNull(result);
 			String stringResult = result.asString();
 
 			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");

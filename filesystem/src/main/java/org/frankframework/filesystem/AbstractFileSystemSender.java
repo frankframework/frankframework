@@ -106,8 +106,8 @@ public abstract class AbstractFileSystemSender<F, S extends IBasicFileSystem<F>>
 		}
 
 		try {
-			Message result = actor.doAction(message, pvl, session);
-			return new SenderResult(result);
+			Message result = actor.doAction(message, pvl);
+			return new SenderResult(result != null ? result : Message.nullMessage());
 		} catch (FileSystemException e) {
 			String forwardName = e.getForward().getForwardName();
 			log.info("error from FileSystemActor, will call forward name [{}]",forwardName, e);
