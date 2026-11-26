@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.frankframework.filesystem.LocalFileSystem;
 public class LocalFileSystemSender extends AbstractFileSystemSender<Path, LocalFileSystem> {
 
 	public LocalFileSystemSender() {
-		setFileSystem(new LocalFileSystem());
+		setFileSystem(new LocalFileSystem(this));
 	}
 
 	@ReferTo(LocalFileSystem.class)

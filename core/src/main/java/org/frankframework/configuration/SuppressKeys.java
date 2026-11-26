@@ -38,7 +38,9 @@ public enum SuppressKeys {
 	XSD_VALIDATION_WARNINGS_SUPPRESS_KEY("warnings.suppress.xsd.warning", true),
 	XSD_VALIDATION_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.error", true),
 	XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY("warnings.suppress.xsd.fatalError", true),
-	UNSAFE_ATTRIBUTE_SUPPRESS_KEY("warnings.suppress.unsafeAttribute", true);
+	UNSAFE_ATTRIBUTE_SUPPRESS_KEY("warnings.suppress.unsafeAttribute", true),
+	FILESYSTEM_ROOT_CONTAINMENT("warnings.suppress.filesystem.rootContainment", true),
+	;
 
 	private final @Getter String key;
 	private final @Getter boolean allowGlobalSuppression;
