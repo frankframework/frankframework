@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jspecify.annotations.NonNull;
@@ -46,10 +48,12 @@ import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.DestinationType;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
@@ -69,16 +73,19 @@ import org.frankframework.util.XmlEncodingUtils;
 public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
 
+	private final @NonNull HasApplicationContext owner;
 	private @Getter boolean createRootFolder = false;
-
-	private static final String FILE_DELIMITER = "/";
 
 	/**
 	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
 	 * When the root is left unspecified, absolute paths to files and folders can be used
 	 */
-	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
-	@Getter @Setter private String root;
+	@Getter private @Nullable String root;
+	private @Nullable Path rootPath;
+
+	public LocalFileSystem(@NonNull HasApplicationContext owner) {
+		this.owner = owner;
+	}
 
 	@Override
 	public void configure() {
@@ -87,8 +94,27 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public void open() throws FileSystemException {
-		if (createRootFolder && root != null && !Files.exists(Paths.get(root))) {
-			createFolder(root);
+		if (rootPath != null) {
+			if (createRootFolder && !Files.exists(rootPath)) {
+				try {
+					Files.createDirectories(rootPath);
+				} catch (IOException e) {
+					throw new FileSystemException("Cannot create folder [" + root + "]", e);
+				}
+			}
+			if (Files.exists(rootPath)) {
+				try {
+					// Get the root realPath to resolve things like Windows SHORTE~1 filenames and case-differences on case-insensitive
+					// file systems.
+					// This helps to correctly determine if result of `toFile` is within the specified filesystem root, or not.
+					rootPath = rootPath.toRealPath(LinkOption.NOFOLLOW_LINKS);
+					root = rootPath.toString();
+				} catch (IOException e) {
+					throw new FileSystemException("Cannot get real path of folder [" + root + "]", e);
+				}
+			}
+		} else {
+			ConfigurationWarnings.add(owner, log, "attribute [root] has not been configured which allows the local-filesystem to access it without restrictions", SuppressKeys.FILESYSTEM_ROOT_CONTAINMENT);
 		}
 
 		super.open();
@@ -105,18 +131,27 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			filename="";
 		}
 
-		if (StringUtils.isNotEmpty(folder) && !(filename.contains(FILE_DELIMITER) || filename.contains("\\"))) {
-			filename = folder + FILE_DELIMITER + filename;
+		if (StringUtils.isNotEmpty(folder) && !(Paths.get(filename).isAbsolute())) {
+			filename = FilenameUtils.concat(folder, filename);
 		}
 
-		Path result = Paths.get(filename);
-
-		if (StringUtils.isNotEmpty(getRoot()) && !result.isAbsolute()) {
+		Path result = Paths.get(filename).normalize();
+		if (result.isAbsolute()) {
+			if (rootPath != null && !result.startsWith(rootPath)) {
+				throw new org.frankframework.filesystem.FileNotFoundException("Cannot access file with absolute path [" + filename + "] because it is outside the specified root-path [" + root + "]");
+			}
+			return result;
+		}
+		if (rootPath != null) {
 			// Filename will always contain the folder, if it's passed as parameter or within the filename.
 			// We need to make sure that the root is not prepended if it's already part of the filename.
 			// Use normalized Path-based comparison to avoid false positives (for example root x/y vs filename x/y2/file).
-			if (!result.normalize().startsWith(Paths.get(getRoot()).normalize())) {
-				return Paths.get(getRoot()).resolve(filename);
+			if (!result.normalize().startsWith(rootPath)) {
+				Path resolvedRelativeResult = rootPath.resolve(filename).normalize();
+				if (!resolvedRelativeResult.startsWith(rootPath)) {
+					throw new org.frankframework.filesystem.FileNotFoundException("Path traversal cannot reach target [" + filename + "]");
+				}
+				return resolvedRelativeResult;
 			}
 
 			filename = result.toString();
@@ -131,7 +166,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@NonNull
 	@Override
-	public DirectoryStream<Path> list(Path folder, @NonNull TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<Path> list(@Nullable Path folder, @NonNull TypeFilter filter) throws FileSystemException {
 		if (folder == null) {
 			folder = toFile(null);
 		}
@@ -484,5 +519,19 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	@Default("false")
 	public void setCreateRootFolder(boolean createRootFolder) {
 		this.createRootFolder = createRootFolder;
+	}
+
+	/**
+	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
+	 * When the root is left unspecified, absolute paths to files and folders can be used
+	 */
+	public void setRoot(String root) {
+		if (StringUtils.isEmpty(root)) {
+			this.rootPath = null;
+			this.root = null;
+			return;
+		}
+		rootPath = Paths.get(root).normalize();
+		this.root = rootPath.toString();
 	}
 }
