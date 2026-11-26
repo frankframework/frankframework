@@ -13,4 +13,3 @@ services:
     environment:
       larva.adapter.active: false
       active.javascript-j2v8: true
-      GLIBC_TUNABLES: glibc.rtld.execstack=2

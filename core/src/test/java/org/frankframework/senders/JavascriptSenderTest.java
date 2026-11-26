@@ -37,7 +37,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void callMain(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		dummyInput = new Message("dummyinput");
@@ -54,7 +53,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void noParameters(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		dummyInput = new Message("dummyinput");
@@ -73,7 +71,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void twoParameters(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		dummyInput = new Message("dummyinput");
@@ -95,7 +92,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void inputAsFirstParameter(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		String input = "10";
@@ -122,7 +118,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void concatenateString(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		dummyInput = new Message("Hello");
@@ -149,7 +144,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void threeParametersTrue(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		dummyInput = new Message("dummyinput");
@@ -175,7 +169,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void threeParametersFalse(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		dummyInput = new Message("dummyinput");
@@ -196,8 +189,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// A ConfigurationException is given when a non existing file is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void invalidFileGivenException(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+	void invalidFileGivenException(JavaScriptEngines engine) {
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 		sender.setJsFileName("Nonexisting.js");
 		sender.setJsFunctionName("f1");
@@ -210,8 +202,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// A ConfigurationException is given when an empty string is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void emptyFileNameGivenException(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+	void emptyFileNameGivenException(JavaScriptEngines engine) {
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 		sender.setJsFileName("");
 		sender.setJsFunctionName("f1");
@@ -225,7 +216,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void invalidFunctionGivenException(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		sender.setJsFileName("Javascript/JavascriptTest.js");
@@ -243,8 +233,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// A ConfigurationException is given when an empty string is given as FunctionName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void emptyFunctionGivenException(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+	void emptyFunctionGivenException(JavaScriptEngines engine) {
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("");
@@ -257,8 +246,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// If there is a syntax error in the given Javascript file a SenderException is thrown.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void invalidJavascriptSyntax(JavaScriptEngines engine) throws ConfigurationException, SenderException {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+	void invalidJavascriptSyntax(JavaScriptEngines engine) throws ConfigurationException {
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/IncorrectJavascript.js");
@@ -274,8 +262,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// is thrown if the used javascript function gives an error.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void errorInJavascriptCode(JavaScriptEngines engine) throws ConfigurationException, SenderException {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+	void errorInJavascriptCode(JavaScriptEngines engine) throws ConfigurationException {
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 		dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/IncorrectJavascript2.js");
@@ -290,8 +277,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	// The input is expected to be of type integer but an input of type Sting is given.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
-	void wrongInputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException, SenderException {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
+	void wrongInputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException {
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 		dummyInput = new Message("Stringinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
@@ -313,7 +299,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void stringWithSingleQuote(JavaScriptEngines engine) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		dummyInput = new Message("Stringinput");
@@ -344,7 +329,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@ParameterizedTest
 	@MethodSource
 	void testWithJavaScriptReturningAnObject(JavaScriptEngines engine, String functionName, String expectedOutput) throws Exception {
-		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnCI(), "Test using J2V8 which no longer works in CI");
 		assumeFalse(engine == JavascriptSender.JavaScriptEngines.J2V8 && TestAssertions.isTestRunningOnARM(), "Test using J2V8 which does not work on ARM");
 
 		// Arrange
