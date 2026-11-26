@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +29,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
-		LocalFileSystem result = new LocalFileSystem();
+		LocalFileSystem result = new LocalFileSystem(mock());
 		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
 	}
@@ -37,7 +40,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 	}
 
 	public void fileSystemActorMoveActionTestNoRoot(String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {
-		LocalFileSystem localFileSystemNoRoot = new LocalFileSystem();
+		LocalFileSystem localFileSystemNoRoot = new LocalFileSystem(mock());
 		String srcFolder = folder.toAbsolutePath().toString();
 
 		String filename = "sendermove" + FILE1;
@@ -168,6 +171,36 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 		actor.open();
 
 		Message message = new Message(fileSystem.getRoot() + "/" + fileName);
+		ParameterValueList pvl = params.getValues(message, session);
+
+		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+	}
+
+	@Test
+	public void testAccessFileOutsideRootFolder() throws Exception {
+		// Arrange
+		Path folderOutsideRootFolder = folder.resolve("folderOutsideRootFolder");
+		Files.createDirectories(folderOutsideRootFolder);
+		Path fileThatShouldntBeAccessed = folderOutsideRootFolder.resolve("fileThatShouldntBeAccessed");
+		Files.createFile(fileThatShouldntBeAccessed);
+		try (OutputStream os = Files.newOutputStream(fileThatShouldntBeAccessed)) {
+			os.write("This is a test".getBytes());
+		}
+
+		String fsRootDir = fileSystem.getRoot() + "/testAccessFileOutsideRootFolder";
+		fileSystem.setRoot(fsRootDir);
+    	fileSystem.open();
+
+		ParameterList params = new ParameterList();
+		params.add(new Parameter("filename", "../folderOutsideRootFolder/fileThatShouldntBeAccessed"));
+		params.configure();
+
+		actor.setAction(FileSystemAction.READ);
+		actor.configure(fileSystem, params, adapter);
+		actor.open();
+
+		// Act / Assert
+		Message message = Message.nullMessage();
 		ParameterValueList pvl = params.getValues(message, session);
 
 		assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));

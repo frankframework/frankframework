@@ -1,6 +1,7 @@
 package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.mock;
 
 import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
@@ -257,7 +258,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void testNullFilteredStream() throws Exception {
-		IBasicFileSystem<?> fs = new LocalFileSystem() {
+		IBasicFileSystem<?> fs = new LocalFileSystem(mock()) {
 
 			@Override
 			public DirectoryStream<Path> list(String folder, TypeFilter filter) {
@@ -271,7 +272,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void testEmptyFilteredStream() throws Exception {
-		IBasicFileSystem<?> fs = new LocalFileSystem() {
+		IBasicFileSystem<?> fs = new LocalFileSystem(mock()) {
 
 			@Override
 			public DirectoryStream<Path> list(String folder, TypeFilter filter) {

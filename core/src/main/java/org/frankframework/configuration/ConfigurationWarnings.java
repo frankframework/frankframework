@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
+import org.springframework.lang.Contract;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasApplicationContext;
@@ -78,15 +79,16 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	}
 
 	// Helper method to retrieve ConfigurationWarnings from the Configuration Context
-	private static ConfigurationWarnings getInstance(@Nullable HasApplicationContext source) {
-		if(source == null) {
+	@Contract("null -> null")
+	private static @Nullable ConfigurationWarnings getInstance(@Nullable HasApplicationContext source) {
+		if (source == null) {
 			IllegalArgumentException e = new IllegalArgumentException("no source provided");
 			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to log notification in it's proper context", e);
 			return null;
 		}
 
 		ApplicationContext applicationContext = source.getApplicationContext();
-		if(applicationContext == null) {
+		if (applicationContext == null) {
 			IllegalArgumentException e = new IllegalArgumentException("ApplicationContext may not be NULL");
 			LogManager.getLogger(ConfigurationWarnings.class).warn("Unable to retrieve ApplicationContext from source [{}]", source, e);
 			return null;
@@ -109,7 +111,7 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 
 	public static boolean isSuppressed(@NonNull SuppressKeys key, @Nullable Adapter adapter) {
 		ConfigurationWarnings instance = getInstance(adapter);
-		if(instance == null) {
+		if (instance == null) {
 			throw new IllegalArgumentException("ConfigurationWarnings not initialized");
 		}
 
