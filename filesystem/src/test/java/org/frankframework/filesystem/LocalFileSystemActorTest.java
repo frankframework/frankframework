@@ -204,7 +204,7 @@ public class LocalFileSystemActorTest extends FileSystemActorRolloverTest<Path, 
 		Message message = Message.nullMessage();
 		ParameterValueList pvl = params.getValues(message, session);
 
-		FileSystemException fileSystemException = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+		FileSystemException fileSystemException = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl));
 		Assertions.assertThat(fileSystemException)
 				.hasMessageContaining("folderOutsideRootFolder")
 				.hasMessageContaining("fileThatShouldntBeAccessed");
