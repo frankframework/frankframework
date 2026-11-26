@@ -2,9 +2,12 @@ package org.frankframework.larva;
 
 import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -67,5 +70,36 @@ public class LarvaUtilTest {
 
 		assertNull(message.getCharset());
 		assertEquals(MediaType.APPLICATION_JSON, message.getContext().getMimeType());
+	}
+
+	@Test
+	public void testPathInsideDirectory() {
+		String directory = new File("scenarios").getAbsolutePath();
+
+		assertTrue(LarvaUtil.isPathInsideDirectory(directory, directory));
+		assertTrue(LarvaUtil.isPathInsideDirectory(directory + File.separator, directory));
+		assertTrue(LarvaUtil.isPathInsideDirectory(directory + File.separator + "sub" + File.separator + "step1.txt", directory));
+		assertTrue(LarvaUtil.isPathInsideDirectory("scenarios" + File.separator + "step1.txt", directory));
+	}
+
+	@Test
+	public void testPathOutsideDirectory() {
+		String directory = new File("scenarios").getAbsolutePath();
+
+		assertFalse(LarvaUtil.isPathInsideDirectory(new File("other-scenarios").getAbsolutePath(), directory));
+		assertFalse(LarvaUtil.isPathInsideDirectory(directory + "-sibling", directory));
+		assertFalse(LarvaUtil.isPathInsideDirectory(directory + File.separator + ".." + File.separator + "step1.txt", directory));
+		assertFalse(LarvaUtil.isPathInsideDirectory(new File(directory).getParent(), directory));
+	}
+
+	@Test
+	public void testPathInsideDirectoryWithoutValues() {
+		String directory = new File("scenarios").getAbsolutePath();
+
+		assertFalse(LarvaUtil.isPathInsideDirectory(null, directory));
+		assertFalse(LarvaUtil.isPathInsideDirectory("", directory));
+		assertFalse(LarvaUtil.isPathInsideDirectory(" ", directory));
+		assertFalse(LarvaUtil.isPathInsideDirectory(directory, null));
+		assertFalse(LarvaUtil.isPathInsideDirectory(directory, ""));
 	}
 }
