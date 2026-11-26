@@ -22,4 +22,3 @@ services:
       active.javascript-j2v8: true
       JPDA_ADDRESS: \*:8001
       JPDA_TRANSPORT: dt_socket
-      GLIBC_TUNABLES: glibc.rtld.execstack=2

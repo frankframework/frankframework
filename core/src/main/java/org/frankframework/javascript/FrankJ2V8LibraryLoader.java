@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  * File copied from the original j2v8 LibraryLoader.java source, version 4.6.0.
  * It has been modified to avoid having to set the <<ALL FILES>> execute permission
  * for loading the native library. Only the call to 'chmod()' is disabled.
+ * It also clears the executable stack flag of the extracted library, see ElfExecutableStackCleaner.
  *
  * Original Copyright statement:
  *
@@ -130,6 +131,10 @@ class FrankJ2V8LibraryLoader {
 				os.close();
 				is.close();
 				// removed call to chmod(), as it appears to be unnecessary, and causes <<ALL FILES>> execute permission exceptions
+				if (isLinux()) {
+					// the library requests an executable stack, which is not allowed by glibc 2.41+
+					ElfExecutableStackCleaner.clearExecutableStackFlag(file.toPath());
+				}
 				if (load(fileName, message)) {
 					return true;
 				}
