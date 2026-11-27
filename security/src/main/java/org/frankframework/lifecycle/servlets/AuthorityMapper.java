@@ -32,6 +32,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 
 import lombok.extern.log4j.Log4j2;
@@ -121,7 +123,21 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 	 */
 	private List<String> getValuesFromToken(GrantedAuthority authority) {
 		if (authority instanceof OidcUserAuthority oidcUserAuthority) {
-			return AuthorityMapperUtil.getRolesFromClaim(oidcUserAuthority.getUserInfo(), authoritiesClaimName);
+			List<String> roles = new ArrayList<>();
+
+			OidcIdToken idToken = oidcUserAuthority.getIdToken();
+			if (idToken != null) {
+				roles.addAll(AuthorityMapperUtil.getRolesFromAttributes(
+						idToken.getClaims(), authoritiesClaimName));
+			}
+
+			OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
+			if (userInfo != null) {
+				roles.addAll(AuthorityMapperUtil.getRolesFromClaim(
+						userInfo, authoritiesClaimName));
+			}
+
+			return roles.stream().distinct().toList();
 		} else if (authority instanceof OAuth2UserAuthority oAuth2UserAuthority) {
 			return AuthorityMapperUtil.getRolesFromAttributes(oAuth2UserAuthority.getAttributes(), authoritiesClaimName);
 		}
