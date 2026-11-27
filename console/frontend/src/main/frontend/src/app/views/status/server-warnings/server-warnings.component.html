@@ -16,7 +16,7 @@
   }
   @if (messageLog[selectedConfiguration]) {
     @if (messageLog[selectedConfiguration].errorStoreCount === 1) {
-      <li class="list-group-item alert-danger">
+      <li class="list-group-item alert-danger" data-cy="status__error-log-warning">
         <fa-icon class="m-r-md" [icon]="faInfoCircle" />
         <span
           >Errorlog contains 1 record. Service management should check whether this record has to be resent or
@@ -25,7 +25,7 @@
       </li>
     }
     @if (messageLog[selectedConfiguration].errorStoreCount > 1) {
-      <li class="list-group-item alert-danger">
+      <li class="list-group-item alert-danger" data-cy="status__error-log-warning">
         <fa-icon class="m-r-md" [icon]="faInfoCircle" />
         <span
           >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should

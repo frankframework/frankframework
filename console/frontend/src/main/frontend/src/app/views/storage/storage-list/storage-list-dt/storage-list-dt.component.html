@@ -11,6 +11,7 @@
         title="Download Message"
         class="btn btn-info btn-xs"
         type="button"
+        data-cy="message-store__row__download-selected"
         (click)="storageService.downloadMessage(msg.id)"
       >
         <fa-icon [icon]="faArrowAltCircleDown" /> Download
@@ -36,6 +37,7 @@
           title="Resend Message"
           class="btn btn-warning btn-xs"
           type="button"
+          data-cy="message-store__row__resend-selected"
           [ladda]="msg.processing && resendAction"
           [disabled]="msg.processing && !resendAction"
           (click)="resendMessage(msg)"
@@ -48,6 +50,7 @@
           title="Delete Message"
           class="btn btn-danger btn-xs"
           type="button"
+          data-cy="message-store__row__delete-selected"
           [ladda]="msg.processing && !resendAction"
           [disabled]="msg.processing && resendAction"
           (click)="deleteMessage(msg)"

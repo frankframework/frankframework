@@ -137,6 +137,7 @@
               title="Select All Messages"
               class="btn btn-default btn-sm space-it-out"
               type="button"
+              data-cy="message-store__select-all"
               (click)="selectAll()"
             >
               Select All
@@ -145,6 +146,7 @@
               title="Unselect All Messages"
               class="btn btn-default btn-sm space-it-out"
               type="button"
+              data-cy="message-store__unselect-all"
               (click)="unselectAll()"
             >
               Unselect All
@@ -183,6 +185,7 @@
               title="Download Selected Messages"
               class="btn btn-info btn-sm space-it-out"
               type="button"
+              data-cy="message-store__download-selected"
               [ladda]="messagesDownloading"
               (click)="downloadMessages()"
             >
@@ -195,6 +198,7 @@
                 title="Resend Selected Messages"
                 class="btn btn-warning btn-sm space-it-out"
                 type="button"
+                data-cy="message-store__resend-selected"
                 [ladda]="messagesProcessing"
                 (click)="resendMessages()"
               >
@@ -206,6 +210,7 @@
                 title="Delete Selected Messages"
                 class="btn btn-danger btn-sm"
                 type="button"
+                data-cy="message-store__delete-selected"
                 [ladda]="messagesProcessing"
                 (click)="deleteMessages()"
               >
@@ -215,7 +220,7 @@
           </div>
           <app-datatable [datasource]="datasource" [displayColumns]="displayedColumns" [truncate]="truncated">
             <ng-template let-element="rowElement" appDtContent>
-              <app-storage-list-dt [message]="element" />
+              <app-storage-list-dt data-cy="message-store__row" [message]="element" />
             </ng-template>
           </app-datatable>
         </div>
