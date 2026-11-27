@@ -309,7 +309,7 @@ public class RunLarvaTests {
 		}
 
 		private String now() {
-			return DateFormatUtils.format(TimeProvider.now(), DateFormatUtils.FULL_ISO_FORMATTER) + " ";
+			return DateFormatUtils.format(TimeProvider.now(), DateFormatUtils.FULL_ISO_TIMESTAMP_WITH_TZ_FORMATTER) + " ";
 		}
 
 		@Override
@@ -338,19 +338,13 @@ public class RunLarvaTests {
 
 		@Override
 		public void stepMessage(Scenario scenario, Step step, String description, String stepMessage) {
-			scenarioOutput.add(scenario, now() + stepMessage);
+			scenarioOutput.add(scenario, now() + step.getDisplayName() + " " + description + " " + stepMessage);
 			super.stepMessage(scenario, step, description, stepMessage);
 		}
 
 		@Override
-		public void stepMessageSuccess(Scenario scenario, Step step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
-			scenarioOutput.add(scenario, now() + description);
-			super.stepMessageSuccess(scenario, step, description, stepResultMessage, stepResultMessagePreparedForDiff);
-		}
-
-		@Override
 		public void stepMessageFailed(Scenario scenario, Step step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
-			scenarioOutput.add(scenario, now() + description + "\nExpected:\n" + stepExpectedResultMessagePreparedForDiff + "\nActual:\n" + stepActualResultMessagePreparedForDiff);
+			scenarioOutput.add(scenario, now() + step.getDisplayName() + " failed\nExpected:\n" + stepExpectedResultMessagePreparedForDiff + "\n\nActual:\n" + stepActualResultMessagePreparedForDiff + "\n");
 			super.stepMessageFailed(scenario, step, description, stepExpectedResultMessage, stepExpectedResultMessagePreparedForDiff, stepActualResultMessage, stepActualResultMessagePreparedForDiff);
 		}
 
