@@ -41,6 +41,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -50,12 +52,14 @@ import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.ScenarioRunner;
+import org.frankframework.larva.Step;
 import org.frankframework.larva.TestRunStatus;
 import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
-import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Attempt to run Larva tests in the Maven build.
@@ -108,7 +112,7 @@ public class RunLarvaTests {
 	@SuppressWarnings("NullAway.Init")
 	private LarvaWriter larvaWriter;
 	@SuppressWarnings("NullAway.Init")
-	private TestExecutionObserver testExecutionObserver;
+	private JUnitScenarioOutputRenderer testExecutionObserver;
 
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
@@ -182,7 +186,7 @@ public class RunLarvaTests {
 
 		larvaWriter = new LarvaWriter(larvaConfig, logger);
 		larvaTool.setWriter(larvaWriter);
-		testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
+		testExecutionObserver = new JUnitScenarioOutputRenderer(larvaWriter);
 	}
 
 	@AfterAll
@@ -269,7 +273,7 @@ public class RunLarvaTests {
 					larvaWriter.flush();
 
 					assumeTrue(scenarioResultMessage == null || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring failure of Blacklisted Scenario: [" + scenarioName + "]");
-					assertNull(scenarioResultMessage, () -> "Scenario failed: [" + scenarioName + "] gave result : " + scenarioResultMessage);
+					assertNull(scenarioResultMessage, () -> "Scenario failed: [" + scenarioName + "] gave result : " + scenarioResultMessage + "; scenario output:\n" + String.join("\n", testExecutionObserver.getScenarioOutput(scenario)));
 				}
 		);
 	}
@@ -294,6 +298,65 @@ public class RunLarvaTests {
 
 		// About 15 to 18 scenarios will fail because the environment is not set up entirely correct. Do not fail the build because of that, still get the extra coverage.
 //		assertEquals(0, result, () -> "Error in LarvaTool scenarios, %d scenarios failed. Duration: %dms; %n%n%s".formatted(result, end - start, larvaOutput));
+	}
+
+	public static class JUnitScenarioOutputRenderer extends PlainTextScenarioOutputRenderer {
+
+		private final MultiValueMap<Scenario, String> scenarioOutput = new LinkedMultiValueMap<>();
+
+		public JUnitScenarioOutputRenderer(LarvaWriter out) {
+			super(out);
+		}
+
+		private String now() {
+			return DateFormatUtils.format(TimeProvider.now(), DateFormatUtils.FULL_ISO_FORMATTER) + " ";
+		}
+
+		@Override
+		public void startScenario(TestRunStatus testRunStatus, Scenario scenario) {
+			scenarioOutput.add(scenario, now() + "Starting " + scenario.getName());
+			super.startScenario(testRunStatus, scenario);
+		}
+
+		@Override
+		public void finishScenario(TestRunStatus testRunStatus, Scenario scenario, int scenarioResult, String scenarioResultMessage) {
+			scenarioOutput.add(scenario, now() + scenarioResultMessage);
+			super.finishScenario(testRunStatus, scenario, scenarioResult, scenarioResultMessage);
+		}
+
+		@Override
+		public void startStep(TestRunStatus testRunStatus, Scenario scenario, Step step) {
+			scenarioOutput.add(scenario, now() + "Starting " + step.getDisplayName());
+			super.startStep(testRunStatus, scenario, step);
+		}
+
+		@Override
+		public void finishStep(TestRunStatus testRunStatus, Scenario scenario, Step step, int stepResult, String stepResultMessage) {
+			scenarioOutput.add(scenario, now() + stepResultMessage);
+			super.finishStep(testRunStatus, scenario, step, stepResult, stepResultMessage);
+		}
+
+		@Override
+		public void stepMessage(Scenario scenario, Step step, String description, String stepMessage) {
+			scenarioOutput.add(scenario, now() + stepMessage);
+			super.stepMessage(scenario, step, description, stepMessage);
+		}
+
+		@Override
+		public void stepMessageSuccess(Scenario scenario, Step step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
+			scenarioOutput.add(scenario, now() + description);
+			super.stepMessageSuccess(scenario, step, description, stepResultMessage, stepResultMessagePreparedForDiff);
+		}
+
+		@Override
+		public void stepMessageFailed(Scenario scenario, Step step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
+			scenarioOutput.add(scenario, now() + description + "\nExpected:\n" + stepExpectedResultMessagePreparedForDiff + "\nActual:\n" + stepActualResultMessagePreparedForDiff);
+			super.stepMessageFailed(scenario, step, description, stepExpectedResultMessage, stepExpectedResultMessagePreparedForDiff, stepActualResultMessage, stepActualResultMessagePreparedForDiff);
+		}
+
+		public List<String> getScenarioOutput(Scenario scenario) {
+			return scenarioOutput.get(scenario);
+		}
 	}
 
 }
