@@ -3,6 +3,7 @@ package org.frankframework.javascript;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -31,7 +32,7 @@ class ElfExecutableStackCleanerTest {
 			Files.copy(is, library);
 		}
 		byte[] original = Files.readAllBytes(library);
-		assertTrue((getGnuStackFlags(original) & PF_X) != 0, "J2V8 library is expected to request an executable stack");
+		assertNotEquals(0, getGnuStackFlags(original) & PF_X, "J2V8 library is expected to request an executable stack");
 
 		assertTrue(ElfExecutableStackCleaner.clearExecutableStackFlag(library));
 
