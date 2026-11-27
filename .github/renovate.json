@@ -96,7 +96,8 @@
             "description": "Tomcat Dependencies",
             "matchManagers": [
                 "maven",
-                "docker"
+                "dockerfile",
+                "docker-compose"
             ],
             "groupName": "Tomcat",
             "matchPackageNames": [
