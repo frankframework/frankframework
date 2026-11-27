@@ -22,7 +22,7 @@ jobs:
       - name: Set tag name
         run: echo "TAG=${{ steps.branch.outputs.result }}-nightly" >> $GITHUB_ENV
       - name: Update nightly release
-        uses: andelf/nightly-release@5834076edc55cc05975561c9722043f072ac5c26 # main
+        uses: andelf/nightly-release@4b7060831fccb76987daa1bfc507d0b85ab47b25 # main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
