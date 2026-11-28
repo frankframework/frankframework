@@ -3,7 +3,6 @@ package org.frankframework.pipes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -66,19 +65,24 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 	}
 
 	@Test
-	public void testEmptyIncrementParameter() {
-		Exception exception = assertThrows(NumberFormatException.class, () -> {
-			String numberSession = "number";
-			session.put(numberSession, "4");
-			pipe.addParameter(new Parameter("increment", ""));
-			pipe.setSessionKey(numberSession);
-			pipe.configure();
-			doPipe(pipe, "", session);
-		});
-		String expectedMessage = "For input string";
-		String actualMessage = exception.getMessage();
-
-		assertTrue(actualMessage.contains(expectedMessage));
+	public void testEmptyIncrementParameter() throws Exception {
+		String numberSession = "number";
+		session.put(numberSession, "4");
+		pipe.addParameter(new Parameter("increment", ""));
+		pipe.setSessionKey(numberSession);
+		pipe.configure();
+		doPipe(pipe, "", session);
+		assertEquals(5, session.get(numberSession));
 	}
 
+	@Test
+	public void testInvalidIncrementParameter() throws Exception {
+		String numberSession = "number";
+		session.put(numberSession, "4");
+		pipe.addParameter(new Parameter("increment", "x"));
+		pipe.setSessionKey(numberSession);
+		pipe.configure();
+
+		assertThrows(NumberFormatException.class, () -> doPipe(pipe, "", session));
+	}
 }
