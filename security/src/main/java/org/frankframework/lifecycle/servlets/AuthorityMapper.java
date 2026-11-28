@@ -121,7 +121,21 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 	 */
 	private List<String> getValuesFromToken(GrantedAuthority authority) {
 		if (authority instanceof OidcUserAuthority oidcUserAuthority) {
-			return AuthorityMapperUtil.getRolesFromClaim(oidcUserAuthority.getUserInfo(), authoritiesClaimName);
+			List<String> combinedRoles = new ArrayList<>();
+
+			// Add roles from the TokenID claimset
+			List<String> tokenIdClaims = AuthorityMapperUtil.getRolesFromAttributes(oidcUserAuthority.getIdToken().getClaims(), authoritiesClaimName);
+			log.debug("fetched claims [{}] from tokenId", tokenIdClaims);
+			combinedRoles.addAll(tokenIdClaims);
+
+			// If a UserInfo endpoint is available, add roles from the userInfo claimset as well
+			if (oidcUserAuthority.getUserInfo() != null) {
+				List<String> userInfoClaims = AuthorityMapperUtil.getRolesFromClaim(oidcUserAuthority.getUserInfo(), authoritiesClaimName);
+				log.debug("fetched claims [{}] from userInfo", userInfoClaims);
+				combinedRoles.addAll(userInfoClaims);
+			}
+
+			return combinedRoles;
 		} else if (authority instanceof OAuth2UserAuthority oAuth2UserAuthority) {
 			return AuthorityMapperUtil.getRolesFromAttributes(oAuth2UserAuthority.getAttributes(), authoritiesClaimName);
 		}

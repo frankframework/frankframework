@@ -177,7 +177,7 @@ public class LarvaServlet extends AbstractHttpServlet {
 			writer.append("<p>No file name received!</p>");
 			writer.append("<p>In case you use Tomcat and large messages this might be caused by maxPostSize which is set to 2097152 (2 megabytes) by default. Add maxPostSize to the Connector element in server.xml with a larger value or 0.</p>");
 		} else if (!isInsideScenariosRootDirectory(request.getParameter("expectedFileName"))) {
-			log.warn("refused to write to file [{}] outside of the configured scenarios root directories", request.getParameter("expectedFileName"));
+			log.error("refused to write to file outside of the configured scenarios root directories");
 			writer.append("<h2 class='warning'>File [")
 					.append(encodeForHtml(request.getParameter("expectedFileName")))
 					.append("] is not inside one of the configured scenarios root directories</h2>")

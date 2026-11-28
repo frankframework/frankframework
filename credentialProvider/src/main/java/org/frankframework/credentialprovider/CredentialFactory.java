@@ -152,11 +152,7 @@ public class CredentialFactory {
 		}
 	}
 
-	/**
-	 *
-	 * @return true if we've found one or more factories
-	 */
-	private boolean loadFactoryClasses() {
+	private String getfactoryClassNames() {
 		String factoryClassNames = getProperty(CREDENTIAL_FACTORY_KEY);
 
 		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
@@ -165,11 +161,22 @@ public class CredentialFactory {
 			factoryClassNames = factoryClassNames.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
 		}
 
+		return factoryClassNames;
+	}
+
+	/**
+	 *
+	 * @return true if we've found one or more factories
+	 */
+	private boolean loadFactoryClasses() {
+		String factoryClassNames = getfactoryClassNames();
+
 		// Attempt to load the provided factories
 		return tryFactories(factoryClassNames);
 	}
 
 	protected void exit() {
+		log.severe("Unable to load CredentialFactory [%s] and no fallback allowed".formatted(getfactoryClassNames()));
 		System.exit(12);
 	}
 

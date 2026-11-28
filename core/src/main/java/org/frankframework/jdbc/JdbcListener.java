@@ -15,6 +15,7 @@
 */
 package org.frankframework.jdbc;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -40,6 +41,7 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 
 /**
@@ -84,28 +86,35 @@ public class JdbcListener extends AbstractJdbcListener implements IPeekableListe
 	}
 
 	protected @Nullable RawMessageWrapper<Serializable> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
-		String query = preparedSelectQuery;
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
 			if (trace && log.isDebugEnabled()) log.debug("executing query for [{}]", preparedSelectQuery);
 			//noinspection SqlSourceToSinkFlow
-			try (ResultSet rs=stmt.executeQuery(preparedSelectQuery)) {
-				if (!rs.next()) {
+			return executeStatementAndExtractMessage(stmt);
+		} catch (Exception e) {
+			throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query ["+preparedSelectQuery+"]", e);
+		}
+	}
+
+	/**
+	 * Execute the select query and return the first message found, or null if no message was found.
+	 * If the query fails with a lock timeout exception (and the DBMS does not support SKIP-LOCKED), null is returned as well.
+	 */
+	private @Nullable MessageWrapper<Serializable> executeStatementAndExtractMessage(Statement stmt) throws IOException, SQLException {
+		try (ResultSet rs= stmt.executeQuery(preparedSelectQuery)) {
+			if (!rs.next()) {
+				return null;
+			}
+			return extractRawMessage(rs);
+		} catch (SQLException e) {
+			if (!getDbmsSupport().hasSkipLockedFunctionality()) {
+				String errorMessage = e.getMessage();
+				if (errorMessage != null && errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
+					log.debug("{}caught lock timeout exception, returning null: ({}){}", getLogPrefix(), e.getClass().getName(), e.getMessage());
 					return null;
 				}
-				return extractRawMessage(rs);
-			} catch (SQLException e) {
-				if (!getDbmsSupport().hasSkipLockedFunctionality()) {
-					String errorMessage = e.getMessage();
-					if (errorMessage != null && errorMessage.toLowerCase().contains("timeout") && errorMessage.toLowerCase().contains("lock")) {
-						log.debug("{}caught lock timeout exception, returning null: ({}){}", getLogPrefix(), e.getClass().getName(), e.getMessage());
-						return null; // resolve locking conflict for dbmses that do not support SKIP LOCKED
-					}
-				}
-				throw e;
 			}
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query ["+query+"]", e);
+			throw e;
 		}
 	}
 
