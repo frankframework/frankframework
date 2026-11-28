@@ -276,7 +276,7 @@
 		<dependency>
 			<groupId>org.apache.wss4j</groupId>
 			<artifactId>wss4j-ws-security-dom</artifactId>
-			<version>4.0.2</version>
+			<version>4.0.3</version>
 			<exclusions>
 				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
 				<exclusion>
@@ -333,7 +333,7 @@
 		<dependency>
 			<groupId>io.swagger.parser.v3</groupId>
 			<artifactId>swagger-parser-v3</artifactId>
-			<version>2.1.48</version>
+			<version>2.1.49</version>
 			<exclusions>
 				<exclusion>
 					<groupId>io.swagger.core.v3</groupId>
@@ -349,12 +349,12 @@
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-core-jakarta</artifactId>
-			<version>2.2.55</version>
+			<version>2.2.56</version>
 		</dependency>
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-models-jakarta</artifactId>
-			<version>2.2.55</version>
+			<version>2.2.56</version>
 		</dependency>
 		<dependency>
 			<groupId>com.networknt</groupId>
@@ -796,7 +796,7 @@
 		<dependency>
 			<groupId>com.github.dasniko</groupId>
 			<artifactId>testcontainers-keycloak</artifactId>
-			<version>4.4.0</version>
+			<version>4.4.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
