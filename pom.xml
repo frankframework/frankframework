@@ -95,7 +95,7 @@
 		<spring.version>7.0.10</spring.version>
 		<spring-security.version>7.1.2</spring-security.version>
 		<spring-integration.version>7.1.2</spring-integration.version>
-		<spring.boot.version>4.1.2</spring.boot.version>
+		<spring.boot.version>4.2.0</spring.boot.version>
 		<tomcat.version>11.0.29</tomcat.version>
 		<tika.version>4.2.0</tika.version>
 		<mcp-sdk.version>2.1.0</mcp-sdk.version>
