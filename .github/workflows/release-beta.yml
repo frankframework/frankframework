@@ -1,15 +1,15 @@
-name: Update nightly release
+name: Update beta release
 
 on:
   workflow_dispatch:
     inputs:
       revision:
-        description: The version in the title of the release.
+        description: The version number of the beta release (used in the release title and download instructions).
         required: true
 
 jobs:
-  nightly-release:
-    name: Nightly Release Build
+  beta-release:
+    name: Beta Release Build
     runs-on: ubuntu-latest
     steps:
       - uses: bluwy/substitute-string-action@66aab512ea85c8215b45e20a14bf12da819c881e # v4
@@ -21,19 +21,21 @@ jobs:
           release/: ''
       - name: Set tag name
         run: echo "TAG=${{ steps.branch.outputs.result }}-nightly" >> $GITHUB_ENV
-      - name: Update nightly release
+      - name: Update beta release
         uses: andelf/nightly-release@4b7060831fccb76987daa1bfc507d0b85ab47b25 # main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: "${{ env.TAG }}"
-          name: "v${{ github.event.inputs.revision }} (nightly)"
+          name: "v${{ github.event.inputs.revision }} (beta)"
           draft: false
           prerelease: true
           body: |
-            The Frank!Framework nightly (snapshot) build provides a daily compilation of the latest code changes and developments, allowing users to access cutting-edge features and updates before they are officially released.
-            
-            For an overview of the changes in this version, please refer to the [Frank!Framework Insights](https://insights.frankframework.org/graph/${{ env.TAG }}?nightly=).
+            This is a **beta** build of the Frank!Framework. It is a pre-release that is updated daily with the latest changes, so you can try out new features and improvements before they are officially released.
+
+            Beta builds are not intended for production use and may contain bugs or incomplete features.
+
+            For an overview of the changes in this version, see [Frank!Framework Insights](https://insights.frankframework.org/graph/${{ env.TAG }}?nightly=).
             
             ## Copy version
             
