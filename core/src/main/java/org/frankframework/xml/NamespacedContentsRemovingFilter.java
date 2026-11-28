@@ -15,13 +15,17 @@
 */
 package org.frankframework.xml;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
- * Filter that removes all Elements and attributes that are in a namespace, retaining only non-namespaced content.
+ * Filter that removes all Elements and attributes that are in a namespace, retaining only
+ * non-namespaced content and any elements and attributes in an allowlisted namespace (issue #10490).
  *
  * @author Gerrit van Brakel
  *
@@ -29,17 +33,25 @@ import org.xml.sax.SAXException;
 public class NamespacedContentsRemovingFilter extends FullXmlFilter {
 
 	private int removingDepth=0;
+	private final Set<String> retainedNamespaces;
 
 	public NamespacedContentsRemovingFilter(ContentHandler handler) {
+		this(handler, Collections.emptySet());
+	}
+
+	public NamespacedContentsRemovingFilter(ContentHandler handler, Set<String> retainedNamespaces) {
 		super(handler);
+		this.retainedNamespaces = retainedNamespaces;
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-		if (removingDepth>0 || StringUtils.isNotEmpty(uri)) {
+		if (removingDepth==0 && StringUtils.isNotEmpty(uri) && retainedNamespaces.contains(uri)) {
+			super.startElement(uri, localName, qName, atts);
+		} else if (removingDepth>0 || StringUtils.isNotEmpty(uri)) {
 			removingDepth++;
 		} else {
-			super.startElement("", localName, localName, new NamespacedContentsRemovingAttributesWrapper(atts));
+			super.startElement("", localName, localName, new NamespacedContentsRemovingAttributesWrapper(atts, retainedNamespaces));
 		}
 	}
 
@@ -47,6 +59,8 @@ public class NamespacedContentsRemovingFilter extends FullXmlFilter {
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (removingDepth>0) {
 			removingDepth--;
+		} else if (StringUtils.isNotEmpty(uri) && retainedNamespaces.contains(uri)) {
+			super.endElement(uri, localName, qName);
 		} else {
 			super.endElement("", localName, localName);
 		}

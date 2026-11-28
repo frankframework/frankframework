@@ -1,0 +1,10 @@
+<Configuration name="ExtAttrTest">
+	<!-- A built-in element customized by a module (issue #10490): the extra attribute is written in the
+	     module's registered namespace, so it validates against the generated type's ##other wildcard and
+	     reaches the digester as a plain auditLevel attribute. -->
+	<Adapter name="ExtAttrAdapter" xmlns:acme="urn:test:vf-ext">
+		<Pipeline>
+			<EchoPipe name="echo" className="org.frankframework.configuration.digester.ExtensionSchemaDigesterTest$AuditingEchoPipe" acme:auditLevel="full"/>
+		</Pipeline>
+	</Adapter>
+</Configuration>
