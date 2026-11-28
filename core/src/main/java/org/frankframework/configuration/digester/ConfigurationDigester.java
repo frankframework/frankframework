@@ -46,6 +46,7 @@ import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.configuration.filters.ClassNameAliases;
 import org.frankframework.configuration.filters.ClassNameRewriter;
 import org.frankframework.configuration.filters.ElementRoleFilter;
 import org.frankframework.configuration.filters.IncludeFilter;
@@ -205,8 +206,9 @@ public class ConfigurationDigester implements ConfigurationAware {
 		handler = new ElementPropertyResolver(handler, properties);
 
 		boolean rewriteLegacyClassNames = properties.getBoolean(MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY, true);
-		if (rewriteLegacyClassNames) {
-			handler = new ClassNameRewriter(handler, applicationContext);
+		ClassNameAliases classNameAliases = ClassNameAliases.getInstance();
+		if (rewriteLegacyClassNames || !classNameAliases.isEmpty()) {
+			handler = new ClassNameRewriter(handler, applicationContext, rewriteLegacyClassNames, classNameAliases);
 		}
 
 		XmlWriter originalConfigWriter = new XmlWriter();

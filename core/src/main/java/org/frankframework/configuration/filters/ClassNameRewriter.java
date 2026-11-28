@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.frankframework.configuration.filters;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
@@ -41,9 +42,21 @@ public class ClassNameRewriter extends FullXmlFilter {
 			"org.frankframework.pipes.LargeBlockTester", "org.frankframework.extensions.sap.jco3.SapLUWManager", "org.frankframework.extensions.rekenbox.RekenBoxCaller");
 
 	private final ConfigurationWarnings configWarning;
+	private final boolean rewriteLegacyClassNames;
+	private final ClassNameAliases aliases;
 
 	public ClassNameRewriter(ContentHandler handler, ApplicationContext applicationContext) {
+		this(handler, applicationContext, true, ClassNameAliases.getInstance());
+	}
+
+	/**
+	 * @param rewriteLegacyClassNames whether to rewrite {@value #LEGACY_PACKAGE_NAME} class names and the old implicit class names
+	 * @param aliases the class name aliases to apply, see {@link ClassNameAliases}
+	 */
+	public ClassNameRewriter(ContentHandler handler, ApplicationContext applicationContext, boolean rewriteLegacyClassNames, ClassNameAliases aliases) {
 		super(handler);
+		this.rewriteLegacyClassNames = rewriteLegacyClassNames;
+		this.aliases = aliases;
 
 		if (applicationContext != null && applicationContext.containsBean("configurationWarnings")) {
 			configWarning = applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);
@@ -57,8 +70,15 @@ public class ClassNameRewriter extends FullXmlFilter {
 		WritableAttributes writableAttributes = new WritableAttributes(attributes);
 		String className = writableAttributes.getValue(CLASS_NAME_ATTRIBUTE);
 
-		if (className != null && (className.startsWith(LEGACY_PACKAGE_NAME) || OLD_IMPLICIT_CLASSNAMES.contains(className))) {
-			writableAttributes.setValue(CLASS_NAME_ATTRIBUTE, rewriteClassName(className));
+		if (className != null) {
+			String rewritten = className;
+			if (rewriteLegacyClassNames && (className.startsWith(LEGACY_PACKAGE_NAME) || OLD_IMPLICIT_CLASSNAMES.contains(className))) {
+				rewritten = rewriteClassName(className);
+			}
+			rewritten = applyAlias(rewritten);
+			if (!rewritten.equals(className)) {
+				writableAttributes.setValue(CLASS_NAME_ATTRIBUTE, rewritten);
+			}
 		}
 
 		super.startElement(uri, localName, qName, writableAttributes);
@@ -76,6 +96,20 @@ public class ClassNameRewriter extends FullXmlFilter {
 			log.debug("Cannot load a class named [{}], will build configuration with original classname [{}]", newClassName, originalClassName);
 		}
 		return originalClassName;
+	}
+
+	private String applyAlias(final String className) {
+		Optional<String> target = aliases.target(className);
+		if (target.isEmpty()) {
+			return className;
+		}
+		String newClassName = target.get();
+		if (!canLoadClass(newClassName)) {
+			addDeprecationWarning("Class name alias [%s] points at [%s], which cannot be loaded. Building the configuration with [%s].".formatted(className, newClassName, className));
+			return className;
+		}
+		addDeprecationWarning("[%s] has been renamed to [%s]. Please change the className attribute.".formatted(className, newClassName));
+		return newClassName;
 	}
 
 	private void addDeprecationWarning(String message) {
