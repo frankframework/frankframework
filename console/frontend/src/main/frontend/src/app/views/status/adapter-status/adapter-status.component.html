@@ -51,22 +51,37 @@
           @if (!showContent(adapter)) {
             <div class="col-sm-2" title="Adapter Store">
               @if ((adapter.messageLogMessageCount ?? 0) > 0) {
-                <span class="text-success" title="Total # of processed messages by the adapter">
+                <span
+                  class="text-success"
+                  title="Total # of processed messages by the adapter"
+                  data-cy="status__adapter-status__message-store-count"
+                >
                   <fa-icon [icon]="faSignIn" /> ({{ adapter.messageLogMessageCount }})
                 </span>
               }
               @if ((adapter.errorStoreMessageCount ?? 0) > 0) {
-                <span class="text-danger" title="Total # of messages in Error"
+                <span
+                  class="text-danger"
+                  title="Total # of messages in Error"
+                  data-cy="status__adapter-status__message-store-error"
                   >&nbsp;<fa-icon [icon]="faTimesCircle" /> ({{ adapter.errorStoreMessageCount }})
                 </span>
               }
               @if ((adapter.sendersMessageLogCount ?? 0) > 0) {
-                <span class="text-success" title="Total # of messages processed by senders that have a messagelog">
+                <span
+                  class="text-success"
+                  title="Total # of messages processed by senders that have a messagelog"
+                  data-cy="status__adapter-status__message-store-log"
+                >
                   &nbsp;<fa-icon [icon]="faDatabase" /> ({{ adapter.sendersMessageLogCount }})
                 </span>
               }
               @if (adapter.senderTransactionalStorageMessageCount! > 0) {
-                <span class="text-primary" title="Total # of messages in messageStoreSenders">
+                <span
+                  class="text-primary"
+                  title="Total # of messages in messageStoreSenders"
+                  data-cy="status__adapter-status__message-store-transactional"
+                >
                   &nbsp;<fa-icon [icon]="faSignOut" /> ({{ adapter.senderTransactionalStorageMessageCount }})
                 </span>
               }
@@ -80,7 +95,7 @@
     <div class="ibox-content p-md">
       <div class="row">
         <div class="col-md-6">
-          <!-- adapter information -->
+          /* -- adapter information - */
           <span class="pull-right">
             <a
               appHasAccessToLink="getAdapterStatistics"
@@ -295,6 +310,7 @@
                         @for (store of getTransactionalStores(receiver); track store) {
                           <span>
                             <span
+                              [attr.data-cy]="`status__adapter-status__message-store__btn-${store.name.toLocaleLowerCase()}`"
                               [title]="`Browse messages with ProcessState: ${store.name}`"
                               [class]="`text-${getProcessStateIconColorFn(store.name)}`"
                             >
