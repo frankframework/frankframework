@@ -70,10 +70,15 @@ public class AuthorityMapperUtil {
 			Map<String, Object> realmAccess = (Map<String, Object>) userAttributes.get(keyParts[0]);
 
 			// Get second part of the key
-			Object userRoles = realmAccess.get(keyParts[1]);
+			if (realmAccess != null && realmAccess.containsKey(keyParts[1])) {
+				Object userRoles = realmAccess.get(keyParts[1]);
 
-			log.debug("fetched user roles [{}] from userAttributes", userRoles);
-			return splitRolesStringIfNeeded(userRoles);
+				log.debug("fetched user roles [{}] from userAttributes", userRoles);
+				return splitRolesStringIfNeeded(userRoles);
+			} else {
+				log.debug("userAttributes does not contain claim [{}]", authoritiesClaimName);
+				return List.of();
+			}
 		}
 	}
 
