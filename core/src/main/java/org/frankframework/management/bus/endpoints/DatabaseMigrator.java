@@ -109,7 +109,7 @@ public class DatabaseMigrator extends BusEndpointBase {
 	}
 
 	@ActionSelector(BusAction.UPLOAD)
-	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
+	@RolesAllowed("IbisTester") // Liquibase evaluates the preconditions of the changelog against the datasource, same role as ExecuteJdbcQuery
 	public StringMessage getMigrationChanges(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		Configuration configuration = getConfigurationByName(configurationName);

@@ -18,6 +18,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -118,5 +119,33 @@ public class TestDatabaseMigrator extends BusTestBase {
 		request.setHeader("filename", "wrong-name.xml");
 		MessageHandlingException mhe = assertThrows(MessageHandlingException.class, () -> callSyncGateway(request), "expected: filename not provided exception");
 		assertTrue(mhe.getCause() instanceof BusException);
+	}
+
+	@Test
+	@WithMockUser(roles = { "IbisObserver" })
+	public void uploadMigrationScriptNotAllowedForObserver() throws Exception {
+		assertUploadNotAllowed();
+	}
+
+	@Test
+	@WithMockUser(roles = { "IbisDataAdmin" })
+	public void uploadMigrationScriptNotAllowedForDataAdmin() throws Exception {
+		assertUploadNotAllowed();
+	}
+
+	@Test
+	@WithMockUser(roles = { "IbisAdmin" })
+	public void uploadMigrationScriptNotAllowedForAdmin() throws Exception {
+		assertUploadNotAllowed();
+	}
+
+	private void assertUploadNotAllowed() throws Exception {
+		final String script = TestFileUtils.getTestFile("/Migrator/DatabaseChangelog.xml");
+		final MessageBuilder<String> request = createRequestMessage(script, BusTopic.JDBC_MIGRATION, BusAction.UPLOAD);
+		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
+		request.setHeader("filename", "DatabaseChangelog.xml");
+
+		final Exception e = assertThrows(Exception.class, () -> callSyncGateway(request));
+		assertInstanceOf(AuthorizationDeniedException.class, e.getCause());
 	}
 }
