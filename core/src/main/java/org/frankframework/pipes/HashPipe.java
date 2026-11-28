@@ -34,12 +34,12 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.ParameterList;
-import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.hash.Algorithm;
 import org.frankframework.pipes.hash.HashGenerator;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StreamUtil;
 
 /**
  * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
@@ -137,26 +137,22 @@ public class HashPipe extends FixedForwardPipe {
 			return null;
 		}
 
+		ParameterList parameterList = getParameterList();
+		String realAuthAlias;
+		String realSecret;
 		try {
-			ParameterList parameterList = getParameterList();
 			ParameterValueList pvl = parameterList.getValues(message, session);
 			// at this location, it would never be useful that the parameterValue defaults to inputMessage
-			ParameterValue authAliasParamValue = pvl.get("authAlias");
-			if (authAliasParamValue != null) {
-				authAlias = authAliasParamValue.asStringValue();
-			}
-			ParameterValue secretParamValue = pvl.get("secret");
-			if (secretParamValue != null) {
-				secret = secretParamValue.asStringValue();
-			}
+			realAuthAlias = pvl.getValue("authAlias", this.authAlias);
+			realSecret = pvl.getValue("secret", this.secret);
 		} catch (ParameterException e) {
-			throw new PipeRunException(this, "exception extracting authAlias", e);
+			throw new PipeRunException(this, "exception extracting " + e.getParameterName(), e);
 		}
 
-		CredentialFactory accessTokenCf = new CredentialFactory(authAlias, "", secret);
+		CredentialFactory accessTokenCf = new CredentialFactory(realAuthAlias, "", realSecret);
 		String cfSecret = accessTokenCf.getPassword();
 
-		return new SecretKeySpec(cfSecret.getBytes(), "algorithm");
+		return new SecretKeySpec(cfSecret.getBytes(StreamUtil.DEFAULT_CHARSET), "algorithm");
 	}
 
 	/**

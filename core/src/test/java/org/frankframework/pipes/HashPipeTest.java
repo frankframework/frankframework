@@ -97,6 +97,7 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	public void paramSha512hex() throws Exception {
 		pipe.setHashEncoding(HashEncoding.Hex); // also tests deprecated BinaryToTextEncoding. same output as above test
 		pipe.setAlgorithm(Algorithm.HmacSHA512);
+		pipe.setSecret("Aardappel");
 		pipe.addParameter(new Parameter("secret", "Potato"));
 		configureAndStartPipe();
 
@@ -107,15 +108,30 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 
 	@Test
 	public void emptyParamSha512hex() throws Exception {
-		pipe.setSecret("Aardappel");
+		pipe.setSecret("Potato");
 		pipe.setHashEncoding(HashEncoding.Hex);
 		pipe.setAlgorithm(Algorithm.HmacSHA512);
-		pipe.addParameter(new Parameter("secret", null));
+		pipe.addParameter(new Parameter("secret", "")); // "null" empty param uses the input message, but it's also the input-message which is being hashed... Now this takes the configured secret
 		configureAndStartPipe();
 
-		PipeRunResult prr = doPipe(pipe, "Potato", session);
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
 		String hash = prr.getResult().asString();
-		assertEquals("beb37d574dce469b92b4494daf92f2065dede3c0b14b7a5d5f0390d4829b580a2867c4d2af3d937757dbcfd083811682eed108d6b0fdf6f760e150f1dfeeb8e3", hash);
+		assertEquals("e7a57d1a100f53d34f3fbeb32792952eb7cc68285eac2f09718d7a3d33c43b75becb1367a17c262d2f8873ad49de0a99c9e51f734559cf3820db75aa7ac5e6da", hash);
+	}
+
+	@Test
+	public void emptySessionParamSha512hex() throws Exception {
+		pipe.setSecret("Potato");
+		pipe.setHashEncoding(HashEncoding.Hex);
+		pipe.setAlgorithm(Algorithm.HmacSHA512);
+		Parameter secretParam = new Parameter("secret", null);
+		secretParam.setSessionKey("secret");
+		pipe.addParameter(secretParam); // "null" empty param uses the input message, but it's also the input-message which is being hashed... Now this takes the configured secret
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
+		String hash = prr.getResult().asString();
+		assertEquals("e7a57d1a100f53d34f3fbeb32792952eb7cc68285eac2f09718d7a3d33c43b75becb1367a17c262d2f8873ad49de0a99c9e51f734559cf3820db75aa7ac5e6da", hash);
 	}
 
 	@Test
@@ -142,7 +158,21 @@ public class HashPipeTest extends PipeTestBase<HashPipe> {
 	@Test
 	public void hashPipeWithAuthAlias() throws Exception {
 		pipe.setHashEncoding(HashEncoding.Hex);
+		pipe.setAuthAlias("anotherAuthAlias");
 		Parameter parameter = new Parameter("authAlias", "alias1");
+		pipe.addParameter(parameter);
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(pipe, "hash me plz", session);
+		String hash = prr.getResult().asString(); assertEquals("a792afbfa40c48654eb22fb41f0eebba45417a10a4df60ceb8d083505b26caa1", hash);
+	}
+
+	@Test
+	public void hashPipeWithEmptyAuthAliasParam() throws Exception {
+		pipe.setHashEncoding(HashEncoding.Hex);
+		pipe.setAuthAlias("alias1");
+		Parameter parameter = new Parameter("authAlias", null);
+		parameter.setSessionKey("authAlias");
 		pipe.addParameter(parameter);
 		configureAndStartPipe();
 
