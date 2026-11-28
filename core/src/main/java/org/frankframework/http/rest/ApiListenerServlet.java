@@ -17,6 +17,7 @@ package org.frankframework.http.rest;
 
 import java.io.IOException;
 import java.io.Serial;
+import java.security.GeneralSecurityException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -268,12 +269,27 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 			try {
 				/*
+				 * An HMAC signature covers the raw request body, so for that method the body has to be
+				 * read before the request is authenticated. Every other method keeps reading it later on.
+				 */
+				Message body = null;
+				if (listener.getAuthenticationMethod() == ApiListener.AuthenticationMethods.HMAC) {
+					if (MultipartUtils.isMultipart(request)) {
+						LOG.warn("{} HMAC authentication is not supported for multipart requests", () -> createAbortMessage(remoteUser, HttpStatus.BAD_REQUEST.value()));
+						response.sendError(HttpStatus.BAD_REQUEST.value(), "HMAC authentication is not supported for multipart requests");
+						return;
+					}
+					body = parseMessageFromRequest(request, response, listener, pipelineSession, remoteUser);
+					if (body == null) return; // Error reading request
+				}
+
+				/*
 				 * Check authentication
 				 */
 				ApiPrincipal userPrincipal;
 
 				if (listener.getAuthenticationMethod() != ApiListener.AuthenticationMethods.NONE) {
-					userPrincipal = checkAuthorization(request, response, listener, pipelineSession);
+					userPrincipal = checkAuthorization(request, response, listener, pipelineSession, body);
 					if (userPrincipal == null) {
 						return;
 					}
@@ -333,8 +349,10 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * Process the request through the pipeline.
 				 * If applicable, map multipart parts into messageContext
 				 */
-				Message body = parseMessageFromRequest(request, response, listener, pipelineSession, remoteUser);
-				if (body == null) return; // Error reading request
+				if (body == null) {
+					body = parseMessageFromRequest(request, response, listener, pipelineSession, remoteUser);
+					if (body == null) return; // Error reading request
+				}
 
 				/*
 				 * Compile Allow header
@@ -465,7 +483,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		return false;
 	}
 
-	private @Nullable ApiPrincipal checkAuthorization(HttpServletRequest request, HttpServletResponse response, ApiListener listener, PipeLineSession pipelineSession) throws IOException {
+	private @Nullable ApiPrincipal checkAuthorization(HttpServletRequest request, HttpServletResponse response, ApiListener listener, PipeLineSession pipelineSession, @Nullable Message body) throws IOException {
 		String authorizationToken = null;
 		Cookie authorizationCookie = null;
 		ApiPrincipal userPrincipal = null;
@@ -532,6 +550,22 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					return null;
 				}
 
+				break;
+			case HMAC:
+				try {
+					byte[] rawBody = body == null ? new byte[0] : body.asByteArray();
+					if (listener.getHmacVerifier().verify(rawBody, request.getHeader(listener.getHmacHeader()))) {
+						userPrincipal = new ApiPrincipal();
+					} else {
+						LOG.warn("{} HMAC signature in header [{}] did not match", () -> createAbortMessage(request.getRemoteUser(), HttpStatus.UNAUTHORIZED.value()), listener::getHmacHeader);
+						response.sendError(HttpStatus.UNAUTHORIZED.value(), "invalid signature");
+						return null;
+					}
+				} catch (GeneralSecurityException e) {
+					LOG.warn("unable to verify HMAC signature", e);
+					response.sendError(HttpStatus.UNAUTHORIZED.value(), "unable to verify signature");
+					return null;
+				}
 				break;
 			default:
 				break;
