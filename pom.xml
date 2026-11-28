@@ -98,7 +98,7 @@
 		<spring.boot.version>4.1.2</spring.boot.version>
 		<tomcat.version>11.0.29</tomcat.version>
 		<tika.version>4.2.0</tika.version>
-		<mcp-sdk.version>2.1.0</mcp-sdk.version>
+		<mcp-sdk.version>2.2.0</mcp-sdk.version>
 
 		<narayana.version>7.3.4.Final</narayana.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
